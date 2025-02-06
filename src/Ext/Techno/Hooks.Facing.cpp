@@ -3,190 +3,138 @@
 #include <JumpjetLocomotionClass.h>
 #include <BulletTypeClass.h>
 
+#include <Ext/WeaponType/Body.h>
+
 #pragma region UnitsFacing
 
 // Would it be better to rewrite the entire UpdateRotation() ?
-DEFINE_HOOK(0x7369A5, UnitClass_UpdateRotation_CheckTurnToTarget, 0x6)
-{
-	enum { SkipGameCode = 0x736A8E, ContinueGameCode = 0x7369B3 };
-
-	GET(UnitClass* const, pThis, ESI);
-
-	if (!pThis->unknown_bool_6AF)
-		return ContinueGameCode;
-
-	if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
-	{
-		if (pExt->UnitIdleActionTimer.IsTicking() || pExt->UnitIdleActionGapTimer.IsTicking() || pExt->UnitIdleIsSelected)
-			return ContinueGameCode;
-	}
-
-	return SkipGameCode;
-}
-
 DEFINE_HOOK(0x7369D6, UnitClass_UpdateRotation_StopUnitIdleAction, 0xA)
 {
 	enum { SkipGameCode = 0x736A8E };
 
 	GET(UnitClass* const, pThis, ESI);
 
-	TechnoTypeExt::ExtData* pTypeExt = nullptr;
-	const auto pTarget = pThis->Target; // pThis->Target have been checked
+	if (!RulesExt::Global()->ExpandTurretRotation)
+		return 0;
 
-	if (const auto pWeaponStruct = pThis->GetWeapon(pThis->SelectWeapon(pTarget))) // Vanilla is pThis->GetTurretWeapon()
+	if (const auto pWeaponStruct = pThis->GetTurretWeapon())
 	{
-		if (const auto pWeapon = pWeaponStruct->WeaponType)
+		const auto pWeapon = pWeaponStruct->WeaponType;
+		const auto pWeaponTypeExt = WeaponTypeExt::ExtMap.Find(pWeapon);
+
+		if (pWeapon && (!pWeapon->OmniFire || (pWeaponTypeExt && pWeaponTypeExt->OmniFire_TurnToTarget)))
 		{
-			if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
-				pExt->StopIdleAction();
+			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type);
 
-			if (!pWeapon->OmniFire)
+			if (pWeaponStruct->TurretLocked)
 			{
-				if (pWeaponStruct->TurretLocked)
-				{
-					pThis->SecondaryFacing.SetDesired(pThis->PrimaryFacing.Current());
-				}
-				else
-				{
-					const auto source = pThis->Location;
-					const auto target = pTarget->GetCoords();
-					const auto radian = Math::atan2(source.Y - target.Y, target.X - source.X);
-					DirStruct tgtDir;
-
-					if (pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type), pTypeExt)
-					{
-						const auto rotate = pTypeExt->Turret_SelfRotation_Angle * (Math::Pi / 180.0);
-
-						if (pTypeExt->Turret_SelfRotation_Symmetric)
-						{
-							const auto curDir = pThis->SecondaryFacing.Current();
-							const auto rightDir = DirStruct { radian + rotate };
-							const auto leftDir = DirStruct { radian - rotate };
-
-							if (abs(static_cast<short>(rightDir.Raw) - static_cast<short>(curDir.Raw)) < abs(static_cast<short>(leftDir.Raw) - static_cast<short>(curDir.Raw)))
-								tgtDir = rightDir;
-							else
-								tgtDir = leftDir;
-						}
-						else
-						{
-							tgtDir = DirStruct { radian + rotate };
-						}
-					}
-
-					pThis->SecondaryFacing.SetDesired(tgtDir);
-				}
-			}
-		}
-	}
-
-	if (!pThis->Locomotor->Is_Moving_Now())
-	{
-		if ((pTypeExt || (pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type), pTypeExt)) && pTypeExt->Turret_BodyRotation_Enable)
-		{
-			const auto rotate = pTypeExt->Turret_BodyRotation_Angle * (Math::Pi / 180.0);
-			const auto curDir = pThis->PrimaryFacing.Current();
-
-			const auto source = pThis->Location;
-			const auto target = pTarget->GetCoords();
-			const auto radian = Math::atan2(source.Y - target.Y, target.X - source.X);
-			DirStruct tgtDir;
-
-			if (pTypeExt->Turret_BodyRotation_Symmetric)
-			{
-				const auto rightDir = DirStruct { radian + rotate };
-				const auto leftDir = DirStruct { radian - rotate };
-
-				if (abs(static_cast<short>(rightDir.Raw) - static_cast<short>(curDir.Raw)) < abs(static_cast<short>(leftDir.Raw) - static_cast<short>(curDir.Raw)))
-					tgtDir = rightDir;
-				else
-					tgtDir = leftDir;
+				pTypeExt->SetTurretLimitedDir(pThis, pThis->PrimaryFacing.Current());
 			}
 			else
 			{
-				tgtDir = DirStruct { radian + rotate };
-			}
+				const auto targetDir = pThis->GetTargetDirection(pThis->Target);
+				pTypeExt->SetTurretLimitedDir(pThis, targetDir);
 
-			if (abs(static_cast<short>(tgtDir.Raw) - static_cast<short>(curDir.Raw)) >= 8192)
-				pThis->PrimaryFacing.SetDesired(tgtDir);
+				if (pTypeExt->Turret_BodyOrientation && !pThis->Locomotor->Is_Moving_Now())
+				{
+					const auto curDir = pThis->PrimaryFacing.Current();
+					const auto tgtDir = pTypeExt->GetBodyDesiredDir(curDir, targetDir);
+
+					if (std::abs(static_cast<short>(static_cast<short>(tgtDir.Raw) - static_cast<short>(curDir.Raw))) >= 8192)
+						pThis->PrimaryFacing.SetDesired(tgtDir);
+				}
+			}
 		}
 	}
 
 	return SkipGameCode;
 }
 
-DEFINE_HOOK(0x736AFB, UnitClass_UpdateRotation_CheckTurnToForward, 0x6)
-{
-	enum { SkipGameCode = 0x736BE2, ContinueGameCode = 0x736B21 };
-
-	GET(UnitClass* const, pThis, ESI);
-
-	// Repeatedly check TurretSpins and IsRotating() seems unnecessary
-	pThis->unknown_bool_6AF = true;
-
-	if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
-	{
-		if (pExt->UnitIdleActionTimer.IsTicking() || pExt->UnitIdleActionGapTimer.IsTicking() || pExt->UnitIdleIsSelected)
-			return ContinueGameCode;
-	}
-
-	return SkipGameCode;
-}
-
-DEFINE_HOOK(0x736B7E, UnitClass_UpdateRotation_ApplyUnitIdleAction, 0xA)
+DEFINE_HOOK(0x736AEA, UnitClass_UpdateRotation_ApplyUnitIdleAction, 0x6)
 {
 	enum { SkipGameCode = 0x736BE2 };
 
 	GET(UnitClass* const, pThis, ESI);
 
-	const auto pWeaponStruct = pThis->GetTurretWeapon();
+	if (!RulesExt::Global()->ExpandTurretRotation)
+		return 0;
+
 	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+
+	// Turning to target?
+	if (pThis->SecondaryFacing.IsRotating())
+	{
+		// Repeatedly check TurretSpins and IsRotating() seems unnecessary
+		pThis->unknown_bool_6AF = true;
+
+		if (!pExt->UnitIdleActionTimer.IsTicking() && !pExt->UnitIdleActionGapTimer.IsTicking() && !pExt->UnitIdleIsSelected)
+			return SkipGameCode;
+	}
+
+	const auto pTypeExt = pExt->TypeExtData;
 	const auto currentMission = pThis->CurrentMission;
 
-	if ((pWeaponStruct && pWeaponStruct->WeaponType && pWeaponStruct->TurretLocked) || (currentMission == Mission::Harmless && pThis->Owner == HouseClass::FindSpecial()))
+	// Busy in attacking or driver dead?
+	if (pThis->Target || (Unsorted::CurrentFrame - pThis->LastFireBulletFrame) < (RulesClass::Instance->GuardAreaTargetingDelay + 5) || (currentMission == Mission::Harmless && pThis->Owner == HouseClass::FindSpecial()))
 	{
-		// Vanilla TurretLocked state and driver been killed state
-		if (pExt)
+		if (pTypeExt->Turret_IdleRotate.Get(RulesExt::Global()->Turret_IdleRotate))
 			pExt->StopIdleAction();
 
-		pThis->SecondaryFacing.SetDesired(pThis->PrimaryFacing.Current());
+		return SkipGameCode;
 	}
-	else
+
+	const auto pWeaponStruct = pThis->GetTurretWeapon();
+
+	// Turret locked?
+	if (pWeaponStruct && pWeaponStruct->WeaponType && pWeaponStruct->TurretLocked)
 	{
-		// Point to mouse
-		if (pExt && pExt->UnitIdleActionSelected && pThis->Owner->IsControlledByCurrentPlayer())
+		if (pTypeExt->Turret_IdleRotate.Get(RulesExt::Global()->Turret_IdleRotate))
+			pExt->StopIdleAction();
+
+		if (!pThis->BunkerLinkedItem && pThis->Type->Speed && (!pThis->Type->IsSimpleDeployer || !pThis->Deployed))
+			pTypeExt->SetTurretLimitedDir(pThis, pThis->PrimaryFacing.Current());
+
+		return SkipGameCode;
+	}
+
+	// Point to mouse
+	if (SessionClass::IsSingleplayer() && pThis->Owner->IsControlledByCurrentPlayer())
+	{
+		if (pTypeExt->Turret_PointToMouse.Get(RulesExt::Global()->Turret_PointToMouse))
 			pExt->ManualIdleAction();
 
-		if (!pExt->UnitIdleIsSelected)
-		{
-			const auto pDestination = pThis->Destination;
-			// Bugfix: Align jumpjet turret's facing with body's
-			// When jumpjets arrived at their FootClass::Destination, they seems stuck at the Move mission
-			// and therefore the turret facing was set to DirStruct{atan2(0,0)}==DirType::East at 0x736BBB
-			// that's why they will come back to normal when giving stop command explicitly
-			// so the best way is to fix the Mission if necessary, but I don't know how to do it
-			// so I skipped jumpjets check temporarily
-			if (!pDestination || locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor))
-			{
-				// Idle main
-				if (pExt && pExt->UnitIdleAction && (currentMission == Mission::Guard || currentMission == Mission::Sticky))
-					pExt->ApplyIdleAction();
-				else if (pThis->Type->Speed) // What DisallowMoving used to skip
-					pThis->SecondaryFacing.SetDesired(pThis->PrimaryFacing.Current());
-			}
-			else if (pThis->Type->Speed) // What DisallowMoving used to skip
-			{
-				// Turn to destination
-				if (pExt)
-					pExt->StopIdleAction();
-
-				const auto source = pThis->Location;
-				const auto target = pDestination->GetCoords();
-				const auto tgtDir = DirStruct { Math::atan2(source.Y - target.Y, target.X - source.X) };
-				pThis->SecondaryFacing.SetDesired(pThis->GetTargetDirection(pDestination));
-			}
-		}
+		if (pExt->UnitIdleIsSelected)
+			return SkipGameCode;
 	}
+
+	const auto pDestination = pThis->Destination;
+	const auto pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor);
+
+	if (pDestination && !pJumpjetLoco)
+	{
+		if (pTypeExt->Turret_IdleRotate.Get(RulesExt::Global()->Turret_IdleRotate))
+			pExt->StopIdleAction();
+
+		if (!pThis->BunkerLinkedItem && pThis->Type->Speed && (!pThis->Type->IsSimpleDeployer || !pThis->Deployed))
+			pTypeExt->SetTurretLimitedDir(pThis, pThis->GetTargetDirection(pDestination));
+
+		return SkipGameCode;
+	}
+
+	// Idle main
+	if (pTypeExt->Turret_IdleRotate.Get(RulesExt::Global()->Turret_IdleRotate))
+	{
+		if (currentMission == Mission::Guard || (pJumpjetLoco && pJumpjetLoco->State == JumpjetLocomotionClass::State::Hovering))
+		{
+			pExt->ApplyIdleAction();
+			return SkipGameCode;
+		}
+
+		pExt->StopIdleAction();
+	}
+
+	if (!pThis->BunkerLinkedItem && pThis->Type->Speed && (!pThis->Type->IsSimpleDeployer || !pThis->Deployed))
+		pTypeExt->SetTurretLimitedDir(pThis, pThis->PrimaryFacing.Current());
 
 	return SkipGameCode;
 }
@@ -195,20 +143,6 @@ DEFINE_HOOK(0x736B7E, UnitClass_UpdateRotation_ApplyUnitIdleAction, 0xA)
 
 #pragma region CheckFacing
 
-DEFINE_HOOK(0x7410BB, UnitClass_GetFireError_CheckFacingError, 0x8)
-{
-	enum { NoNeedToCheck = 0x74132B, ContinueCheck = 0x7410C3 };
-
-	GET(FireError, fireError, EAX);
-
-	if (fireError == FireError::OK)
-		return ContinueCheck;
-
-	GET(UnitClass*, pThis, ESI);
-
-	return (fireError == FireError::REARM && !pThis->Type->Turret && !pThis->IsWarpingIn()) ? ContinueCheck : NoNeedToCheck;
-}
-
 DEFINE_HOOK(0x7412BB, UnitClass_GetFireError_CheckFacingDeviation, 0x7)
 {
 	enum { SkipGameCode = 0x7412D4 };
@@ -216,46 +150,14 @@ DEFINE_HOOK(0x7412BB, UnitClass_GetFireError_CheckFacingDeviation, 0x7)
 	GET(UnitClass* const, pThis, ESI);
 	GET(AbstractClass* const, pTarget, EBP);
 	GET(BulletTypeClass* const, pBulletType, EDX);
-	GET(DirStruct, curDir, EDI);
-	GET(DirStruct*, pTargetDir, EAX);
+	GET(DirStruct* const, pTgtDir, EAX);
 
-	const auto source = pThis->Location;
-	const auto target = pTarget->GetCoords();
-	const auto radian = Math::atan2(source.Y - target.Y, target.X - source.X);
+	*pTgtDir = pThis->GetTargetDirection(pTarget);
 
-	if (pThis->Type->Turret)
-	{
-		if (const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type))
-		{
-			const auto rotate = pTypeExt->Turret_SelfRotation_Angle * (Math::Pi / 180.0);
-
-			if (pTypeExt->Turret_SelfRotation_Symmetric)
-			{
-				const auto rightDir = DirStruct { radian + rotate };
-				const auto leftDir = DirStruct { radian - rotate };
-
-				if (abs(static_cast<short>(rightDir.Raw) - static_cast<short>(curDir.Raw)) < abs(static_cast<short>(leftDir.Raw) - static_cast<short>(curDir.Raw)))
-					*pTargetDir = rightDir;
-				else
-					*pTargetDir = leftDir;
-			}
-			else
-			{
-				*pTargetDir = DirStruct { radian + rotate };
-			}
-		}
-		else
-		{
-			*pTargetDir = DirStruct { radian };
-		}
-	}
-	else
-	{
-		*pTargetDir = DirStruct { radian };
-	}
+	if (RulesExt::Global()->ExpandTurretRotation && pThis->Type->Turret)
+		*pTgtDir = TechnoTypeExt::ExtMap.Find(pThis->Type)->GetTurretDesiredDir(*pTgtDir);
 
 	R->EBX(pBulletType->ROT ? 16 : 8);
-	R->EAX(pTargetDir);
 	return SkipGameCode;
 }
 

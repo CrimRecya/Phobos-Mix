@@ -3,8 +3,7 @@
 #include <Ext/SWType/Body.h>
 #include <Ext/TechnoType/Body.h>
 #include <Ext/Techno/Body.h>
-
-#include <ScenarioClass.h>
+#include <Ext/Scenario/Body.h>
 
 //Static init
 
@@ -361,6 +360,181 @@ void HouseExt::GetAIChronoshiftSupers(HouseClass* pThis, SuperClass*& pSuperCSph
 	}
 }
 
+int HouseExt::CountOwnedPresentExt(HouseClass* pHouse, TechnoTypeClass* pTechnoType, bool upgrade, bool deploy)
+{
+	switch (pTechnoType->WhatAmI())
+	{
+	case AbstractType::BuildingType:
+		return HouseExt::CountOwnedPresentWithDeployOrUpgrade(pHouse, static_cast<BuildingTypeClass*>(pTechnoType), upgrade, deploy);
+	case AbstractType::InfantryType:
+		return pHouse->CountOwnedAndPresent(static_cast<InfantryTypeClass*>(pTechnoType));
+	case AbstractType::UnitType:
+		return HouseExt::CountOwnedPresentWithDeploy(pHouse, static_cast<UnitTypeClass*>(pTechnoType), deploy);
+	case AbstractType::AircraftType:
+		return pHouse->CountOwnedAndPresent(static_cast<AircraftTypeClass*>(pTechnoType));
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+int HouseExt::CountOwnedPresentWithDeploy(HouseClass* pHouse, UnitTypeClass* pUnitType, bool deploy)
+{
+	auto count = pHouse->CountOwnedAndPresent(pUnitType);
+
+	if (deploy && pUnitType->DeploysInto)
+		count += pHouse->CountOwnedAndPresent(pUnitType->DeploysInto);
+
+	return count;
+}
+
+int HouseExt::CountOwnedPresentWithDeployOrUpgrade(HouseClass* pHouse, BuildingTypeClass* pBuildingType, bool upgrade, bool deploy)
+{
+	auto count = pHouse->CountOwnedAndPresent(pBuildingType);
+
+	if (deploy && pBuildingType->UndeploysInto)
+		count += pHouse->CountOwnedAndPresent(pBuildingType->UndeploysInto);
+
+	if (!upgrade)
+		return count;
+
+	const auto upgrades = BuildingTypeExt::GetUpgradesAmount(pBuildingType, pHouse);
+
+	if (upgrades != -1)
+		count += upgrades;
+
+	return count;
+}
+
+int HouseExt::CountOwnedNowWithDeployOrUpgrade(HouseClass* pHouse, BuildingTypeClass* pBuildingType, bool upgrade, bool deploy)
+{
+	auto count = pHouse->CountOwnedNow(pBuildingType);
+
+	if (deploy && pBuildingType->UndeploysInto)
+		count += pHouse->CountOwnedNow(pBuildingType->UndeploysInto);
+
+	if (!upgrade)
+		return count;
+
+	const auto upgrades = BuildingTypeExt::GetUpgradesAmount(pBuildingType, pHouse);
+
+	if (upgrades != -1)
+		count += upgrades;
+
+	return count;
+}
+
+bool HouseExt::CheckOwnerBitfieldForCurrentPlayer(TechnoTypeClass* pType)
+{
+	const auto pScenarioExt = ScenarioExt::Global();
+	DWORD baseBits = TechnoTypeExt::ExtMap.Find(pType)->Cameo_RequiredHouses & pType->GetOwners();
+	baseBits &= (1u << HouseClass::CurrentPlayer->Type->FindParentCountryIndex());
+
+	if (!baseBits)
+		return false;
+
+	bool result = false;
+
+	switch (pType->WhatAmI())
+	{
+	case AbstractType::Building:
+	case AbstractType::BuildingType:
+	{
+		result = pScenarioExt->OwnerBitfield_BuildingType & baseBits;
+		break;
+	}
+	case AbstractType::Infantry:
+	case AbstractType::InfantryType:
+	{
+		result = pScenarioExt->OwnerBitfield_InfantryType & baseBits;
+		break;
+	}
+	case AbstractType::Unit:
+	case AbstractType::UnitType:
+	{
+		if (!pType->Naval)
+			result = pScenarioExt->OwnerBitfield_VehicleType & baseBits;
+		else
+			result = pScenarioExt->OwnerBitfield_NavyType & baseBits;
+
+		break;
+	}
+	case AbstractType::Aircraft:
+	case AbstractType::AircraftType:
+	{
+		result = pScenarioExt->OwnerBitfield_AircraftType & baseBits;
+		break;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	return result;
+}
+
+void HouseExt::RecheckOwnerBitfieldForCurrentPlayer()
+{
+	const auto pScenarioExt = ScenarioExt::Global();
+	pScenarioExt->OwnerBitfield_BuildingType = 0;
+	pScenarioExt->OwnerBitfield_InfantryType = 0;
+	pScenarioExt->OwnerBitfield_VehicleType = 0;
+	pScenarioExt->OwnerBitfield_NavyType = 0;
+	pScenarioExt->OwnerBitfield_AircraftType = 0;
+
+	for (const auto& pBuilding : HouseClass::CurrentPlayer->Buildings)
+	{
+		const auto pBuildingType = pBuilding->Type;
+
+		switch (pBuildingType->Factory)
+		{
+		case AbstractType::Building:
+		case AbstractType::BuildingType:
+		{
+			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pBuildingType);
+			DWORD baseBits = pTypeExt->Cameo_RequiredHouses & pBuildingType->GetOwners();
+			pScenarioExt->OwnerBitfield_BuildingType |= baseBits;
+			break;
+		}
+		case AbstractType::Infantry:
+		case AbstractType::InfantryType:
+		{
+			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pBuildingType);
+			DWORD baseBits = pTypeExt->Cameo_RequiredHouses & pBuildingType->GetOwners();
+			pScenarioExt->OwnerBitfield_InfantryType |= baseBits;
+			break;
+		}
+		case AbstractType::Unit:
+		case AbstractType::UnitType:
+		{
+			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pBuildingType);
+			DWORD baseBits = pTypeExt->Cameo_RequiredHouses & pBuildingType->GetOwners();
+
+			if (!pBuildingType->Naval)
+				pScenarioExt->OwnerBitfield_VehicleType |= baseBits;
+			else
+				pScenarioExt->OwnerBitfield_NavyType |= baseBits;
+
+			break;
+		}
+		case AbstractType::Aircraft:
+		case AbstractType::AircraftType:
+		{
+			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pBuildingType);
+			DWORD baseBits = pTypeExt->Cameo_RequiredHouses & pBuildingType->GetOwners();
+			pScenarioExt->OwnerBitfield_AircraftType |= baseBits;
+			break;
+		}
+		default:
+		{
+			break;
+		}
+		}
+	}
+}
+
 // Ares
 HouseClass* HouseExt::GetHouseKind(OwnerHouseKind const kind, bool const allowRandom, HouseClass* const pDefault, HouseClass* const pInvoker, HouseClass* const pVictim)
 {
@@ -607,9 +781,13 @@ void HouseExt::ExtData::Serialize(T& Stm)
 	Stm
 		.Process(this->PowerPlantEnhancers)
 		.Process(this->OwnedLimboDeliveredBuildings)
-		.Process(this->OwnedExistCameoTechnoTypes)
 		.Process(this->OwnedDeployingUnits)
-		.Process(this->BaseNormalCells)
+		.Process(this->CurrentBuildingType)
+		.Process(this->CurrentBuildingDrawType)
+		.Process(this->CurrentBuildingTopLeft)
+		.Process(this->CurrentBuildingTimer)
+		.Process(this->CurrentBuildingTimes)
+		.Process(this->LastRefineryBuildFrame)
 		.Process(this->LimboAircraft)
 		.Process(this->LimboBuildings)
 		.Process(this->LimboInfantry)
@@ -619,11 +797,6 @@ void HouseExt::ExtData::Serialize(T& Stm)
 		.Process(this->Factory_VehicleType)
 		.Process(this->Factory_NavyType)
 		.Process(this->Factory_AircraftType)
-		.Process(this->CurrentBuildingType)
-		.Process(this->CurrentBuildingTopLeft)
-		.Process(this->CurrentBuildingTimer)
-		.Process(this->CurrentBuildingTimes)
-		.Process(this->LastRefineryBuildFrame)
 		.Process(this->AISuperWeaponDelayTimer)
 		.Process(this->RepairBaseNodes)
 		.Process(this->RestrictedFactoryPlants)
@@ -638,6 +811,7 @@ void HouseExt::ExtData::Serialize(T& Stm)
 		.Process(this->AIFireSaleDelayTimer)
 		.Process(this->SuspendedEMPulseSWs)
 		.Process(this->SuperExts)
+		.Process(this->SpyEffect_RadarJamTimer)
 		;
 }
 
@@ -889,7 +1063,8 @@ CanBuildResult HouseExt::BuildLimitGroupCheck(const HouseClass* pThis, const Tec
 int QueuedNum(const HouseClass* pHouse, const TechnoTypeClass* pType)
 {
 	const AbstractType absType = pType->WhatAmI();
-	const FactoryClass* pFactory = pHouse->GetPrimaryFactory(absType, pType->Naval, BuildCat::DontCare);
+	const BuildCat buildCat = (pType->WhatAmI() == AbstractType::BuildingType ? static_cast<const BuildingTypeClass*>(pType)->BuildCat : BuildCat::DontCare);
+	const FactoryClass* pFactory = pHouse->GetPrimaryFactory(absType, pType->Naval, buildCat);
 	int queued = 0;
 
 	if (pFactory)
@@ -909,7 +1084,8 @@ int QueuedNum(const HouseClass* pHouse, const TechnoTypeClass* pType)
 void RemoveProduction(const HouseClass* pHouse, const TechnoTypeClass* pType, int num)
 {
 	const AbstractType absType = pType->WhatAmI();
-	FactoryClass* pFactory = pHouse->GetPrimaryFactory(absType, pType->Naval, BuildCat::DontCare);
+	const BuildCat buildCat = (pType->WhatAmI() == AbstractType::BuildingType ? static_cast<const BuildingTypeClass*>(pType)->BuildCat : BuildCat::DontCare);
+	FactoryClass* pFactory = pHouse->GetPrimaryFactory(absType, pType->Naval, buildCat);
 	if (pFactory)
 	{
 		int queued = pFactory->CountTotal(pType);

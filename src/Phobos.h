@@ -30,6 +30,7 @@ public:
 
 	static const char* AppIconPath;
 	static const wchar_t* VersionDescription;
+	static bool ShowCurrentInfo;
 	static bool DisplayDamageNumbers;
 	static bool IsLoadingSaveGame;
 	static bool ShouldQuickSave;
@@ -53,6 +54,12 @@ public:
 		static double PowerDelta_ConditionYellow;
 		static double PowerDelta_ConditionRed;
 		static bool CenterPauseMenuBackground;
+		static bool SuperWeaponSidebar;
+		static int SuperWeaponSidebar_Interval;
+		static int SuperWeaponSidebar_LeftOffset;
+		static int SuperWeaponSidebar_CameoHeight;
+		static int SuperWeaponSidebar_Max;
+		static int SuperWeaponSidebar_MaxColumns;
 		static bool WeedsCounter_Show;
 		static bool AnchoredToolTips;
 
@@ -80,6 +87,7 @@ public:
 		static bool SelectedDisplay_Enable;
 		static bool FPSCounter_Enable;
 		static bool MessageDisplayInCenter;
+		static bool AutoBuilding_Enable;
 		static bool ShowBuildingStatistics;
 		static bool DrawAdjacentBoundary;
 		static bool RealTimeTimers;
@@ -95,6 +103,8 @@ public:
 		static bool ShowWeedsCounter;
 		static bool ShowPlanningPath;
 		static bool HideLightFlashEffects;
+		static bool ShowFlashOnSelecting;
+		static bool UnitPowerDrain;
 	};
 
 	class Misc

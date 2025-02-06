@@ -1,7 +1,7 @@
-#include <AircraftClass.h>
 #include "Body.h"
 
 #include <AircraftClass.h>
+#include <EventClass.h>
 #include <ScenarioClass.h>
 #include <TunnelLocomotionClass.h>
 
@@ -80,7 +80,9 @@ DEFINE_HOOK(0x6F9FA9, TechnoClass_AI_PromoteAnim, 0x6)
 			promAnim = GameCreate<AnimClass>(RulesExt::Global()->Promote_VeteranAnimation, pThis->GetCenterCoords());
 		else if (RulesExt::Global()->Promote_EliteAnimation)
 			promAnim = GameCreate<AnimClass>(RulesExt::Global()->Promote_EliteAnimation, pThis->GetCenterCoords());
-		promAnim->SetOwnerObject(pThis);
+
+		if(promAnim)
+			promAnim->SetOwnerObject(pThis);
 	}
 
 	return aresProcess();
@@ -138,10 +140,11 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	pExt->InitializeLaserTrails();
 	pExt->InitializeAttachEffects();
 	pExt->InitializeDisplayInfo();
-	pExt->InitializeUnitIdleAction();
 
 	if (pExt->TypeExtData->UniqueTechno && pThis->Owner->IsControlledByCurrentPlayer())
 		ScenarioExt::Global()->OwnedHeros.push_back(pExt);
+
+	pExt->InitAggressiveStance();
 
 	return 0;
 }
@@ -620,6 +623,73 @@ DEFINE_HOOK(0x7418D4, UnitClass_CrushCell_FireDeathWeapon, 0x6)
 	return 0;
 }
 
+#pragma endregion
+
+#pragma region KeepTargetOnMove
+
+// Do not explicitly reset target for KeepTargetOnMove vehicles when issued move command.
+DEFINE_HOOK(0x4C7462, EventClass_Execute_KeepTargetOnMove, 0x5)
+{
+	enum { SkipGameCode = 0x4C74C0 };
+
+	GET(EventClass*, pThis, ESI);
+	GET(TechnoClass*, pTechno, EDI);
+	GET(AbstractClass*, pTarget, EBX);
+
+	if (pTechno->WhatAmI() != AbstractType::Unit)
+		return 0;
+
+	auto const mission = static_cast<Mission>(pThis->MegaMission.Mission);
+	auto const pExt = TechnoExt::ExtMap.Find(pTechno);
+
+	if ((mission == Mission::Move) && pExt->TypeExtData->KeepTargetOnMove && pTechno->Target && !pTarget)
+	{
+		if (pTechno->IsCloseEnoughToAttack(pTechno->Target))
+		{
+			auto const pDestination = pThis->MegaMission.Destination.As_Abstract();
+			pTechno->SetDestination(pDestination, true);
+			pExt->KeepTargetOnMove = true;
+
+			return SkipGameCode;
+		}
+	}
+
+	pExt->KeepTargetOnMove = false;
+
+	return 0;
+}
+
+// Reset the target if beyond weapon range.
+// This was originally in UnitClass::Mission_Move() but because that
+// is only checked every ~15 frames, it can cause responsiveness issues.
+DEFINE_HOOK(0x736480, UnitClass_AI_KeepTargetOnMove, 0x6)
+{
+	GET(UnitClass*, pThis, ESI);
+
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+
+	if (pExt->KeepTargetOnMove && pExt->TypeExtData->KeepTargetOnMove && pThis->Target && pThis->CurrentMission == Mission::Move)
+	{
+		int weaponIndex = pThis->SelectWeapon(pThis->Target);
+
+		if (auto const pWeapon = pThis->GetWeapon(weaponIndex)->WeaponType)
+		{
+			int extraDistance = static_cast<int>(pExt->TypeExtData->KeepTargetOnMove_ExtraDistance.Get());
+			int range = pWeapon->Range;
+			pWeapon->Range += extraDistance; // Temporarily adjust weapon range based on the extra distance.
+
+			if (!pThis->IsCloseEnough(pThis->Target, weaponIndex))
+				pThis->SetTarget(nullptr);
+
+			pWeapon->Range = range;
+		}
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
 DEFINE_HOOK(0x70D703, TechnoClass_FireDeathWeapon_UseGlobalDeathWeaponDamage, 0xA)
 {
 	enum { ReplaceDamage = 0x70D724 };
@@ -634,5 +704,3 @@ DEFINE_HOOK(0x70D703, TechnoClass_FireDeathWeapon_UseGlobalDeathWeaponDamage, 0x
 
 	return 0;
 }
-
-#pragma endregion

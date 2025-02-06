@@ -21,11 +21,16 @@ public:
 	class ExtData final : public Extension<HouseClass>
 	{
 	public:
-		std::map<BuildingTypeExt::ExtData*, int> PowerPlantEnhancers;
+		std::map<int, int> PowerPlantEnhancers;
 		std::vector<BuildingClass*> OwnedLimboDeliveredBuildings;
-		std::vector<TechnoTypeExt::ExtData*> OwnedExistCameoTechnoTypes;
+
 		std::vector<UnitClass*> OwnedDeployingUnits;
-		std::vector<CellStruct> BaseNormalCells;
+		BuildingTypeClass* CurrentBuildingType;
+		BuildingTypeClass* CurrentBuildingDrawType;
+		CellStruct CurrentBuildingTopLeft;
+		CDTimerClass CurrentBuildingTimer;
+		int CurrentBuildingTimes;
+		int LastRefineryBuildFrame;
 
 		CounterClass LimboAircraft;  // Currently owned aircraft in limbo
 		CounterClass LimboBuildings; // Currently owned buildings in limbo
@@ -41,12 +46,6 @@ public:
 		CDTimerClass CombatAlertTimer;
 		CDTimerClass AISuperWeaponDelayTimer;
 		CDTimerClass AIFireSaleDelayTimer;
-
-		BuildingTypeClass* CurrentBuildingType;
-		CellStruct CurrentBuildingTopLeft;
-		CDTimerClass CurrentBuildingTimer;
-		int CurrentBuildingTimes;
-		int LastRefineryBuildFrame;
 
 		//Read from INI
 		Nullable<bool> RepairBaseNodes[3];
@@ -64,7 +63,7 @@ public:
 		int NumConYards_NonMFB;
 		int NumShipyards_NonMFB;
 
-		std::map<SuperClass*, std::vector<SuperClass*>> SuspendedEMPulseSWs;
+		std::map<int, std::vector<int>> SuspendedEMPulseSWs;
 		// standalone? no need and not a good idea
 		struct SWExt
 		{
@@ -72,12 +71,18 @@ public:
 		};
 		std::vector<SWExt> SuperExts;
 
+		CDTimerClass SpyEffect_RadarJamTimer;
+
 		ExtData(HouseClass* OwnerObject) : Extension<HouseClass>(OwnerObject)
 			, PowerPlantEnhancers {}
 			, OwnedLimboDeliveredBuildings {}
-			, OwnedExistCameoTechnoTypes {}
 			, OwnedDeployingUnits {}
-			, BaseNormalCells {}
+			, CurrentBuildingType { nullptr }
+			, CurrentBuildingDrawType { nullptr }
+			, CurrentBuildingTopLeft {}
+			, CurrentBuildingTimer {}
+			, CurrentBuildingTimes { 0 }
+			, LastRefineryBuildFrame { 0 }
 			, LimboAircraft {}
 			, LimboBuildings {}
 			, LimboInfantry {}
@@ -87,11 +92,6 @@ public:
 			, Factory_VehicleType { nullptr }
 			, Factory_NavyType { nullptr }
 			, Factory_AircraftType { nullptr }
-			, CurrentBuildingType { nullptr }
-			, CurrentBuildingTopLeft {}
-			, CurrentBuildingTimer {}
-			, CurrentBuildingTimes { 0 }
-			, LastRefineryBuildFrame { 0 }
 			, CombatAlertTimer {}
 			, AISuperWeaponDelayTimer {}
 			, RepairBaseNodes { }
@@ -106,6 +106,7 @@ public:
 			, AIFireSaleDelayTimer {}
 			, SuspendedEMPulseSWs {}
 			, SuperExts(SuperWeaponTypeClass::Array->Count)
+			, SpyEffect_RadarJamTimer {}
 		{ }
 
 		bool OwnsLimboDeliveredBuilding(BuildingClass* pBuilding);
@@ -200,4 +201,10 @@ public:
 
 	static CanBuildResult BuildLimitGroupCheck(const HouseClass* pThis, const TechnoTypeClass* pItem, bool buildLimitOnly, bool includeQueued);
 	static bool ReachedBuildLimit(const HouseClass* pHouse, const TechnoTypeClass* pType, bool ignoreQueued);
+	static int CountOwnedPresentExt(HouseClass* pHouse, TechnoTypeClass* pTechnoType, bool upgrade = false, bool deploy = false);
+	static int CountOwnedPresentWithDeploy(HouseClass* pHouse, UnitTypeClass* pUnitType, bool deploy = false);
+	static int CountOwnedPresentWithDeployOrUpgrade(HouseClass* pHouse, BuildingTypeClass* pBuildingType, bool upgrade = false, bool deploy = false);
+	static int CountOwnedNowWithDeployOrUpgrade(HouseClass* pHouse, BuildingTypeClass* pBuildingType, bool upgrade = true, bool deploy = true);
+	static bool CheckOwnerBitfieldForCurrentPlayer(TechnoTypeClass* pType);
+	static void RecheckOwnerBitfieldForCurrentPlayer();
 };

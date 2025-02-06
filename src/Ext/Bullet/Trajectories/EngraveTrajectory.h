@@ -9,6 +9,7 @@ public:
 		, SourceCoord { { 0, 0 } }
 		, TargetCoord { { 0, 0 } }
 		, MirrorCoord { true }
+		, UseDisperseCoord { false }
 		, ApplyRangeModifiers { false }
 		, TheDuration { 0 }
 		, IsLaser { true }
@@ -33,6 +34,7 @@ public:
 	Valueable<Point2D> SourceCoord;
 	Valueable<Point2D> TargetCoord;
 	Valueable<bool> MirrorCoord;
+	Valueable<bool> UseDisperseCoord;
 	Valueable<bool> ApplyRangeModifiers;
 	Valueable<int> TheDuration;
 	Valueable<bool> IsLaser;
@@ -63,7 +65,7 @@ public:
 		, TheDuration { trajType->TheDuration }
 		, LaserTimer {}
 		, DamageTimer {}
-		, TechnoInLimbo { false }
+		, TechnoInTransport { false }
 		, NotMainWeapon { false }
 		, FLHCoord {}
 		, BuildingCoord {}
@@ -85,7 +87,7 @@ public:
 	int TheDuration;
 	CDTimerClass LaserTimer;
 	CDTimerClass DamageTimer;
-	bool TechnoInLimbo;
+	bool TechnoInTransport;
 	bool NotMainWeapon;
 	CoordStruct FLHCoord;
 	CoordStruct BuildingCoord;
@@ -95,10 +97,11 @@ private:
 	void Serialize(T& Stm);
 
 	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
-	void CheckMirrorCoord(TechnoClass* pTechno);
+	inline void CheckMirrorCoord(TechnoClass* pTechno);
 	void SetEngraveDirection(BulletClass* pBullet, CoordStruct theSource, CoordStruct theTarget);
+	inline bool InvalidFireCondition(TechnoClass* pTechno);
 	int GetFloorCoordHeight(BulletClass* pBullet, CoordStruct coord);
 	bool PlaceOnCorrectHeight(BulletClass* pBullet);
 	void DrawEngraveLaser(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner);
-	void DetonateLaserWarhead(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner);
+	inline void DetonateLaserWarhead(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner);
 };

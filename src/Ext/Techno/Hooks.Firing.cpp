@@ -287,15 +287,6 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 		const auto pTechno = abstract_cast<TechnoClass*>(pTarget);
 		CellClass* pTargetCell = nullptr;
 
-		if (pWeaponExt->NoRepeatFire > 0)
-		{
-			if (const auto pTargetTechnoExt = TechnoExt::ExtMap.Find(pTechno))
-			{
-				if ((Unsorted::CurrentFrame - pTargetTechnoExt->LastBeLockedFrame) < pWeaponExt->NoRepeatFire)
-					return CannotFire;
-			}
-		}
-
 		// AAOnly doesn't need to be checked if LandTargeting=1.
 		if (pThis->GetTechnoType()->LandTargeting != LandTargetingType::Land_Not_OK && pWeapon->Projectile->AA && pTarget && !pTarget->IsInAir())
 		{
@@ -488,7 +479,7 @@ DEFINE_HOOK(0x6FDD7D, TechnoClass_FireAt_UpdateWeaponType, 0x5)
 			if (pExt->LastWeaponType && pExt->LastWeaponType->Burst)
 			{
 				const auto ratio = static_cast<double>(pThis->CurrentBurstIndex) / pExt->LastWeaponType->Burst;
-				const auto rof = static_cast<int>(ratio * pExt->LastWeaponType->ROF * pExt->AE.ROFMultiplier) - (Unsorted::CurrentFrame - pThis->unknown_int_120);
+				const auto rof = static_cast<int>(ratio * pExt->LastWeaponType->ROF * pExt->AE.ROFMultiplier) - (Unsorted::CurrentFrame - pThis->LastFireBulletFrame);
 
 				if (rof > 0)
 				{
@@ -535,7 +526,10 @@ DEFINE_HOOK(0x6FF8F1, TechnoClass_FireAt_AfterFire, 0x6)
 		auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
 
 		if (pWeaponExt && pWeaponExt->ResetGattlingValue)
+		{
+			pThis->CurrentGattlingStage = 0;
 			reinterpret_cast<void(__thiscall*)(TechnoClass*, int)>(0x70E000)(pThis, 0); // TechnoClass::UpdateGattlingValueDecrease
+		}
 	}
 
 	return 0;
@@ -560,10 +554,15 @@ DEFINE_HOOK(0x6FDDC0, TechnoClass_FireAt_DiscardAEOnFire, 0x6)
 
 	if (const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon))
 	{
-		if (pWeaponExt->NoRepeatFire > 0)
+		if (pWeaponExt->AttachEffect_Enable)
 		{
-			if (const auto pTargetTechnoExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pTarget)))
-				pTargetTechnoExt->LastBeLockedFrame = Unsorted::CurrentFrame;
+			if (const auto pTargetTechno = abstract_cast<TechnoClass*>(pTarget))
+			{
+				auto const& info = pWeaponExt->AttachEffects;
+				AttachEffectClass::Attach(pTargetTechno, pThis->Owner, pThis, pWeapon->Warhead, info);
+				AttachEffectClass::Detach(pTargetTechno, info);
+				AttachEffectClass::DetachByGroups(pTargetTechno, info);
+			}
 		}
 	}
 
@@ -773,6 +772,23 @@ DEFINE_HOOK(0x6FE821, TechnoClass_Fire_BallisticScatterPhobos, 0x6)
 	return 0;
 }
 
+DEFINE_HOOK(0x6FF78F, TechnoClass_Fire_ReselectIfLimboedCheck, 0xA)
+{
+	enum { SkipGameCode = 0x6FF79C };
+
+	GET(WeaponTypeClass* const, pWeapon, EBX);
+	GET_BASE(AbstractClass* const, pTarget, 0x8);
+
+	if (WeaponTypeExt::ExtMap.Find(pWeapon)->UnlimboDetonate || pTarget->WhatAmI() == AbstractType::Infantry)
+	{
+		GET(TechnoClass* const, pThis, ESI);
+
+		pThis->ShouldBeReselectOnUnlimbo = false;
+	}
+
+	return SkipGameCode;
+}
+
 DEFINE_HOOK(0x6FF7EF, TechnoClass_Fire_LimboLaunchRecord, 0xA)
 {
 	enum { SkipGameCode = 0x6FF7F9 };
@@ -780,11 +796,19 @@ DEFINE_HOOK(0x6FF7EF, TechnoClass_Fire_LimboLaunchRecord, 0xA)
 	GET(TechnoClass* const, pThis, ESI);
 	GET_STACK(BulletClass* const, pBullet, STACK_OFFSET(0xB0, -0x74));
 
-	if (!pThis->InLimbo)
+	if (!pThis->InLimbo && pBullet)
 	{
 		auto const pBulletExt = BulletExt::ExtMap.Find(pBullet);
 		pBulletExt->LimboedLauncher = pThis;
 		pBulletExt->LimboedDir = pThis->PrimaryFacing.Current().GetDir();
+
+		GET(WeaponTypeClass* const, pWeapon, EBX);
+
+		if (WeaponTypeExt::ExtMap.Find(pWeapon)->UnlimboDetonate)
+		{
+			if (auto const pFoot = abstract_cast<FootClass*>(pThis))
+				pThis->OldTeam = pFoot->Team;
+		}
 	}
 
 	pThis->Limbo();
@@ -879,13 +903,6 @@ DEFINE_HOOK(0x6F3B37, TechnoClass_GetFLH_BurstFLH_1, 0x7)
 	GET(int, OriginalZ, EAX);
 	GET_STACK(int, weaponIndex, STACK_OFFSET(0xD8, 0x8));
 
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
-
-	if (!pExt)
-		return 0;
-
-	const auto pTypeExt = pExt->TypeExtData;
-
 	if (weaponIndex < 0)
 	{
 		auto currentPassenger = pThis->Passengers.FirstPassenger;
@@ -901,26 +918,25 @@ DEFINE_HOOK(0x6F3B37, TechnoClass_GetFLH_BurstFLH_1, 0x7)
 	}
 
 	bool FLHFound = false;
-	auto FLH = CoordStruct::Empty;
-
-	FLH = TechnoExt::GetBurstFLH(pThis, weaponIndex, FLHFound, pTypeExt);
+	auto FLH = TechnoExt::GetBurstFLH(pThis, weaponIndex, FLHFound);
 	BurstFLHTemp::FLHFound = FLHFound;
 
 	if (!FLHFound)
 	{
 		if (auto pInf = abstract_cast<InfantryClass*>(pThis))
-			FLH = TechnoExt::GetSimpleFLH(pInf, weaponIndex, FLHFound, pTypeExt);
+			FLH = TechnoExt::GetSimpleFLH(pInf, weaponIndex, FLHFound);
 	}
 
 	if (FLHFound)
 	{
-		pExt->LastWeaponFLH = FLH;
+		if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
+			pExt->LastWeaponFLH = FLH;
 
 		R->ECX(FLH.X);
 		R->EBP(FLH.Y);
 		R->EAX(FLH.Z);
 	}
-	else
+	else if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
 	{
 		pExt->LastWeaponFLH = { OriginalX, ((pThis->CurrentBurstIndex % 2 == 1) ? -OriginalY : OriginalY), OriginalZ };
 	}

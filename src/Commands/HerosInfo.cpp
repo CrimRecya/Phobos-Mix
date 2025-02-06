@@ -9,7 +9,7 @@ const char* HerosInfoCommandClass::GetName() const
 
 const wchar_t* HerosInfoCommandClass::GetUIName() const
 {
-	return GeneralUtils::LoadStringUnlessMissing("TXT_HEROS_INFO", L"heros display");
+	return GeneralUtils::LoadStringUnlessMissing("TXT_HEROS_INFO", L"Heros display");
 }
 
 const wchar_t* HerosInfoCommandClass::GetUICategory() const

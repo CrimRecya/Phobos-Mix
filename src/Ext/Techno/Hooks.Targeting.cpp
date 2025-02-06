@@ -76,6 +76,6 @@ DEFINE_HOOK(0x6FA67D, TechnoClass_Update_DistributeTargetingFrame, 0xA)
 		}
 	}
 
-	R->EAX(pThis->vt_entry_4C4());
+	R->EAX(pThis->MegaMissionIsAttackMove());
 	return Targeting;
 }

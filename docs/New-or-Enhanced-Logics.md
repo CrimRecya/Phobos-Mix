@@ -45,7 +45,7 @@ This page describes all the engine features that are either new and introduced b
     - `Crit.AllowWarheads` can be used to list only Warheads that can benefit from this critical hit chance multiplier and `Crit.DisallowWarheads` weapons that are not allowed to, respectively.
   - `RevengeWeapon` can be used to temporarily grant the specified weapon as a [revenge weapon](#revenge-weapon) for the attached object.
     - `RevengeWeapon.AffectsHouses` customizes which houses can trigger the revenge weapon.
-  - `ReflectDamage` can be set to true to have any positive damage dealt to the object the effect is attached to be reflected back to the attacker. `ReflectDamage.Warhead` determines which Warhead is used to deal the damage, defaults to `[CombatDamage]`->`C4Warhead`. If `ReflectDamage.Warhead` is set to true, the Warhead is fully detonated instead of used to simply deal damage. `ReflectDamage.Multiplier` is a multiplier to the damage received and then reflected back. Already reflected damage cannot be further reflected back.
+  - `ReflectDamage` can be set to true to have any positive damage dealt to the object the effect is attached to be reflected back to the attacker. `ReflectDamage.Warhead` determines which Warhead is used to deal the damage, defaults to `[CombatDamage]`->`C4Warhead`. If `ReflectDamage.Warhead.Detonate` is set to true, the Warhead is fully detonated instead of used to simply deal damage. `ReflectDamage.Multiplier` is a multiplier to the damage received and then reflected back. Already reflected damage cannot be further reflected back.
     - Warheads can prevent reflect damage from occuring by setting `SuppressReflectDamage` to true. `SuppressReflectDamage.Types` can control which AttachEffectTypes' reflect damage is suppressed, if none are listed then all of them are suppressed.
   - `DisableWeapons` can be used to disable ability to fire any and all weapons.
     - On TechnoTypes with `OpenTopped=true`, `OpenTopped.CheckTransportDisableWeapons` can be set to true to make passengers not be able to fire out if transport's weapons are disabled by `DisableWeapons`.
@@ -360,6 +360,7 @@ Shield.ReplaceNonRespawning=false           ; boolean
 Shield.MinimumReplaceDelay=0                ; integer, game frames
 Shield.InheritStateOnReplace=false          ; boolean
 ```
+
 - Now you can have a shield for any TechnoType. It serves as a second health pool with independent `Armor` and `Strength` values.
   - Shield will not take damage if the TechnoType is under effects of `Temporal` warhead, is Iron Curtained / Force Shielded, has `Immune=true` or if it has `TypeImmune=true` and the damage source is another instance of same TechnoType belonging to same house.
   - Negative damage will recover shield, unless shield has been broken. If shield isn't full, all negative damage will be absorbed by shield.
@@ -417,7 +418,7 @@ Shield.InheritStateOnReplace=false          ; boolean
   - `Shield.SelfHealing.Rate` & `Shield.SelfHealing.Amount` override ShieldType `SelfHealing.Rate` and `SelfHealing.Amount` for duration of `Shield.SelfHealing.Duration` amount of frames. Negative rate & zero or lower amount default to ShieldType values. If `Shield.SelfHealing.RestartTimer` is set, currently running self-healing timer is restarted, otherwise timer's duration is adjusted in proportion to the new `Shield.SelfHealing.Rate` (e.g timer will be same percentage through before and after) without restarting the timer. If the effect expires while self-healing timer is running, remaining time is adjusted to proportionally match ShieldType `SelfHealing.Rate`. Re-applying the effect resets the duration to `Shield.SelfHealing.Duration`.
     - Additionally `Shield.SelfHealing.RestartInCombat` & `Shield.SelfHealing.RestartInCombatDelay` can be used to override ShieldType settings.
   - `Shield.AffectTypes` allows listing which ShieldTypes can be affected by any of the effects listed above. If none are listed, all ShieldTypes are affected.
-    -  `Shield.AffectTypes` can be overriden for specific shield interactions by using keys `Shield.Penetrate.Types`, `Shield.Break.Types`, `Shield.Respawn.Types` and `Shield.SelfHealing.Types` respectively.
+    - `Shield.AffectTypes` can be overriden for specific shield interactions by using keys `Shield.Penetrate.Types`, `Shield.Break.Types`, `Shield.Respawn.Types` and `Shield.SelfHealing.Types` respectively.
   - `Shield.AttachTypes` & `Shield.RemoveTypes` allows listing ShieldTypes that are attached or removed, respectively from any targets affected by the warhead (positive `Verses` values). Normally only first listed ShieldType in `Shield.AttachTypes` is applied.
     - If `Shield.ReplaceOnly` is set, shields from `Shield.AttachTypes` are only applied to affected targets from which shields were simultaneously removed, matching the order listed in `Shield.RemoveTypes`. If `Shield.AttachTypes` contains less items than `Shield.RemoveTypes`, last item from the former is used for any remaining removed shields.
     - If `Shield.ReplaceNonRespawning` is set, shield from `Shield.AttachTypes` replaces existing shields that have been broken and cannot respawn on their own.
@@ -461,7 +462,7 @@ CreateUnit.AlwaysSpawnOnGround=false   ; boolean
 CreateUnit.SpawnParachutedInAir=false  ; boolean
 CreateUnit.ConsiderPathfinding=false   ; boolean
 CreateUnit.SpawnAnim=                  ; Animation
-CreareUnit.SpawnHeight=-1              ; integer, height in leptons
+CreateUnit.SpawnHeight=-1              ; integer, height in leptons
 ```
 
 ```{note}
@@ -583,20 +584,44 @@ SpyEffect.InfiltratorSuperWeapon=  ; SuperWeaponType
 
 ### Building placing and deploying logic enhancement
 
-- In vanilla games, buildings are always cannot placing or deploying on the cells that other infantries or units on. Now this can be  changed by setting `ExpandBuildingPlace` to true, when you try to place the building on these cells, it will check whether the occupiers can be scatter by yourself (include your own technos and allies non-player technos) and whether there are enough spaces to scatter. If can, it will record which building you are placing and show a preview to you and your allies, then start a timer to record this placement and order the occupiers to leave this building area. When the area is cleared, the building will be truly place down and the production queue will be restored to original state. But when the timer expires or an unexpected situation has occurred which make the building impossible be constructed here anymore, it will stop the action and play "cannot deploy here", then you should re-place or re-deploy the building in a valid space. Note that when the building has been recorded and is trying to place, unless the production queue has vanished (such as construction yard is no longer exist), it will continue to function normally until the conditions are not met.
-  - `AutoUpgrade` controls whether building upgrades can be automatically placed on the correct and earliest built building.
-  - `LimboBuild` controls whether building can be automatically placed like `LimboDelivery`.
+- In vanilla games, buildings are always cannot placing or deploying on the cells that other infantries or units on. Now this can be changed by setting `ExtendedBuildingPlacing` to true, when you try to place the building on these cells, it will check whether the occupiers can be scatter by yourself (include your own technos and allies technos) and whether there are enough spaces to scatter. If can, it will record which building you are placing and show a preview to you and your allies, then start a timer to record this placement and order the occupiers to leave this building area. When the area is cleared, the building will be truly place down and the production queue will be restored to original state. But when the timer expires or an unexpected situation has occurred which make the building impossible be constructed here anymore, it will stop the action and play "cannot deploy here", then you should re-place or re-deploy the building in a valid space. Note that when the building has been recorded and is trying to place, unless the production queue has vanished (such as construction yard is no longer exist), it will continue to function normally until the conditions are not met.
+- `AutoBuilding` controls whether building can be automatically placed. Default to `[General]->AutoBuilding`
+  - `AutoBuilding.Gap` controls the gap of automatically placed buildings.
+  - For shortcut keys, see [User Interface -> Auto Building](User-Interface.md#Auto-Building). Default to on.
+- `LimboBuild` controls whether building can be automatically placed like `LimboDelivery`.
   - `LimboBuildID` defines the numeric ID of the building placed by `LimboBuild`.
+- `PlaceBuilding.OnLand` controls building with `WaterBound=yes` will become which building when placed on land.
+- `PlaceBuilding.OnWater` controls building with `WaterBound=no` will become which building when placed on water.
 
 In `rulesmd.ini`:
 ```ini
 [General]
-ExpandBuildingPlace=false   ; boolean
+ExtendedBuildingPlacing=false   ; boolean
+AutoBuilding=false              ; boolean
 
-[SOMEBUILDING]              ; BuildingType
-AutoUpgrade=false           ; boolean
-LimboBuild=false            ; boolean
-LimboBuildID=-1             ; boolean
+[SOMEBUILDING]                  ; BuildingType
+AutoBuilding=                   ; boolean
+AutoBuilding.Gap=0              ; integer
+LimboBuild=false                ; boolean
+LimboBuildID=-1                 ; integer
+PlaceBuilding.OnLand=           ; BuildingType
+PlaceBuilding.OnWater=          ; BuildingType
+```
+
+```{note}
+- `AutoBuilding` not support buildings with `LaserFence=true` , `Gate=true` or `ToTile=true`.
+- `PlaceBuilding.OnLand` and `PlaceBuilding.OnWater` are only work for players.
+```
+
+### Skip anim delay for burst fire
+
+- In Red Alert 1, the tesla coil will attack multiple times after charging animation. This is not possible in Red Alert 2, where the building must play the charge animation every time it fires.
+- Now you can implement the above logic using the following flag.
+
+In `artmd.ini`:
+```ini
+[SOMEBUILDING]                     ; BuildingType
+IsAnimDelayedBurst=true            ; boolean
 ```
 
 ## Infantry
@@ -692,7 +717,6 @@ OnlyUseLandSequences=false  ; boolean
 
 ## Projectiles
 
-
 ### Projectile interception logic
 
 ![image](_static/images/projectile-interception-01.gif)
@@ -747,11 +771,12 @@ Currently interceptor weapons with projectiles that do not have `Inviso=true` wi
   - The speed of the projectile is defined by `Trajectory.Speed`, which unlike `Speed` used by `ROT` > 0 projectiles is defined on projectile not weapon.
     - In `Trajectory=Straight`, it refers to the whole distance speed of the projectile and it has no restrictions.
     - In `Trajectory=Bombard`, it refers to the initial speed of the projectile and it has no restrictions.
-    - In `Trajectory=Disperse`, it refers to the maximum speed of the projectile and it cannot exceed 256. `Trajectory.Speed` will be fixed at 192 by setting `Trajectory.Disperse.UniqueCurve=true`.
+    - In `Trajectory=Disperse`, it refers to the final speed of the projectile and it cannot exceed 256. `Trajectory.Speed` will be fixed at 192 by setting `Trajectory.Disperse.UniqueCurve=true`.
     - In `Trajectory=Engrave`, it refers to the engrave speed of the projectile and it cannot exceed 128. Recommend set as about 40.
     - In `Trajectory=Parabola`, it refers to the horizontal velocity of the projectile and is only used for modes 0, 3, or 5 and it has no restrictions.
+    - In `Trajectory=Tracing`, it refers to the speed of tracing and turning around of the projectile.
 
-  In `rulesmd.ini`:
+In `rulesmd.ini`:
 ```ini
 [SOMEPROJECTILE]        ; Projectile
 Trajectory.Speed=100.0  ; floating point value
@@ -766,10 +791,10 @@ Trajectory.Speed=100.0  ; floating point value
   - `Trajectory.Straight.DetonationDistance` controls the maximum distance in cells from intended target (checked at start of each game frame, before the projectile moves) at which the projectile will be forced to detonate. Set to 0 to disable forced detonation (note that this can cause the projectile to overshoot the target). If `Trajectory.Straight.ApplyRangeModifiers` is set to true, any applicable weapon range modifiers from the firer are applied here as well. By setting `Trajectory.Straight.PassThrough=true`, it refers to the distance that projectile should travel from itself when it above 0, and the distance that projectile should move behind the target when it below 0 (use the absolute value).
   - `Trajectory.Straight.TargetSnapDistance` controls the maximum distance in cells from intended target the projectile can be at moment of detonation to make the projectile 'snap' on the intended target. Set to 0 to disable snapping.
   - `Trajectory.Straight.PassThrough` enables special case logic where the projectile does not detonate in contact with the target but instead travels up to a distance defined by `Trajectory.Straight.DetonationDistance`. Note that the firing angle of the projectile is adjusted with this in mind, making it fire straight ahead if the target is on same elevation.
-  - `Trajectory.Straight.PassDetonate` enables extra detonations when the projectile is traveling.
-    - `Trajectory.Straight.PassDetonateWarhead` defined the warhead detonated by `Trajectory.Straight.PassDetonate`, and `Trajectory.Straight.PassDetonateDamage` defined the damage caused by `Trajectory.Straight.PassDetonateWarhead`.
+  - `Trajectory.Straight.PassDetonate` enables extra detonations when the projectile is traveling. (You can use this when you want the projectile to detonate warheads every other distance/time during the flight.)
+    - `Trajectory.Straight.PassDetonateWarhead` defines the warhead detonated by `Trajectory.Straight.PassDetonate`, and `Trajectory.Straight.PassDetonateDamage` defines the damage caused by `Trajectory.Straight.PassDetonateWarhead`.
     - `Trajectory.Straight.PassDetonateDelay` controls the delay for detonating the warhead defined by `Trajectory.Straight.Warhead`.
-    - `Trajectory.Straight.PassDetonateTimer` controls the initial delay for detonating the warhead defined by `Trajectory.Straight.Warhead`.
+    - `Trajectory.Straight.PassDetonateInitialDelay` controls the initial delay for detonating the warhead defined by `Trajectory.Straight.Warhead`.
     - `Trajectory.Straight.PassDetonateLocal` controls whether `Trajectory.Straight.PassDetonateWarhead` and weapon's `Warhead` are always detonate at ground level. It will also no longer restrict vertical velocity of the projectile when using `Trajectory.Straight.ConfineAtHeight`.
   - `Trajectory.Straight.LeadTimeCalculate` controls whether the projectile need to calculate the lead time of the target when firing. Note that this will not affect the facing of the turret.
   - `Trajectory.Straight.OffsetCoord` controls the offsets of the target. Projectile will aim at this position to attack. It also supports `Inaccurate=yes` and `Trajectory.Straight.LeadTimeCalculate=true` on this basis.
@@ -777,8 +802,8 @@ Trajectory.Speed=100.0  ; floating point value
     - `Trajectory.Straight.MirrorCoord` controls whether `Trajectory.Straight.OffsetCoord` need to mirror the lateral value to adapt to the current burst index. At the same time, the rotation direction calculated by `Trajectory.Straight.RotateCoord` will also be reversed, and the rotation angle between each adjacent projectile on each side will not change as a result.
     - `Trajectory.Straight.UseDisperseBurst` controls whether the calculation of `Trajectory.Straight.RotateCoord` is based on its superior's `Trajectory.Disperse.WeaponBurst` of the dispersed trajectory, rather than `Burst` of the weapon. If this value is not appropriate, it will result in unsatisfactory visual displays.
     - `Trajectory.Straight.AxisOfRotation` controls the rotation axis when calculating `Trajectory.Straight.RotateCoord`. The axis will rotates with the unit orientation or the vector that from target position to the source position.
-  - `Trajectory.Straight.ProximityImpact` controls the initial proximity fuse times. When there are enough remaining times and the projectile approaches another valid target, it will detonate a warhead defined by `Trajectory.Straight.Warhead` on it. If the times is about to run out, it will also detonate itself at its location. This function can be cancelled by setting to 0. A negative integer means unlimited times. By the way, you can use the weapon's `Warhead` with low versus only to aim at the target, and use the `Trajectory.Straight.ProximityWarhead` to causing actual harm.
-    - `Trajectory.Straight.ProximityWarhead` defined the warhead detonated by `Trajectory.Straight.ProximityImpact`, and `Trajectory.Straight.ProximityDamage` defined the damage caused by `Trajectory.Straight.ProximityWarhead`.
+  - `Trajectory.Straight.ProximityImpact` controls the initial proximity fuse times. When there are enough remaining times and the projectile approaches another valid target, it will detonate a warhead defined by `Trajectory.Straight.Warhead` on it. If the times is about to run out, it will also detonate itself at its location. This function can be cancelled by setting to 0. A negative integer means unlimited times. By the way, you can use the weapon's `Warhead` with low versus only to aim at the target, and use the `Trajectory.Straight.ProximityWarhead` to causing actual harm. (You can use this to cause non repeated damage to all units encountered during the flight of the projectile.)
+    - `Trajectory.Straight.ProximityWarhead` defines the warhead detonated by `Trajectory.Straight.ProximityImpact`, and `Trajectory.Straight.ProximityDamage` defines the damage caused by `Trajectory.Straight.ProximityWarhead`.
     - `Trajectory.Straight.ProximityRadius` controls the range of proximity fuse. It can NOT be set as a negative integer.
     - `Trajectory.Straight.ProximityDirect` controls whether let the target receive damage instead of detonating the warhead.
     - `Trajectory.Straight.ProximityMedial` controls whether to detonate `Trajectory.Straight.ProximityWarhead` at the bullet's location rather than the proximity target's location. If `Trajectory.Straight.ProximityDirect` is set to true, this will only affect the calculation result of `Trajectory.Straight.EdgeAttenuation`.
@@ -787,7 +812,7 @@ Trajectory.Speed=100.0  ; floating point value
   - `Trajectory.Straight.ThroughVehicles` controls whether the projectile will not be obstructed by vehicles or aircrafts on the ground. When it is obstructed, it will be directly detonated at its location. If it still have `Trajectory.Straight.ProximityImpact` times, it will also detonate a `Trajectory.Straight.ProximityImpact` at the location of the obstacle.
   - `Trajectory.Straight.ThroughBuilding` controls whether the projectile will not be obstructed by buildings. When it is obstructed, it will be directly detonated at its location. If it still have `Trajectory.Straight.ProximityImpact` times, it will also detonate a `Trajectory.Straight.ProximityImpact` at the location of the obstacle.
   - `Trajectory.Straight.SubjectToGround` controls whether the projectile should explode when it hits the ground. Note that this will not make AI search for suitable attack locations.
-  - `Trajectory.Straight.ConfineAtHeight` controls the height above ground that projectile will try to travel as it can. It can not move down from the cliff by setting `SubjectToCliffs=yes`. It can be cancelled by setting as a non positive integer. It will be forcibly cancelled by setting `Trajectory.Speed` above 256.
+  - `Trajectory.Straight.ConfineAtHeight` controls the height above ground that projectile will try to travel as it can. It can not move down from the cliff by setting `SubjectToCliffs=true`. It can be cancelled by setting as a non positive integer. It will be forcibly cancelled by setting `Trajectory.Speed` above 256.
   - `Trajectory.Straight.EdgeAttenuation` controls the edge attenuation ratio of projectile damage (includes all types of the trajectory's damage), that is, the actual damage caused will be this value multiplied by the ratio of the current distance to the weapon's range. Can NOT be set to a negative integer.
   - `Trajectory.Straight.CountAttenuation` controls the attenuation coefficient of projectile damage (includes all types of the trajectory's damage), that is, how many times the next damage after each bounce is the damage just caused. Can NOT be set to a negative integer.
 
@@ -803,7 +828,7 @@ Trajectory.Straight.PassDetonate=false          ; boolean
 Trajectory.Straight.PassDetonateWarhead=        ; WarheadType
 Trajectory.Straight.PassDetonateDamage=0        ; integer
 Trajectory.Straight.PassDetonateDelay=1         ; integer
-Trajectory.Straight.PassDetonateTimer=0         ; integer
+Trajectory.Straight.PassDetonateInitialDelay=0  ; integer
 Trajectory.Straight.PassDetonateLocal=false     ; boolean
 Trajectory.Straight.LeadTimeCalculate=false     ; boolean
 Trajectory.Straight.OffsetCoord=0,0,0           ; integer - Forward,Lateral,Height
@@ -885,7 +910,7 @@ Trajectory.Bombard.SubjectToGround=false      ; boolean
 #### Disperse trajectory
 
 - Its trajectory looks a bit like a `ROT`, but its settings are more flexible. It also has a unique trajectory. And as its name suggests, it can even spread out more weapons.
-  - `Trajectory.Disperse.UniqueCurve` controls whether to enable simulated Qian Xuesen trajectory. After enabling this, it will NOT respect the following 19 items and `Trajectory.Speed`.
+  - `Trajectory.Disperse.UniqueCurve` controls whether to enable simulated Qian Xuesen trajectory. After enabling this, it will NOT respect the following 21 items and `Trajectory.Speed`.
   - `Trajectory.Disperse.PreAimCoord` controls the initial flight direction of the projectile, and after reaching this coordinate, it will begin to turn towards the target direction. When it is set to 0,0,0 , it will directly face the target.
     - `Trajectory.Disperse.RotateCoord` controls whether to rotate the projectile's firing direction within the angle bisector of `Trajectory.Disperse.PreAimCoord` according to the weapon's `Burst`. Set to 0 to disable this function.
     - `Trajectory.Disperse.MirrorCoord` controls whether `Trajectory.Disperse.PreAimCoord` need to mirror the lateral value to adapt to the current burst index. At the same time, the rotation direction calculated by `Trajectory.Disperse.RotateCoord` will also be reversed, and the rotation angle between each adjacent projectile on each side will not change as a result.
@@ -899,28 +924,34 @@ Trajectory.Bombard.SubjectToGround=false      ; boolean
   - `Trajectory.Disperse.LockDirection` controls whether after reaching `Trajectory.Disperse.PreAimCoord` and completing the first turn, the projectile will lock the direction of motion without further adjustment.
   - `Trajectory.Disperse.CruiseEnable` controls whether after reaching `Trajectory.Disperse.PreAimCoord` and completing the first turn, the projectile will maintain altitude while moving towards the target.
     - `Trajectory.Disperse.CruiseUnableRange` controls how far away it is from the target to end the cruise phase, no longer maintaining the cruise altitude, and begins to move directly towards the target. If the distance is already below this value by the time `Trajectory.Disperse.PreAimCoord` is reached, the cruise phase will be skipped.
+    - `Trajectory.Disperse.CruiseAltitude` controls the minimum altitude of the projectile in the cruise phase.
+    - `Trajectory.Disperse.CruiseAlongLevel` controls whether to calculate `Trajectory.Disperse.CruiseAltitude` by the height of the projectile and the ground height of the current position, otherwise it will be calculated by the height of the projectile and the height of the launch position.
   - `Trajectory.Disperse.LeadTimeCalculate` controls whether the projectile need to calculate the lead time of the target during motion.
-  - `Trajectory.Disperse.TargetSnapDistance` controls the maximum distance in cells from intended target the projectile can be at moment of detonation to make the projectile 'snap' on the intended target. Set to 0 to disable snapping.
+  - `Trajectory.Disperse.RecordSourceCoord` controls whether the projectile needs to record the launch position, which will be used for the weapons in `Trajectory.Disperse.Weapons`. It can be nested and inherited when both sides set this to true.
+  - `Trajectory.Disperse.RetargetAllies` controls whether the projectile chooses allies as its target when searching for new targets after losing its original target.
   - `Trajectory.Disperse.RetargetRadius` controls the radius of the projectile to search for a new target after losing its original target. If it hasn't arrived `Trajectory.Disperse.PreAimCoord` yet, the last coordinate of the original target is taken as the center of the searching circle. Otherwise, the coordinate of the distance in front of the projectile is taken as the center of the circle. Set to 0 indicates that this function is not enabled, and it will still attempt to attack the original target's location. If it is set to a negative value, it will directly self explode in place.
-    - `Trajectory.Disperse.RetargetAllies` controls whether the projectile chooses allies as its target when searching for new targets after losing its original target.
-  - `Trajectory.Disperse.SuicideShortOfROT` controls whether the projectile will explode when it detected its insufficient turning ability.
+  - `Trajectory.Disperse.TargetSnapDistance` controls the maximum distance in cells from intended target the projectile can be at moment of detonation to make the projectile 'snap' on the intended target. Set to 0 to disable snapping.
   - `Trajectory.Disperse.SuicideAboveRange` controls the projectile to self destruct directly after reaching the flight distance. Set to 0 to disable suicide.
+  - `Trajectory.Disperse.SuicideShortOfROT` controls whether the projectile will explode when it detected its insufficient turning ability.
   - `Trajectory.Disperse.SuicideIfNoWeapon` controls whether the projectile will self destruct after the number of times it spreads the weapon has been exhausted. If `Trajectory.Disperse.WeaponCount` set to 0, this will not be enabled.
-  - `Trajectory.Disperse.Weapons` defined the dispersal weapons of the projectile.
-    - `Trajectory.Disperse.WeaponBurst` defined how many corresponding weapons each time the projectile will fire. When the quantity is lower than `Trajectory.Disperse.Weapons`, it will use the last value.
+  - `Trajectory.Disperse.Weapons` defines the dispersal weapons of the projectile.
+    - `Trajectory.Disperse.WeaponBurst` defines how many corresponding weapons each time the projectile will fire. When the quantity is lower than `Trajectory.Disperse.Weapons`, it will use the last value.
     - `Trajectory.Disperse.WeaponCount` controls how many times the projectile can spread the weapon. Set to a negative value means unlimited times.
     - `Trajectory.Disperse.WeaponDelay` controls the delay for dispersing the weapons defined by `Trajectory.Disperse.Weapons`.
-    - `Trajectory.Disperse.WeaponTimer` controls the initial delay for dispersing the weapons defined by `Trajectory.Disperse.Weapons`.
-    - `Trajectory.Disperse.WeaponScope` controls the weapon dispersing timer to start counting only within this distance of reaching the target. Set to 0 to disable this function. Set to a negative value means it will only disperse the weapon at most once before detonation.
+    - `Trajectory.Disperse.WeaponInitialDelay` controls the initial delay for dispersing the weapons defined by `Trajectory.Disperse.Weapons`.
+    - `Trajectory.Disperse.WeaponEffectiveRange` controls the weapon dispersing timer to start counting only within this distance of reaching the target. Set to 0 to disable this function. Set to a negative value means it will only disperse the weapon at most once before detonation.
     - `Trajectory.Disperse.WeaponSeparate` controls whether the projectile no longer fire all the weapons in `Trajectory.Disperse.Weapons` at once and instead fire a group of weapons in the list order, following `Trajectory.Disperse.WeaponBurst`.
     - `Trajectory.Disperse.WeaponRetarget` controls whether the dispersed weapons will find new targets on their own. Using the `Range`, `CanTarget`, required `AttachedEffects` of weapons to search new targets.
     - `Trajectory.Disperse.WeaponLocation` controls whether the dispersed weapons will search for new targets at the center of the spreading position, otherwise they will focus on the original target.
     - `Trajectory.Disperse.WeaponTendency` controls whether the dispersed weapons will choose the original target as the first new target in each group of weapons.
+    - `Trajectory.Disperse.WeaponHolistic` controls whether the dispersed weapons will choose targets that are in different states from the original target (in air and on ground).
+    - `Trajectory.Disperse.WeaponMarginal` controls whether the dispersed weapons will choose unimportant items such as trees and streetlights as secondary targets.
     - `Trajectory.Disperse.WeaponToAllies` controls whether the dispersed weapons will choose allies as targets when searching for new targets.
     - `Trajectory.Disperse.WeaponDoRepeat` controls whether the dispersed weapons will select duplicate targets when the number of targets is insufficient. If it is set to true and the weapon can select both the technos and the ground as targets, the technos will be prioritized, then if all non-repeating technos have been selected and the weapon can still be launched at this time (in each round of salvo), it will start selecting duplicate technos. If it is set to false and the weapon can select both the technos and the ground as targets, the technos will be prioritized, followed by the ground cells, then if all non-repeating technos have been selected and the weapon can still be launched at this time (in each round of salvo), it will stop firing remaining bursts.
 
 In `rulesmd.ini`:
 ```ini
+[SOMEPROJECTILE]                                ; Projectile
 Trajectory=Disperse                             ; Trajectory type
 Trajectory.Disperse.UniqueCurve=false           ; boolean
 Trajectory.Disperse.PreAimCoord=0,0,0           ; integer - Forward,Lateral,Height
@@ -936,23 +967,28 @@ Trajectory.Disperse.ROT=30.0                    ; floating point value
 Trajectory.Disperse.LockDirection=false         ; boolean
 Trajectory.Disperse.CruiseEnable=false          ; boolean
 Trajectory.Disperse.CruiseUnableRange=5         ; floating point value
+Trajectory.Disperse.CruiseAltitude=800          ; integer
+Trajectory.Disperse.CruiseAlongLevel=false      ; boolean
 Trajectory.Disperse.LeadTimeCalculate=true      ; boolean
-Trajectory.Disperse.TargetSnapDistance=0.5      ; floating point value
-Trajectory.Disperse.RetargetRadius=0            ; floating point value
+Trajectory.Disperse.RecordSourceCoord=false     ; boolean
 Trajectory.Disperse.RetargetAllies=false        ; boolean
-Trajectory.Disperse.SuicideShortOfROT=true      ; boolean
+Trajectory.Disperse.RetargetRadius=0            ; floating point value
+Trajectory.Disperse.TargetSnapDistance=0.5      ; floating point value
 Trajectory.Disperse.SuicideAboveRange=0         ; floating point value
+Trajectory.Disperse.SuicideShortOfROT=true      ; boolean
 Trajectory.Disperse.SuicideIfNoWeapon=true      ; boolean
 Trajectory.Disperse.Weapons=                    ; list of WeaponTypes
 Trajectory.Disperse.WeaponBurst=                ; list of integers
 Trajectory.Disperse.WeaponCount=0               ; integer
 Trajectory.Disperse.WeaponDelay=1               ; integer
-Trajectory.Disperse.WeaponTimer=0               ; integer
-Trajectory.Disperse.WeaponScope=0               ; floating point value
+Trajectory.Disperse.WeaponInitialDelay=0        ; integer
+Trajectory.Disperse.WeaponEffectiveRange=0      ; floating point value
 Trajectory.Disperse.WeaponSeparate=false        ; boolean
 Trajectory.Disperse.WeaponRetarget=false        ; boolean
 Trajectory.Disperse.WeaponLocation=false        ; boolean
 Trajectory.Disperse.WeaponTendency=false        ; boolean
+Trajectory.Disperse.WeaponHolistic=false        ; boolean
+Trajectory.Disperse.WeaponMarginal=false        ; boolean
 Trajectory.Disperse.WeaponToAllies=false        ; boolean
 Trajectory.Disperse.WeaponDoRepeat=false        ; boolean
 ```
@@ -961,7 +997,7 @@ Trajectory.Disperse.WeaponDoRepeat=false        ; boolean
 - Make sure you set a low `Trajectory.Disperse.RetargetRadius` value unless necessary. If you set `Trajectory.Disperse.WeaponRetarget=true`, also make sure you set `Trajectory.Disperse.Weapons` a low `Range` value unless necessary.
 - This does not properly support `Arcing=true` projectiles.
 - Note that the listed Weapons in `Trajectory.Disperse.Weapons` must be listed in `[WeaponTypes]` for them to work.
-- `Trajectory.Disperse.Weapons` now not support customized `LaserThickness`, `Bolt.ColorN`, `Beam.Color`, `Beam.Duration`  and `Beam.Amplitude`.
+- `Trajectory.Disperse.Weapons` now not support customized `Bolt.ColorN`.
 ```
 
 #### Engrave trajectory
@@ -971,7 +1007,8 @@ Trajectory.Disperse.WeaponDoRepeat=false        ; boolean
   - `Trajectory.Engrave.SourceCoord` controls the starting point of engraving line segment. Taking the target as the coordinate center. Specifically, it will start from the firing position when set to 0,0 . The height of the point will always at ground level.
   - `Trajectory.Engrave.TargetCoord` controls the end point of engraving line segment. Taking the target as the coordinate center. The height of the point will always at ground level.
     - `Trajectory.Engrave.MirrorCoord` controls whether `Trajectory.Engrave.SourceCoord` and `Trajectory.Engrave.TargetCoord` need to mirror the lateral value to adapt to the current FLH.
-    - `Trajectory.Engrave.TheDuration` controls the duration of the entire engrave process. Set to 0 will automatically use `Trajectory.Engrave.SourceCoord` and `Trajectory.Engrave.TargetCoord` to calculate the process duration.
+  - `Trajectory.Engrave.UseDisperseCoord` controls whether the emission position of the engrave laser need to replaced with the FLH of its superior's dispersed trajectory, which set `Trajectory.Disperse.RecordSourceCoord` to true.
+  - `Trajectory.Engrave.TheDuration` controls the duration of the entire engrave process. Set to 0 will automatically use `Trajectory.Engrave.SourceCoord` and `Trajectory.Engrave.TargetCoord` to calculate the process duration.
   - `Trajectory.Engrave.IsLaser` controls whether laser drawing is required.
     - `Trajectory.Engrave.IsSupported` controls whether the engrave laser will be brighter and thicker. Need to set `Trajectory.Engrave.IsHouseColor` or `Trajectory.Engrave.IsSingleColor` to true.
     - `Trajectory.Engrave.IsHouseColor` controls whether set the engrave laser to draw using player's team color. These lasers respect `Trajectory.Engrave.LaserThickness` and `Trajectory.Engrave.IsSupported`.
@@ -986,11 +1023,13 @@ Trajectory.Disperse.WeaponDoRepeat=false        ; boolean
 
 In `rulesmd.ini`:
 ```ini
+[SOMEPROJECTILE]                               ; Projectile
 Trajectory=Engrave                             ; Trajectory type
 Trajectory.Engrave.ApplyRangeModifiers=false   ; boolean
 Trajectory.Engrave.SourceCoord=0,0             ; integer - Forward,Lateral
 Trajectory.Engrave.TargetCoord=0,0             ; integer - Forward,Lateral
 Trajectory.Engrave.MirrorCoord=true            ; boolean
+Trajectory.Engrave.UseDisperseCoord=false      ; boolean
 Trajectory.Engrave.TheDuration=0               ; integer
 Trajectory.Engrave.IsLaser=true                ; boolean
 Trajectory.Engrave.IsSupported=false           ; boolean
@@ -1039,6 +1078,7 @@ Trajectory.Engrave.DamageDelay=2               ; integer
 
 In `rulesmd.ini`:
 ```ini
+[SOMEPROJECTILE]                                ; Projectile
 Trajectory=Parabola                             ; Trajectory type
 Trajectory.Parabola.DetonationDistance=0.4      ; floating point value
 Trajectory.Parabola.TargetSnapDistance=0.5      ; floating point value
@@ -1066,6 +1106,68 @@ Trajectory.Parabola.AxisOfRotation=0,0,1        ; integer - Forward,Lateral,Heig
 ```
 
 #### Tracing trajectory
+
+- A trajectory that keeps following the target and will only detonate when its survival time is exhausted.
+  - `Trajectory.Tracing.TraceMode` controls how should the projectile trace the target. This is used to calculate coordinate axis of `Trajectory.Tracing.OffsetCoord` located on the tracking target. The H axis is not affected by the tilt and deflection of the tracking target, and always faces directly above. This has the following 6 modes.
+    - Connection - Line vector. Take the horizontal component of the vector between the launch position and the target position as the F axis.
+    - Global - Map direction. Take the lower right side of the map as the F axis.
+    - Body - Follow the body. The F axis is the body orientation of the tracking target.
+    - Turret - Follow the turret. The F axis is the turret orientation of the tracking target.
+    - RotateCW - Rotate clockwise. Rotate clockwise around the H axis with the resultant offset in the FL direction as the radius.
+    - RotateCCW - Rotate counterclockwise. Rotate counterclockwise around the H axis with the resultant offset in the FL direction as the radius.
+  - `Trajectory.Tracing.TheDuration` controls the tracing duration in frames. If it is a non-positive number, the projectile will use weapon's `ROF`-10 as the duration. At least 1 frame.
+  - `Trajectory.Tracing.TolerantTime` controls how long the projectile will detonate after losing the target. If it is 0, it will detonate directly when switching targets.
+  - `Trajectory.Tracing.ROT` controls the rotational speed of the projectile. When it is negative, it will follow the direction of movement. When it is 0, it will always face the target. When it is positive, it will rotate towards the target according to this speed. If `Trajectory.Tracing.BulletSpin=true`, the direction of rotation is determined by its positive or negative sign, and the speed of rotation is determined by its value.
+  - `Trajectory.Tracing.BulletSpin` controls whether the projectile will continuously rotate itself like `TurretSpin`.
+  - `Trajectory.Tracing.PeacefullyVanish` controls whether the projectile disappears directly when it is about to detonate, without producing animation or causing damage
+  - `Trajectory.Tracing.TraceTheTarget` controls whether the target tracked by the projectile is the target of the projectile, and the tracing weapons will be fired by the unit towards the projectile. Otherwise, it will trace the firer, and the tracing weapons will be fired from the projectile towards the target. At the same time, the projectile will detonate if the firer dies.
+  - `Trajectory.Tracing.CreateAtTarget` controls whether the projectile is directly generated at the target position.
+  - `Trajectory.Tracing.CreateCoord` controls the generate position. Not related to `Trajectory.Tracing.TraceMode`.
+  - `Trajectory.Tracing.OffsetCoord` controls the tracing position on its target, use `Trajectory.Tracing.TraceMode` determines the specific location.
+  - `Trajectory.Tracing.WeaponCoord` controls the FLH where the projectile fires the weapon when `Trajectory.Tracing.TraceTheTarget=false`.
+  - `Trajectory.Tracing.UseDisperseCoord` controls whether the fire position of `Trajectory.Tracing.Weapons` need to replaced with the FLH of its superior's dispersed trajectory, which set `Trajectory.Disperse.RecordSourceCoord` to true (Only if the weapon should be fired from the unit position).
+  - `Trajectory.Tracing.Weapons` defines the tracing weapons of the projectile.
+    - `Trajectory.Tracing.WeaponCount` controls how many times the projectile can fire the corresponding weapon. Set to a negative value means unlimited times. If set to zero, the cooling will be calculated directly without firing the tracing weapon. If the quantity is less than `Trajectory.Tracing.Weapons`, the last value in the list will be used.
+    - `Trajectory.Tracing.WeaponDelay` controls the delay after firing the corresponding weapon, at least 1 frame. If the quantity is less than `Trajectory.Tracing.Weapons`, the last value in the list will be used.
+    - `Trajectory.Tracing.WeaponInitialDelay` controls the initial delay for firing the tracing weapons defined by `Trajectory.Tracing.Weapons`.
+    - `Trajectory.Tracing.WeaponCycle` controls how many rounds of weapons the projectile can fire, zero will not fire weapons, and negative numbers are considered infinite.
+    - `Trajectory.Tracing.WeaponCheck` controls whether the projectile will check its orientation before firing the tracing weapons. Ignore this if `Trajectory.Tracing.Synchronize=false` or `Trajectory.Tracing.TraceTheTarget=true` or `Trajectory.Tracing.BulletSpin=true` or have negative `Trajectory.Tracing.ROT`.
+  - `Trajectory.Tracing.Synchronize` controls whether the target of the projectile is synchronized with the target of its firer. If not, the projectile will not update the target. When `Trajectory.Tracing.TraceTheTarget=no`, the tracing weapons will select their own targets to attack based on its range.
+  - `Trajectory.Tracing.SuicideAboveRange` controls whether the projectile will explode if its target exceeds the range.
+  - `Trajectory.Tracing.SuicideIfNoWeapon` controls whether the projectile will explode after firing the final weapon.
+
+在 `rulesmd.ini` 之中：
+```ini
+[SOMEPROJECTILE]                            ; Projectile
+Trajectory=Tracing                          ; Trajectory type
+Trajectory.Tracing.TraceMode=Connection     ; TraceMode value enumeration (Connection|Global|Body|Turret|RotateCW|RotateCCW)
+Trajectory.Tracing.TheDuration=0            ; integer
+Trajectory.Tracing.TolerantTime=-1          ; integer
+Trajectory.Tracing.ROT=-1                   ; integer
+Trajectory.Tracing.BulletSpin=no            ; boolean
+Trajectory.Tracing.PeacefullyVanish=no      ; boolean
+Trajectory.Tracing.TraceTheTarget=yes       ; boolean
+Trajectory.Tracing.CreateAtTarget=no        ; boolean
+Trajectory.Tracing.CreateCoord=0,0,0        ; integer - Forward,Lateral,Height
+Trajectory.Tracing.OffsetCoord=0,0,0        ; integer - Forward,Lateral,Height
+Trajectory.Tracing.WeaponCoord=0,0,0        ; integer - Forward,Lateral,Height
+Trajectory.Tracing.UseDisperseCoord=false   ; boolean
+Trajectory.Tracing.Weapons=                 ; list of WeaponTypes
+Trajectory.Tracing.WeaponCount=             ; list of integers
+Trajectory.Tracing.WeaponDelay=             ; list of integers
+Trajectory.Tracing.WeaponInitialDelay=0     ; integer
+Trajectory.Tracing.WeaponCycle=-1           ; integer
+Trajectory.Tracing.WeaponCheck=no           ; boolean
+Trajectory.Tracing.Synchronize=yes          ; boolean
+Trajectory.Tracing.SuicideAboveRange=no     ; boolean
+Trajectory.Tracing.SuicideIfNoWeapon=no     ; boolean
+```
+
+```{note}
+- If you set `Trajectory.Tracing.TraceTheTarget=false` and `Trajectory.Tracing.Synchronize=false`, make sure you set low `Range` values for weapons in `Trajectory.Tracing.Weapons` unless necessary.
+- Note that the listed Weapons in `Trajectory.Tracing.Weapons` must be listed in `[WeaponTypes]` for them to work.
+- `Trajectory.Tracing.Weapons` now not support customized `Bolt.ColorN`.
+```
 
 ### Shrapnel enhancements
 
@@ -1196,7 +1298,8 @@ EMPulse.SuspendOthers=false  ; boolean
   - `LimboDelivery.RollChances` lists chances of each "dice roll" happening. Valid values range from 0% (never happens) to 100% (always happens). Defaults to a single sure roll.
   - `LimboDelivery.RandomWeightsN` lists the weights for each "dice roll" that increase the probability of picking a specific building. Valid values are 0 (don't pick) and above (the higher value, the bigger the likelyhood). `RandomWeights` are a valid alias for `RandomWeights0`. If a roll attempt doesn't have weights specified, the last weights will be used.
 
-Note: This feature might not support every building flag. Flags that are confirmed to work correctly are listed below:
+```{note}
+- This feature might not support every building flag. Flags that are confirmed to work correctly are listed below:
   - FactoryPlant
   - OrePurifier
   - SpySat
@@ -1204,11 +1307,13 @@ Note: This feature might not support every building flag. Flags that are confirm
   - Prerequisite, PrerequisiteOverride, Prerequisite.List# (Ares 0.1), Prerequisite.Negative (Ares 0.1), GenericPrerequisites (Ares 0.1)
   - SuperWeapon, SuperWeapon2, SuperWeapons (Ares 0.9), SW.AuxBuildings (Ares 0.9), SW.NegBuildings (Ares 0.9)
 
-Note: In order for this feature to work with AITriggerTypes conditions ("Owning house owns ???" and "Enemy house owns ???"), `LegalTarget` must be set to true.
+- In order for this feature to work with AITriggerTypes conditions ("Owning house owns ???" and "Enemy house owns ???"), `LegalTarget` must be set to true.
+```
 
 ```{warning}
 Remember that Limbo Delivered buildings don't exist physically! This means they should never have enabled machanics that require interaction with the game world (i.e. factories, cloning vats, service depots, helipads). They also **should have either `KeepAlive=no` set or be killable with LimboKill** - otherwise the game might never end.
 ```
+
 In `rulesmd.ini`:
 ```ini
 [SOMESW]                        ; Superweapon
@@ -1222,7 +1327,7 @@ LimboKill.IDs=                  ; List of numeric IDs.
 
 ### Next
 
-Superweapons can now launch other superweapons at the same target. Launched types can be additionally randomized using the same rules as with LimboDelivery (see above).
+- Superweapons can now launch other superweapons at the same target. Launched types can be additionally randomized using the same rules as with LimboDelivery (see above).
   - `SW.Next.RealLaunch` controls whether the owner who fired the initial superweapon must own all listed superweapons and sufficient funds to support `Money.Amout`. Otherwise they will be launched forcibly.
   - `SW.Next.IgnoreInhibitors` ignores `SW.Inhibitors`/`SW.AnyInhibitor` of each superweapon, otherwise only non-inhibited superweapons are launched.
   - `SW.Next.IgnoreDesignators` ignores `SW.Designators`/`SW.AnyDesignator` respectively.
@@ -1372,7 +1477,24 @@ AutoFire=false             ; boolean
 AutoFire.TargetSelf=false  ; boolean
 ```
 
+### Automatically target structures
+
+- You can make a unit Aggressive Stance by default.
+- Under aggressive stance, units and structures will target unarmed enemy buildings if no enemy units or defensive structures can be targeted.
+- For more details of Aggressive Stance, see [User Interface -> Toggle Aggressive Stance](User-Interface.md#toggle-aggressive-stance) for details.
+
+In `rulesmd.ini`:
+```ini
+[SOMETECHNO]                           ; TechnoType
+AggressiveStance=false                 ; boolean
+AggressiveStance.Togglable=            ; boolean
+AggressiveStance.Exempt=false          ; boolean
+VoiceEnterAggressiveStance=            ; sound entry
+VoiceExitAggressiveStance=             ; sound entry
+```
+
 ### Build limit group
+
 - You can now make different technos share build limit in a group.
 - `BuildLimitGroup.Types` determines the technos that'll be used for build limit conditions of the selected techno. Note that the limit won't be applied to technos in the list. To do this, you'll have to manually define the limit per techno.
 - `BuildLimitGroup.Nums` determines the amount of technos that would reach the build limit. If using a single integer, it'll use the sum of all technos in the group to calculate build limit. If using a list of integers with the same size of `BuildLimitGroup.Types`, it'll calculate build limit per techno with value matching the position in `BuildLimitGroup.Types` is used for that type.
@@ -1481,6 +1603,7 @@ ForceWeapon.Disguised=-1        ; integer. 0 for primary weapon, 1 for secondary
 ```
 
 ### Make units try turning to target when firing with `OmniFire=yes`
+
 - The unit will try to turn the body to target even firing with `OmniFire=yes`
   - Jumpjets are recommended to have the same value of body `ROT` and `JumpjetTurnRate`
 
@@ -1533,7 +1656,7 @@ If this option is not set, the self-destruction logic will not be enabled. `Auto
 Please notice that if the object is a unit which carries passengers, they will not be released even with the `kill` option **if you are not using Ares 3.0+**.
 ```
 
-This logic also supports buildings delivered by [LimboDelivery](#LimboDelivery). However in this case, all `AutoDeath.Behavior` values produce identical result where the building is simply deleted.
+This logic also supports buildings delivered by [LimboDelivery](#limbodelivery). However in this case, all `AutoDeath.Behavior` values produce identical result where the building is simply deleted.
 
 In `rulesmd.ini`:
 ```ini
@@ -1642,6 +1765,7 @@ Tint.Color=               ; integer - R,G,B
 Tint.Intensity=0.0        ; floating point value
 Tint.VisibleToHouses=all  ; list of Affected House Enumeration (none|owner/self|allies/ally|team|enemies/enemy|all)
 ```
+
 ### Customize EVA voice and `SellSound` when selling units
 
 - When a building or a unit is sold, a sell sound as well as an EVA is played to the owner. These configurations have been deglobalized.
@@ -1727,6 +1851,7 @@ CombatAlert.Suppress=   ;boolean
 ```
 
 ### Convert TechnoType on owner house change
+
 - You can now change a unit's type when changing ownership from human to computer or from computer to human.
 
 In `rulesmd.ini`:
@@ -1736,16 +1861,15 @@ Convert.HumanToComputer =   ; TechnoType
 Convert.ComputerToHuman =   ; TechnoType
 ```
 
-### Waypoint for building and aircraft
+### Waypoint for building
 
-- In vanilla, building and aircraft is forbiddened to use waypoint. Now you can turn it on by the following flags.
-- P.S.: The waypoint for building seems working fine, but for aircraft there are visible problems. It may be improved in the future. For now you can try it, but at your own risk.
+- In vanilla, building is forbiddened to use waypoint. Now you can turn it on by the following flags.
+- P.S.: The waypoint for building seems working fine. For now you can try it, but at your own risk.
 
 In `rulesmd.ini`:
 ```ini
 [General]
 BuildingWaypoint=false    ; boolean
-AircraftWaypoint=false    ; boolean
 ```
 
 ### Recount burst index
@@ -1759,6 +1883,126 @@ RecountBurst=false  ; boolean
 
 [SOMETECHNO]        ; TechnoType
 RecountBurst=       ; boolean
+```
+
+### Customized Vehicle Turret Rotation
+
+- When `ExpandTurretRotation` is set to true, the following functions will be enabled.
+- Units with turret without `TurretSpins=true` can looks more vivid when it is in idle.
+  - `Turret.IdleRotate` controls whether units can rotate their turrets when in idle. Defaults to `[AudioVisual]` -> `Turret.IdleRotate`.
+  - `Turret.PointToMouse` controls whether units will turn their turrets to your mouse when in idle. Defaults to `[AudioVisual]` -> `Turret.PointToMouse`.
+    - At the present moment, this only functions in singleplayer.
+  - `Turret.IdleRestartMin` and `Turret.IdleRestartMax` control the delay from idle to action occurrence together.
+  - `Turret.IdleIntervalMin` and `Turret.IdleIntervalMax` control the delay between every idle actions together.
+- The turret and body of the units can now be rotated under control.
+  - `Turret.Restriction` defines the angle at which the turret can be turned to both sides.
+  - `Turret.ExtraAngle` defines the additional rotation angle of the turret, and `Turret.Restriction` will also rotate with this value. The positive number is clockwise and the negative number is counterclockwise, that is, what angle the turret should use by default or face the target.
+  - `Turret.BodyOrientation` controls whether the body needs to aim at the target when firing.
+  - `Turret.BodyOrientationAngle` defines the additional rotation angle of the body when aiming at the target. The positive number is clockwise and the negative number is counterclockwise, that is, what angle the body should use to face the target.
+  - `Turret.BodyOrientationSymmetric` controls whether both sides of the additional body rotation angle can be used.
+
+In `rulesmd.ini`:
+```ini
+[General]
+ExpandTurretRotation=no             ; boolean
+
+[AudioVisual]
+Turret.IdleRotate=false             ; boolean
+Turret.PointToMouse=false           ; boolean
+Turret.IdleRestartMin=150           ; integer, number of frames
+Turret.IdleRestartMax=300           ; integer, number of frames
+Turret.IdleIntervalMin=150          ; integer, number of frames
+Turret.IdleIntervalMax=450          ; integer, number of frames
+
+[SOMEUNIT]                          ; VehicleType, `Turret=yes`
+Turret.IdleRotate=                  ; boolean
+Turret.PointToMouse=                ; boolean
+Turret.Restriction=180.0            ; floating point value
+Turret.ExtraAngle=0                 ; floating point value
+Turret.BodyOrientation=no           ; boolean
+Turret.BodyOrientationAngle=0       ; floating point value
+Turret.BodyOrientationSymmetric=yes ; boolean
+```
+
+### Delay automatic attack on the controlled unit
+
+- Now you can make the techno that has just been mind controlled not be automatically attacked by its original friendly forces for a period of time defined by `MindControl.ThreatDelay` on the mind control warhead, default to `[General]->AttackMindControlledDelay`. This will not affect the manual selection of attacks and is useless with permanent mind control.
+
+In `rulesmd.ini`:
+```ini
+[General]
+AttackMindControlledDelay=0   ; integer, game frames
+
+[SOMEWARHEAD]                 ; Warhead
+MindControl.ThreatDelay=      ; integer, game frames
+```
+
+### Aggressive attack move mission
+
+- `AttackMove.Aggressive` allows your technos to attack the enemy's unarmed buildings more aggressively when in attack move mission (Ctrl+Shift). Default to `[General]->AttackMove.Aggressive`.
+- `AttackMove.UpdateTarget` allows your technos to automatically change and select a higher threat target when in attack move mission (Ctrl+Shift). Also default to `[General]->AttackMove.Aggressive`.
+
+In `rulesmd.ini`:
+```ini
+[General]
+AttackMove.Aggressive=false   ; boolean
+
+[SOMETECHNO]
+AttackMove.Aggressive=        ; boolean
+AttackMove.UpdateTarget=      ; boolean
+```
+
+### No rearm and reload in EMP or temporal
+
+- Now you can make technos unable to rearm and reload when they are in EMP or locked by a temporal weapon. Defaults to values in `[General]`. This will not affect the reloading of the airport aircraft.
+
+In `rulesmd.ini`:
+```ini
+[General]
+NoRearm.UnderEMP=false   ; boolean
+NoRearm.Temporal=false   ; boolean
+NoReload.UnderEMP=false  ; boolean
+NoReload.Temporal=false  ; boolean
+
+[SOMETECHNO]             ; TechnoType
+NoRearm.UnderEMP=        ; boolean
+NoRearm.Temporal=        ; boolean
+NoReload.UnderEMP=       ; boolean
+NoReload.Temporal=       ; boolean
+```
+
+### Manually empty and reload ammo
+
+- You can now use the shortcut key to manually empty and reload ammo for units. Aircraft still needs to return to the airport to reload.
+  - `CanManualReload` controls whether this type of techno can manually empty and reload ammo.
+  - `CanManualReload.ResetROF` controls whether need to reset rearm timer when manually empty and reload ammo.
+  - `CanManualReload.DetonateWarhead` controls whether need to detonate a warhead at the techno's location with 1 damage when manually empty and reload ammo.
+  - `CanManualReload.DetonateConsume` controls whether `CanManualReload.DetonateWarhead` require the techno to have more ammo than this value (or equal to) before reloading in order to detonate.
+  - For shortcut keys, see [User Interface -> Manually Reload](User-Interface.md#Manual-Reload).
+
+In `rulesmd.ini`:
+```ini
+[SOMETECHNO]                        ; TechnoType
+CanManualReload=false               ; boolean
+CanManualReload.ResetROF=true       ; boolean
+CanManualReload.DetonateWarhead=    ; WarheadType
+CanManualReload.DetonateConsume=0   ; integer
+```
+
+### Extended gattling rate down logic
+
+- Now you can customize some effects of RateDown.
+  - `RateDown.Delay` controls the delay before using `RateDown` to reduce the gattling value.
+  - `RateDown.Cover` replaces the original `RateDown` when techno's ammo is lower than `RateDown.Ammo`.
+  - `RateDown.Reset` controls whether to reset the gattling value directly when the techno has no target or changes targets.
+
+In `rulesmd.ini`:
+```ini
+[SOMETECHNO]           ; TechnoType, `IsGattling=yes`
+RateDown.Delay=0       ; integer, game frames
+RateDown.Ammo=-2       ; integer
+RateDown.Cover=0       ; integer
+RateDown.Reset=false   ; boolean
 ```
 
 ## Terrain
@@ -2049,6 +2293,7 @@ SpawnsCrate(N).Weight=1  ; integer
 ```
 
 ### Trigger specific NotHuman infantry Death anim sequence
+
 - Warheads are now able to trigger specific `NotHuman=yes` infantry `Death` anim sequence using the corresponding tag. It's value represents sequences from `Die1` to `Die5`.
 
 In `rulesmd.ini`:
@@ -2072,6 +2317,38 @@ DamageEnemiesMultiplier=1.0   ; floating point value
 DamageOwnerMultiplier=        ; floating point value
 DamageAlliesMultiplier=       ; floating point value
 DamageEnemiesMultiplier=      ; floating point value
+```
+
+### Sell or undeploy building on impact
+
+- Warheads with `BuildingSell` can now sell buildings with build up image. It has a higher priority than `BuildingUndeploy`.
+- Warheads with `BuildingUndeploy` can now undeploy buildings with `UndeploysInto`.
+  - `BuildingUndeploy.Leave` controls whether need to let them move to low threat locations nearby. The threat degree here is calculated using the technos' cost. If a nearby techno has no primary weapons or is owned by your allies, it will not be included.
+
+In `rulesmd.ini`:
+```ini
+[SOMEWARHEAD]                  ; Warhead
+BuildingSell=false             ; boolean
+BuildingUndeploy=false         ; boolean
+BuildingUndeploy.Leave=false   ; boolean
+```
+
+### Allow merging AOE damage to buildings into one
+
+- Warheads are now able to damage building only once by merging the AOE damage when setting `MergeBuildingDamage` to true, which default to `[CombatDamage]->MergeBuildingDamage`.
+
+In `rulesmd.ini`:
+```ini
+[CombatDamage]
+MergeBuildingDamage=false    ; boolean
+
+[SOMEWARHEAD]                ; Warhead
+MergeBuildingDamage=         ; boolean
+```
+
+```{note}
+- This is different from `CellSpread.MaxAffect`.
+- Due to the rounding of damage, there may be a slight increase in damage.
 ```
 
 ## Weapons

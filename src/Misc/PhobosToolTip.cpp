@@ -1,7 +1,6 @@
 #include <Helpers/Macro.h>
 
 #include "PhobosToolTip.h"
-#include "TacticalButtons.h"
 
 #include <AircraftClass.h>
 #include <BuildingClass.h>
@@ -18,6 +17,8 @@
 #include <Ext/Side/Body.h>
 #include <Ext/Surface/Body.h>
 #include <Ext/House/Body.h>
+#include <Ext/Scenario/Body.h>
+#include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
 
 #include <sstream>
 #include <iomanip>
@@ -84,10 +85,26 @@ inline int PhobosToolTip::GetBuildTime(TechnoTypeClass* pType) const
 
 inline int PhobosToolTip::GetPower(TechnoTypeClass* pType) const
 {
-	if (auto const pBldType = abstract_cast<BuildingTypeClass*>(pType))
-		return pBldType->PowerBonus - pBldType->PowerDrain;
+	switch (pType->WhatAmI())
+	{
+	case AbstractType::AircraftType:
+	case AbstractType::InfantryType:
+	case AbstractType::UnitType:
+		{
+			if (!Phobos::Config::UnitPowerDrain)
+				return 0;
 
-	return 0;
+			const auto pExt = TechnoTypeExt::ExtMap.Find(pType);
+			return pExt->Power;
+		}
+	case AbstractType::BuildingType:
+		{
+			auto pBldType = (BuildingTypeClass*)pType;
+			return pBldType->PowerBonus - pBldType->PowerDrain;
+		}
+	default:
+		return 0;
+	}
 }
 
 inline const wchar_t* PhobosToolTip::GetBuffer() const
@@ -124,13 +141,12 @@ void PhobosToolTip::HelpText_Techno(TechnoTypeClass* pType)
 		return;
 
 	auto const pData = TechnoTypeExt::ExtMap.Find(pType);
-	auto const pHouse = HouseClass::CurrentPlayer();
 
 	int nBuildTime = TickTimeToSeconds(this->GetBuildTime(pType));
 	int nSec = nBuildTime % 60;
 	int nMin = nBuildTime / 60;
 
-	int cost = pType->GetActualCost(pHouse);
+	int cost = pType->GetActualCost(HouseClass::CurrentPlayer);
 
 	std::wostringstream oss;
 	oss << pType->UIName << L"\n"
@@ -151,15 +167,10 @@ void PhobosToolTip::HelpText_Techno(TechnoTypeClass* pType)
 	if (auto pDesc = this->GetUIDescription(pData))
 		oss << L"\n" << pDesc;
 
-	if (pData->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist) && pHouse)
+	if (pData->IsGreyCameoForCurrentPlayer)
 	{
-		auto& vec = HouseExt::ExtMap.Find(pHouse)->OwnedExistCameoTechnoTypes;
-
-		if (std::find(vec.begin(), vec.end(), pData) != vec.end())
-		{
-			if (auto pExDesc = this->GetUnbuildableUIDescription(pData))
-				oss << L"\n" << pExDesc;
-		}
+		if (auto pExDesc = this->GetUnbuildableUIDescription(pData))
+			oss << L"\n" << pExDesc;
 	}
 
 	this->TextBuffer = oss.str();
@@ -234,29 +245,58 @@ DEFINE_HOOK(0x6A9316, SidebarClass_StripClass_HelpText, 0x6)
 	return 0x6A93DE;
 }
 
-DEFINE_HOOK(0x4AE511, DisplayClass_GetToolTip_SkipTacticalTip, 0x5)
+DEFINE_HOOK(0x4AE51E, DisplayClass_GetToolTip_HelpText, 0x6)
 {
-	enum { UseButtonTip = 0x4AE5F8, SkipGameCode = 0x4AE69B };
+	enum { ApplyToolTip = 0x4AE69D };
 
-	const auto pButtons = &TacticalButtonsClass::Instance;
-	const auto buttonIndex = pButtons->GetButtonIndex();
-
-	if (buttonIndex < 0)
+	if (!SWSidebarClass::IsEnabled())
 		return 0;
 
-	if (!buttonIndex)
-		return SkipGameCode;
+	const auto button = SWSidebarClass::Instance.CurrentButton;
 
-	if (buttonIndex <= 10) // Button index 1-10 : Super weapons buttons
+	if (!button)
+		return 0;
+
+	PhobosToolTip::Instance.IsCameo = true;
+
+	if (PhobosToolTip::Instance.IsEnabled())
+	{
+		PhobosToolTip::Instance.HelpText_Super(button->SuperIndex);
 		R->EAX(PhobosToolTip::Instance.GetBuffer());
-	else if (buttonIndex > 60 && buttonIndex <= 68) // Button index 61-68 : Hero buttons
-		R->EAX(0);
-	else if (buttonIndex > 70 && buttonIndex <= 100) // Button index 71-100 : Select buttons
-		R->EAX(pButtons->HoveredSelected);
+	}
 	else
-		R->EAX(0);
+	{
+		const auto pSuper = HouseClass::CurrentPlayer->Supers[button->SuperIndex];
+		R->EAX(pSuper->Type->UIName);
+	}
 
-	return UseButtonTip;
+	return ApplyToolTip;
+}
+
+DEFINE_HOOK(0x724247, ToolTipManager_ProcessMessage_SetDelayTimer, 0x6)
+{
+	enum { SkipDelay = 0x72429E };
+	return SWSidebarClass::IsEnabled() && SWSidebarClass::Instance.CurrentButton ? SkipDelay : 0;
+}
+
+DEFINE_HOOK(0x72428C, ToolTipManager_ProcessMessage_Redraw, 0x5)
+{
+	enum { SkipRedraw = 0x724297 };
+	return SWSidebarClass::IsEnabled() && SWSidebarClass::Instance.CurrentButton ? SkipRedraw : 0;
+}
+
+DEFINE_HOOK(0x724B2E, ToolTipManager_SetX, 0x6)
+{
+	if (SWSidebarClass::IsEnabled())
+	{
+		if (const auto button = SWSidebarClass::Instance.CurrentButton)
+		{
+			R->EDX(button->X + button->Width);
+			R->EAX(button->Y + SWButtonClass::ToolTip_Align_Y);
+		}
+	}
+
+	return 0;
 }
 
 // TODO: reimplement CCToolTip::Draw2 completely
@@ -366,7 +406,10 @@ DEFINE_HOOK(0x478FDC, CCToolTip_Draw2_FillRect, 0x5)
 
 	const bool isCameo = PhobosToolTip::Instance.IsCameo;
 
-	if (isCameo && Phobos::UI::AnchoredToolTips && PhobosToolTip::Instance.IsEnabled() && Phobos::Config::ToolTipDescriptions)
+	if (isCameo && Phobos::UI::AnchoredToolTips
+		&& PhobosToolTip::Instance.IsEnabled()
+		&& Phobos::Config::ToolTipDescriptions
+		&& !SWSidebarClass::Instance.CurrentButton)
 	{
 		LEA_STACK(LTRBStruct*, a2, STACK_OFFSET(0x44, -0x20));
 		auto x = DSurface::SidebarBounds->X - pRect->Width - 2;

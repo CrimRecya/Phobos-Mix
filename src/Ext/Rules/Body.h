@@ -44,6 +44,7 @@ public:
 		Valueable<int> ChronoSphereDelay;
 		ValueableIdx<SuperWeaponTypeClass> AIChronoSphereSW;
 		ValueableIdx<SuperWeaponTypeClass> AIChronoWarpSW;
+		int SubterraneanSpeed;
 		Valueable<int> SubterraneanHeight;
 		Nullable<int> AISuperWeaponDelay;
 		Valueable<bool> UseGlobalRadApplicationDelay;
@@ -64,6 +65,8 @@ public:
 		Nullable<TranslucencyLevel> PlacementGrid_TranslucencyWithPreview;
 		Valueable<bool> PlacementPreview;
 		TranslucencyLevel PlacementPreview_Translucency;
+
+		Valueable<bool> SuperWeaponSidebar_AllowByDefault;
 
 		Nullable<double> ConditionYellow_Terrain;
 		Nullable<double> Shield_ConditionYellow;
@@ -94,12 +97,13 @@ public:
 
 		Valueable<bool> JumpjetClimbPredictHeight;
 		Valueable<bool> JumpjetClimbWithoutCutOut;
-		Valueable<bool> UnitIdleRotateTurret;
-		Valueable<bool> UnitIdlePointToMouse;
-		Valueable<int> UnitIdleActionRestartMin;
-		Valueable<int> UnitIdleActionRestartMax;
-		Valueable<int> UnitIdleActionIntervalMin;
-		Valueable<int> UnitIdleActionIntervalMax;
+		Valueable<bool> ExpandTurretRotation;
+		Valueable<bool> Turret_IdleRotate;
+		Valueable<bool> Turret_PointToMouse;
+		Valueable<int> Turret_IdleRestartMin;
+		Valueable<int> Turret_IdleRestartMax;
+		Valueable<int> Turret_IdleIntervalMin;
+		Valueable<int> Turret_IdleIntervalMax;
 		Valueable<bool> RecountBurst;
 		Valueable<bool> FactoryProgressDisplay;
 		Valueable<bool> MainSWProgressDisplay;
@@ -122,29 +126,38 @@ public:
 		Valueable<double> DamageOwnerMultiplier;
 		Valueable<double> DamageAlliesMultiplier;
 		Valueable<double> DamageEnemiesMultiplier;
-		Valueable<bool> ExpandAircraftMission;
+		Valueable<bool> ExtendedAircraftMissions;
 		Valueable<bool> CheckUnitBaseNormal;
 		Valueable<bool> Cameo_AlwaysExist;
 		Valueable<SHPStruct*> Cameo_OverlayShapes;
-		Valueable<Vector3D<int>> Cameo_OverlayFrames;
+		ValueableVector<int> Cameo_OverlayFrames;
 		CustomPalette Cameo_OverlayPalette;
-		Valueable<bool> ExpandBuildingPlace;
+		Valueable<bool> ExtendedBuildingPlacing;
+		Valueable<bool> AutoBuilding;
+		Valueable<bool> BuildingProductionQueue;
 		Valueable<bool> PlacementGrid_Expand;
 		Valueable<Vector3D<int>> PlacementGrid_LandFrames;
 		Valueable<Vector3D<int>> PlacementGrid_WaterFrames;
-		Valueable<bool> SWSidebarBackground;
 		PhobosPCXFile SelectedInfantryMissingPCX;
 		PhobosPCXFile SelectedVehicleMissingPCX;
 		PhobosPCXFile SelectedAircraftMissingPCX;
 		PhobosPCXFile SelectedBuildingMissingPCX;
-		Valueable<bool> AINonAutoDeploy;
+		Valueable<bool> AIAutoDeployMCV;
 		Valueable<bool> AISetBaseCenter;
 		Valueable<bool> AIBiasSpawnCell;
 		Valueable<bool> AIForbidConYard;
-		Valueable<bool> NoRearmInEMPState;
-		Valueable<bool> NoRearmInTemporal;
+		Valueable<bool> NoRearm_UnderEMP;
+		Valueable<bool> NoRearm_Temporal;
+		Valueable<bool> NoReload_UnderEMP;
+		Valueable<bool> NoReload_Temporal;
 		Valueable<int> CleanUpAirBarrier;
+		Valueable<int> AttackMindControlledDelay;
 		Valueable<bool> NoQueueUpToEnter;
+		Valueable<bool> NoQueueUpToUnload;
+		Valueable<bool> AttackMove_Aggressive;
+		Valueable<bool> ExtendedScatterAction;
+		Valueable<bool> UnitWithoutTurretAlwaysTurnToTarget;
+		Valueable<bool> MergeBuildingDamage;
 
 		Valueable<bool> AllowParallelAIQueues;
 		Valueable<bool> ForbidParallelAIQueues_Aircraft;
@@ -212,7 +225,6 @@ public:
 		Valueable<bool> CombatAlert_UseEVA;
 		Valueable<bool> CylinderRangefinding;
 		Valueable<bool> BuildingWaypoint;
-		Valueable<bool> AircraftWaypoint;
 		Valueable<bool> StopPlanningOnEnter;
 		Valueable<bool> StrafingTargetScatter;
 		Nullable<int> AINormalTargetingDelay;
@@ -250,7 +262,7 @@ public:
 		Valueable<bool> DistributeTargetingFrame;
 		Valueable<bool> DistributeTargetingFrame_AIOnly;
 		Valueable<bool> AttackMove_IgnoreWeaponCheck;
-		Valueable<bool> AttackMove_StopWhenTargetAcquired_UseOpportunityFireAsDefault;
+		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 		Valueable<bool> BuildingTypeSelectable;
 
 		Valueable<double> AircraftLevelLightMultiplier;
@@ -265,6 +277,8 @@ public:
 		Valueable<int> AIFireSaleDelay;
 		Valueable<bool> AIAllToHunt;
 		Valueable<bool> RepairBaseNodes;
+
+		Valueable<bool> EnableAggressiveStance;
 
 		Valueable<bool> WarheadParticleAlphaImageIsLightFlash;
 		Valueable<int> CombatLightDetailLevel;
@@ -283,6 +297,7 @@ public:
 			, ChronoSphereDelay { 0 }
 			, AIChronoSphereSW {}
 			, AIChronoWarpSW {}
+			, SubterraneanSpeed { 19 }
 			, SubterraneanHeight { -256 }
 			, AISuperWeaponDelay {}
 			, UseGlobalRadApplicationDelay { true }
@@ -301,6 +316,8 @@ public:
 			, PlacementGrid_TranslucencyWithPreview { }
 			, PlacementPreview { false }
 			, PlacementPreview_Translucency { 75 }
+
+			, SuperWeaponSidebar_AllowByDefault { false }
 
 			, Shield_ConditionYellow { }
 			, Shield_ConditionRed { }
@@ -329,12 +346,13 @@ public:
 
 			, JumpjetClimbPredictHeight { false }
 			, JumpjetClimbWithoutCutOut { false }
-			, UnitIdleRotateTurret { false }
-			, UnitIdlePointToMouse { false }
-			, UnitIdleActionRestartMin { 150 }
-			, UnitIdleActionRestartMax { 300 }
-			, UnitIdleActionIntervalMin { 150 }
-			, UnitIdleActionIntervalMax { 450 }
+			, ExpandTurretRotation { false }
+			, Turret_IdleRotate { false }
+			, Turret_PointToMouse { false }
+			, Turret_IdleRestartMin { 150 }
+			, Turret_IdleRestartMax { 300 }
+			, Turret_IdleIntervalMin { 150 }
+			, Turret_IdleIntervalMax { 450 }
 			, RecountBurst { false }
 			, FactoryProgressDisplay { false }
 			, MainSWProgressDisplay { false }
@@ -357,29 +375,38 @@ public:
 			, DamageOwnerMultiplier { 1.0 }
 			, DamageAlliesMultiplier { 1.0 }
 			, DamageEnemiesMultiplier { 1.0 }
-			, ExpandAircraftMission { false }
+			, ExtendedAircraftMissions { false }
 			, CheckUnitBaseNormal { false }
 			, Cameo_AlwaysExist { false }
 			, Cameo_OverlayShapes { FileSystem::PIPS_SHP }
-			, Cameo_OverlayFrames { { -1, -1, -1 } }
+			, Cameo_OverlayFrames {}
 			, Cameo_OverlayPalette {}
-			, ExpandBuildingPlace { false }
+			, ExtendedBuildingPlacing { false }
+			, AutoBuilding { false }
+			, BuildingProductionQueue { false }
 			, PlacementGrid_Expand { false }
 			, PlacementGrid_LandFrames { { 1, 0, 0 } }
 			, PlacementGrid_WaterFrames { { 1, 0, 0 } }
-			, SWSidebarBackground { true }
-			, AINonAutoDeploy { false }
-			, AISetBaseCenter { false }
+			, AIAutoDeployMCV { true }
+			, AISetBaseCenter { true }
 			, AIBiasSpawnCell { false }
 			, AIForbidConYard { false }
 			, SelectedInfantryMissingPCX {}
 			, SelectedVehicleMissingPCX {}
 			, SelectedAircraftMissingPCX {}
 			, SelectedBuildingMissingPCX {}
-			, NoRearmInEMPState { false }
-			, NoRearmInTemporal { false }
+			, NoRearm_UnderEMP { false }
+			, NoRearm_Temporal { false }
+			, NoReload_UnderEMP { false }
+			, NoReload_Temporal { false }
 			, CleanUpAirBarrier { 0 }
+			, AttackMindControlledDelay { 0 }
 			, NoQueueUpToEnter { false }
+			, NoQueueUpToUnload { false }
+			, AttackMove_Aggressive { false }
+			, ExtendedScatterAction { false }
+			, UnitWithoutTurretAlwaysTurnToTarget { false }
+			, MergeBuildingDamage { false }
 
 			, AllowParallelAIQueues { true }
 			, ForbidParallelAIQueues_Aircraft { false }
@@ -440,7 +467,6 @@ public:
 			, CombatAlert_UseEVA { true }
 			, CylinderRangefinding { false }
 			, BuildingWaypoint { false }
-			, AircraftWaypoint { false }
 			, StopPlanningOnEnter { true }
 			, StrafingTargetScatter { true }
 			, AINormalTargetingDelay {}
@@ -478,7 +504,7 @@ public:
 			, DistributeTargetingFrame { false }
 			, DistributeTargetingFrame_AIOnly { true }
 			, AttackMove_IgnoreWeaponCheck { false }
-			, AttackMove_StopWhenTargetAcquired_UseOpportunityFireAsDefault { false }
+			, AttackMove_StopWhenTargetAcquired {}
 			, BuildingTypeSelectable { false }
 			, AircraftLevelLightMultiplier { 1.0 }
 			, JumpjetLevelLightMultiplier { 0.0 }
@@ -490,6 +516,7 @@ public:
 			, AIFireSaleDelay { 0 }
 			, AIAllToHunt { true }
 			, RepairBaseNodes { false }
+			, EnableAggressiveStance { false }
 			, WarheadParticleAlphaImageIsLightFlash { false }
 			, CombatLightDetailLevel { 0 }
 			, LightFlashAlphaImageDetailLevel { 0 }

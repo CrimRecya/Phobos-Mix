@@ -68,6 +68,7 @@ public:
 		Valueable<bool> Crit_SuppressWhenIntercepted;
 
 		Nullable<AnimTypeClass*> MindControl_Anim;
+		Nullable<int> MindControl_ThreatDelay;
 
 		Valueable<bool> Shield_Penetrate;
 		Valueable<bool> Shield_Break;
@@ -159,7 +160,10 @@ public:
 		Valueable<bool> CLIsBlack;
 		Nullable<bool> Particle_AlphaImageIsLightFlash;
 
+		Valueable<bool> BuildingSell;
 		Valueable<bool> BuildingUndeploy;
+		Valueable<bool> BuildingUndeploy_Leave;
+		Nullable<bool> MergeBuildingDamage;
 		Nullable<double> DamageOwnerMultiplier;
 		Nullable<double> DamageAlliesMultiplier;
 		Nullable<double> DamageEnemiesMultiplier;
@@ -240,6 +244,7 @@ public:
 			, Crit_SuppressWhenIntercepted { false }
 
 			, MindControl_Anim {}
+			, MindControl_ThreatDelay {}
 
 			, Shield_Penetrate { false }
 			, Shield_Break { false }
@@ -331,7 +336,10 @@ public:
 		    , CLIsBlack { false }
 			, Particle_AlphaImageIsLightFlash {}
 
+			, BuildingSell { false }
 			, BuildingUndeploy { false }
+			, BuildingUndeploy_Leave { false }
+			, MergeBuildingDamage {}
 			, DamageOwnerMultiplier {}
 			, DamageAlliesMultiplier {}
 			, DamageEnemiesMultiplier {}

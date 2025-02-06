@@ -193,7 +193,7 @@ void WarheadTypeExt::ExtData::Detonate(TechnoClass* pOwner, HouseClass* pHouse, 
 
 void WarheadTypeExt::ExtData::DetonateOnOneUnit(HouseClass* pHouse, TechnoClass* pTarget, TechnoClass* pOwner, bool bulletWasIntercepted)
 {
-	if (!pTarget || pTarget->InLimbo || !pTarget->IsAlive || !pTarget->Health || pTarget->IsSinking)
+	if (!pTarget || pTarget->InLimbo || !pTarget->IsAlive || !pTarget->Health || pTarget->IsSinking || pTarget->BeingWarpedOut)
 		return;
 
 	TechnoExt::ExtData* pTargetExt = nullptr;
@@ -218,7 +218,7 @@ void WarheadTypeExt::ExtData::DetonateOnOneUnit(HouseClass* pHouse, TechnoClass*
 	if (this->AttachEffects.AttachTypes.size() > 0 || this->AttachEffects.RemoveTypes.size() > 0 || this->AttachEffects.RemoveGroups.size() > 0)
 		this->ApplyAttachEffects(pTarget, pHouse, pOwner);
 
-	if (this->BuildingUndeploy)
+	if (this->BuildingSell || this->BuildingUndeploy)
 		this->ApplyBuildingUndeploy(pTarget);
 
 #ifdef LOCO_TEST_WARHEADS
@@ -235,8 +235,19 @@ void WarheadTypeExt::ExtData::ApplyBuildingUndeploy(TechnoClass* pTarget)
 {
 	const auto pBuilding = abstract_cast<BuildingClass*>(pTarget);
 
-	if (!pBuilding)
+	if (!pBuilding || !pBuilding->IsAlive || !pBuilding->IsOnMap || pBuilding->InLimbo)
 		return;
+
+	const auto mission = pBuilding->CurrentMission;
+
+	if (mission == Mission::Construction || mission == Mission::Selling)
+		return;
+
+	if (this->BuildingSell)
+	{
+		pBuilding->Sell(1);
+		return;
+	}
 
 	const auto pType = pBuilding->Type;
 
@@ -244,12 +255,58 @@ void WarheadTypeExt::ExtData::ApplyBuildingUndeploy(TechnoClass* pTarget)
 		return;
 
 	auto cell = pBuilding->GetMapCoords();
+	const auto width = pType->GetFoundationWidth();
+	const auto height = pType->GetFoundationHeight(false);
 
-	if (pType->GetFoundationWidth() > 2 || pType->GetFoundationHeight(false) > 2)
+	if (width > 2 || height > 2)
 		cell += CellStruct { 1, 1 };
 
+	if (this->BuildingUndeploy_Leave)
+	{
+		const auto pHouse = pBuilding->Owner;
+		const auto pItems = Helpers::Alex::getCellSpreadItems(pBuilding->GetCoords(), 20);
+		int record[16] = {0};
+
+		for (const auto& pItem : pItems)
+		{
+			if ((!pHouse || !pHouse->IsAlliedWith(pItem)) && pItem->IsArmed())
+				record[pBuilding->GetTargetDirection(pItem).GetValue<4>()] += pItem->GetTechnoType()->Cost;
+		}
+
+		int costs = 0;
+		int dir = 0;
+
+		for (int i = 16; i < 32; ++i)
+		{
+			int newCosts = 0;
+
+			for (int j = -7; j < 8; ++j)
+				newCosts += ((8 - abs(j)) * record[(i + j) & 15]);
+
+			if (newCosts > costs)
+			{
+				dir = (i - 16);
+				costs = newCosts;
+			}
+		}
+
+		if (!costs)
+			dir = ScenarioClass::Instance->Random.RandomRanged(0, 15);
+
+		const double radian = -(((dir - 4) / 16.0) * Math::TwoPi);
+
+		cell.X -= static_cast<short>(14 * cos(radian));
+		cell.Y += static_cast<short>(14 * sin(radian));
+
+		const auto newCell = MapClass::Instance->NearByLocation(cell, pType->UndeploysInto->SpeedType, -1, pType->UndeploysInto->MovementZone,
+			false, (width + 2), (height + 2), false, false, false, false, CellStruct::Empty, false, false);
+
+		if (newCell != CellStruct::Empty)
+			cell = newCell;
+	}
+
 	pBuilding->SetArchiveTarget(MapClass::Instance->GetCellAt(cell));
-	pBuilding->Sell(0xFFFFFFFF);
+	pBuilding->Sell(1);
 }
 
 void WarheadTypeExt::ExtData::ApplyShieldModifiers(TechnoClass* pTarget, TechnoExt::ExtData* pTargetExt = nullptr)
@@ -460,14 +517,14 @@ void WarheadTypeExt::ExtData::InterceptBullets(TechnoClass* pOwner, WeaponTypeCl
 	{
 		for (auto const pBullet : *BulletClass::Array)
 		{
-			if (pBullet->Location.DistanceFrom(coords) > cellSpread * Unsorted::LeptonsPerCell)
-				continue;
-
 			auto const pBulletExt = BulletExt::ExtMap.Find(pBullet);
 			auto const pBulletTypeExt = pBulletExt->TypeExtData;
 
 			// Cells don't know about bullets that may or may not be located on them so it has to be this way.
-			if (pBulletTypeExt && pBulletTypeExt->Interceptable)
+			if (!pBulletTypeExt || !pBulletTypeExt->Interceptable)
+				continue;
+
+			if (pBullet->Location.DistanceFrom(coords) <= cellSpread * Unsorted::LeptonsPerCell)
 				pBulletExt->InterceptBullet(pOwner, pWeapon);
 		}
 	}

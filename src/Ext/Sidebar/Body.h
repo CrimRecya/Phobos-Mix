@@ -18,8 +18,12 @@ public:
 	class ExtData final : public Extension<SidebarClass>
 	{
 	public:
+		bool SWSidebar_Enable;
+		DynamicVectorClass<int> SWSidebar_Indices;
 
 		ExtData(SidebarClass* OwnerObject) : Extension<SidebarClass>(OwnerObject)
+			, SWSidebar_Enable { true }
+			, SWSidebar_Indices {}
 		{ }
 
 		virtual ~ExtData() = default;
@@ -58,4 +62,6 @@ public:
 	{
 		Global()->InvalidatePointer(ptr, removed);
 	}
+
+	static bool __stdcall AresTabCameo_RemoveCameo(BuildType* pItem);
 };

@@ -1,6 +1,6 @@
 #include "FPSNewCounter.h"
 
-#include <Misc/TacticalButtons.h>
+#include <Utilities/GeneralUtils.h>
 
 const char* FPSNewCounterCommandClass::GetName() const
 {

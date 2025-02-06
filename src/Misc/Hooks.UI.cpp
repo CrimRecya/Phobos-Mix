@@ -248,13 +248,16 @@ DEFINE_HOOK(0x4A8B9B, DisplayClass_Set_View_Dimensions, 0x6)
 	if (!Phobos::Config::MessageDisplayInCenter)
 		return 0;
 
-	enum { SkipGameCode = 0x4A8BBD };
+	enum { SkipGameCode = 0x4A8BDB };
 
 	const RectangleStruct* const pRect = &DSurface::ViewBounds;
 	const auto sideWidth = pRect->Width / 6;
+	const auto width = pRect->Width - (sideWidth << 1);
+	const auto posX = pRect->X + sideWidth;
+	const auto posY = pRect->Height - pRect->Height / 8 - 120;
 
-	MessageListClass::Instance->Init(pRect->X + sideWidth, (pRect->Height - pRect->Height / 8 - 120),
-		6, 98, 14, -1, -1, 0, 20, 98, pRect->Width - (sideWidth << 1));
+	MessageListClass::Instance->Init(posX, posY, 6, 98, 18, -1, -1, 0, 20, 98, width);
+	MessageListClass::Instance->SetWidth(width);
 
 	return SkipGameCode;
 }
@@ -268,9 +271,11 @@ DEFINE_HOOK(0x684A9A, UnknownClass_sub_684620_InitMessageList, 0x6)
 
 	const RectangleStruct* const pRect = &DSurface::ViewBounds;
 	const auto sideWidth = pRect->Width / 6;
+	const auto width = pRect->Width - (sideWidth << 1);
+	const auto posX = pRect->X + sideWidth;
+	const auto posY = pRect->Height - pRect->Height / 8 - 120;
 
-	MessageListClass::Instance->Init(pRect->X + sideWidth, (pRect->Height - pRect->Height / 8 - 120),
-		6, 98, 14, -1, -1, 0, 20, 98, pRect->Width - (sideWidth << 1));
+	MessageListClass::Instance->Init(posX, posY, 6, 98, 18, -1, -1, 0, 20, 98, width);
 
 	return SkipGameCode;
 }
@@ -286,7 +291,7 @@ DEFINE_HOOK(0x623A9F, DSurface_sub_623880_DrawBitFontStrings, 0x5)
 	GET(DSurface* const, pSurface, ECX);
 	GET(const int, height, EBP);
 
-	pRect->Height = height;
+	pRect->Height = height - 3;
 	auto black = ColorStruct { 0, 0, 0 };
 	auto trans = (TacticalButtonsClass::Instance.OnMessages || ScenarioClass::Instance->UserInputLocked) ? 80 : 40;
 	pSurface->FillRectTrans(pRect, &black, trans);

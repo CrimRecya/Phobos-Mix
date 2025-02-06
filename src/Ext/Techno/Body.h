@@ -49,8 +49,6 @@ public:
 		bool CanCloakDuringRearm; // Current rearm timer was started by DecloakToFire=no weapon.
 		int WHAnimRemainingCreationInterval;
 		bool CanCurrentlyDeployIntoBuilding; // Only set on UnitClass technos with DeploysInto set in multiplayer games, recalculated once per frame so no need to serialize.
-		bool UnitIdleAction;
-		bool UnitIdleActionSelected;
 		bool UnitIdleIsSelected;
 		CDTimerClass UnitIdleActionTimer;
 		CDTimerClass UnitIdleActionGapTimer;
@@ -58,18 +56,21 @@ public:
 		WeaponTypeClass* LastWeaponType;
 		CoordStruct LastWeaponFLH;
 		int LastHurtFrame;
-		int LastBeLockedFrame;
-		int MyTargetingFrame;
+		int BeControlledThreatFrame;
+		DWORD LastTargetID;
 		int AccumulatedGattlingValue;
 		bool ShouldUpdateGattlingValue;
-		bool HasCachedClickMission;
+		int ScatteringStopFrame;
+		int MyTargetingFrame;
+		int AttackMoveFollowerTempCount;
+		CellClass* AutoTargetedWallCell;
+		bool HasCachedClick;
 		Mission CachedMission;
 		AbstractClass* CachedCell;
 		AbstractClass* CachedTarget;
 		bool HasCachedClickEvent;
 		EventType CachedEventType;
 		CellClass* FiringObstacleCell; // Set on firing if there is an obstacle cell between target and techno, used for updating WaveClass target etc.
-		bool KeepTargetOnMove;
 		bool IsDetachingForCloak; // Used for checking animation detaching, set to true before calling Detach_All() on techno when this anim is attached to and to false after when cloaking only.
 
 		// Used for Passengers.SyncOwner.RevertOnExit instead of TechnoClass::InitialOwner / OriginallyOwnedByHouse,
@@ -78,6 +79,9 @@ public:
 		bool HasRemainingWarpInDelay;          // Converted from object with Teleport Locomotor to one with a different Locomotor while still phasing in OR set if ChronoSphereDelay > 0.
 		int LastWarpInDelay;                   // Last-warp in delay for this unit, used by HasCarryoverWarpInDelay.
 		bool IsBeingChronoSphered;             // Set to true on units currently being ChronoSphered, does not apply to Ares-ChronoSphere'd buildings or Chrono reinforcements.
+		bool KeepTargetOnMove;
+
+		bool AggressiveStance;                  // Aggressive stance that will auto target buildings
 
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
@@ -106,32 +110,35 @@ public:
 			, CanCloakDuringRearm { false }
 			, WHAnimRemainingCreationInterval { 0 }
 			, CanCurrentlyDeployIntoBuilding { false }
-			, UnitIdleAction { false }
-			, UnitIdleActionSelected { false }
-			, UnitIdleIsSelected { 0 }
+			, UnitIdleIsSelected { false }
 			, UnitIdleActionTimer {}
 			, UnitIdleActionGapTimer {}
 			, UnitAutoDeployTimer {}
 			, LastWeaponType {}
 			, LastWeaponFLH {}
 			, LastHurtFrame { 0 }
-			, LastBeLockedFrame { 0 }
-			, MyTargetingFrame { ScenarioClass::Instance->Random.RandomRanged(0,15) }
+			, BeControlledThreatFrame { 0 }
+			, LastTargetID { 0xFFFFFFFF }
 			, AccumulatedGattlingValue { 0 }
 			, ShouldUpdateGattlingValue { false }
-			, HasCachedClickMission { false }
+			, ScatteringStopFrame { 0 }
+			, MyTargetingFrame { ScenarioClass::Instance->Random.RandomRanged(0,15) }
+			, AttackMoveFollowerTempCount { 0 }
+			, AutoTargetedWallCell{ nullptr }
+			, HasCachedClick { false }
 			, CachedMission { Mission::None }
 			, CachedCell { nullptr }
 			, CachedTarget { nullptr }
 			, HasCachedClickEvent { false }
 			, CachedEventType { EventType::LAST_EVENT }
 			, FiringObstacleCell {}
-			, KeepTargetOnMove { false }
 			, IsDetachingForCloak { false }
 			, OriginalPassengerOwner {}
 			, HasRemainingWarpInDelay { false }
 			, LastWarpInDelay { 0 }
 			, IsBeingChronoSphered { false }
+			, AggressiveStance { false }
+			, KeepTargetOnMove { false }
 		{ }
 
 		void OnEarlyUpdate();
@@ -146,6 +153,7 @@ public:
 		void UpdateTypeData(TechnoTypeClass* currentType);
 		void UpdateLaserTrails();
 		void UpdateAttachEffects();
+		void UpdateGattlingRateDownReset();
 		void UpdateCumulativeAttachEffects(AttachEffectTypeClass* pAttachEffectType, AttachEffectClass* pRemoved = nullptr);
 		void RecalculateStatMultipliers();
 		void UpdateTemporal();
@@ -159,7 +167,6 @@ public:
 		bool HasAttachedEffects(std::vector<AttachEffectTypeClass*> attachEffectTypes, bool requireAll, bool ignoreSameSource, TechnoClass* pInvoker, AbstractClass* pSource, std::vector<int> const* minCounts, std::vector<int> const* maxCounts) const;
 		int GetAttachedEffectCumulativeCount(AttachEffectTypeClass* pAttachEffectType, bool ignoreSameSource = false, TechnoClass* pInvoker = nullptr, AbstractClass* pSource = nullptr) const;
 		void InitializeDisplayInfo();
-		void InitializeUnitIdleAction();
 		void StopIdleAction();
 		void ApplyIdleAction();
 		void ManualIdleAction();
@@ -170,6 +177,11 @@ public:
 		virtual void InvalidatePointer(void* ptr, bool bRemoved) override;
 		virtual void LoadFromStream(PhobosStreamReader& Stm) override;
 		virtual void SaveToStream(PhobosStreamWriter& Stm) override;
+
+		void InitAggressiveStance();
+		bool GetAggressiveStance() const;
+		void ToggleAggressiveStance();
+		bool CanToggleAggressiveStance();
 
 	private:
 		template <typename T>
@@ -209,8 +221,8 @@ public:
 
 	static CoordStruct GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct flh, bool turretFLH = false);
 
-	static CoordStruct GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FLHFound, TechnoTypeExt::ExtData* pTypeExt = nullptr);
-	static CoordStruct GetSimpleFLH(InfantryClass* pThis, int weaponIndex, bool& FLHFound, TechnoTypeExt::ExtData* pTypeExt = nullptr);
+	static CoordStruct GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FLHFound);
+	static CoordStruct GetSimpleFLH(InfantryClass* pThis, int weaponIndex, bool& FLHFound);
 
 	static void ChangeOwnerMissionFix(FootClass* pThis);
 	static void KillSelf(TechnoClass* pThis, AutoDeathBehavior deathOption, AnimTypeClass* pVanishAnimation, bool isInLimbo = false);

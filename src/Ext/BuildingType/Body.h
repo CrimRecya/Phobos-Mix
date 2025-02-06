@@ -59,6 +59,7 @@ public:
 		Valueable<bool> SpyEffect_Custom;
 		ValueableIdx<SuperWeaponTypeClass> SpyEffect_VictimSuperWeapon;
 		ValueableIdx<SuperWeaponTypeClass> SpyEffect_InfiltratorSuperWeapon;
+		Valueable<int> SpyEffect_RadarJamDuration;
 
 		Nullable<bool> ConsideredVehicle;
 		Valueable<bool> ZShapePointMove_OnBuildup;
@@ -67,12 +68,19 @@ public:
 
 		Valueable<bool> JustHasRallyPoint;
 		Nullable<CoordStruct> JumpjetExitCoord;
-		Valueable<bool> AnimDontDelayBurst;
+		Nullable<int> RallySpeedType;
+		Nullable<int> RallyMovementZone;
 
-		Valueable<bool> AutoUpgrade;
+		Nullable<bool> Cameo_ShouldCount;
+		Nullable<bool> AutoBuilding;
+		Valueable<int> AutoBuilding_Gap;
 		Valueable<bool> LimboBuild;
 		Valueable<int> LimboBuildID;
 		Valueable<BuildingTypeClass*> LaserFencePost_Fence;
+		Valueable<BuildingTypeClass*> PlaceBuilding_OnLand;
+		Valueable<BuildingTypeClass*> PlaceBuilding_OnWater;
+
+		Valueable<bool> IsAnimDelayedBurst;
 
 		std::vector<std::optional<DirType>> AircraftDockingDirs;
 
@@ -87,6 +95,8 @@ public:
 		Valueable<bool> NoBuildAreaOnBuildup;
 		ValueableVector<BuildingTypeClass*> Adjacent_Allowed;
 		ValueableVector<BuildingTypeClass*> Adjacent_Disallowed;
+
+		Nullable<Point2D> BarracksExitCell;
 
 		ExtData(BuildingTypeClass* OwnerObject) : Extension<BuildingTypeClass>(OwnerObject)
 			, PowersUp_Owner { AffectedHouse::Owner }
@@ -122,19 +132,26 @@ public:
 			, SpyEffect_Custom { false }
 			, SpyEffect_VictimSuperWeapon {}
 			, SpyEffect_InfiltratorSuperWeapon {}
+			, SpyEffect_RadarJamDuration { 0 }
 			, ConsideredVehicle {}
 			, ZShapePointMove_OnBuildup { false }
 			, SellBuildupLength { 23 }
 			, JustHasRallyPoint { false }
 			, JumpjetExitCoord { }
-			, AnimDontDelayBurst { false }
-			, AutoUpgrade { false }
+			, RallySpeedType { }
+			, RallyMovementZone { }
+			, Cameo_ShouldCount {}
+			, AutoBuilding {}
+			, AutoBuilding_Gap { 1 }
 			, LimboBuild { false }
 			, LimboBuildID { -1 }
 			, LaserFencePost_Fence {}
+			, PlaceBuilding_OnLand {}
+			, PlaceBuilding_OnWater {}
 			, AircraftDockingDirs {}
 			, FactoryPlant_AllowTypes {}
 			, FactoryPlant_DisallowTypes {}
+			, IsAnimDelayedBurst { true }
 			, IsDestroyableObstacle { false }
 			, Units_RepairRate {}
 			, Units_RepairStep {}
@@ -143,6 +160,7 @@ public:
 			, NoBuildAreaOnBuildup { false }
 			, Adjacent_Allowed {}
 			, Adjacent_Disallowed {}
+			, BarracksExitCell {}
 		{ }
 
 		// Ares 0.A functions
@@ -181,13 +199,12 @@ public:
 
 	static int GetEnhancedPower(BuildingClass* pBuilding, HouseClass* pHouse);
 	static bool CanUpgrade(BuildingClass* pBuilding, BuildingTypeClass* pUpgradeType, HouseClass* pUpgradeOwner);
-	static int GetUpgradesAmount(BuildingTypeClass* pBuilding, HouseClass* pHouse);
-	static bool ShouldExistGreyCameo(const HouseClass* const pHouse, const TechnoTypeExt::ExtData* const pTypeExt);
-	static CanBuildResult CheckAlwaysExistCameo(const HouseClass* const pHouse, const TechnoTypeClass* const pType, CanBuildResult canBuild);
+	static int GetUpgradesAmount(BuildingTypeClass* pBuildingType, HouseClass* pHouse);
+	static void DrawAdjacentLines();
 	static bool CheckOccupierCanLeave(HouseClass* pBuildingHouse, HouseClass* pOccupierHouse);
 	static bool CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, CellStruct topLeftCell, HouseClass* pHouse, TechnoClass* pExceptTechno = nullptr);
-	static void DrawAdjacentLines();
-	static bool AutoUpgradeBuilding(BuildingClass* pBuilding);
+	static bool IsSameBuildingType(BuildingTypeClass* pType1, BuildingTypeClass* pType2);
+	static bool AutoPlaceBuilding(BuildingClass* pBuilding);
 	static bool BuildLimboBuilding(BuildingClass* pBuilding);
 	static void CreateLimboBuilding(BuildingClass* pBuilding, BuildingTypeClass* pType, HouseClass* pOwner, int ID);
 	static bool DeleteLimboBuilding(BuildingClass* pBuilding, int ID);

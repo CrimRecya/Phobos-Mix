@@ -11,10 +11,18 @@
 #include "ToggleDesignatorRange.h"
 #include "SaveVariablesToFile.h"
 #include "SelectCaptured.h"
-#include "SWShortcuts.h"
 #include "SelectedInfo.h"
 #include "HerosInfo.h"
 #include "FPSNewCounter.h"
+#include "AutoBuilding.h"
+#include "DistributionMode.h"
+#include "ShowCurrentInfo.h"
+#include "ManualReloadAmmo.h"
+#include "ToggleSWSidebar.h"
+#include "FireTacticalSW.h"
+#include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
+
+#include "AggressiveStance.h"
 
 DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 {
@@ -25,26 +33,34 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<ToggleDigitalDisplayCommandClass>();
 	MakeCommand<ToggleDesignatorRangeCommandClass>();
 	MakeCommand<SelectCapturedCommandClass>();
-	MakeCommand<SWShortcutsCommandClass<0>>();
-	MakeCommand<SWShortcutsCommandClass<1>>();
-	MakeCommand<SWShortcutsCommandClass<2>>();
-	MakeCommand<SWShortcutsCommandClass<3>>();
-	MakeCommand<SWShortcutsCommandClass<4>>();
-	MakeCommand<SWShortcutsCommandClass<5>>();
-	MakeCommand<SWShortcutsCommandClass<6>>();
-	MakeCommand<SWShortcutsCommandClass<7>>();
-	MakeCommand<SWShortcutsCommandClass<8>>();
-	MakeCommand<SWShortcutsCommandClass<9>>();
-	MakeCommand<SWShortcutsCommandClass<10>>();
 	MakeCommand<SelectedInfoCommandClass>();
 	MakeCommand<HerosInfoCommandClass>();
 	MakeCommand<FPSNewCounterCommandClass>();
+	MakeCommand<AutoBuildingCommandClass>();
+	MakeCommand<DistributionMode1CommandClass>();
+	MakeCommand<DistributionMode2CommandClass>();
+	MakeCommand<DistributionMode3CommandClass>();
+	MakeCommand<ManualReloadAmmoCommandClass>();
+	MakeCommand<AggressiveStanceClass>();
+	MakeCommand<ToggleSWSidebar>();
+
+	SWSidebarClass::Commands[0] = MakeCommand<FireTacticalSWCommandClass<0>>();
+	SWSidebarClass::Commands[1] = MakeCommand<FireTacticalSWCommandClass<1>>();
+	SWSidebarClass::Commands[2] = MakeCommand<FireTacticalSWCommandClass<2>>();
+	SWSidebarClass::Commands[3] = MakeCommand<FireTacticalSWCommandClass<3>>();
+	SWSidebarClass::Commands[4] = MakeCommand<FireTacticalSWCommandClass<4>>();
+	SWSidebarClass::Commands[5] = MakeCommand<FireTacticalSWCommandClass<5>>();
+	SWSidebarClass::Commands[6] = MakeCommand<FireTacticalSWCommandClass<6>>();
+	SWSidebarClass::Commands[7] = MakeCommand<FireTacticalSWCommandClass<7>>();
+	SWSidebarClass::Commands[8] = MakeCommand<FireTacticalSWCommandClass<8>>();
+	SWSidebarClass::Commands[9] = MakeCommand<FireTacticalSWCommandClass<9>>();
 
 	if (Phobos::Config::DevelopmentCommands)
 	{
 		MakeCommand<DamageDisplayCommandClass>();
 		MakeCommand<SaveVariablesToFileCommandClass>();
 		MakeCommand<ObjectInfoCommandClass>();
+		MakeCommand<ShowCurrentInfoCommandClass>();
 		MakeCommand<FrameByFrameCommandClass>();
 		MakeCommand<FrameStepCommandClass<1>>(); // Single step in
 		MakeCommand<FrameStepCommandClass<5>>(); // Speed 1

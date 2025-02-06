@@ -24,7 +24,7 @@ DEFINE_HOOK(0x508C30, HouseClass_UpdatePower_UpdateCounter, 0x5)
 			if (pExt->PowerPlantEnhancer_Buildings.size() &&
 				(pExt->PowerPlantEnhancer_Amount != 0 || pExt->PowerPlantEnhancer_Factor != 1.0f))
 			{
-				++pHouseExt->PowerPlantEnhancers[pExt];
+				++pHouseExt->PowerPlantEnhancers[pBld->Type->ArrayIndex];
 			}
 		}
 	}
@@ -41,6 +41,50 @@ DEFINE_HOOK(0x508CF2, HouseClass_UpdatePower_PowerOutput, 0x7)
 	pThis->PowerOutput += BuildingTypeExt::GetEnhancedPower(pBld, pThis);
 
 	return 0x508D07;
+}
+
+// Trigger power recalculation on gain/loss of any techno, not just buildings.
+DEFINE_HOOK_AGAIN(0x5025F0, HouseClass_RegisterGain, 0x5) // RegisterLoss
+DEFINE_HOOK(0x502A80, HouseClass_RegisterGain, 0x8)
+{
+	if (!Phobos::Config::UnitPowerDrain)
+		return 0;
+
+	GET(HouseClass*, pThis, ECX);
+
+	pThis->RecheckPower = true;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x508D8D, HouseClass_UpdatePower_Techno, 0x6)
+{
+	if (!Phobos::Config::UnitPowerDrain)
+		return 0;
+
+	GET(HouseClass*, pThis, ESI);
+
+	auto updateDrainForThisType = [pThis](const TechnoTypeClass* pType)
+	{
+			const int count = pThis->CountOwnedAndPresent(pType);
+			if (count == 0)
+				return;
+			const auto pExt = TechnoTypeExt::ExtMap.Find(pType);
+			if (pExt->Power > 0)
+				pThis->PowerOutput += pExt->Power * count;
+			else
+				pThis->PowerDrain -= pExt->Power * count;
+	};
+
+	for (const auto pType : *InfantryTypeClass::Array)
+		updateDrainForThisType(pType);
+	for (const auto pType : *UnitTypeClass::Array)
+		updateDrainForThisType(pType);
+	for (const auto pType : *AircraftTypeClass::Array)
+		updateDrainForThisType(pType);
+	// Don't do this for buildings, they've already been counted.
+
+	return 0;
 }
 
 DEFINE_HOOK(0x73E474, UnitClass_Unload_Storage, 0x6)
@@ -208,6 +252,12 @@ DEFINE_HOOK(0x7015C9, TechnoClass_Captured_UpdateTracking, 0x6)
 		pNewOwnerExt->AddToLimboTracking(pType);
 	}
 
+	if (RulesExt::Global()->ExtendedBuildingPlacing && pThis->WhatAmI() == AbstractType::Unit && pType->DeploysInto)
+	{
+		auto& vec = pOwnerExt->OwnedDeployingUnits;
+		vec.erase(std::remove(vec.begin(), vec.end(), pThis), vec.end());
+	}
+
 	if (auto pMe = generic_cast<FootClass*>(pThis))
 	{
 		bool I_am_human = pThis->Owner->IsControlledByHuman();
@@ -257,34 +307,82 @@ DEFINE_HOOK(0x65E997, HouseClass_SendAirstrike_PlaceAircraft, 0x6)
 	return result ? SkipGameCode : SkipGameCodeNoSuccess;
 }
 
+// Vanilla and Ares all only hardcoded to find factory with BuildCat::DontCare...
+static inline bool CheckShouldDisableDefensesCameo(HouseClass* pHouse, TechnoTypeClass* pType)
+{
+	if (const auto pBuildingType = abstract_cast<BuildingTypeClass*>(pType))
+	{
+		if (pBuildingType->BuildCat == BuildCat::Combat)
+		{
+			auto count = 0;
+
+			if (const auto pFactory = pHouse->Primary_ForDefenses)
+			{
+				count = pFactory->CountTotal(pBuildingType);
+
+				if (pFactory->Object && pFactory->Object->GetType() == pBuildingType && pBuildingType->BuildLimit > 0)
+					--count;
+			}
+
+			auto buildLimitRemaining = [](HouseClass* pHouse, BuildingTypeClass* pBldType)
+			{
+				const auto BuildLimit = pBldType->BuildLimit;
+
+				if (BuildLimit >= 0)
+					return BuildLimit - HouseExt::CountOwnedNowWithDeployOrUpgrade(pHouse, pBldType);
+				else
+					return -BuildLimit - pHouse->CountOwnedEver(pBldType);
+			};
+
+			if (buildLimitRemaining(pHouse, pBuildingType) - count <= 0)
+				return true;
+		}
+	}
+
+	return false;
+}
+
+static inline bool CheckShowGreyCameo(const HouseClass* const pHouse, const TechnoTypeClass* const pType, const int address)
+{
+	return (pHouse == HouseClass::CurrentPlayer
+		&& (address == 0x6A5FED // Check redraw sidebar when techno loss
+		|| address == 0x6A97EF // Draw sidebar cameos
+		|| address == 0x6AB65B) // Prevent click sidebar cameo
+		&& TechnoTypeExt::ExtMap.Find(pType)->IsGreyCameoForCurrentPlayer);
+}
+
 DEFINE_HOOK(0x50B669, HouseClass_ShouldDisableCameo_GreyCameo, 0x5)
 {
-	GET(HouseClass*, pThis, ECX);
-	GET_STACK(TechnoTypeClass*, pType, 0x4);
-	GET(bool, aresDisable, EAX);
+	GET(HouseClass* const, pThis, ECX);
+	GET_STACK(TechnoTypeClass* const, pType, 0x4);
+	GET(const bool, aresDisable, EAX);
 
 	if (aresDisable || !pType)
 		return 0;
 
-	if (HouseExt::ReachedBuildLimit(pThis, pType, false))
+	if (CheckShouldDisableDefensesCameo(pThis, pType)
+		|| HouseExt::ReachedBuildLimit(pThis, pType, false)
+		|| CheckShowGreyCameo(pThis, pType, *R->ESP<int*>()))
 	{
 		R->EAX(true);
 	}
-	else if (const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType)) // The types exist in the list means that they are not buildable now
-	{
-		if (pTypeExt->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist))
-		{
-			if (const auto pHouseExt = HouseExt::ExtMap.Find(pThis))
-			{
-				auto& vec = pHouseExt->OwnedExistCameoTechnoTypes;
-
-				if (std::find(vec.begin(), vec.end(), pTypeExt) != vec.end())
-					R->EAX(true);
-			}
-		}
-	}
 
 	return 0;
+}
+
+DEFINE_HOOK(0x4F9286, HouseClass_Update_RecheckOwnerBitfield, 0x6)
+{
+	enum { SkipLoop = 0x4F92DD, StartLoop = 0x4F928C };
+
+	GET(const int, buildingCount, EBP);
+
+	R->EBX(0);
+
+	if (!buildingCount)
+		return SkipLoop;
+
+	HouseExt::RecheckOwnerBitfieldForCurrentPlayer();
+	return StartLoop;
 }
 
 // All technos have Cameo_AlwaysExist=true need to change the EVA_NewConstructionOptions playing time
@@ -400,6 +498,43 @@ DEFINE_HOOK(0x4FD8F7, HouseClass_UpdateAI_OnLastLegs, 0x10)
 	}
 
 	return ret;
+}
+
+namespace SpyEffectRadarJamContext
+{
+	HouseClass* pThis;
+}
+
+DEFINE_HOOK(0x4F8440, HouseCLass_Update_SpyEffectRadarJam, 0x5)
+{
+	GET(HouseClass*, pThis, ECX);
+
+	auto pExt = HouseExt::ExtMap.Find(pThis);
+
+	int StartTime = pExt->SpyEffect_RadarJamTimer.StartTime;
+	int TimeLeft = pExt->SpyEffect_RadarJamTimer.TimeLeft;
+
+	if (StartTime != -1 && Unsorted::CurrentFrame - StartTime == TimeLeft)
+	{
+		pExt->SpyEffect_RadarJamTimer.Stop();
+		pThis->RecheckRadar = true;
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x508DF0, HouseClass_UpdateRadar_SetContext, 0x7)
+{
+	GET(HouseClass*, pThis, ECX);
+	SpyEffectRadarJamContext::pThis = pThis;
+	return 0;
+}
+
+DEFINE_HOOK(0x508F2A, HouseClass_UpdateRadar_CheckSpyEffectRadarJam, 0x5)
+{
+	enum { RadarUnavailable = 0x508F2F };
+	auto const pExt = HouseExt::ExtMap.Find(SpyEffectRadarJamContext::pThis);
+	return pExt->SpyEffect_RadarJamTimer.IsTicking() ? RadarUnavailable : 0;
 }
 
 // WW's code set anger on every houses, even on the allies.

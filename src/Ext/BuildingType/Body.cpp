@@ -2,7 +2,6 @@
 
 #include <EventClass.h>
 #include <TacticalClass.h>
-#include <TunnelLocomotionClass.h>
 
 #include <Utilities/GeneralUtils.h>
 #include <Ext/TechnoType/Body.h>
@@ -54,12 +53,13 @@ int BuildingTypeExt::GetEnhancedPower(BuildingClass* pBuilding, HouseClass* pHou
 
 	auto const pHouseExt = HouseExt::ExtMap.Find(pHouse);
 
-	for (const auto& [pExt, nCount] : pHouseExt->PowerPlantEnhancers)
+	for (const auto& [bTypeIdx, nCount] : pHouseExt->PowerPlantEnhancers)
 	{
-		if (pExt->PowerPlantEnhancer_Buildings.Contains(pBuilding->Type))
+		auto bTypeExt = BuildingTypeExt::ExtMap.Find(BuildingTypeClass::Array->Items[bTypeIdx]);
+		if (bTypeExt->PowerPlantEnhancer_Buildings.Contains(pBuilding->Type))
 		{
-			fFactor *= std::powf(pExt->PowerPlantEnhancer_Factor, static_cast<float>(nCount));
-			nAmount += pExt->PowerPlantEnhancer_Amount * nCount;
+			fFactor *= std::powf(bTypeExt->PowerPlantEnhancer_Factor, static_cast<float>(nCount));
+			nAmount += bTypeExt->PowerPlantEnhancer_Amount * nCount;
 		}
 	}
 
@@ -75,6 +75,7 @@ int BuildingTypeExt::GetUpgradesAmount(BuildingTypeClass* pBuilding, HouseClass*
 	auto checkUpgrade = [pHouse, pBuilding, &result, &isUpgrade](BuildingTypeClass* pTPowersUp)
 	{
 		isUpgrade = true;
+
 		for (auto const& pBld : pHouse->Buildings)
 		{
 			if (pBld->Type == pTPowersUp)
@@ -103,122 +104,16 @@ int BuildingTypeExt::GetUpgradesAmount(BuildingTypeClass* pBuilding, HouseClass*
 	return isUpgrade ? result : -1;
 }
 
-bool BuildingTypeExt::ShouldExistGreyCameo(const HouseClass* const pHouse, const TechnoTypeExt::ExtData* const pTypeExt)
-{
-	const auto pType = pTypeExt->OwnerObject();
-	const auto techLevel = pType->TechLevel;
-
-	if (techLevel <= 0 || techLevel > Game::TechLevel)
-		return false;
-
-	if (!pHouse->InOwners(pType))
-		return false;
-
-	if (!pHouse->InRequiredHouses(pType))
-		return false;
-
-	if (pHouse->InForbiddenHouses(pType))
-		return false;
-
-	const auto& pNegTypes = pTypeExt->Cameo_NegTechnos;
-
-	if (pNegTypes.size())
-	{
-		for (const auto& pNegType : pNegTypes)
-		{
-			if (pNegType && pHouse->CountOwnedAndPresent(pNegType))
-				return false;
-		}
-	}
-
-	const auto& pAuxTypes = pTypeExt->Cameo_AuxTechnos;
-
-	if (!pAuxTypes.size())
-	{
-		const auto sideIndex = pType->AIBasePlanningSide;
-
-		return (sideIndex == -1 || sideIndex == pHouse->Type->SideIndex);
-	}
-
-	for (const auto& pAuxType : pAuxTypes)
-	{
-		const auto pAuxTypeExt = TechnoTypeExt::ExtMap.Find(pAuxType);
-
-		if (pAuxTypeExt && !pAuxTypeExt->CameoCheckMutex)
-		{
-			if (pHouse->CountOwnedAndPresent(pAuxType))
-				return true;
-
-			pAuxTypeExt->CameoCheckMutex = true;
-			const auto exist = BuildingTypeExt::ShouldExistGreyCameo(pHouse, pAuxTypeExt);
-			pAuxTypeExt->CameoCheckMutex = false;
-
-			if (exist)
-				return true;
-		}
-	}
-
-	return false;
-}
-
-// Check the cameo change
-CanBuildResult BuildingTypeExt::CheckAlwaysExistCameo(const HouseClass* const pHouse, const TechnoTypeClass* const pType, CanBuildResult canBuild)
-{
-	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-
-	if (pTypeExt->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist))
-	{
-		auto& vec = HouseExt::ExtMap.Find(HouseClass::CurrentPlayer)->OwnedExistCameoTechnoTypes;
-
-		if (canBuild == CanBuildResult::Unbuildable) // Unbuildable + Satisfy basic limitations = Change it to TemporarilyUnbuildable
-		{
-			pTypeExt->CameoCheckMutex = true;
-			const auto exist = BuildingTypeExt::ShouldExistGreyCameo(pHouse, pTypeExt);
-			pTypeExt->CameoCheckMutex = false;
-
-			if (exist)
-			{
-				if (std::find(vec.begin(), vec.end(), pTypeExt) == vec.end()) // … + Not in the list = Need to add it into list
-				{
-					vec.push_back(pTypeExt);
-					SidebarClass::Instance->SidebarNeedsRepaint();
-					const EventClass event
-					(
-						pHouse->ArrayIndex,
-						EventType::AbandonAll,
-						static_cast<int>(pType->WhatAmI()),
-						pType->GetArrayIndex(),
-						pType->Naval
-					);
-					EventClass::AddEvent(event);
-				}
-
-				canBuild = CanBuildResult::TemporarilyUnbuildable;
-			}
-		}
-		else if (std::find(vec.begin(), vec.end(), pTypeExt) != vec.end()) // Not Unbuildable + In the list = remove it from the list and play EVA
-		{
-			vec.erase(std::remove(vec.begin(), vec.end(), pTypeExt), vec.end());
-			SidebarClass::Instance->SidebarNeedsRepaint();
-
-			if (pHouse->IsControlledByCurrentPlayer())
-				VoxClass::Play(&Make_Global<const char>(0x83FA64)); // 0x83FA64 -> EVA_NewConstructionOptions
-		}
-	}
-
-	return canBuild;
-}
-
 // Check whether can call the occupiers leave
 bool BuildingTypeExt::CheckOccupierCanLeave(HouseClass* pBuildingHouse, HouseClass* pOccupierHouse)
 {
-	if (!pOccupierHouse)
+	if (!pOccupierHouse || !pBuildingHouse)
 		return false;
 	else if (pBuildingHouse == pOccupierHouse)
 		return true;
-	else if (SessionClass::Instance->GameMode == GameMode::Campaign && pOccupierHouse->IsInPlayerControl)
+	else if (pOccupierHouse->IsAlliedWith(pBuildingHouse))
 		return true;
-	else if (!pOccupierHouse->IsControlledByHuman() && pOccupierHouse->IsAlliedWith(pBuildingHouse))
+	else if (SessionClass::IsCampaign() && pBuildingHouse->IsControlledByHuman() && pOccupierHouse->IsControlledByHuman())
 		return true;
 
 	return false;
@@ -255,7 +150,7 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 					{
 						const auto pFoot = static_cast<FootClass*>(pCellTechno);
 
-						if (pFoot->GetCurrentSpeed() <= 0 || (locomotion_cast<TunnelLocomotionClass*>(pFoot->Locomotor) && !pFoot->Locomotor->Is_Moving()))
+						if (pFoot->GetCurrentSpeed() <= 0 || !pFoot->Locomotor->Is_Moving())
 						{
 							if (absType == AbstractType::Infantry)
 								++infantryCount.X;
@@ -285,7 +180,7 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 
 		if (const auto pSearchCell = MapClass::Instance->GetCellAt(searchCell))
 		{
-			if (std::find(checkedCells.begin(), checkedCells.end(), pSearchCell) == checkedCells.end() // TODO If there is a cellflag that can be used …
+			if (std::find(checkedCells.begin(), checkedCells.end(), pSearchCell) == checkedCells.end() // TODO If there is a cellflag (or CellExt) that can be used …
 				&& !pSearchCell->GetBuilding()
 				&& pSearchCell->IsClearToMove(SpeedType::Amphibious, true, true, -1, MovementZone::Amphibious, -1, false))
 			{
@@ -553,7 +448,6 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 				pUnit->Undeploy();
 
 			pUnit->SetDestination(pDestinationCell, false);
-			pUnit->QueueMission(Mission::Move, false);
 		}
 	}
 
@@ -562,12 +456,11 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 
 void BuildingTypeExt::DrawAdjacentLines()
 {
-	const auto pBuilding = abstract_cast<BuildingClass*>(DisplayClass::Instance->CurrentBuilding);
+	const auto pType = abstract_cast<BuildingTypeClass*>(DisplayClass::Instance->CurrentBuildingType);
 
-	if (!pBuilding)
+	if (!pType)
 		return;
 
-	const auto pType = pBuilding->Type;
 	const auto adjacent = static_cast<short>(pType->Adjacent + 1);
 
 	if (adjacent <= 0)
@@ -644,73 +537,225 @@ void BuildingTypeExt::DrawAdjacentLines()
 	}
 }
 
-bool BuildingTypeExt::AutoUpgradeBuilding(BuildingClass* pBuilding)
+bool BuildingTypeExt::IsSameBuildingType(BuildingTypeClass* pType1, BuildingTypeClass* pType2)
 {
-	const auto pBuildingType = pBuilding->Type;
+	if (pType1 == pType2)
+		return true;
 
-	if (!pBuildingType->PowersUpBuilding[0])
+	if (pType1->BuildCat != pType2->BuildCat || pType1->PlaceAnywhere || pType2->PlaceAnywhere)
 		return false;
 
-	if (const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType))
-	{
-		if (pTypeExt->AutoUpgrade)
-		{
-			const auto pHouse = pBuilding->Owner;
-			const auto pHouseExt = HouseExt::ExtMap.Find(pHouse);
+	const auto pType1Ext = BuildingTypeExt::ExtMap.Find(pType1);
+	const auto pType2Ext = BuildingTypeExt::ExtMap.Find(pType2);
 
-			for (const auto& pOwned : pHouse->Buildings)
-			{
-				if (reinterpret_cast<bool(__thiscall*)(BuildingClass*, BuildingTypeClass*, HouseClass*)>(0x452670)(pOwned, pBuildingType, pHouse)) // CanUpgradeBuilding
-				{
-					if (pOwned->IsAlive && pOwned->Health > 0 && pOwned->IsOnMap && !pOwned->InLimbo && pOwned->CurrentMission != Mission::Selling)
-					{
-						const auto cell = pOwned->GetMapCoords();
+	if (pType1Ext->LimboBuild || pType2Ext->LimboBuild)
+		return false;
 
-						if (cell != CellStruct::Empty && !pHouseExt->OwnsLimboDeliveredBuilding(pOwned))
-						{
-							const EventClass event
-							(
-								pHouse->ArrayIndex,
-								EventType::Place,
-								AbstractType::Building,
-								pBuildingType->GetArrayIndex(),
-								pBuildingType->Naval,
-								cell
-							);
-							EventClass::AddEvent(event);
+	if (pType1Ext->PlaceBuilding_OnLand == pType2 || pType1Ext->PlaceBuilding_OnWater == pType2)
+		return true;
 
-							return true;
-						}
-					}
-				}
-			}
-		}
-	}
+	if (pType2Ext->PlaceBuilding_OnLand == pType1 || pType2Ext->PlaceBuilding_OnWater == pType1)
+		return true;
 
 	return false;
+}
+
+bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
+{
+	if (!Phobos::Config::AutoBuilding_Enable)
+		return false;
+
+	const auto pType = pBuilding->Type;
+	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+
+	if (!pTypeExt->AutoBuilding.Get(RulesExt::Global()->AutoBuilding) || pType->LaserFence || pType->Gate || pType->ToTile)
+		return false;
+
+	const auto pHouse = pBuilding->Owner;
+
+	if (pHouse->Buildings.Count <= 0)
+		return false;
+
+	const auto foundation = pType->GetFoundationData(true);
+
+	auto canBuildHere = [&pType, &pHouse, &foundation](CellStruct cell)
+	{
+		return reinterpret_cast<bool(__thiscall*)(MapClass*, BuildingTypeClass*, int, CellStruct*, CellStruct*)>(0x4A8EB0)(MapClass::Instance(),
+			pType, pHouse->ArrayIndex, foundation, &cell) // Adjacent
+			&& reinterpret_cast<bool(__thiscall*)(MapClass*, BuildingTypeClass*, int, CellStruct*, CellStruct*)>(0x4A9070)(MapClass::Instance(),
+			pType, pHouse->ArrayIndex, foundation, &cell); // NoShroud
+	};
+
+	const auto pHouseExt = HouseExt::ExtMap.Find(pHouse);
+
+	auto getMapCell = [&pHouseExt](BuildingClass* pBuilding)
+	{
+		if (!pBuilding->IsAlive || pBuilding->Health <= 0 || !pBuilding->IsOnMap || pBuilding->InLimbo || pHouseExt->OwnsLimboDeliveredBuilding(pBuilding))
+			return CellStruct::Empty;
+
+		return pBuilding->GetMapCoords();
+	};
+
+	auto addPlaceEvent = [&pType, &pHouse](CellStruct cell)
+	{
+		const EventClass event (pHouse->ArrayIndex, EventType::Place, AbstractType::Building, pType->GetArrayIndex(), pType->Naval, cell);
+		EventClass::AddEvent(event);
+	};
+
+	if (pType->LaserFencePost || pType->Wall)
+	{
+		for (const auto& pOwned : pHouse->Buildings)
+		{
+			const auto pOwnedType = pOwned->Type;
+
+			if (!pOwnedType->ProtectWithWall)
+				continue;
+
+			const auto baseCell = getMapCell(pOwned);
+
+			if (baseCell == CellStruct::Empty)
+				continue;
+
+			const auto width = pOwnedType->GetFoundationWidth();
+			const auto height = pOwnedType->GetFoundationHeight(true);
+			auto cell = CellStruct::Empty;
+			int index = 0, check = width + 1, count = 0;
+
+			for (auto pFoundation = pOwnedType->FoundationOutside; *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+			{
+				if (++index != check)
+					continue;
+
+				check += (++count & 1) ? 1 : (height * 2 + width + 1);
+				const auto outsideCell = baseCell + *pFoundation;
+				const auto pCell = MapClass::Instance->TryGetCellAt(outsideCell);
+
+				if (pCell && pCell->CanThisExistHere(pOwnedType->SpeedType, pOwnedType, pHouse) && canBuildHere(outsideCell))
+				{
+					addPlaceEvent(outsideCell);
+					return true;
+				}
+			}
+
+			for (auto pFoundation = pOwnedType->FoundationOutside; *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+			{
+				const auto outsideCell = baseCell + *pFoundation;
+				const auto pCell = MapClass::Instance->TryGetCellAt(outsideCell);
+
+				if (pCell && pCell->CanThisExistHere(pOwnedType->SpeedType, pOwnedType, pHouse) && canBuildHere(outsideCell))
+					cell = outsideCell;
+			}
+
+			if (cell == CellStruct::Empty)
+				continue;
+
+			addPlaceEvent(cell);
+			return true;
+		}
+
+		return false;
+	}
+	else if (pType->PowersUpBuilding[0])
+	{
+		for (const auto& pOwned : pHouse->Buildings)
+		{
+			if (!reinterpret_cast<bool(__thiscall*)(BuildingClass*, BuildingTypeClass*, HouseClass*)>(0x452670)(pOwned, pType, pHouse)) // CanUpgradeBuilding
+				continue;
+
+			const auto cell = getMapCell(pOwned);
+
+			if (cell == CellStruct::Empty || pOwned->CurrentMission == Mission::Selling || !canBuildHere(cell))
+				continue;
+
+			addPlaceEvent(cell);
+			return true;
+		}
+
+		return false;
+	}
+	else if (pType->PlaceAnywhere)
+	{
+		for (const auto& pOwned : pHouse->Buildings)
+		{
+			if (!pOwned->Type->BaseNormal)
+				continue;
+
+			const auto cell = getMapCell(pOwned);
+
+			if (cell == CellStruct::Empty || !canBuildHere(cell))
+				continue;
+
+			addPlaceEvent(cell);
+			return true;
+		}
+
+		return false;
+	}
+
+	const auto buildGap = static_cast<short>(pTypeExt->AutoBuilding_Gap + pType->ProtectWithWall ? 1 : 0);
+	const auto doubleGap = buildGap * 2;
+	const auto width = pType->GetFoundationWidth() + doubleGap;
+	const auto height = pType->GetFoundationHeight(true) + doubleGap;
+	const auto speedType = pType->SpeedType == SpeedType::Float ? SpeedType::Float : SpeedType::Track;
+	const auto buildable = speedType != SpeedType::Float;
+
+	auto tryBuildAt = [&](DynamicVectorClass<BuildingClass*>& vector, bool baseNormal)
+	{
+		for (const auto& pBase : vector)
+		{
+			if (baseNormal && !pBase->Type->BaseNormal)
+				continue;
+
+			const auto baseCell = getMapCell(pBase);
+
+			if (baseCell == CellStruct::Empty)
+				continue;
+
+			// TODO The construction area does not actually need to be so large, the surrounding space should be able to be occupied by other things
+			// TODO It would be better if the Buildable check could be fit with ExtendedBuildingPlacing within this function.
+			// TODO Similarly, it would be better if the following Adjacent & NoShroud check could be made within this function.
+			auto cell = pType->PlaceAnywhere ? baseCell : MapClass::Instance->NearByLocation(baseCell, speedType, -1, MovementZone::Normal, false,
+				width, height, false, false, false, false, CellStruct::Empty, false, buildable);
+
+			if (cell == CellStruct::Empty)
+				return false;
+
+			cell += CellStruct { buildGap, buildGap };
+
+			if (!canBuildHere(cell))
+				continue;
+
+			addPlaceEvent(cell);
+			return true;
+		}
+
+		return false;
+	};
+
+	if (pHouse->ConYards.Count > 0 && tryBuildAt(pHouse->ConYards, false))
+		return true;
+
+	return tryBuildAt(pHouse->Buildings, true);
 }
 
 bool BuildingTypeExt::BuildLimboBuilding(BuildingClass* pBuilding)
 {
 	const auto pBuildingType = pBuilding->Type;
 
-	if (const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType))
+	if (BuildingTypeExt::ExtMap.Find(pBuildingType)->LimboBuild)
 	{
-		if (pTypeExt->LimboBuild)
-		{
-			const EventClass event
-			(
-				pBuilding->Owner->ArrayIndex,
-				EventType::Place,
-				AbstractType::Building,
-				pBuildingType->GetArrayIndex(),
-				pBuildingType->Naval,
-				CellStruct { 1, 1 }
-			);
-			EventClass::AddEvent(event);
+		const EventClass event
+		(
+			pBuilding->Owner->ArrayIndex,
+			EventType::Place,
+			AbstractType::Building,
+			pBuildingType->GetArrayIndex(),
+			pBuildingType->Naval,
+			CellStruct { 1, 1 }
+		);
+		EventClass::AddEvent(event);
 
-			return true;
-		}
+		return true;
 	}
 
 	return false;
@@ -865,15 +910,22 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->JustHasRallyPoint.Read(exINI, pSection, "JustHasRallyPoint");
 	this->JumpjetExitCoord.Read(exINI, pSection, "JumpjetExitCoord");
+	this->RallySpeedType.Read(exINI, pSection, "RallySpeedType");
+	this->RallyMovementZone.Read(exINI,pSection,"RallyMovementZone");
 
-	this->AutoUpgrade.Read(exINI, pSection, "AutoUpgrade");
+	this->Cameo_ShouldCount.Read(exINI, pSection, "Cameo.ShouldCount");
+	this->AutoBuilding.Read(exINI, pSection, "AutoBuilding");
+	this->AutoBuilding_Gap.Read(exINI, pSection, "AutoBuilding.Gap");
 	this->LimboBuild.Read(exINI, pSection, "LimboBuild");
 	this->LimboBuildID.Read(exINI, pSection, "LimboBuildID");
 	this->LaserFencePost_Fence.Read(exINI, pSection, "LaserFencePost.Fence");
+	this->PlaceBuilding_OnLand.Read(exINI, pSection, "PlaceBuilding.OnLand");
+	this->PlaceBuilding_OnWater.Read(exINI, pSection, "PlaceBuilding.OnWater");
 
 	this->FactoryPlant_AllowTypes.Read(exINI, pSection, "FactoryPlant.AllowTypes");
 	this->FactoryPlant_DisallowTypes.Read(exINI, pSection, "FactoryPlant.DisallowTypes");
 
+	this->IsAnimDelayedBurst.Read(exArtINI, pSection, "IsAnimDelayedBurst");
 	this->Units_RepairRate.Read(exINI, pSection, "Units.RepairRate");
 	this->Units_RepairStep.Read(exINI, pSection, "Units.RepairStep");
 	this->Units_RepairPercent.Read(exINI, pSection, "Units.RepairPercent");
@@ -882,6 +934,8 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->NoBuildAreaOnBuildup.Read(exINI, pSection, "NoBuildAreaOnBuildup");
 	this->Adjacent_Allowed.Read(exINI, pSection, "Adjacent.Allowed");
 	this->Adjacent_Disallowed.Read(exINI, pSection, "Adjacent.Disallowed");
+
+	this->BarracksExitCell.Read(exINI, pSection, "BarracksExitCell");
 
 	if (pThis->NumberOfDocks > 0)
 	{
@@ -914,6 +968,7 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		this->SpyEffect_VictimSuperWeapon.Read(exINI, pSection, "SpyEffect.VictimSuperWeapon");
 		this->SpyEffect_InfiltratorSuperWeapon.Read(exINI, pSection, "SpyEffect.InfiltratorSuperWeapon");
 	}
+	this->SpyEffect_RadarJamDuration.Read(exINI, pSection, "SpyEffect.RadarJamDuration");
 
 	if (pThis->MaxNumberOccupants > 10)
 	{
@@ -944,8 +999,6 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	}
 
 	// Art
-	this->AnimDontDelayBurst.Read(exArtINI, pSection, "AnimDontDelayBurst");
-
 	this->ZShapePointMove_OnBuildup.Read(exArtINI, pSection, "ZShapePointMove.OnBuildup");
 }
 
@@ -993,19 +1046,26 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->SpyEffect_Custom)
 		.Process(this->SpyEffect_VictimSuperWeapon)
 		.Process(this->SpyEffect_InfiltratorSuperWeapon)
+		.Process(this->SpyEffect_RadarJamDuration)
 		.Process(this->ConsideredVehicle)
 		.Process(this->ZShapePointMove_OnBuildup)
 		.Process(this->SellBuildupLength)
 		.Process(this->JustHasRallyPoint)
 		.Process(this->JumpjetExitCoord)
-		.Process(this->AnimDontDelayBurst)
-		.Process(this->AutoUpgrade)
+		.Process(this->RallySpeedType)
+		.Process(this->RallyMovementZone)
+		.Process(this->Cameo_ShouldCount)
+		.Process(this->AutoBuilding)
+		.Process(this->AutoBuilding_Gap)
 		.Process(this->LimboBuild)
 		.Process(this->LimboBuildID)
 		.Process(this->LaserFencePost_Fence)
+		.Process(this->PlaceBuilding_OnLand)
+		.Process(this->PlaceBuilding_OnWater)
 		.Process(this->AircraftDockingDirs)
 		.Process(this->FactoryPlant_AllowTypes)
 		.Process(this->FactoryPlant_DisallowTypes)
+		.Process(this->IsAnimDelayedBurst)
 		.Process(this->IsDestroyableObstacle)
 		.Process(this->Units_RepairRate)
 		.Process(this->Units_RepairStep)
@@ -1014,6 +1074,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->NoBuildAreaOnBuildup)
 		.Process(this->Adjacent_Allowed)
 		.Process(this->Adjacent_Disallowed)
+		.Process(this->BarracksExitCell)
 		;
 }
 

@@ -19,11 +19,12 @@ wchar_t Phobos::wideBuffer[Phobos::readLength];
 
 const char* Phobos::AppIconPath = nullptr;
 
+bool Phobos::ShowCurrentInfo = false;
 bool Phobos::DisplayDamageNumbers = false;
 bool Phobos::IsLoadingSaveGame = false;
 
 #ifdef STR_GIT_COMMIT
-const wchar_t* Phobos::VersionDescription = L"Phobos nightly build (" STR_GIT_COMMIT L" @ " STR_GIT_BRANCH L"). DO NOT SHIP IN MODS!";
+const wchar_t* Phobos::VersionDescription = L" Phobos nightly build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"(" STR_GIT_COMMIT L"). DO NOT SHIP IN MODS!";
 #elif !defined(IS_RELEASE_VER)
 const wchar_t* Phobos::VersionDescription = L" Phobos special merge build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L". Please test the build before shipping.";
 #else
@@ -46,7 +47,7 @@ void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
 			Phobos::AppIconPath = ppArgs[++i];
 		}
 #ifndef IS_RELEASE_VER
-		if (_stricmp(pArg, "-b=" _STR(BUILD_NUMBER)) == 0)
+		if (_stricmp(pArg, "-m.b=" _STR(BUILD_NUMBER) "+" _STR(MERGE_NUMBER) "_" _STR(MERGE_PATCH)) == 0)
 		{
 			HideWarning = true;
 		}

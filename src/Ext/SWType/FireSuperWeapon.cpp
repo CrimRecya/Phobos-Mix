@@ -115,6 +115,7 @@ void SWTypeExt::ExtData::ApplyLimboKill(HouseClass* pHouse)
 					{
 						it = vec.erase(it);
 
+						// Remove limbo buildings' tracking here because their are not truely InLimbo
 						if (!pBuilding->Type->Insignificant && !pBuilding->Type->DontScore)
 							HouseExt::ExtMap.Find(pBuilding->Owner)->RemoveFromLimboTracking(pBuilding->Type);
 
@@ -341,10 +342,10 @@ void SWTypeExt::ExtData::HandleEMPulseLaunch(SuperClass* pSW, const CellStruct& 
 			{
 				pSuper->IsSuspended = true;
 
-				if (pHouseExt->SuspendedEMPulseSWs.count(pSW))
-					pHouseExt->SuspendedEMPulseSWs[pSW].push_back(pSuper);
+				if (pHouseExt->SuspendedEMPulseSWs.count(pSW->Type->ArrayIndex))
+					pHouseExt->SuspendedEMPulseSWs[pSW->Type->ArrayIndex].push_back(pSuper->Type->ArrayIndex);
 				else
-					pHouseExt->SuspendedEMPulseSWs.insert({ pSW, std::vector<SuperClass*>{pSuper} });
+					pHouseExt->SuspendedEMPulseSWs.insert({ pSW->Type->ArrayIndex, std::vector<int>{pSuper->Type->ArrayIndex} });
 			}
 		}
 	}

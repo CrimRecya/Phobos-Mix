@@ -14,7 +14,7 @@ public:
 		, PassDetonateWarhead {}
 		, PassDetonateDamage { 0 }
 		, PassDetonateDelay { 1 }
-		, PassDetonateTimer { 0 }
+		, PassDetonateInitialDelay { 0 }
 		, PassDetonateLocal { false }
 		, LeadTimeCalculate { false }
 		, OffsetCoord { { 0, 0, 0 } }
@@ -52,7 +52,7 @@ public:
 	Valueable<WarheadTypeClass*> PassDetonateWarhead;
 	Valueable<int> PassDetonateDamage;
 	Valueable<int> PassDetonateDelay;
-	Valueable<int> PassDetonateTimer;
+	Valueable<int> PassDetonateInitialDelay;
 	Valueable<bool> PassDetonateLocal;
 	Valueable<bool> LeadTimeCalculate;
 	Valueable<CoordStruct> OffsetCoord;
@@ -123,8 +123,8 @@ public:
 	int ProximityImpact;
 	int ProximityDamage;
 	int RemainingDistance;
-	TechnoClass* ExtraCheck;
-	std::map<TechnoClass*, int> TheCasualty;
+	TechnoClass* ExtraCheck; // No taken out for use in next frame
+	std::map<int, int> TheCasualty; // Only for recording existence
 	double FirepowerMult;
 	int AttenuationRange;
 	CoordStruct LastTargetCoord;
@@ -138,10 +138,11 @@ private:
 
 	void PrepareForOpenFire(BulletClass* pBullet);
 	int GetVelocityZ(BulletClass* pBullet);
-	bool CalculateBulletVelocity(BulletClass* pBullet, double straightSpeed);
+	bool CalculateBulletVelocity(BulletClass* pBullet);
 	bool BulletPrepareCheck(BulletClass* pBullet);
-	bool BulletDetonatePreCheck(BulletClass* pBullet, double straightSpeed);
-	void BulletDetonateLastCheck(BulletClass* pBullet, HouseClass* pOwner, double straightSpeed);
+	bool BulletDetonatePreCheck(BulletClass* pBullet);
+	void BulletDetonateVelocityCheck(BulletClass* pBullet, HouseClass* pOwner);
+	void BulletDetonateLastCheck(BulletClass* pBullet, HouseClass* pOwner);
 	bool CheckThroughAndSubjectInCell(BulletClass* pBullet, CellClass* pCell, HouseClass* pOwner);
 	void CalculateNewDamage(BulletClass* pBullet);
 	void PassWithDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
@@ -149,8 +150,8 @@ private:
 	std::vector<CellClass*> GetCellsInProximityRadius(BulletClass* pBullet);
 	std::vector<CellStruct> GetCellsInRectangle(CellStruct bottomStaCell, CellStruct leftMidCell, CellStruct rightMidCell, CellStruct topEndCell);
 	int GetTheTrueDamage(int damage, BulletClass* pBullet, TechnoClass* pTechno, bool self);
-	double GetExtraDamageMultiplier(BulletClass* pBullet, TechnoClass* pTechno, double edgeAttenuation);
-	bool PassAndConfineAtHeight(BulletClass* pBullet, double straightSpeed);
+	double GetExtraDamageMultiplier(BulletClass* pBullet, TechnoClass* pTechno);
+	bool PassAndConfineAtHeight(BulletClass* pBullet);
 	int GetFirerZPosition(BulletClass* pBullet);
 	int GetTargetZPosition(BulletClass* pBullet);
 	bool ElevationDetonationCheck(BulletClass* pBullet);

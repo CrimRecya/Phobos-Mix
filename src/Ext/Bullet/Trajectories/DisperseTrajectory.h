@@ -20,24 +20,29 @@ public:
 		, ROT { 30.0 }
 		, LockDirection { false }
 		, CruiseEnable { false }
-		, CruiseUnableRange { 5.0 }
+		, CruiseUnableRange { Leptons(1280) }
+		, CruiseAltitude { 800 }
+		, CruiseAlongLevel { false }
 		, LeadTimeCalculate { true }
-		, TargetSnapDistance { Leptons(128) }
+		, RecordSourceCoord { false }
 		, RetargetAllies { false }
 		, RetargetRadius { 0 }
-		, SuicideShortOfROT { true }
+		, TargetSnapDistance { Leptons(128) }
 		, SuicideAboveRange { 0 }
+		, SuicideShortOfROT { true }
 		, SuicideIfNoWeapon { true }
 		, Weapons {}
 		, WeaponBurst {}
 		, WeaponCount { 0 }
 		, WeaponDelay { 1 }
-		, WeaponTimer { 0 }
-		, WeaponScope { Leptons(0) }
+		, WeaponInitialDelay { 0 }
+		, WeaponEffectiveRange { Leptons(0) }
 		, WeaponSeparate { false }
 		, WeaponRetarget { false }
 		, WeaponLocation { false }
 		, WeaponTendency { false }
+		, WeaponHolistic { false }
+		, WeaponMarginal { false }
 		, WeaponToAllies { false }
 		, WeaponDoRepeat { false }
 	{ }
@@ -61,24 +66,29 @@ public:
 	Valueable<double> ROT;
 	Valueable<bool> LockDirection;
 	Valueable<bool> CruiseEnable;
-	Valueable<double> CruiseUnableRange;
+	Valueable<Leptons> CruiseUnableRange;
+	Valueable<int> CruiseAltitude;
+	Valueable<bool> CruiseAlongLevel;
 	Valueable<bool> LeadTimeCalculate;
-	Valueable<Leptons> TargetSnapDistance;
+	Valueable<bool> RecordSourceCoord;
 	Valueable<bool> RetargetAllies;
 	Valueable<double> RetargetRadius;
-	Valueable<bool> SuicideShortOfROT;
+	Valueable<Leptons> TargetSnapDistance;
 	Valueable<double> SuicideAboveRange;
+	Valueable<bool> SuicideShortOfROT;
 	Valueable<bool> SuicideIfNoWeapon;
 	ValueableVector<WeaponTypeClass*> Weapons;
 	ValueableVector<int> WeaponBurst;
 	Valueable<int> WeaponCount;
 	Valueable<int> WeaponDelay;
-	Valueable<int> WeaponTimer;
-	Valueable<Leptons> WeaponScope;
+	Valueable<int> WeaponInitialDelay;
+	Valueable<Leptons> WeaponEffectiveRange;
 	Valueable<bool> WeaponSeparate;
 	Valueable<bool> WeaponRetarget;
 	Valueable<bool> WeaponLocation;
 	Valueable<bool> WeaponTendency;
+	Valueable<bool> WeaponHolistic;
+	Valueable<bool> WeaponMarginal;
 	Valueable<bool> WeaponToAllies;
 	Valueable<bool> WeaponDoRepeat;
 
@@ -96,6 +106,7 @@ public:
 		, Speed { trajType->LaunchSpeed }
 		, PreAimCoord { trajType->PreAimCoord.Get() }
 		, UseDisperseBurst { trajType->UseDisperseBurst }
+		, CruiseEnable { trajType->CruiseEnable }
 		, SuicideAboveRange { trajType->SuicideAboveRange * Unsorted::LeptonsPerCell }
 		, WeaponCount { trajType->WeaponCount }
 		, WeaponTimer {}
@@ -109,6 +120,8 @@ public:
 		, LastTargetCoord {}
 		, PreAimDistance { 0 }
 		, LastReviseMult { 0 }
+		, FLHCoord {}
+		, BuildingCoord {}
 		, FirepowerMult { 1.0 }
 	{ }
 
@@ -126,6 +139,7 @@ public:
 	double Speed;
 	CoordStruct PreAimCoord;
 	bool UseDisperseBurst;
+	bool CruiseEnable;
 	double SuicideAboveRange;
 	int WeaponCount;
 	CDTimerClass WeaponTimer;
@@ -139,23 +153,26 @@ public:
 	CoordStruct LastTargetCoord;
 	double PreAimDistance;
 	double LastReviseMult;
+	CoordStruct FLHCoord;
+	CoordStruct BuildingCoord;
 	double FirepowerMult;
 
 private:
 	template <typename T>
 	void Serialize(T& Stm);
 
+	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
 	void InitializeBulletNotCurve(BulletClass* pBullet, bool facing);
-	BulletVelocity RotateAboutTheAxis(BulletVelocity theSpeed, BulletVelocity theAxis, double theRadian);
+	inline BulletVelocity RotateAboutTheAxis(BulletVelocity theSpeed, BulletVelocity theAxis, double theRadian);
 	bool CalculateBulletVelocity(BulletClass* pBullet, double trajectorySpeed);
-	bool BulletRetargetTechno(BulletClass* pBullet, HouseClass* pOwner);
-	bool CheckTechnoIsInvalid(TechnoClass* pTechno);
-	bool CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget);
+	bool BulletRetargetTechno(BulletClass* pBullet);
+	inline bool CheckTechnoIsInvalid(TechnoClass* pTechno);
+	inline bool CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget);
 	bool CurveVelocityChange(BulletClass* pBullet);
-	bool NotCurveVelocityChange(BulletClass* pBullet, HouseClass* pOwner);
+	bool NotCurveVelocityChange(BulletClass* pBullet);
 	bool StandardVelocityChange(BulletClass* pBullet);
 	bool ChangeBulletVelocity(BulletClass* pBullet, CoordStruct targetLocation, double turningRadius, bool curve);
-	bool PrepareDisperseWeapon(BulletClass* pBullet, HouseClass* pOwner);
+	bool PrepareDisperseWeapon(BulletClass* pBullet);
 	void CreateDisperseBullets(BulletClass* pBullet, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst);
 	void DisperseBurstSubstitution(BulletClass* pBullet, CoordStruct axis, double rotateCoord, int curBurst, int maxBurst, bool mirror);
 };

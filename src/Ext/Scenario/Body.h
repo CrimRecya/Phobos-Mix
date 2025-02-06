@@ -36,7 +36,13 @@ public:
 		std::vector<TechnoExt::ExtData*> AutoDeathObjects;
 		std::vector<TechnoExt::ExtData*> TransportReloaders; // Objects that can reload ammo in limbo
 
-		std::vector<int> SWButtonData;
+		DWORD OwnerBitfield_BuildingType;
+		DWORD OwnerBitfield_InfantryType;
+		DWORD OwnerBitfield_VehicleType;
+		DWORD OwnerBitfield_NavyType;
+		DWORD OwnerBitfield_AircraftType;
+
+		std::vector<CellStruct> BaseNormalCells;
 		std::vector<TechnoExt::ExtData*> OwnedHeros;
 
 		ExtData(ScenarioClass* OwnerObject) : Extension<ScenarioClass>(OwnerObject)
@@ -46,7 +52,12 @@ public:
 			, Variables { }
 			, AutoDeathObjects {}
 			, TransportReloaders {}
-			, SWButtonData {}
+			, OwnerBitfield_BuildingType { 0 }
+			, OwnerBitfield_InfantryType { 0 }
+			, OwnerBitfield_VehicleType { 0 }
+			, OwnerBitfield_NavyType { 0 }
+			, OwnerBitfield_AircraftType { 0 }
+			, BaseNormalCells {}
 			, OwnedHeros {}
 		{ }
 

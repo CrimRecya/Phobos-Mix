@@ -72,32 +72,31 @@ CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct pCoo
 	return location;
 }
 
-CoordStruct TechnoExt::GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FLHFound, TechnoTypeExt::ExtData* pTypeExt)
+CoordStruct TechnoExt::GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FLHFound)
 {
 	FLHFound = false;
 	CoordStruct FLH = CoordStruct::Empty;
 
-	if (!pTypeExt)
-		pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+	auto const pExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
 
 	auto pInf = abstract_cast<InfantryClass*>(pThis);
-	std::span<std::vector<CoordStruct>> pickedFLHs = pTypeExt->WeaponBurstFLHs;
+	std::span<std::vector<CoordStruct>> pickedFLHs = pExt->WeaponBurstFLHs;
 
 	if (pThis->Veterancy.IsElite())
 	{
 		if (pInf && pInf->IsDeployed())
-			pickedFLHs = pTypeExt->EliteDeployedWeaponBurstFLHs;
+			pickedFLHs = pExt->EliteDeployedWeaponBurstFLHs;
 		else if (pInf && pInf->Crawling)
-			pickedFLHs = pTypeExt->EliteCrouchedWeaponBurstFLHs;
+			pickedFLHs = pExt->EliteCrouchedWeaponBurstFLHs;
 		else
-			pickedFLHs = pTypeExt->EliteWeaponBurstFLHs;
+			pickedFLHs = pExt->EliteWeaponBurstFLHs;
 	}
 	else
 	{
 		if (pInf && pInf->IsDeployed())
-			pickedFLHs = pTypeExt->DeployedWeaponBurstFLHs;
+			pickedFLHs = pExt->DeployedWeaponBurstFLHs;
 		else if (pInf && pInf->Crawling)
-			pickedFLHs = pTypeExt->CrouchedWeaponBurstFLHs;
+			pickedFLHs = pExt->CrouchedWeaponBurstFLHs;
 	}
 	if ((int)pickedFLHs[weaponIndex].size() > pThis->CurrentBurstIndex)
 	{
@@ -108,15 +107,12 @@ CoordStruct TechnoExt::GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FL
 	return FLH;
 }
 
-CoordStruct TechnoExt::GetSimpleFLH(InfantryClass* pThis, int weaponIndex, bool& FLHFound, TechnoTypeExt::ExtData* pTypeExt)
+CoordStruct TechnoExt::GetSimpleFLH(InfantryClass* pThis, int weaponIndex, bool& FLHFound)
 {
 	FLHFound = false;
 	CoordStruct FLH = CoordStruct::Empty;
 
-	if (!pTypeExt)
-		pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
-
-	if (pTypeExt)
+	if (auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type))
 	{
 		Nullable<CoordStruct> pickedFLH;
 
@@ -167,29 +163,6 @@ void TechnoExt::ExtData::InitializeDisplayInfo()
 		if (pDelType && !pThis->Passengers.GetFirstPassenger())
 			this->PassengerDeletionTimer.TimeLeft = pDelType->Rate;
 	}
-}
-
-void TechnoExt::ExtData::InitializeUnitIdleAction()
-{
-	const auto pThis = this->OwnerObject();
-
-	if (pThis->WhatAmI() != AbstractType::Unit || !pThis->HasTurret())
-		return;
-
-	const auto pType = pThis->GetTechnoType();
-	const auto pTypeExt = this->TypeExtData;
-
-	if (pTypeExt->AutoFire || pType->TurretSpins)
-		return;
-
-	if (pTypeExt->UnitIdleRotateTurret.Get(RulesExt::Global()->UnitIdleRotateTurret))
-		this->UnitIdleAction = true;
-
-	if (!SessionClass::IsSingleplayer())
-		return;
-
-	if (pTypeExt->UnitIdlePointToMouse.Get(RulesExt::Global()->UnitIdlePointToMouse))
-		this->UnitIdleActionSelected = true;
 }
 
 void TechnoExt::ExtData::InitializeAttachEffects()

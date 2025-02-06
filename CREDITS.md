@@ -236,7 +236,7 @@ This page lists all the individual contributions to the project by their author.
   - Air unit tracking fix for large range / `CellSpread`
   - Extra tint intensity for Iron Curtain & Force Shield
   - Option to enable parsing 8-bit RGB values from `[ColorAdd]` instead of RGB565
-  - Customizing height at which subterranean units travel
+  - Customizing height and speed at which subterranean units travel
   - AI superweapon delay timer customization
   - Disabling `MultipleFactory` bonus from specific BuildingType
   - Customizable ChronoSphere teleport delays for units
@@ -255,6 +255,8 @@ This page lists all the individual contributions to the project by their author.
   - `Scorch` / `Flamer` fire animation customization
   - EM Pulse cannon logic improvements
   - `<Player @ X>` as owner for pre-placed objects
+  - Custom exit cell for infantry factory
+  - Vehicles keeping target on move command
 - **Morton (MortonPL)**:
   - `XDrawOffset` for animations
   - Shield passthrough & absorption
@@ -272,8 +274,9 @@ This page lists all the individual contributions to the project by their author.
   - Show designator & inhibitor range
   - Dump variables to file on scenario end / hotkey
   - "House owns TechnoType" and "House doesn't own TechnoType" trigger events
-  - Help with docs
   - Voxel light source position customization
+  - Extending `Power` to all TechnoTypes
+  - Help with docs
 - **ChrisLv_CN** (work relicensed under [following permission](https://github.com/Phobos-developers/Phobos/blob/develop/images/ChrisLv-relicense.png)):
    - General assistance
    - Interceptor logic prototype
@@ -335,6 +338,10 @@ This page lists all the individual contributions to the project by their author.
    - `InfDeath=9` versus jumpjet infantry 0 damage fix
    - Skip rally point line drawing when undeploying a building
    - Ares' `SW.Shots` hint on extended tooltips
+   - Ares' Abductor weapon fix
+   - Suppress Ares' swizzle warning when parsing tags and taskforces
+   - Better fix for Ares academy not working on the initial payloads of vehicles built from a war factory
+   - Fix Ares' InitialPayload for teams spawned by trigger actions
    - Misc code refactor & maintenance, CN doc fixes, bugfixes
 - **FlyStar**
    - Campaign load screen PCX support
@@ -345,6 +352,7 @@ This page lists all the individual contributions to the project by their author.
    - Disguised units not using the correct palette if target has custom palette bugfix
    - Tunnel/Walk/Mech locomotor being stuck when moving too fast bugfix
    - Assign Super Weapon cameo to any sidebar tab
+   - Exclusive SuperWeapon Sidebar
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**
    - Customizable ShowTimer priority of superweapons
@@ -360,6 +368,7 @@ This page lists all the individual contributions to the project by their author.
   - `TurretOffset` support for SHP vehicles
   - Customizable rocker amplitude
   - Customizable wake anim
+  - Initial effort on optimization for crates' random distribution
 - **Fryone**
   - Customizable ElectricBolt Arcs
   - Sound entry on unit's creation
@@ -373,18 +382,26 @@ This page lists all the individual contributions to the project by their author.
 - **NaotoYuuki**
   - Vertical & meteor trajectory projectile prototypes
 - **CrimRecya**
+  - Fix `LimboKill` not working reliably
+  - Exclusive SuperWeapon Sidebar
+  - Allow using waypoints, area guard and attack move with aircraft
+  - Fix `Stop` command not working so well in some cases
+  - Fix aircraft `MovementZone` and `SpeedType` inconsistencies
+  - Use 2D distance instead of 3D to check whether in air team members have arrived destination
+  - Enhanced Straight trajectory
+  - Enable building production queue
+  - Fix for sidebar not updating queued unit numbers when on hold
   - Technos will maintain a suitable distance after firing
   - Several new Infotypes, no display in specific status and a new single frame display method
   - Projectile subject to ground check before firing
   - Technos recount current burst index when change the firing weapon
-  - Enhanced Straight trajectory
   - New Disperse trajectory
   - New Engrave trajectory
   - New Parabola trajectory
   - New Tracing trajectory
   - Display factories, superweapons, iron curtain and temporal progress on specific technos
   - Damage multiplier for different houses
-  - Units Rotate Turret When in Idle Action
+  - Customized Vehicle Turret Rotation
   - Jumpjet climbing logic enhancement
   - Building placing and deploying logic enhancement
   - Unit base normal and new placing grids
@@ -392,8 +409,17 @@ This page lists all the individual contributions to the project by their author.
   - Units will not always stuck in the factory
   - Optimize aircrafts stop action and allow they using area guard and attack moving
   - Exclusive Sidebar for Superweapons
-  - Fix `LimboKill` not working reliably
   - Observer sidebar in skirmish game mode
+  - Draw visual effects for airburst weapons
+  - Delay automatic attack on the controlled unit
+  - Aggressive attack move mission
+  - No rearm and reload in EMP or temporal
+  - Manually empty and reload ammo
+  - No turret unit turn to the target
+  - Sell or undeploy building on impact
+  - Extended gattling rate down logic
+  - Allow merging AOE damage to buildings into one
+  - Distribution click action mode
 - **Ollerus**
   - Build limit group enhancement
   - Customizable rocker amplitude
@@ -403,6 +429,7 @@ This page lists all the individual contributions to the project by their author.
   - Skirmish AI "sell all buildings and set all technos to hunt" behavior dehardcode
   - Skirmish AI "gather when MCV deploy" behavior dehardcode
   - Global value of `RepairBaseNodes`
+  - Skip anim delay for burst fire
   - Raise alert when technos are taking damage
   - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller
   - `Spawner.RecycleRange`
@@ -415,7 +442,11 @@ This page lists all the individual contributions to the project by their author.
   - Toggle waypoint for building and aircraft
   - Weapon range finding in cylinder
   - Units are now unable to kick out from a factory that is in construction process
+  - No turret unit turn to the target
 - **tyuah8** - Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix
+- **Aephiex**
+  - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
+  - Aggressive stance toggle command (auto target unarmed enemy buildings)
 - **Ares developers**
   - YRpp and Syringe which are used, save/load, project foundation and generally useful code from Ares
   - unfinished RadTypes code
@@ -423,7 +454,7 @@ This page lists all the individual contributions to the project by their author.
   - Superweapon launch site & availability code
   - AI vehicle production update code
   - parts of TechnoType conversion placeholder code
-- **ststl, FlyStar, Saigyouji, JunJacobYoung** - Digital Display
+- **ststl, FlyStar, NaotoYuuki, Saigyouji, JunJacobYoung** - Digital Display
 - **SukaHati (Erzoid)** - Minimum interceptor guard range
 - **E1 Elite** - TileSet 255 and above bridge repair fix
 - **AutoGavy** - interceptor logic, Warhead critical hit logic
@@ -441,6 +472,7 @@ This page lists all the individual contributions to the project by their author.
 - **thomassneddon** - general assistance, knowledge about voxel lighting model
 - **Xkein** - general assistance, YRpp edits
 - **mevitar** - honorary shield tester *triple* award
+- **Phobos CN Tester Group (Reedom, Mantis, Swim Wing, Takitoru, Examon, AKB, Pusheen, ZQ, Claptrap, BunkerGeneral, Big J, Skywalker, ChickEmperor, Shifty, Mikain, Tobiichi Origami, Feiron, W_S502, Ailink, AbrahamMikhail, Tide, Fnfalsc, Yumeri_Rei, Nacho, Zhuzi, Ika_Aru)** - extensive and thorough testing
 - **Damfoos** - extensive and thorough testing
 - **Dmitry Volkov** - extensive and thorough testing
 - **Rise of the East community** - extensive playtesting of in-dev features

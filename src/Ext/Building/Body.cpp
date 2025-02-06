@@ -1,4 +1,5 @@
 #include "Body.h"
+#include "Ext/House/Body.h"
 
 #include <BitFont.h>
 
@@ -339,6 +340,19 @@ bool BuildingExt::ExtData::HandleInfiltrate(HouseClass* pInfiltratorHouse, int m
 		idx = this->TypeExtData->SpyEffect_InfiltratorSuperWeapon;
 		if (idx >= 0)
 			launchTheSWHere(pInfiltratorHouse->Supers.Items[idx], pInfiltratorHouse);
+
+		auto jamTime = this->TypeExtData->SpyEffect_RadarJamDuration;
+
+		if (jamTime > 0)
+		{
+			pVictimHouse->RecheckRadar = true;
+			auto pVictimExt = HouseExt::ExtMap.Find(pVictimHouse);
+			if (pVictimExt->SpyEffect_RadarJamTimer.TimeLeft < jamTime)
+			{
+				pVictimExt->SpyEffect_RadarJamTimer.Stop();
+				pVictimExt->SpyEffect_RadarJamTimer.Start(jamTime);
+			}
+		}
 	}
 
 	return true;
@@ -350,7 +364,7 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 	{
 		if (const auto pUnit = abstract_cast<UnitClass*>(pTechno))
 		{
-			if (!pUnit->unknown_bool_418 && pUnit->GetCurrentSpeed() <= 0)
+			if (!pUnit->IsTether && pUnit->GetCurrentSpeed() <= 0)
 			{
 				if (const auto pTeam = pUnit->Team)
 					pTeam->LiberateMember(pUnit);
@@ -372,7 +386,7 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 		{
 			if (const auto pUnit = abstract_cast<UnitClass*>(pObject))
 			{
-				if (pThis->Owner != pUnit->Owner || pUnit->unknown_bool_418)
+				if (pThis->Owner != pUnit->Owner || pUnit->IsTether)
 					continue;
 
 				const auto height = pUnit->GetHeight();

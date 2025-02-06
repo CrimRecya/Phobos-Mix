@@ -40,9 +40,6 @@ bool __forceinline BuildingExt::CanUndeployOnSell(BuildingClass* pThis)
 		// or MindControlledBy YURIX (why? for balance?)
 		if (pThis->MindControlledBy)
 			return false;
-		// Skip human check
-		//if (!pThis->Owner->IsControlledByHuman())
-		//	return false;
 	}
 
 	// Move ArchiveTarget check outside Conyard check to allow generic Unsellable=no buildings to be sold

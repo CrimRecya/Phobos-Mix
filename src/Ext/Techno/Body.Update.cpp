@@ -51,6 +51,19 @@ void TechnoExt::ExtData::OnEarlyUpdate()
 	this->UpdateRecountBurst();
 	this->UpdateRearmInEMPState();
 	this->UpdateCachedClick();
+	this->UpdateGattlingRateDownReset();
+
+	if (this->AttackMoveFollowerTempCount)
+		this->AttackMoveFollowerTempCount--;
+
+	if (auto pCell = this->AutoTargetedWallCell)
+	{
+		if (pCell->OverlayTypeIndex == -1)
+		{
+			this->OwnerObject()->SetTarget(nullptr);
+			this->AutoTargetedWallCell = nullptr;
+		}
+	}
 }
 
 void TechnoExt::ExtData::ApplyInterceptor()
@@ -66,6 +79,12 @@ void TechnoExt::ExtData::ApplyInterceptor()
 		// so it can differ across players throwing target management out of sync.
 		for (auto const& pBullet : *BulletClass::Array())
 		{
+			auto const pBulletExt = BulletExt::ExtMap.Find(pBullet);
+			auto const pBulletTypeExt = pBulletExt->TypeExtData;
+
+			if (!pBulletTypeExt || !pBulletTypeExt->Interceptable)
+				continue;
+
 			const auto pInterceptorType = pTypeExt->InterceptorType.get();
 			const auto& guardRange = pInterceptorType->GuardRange.Get(pThis);
 			const auto& minguardRange = pInterceptorType->MinimumGuardRange.Get(pThis);
@@ -73,12 +92,6 @@ void TechnoExt::ExtData::ApplyInterceptor()
 			auto distance = pBullet->Location.DistanceFrom(pThis->Location);
 
 			if (distance > guardRange || distance < minguardRange)
-				continue;
-
-			auto const pBulletExt = BulletExt::ExtMap.Find(pBullet);
-			auto const pBulletTypeExt = pBulletExt->TypeExtData;
-
-			if (!pBulletTypeExt || !pBulletTypeExt->Interceptable)
 				continue;
 
 			if (pBulletTypeExt->Armor.isset())
@@ -619,34 +632,6 @@ void TechnoExt::ExtData::UpdateMindControlAnim()
 	}
 }
 
-void TechnoExt::ExtData::UpdateRearmInEMPState()
-{
-	const auto pThis = this->OwnerObject();
-
-	if (pThis->IsUnderEMP() && this->TypeExtData->NoRearmInEMPState.Get(RulesExt::Global()->NoRearmInEMPState))
-	{
-		if (pThis->RearmTimer.InProgress())
-			pThis->RearmTimer.TimeLeft++;
-
-		if (pThis->ReloadTimer.InProgress())
-			pThis->ReloadTimer.TimeLeft++;
-	}
-}
-
-void TechnoExt::ExtData::UpdateRearmInTemporal()
-{
-	const auto pThis = this->OwnerObject();
-
-	if (this->TypeExtData->NoRearmInTemporal.Get(RulesExt::Global()->NoRearmInTemporal))
-	{
-		if (pThis->RearmTimer.InProgress())
-			pThis->RearmTimer.TimeLeft++;
-
-		if (pThis->ReloadTimer.InProgress())
-			pThis->ReloadTimer.TimeLeft++;
-	}
-}
-
 void TechnoExt::ExtData::UpdateRecountBurst()
 {
 	const auto pThis = this->OwnerObject();
@@ -655,7 +640,7 @@ void TechnoExt::ExtData::UpdateRecountBurst()
 	{
 		const auto pWeapon = this->LastWeaponType;
 
-		if (pWeapon && pWeapon->Burst && pThis->unknown_int_120 + std::max(pWeapon->ROF, 30) <= Unsorted::CurrentFrame)
+		if (pWeapon && pWeapon->Burst && pThis->LastFireBulletFrame + std::max(pWeapon->ROF, 30) <= Unsorted::CurrentFrame)
 		{
 			const auto ratio = static_cast<double>(pThis->CurrentBurstIndex) / pWeapon->Burst;
 			const auto rof = static_cast<int>(ratio * pWeapon->ROF * this->AE.ROFMultiplier) - std::max(pWeapon->ROF, 30);
@@ -673,9 +658,6 @@ void TechnoExt::ExtData::UpdateRecountBurst()
 
 void TechnoExt::ExtData::StopIdleAction()
 {
-	if (!this->UnitIdleAction)
-		return;
-
 	if (this->UnitIdleActionTimer.IsTicking())
 		this->UnitIdleActionTimer.Stop();
 
@@ -695,55 +677,51 @@ void TechnoExt::ExtData::ApplyIdleAction()
 	if (this->UnitIdleActionTimer.Completed()) // Set first direction
 	{
 		this->UnitIdleActionTimer.Stop();
-		this->UnitIdleActionGapTimer.Start(ScenarioClass::Instance->Random.RandomRanged(RulesExt::Global()->UnitIdleActionIntervalMin, RulesExt::Global()->UnitIdleActionIntervalMax));
-		bool noNeedTurnForward = false;
+		this->UnitIdleActionGapTimer.Start(ScenarioClass::Instance->Random.RandomRanged(RulesExt::Global()->Turret_IdleIntervalMin, RulesExt::Global()->Turret_IdleIntervalMax));
+		bool noTurn = false;
 
 		if (const auto pUnit = abstract_cast<UnitClass*>(pThis))
-			noNeedTurnForward = pUnit->BunkerLinkedItem || !pUnit->Type->Speed || (pUnit->Type->IsSimpleDeployer && pUnit->Deployed);
+			noTurn = pUnit->BunkerLinkedItem || !pUnit->Type->Speed || (pUnit->Type->IsSimpleDeployer && pUnit->Deployed);
 		else if (pThis->WhatAmI() == AbstractType::Building)
-			noNeedTurnForward = true;
+			noTurn = true;
 
-		const auto extraRadian = ScenarioClass::Instance->Random.RandomDouble() - 0.5;
-
-		DirStruct unitIdleFacingDirection;
-		unitIdleFacingDirection.SetRadian<32>(pThis->PrimaryFacing.Current().GetRadian<32>() + (noNeedTurnForward ? extraRadian * Math::TwoPi : extraRadian));
+		const auto raw = static_cast<short>(ScenarioClass::Instance->Random.RandomRanged(0, 65535) - 32768);
+		const auto pTypeExt = this->TypeExtData;
 
 		this->StopRotateWithNewROT(ScenarioClass::Instance->Random.RandomRanged(2,4) >> 1);
-		turret->SetDesired(unitIdleFacingDirection);
+		turret->SetDesired(pTypeExt->GetTurretDesiredDir(DirStruct { (pTypeExt->GetTurretLimitedRaw(noTurn ? raw : (raw / 4)) + static_cast<short>(pThis->PrimaryFacing.Current().Raw)) }));
 	}
 	else if (this->UnitIdleActionGapTimer.IsTicking()) // Check change direction
 	{
 		if (!this->UnitIdleActionGapTimer.HasTimeLeft()) // Set next direction
 		{
-			this->UnitIdleActionGapTimer.Start(ScenarioClass::Instance->Random.RandomRanged(RulesExt::Global()->UnitIdleActionIntervalMin, RulesExt::Global()->UnitIdleActionIntervalMax));
-			bool noNeedTurnForward = false;
+			this->UnitIdleActionGapTimer.Start(ScenarioClass::Instance->Random.RandomRanged(RulesExt::Global()->Turret_IdleIntervalMin, RulesExt::Global()->Turret_IdleIntervalMax));
+			bool noTurn = false;
 
 			if (const auto pUnit = abstract_cast<UnitClass*>(pThis))
-				noNeedTurnForward = pUnit->BunkerLinkedItem || !pUnit->Type->Speed || (pUnit->Type->IsSimpleDeployer && pUnit->Deployed);
+				noTurn = pUnit->BunkerLinkedItem || !pUnit->Type->Speed || (pUnit->Type->IsSimpleDeployer && pUnit->Deployed);
 			else if (pThis->WhatAmI() == AbstractType::Building)
-				noNeedTurnForward = true;
+				noTurn = true;
 
-			const auto extraRadian = ScenarioClass::Instance->Random.RandomDouble() - 0.5;
-
-			DirStruct unitIdleFacingDirection;
-			unitIdleFacingDirection.SetRadian<32>(pThis->PrimaryFacing.Current().GetRadian<32>() + (noNeedTurnForward ? extraRadian * Math::TwoPi : extraRadian));
+			const auto raw = static_cast<short>(ScenarioClass::Instance->Random.RandomRanged(0, 65535) - 32768);
+			const auto pTypeExt = this->TypeExtData;
 
 			this->StopRotateWithNewROT(ScenarioClass::Instance->Random.RandomRanged(2,4) >> 1);
-			turret->SetDesired(unitIdleFacingDirection);
+			turret->SetDesired(pTypeExt->GetTurretDesiredDir(DirStruct { (pTypeExt->GetTurretLimitedRaw(noTurn ? raw : (raw / 4)) + static_cast<short>(pThis->PrimaryFacing.Current().Raw)) }));
 		}
 	}
 	else if (!this->UnitIdleActionTimer.IsTicking()) // In idle now
 	{
-		this->UnitIdleActionTimer.Start(ScenarioClass::Instance->Random.RandomRanged(RulesExt::Global()->UnitIdleActionRestartMin, RulesExt::Global()->UnitIdleActionRestartMax));
-		bool noNeedTurnForward = false;
+		this->UnitIdleActionTimer.Start(ScenarioClass::Instance->Random.RandomRanged(RulesExt::Global()->Turret_IdleRestartMin, RulesExt::Global()->Turret_IdleRestartMax));
+		bool noTurn = false;
 
 		if (const auto pUnit = abstract_cast<UnitClass*>(pThis))
-			noNeedTurnForward = pUnit->BunkerLinkedItem || !pUnit->Type->Speed || (pUnit->Type->IsSimpleDeployer && pUnit->Deployed);
+			noTurn = pUnit->BunkerLinkedItem || !pUnit->Type->Speed || (pUnit->Type->IsSimpleDeployer && pUnit->Deployed);
 		else if (pThis->WhatAmI() == AbstractType::Building)
-			noNeedTurnForward = true;
+			noTurn = true;
 
-		if (!noNeedTurnForward)
-			turret->SetDesired(pThis->PrimaryFacing.Current());
+		if (!noTurn)
+			turret->SetDesired(this->TypeExtData->GetTurretDesiredDir(pThis->PrimaryFacing.Current()));
 	}
 }
 
@@ -754,18 +732,23 @@ void TechnoExt::ExtData::ManualIdleAction()
 
 	if (pThis->IsSelected)
 	{
-		this->StopIdleAction();
+		const auto pTypeExt = this->TypeExtData;
+
+		if (pTypeExt->Turret_IdleRotate.Get(RulesExt::Global()->Turret_IdleRotate))
+			this->StopIdleAction();
+
 		this->UnitIdleIsSelected = true;
 		const auto mouseCoords = TacticalClass::Instance->ClientToCoords(WWMouseClass::Instance->XY1);
 
 		if (mouseCoords != CoordStruct::Empty) // Mouse in tactical
 		{
-			const auto technoCoords = this->OwnerObject()->GetCoords();
-			const auto offset = -static_cast<int>(technoCoords.Z * 1.25);
-			const auto nowRadian = Math::atan2(technoCoords.Y + offset - mouseCoords.Y, mouseCoords.X - technoCoords.X - offset);
-			DirStruct unitIdleFacingDirection;
-			unitIdleFacingDirection.SetRadian<32>(nowRadian);
-			turret->SetDesired(unitIdleFacingDirection);
+			const auto offset = -static_cast<int>(pThis->GetCoords().Z * ((Unsorted::LeptonsPerCell / 2.0) / Unsorted::LevelHeight));
+			const auto targetDir = pThis->GetTargetDirection(MapClass::Instance->GetCellAt(CoordStruct { mouseCoords.X - offset, mouseCoords.Y - offset, 0 }));
+
+			if (const auto pFoot = abstract_cast<FootClass*>(pThis))
+				pTypeExt->SetTurretLimitedDir(pFoot, targetDir);
+			else
+				turret->SetDesired(pTypeExt->GetTurretDesiredDir(targetDir));
 		}
 	}
 	else if (this->UnitIdleIsSelected) // Immediately stop when is not selected
@@ -786,6 +769,25 @@ void TechnoExt::ExtData::StopRotateWithNewROT(int ROT)
 
 	if (ROT >= 0)
 		turret->SetROT(ROT);
+}
+
+void TechnoExt::ExtData::UpdateGattlingRateDownReset()
+{
+	const auto pTypeExt = this->TypeExtData;
+
+	if (pTypeExt->OwnerObject()->IsGattling)
+	{
+		const auto pThis = this->OwnerObject();
+
+		if (pTypeExt->RateDown_Reset && (!pThis->Target || this->LastTargetID != pThis->Target->UniqueID))
+		{
+			this->LastTargetID = pThis->Target ? pThis->Target->UniqueID : 0xFFFFFFFF;
+			pThis->GattlingValue = 0;
+			pThis->CurrentGattlingStage = 0;
+			this->AccumulatedGattlingValue = 0;
+			this->ShouldUpdateGattlingValue = false;
+		}
+	}
 }
 
 void TechnoExt::ApplyGainedSelfHeal(TechnoClass* pThis)
@@ -887,6 +889,13 @@ void TechnoExt::KillSelf(TechnoClass* pThis, AutoDeathBehavior deathOption, Anim
 		{
 			if (pFoot->ParasiteImUsing && pFoot->ParasiteImUsing->Victim)
 				pFoot->ParasiteImUsing->ExitUnit();
+		}
+
+		// Remove limbo buildings' tracking here because their are not truely InLimbo
+		if (auto const pBuilding = abstract_cast<BuildingClass*>(pThis))
+		{
+			if (!pBuilding->InLimbo && !pBuilding->Type->Insignificant && !pBuilding->Type->DontScore)
+				HouseExt::ExtMap.Find(pBuilding->Owner)->RemoveFromLimboTracking(pBuilding->Type);
 		}
 
 		pThis->RegisterKill(pThis->Owner);
@@ -1007,6 +1016,34 @@ void TechnoExt::ExtData::UpdateTemporal()
 		ae->AI_Temporal();
 
 	this->UpdateRearmInTemporal();
+}
+
+void TechnoExt::ExtData::UpdateRearmInEMPState()
+{
+	const auto pThis = this->OwnerObject();
+
+	if (!pThis->IsUnderEMP() && !pThis->Deactivated)
+		return;
+
+	const auto pTypeExt = this->TypeExtData;
+
+	if (pThis->RearmTimer.InProgress() && pTypeExt->NoRearm_UnderEMP.Get(RulesExt::Global()->NoRearm_UnderEMP))
+		pThis->RearmTimer.StartTime++;
+
+	if (pThis->ReloadTimer.InProgress() && pTypeExt->NoReload_UnderEMP.Get(RulesExt::Global()->NoReload_UnderEMP))
+		pThis->ReloadTimer.StartTime++;
+}
+
+void TechnoExt::ExtData::UpdateRearmInTemporal()
+{
+	const auto pThis = this->OwnerObject();
+	const auto pTypeExt = this->TypeExtData;
+
+	if (pThis->RearmTimer.InProgress() && pTypeExt->NoRearm_Temporal.Get(RulesExt::Global()->NoRearm_Temporal))
+		pThis->RearmTimer.StartTime++;
+
+	if (pThis->ReloadTimer.InProgress() && pTypeExt->NoReload_Temporal.Get(RulesExt::Global()->NoReload_Temporal))
+		pThis->ReloadTimer.StartTime++;
 }
 
 // Updates state of all AttachEffects on techno.

@@ -163,7 +163,12 @@ void ScenarioExt::ExtData::Serialize(T& Stm)
 		.Process(this->BriefingTheme)
 		.Process(this->AutoDeathObjects)
 		.Process(this->TransportReloaders)
-		.Process(this->SWButtonData)
+		.Process(this->OwnerBitfield_BuildingType)
+		.Process(this->OwnerBitfield_InfantryType)
+		.Process(this->OwnerBitfield_VehicleType)
+		.Process(this->OwnerBitfield_NavyType)
+		.Process(this->OwnerBitfield_AircraftType)
+		.Process(this->BaseNormalCells)
 		.Process(this->OwnedHeros)
 		;
 }

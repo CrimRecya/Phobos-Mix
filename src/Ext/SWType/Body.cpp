@@ -12,6 +12,14 @@ void SWTypeExt::ExtData::Serialize(T& Stm)
 {
 	Stm
 		.Process(this->Money_Amount)
+		.Process(this->EVA_Impatient)
+		.Process(this->EVA_InsufficientFunds)
+		.Process(this->EVA_SelectTarget)
+		.Process(this->SW_UseAITargeting)
+		.Process(this->SW_AutoFire)
+		.Process(this->SW_ManualFire)
+		.Process(this->SW_ShowCameo)
+		.Process(this->SW_Unstoppable)
 		.Process(this->SW_Inhibitors)
 		.Process(this->SW_AnyInhibitor)
 		.Process(this->SW_Designators)
@@ -26,8 +34,10 @@ void SWTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->SW_PostDependent)
 		.Process(this->SW_MaxCount)
 		.Process(this->SW_Shots)
-		.Process(this->SidebarPCX)
-		.Process(this->CameoPal)
+		.Process(this->Message_CannotFire)
+		.Process(this->Message_InsufficientFunds)
+		.Process(this->Message_ColorScheme)
+		.Process(this->Message_FirerColor)
 		.Process(this->UIDescription)
 		.Process(this->CameoPriority)
 		.Process(this->LimboDelivery_Types)
@@ -51,12 +61,12 @@ void SWTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->ShowTimer_Priority)
 		.Process(this->Convert_Pairs)
 		.Process(this->ShowDesignatorRange)
-		.Process(this->SW_QuickFireAtMouse)
-		.Process(this->SW_QuickFireInScreen)
-		.Process(this->SW_InScreen_Show)
-		.Process(this->SW_InScreen_PriorityHouses)
-		.Process(this->SW_InScreen_RequiredHouses)
 		.Process(this->TabIndex)
+		.Process(this->SuperWeaponSidebar_Allow)
+		.Process(this->SuperWeaponSidebar_PriorityHouses)
+		.Process(this->SuperWeaponSidebar_RequiredHouses)
+		.Process(this->SidebarPal)
+		.Process(this->SidebarPCX)
 		.Process(this->UseWeeds)
 		.Process(this->UseWeeds_Amount)
 		.Process(this->UseWeeds_StorageTimer)
@@ -88,6 +98,14 @@ void SWTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	// from ares
 	this->Money_Amount.Read(exINI, pSection, "Money.Amount");
+	this->EVA_Impatient.Read(exINI, pSection, "EVA.Impatient");
+	this->EVA_InsufficientFunds.Read(exINI, pSection, "EVA.InsufficientFunds");
+	this->EVA_SelectTarget.Read(exINI, pSection, "EVA.SelectTarget");
+	this->SW_UseAITargeting.Read(exINI, pSection, "SW.UseAITargeting");
+	this->SW_AutoFire.Read(exINI, pSection, "SW.AutoFire");
+	this->SW_ManualFire.Read(exINI, pSection, "SW.ManualFire");
+	this->SW_ShowCameo.Read(exINI, pSection, "SW.ShowCameo");
+	this->SW_Unstoppable.Read(exINI, pSection, "SW.Unstoppable");
 	this->SW_Inhibitors.Read(exINI, pSection, "SW.Inhibitors");
 	this->SW_AnyInhibitor.Read(exINI, pSection, "SW.AnyInhibitor");
 	this->SW_Designators.Read(exINI, pSection, "SW.Designators");
@@ -102,8 +120,18 @@ void SWTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->SW_PostDependent.Read(exINI, pSection, "SW.PostDependent");
 	this->SW_MaxCount.Read(exINI, pSection, "SW.MaxCount");
 	this->SW_Shots.Read(exINI, pSection, "SW.Shots");
-	this->SidebarPCX.Read(pINI, pSection, "SidebarPCX");
-	this->CameoPal.LoadFromINI(pINI, pSection, "SidebarPalette");
+
+	this->Message_CannotFire.Read(exINI, pSection, "Message.CannotFire");
+	this->Message_InsufficientFunds.Read(exINI, pSection, "Message.InsufficientFunds");
+
+	// messages and their properties
+	this->Message_FirerColor.Read(exINI, pSection, "Message.FirerColor");
+	if (pINI->ReadString(pSection, "Message.Color", NONE_STR, Phobos::readBuffer))
+	{
+		this->Message_ColorScheme = ColorScheme::FindIndex(Phobos::readBuffer);
+		if (this->Message_ColorScheme < 0)
+			Debug::INIParseFailed(pSection, "Message.Color", Phobos::readBuffer, "Expected a valid color scheme name.");
+	}
 
 	this->UIDescription.Read(exINI, pSection, "UIDescription");
 	this->CameoPriority.Read(exINI, pSection, "CameoPriority");
@@ -189,14 +217,15 @@ void SWTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->ShowDesignatorRange.Read(exINI, pSection, "ShowDesignatorRange");
 
-	this->SW_QuickFireAtMouse.Read(exINI, pSection, "SW.QuickFireAtMouse");
-	this->SW_QuickFireInScreen.Read(exINI, pSection, "SW.QuickFireInScreen");
-	this->SW_InScreen_Show.Read(exINI, pSection, "SW.InScreen.Show");
-	this->SW_InScreen_PriorityHouses = pINI->ReadHouseTypesList(pSection, "SW.InScreen.PriorityHouses", this->SW_InScreen_PriorityHouses);
-	this->SW_InScreen_RequiredHouses = pINI->ReadHouseTypesList(pSection, "SW.InScreen.RequiredHouses", this->SW_InScreen_RequiredHouses);
-
 	this->TabIndex.Read(exINI, pSection, "TabIndex");
 	GeneralUtils::IntValidCheck(&this->TabIndex, pSection, "TabIndex", 1, 0, 3);
+
+	this->SuperWeaponSidebar_Allow.Read(exINI, pSection, "SuperWeaponSidebar.Allow");
+	this->SuperWeaponSidebar_PriorityHouses = pINI->ReadHouseTypesList(pSection, "SuperWeaponSidebar.PriorityHouses", this->SuperWeaponSidebar_PriorityHouses);
+	this->SuperWeaponSidebar_RequiredHouses = pINI->ReadHouseTypesList(pSection, "SuperWeaponSidebar.RequiredHouses", this->SuperWeaponSidebar_RequiredHouses);
+
+	this->SidebarPal.LoadFromINI(pINI, pSection, "SidebarPalette");
+	this->SidebarPCX.Read(pINI, pSection, "SidebarPCX");
 
 	this->UseWeeds.Read(exINI, pSection, "UseWeeds");
 	this->UseWeeds_Amount.Read(exINI, pSection, "UseWeeds.Amount");

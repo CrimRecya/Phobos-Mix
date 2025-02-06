@@ -21,6 +21,7 @@ You can use the migration utility (can be found on [Phobos supplementaries repo]
 
 #### From post-0.3 devbuilds
 
+- Lunar theater tileset parsing unhardcoding is now only applied if `lunarmd.ini` has `[General]` -> `ApplyLunarFixes` set to true.
 - `Units.DisableRepairCost` was changed to `Units.UseRepairCost` (note inverted expected value) as it no longer has discrete default value and affects `Hospital=true` buildings, infantry do not have repair cost by default.
 - Critical hit animations created by `Crit.AnimOnAffectedTargets=true` Warheads no longer default to `AnimList.PickRandom` if `Crit.AnimList.PickRandom` is not set.
 - `SelfHealGainType` value `none` has been changed to `noheal` due to `none` being treated as a blank string and not parsed by the game.
@@ -310,6 +311,70 @@ HideLightFlashEffects=false      ; boolean
   <summary>Click to show</summary>
 
 New:
+- Allow using waypoints, area guard and attack move with aircraft (by CrimRecya)
+- Enhanced Straight trajectory (by CrimRecya)
+- Enable building production queue (by CrimRecya)
+- Fixed sidebar not updating queued unit numbers when adding or removing units when the production is on hold (by CrimRecya)
+- Custom exit cell for infantry factory (by Starkku)
+- Option for vehicles to keep target when issued move command (by Starkku)
+- Skip anim delay for burst fire (by TaranDahl)
+- Projectile subject to ground check before firing (by CrimRecya)
+- New Disperse trajectory (by CrimRecya)
+- New Engrave trajectory (by CrimRecya)
+- New Parabola trajectory (by CrimRecya)
+- New Tracing trajectory (by CrimRecya)
+- Technos will maintain a suitable distance after firing (by CrimRecya)
+- Several new Infotypes, no display in specific status and a new single frame display method (by CrimRecya)
+- Technos recount current burst index when change the firing weapon (by CrimRecya)
+- Damage multiplier for different houses (by CrimRecya)
+- Display factories, superweapons, iron curtain and temporal progress on specific technos (by CrimRecya)
+- Customized Vehicle Turret Rotation (by CrimRecya)
+- Jumpjet Climbing Logic Enhancement (by CrimRecya)
+- Building placing and deploying logic enhancement (by CrimRecya)
+- Unit base normal and new placing grids (by CrimRecya)
+- Grey cameo preview and cameo overlays (by CrimRecya)
+- Draw visual effects for airburst weapons (by CrimRecya)
+- Delay automatic attack on the controlled unit (by CrimRecya)
+- Aggressive attack move mission (by CrimRecya)
+- No rearm and reload in EMP or temporal (by CrimRecya)
+- Manually empty and reload ammo (by CrimRecya)
+- No turret unit turn to the target (by CrimRecya & TaranDahl)
+- Sell or undeploy building on impact (by CrimRecya)
+- Extended gattling rate down logic (by CrimRecya)
+- Exclusive SuperWeapon Sidebar (by NetsuNegi & CrimRecya)
+- Allow merging AOE damage to buildings into one (by CrimRecya)
+- Distribution click action mode (by CrimRecya)
+- Raise alert when technos are taking damage (by TaranDahl)
+- New hotkey to select the units within the current screen that are captured by non-permanent mind-controller. (by TaranDahl)
+- Recycle spawned in long-range (by TaranDahl)
+- Play an anim when recycling a spawned (by TaranDahl)
+- CellSpread in cylinder shape (by TaranDahl)
+- CellSpread damage check if victim is in air (by TaranDahl)
+- Toggle waypoint for building and aircraft (by TaranDahl)
+- Weapon range finding in cylinder (by TaranDahl)
+- Buildings with foundation bigger than 1x1 can now recycle spawned correctly (by TaranDahl)
+- Infantry firing while moving (by TaranDahl)
+- Fix the bug that parasite will vanish if it missed its target when its previous cell is occupied (by TaranDahl)
+- Grant new superweapons in superweapons (by FS-21).
+- Enhance bombard trajectory with vertical and meteor trajectory (by NaotoYuuki & Ollerus)
+- Option for vehicles to keep target when issued move command (by Starkku)
+- Aggressive stance toggle command (auto target unarmed enemy buildings) (by Aephiex)
+
+Vanilla fixes:
+- Aircraft will now behave as expected according to it's `MovementZone` and `SpeedType` when moving onto different surfaces. In particular, this fixes erratic behavior when vanilla aircraft is ordered to move onto water surface and instead the movement order changes to a shore nearby (by CrimRecya)
+- Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory (by CrimRecya & TaranDahl)
+- Observer sidebar in skirmish game mode (by CrimRecya)
+
+Phobos fixes:
+- Type conversion on Warheads and Superweapons will no longer recursively convert units if applicable conversion pairs are listed, and only first applicable pair takes effect (by Starkku)
+</details>
+
+### 0.4
+
+<details>
+  <summary>Click to show</summary>
+
+New:
 - `Crit.AffectsHouses` for critical hit system (by Starkku)
 - Warhead or weapon detonation at superweapon target cell (by Starkku)
 - Super Weapons launching other Super Weapons (by Morton)
@@ -367,7 +432,7 @@ New:
 - Chrono sparkle animation display customization and improvements (by Starkku)
 - Script action to Chronoshift teams to enemy base (by Starkku)
 - Customizable ElectricBolt Arcs (by Fryone, Kerbiter)
-- Digital display of HP and SP (by ststl, FlyStar, Saigyouji, JunJacobYoung)
+- Digital display of HP and SP (by ststl, FlyStar, NaotoYuuki, Saigyouji, JunJacobYoung, based on knowledge of DeathFish)
 - PipScale pip customizations (size, ammo / spawn / tiberium frames or offsets) (by Starkku)
 - Auto-deploy/Deploy block on ammo change (by Fryone)
 - `AltPalette` lighting toggle (by Starkku)
@@ -392,7 +457,6 @@ New:
 - Allow setting default singleplayer map loading screen and briefing offsets (by Starkku)
 - Allow toggling whether or not fire particle systems adjust target coordinates when firer rotates (by Starkku)
 - `AmbientDamage` warhead & main target ignore customization (by Starkku)
-- Grant new superweapons in superweapons (by FS-21).
 - Flashing Technos on selecting (by Fryone)
 - Customizable DropPod properties on a per-InfantryType basis (by Trsdy)
 - Projectile return weapon (by Starkku)
@@ -416,35 +480,15 @@ New:
 - Custom tint on TechnoTypes (by Starkku)
 - Revenge weapon (by Starkku)
 - AttachEffect types with new features like custom tint and weapon range modifier (by Starkku)
-- Allow trajectory projectiles to use `Inaccurate` & `BallisticScatter` keys (by NaotoYuuki)
-- Enhance bombard trajectory with vertical and meteor trajectory (by NaotoYuuki & Ollerus)
-- Allow different technos to share build limit in a group (by ststl & Ollerus)
-- Projectile subject to ground check before firing (by CrimRecya)
-- Enhanced Straight trajectory (by CrimRecya)
-- New Engrave trajectory (by CrimRecya)
-- New Parabola trajectory (by CrimRecya)
-- New Tracing trajectory (by CrimRecya)
-- Optimize aircrafts stop action and allow they using area guard and attack moving (by CrimRecya)
-- Exclusive Sidebar for Superweapons (by CrimRecya)
-- Raise alert when technos are taking damage (by TaranDahl)
-- New hotkey to select the units within the current screen that are captured by non-permanent mind-controller. (by TaranDahl)
-- Recycle spawned in long-range (by TaranDahl)
-- Play an anim when recycling a spawned (by TaranDahl)
-- CellSpread in cylinder shape (by TaranDahl)
-- CellSpread damage check if victim is in air (by TaranDahl)
-- Toggle waypoint for building and aircraft (by TaranDahl)
-- Weapon range finding in cylinder (by TaranDahl)
 - Force shield effect sync on deploy & vs. organic targets effect customization to complement the Iron Curtain ones (by Starkku)
 - Map trigger action 41 (Play animation at waypoint) now uses additional parameter to determine if animation can play sound, deal damage etc. (by Starkku)
-- Technos will maintain a suitable distance after firing (by CrimRecya)
-- Several new Infotypes, no display in specific status and a new single frame display method (by CrimRecya)
 - Allow restricting how many times per frame a single radiation site can damage a building (by Starkku)
 - Allow explicitly setting the superweapons AI uses for Chronoshift script actions (by Starkku)
 - Allow customizing Aircraft weapon strafing regardless of `ROT` and `Strafing.Shots` values beyond 5 (by Trsdy)
 - Allow strafing weapons to deduct ammo per shot instead of per strafing run (by Starkku)
-- Technos recount current burst index when change the firing weapon (by CrimRecya)
 - Allow `CloakVisible=true` laser trails optinally be seen only if unit is detected (by Starkku)
-- New Disperse trajectory (by CrimRecya)
+- Skirmish AI "sell all buildings and set all technos to hunt" behavior dehardcode (by TaranDahl/航味麻酱)
+- Skirmish AI "gather when MCV deploy" behavior dehardcode (by TaranDahl/航味麻酱)
 - Customizing whether passengers are kicked out when an aircraft fires (by ststl)
 - Shield hit flash (by Starkku)
 - Option to scatter `Anim/SplashList` animations around impact coordinates (by Starkku)
@@ -457,19 +501,12 @@ New:
 - Map events `604-605` for checking if a specific Techno enters in a cell (by FS-21)
 - Waypoint path is drawn for all units under player control or if `[GlobalControls]->DebugPlanningPaths=yes` (by Trsdy)
 - `RemoveDisguise` now works on vehicle disguises (by Trsdy)
-- Damage multiplier for different houses (by CrimRecya)
-- Display factories, superweapons, iron curtain and temporal progress on specific technos (by CrimRecya)
-- Units Rotate Turret When in Idle Action (by CrimRecya)
 - Allow anchoring extended tooltips to the left side of the sidebar (by Trsdy)
 - Toggle to allow spawned aircraft to attack immediately after being spawned (by Starkku)
 - `ZAdjust` for OverlayTypes (by Starkku)
-- Jumpjet Climbing Logic Enhancement (by CrimRecya)
 - Allow customizing extra tint intensity for Iron Curtain & Force Shield (by Starkku)
 - Option to enable parsing 8-bit RGB values from `[ColorAdd]` instead of RGB565 (by Starkku)
-- Customizing height at which subterranean units travel (by Starkku)
-- Building placing and deploying logic enhancement (by CrimRecya)
-- Unit base normal and new placing grids (by CrimRecya)
-- Grey cameo preview and cameo overlays (by CrimRecya)
+- Customizing height and speed at which subterranean units travel (by Starkku)
 - Option for Warhead damage to penetrate Iron Curtain or Force Shield (by Starkku)
 - Option for Warhead to remove all shield types at once (by Starkku)
 - Allow customizing voxel light source position (by Kerbiter, Morton, based on knowledge of thomassnedon)
@@ -482,7 +519,6 @@ New:
 - Custom object palettes for TerrainTypes (by Starkku)
 - Forbidding parallel AI queues for specific TechnoTypes (by Starkku)
 - Nonprovocative Warheads (by Starkku)
-- Option for vehicles to keep target when issued move command (by Starkku)
 - Option to restore `PowerSurplus` setting for AI (by Starkku)
 - `FireOnce` infantry sequence reset toggle (by Starkku)
 - Assign Super Weapon cameo to any sidebar tab (by NetsuNegi)
@@ -499,6 +535,8 @@ New:
 - Allow infantry to use land sequences in water (by Starkku)
 - `<Player @ X>` can now be used as owner for pre-placed objects on skirmish and multiplayer maps (by Starkku)
 - Allow customizing charge turret delays per burst on a weapon (by Starkku)
+- Unit `Speed` setting now accepts floating point values (by Starkku)
+- Extending `Power` to all TechnoTypes (by Morton)
 
 Vanilla fixes:
 - Allow AI to repair structures built from base nodes/trigger action 125/SW delivery in single player missions (by Trsdy)
@@ -566,27 +604,24 @@ Vanilla fixes:
 - Units with `Sensors=true` will no longer reveal ally buildings (by Starkku)
 - Air units are now reliably included by target scan with large range and Warhead detonation by large `CellSpread` (by Starkku)
 - Weapons with `AA=true` Projectile can now correctly fire at air units when both firer and target are over a bridge (by Starkku)
-- Buildings with foundation bigger than 1x1 can now recycle spawned correctly (by TaranDahl)
-- Infantry firing while moving (by TaranDahl)
-- Fix the bug that parasite will vanish if it missed its target when its previous cell is occupied (by TaranDahl)
-- Observer sidebar in skirmish game mode (by CrimRecya)
-- Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory (by CrimRecya & TaranDahl)
 - Fixed disguised units not using the correct palette if target has custom palette (by NetsuNegi)
 - Building upgrades now consistently use building's `PowerUpN` animation settings corresponding to the upgrade's `PowersUpToLevel` where possible (by Starkku)
 - Subterranean units are no longer allowed to perform deploy functions like firing weapons or `IsSimpleDeployer` while burrowed or burrowing, they will instead emerge first like they do for transport unloading (by Starkku)
-- Projectiles created from `AirburstWeapon` now remember their WeaponType and can apply radiation etc. (by Starkku)
 - Fixed `Temporal=true` Warheads potentially crashing game if used to attack `Slaved=true` infantry (by Starkku)
 - Fixed some locomotors (Tunnel, Walk, Mech) getting stuck when moving too fast (by NetsuNegi)
 - Animations with `MakeInfantry` and `UseNormalLight=false` that are drawn in unit palette will now have cell lighting changes applied on them (by Starkku)
 - Fixed Nuke & Dominator Level lighting not applying to AircraftTypes (by Starkku)
 - Removed the 0 damage effect from `InfDeath=9` warheads to in-air infantries (by Trsdy)
-- Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix (by tyuah8)
 - Projectiles created from `AirburstWeapon` now remember their WeaponType and can apply radiation etc. (by Starkku)
 - Fixed damaged aircraft not repairing on `UnitReload=true` docks unless they land on the dock first (by Starkku)
-- Certain global tileset indices (`ShorePieces`, `WaterSet`, `CliffSet`, `WaterCliffs`, `WaterBridge`, `BridgeSet` and `WoodBridgeSet`) are now correctly parsed for Lunar theater (by Starkku)
+- Certain global tileset indices (`ShorePieces`, `WaterSet`, `CliffSet`, `WaterCliffs`, `WaterBridge`, `BridgeSet` and `WoodBridgeSet`) can now be toggled to be parsed for lunar theater (by Starkku)
 - Fixed infantry `SecondaryFire` / `SecondaryProne` sequences being displayed in water instead of `WetAttack` (by Starkku)
 - Fixed objects with ally target and `AttackFriendlies=true` having their target reset every frame, particularly AI-owned buildings (by Starkku)
 - Follower vehicle index for preplaced vehicles in maps is now explicitly constrained to `[Units]` list in map files and is no longer thrown off by vehicles that could not be created or created vehicles having other vehicles as initial passengers (by Starkku)
+- Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix (by tyuah8)
+- Fix `Stop` command not working so well in some cases (by CrimRecya)
+- Use 2D distance instead of 3D to check whether in air team members have arrived destination (by CrimRecya)
+- Subterranean movement now benefits from speed multipliers from all sources such as veterancy, AttachEffect etc. (by Starkku)
 
 Phobos fixes:
 - Fixed a few errors of calling for superweapon launch by `LaunchSW` or building infiltration (by Trsdy)
@@ -632,6 +667,7 @@ Phobos fixes:
 - Fixed `SelfHealGainType=none` not working (changed to `noheal`) (by Starkku)
 - Fixed AircraftTypes gaining self-healing from `UnitsGainSelfHeal` by default (while not displaying the pip) when they should not (by Starkku)
 - Fixed `LaunchSW.IgnoreInhibitors` and `SW.Next.IgnoreInhibitors` overriding corresponding `IgnoreDesignators` settings (by Ollerus)
+- Type conversion on Warheads and Superweapons will no longer recursively convert units if applicable conversion pairs are listed, and only first applicable pair takes effect (by Starkku)
 
 Fixes / interactions with other extensions:
 - Weapons fired by EMPulse superweapons *(Ares feature)* now fully respect the firing building's FLH.
@@ -642,6 +678,10 @@ Fixes / interactions with other extensions:
 - All forms of type conversion (including Ares') now correctly update `OpenTopped` state of passengers in transport that is converted (by Starkku)
 - Fixed an issue introduced by Ares that caused `Grinding=true` building `ActiveAnim` to be incorrectly restored while `SpecialAnim` was playing and the building was sold, erased or destroyed (by Starkku)
 - Appended Ares' `SW.Shots` usage to extended tooltips (by Trsdy)
+- Fixed Ares' Abductor weapon leaves permanent placement stats when abducting moving vehicles (by Trsdy)
+- Suppressed Ares' swizzle warning when parsing `Tags` and `TaskForces` (by Trsdy)
+- Fixed Academy *(Ares feature)* not working on the initial payloads *(Ares feature)* of vehicles built from a war factory (by Trsdy, supersedes Aephiex impl.)
+- Fixed Ares' InitialPayload not being created for vehicles spawned by trigger actions (by Trsdy)
 </details>
 
 ### 0.3.0.1
@@ -778,8 +818,6 @@ New:
 - Animated (non-tiberium spawning) TerrainTypes (by Starkku)
 - Toggleable passenger killing for Explodes=true units (by Starkku)
 - New condition for automatic self-destruction logic when TechnoTypes exist/don't exist (by FlyStar)
-- Skirmish AI "sell all buildings and set all technos to hunt" behavior dehardcode (by TaranDahl/航味麻酱)
-- Skirmish AI "gather when MCV deploy" behavior dehardcode (by TaranDahl/航味麻酱)
 
 Vanilla fixes:
 - Fixed laser drawing code to allow for thicker lasers in house color draw mode (by Kerbiter, ChrisLv_CN)

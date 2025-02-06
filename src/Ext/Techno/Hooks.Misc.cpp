@@ -306,31 +306,6 @@ DEFINE_HOOK(0x7295E2, TunnelLocomotionClass_ProcessStateDigging_SubterraneanHeig
 	return SkipGameCode;
 }
 
-DEFINE_HOOK(0x7295C5, TunnelLocomotionClass_ProcessDigging_DiggingSpeed, 0x9)
-{
-	enum { Move = 0x7298C7, ShouldStop = 0x7295CE };
-
-	GET(int, deltaRange, EAX);
-	GET(TunnelLocomotionClass* const, pThis, ESI);
-
-	auto const pTechno = pThis->LinkedTo;
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
-	const double speed = TechnoExt::GetCurrentSpeedMultiplier(pTechno) * (pTypeExt ? pTypeExt->DiggingSpeed : 19.0);
-
-	if (deltaRange < static_cast<int>(speed) + 1)
-		return ShouldStop;
-
-	CoordStruct currentCrd = pTechno->Location;
-	CoordStruct targetCrd = pThis->Coords;
-	int newCrdX = (int)(currentCrd.X + speed * (targetCrd.X - currentCrd.X) / (double)deltaRange);
-	int newCrdY = (int)(currentCrd.Y + speed * (targetCrd.Y - currentCrd.Y) / (double)deltaRange);
-
-	R->EAX(newCrdX);
-	R->EDX(newCrdY);
-	R->EDI(currentCrd.Z);
-	return Move;
-}
-
 DEFINE_HOOK(0x7292BF, TunnelLocomotionClass_ProcessPreDigIn_DigStartROT, 0x6)
 {
 	GET(TunnelLocomotionClass* const, pThis, ESI);
@@ -445,6 +420,185 @@ DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_ReturnFireCheck, 0x7)
 	const bool isJJMoving = pThisFoot->GetHeight() > Unsorted::CellHeight && mission == Mission::Move && pThisFoot->Locomotor->Is_Moving_Now();
 
 	return (isJJMoving || (mission == Mission::Move && pThisFoot->GetHeight() <= 0)) ? SkipReturnFire : NotSkip;
+}
+
+#pragma endregion
+
+#pragma region AttackMindControlledDelay
+
+bool __fastcall CanAttackMindControlled(TechnoClass* pControlled, TechnoClass* pRetaliator)
+{
+	const auto pMind = pControlled->MindControlledBy;
+
+	if (!pMind || pRetaliator->Berzerk)
+		return true;
+
+	const auto pManager = pMind->CaptureManager;
+
+	if (!pManager)
+		return true;
+
+	const auto pHome = pManager->GetOriginalOwner(pControlled);
+	const auto pHouse = pRetaliator->Owner;
+
+	if (!pHome || !pHouse || !pHouse->IsAlliedWith(pHome))
+		return true;
+
+	const auto pExt = TechnoExt::ExtMap.Find(pControlled);
+
+	if (!pExt)
+		return true;
+
+	return pExt->BeControlledThreatFrame <= Unsorted::CurrentFrame();
+}
+
+DEFINE_HOOK(0x7089E8, TechnoClass_AllowedToRetaliate_AttackMindControlledDelay, 0x6)
+{
+	enum { CannotRetaliate = 0x708B17 };
+
+	GET(TechnoClass* const, pThis, ESI);
+	GET(TechnoClass* const, pAttacker, EBP);
+
+	return CanAttackMindControlled(pAttacker, pThis) ? 0 : CannotRetaliate;
+}
+
+DEFINE_HOOK(0x6F88BF, TechnoClass_CanAutoTargetObject_AttackMindControlledDelay, 0x6)
+{
+	enum { CannotSelect = 0x6F894F };
+
+	GET(TechnoClass* const, pThis, EDI);
+	GET(ObjectClass* const, pTarget, ESI);
+
+	if (const auto pTechno = abstract_cast<TechnoClass*>(pTarget))
+	{
+		if (!CanAttackMindControlled(pTechno, pThis))
+			return CannotSelect;
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
+#pragma region NoTurretUnitAlwaysTurnToTarget
+
+DEFINE_HOOK(0x7410BB, UnitClass_GetFireError_CheckFacingError, 0x8)
+{
+	enum { NoNeedToCheck = 0x74132B, ContinueCheck = 0x7410C3 };
+
+	GET(const FireError, fireError, EAX);
+
+	if (fireError == FireError::OK)
+		return ContinueCheck;
+
+	if (!RulesExt::Global()->UnitWithoutTurretAlwaysTurnToTarget)
+		return NoNeedToCheck;
+
+	GET(UnitClass* const, pThis, ESI);
+
+	return (fireError == FireError::REARM && !pThis->Type->Turret && !pThis->IsWarpingIn()) ? ContinueCheck : NoNeedToCheck;
+}
+
+#pragma endregion
+
+#pragma region ExtendedGattlingRateDown
+
+DEFINE_HOOK(0x70DE40, BuildingClass_sub_70DE40_GattlingRateDownDelay, 0xA)
+{
+	enum { Return = 0x70DE62 };
+
+	GET(BuildingClass* const, pThis, ECX);
+	GET_STACK(int, rateDown, STACK_OFFSET(0x0, 0x4));
+
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pTypeExt = pExt->TypeExtData;
+
+	if (pTypeExt->RateDown_Delay < 0)
+		return Return;
+
+	++pExt->AccumulatedGattlingValue;
+	auto remain = pExt->AccumulatedGattlingValue;
+
+	if (!pExt->ShouldUpdateGattlingValue)
+		remain -= pTypeExt->RateDown_Delay;
+
+	if (remain <= 0)
+		return Return;
+
+	// Time's up
+	pExt->AccumulatedGattlingValue = 0;
+	pExt->ShouldUpdateGattlingValue = true;
+
+	if (pThis->Ammo <= pTypeExt->RateDown_Ammo)
+		rateDown = pTypeExt->RateDown_Cover;
+
+	if (!rateDown)
+	{
+		pThis->GattlingValue = 0;
+		return Return;
+	}
+
+	auto newValue = pThis->GattlingValue;
+	newValue -= (rateDown * remain);
+	pThis->GattlingValue = (newValue <= 0) ? 0 : newValue;
+	return Return;
+}
+
+DEFINE_HOOK(0x70DE70, TechnoClass_sub_70DE70_GattlingRateDownReset, 0x5)
+{
+	GET(TechnoClass* const, pThis, ECX);
+
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	pExt->AccumulatedGattlingValue = 0;
+	pExt->ShouldUpdateGattlingValue = false;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x70E01E, TechnoClass_sub_70E000_GattlingRateDownDelay, 0x6)
+{
+	enum { SkipGameCode = 0x70E04D };
+
+	GET(TechnoClass* const, pThis, ESI);
+	GET_STACK(int, rateMult, STACK_OFFSET(0x10, 0x4));
+
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pTypeExt = pExt->TypeExtData;
+
+	if (pTypeExt->RateDown_Delay < 0)
+		return SkipGameCode;
+
+	pExt->AccumulatedGattlingValue += rateMult;
+	auto remain = pExt->AccumulatedGattlingValue;
+
+	if (!pExt->ShouldUpdateGattlingValue)
+		remain -= pTypeExt->RateDown_Delay;
+
+	if (remain <= 0 && rateMult)
+		return SkipGameCode;
+
+	// Time's up
+	pExt->AccumulatedGattlingValue = 0;
+	pExt->ShouldUpdateGattlingValue = true;
+
+	if (!rateMult)
+	{
+		pThis->GattlingValue = 0;
+		return SkipGameCode;
+	}
+
+	const auto rateDown = (pThis->Ammo <= pTypeExt->RateDown_Ammo) ? pTypeExt->RateDown_Cover.Get() : pTypeExt->OwnerObject()->RateDown;
+
+	if (!rateDown)
+	{
+		pThis->GattlingValue = 0;
+		return SkipGameCode;
+	}
+
+	auto newValue = pThis->GattlingValue;
+	newValue -= (rateDown * remain);
+	pThis->GattlingValue = (newValue <= 0) ? 0 : newValue;
+	return SkipGameCode;
 }
 
 #pragma endregion

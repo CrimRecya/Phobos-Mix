@@ -162,12 +162,6 @@ DEFINE_HOOK(0x73D6E6, UnitClass_Unload_Subterranean, 0x6)
 			return ReturnFromFunction;
 	}
 
-	if (pThis->Type->Passengers > 0 && TechnoTypeExt::ExtMap.Find(pThis->Type)->LeaveTransportKill)
-	{
-		pThis->KillPassengers(pThis);
-		pThis->RemoveGunner(nullptr);
-	}
-
 	return 0;
 }
 

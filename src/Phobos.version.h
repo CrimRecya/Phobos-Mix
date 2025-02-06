@@ -23,13 +23,13 @@
 #pragma endregion
 
 // Build number. Incremented on each released build.
-#define BUILD_NUMBER 44
+#define BUILD_NUMBER 45
 
 // Merge number. Counted main merge contributors.
 #define MERGE_NUMBER 3
 
 // Indicates Merge-related bugfixes only.
-#define MERGE_PATCH 27
+#define MERGE_PATCH 13
 
 // Nightly defines GIT_COMMIT and GIT_BRANCH in GH Actions
 
