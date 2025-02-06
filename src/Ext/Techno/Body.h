@@ -64,7 +64,7 @@ public:
 		int MyTargetingFrame;
 		int AttackMoveFollowerTempCount;
 		CellClass* AutoTargetedWallCell;
-		bool HasCachedClick;
+		bool HasCachedClickMission;
 		Mission CachedMission;
 		AbstractClass* CachedCell;
 		AbstractClass* CachedTarget;
@@ -125,7 +125,7 @@ public:
 			, MyTargetingFrame { ScenarioClass::Instance->Random.RandomRanged(0,15) }
 			, AttackMoveFollowerTempCount { 0 }
 			, AutoTargetedWallCell{ nullptr }
-			, HasCachedClick { false }
+			, HasCachedClickMission { false }
 			, CachedMission { Mission::None }
 			, CachedCell { nullptr }
 			, CachedTarget { nullptr }
