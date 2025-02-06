@@ -50,14 +50,7 @@ void TechnoExt::ExtData::OnEarlyUpdate()
 	this->UpdateAttachEffects();
 	this->UpdateRecountBurst();
 	this->UpdateRearmInEMPState();
-
-	if (this->HasCachedClick)
-	{
-		if (EventClass::OutList->Count < 128)
-		{
-			this->ProcessCachedClick();
-		}
-	}
+	this->UpdateCachedClick();
 }
 
 void TechnoExt::ExtData::ApplyInterceptor()
@@ -1231,23 +1224,34 @@ void TechnoExt::ExtData::RecalculateStatMultipliers()
 		pThis->Uncloak(true);
 }
 
-void TechnoExt::ExtData::ClearCachedClick()
+void TechnoExt::ExtData::UpdateCachedClick()
 {
-	this->HasCachedClick = false;
-	this->CachedMission = Mission::None;
-	this->CachedCell = nullptr;
-	this->CachedTarget = nullptr;
-}
+	if (EventClass::OutList->Count >= 128)
+		return;
 
-void TechnoExt::ExtData::ProcessCachedClick()
-{
-	TargetClass target1 = TargetClass(this->CachedCell);
-	TargetClass target2 = TargetClass(this->CachedTarget);
-	TargetClass target3 = TargetClass(this->OwnerObject());
-	TargetClass target4;
-	target4.m_ID = target3.m_ID;
-	target4.m_RTTI = 0;
-	EventClass event = EventClass(HouseClass::CurrentPlayer->ArrayIndex, target3, this->CachedMission, target2, target1, target4);
-	EventClass::AddEvent(event);
-	this->ClearCachedClick();
+	if (this->HasCachedClickMission)
+	{
+		// process
+		TargetClass target1 = TargetClass(this->CachedCell);
+		TargetClass target2 = TargetClass(this->CachedTarget);
+		TargetClass target3 = TargetClass(this->OwnerObject());
+		TargetClass target4;
+		target4.m_ID = target3.m_ID;
+		target4.m_RTTI = 0;
+		EventClass event = EventClass(HouseClass::CurrentPlayer->ArrayIndex, target3, this->CachedMission, target2, target1, target4);
+		EventClass::AddEvent(event);
+		// clear
+		this->HasCachedClickMission = false;
+		this->CachedMission = Mission::None;
+		this->CachedCell = nullptr;
+		this->CachedTarget = nullptr;
+	}
+	else if (this->HasCachedClickEvent)
+	{
+		// process
+		this->OwnerObject()->ClickedEvent(this->CachedEventType);
+		// clear
+		this->HasCachedClickEvent = false;
+		this->CachedEventType = EventType::LAST_EVENT;
+	}
 }

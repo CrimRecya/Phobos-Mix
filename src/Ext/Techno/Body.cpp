@@ -522,10 +522,12 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->LastHurtFrame)
 		.Process(this->LastBeLockedFrame)
 		.Process(this->MyTargetingFrame)
-		.Process(this->HasCachedClick)
+		.Process(this->HasCachedClickMission)
 		.Process(this->CachedMission)
 		.Process(this->CachedCell)
 		.Process(this->CachedTarget)
+		.Process(this->HasCachedClickEvent)
+		.Process(this->CachedEventType)
 		.Process(this->FiringObstacleCell)
 		.Process(this->KeepTargetOnMove)
 		.Process(this->IsDetachingForCloak)
@@ -538,9 +540,12 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 
 void TechnoExt::ExtData::InvalidatePointer(void* ptr, bool bRemoved)
 {
-	if (this->HasCachedClick && this->CachedTarget == ptr)
+	if (this->HasCachedClickMission && this->CachedTarget == ptr)
 	{
-		this->ClearCachedClick();
+		this->HasCachedClickMission = false;
+		this->CachedMission = Mission::None;
+		this->CachedCell = nullptr;
+		this->CachedTarget = nullptr;
 	}
 }
 

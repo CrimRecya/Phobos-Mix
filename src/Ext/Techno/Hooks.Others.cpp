@@ -1985,107 +1985,24 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 
 #pragma region EventListOverflow
 
-DEFINE_HOOK(0x6FFE55, TechnoClass_ClickedEvent_AddEvent, 0xA)
+DEFINE_HOOK(0x6FFE00, TechnoClass_ClickedEvent_CacheClickedEvent, 0x5)
 {
-	GET(int, stack, ESP);
+	GET(TechnoClass*, pThis, ECX);
+	GET_STACK(EventType, event, 0x4);
 
-	EventClass* pEvent = (EventClass*)(stack + 0x80 - 0x70);
-
-	if (EventClass::OutList->Count >= 128 && SessionClass::IsSingleplayer() && (Game::RecordingFlag & RecordFlag::Read) == (RecordFlag)0)
+	if (EventClass::OutList->Count >= 128)
 	{
-		if (EventClass::DoList->Count < 0x4000)
-		{
-			auto pDoListTail = &EventClass::DoList->List[EventClass::DoList->Tail];
-			memcpy(pDoListTail, pEvent, 0x108);
-			pDoListTail += 108;
-			pDoListTail->Type = pEvent->Type;
-			pDoListTail->HouseIndex = pEvent->HouseIndex;
-			EventClass::DoList->Timings[EventClass::DoList->Tail] = timeGetTime();
-			EventClass::DoList->Tail = (LOWORD(EventClass::DoList->Tail) + 1) & 0x3FFF;
-			EventClass::DoList->Count++;
-		}
+		auto const pExt = TechnoExt::ExtMap.Find(pThis);
+		pExt->HasCachedClickEvent = true;
+		pExt->CachedEventType = event;
+		// one cache at a time
+		pExt->HasCachedClickMission = false;
+		pExt->CachedMission = Mission::None;
+		pExt->CachedCell = nullptr;
+		pExt->CachedTarget = nullptr;
 	}
-
-	return 0;
 }
 
-DEFINE_HOOK(0x6521CE, EventClass_AddEvent, 0x5)
-{
-	GET(int, stack, ESP);
-
-	EventClass* pEvent = (EventClass*)(stack + 4);
-
-	if (EventClass::OutList->Count >= 128 && SessionClass::IsSingleplayer() && (Game::RecordingFlag & RecordFlag::Read) == (RecordFlag)0)
-	{
-		if (EventClass::DoList->Count < 0x4000)
-		{
-			auto pDoListTail = &EventClass::DoList->List[EventClass::DoList->Tail];
-			memcpy(pDoListTail, pEvent, 0x108);
-			pDoListTail += 108;
-			pDoListTail->Type = pEvent->Type;
-			pDoListTail->HouseIndex = pEvent->HouseIndex;
-			EventClass::DoList->Timings[EventClass::DoList->Tail] = timeGetTime();
-			EventClass::DoList->Tail = (LOWORD(EventClass::DoList->Tail) + 1) & 0x3FFF;
-			EventClass::DoList->Count++;
-		}
-	}
-
-	return 0;
-}
-/*
-DEFINE_HOOK(0x646EF5, EventClass_AddMegaMissionEvent, 0xA)
-{
-	GET(EventClass*, pEvent, EAX);
-
-	if (EventClass::OutList->Count >= 128 && SessionClass::IsSingleplayer() && (Game::RecordingFlag & RecordFlag::Read) == (RecordFlag)0)
-	{
-		if (EventClass::DoList->Count < 0x4000)
-		{
-			auto pDoListTail = &EventClass::DoList->List[EventClass::DoList->Tail];
-			memcpy(pDoListTail, pEvent, 0x108);
-			pDoListTail += 108;
-			pDoListTail->Type = pEvent->Type;
-			pDoListTail->HouseIndex = pEvent->HouseIndex;
-			EventClass::DoList->Timings[EventClass::DoList->Tail] = timeGetTime();
-			EventClass::DoList->Tail = (LOWORD(EventClass::DoList->Tail) + 1) & 0x3FFF;
-			EventClass::DoList->Count++;
-		}
-	}
-
-	return 0;
-}
-
-DEFINE_HOOK(0x64C739, Game_ProcessDoList_AddMegaMissionEvent, 0xA)
-{
-	if (EventClass::MegaMissionList->Count == 256 && SessionClass::IsSingleplayer() && (Game::RecordingFlag & RecordFlag::Read) == (RecordFlag)0)
-	{
-		reinterpret_cast<void(__fastcall*)(int, int)>(0x64CDA0)(0, 256); // Game::ProcessMegaMissionList
-		auto Head = EventClass::MegaMissionList->Head;
-
-		while (true)
-		{
-			reinterpret_cast<void(__thiscall*)(EventClass*)>(0x4C6CB0)(&EventClass::MegaMissionList->List[Head]); // EventClass::RespondToEvent
-
-			if (!EventClass::MegaMissionList->Count)
-			{
-				break;
-			}
-
-			Head = (LOBYTE(EventClass::MegaMissionList->Head) + 1);
-			EventClass::MegaMissionList->Head = Head;
-
-			if (!--EventClass::MegaMissionList->Count)
-			{
-				break;
-			}
-		}
-
-		reinterpret_cast<EventClass* (__fastcall*)()>(0x4E7F00)(); // EventClass::ClearMegaMissionList
-	}
-
-	return 0;
-}
-*/
 DEFINE_HOOK(0x6FFDA5, TechnoClass_ClickedMission_CacheClickedMission, 0x7)
 {
 	GET_STACK(AbstractClass* const, pCell, STACK_OFFSET(0x98, 0xC));
@@ -2096,10 +2013,13 @@ DEFINE_HOOK(0x6FFDA5, TechnoClass_ClickedMission_CacheClickedMission, 0x7)
 	if (EventClass::OutList->Count >= 128)
 	{
 		auto const pExt = TechnoExt::ExtMap.Find(pThis);
-		pExt->HasCachedClick = true;
+		pExt->HasCachedClickMission = true;
 		pExt->CachedMission = mission;
 		pExt->CachedCell = pCell;
 		pExt->CachedTarget = pTarget;
+		// one cache at a time
+		pExt->HasCachedClickEvent = false;
+		pExt->CachedEventType = EventType::LAST_EVENT;
 	}
 
 	return 0;

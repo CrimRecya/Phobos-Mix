@@ -62,10 +62,12 @@ public:
 		int MyTargetingFrame;
 		int AccumulatedGattlingValue;
 		bool ShouldUpdateGattlingValue;
-		bool HasCachedClick;
+		bool HasCachedClickMission;
 		Mission CachedMission;
 		AbstractClass* CachedCell;
 		AbstractClass* CachedTarget;
+		bool HasCachedClickEvent;
+		EventType CachedEventType;
 		CellClass* FiringObstacleCell; // Set on firing if there is an obstacle cell between target and techno, used for updating WaveClass target etc.
 		bool KeepTargetOnMove;
 		bool IsDetachingForCloak; // Used for checking animation detaching, set to true before calling Detach_All() on techno when this anim is attached to and to false after when cloaking only.
@@ -117,10 +119,12 @@ public:
 			, MyTargetingFrame { ScenarioClass::Instance->Random.RandomRanged(0,15) }
 			, AccumulatedGattlingValue { 0 }
 			, ShouldUpdateGattlingValue { false }
-			, HasCachedClick { false }
+			, HasCachedClickMission { false }
 			, CachedMission { Mission::None }
 			, CachedCell { nullptr }
 			, CachedTarget { nullptr }
+			, HasCachedClickEvent { false }
+			, CachedEventType { EventType::LAST_EVENT }
 			, FiringObstacleCell {}
 			, KeepTargetOnMove { false }
 			, IsDetachingForCloak { false }
@@ -160,8 +164,7 @@ public:
 		void ApplyIdleAction();
 		void ManualIdleAction();
 		void StopRotateWithNewROT(int ROT = -1);
-		void ClearCachedClick();
-		void ProcessCachedClick();
+		void UpdateCachedClick();
 
 		virtual ~ExtData() override;
 		virtual void InvalidatePointer(void* ptr, bool bRemoved) override;
