@@ -1815,6 +1815,8 @@ DEFINE_HOOK(0x6FFE00, TechnoClass_ClickedEvent_CacheClickedEvent, 0x5)
 		pExt->CachedCell = nullptr;
 		pExt->CachedTarget = nullptr;
 	}
+
+	return 0;
 }
 
 DEFINE_HOOK(0x6FFDA5, TechnoClass_ClickedMission_CacheClickedMission, 0x7)
