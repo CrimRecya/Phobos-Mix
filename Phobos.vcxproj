@@ -23,6 +23,8 @@
     <ClCompile Include="src\Ext\Sidebar\SWSidebar\SWSidebarClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SWSidebar\SWButtonClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SWSidebar\ToggleSWButtonClass.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoButtonClass.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoColumnClass.cpp" />
     <ClCompile Include="src\Ext\TechnoType\Hooks.MatrixOp.cpp" />
     <ClCompile Include="src\New\Entity\AttachEffectClass.cpp" />
     <ClCompile Include="src\New\Type\AttachEffectTypeClass.cpp" />
@@ -216,6 +218,8 @@
     <ClInclude Include="src\Ext\Sidebar\SWSidebar\SWSidebarClass.h" />
     <ClInclude Include="src\Ext\Sidebar\SWSidebar\SWButtonClass.h" />
     <ClInclude Include="src\Ext\Sidebar\SWSidebar\ToggleSWButtonClass.h" />
+    <ClInclude Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoButtonClass.h" />
+    <ClInclude Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoColumnClass.h" />
     <ClInclude Include="src\New\Entity\AttachEffectClass.h" />
     <ClInclude Include="src\New\Type\AttachEffectTypeClass.h" />
     <ClInclude Include="src\Commands\SelectCaptured.h" />

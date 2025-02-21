@@ -1,6 +1,6 @@
 #include "HerosInfo.h"
 
-#include <Misc/TacticalButtons.h>
+#include <Ext/Sidebar/UniqueButton/UniqueTechnoColumnClass.h>
 
 const char* HerosInfoCommandClass::GetName() const
 {
@@ -24,5 +24,5 @@ const wchar_t* HerosInfoCommandClass::GetUIDescription() const
 
 void HerosInfoCommandClass::Execute(WWKey eInput) const
 {
-	TacticalButtonsClass::Instance.HeroSwitch();
+	UniqueTechnoColumnClass::Instance.Visible = !UniqueTechnoColumnClass::Instance.Visible;
 }

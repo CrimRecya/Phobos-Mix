@@ -1,4 +1,6 @@
 #include "Body.h"
+#include "SWSidebar/SWSidebarClass.h"
+#include "UniqueButton/UniqueTechnoColumnClass.h"
 
 #include <HouseClass.h>
 #include <FactoryClass.h>
@@ -104,11 +106,17 @@ DEFINE_HOOK(0x72FCB5, InitSideRectangles_CenterBackground, 0x5)
 	return 0;
 }
 
+#pragma region MarkRedraw
+
 DEFINE_HOOK(0x4F92DD, HouseClass_Update_RedrawSidebarWhenRecheckTechTree, 0x5)
 {
 	SidebarClass::Instance->SidebarBackgroundNeedsRedraw = true;
 	return 0;
 }
+
+#pragma endregion
+
+#pragma region DrawGreyCameoExtraCover
 
 DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
 {
@@ -212,6 +220,10 @@ DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
 	return 0;
 }
 
+#pragma endregion
+
+#pragma region ObserverDiplomacyHouses
+
 DEFINE_HOOK(0x6A557A, SidebarClass_Init_IO_RecordDiplomacyHouses1, 0x5)
 {
 	enum { SkipGameCode = 0x6A5830, ContinueGameCode = 0x6A558D };
@@ -238,3 +250,33 @@ DEFINE_HOOK(0x6A57F6, SidebarClass_Init_IO_RecordDiplomacyHouses3, 0x7)
 
 	return (pHouse->IsHumanPlayer || HouseClass::CurrentPlayer == HouseClass::Observer) ? MeetCondition : ContinueLoop;
 }
+
+#pragma endregion
+
+#pragma region NewButtonsRelated
+
+DEFINE_HOOK(0x692419, DisplayClass_ProcessClickCoords_SkipOnNewButtons, 0x7)
+{
+	enum { DoNothing = 0x6925FC };
+
+	return (SWSidebarClass::IsEnabled() && SWSidebarClass::Instance.CurrentColumn
+		|| SWSidebarClass::Instance.ToggleButton && SWSidebarClass::Instance.ToggleButton->IsHovering
+		|| UniqueTechnoColumnClass::Instance.Hovering >= 0)
+		? DoNothing : 0;
+}
+
+DEFINE_HOOK(0x6A5082, SidebarClass_InitClear_InitializeNewButtons, 0x5)
+{
+	SWSidebarClass::Instance.InitClear();
+	UniqueTechnoColumnClass::Instance.InitClear();
+	return 0;
+}
+
+DEFINE_HOOK(0x6A5839, SidebarClass_InitIO_InitializeNewButtons, 0x5)
+{
+	SWSidebarClass::Instance.InitIO();
+	UniqueTechnoColumnClass::Instance.InitIO();
+	return 0;
+}
+
+#pragma endregion

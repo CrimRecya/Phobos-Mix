@@ -75,6 +75,52 @@ void SWSidebarClass::InitClear()
 	columns.clear();
 }
 
+void SWSidebarClass::InitIO()
+{
+	if (!Phobos::UI::SuperWeaponSidebar || Unsorted::ArmageddonMode)
+		return;
+
+	if (const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]))
+	{
+		const auto pOnPCX = pSideExt->SuperWeaponSidebar_OnPCX.GetSurface();
+		const auto pOffPCX = pSideExt->SuperWeaponSidebar_OffPCX.GetSurface();
+		int width = 0, height = 0;
+
+		if (pOnPCX)
+		{
+			if (pOffPCX)
+			{
+				width = std::max(pOnPCX->GetWidth(), pOffPCX->GetWidth());
+				height = std::max(pOnPCX->GetHeight(), pOffPCX->GetHeight());
+			}
+			else
+			{
+				width = pOnPCX->GetWidth();
+				height = pOnPCX->GetHeight();
+			}
+		}
+		else if (pOffPCX)
+		{
+			width = pOffPCX->GetWidth();
+			height = pOffPCX->GetHeight();
+		}
+
+		if (width > 0 && height > 0)
+		{
+			if (const auto toggleButton = GameCreate<ToggleSWButtonClass>(SWButtonClass::StartID + SuperWeaponTypeClass::Array->Count, 0, 0, width, height))
+			{
+				toggleButton->Zap();
+				GScreenClass::Instance->AddButton(toggleButton);
+				SWSidebarClass::Instance.ToggleButton = toggleButton;
+				toggleButton->UpdatePosition();
+			}
+		}
+	}
+
+	for (const auto superIdx : SidebarExt::Global()->SWSidebar_Indices)
+		SWSidebarClass::Instance.AddButton(superIdx);
+}
+
 bool SWSidebarClass::AddButton(int superIdx)
 {
 	auto& columns = this->Columns;
@@ -187,18 +233,6 @@ bool SWSidebarClass::IsEnabled()
 
 // Hooks
 
-DEFINE_HOOK(0x692419, DisplayClass_ProcessClickCoords_SWSidebar, 0x7)
-{
-	enum { DoNothing = 0x6925FC };
-
-	if (SWSidebarClass::IsEnabled() && SWSidebarClass::Instance.CurrentColumn)
-		return DoNothing;
-
-	const auto toggleButton = SWSidebarClass::Instance.ToggleButton;
-
-	return toggleButton && toggleButton->IsHovering ? DoNothing : 0;
-}
-
 DEFINE_HOOK(0x4F92FB, HouseClass_UpdateTechTree_SWSidebar, 0x7)
 {
 	enum { SkipGameCode = 0x4F9302 };
@@ -283,56 +317,16 @@ DEFINE_HOOK(0x6AA790, StripClass_RecheckCameo_RemoveCameo, 0x6)
 	return ShouldRemove;
 }
 
-DEFINE_HOOK(0x6A5082, SidebarClass_InitClear_InitializeSWSidebar, 0x5)
+DEFINE_HOOK(0x724B2E, ToolTipManager_SetXY, 0x6)
 {
-	SWSidebarClass::Instance.InitClear();
-	return 0;
-}
-
-DEFINE_HOOK(0x6A5839, SidebarClass_InitIO_InitializeSWSidebar, 0x5)
-{
-	if (!Phobos::UI::SuperWeaponSidebar || Unsorted::ArmageddonMode)
-		return 0;
-
-	if (const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]))
+	if (SWSidebarClass::IsEnabled())
 	{
-		const auto pOnPCX = pSideExt->SuperWeaponSidebar_OnPCX.GetSurface();
-		const auto pOffPCX = pSideExt->SuperWeaponSidebar_OffPCX.GetSurface();
-		int width = 0, height = 0;
-
-		if (pOnPCX)
+		if (const auto button = SWSidebarClass::Instance.CurrentButton)
 		{
-			if (pOffPCX)
-			{
-				width = std::max(pOnPCX->GetWidth(), pOffPCX->GetWidth());
-				height = std::max(pOnPCX->GetHeight(), pOffPCX->GetHeight());
-			}
-			else
-			{
-				width = pOnPCX->GetWidth();
-				height = pOnPCX->GetHeight();
-			}
-		}
-		else if (pOffPCX)
-		{
-			width = pOffPCX->GetWidth();
-			height = pOffPCX->GetHeight();
-		}
-
-		if (width > 0 && height > 0)
-		{
-			if (const auto toggleButton = GameCreate<ToggleSWButtonClass>(SWButtonClass::StartID + SuperWeaponTypeClass::Array->Count, 0, 0, width, height))
-			{
-				toggleButton->Zap();
-				GScreenClass::Instance->AddButton(toggleButton);
-				SWSidebarClass::Instance.ToggleButton = toggleButton;
-				toggleButton->UpdatePosition();
-			}
+			R->EDX(button->X + button->Width);
+			R->EAX(button->Y + SWButtonClass::ToolTip_Align_Y);
 		}
 	}
-
-	for (const auto superIdx : SidebarExt::Global()->SWSidebar_Indices)
-		SWSidebarClass::Instance.AddButton(superIdx);
 
 	return 0;
 }
