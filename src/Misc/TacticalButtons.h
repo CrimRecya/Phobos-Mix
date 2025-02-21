@@ -30,15 +30,8 @@ public:
 	void CurrentSelectPathDraw();
 	void CurrentSelectInfoDraw();
 
-	// Button index 1-8 : Heros buttons
-	inline bool IndexInHerosButtons();
-	BSurface* GetMissingCameo(SHPStruct* pSHP);
-	void HerosDraw();
-	void HeroSelect(int buttonIndex);
-	void HeroSwitch();
-
 	// Button index 11-100 : Select buttons
-	inline bool IndexInSelectButtons();
+	bool IndexInSelectButtons();
 	inline void AddToCurrentSelect(TechnoTypeExt::ExtData* pTypeExt, int count, int checkIndex);
 	BSurface* SearchMissingCameo(AbstractType absType, SHPStruct* pSHP);
 	void SelectedTrigger(int buttonIndex, bool select);
@@ -63,10 +56,6 @@ public:
 	// Button index N/A : FPS Counter
 
 	// Button index N/A : Show Current Info
-
-	// Button index 1-8 : Heros buttons
-	bool HeroVisible { true };
-	const wchar_t* HoveredHero { nullptr };
 
 	// Button index 11-100 : Select buttons
 	bool UpdateSelect { false };

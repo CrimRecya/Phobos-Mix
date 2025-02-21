@@ -1,6 +1,7 @@
 #include <Helpers/Macro.h>
 
 #include "PhobosToolTip.h"
+#include "TacticalButtons.h"
 
 #include <AircraftClass.h>
 #include <BuildingClass.h>
@@ -19,6 +20,7 @@
 #include <Ext/House/Body.h>
 #include <Ext/Scenario/Body.h>
 #include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
+#include <Ext/Sidebar/UniqueButton/UniqueTechnoColumnClass.h>
 
 #include <sstream>
 #include <iomanip>
@@ -249,50 +251,58 @@ DEFINE_HOOK(0x4AE51E, DisplayClass_GetToolTip_HelpText, 0x6)
 {
 	enum { ApplyToolTip = 0x4AE69D };
 
-	if (!SWSidebarClass::IsEnabled())
-		return 0;
+	const auto pButtons = &TacticalButtonsClass::Instance;
+	const auto buttonIndex = pButtons->GetButtonIndex();
 
-	const auto button = SWSidebarClass::Instance.CurrentButton;
-
-	if (!button)
-		return 0;
-
-	PhobosToolTip::Instance.IsCameo = true;
-
-	if (PhobosToolTip::Instance.IsEnabled())
+	if (buttonIndex >= 0)
 	{
-		PhobosToolTip::Instance.HelpText_Super(button->SuperIndex);
-		R->EAX(PhobosToolTip::Instance.GetBuffer());
-	}
-	else
-	{
-		const auto pSuper = HouseClass::CurrentPlayer->Supers[button->SuperIndex];
-		R->EAX(pSuper->Type->UIName);
+		if (!buttonIndex)
+			R->EAX(0);
+		else if (pButtons->IndexInSelectButtons())
+			R->EAX(pButtons->HoveredSelected);
+		else
+			R->EAX(0);
+
+		return ApplyToolTip;
 	}
 
-	return ApplyToolTip;
-}
-
-DEFINE_HOOK(0x724247, ToolTipManager_ProcessMessage_SetDelayTimer, 0x6)
-{
-	enum { SkipDelay = 0x72429E };
-	return SWSidebarClass::IsEnabled() && SWSidebarClass::Instance.CurrentButton ? SkipDelay : 0;
-}
-
-DEFINE_HOOK(0x72428C, ToolTipManager_ProcessMessage_Redraw, 0x5)
-{
-	enum { SkipRedraw = 0x724297 };
-	return SWSidebarClass::IsEnabled() && SWSidebarClass::Instance.CurrentButton ? SkipRedraw : 0;
-}
-
-DEFINE_HOOK(0x724B2E, ToolTipManager_SetX, 0x6)
-{
 	if (SWSidebarClass::IsEnabled())
 	{
 		if (const auto button = SWSidebarClass::Instance.CurrentButton)
 		{
-			R->EDX(button->X + button->Width);
-			R->EAX(button->Y + SWButtonClass::ToolTip_Align_Y);
+			PhobosToolTip::Instance.IsCameo = true;
+
+			if (PhobosToolTip::Instance.IsEnabled())
+			{
+				PhobosToolTip::Instance.HelpText_Super(button->SuperIndex);
+				R->EAX(PhobosToolTip::Instance.GetBuffer());
+			}
+			else
+			{
+				const auto pSuper = HouseClass::CurrentPlayer->Supers[button->SuperIndex];
+				R->EAX(pSuper->Type->UIName);
+			}
+
+			return ApplyToolTip;
+		}
+		else if (SWSidebarClass::Instance.CurrentColumn
+			|| SWSidebarClass::Instance.ToggleButton && SWSidebarClass::Instance.ToggleButton->IsHovering)
+		{
+			R->EAX(0);
+			return ApplyToolTip;
+		}
+	}
+
+	const auto uniqueIndex = UniqueTechnoColumnClass::Instance.Hovering;
+
+	if (uniqueIndex >= 0)
+	{
+		auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
+
+		if (uniqueIndex < static_cast<int>(vec.size()))
+		{
+			R->EAX(vec[uniqueIndex]->TypeExtData->OwnerObject()->UIName);
+			return ApplyToolTip;
 		}
 	}
 
