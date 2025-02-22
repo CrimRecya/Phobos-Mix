@@ -105,6 +105,27 @@ bool ToggleSWButtonClass::SwitchSidebar()
 {
 	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
 	SidebarExt::Global()->SWSidebar_Enable = !SidebarExt::Global()->SWSidebar_Enable;
-	SWSidebarClass::Instance.RecheckInput();
-	return SWSidebarClass::Instance.IsEnabled();
+
+	const bool disabled = !SWSidebarClass::IsEnabled();
+	const auto& columns = SWSidebarClass::Instance.Columns;
+
+	if (!columns.empty())
+	{
+		for (const auto& pColumn : columns)
+		{
+			pColumn->Disabled = disabled;
+			const auto& buttons = pColumn->Buttons;
+
+			if (!buttons.empty())
+			{
+				for (const auto& pButton : buttons)
+					pButton->Disabled = disabled;
+			}
+		}
+	}
+
+	if (const auto pToggle = SWSidebarClass::Instance.ToggleButton)
+		pToggle->UpdatePosition();
+
+	return !disabled;
 }

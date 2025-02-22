@@ -21,17 +21,11 @@
 
 #include <CCINIClass.h>
 #include <InputManagerClass.h>
-#include <WWMouseClass.h>
-
-#include <Utilities/Macro.h>
-#include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
-
-#include <CCINIClass.h>
-#include <InputManagerClass.h>
 #include <MouseClass.h>
 #include <WWMouseClass.h>
 
 #include <Utilities/Macro.h>
+#include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
 
 DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 {
