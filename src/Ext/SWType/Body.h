@@ -191,6 +191,7 @@ public:
 		std::pair<double, double> GetEMPulseCannonRange(BuildingClass* pBuilding) const;
 
 		virtual void LoadFromINIFile(CCINIClass* pINI) override;
+		virtual void Initialize() override;
 		virtual ~ExtData() = default;
 
 		virtual void InvalidatePointer(void* ptr, bool bRemoved) override { }
