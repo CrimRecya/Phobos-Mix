@@ -402,14 +402,8 @@ PlacementGrid.WaterFrames=1,0,0  ; integer, zero-based frame index - have techno
 
 ### `[ ]` Auto Building
 
-- `AutomaticPlacingBuilding` controls the default enabled/disabled state that whether building can be automatically placed  (when it has [AutoBuilding](New-or-Enhanced-Logics.md#Building-placing-and-deploying-logic-enhancement)). You can use a hotkey to switches on/off this state.
+- Switches on/off [auto building mode](New-or-Enhanced-Logics.md#Automatic-placing-the-building-product).
 - For localization add `TXT_AUTO_BUILD` and `TXT_AUTO_BUILD_DESC` into your `.csf` file.
-
-In `ra2md.ini`:
-```ini
-[Phobos]
-AutomaticPlacingBuilding=true    ; boolean
-```
 
 ### `[ ]` Distribution Mode Spread / Filter / Enable
 
