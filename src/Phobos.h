@@ -87,7 +87,7 @@ public:
 		static bool SelectedDisplay_Enable;
 		static bool FPSCounter_Enable;
 		static bool MessageDisplayInCenter;
-		static bool AutoBuilding_Enable;
+		static bool AutomaticPlacingBuilding;
 		static bool ShowBuildingStatistics;
 		static bool DrawAdjacentBoundary;
 		static bool RealTimeTimers;

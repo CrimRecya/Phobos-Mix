@@ -54,7 +54,7 @@ bool Phobos::Config::SelectedDisplay_Enable = false;
 bool Phobos::Config::FPSCounter_Enable = false;
 bool Phobos::Config::MessageDisplayInCenter = false;
 bool Phobos::Config::ShowBuildingStatistics = false;
-bool Phobos::Config::AutoBuilding_Enable = true;
+bool Phobos::Config::AutomaticPlacingBuilding = true;
 bool Phobos::Config::DrawAdjacentBoundary = false;
 bool Phobos::Config::RealTimeTimers = false;
 bool Phobos::Config::RealTimeTimers_Adaptive = false;
@@ -113,6 +113,7 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 	Phobos::Config::ScrollSidebarStripWhenHoldAlt = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ScrollSidebarStripWhenHoldAlt", true);
 	Phobos::Config::ScrollSidebarStripWhenHoldCtrl = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ScrollSidebarStripWhenHoldCtrl", true);
 	Phobos::Config::ScrollSidebarStripWhenHoldShift = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ScrollSidebarStripWhenHoldShift", true);
+	Phobos::Config::AutomaticPlacingBuilding = CCINIClass::INI_RA2MD->ReadBool("Phobos", "AutomaticPlacingBuilding", true);
 
 	// Custom game speeds, 6 - i so that GS6 is index 0, just like in the engine
 	Phobos::Config::CampaignDefaultGameSpeed = 6 - CCINIClass::INI_RA2MD->ReadInteger("Phobos", "CampaignDefaultGameSpeed", 4);
