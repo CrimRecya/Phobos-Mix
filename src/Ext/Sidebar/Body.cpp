@@ -1,11 +1,11 @@
 #include "Body.h"
+#include "SWSidebar/SWSidebarClass.h"
 
 #include <EventClass.h>
 #include <HouseClass.h>
 #include <SuperClass.h>
 
 #include <Ext/BuildingType/Body.h>
-#include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
 
 std::unique_ptr<SidebarExt::ExtData> SidebarExt::Data = nullptr;
 
