@@ -26,7 +26,7 @@ const wchar_t* AutoBuildingCommandClass::GetUIDescription() const
 
 void AutoBuildingCommandClass::Execute(WWKey eInput) const
 {
-	Phobos::Config::AutoBuilding_Enable = !Phobos::Config::AutoBuilding_Enable;
+	Phobos::Config::AutomaticPlacingBuilding = !Phobos::Config::AutomaticPlacingBuilding;
 	const int tabIndex = SidebarClass::Instance->ActiveTabIndex;
 
 	if (!tabIndex || tabIndex == 1)

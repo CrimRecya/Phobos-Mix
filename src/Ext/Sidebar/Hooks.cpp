@@ -166,7 +166,7 @@ DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
 	{
 		const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType);
 
-		if (Phobos::Config::AutoBuilding_Enable && frameSize > 1 && frames[1] >= 0 && !greyCameo && pTypeExt->AutoBuilding.Get(RulesExt::Global()->AutoBuilding))
+		if (Phobos::Config::AutomaticPlacingBuilding && frameSize > 1 && frames[1] >= 0 && !greyCameo && pTypeExt->AutoBuilding.Get(RulesExt::Global()->AutoBuilding))
 		{
 			DSurface::Sidebar->DrawSHP(
 				pRulesExt->Cameo_OverlayPalette.GetOrDefaultConvert(FileSystem::PALETTE_PAL),

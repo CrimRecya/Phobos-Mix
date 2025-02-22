@@ -541,7 +541,7 @@ bool BuildingTypeExt::IsSameBuildingType(BuildingTypeClass* pType1, BuildingType
 
 bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 {
-	if (!Phobos::Config::AutoBuilding_Enable)
+	if (!Phobos::Config::AutomaticPlacingBuilding)
 		return false;
 
 	const auto pType = pBuilding->Type;
