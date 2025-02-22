@@ -31,3 +31,14 @@ void UniqueTechnoColumnClass::InitIO()
 		this->Buttons[i] = pButton;
 	}
 }
+
+void UniqueTechnoColumnClass::SwitchVisible()
+{
+	this->Visible = !this->Visible;
+
+	for (int i = 0; i < 8; ++i)
+	{
+		if (auto& pButton = this->Buttons[i])
+			pButton->Disabled = !this->Visible;
+	}
+}

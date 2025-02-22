@@ -10,6 +10,7 @@ UniqueTechnoButtonClass::UniqueTechnoButtonClass(unsigned int id, int x, int y, 
 	: ControlClass(id, x, y, width, height, GadgetFlag::LeftPress, false)
 {
 	UniqueTechnoColumnClass::Instance.Buttons[(id - UniqueTechnoButtonClass::StartID)] = this;
+	this->Disabled = !UniqueTechnoColumnClass::Instance.Visible;
 }
 
 bool UniqueTechnoButtonClass::Draw(bool forced)

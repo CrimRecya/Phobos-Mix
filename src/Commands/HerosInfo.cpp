@@ -24,5 +24,5 @@ const wchar_t* HerosInfoCommandClass::GetUIDescription() const
 
 void HerosInfoCommandClass::Execute(WWKey eInput) const
 {
-	UniqueTechnoColumnClass::Instance.Visible = !UniqueTechnoColumnClass::Instance.Visible;
+	UniqueTechnoColumnClass::Instance.SwitchVisible();
 }
