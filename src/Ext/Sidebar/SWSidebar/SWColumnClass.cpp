@@ -5,7 +5,7 @@
 #include <Ext/Side/Body.h>
 
 SWColumnClass::SWColumnClass(unsigned int id, int maxButtons, int x, int y, int width, int height)
-	: ControlClass(id, x, y, width, height, static_cast<GadgetFlag>(0), true)
+	: ControlClass(id, x, y, width, height, static_cast<GadgetFlag>(0), false)
 	, MaxButtons(maxButtons)
 {
 	SWSidebarClass::Instance.Columns.emplace_back(this);
@@ -68,18 +68,12 @@ void SWColumnClass::OnMouseLeave()
 
 bool SWColumnClass::Clicked(DWORD* pKey, GadgetFlag flags, int x, int y, KeyModifier modifier)
 {
-	for (const auto button : this->Buttons)
-	{
-		if (button->Clicked(pKey, flags, x, y, modifier))
-			return true;
-	}
-
 	return false;
 }
 
 bool SWColumnClass::AddButton(int superIdx)
 {
-const auto pSWType = SuperWeaponTypeClass::Array->GetItemOrDefault(superIdx);
+	const auto pSWType = SuperWeaponTypeClass::Array->GetItemOrDefault(superIdx);
 
 	if (!pSWType)
 		return false;
@@ -157,7 +151,6 @@ bool SWColumnClass::RemoveButton(int superIdx)
 		return false;
 
 	AnnounceInvalidPointer(SWSidebarClass::Instance.CurrentButton, *it);
-	GScreenClass::Instance->RemoveButton(*it);
 
 	auto& indices = SidebarExt::Global()->SWSidebar_Indices;
 	const auto it_Idx = std::find(indices.cbegin(), indices.cend(), superIdx);
@@ -166,6 +159,7 @@ bool SWColumnClass::RemoveButton(int superIdx)
 		indices.erase(it_Idx);
 
 	GScreenClass::Instance->RemoveButton(*it);
+	buttons.erase(it);
 	return true;
 }
 
