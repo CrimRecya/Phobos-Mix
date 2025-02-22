@@ -347,15 +347,18 @@ DEFINE_HOOK(0x450630, BuildingClass_UpdateRepair_PlayerAutoRepair, 0x9)
 {
 	GET(BuildingClass*, pThis, ECX);
 
-	auto const pOwner = pThis->Owner;
+	if (!pThis->CanBeRepaired())
+		return 0;
+
 	auto const mission = pThis->CurrentMission;
 
-	if (pThis->Health < pThis->GetTechnoType()->Strength
-		&& pThis->Type->ClickRepairable
-		&& mission != Mission::Construction && mission != Mission::Selling
-		&& (pOwner->IsHumanPlayer || pOwner->IsControlledByHuman()) && RulesExt::Global()->PlayerAutoRepair)
-	{
-		pThis->IsBeingRepaired = true;	}
+	if (mission == Mission::Construction || mission == Mission::Selling)
+		return 0;
+
+	auto const pOwner = pThis->Owner;
+
+	if (pOwner->IsControlledByHuman() && RulesExt::Global()->PlayerAutoRepair)
+		pThis->IsBeingRepaired = true;
 
 	return 0;
 }
