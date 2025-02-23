@@ -25,6 +25,10 @@
     <ClCompile Include="src\Ext\Sidebar\SWSidebar\ToggleSWButtonClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoButtonClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoColumnClass.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedButtonClass.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedCameoClass.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedColumnClass.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedInfoClass.cpp" />
     <ClCompile Include="src\Ext\TechnoType\Hooks.MatrixOp.cpp" />
     <ClCompile Include="src\New\Entity\AttachEffectClass.cpp" />
     <ClCompile Include="src\New\Type\AttachEffectTypeClass.cpp" />
@@ -37,7 +41,6 @@
     <ClCompile Include="src\Commands\QuickSave.cpp" />
     <ClCompile Include="src\Commands\SelectedInfo.cpp" />
     <ClCompile Include="src\Commands\HerosInfo.cpp" />
-    <ClCompile Include="src\Commands\FPSNewCounter.cpp" />
     <ClCompile Include="src\Commands\AutoBuilding.cpp" />
     <ClCompile Include="src\Commands\DistributionMode.cpp" />
     <ClCompile Include="src\Commands\ShowCurrentInfo.cpp" />
@@ -216,6 +219,10 @@
     <ClInclude Include="src\Ext\Sidebar\SWSidebar\ToggleSWButtonClass.h" />
     <ClInclude Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoButtonClass.h" />
     <ClInclude Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoColumnClass.h" />
+    <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedButtonClass.h" />
+    <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedCameoClass.h" />
+    <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedColumnClass.h" />
+    <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedInfoClass.h" />
     <ClInclude Include="src\New\Entity\AttachEffectClass.h" />
     <ClInclude Include="src\New\Type\AttachEffectTypeClass.h" />
     <ClInclude Include="src\Commands\FrameByFrame.h" />
@@ -228,7 +235,6 @@
     <ClInclude Include="src\Commands\QuickSave.h" />
     <ClInclude Include="src\Commands\SelectedInfo.h" />
     <ClInclude Include="src\Commands\HerosInfo.h" />
-    <ClInclude Include="src\Commands\FPSNewCounter.h" />
     <ClInclude Include="src\Commands\AutoBuilding.h" />
     <ClInclude Include="src\Commands\DistributionMode.h" />
     <ClInclude Include="src\Commands\ShowCurrentInfo.h" />

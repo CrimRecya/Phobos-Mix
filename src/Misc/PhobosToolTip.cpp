@@ -1,7 +1,6 @@
 #include <Helpers/Macro.h>
 
 #include "PhobosToolTip.h"
-#include "TacticalButtons.h"
 
 #include <AircraftClass.h>
 #include <BuildingClass.h>
@@ -250,21 +249,6 @@ DEFINE_HOOK(0x6A9316, SidebarClass_StripClass_HelpText, 0x6)
 DEFINE_HOOK(0x4AE51E, DisplayClass_GetToolTip_HelpText, 0x6)
 {
 	enum { ApplyToolTip = 0x4AE69D };
-
-	const auto pButtons = &TacticalButtonsClass::Instance;
-	const auto buttonIndex = pButtons->GetButtonIndex();
-
-	if (buttonIndex >= 0)
-	{
-		if (!buttonIndex)
-			R->EAX(0);
-		else if (pButtons->IndexInSelectButtons())
-			R->EAX(pButtons->HoveredSelected);
-		else
-			R->EAX(0);
-
-		return ApplyToolTip;
-	}
 
 	if (SWSidebarClass::IsEnabled())
 	{

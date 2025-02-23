@@ -11,7 +11,6 @@
 #include "SaveVariablesToFile.h"
 #include "SelectedInfo.h"
 #include "HerosInfo.h"
-#include "FPSNewCounter.h"
 #include "AutoBuilding.h"
 #include "DistributionMode.h"
 #include "ShowCurrentInfo.h"
@@ -37,7 +36,6 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<ToggleDesignatorRangeCommandClass>();
 	MakeCommand<SelectedInfoCommandClass>();
 	MakeCommand<HerosInfoCommandClass>();
-	MakeCommand<FPSNewCounterCommandClass>();
 	MakeCommand<AutoBuildingCommandClass>();
 
 	if (Phobos::Config::AllowDistributionCommand)

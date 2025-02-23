@@ -2,7 +2,6 @@
 
 #include <SessionClass.h>
 #include <VeinholeMonsterClass.h>
-#include <Misc/TacticalButtons.h>
 
 std::unique_ptr<ScenarioExt::ExtData> ScenarioExt::Data = nullptr;
 
@@ -234,8 +233,6 @@ DEFINE_HOOK(0x689669, ScenarioClass_Load_Suffix, 0x6)
 		if (Reader.Expect(ScenarioExt::Canary) && Reader.RegisterChange(buffer))
 			buffer->LoadFromStream(Reader);
 	}
-
-	TacticalButtonsClass::Instance.UpdateSelect = true;
 
 	return 0;
 }

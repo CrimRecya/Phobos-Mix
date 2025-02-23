@@ -9,9 +9,9 @@
 #include <Ext/House/Body.h>
 #include <Ext/WeaponType/Body.h>
 #include <Ext/Scenario/Body.h>
+#include "Ext/Sidebar/SelectedButton/SelectedInfoClass.h"
 #include <Utilities/EnumFunctions.h>
 #include <Utilities/AresFunctions.h>
-#include <Misc/TacticalButtons.h>
 
 #include <WWMouseClass.h>
 #include <TacticalClass.h>
@@ -422,7 +422,7 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 	auto const pOldType = this->TypeExtData->OwnerObject();
 
 	// Update select data
-	TacticalButtonsClass::Instance.UpdateSelect = true;
+	SelectedInfoClass::Instance.ShouldUpdate = true;
 
 	if (this->LaserTrails.size())
 		this->LaserTrails.clear();

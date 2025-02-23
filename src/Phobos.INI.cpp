@@ -51,7 +51,6 @@ bool Phobos::Config::ArtImageSwap = false;
 bool Phobos::Config::ShowPlacementPreview = false;
 bool Phobos::Config::DigitalDisplay_Enable = false;
 bool Phobos::Config::SelectedDisplay_Enable = false;
-bool Phobos::Config::FPSCounter_Enable = false;
 bool Phobos::Config::MessageDisplayInCenter = false;
 bool Phobos::Config::ShowBuildingStatistics = false;
 bool Phobos::Config::AutomaticPlacingBuilding = true;
@@ -94,7 +93,6 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 	Phobos::Config::RealTimeTimers_Adaptive = CCINIClass::INI_RA2MD->ReadBool("Phobos", "RealTimeTimers.Adaptive", false);
 	Phobos::Config::DigitalDisplay_Enable = CCINIClass::INI_RA2MD->ReadBool("Phobos", "DigitalDisplay.Enable", false);
 	Phobos::Config::SelectedDisplay_Enable = CCINIClass::INI_RA2MD->ReadBool("Phobos", "SelectedDisplay.Enable", false);
-	Phobos::Config::FPSCounter_Enable = CCINIClass::INI_RA2MD->ReadBool("Phobos", "FPSCounter.Enable", false);
 	Phobos::Config::MessageDisplayInCenter = CCINIClass::INI_RA2MD->ReadBool("Phobos", "MessageDisplayInCenter", false);
 	Phobos::Config::ShowBuildingStatistics = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ShowBuildingStatistics", false);
 	Phobos::Config::DrawAdjacentBoundary = CCINIClass::INI_RA2MD->ReadBool("Phobos", "DrawAdjacentBoundary", false);
@@ -218,7 +216,7 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 		Phobos::UI::SuperWeaponSidebar_Max =
 			ini_uimd.ReadInteger(SIDEBAR_SECTION, "SuperWeaponSidebar.Max", Phobos::UI::SuperWeaponSidebar_Max);
 
-		const int reserveHeight = 96;
+		const int reserveHeight = 300;
 		const int screenHeight = GameOptionsClass::Instance->ScreenHeight - reserveHeight;
 
 		if (Phobos::UI::SuperWeaponSidebar_Max > 0)

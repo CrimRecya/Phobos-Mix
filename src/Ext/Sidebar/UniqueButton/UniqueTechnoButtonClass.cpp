@@ -6,10 +6,9 @@
 
 #include <Ext/Scenario/Body.h>
 
-UniqueTechnoButtonClass::UniqueTechnoButtonClass(unsigned int id, int x, int y, int width, int height)
-	: ControlClass(id, x, y, width, height, GadgetFlag::LeftPress, false)
+UniqueTechnoButtonClass::UniqueTechnoButtonClass(unsigned int id, int x, int y)
+	: ControlClass(id, x, y, 60, 48, GadgetFlag::LeftPress, false)
 {
-	UniqueTechnoColumnClass::Instance.Buttons[(id - UniqueTechnoButtonClass::StartID)] = this;
 	this->Disabled = !UniqueTechnoColumnClass::Instance.Visible;
 }
 
@@ -23,7 +22,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 	if (vec.empty())
 		return false;
 
-	const int index = this->ID - UniqueTechnoButtonClass::StartID;
+	const int index = this->ID - UniqueTechnoColumnClass::StartID;
 
 	if (index >= static_cast<int>(vec.size()))
 		return false;
@@ -353,7 +352,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 		}
 	}
 
-	if (this->Hovering && !ScenarioClass::Instance->UserInputLocked)
+	if (this->Hovering)
 	{
 		RectangleStruct rect { 0, 0, position.X + 60, position.Y + 48 };
 		DSurface::Composite->DrawRectEx(&rect, &drawRect, Drawing::RGB_To_Int(Drawing::TooltipColor));
@@ -364,11 +363,11 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 
 void UniqueTechnoButtonClass::OnMouseEnter()
 {
-	if (ScenarioClass::Instance->UserInputLocked || !UniqueTechnoColumnClass::Instance.Visible)
+	if (!UniqueTechnoColumnClass::Instance.Visible)
 		return;
 
 	auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
-	const int index = this->ID - UniqueTechnoButtonClass::StartID;
+	const int index = this->ID - UniqueTechnoColumnClass::StartID;
 
 	if (index >= static_cast<int>(vec.size()))
 		return;
@@ -387,11 +386,11 @@ void UniqueTechnoButtonClass::OnMouseLeave()
 
 bool UniqueTechnoButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
 {
-	if (ScenarioClass::Instance->UserInputLocked || !UniqueTechnoColumnClass::Instance.Visible || !(flags & GadgetFlag::LeftPress))
+	if (!UniqueTechnoColumnClass::Instance.Visible || !(flags & GadgetFlag::LeftPress))
 		return false;
 
 	auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
-	const int index = this->ID - UniqueTechnoButtonClass::StartID;
+	const int index = this->ID - UniqueTechnoColumnClass::StartID;
 
 	if (index >= static_cast<int>(vec.size()))
 		return false;
