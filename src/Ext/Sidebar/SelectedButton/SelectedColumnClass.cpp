@@ -81,8 +81,8 @@ void SelectedColumnClass::DrawInfo() const
 	const auto pDisplayTypeExt = TechnoTypeExt::ExtMap.Find(TechnoTypeExt::GetTechnoType(pDisplayType));
 
 	TextPrintType printType = TextPrintType::Center | TextPrintType::Point8;
-	const COLORREF tooltipColor = Drawing::RGB_To_Int(Drawing::TooltipColor);
-	position += Point2D { 128, 5 };
+	COLORREF color = Drawing::RGB_To_Int(Drawing::TooltipColor);
+	position += Point2D { 126, 5 };
 
 	if (const auto name = (pDisplayTypeExt && !pDisplayTypeExt->EnemyUIName.Get().empty()) ? pDisplayTypeExt->EnemyUIName.Get().Text : pDisplayType->UIName)
 	{
@@ -100,14 +100,12 @@ void SelectedColumnClass::DrawInfo() const
 		wchar_t text[0x20] = {0};
 		wcsncpy_s(text, name, length);
 		text[length] = L'\0';
-		DSurface::Composite->DrawTextA(text, &surfaceRect, &position, tooltipColor, 0, printType);
+		DSurface::Composite->DrawTextA(text, &surfaceRect, &position, color, 0, printType);
 	}
 
 	position.Y += 18;
 	{
-		auto color = tooltipColor;
 		int value = -1, maxValue = 0;
-
 		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_UpperType.Get() : DisplayInfoType::Shield;
 		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue);
 
@@ -149,9 +147,7 @@ void SelectedColumnClass::DrawInfo() const
 
 	position.Y += 14;
 	{
-		auto color = tooltipColor;
 		int value = -1, maxValue = 0;
-
 		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_BelowType.Get() : DisplayInfoType::Health;
 		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue);
 
@@ -273,12 +269,7 @@ void SelectedColumnClass::DrawInfo() const
 				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 20 - time);
 			}
 
-			if (pThis->TemporalTargetingMe)
-			{
-				ColorStruct fillColor { 100, 100, 255 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
-			}
-			else if (pThis->AirstrikeTintStage)
+			if (pThis->AirstrikeTintStage)
 			{
 				ColorStruct fillColor { 255, 50, 0 };
 				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
@@ -300,8 +291,17 @@ void SelectedColumnClass::DrawInfo() const
 	{
 		if (!pDisplayTypeExt->UIDescription.Get().empty())
 		{
-			// const auto description = pDisplayTypeExt->UIDescription.Get().Text;
-			// TODO Draw text
+			const auto description = pDisplayTypeExt->UIDescription.Get().Text;
+			auto location = Point2D { pMainCameo->X, pMainCameo->Y };
+			RectangleStruct textRect = Drawing::GetTextDimensions(description, location, 0, 3, 2);
+			location.X += 5;
+			location.Y -= textRect.Height + 5;
+			textRect.Y -= textRect.Height + 5;
+			textRect.Width += 8;
+			ColorStruct textColor { 0, 0, 0 };
+			DSurface::Composite->FillRectTrans(&textRect, &textColor, 40);
+			DSurface::Composite->DrawRect(&textRect, COLOR_WHITE);
+			DSurface::Composite->DrawText(description, &location, COLOR_WHITE);
 		}
 	}
 }
@@ -362,15 +362,32 @@ void SelectedBottomClass::DrawInfo() const
 	}
 
 	auto location = Point2D { this->X + 12, this->Y + 3 };
-	wchar_t fpsBuffer[0x20];
-	swprintf_s(fpsBuffer, L"FPS: %u", fps);
-	DSurface::Composite->DrawText(fpsBuffer, &location, color);
+	{
+		wchar_t buffer[0x20];
+		swprintf_s(buffer, L"FPS: %u", fps);
+		DSurface::Composite->DrawText(buffer, &location, color);
+	}
 
 	location.X += 77;
-	wchar_t avgBuffer[0x20];
-	swprintf_s(avgBuffer, L"Avg: %.2lf", FPSCounter::GetAverageFrameRate());
-	DSurface::Composite->DrawText(avgBuffer, &location, COLOR_WHITE);
+	{
+		wchar_t buffer[0x20];
+		swprintf_s(buffer, L"Avg: %.2lf", FPSCounter::GetAverageFrameRate());
+		DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
+	}
 
-	location.X += 115;
-	// TODO time
+	location.X += 95;
+	{
+		wchar_t buffer[0x20];
+		const auto frame = Unsorted::CurrentFrame();
+		const auto second = frame / 15;
+		const auto minute = second / 60;
+		const auto hour = minute / 60;
+
+		if (hour)
+			swprintf_s(buffer, L"%d:%02d:%02d", hour, minute % 60, second % 60);
+		else
+			swprintf_s(buffer, L"%02d:%02d", minute % 60, second % 60);
+
+		DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
+	}
 }

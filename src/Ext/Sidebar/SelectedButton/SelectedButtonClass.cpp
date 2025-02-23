@@ -1,10 +1,8 @@
 #include "SelectedButtonClass.h"
 #include "SelectedInfoClass.h"
 
-#include <EventClass.h>
-#include <HouseClass.h>
-
 #include <Ext/Side/Body.h>
+#include <Ext/Event/Body.h>
 
 SelectedButtonClass::SelectedButtonClass(unsigned int id, int x, int y)
 	: ControlClass(id, x, y, 30, 30, GadgetFlag::LeftPress, false)
@@ -37,11 +35,29 @@ bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 	{
 		if (this->ID == (SelectedInfoClass::StartID + 1)) // PushButton
 		{
-			// TODO event
+/*			const auto& vec = ObjectClass::CurrentObjects();
+
+			if (vec.Count > 0)
+			{
+				if (const auto pTechno = abstract_cast<TechnoClass*>(ObjectClass::CurrentObjects->Items[0]))
+				{
+					if (pTechno->Owner->IsControlledByCurrentPlayer())
+						; // TODO event
+				}
+			}*/
 		}
 		else // AmmoButton
 		{
-			// TODO event
+			const auto& vec = ObjectClass::CurrentObjects();
+
+			if (vec.Count > 0)
+			{
+				if (const auto pTechno = abstract_cast<TechnoClass*>(ObjectClass::CurrentObjects->Items[0]))
+				{
+					if (pTechno->Owner->IsControlledByCurrentPlayer())
+						EventExt::RaiseManualReloadEvent(pTechno);
+				}
+			}
 		}
 	}
 
@@ -54,43 +70,60 @@ void SelectedButtonClass::DrawInfo() const
 	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
 	const auto pSHP = pSideExt->SelectedInfo_Button.Get();
 
-	if (!pSHP || pSHP->Frames < 6)
+	if (!pSHP || pSHP->Frames < 7)
 		return;
 
-	const auto position = Point2D { this->X + 5, this->Y + 5 };
+	const auto position = Point2D { this->X, this->Y };
+	const auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
+
+	DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
+		pSHP, 0, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+
 	const auto pObject = ObjectClass::CurrentObjects->Items[0];
 	const auto pTechno = abstract_cast<TechnoClass*>(pObject);
 
 	if (this->ID == (SelectedInfoClass::StartID + 1)) // PushButton
 	{
-		int frame = 0;
+		int frame = 1;
 
 		if (false)
-			frame = false ? 2 : 1;
+			frame = false ? 3 : 2;
 
-		RectangleStruct rect { 0, 0, this->X + 25, this->Y + 25 };
 		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 			pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 
 		if (this->Hovering)
 		{
-			// TODO Draw text
+			auto location = Point2D { this->X + this->Width + 10, this->Y + 4 };
+			RectangleStruct drawRect = Drawing::GetTextDimensions(L"AggressiveStance", location, 0, 3, 2);
+			location += Point2D { 5, 2 };
+			drawRect.Width += 8;
+			ColorStruct color { 0, 0, 0 };
+			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
+			DSurface::Composite->DrawRect(&drawRect, COLOR_WHITE);
+			DSurface::Composite->DrawText(L"AggressiveStance", &location, COLOR_WHITE);
 		}
 	}
 	else // AmmoButton
 	{
-		int frame = 3;
+		int frame = 4;
 
 		if (pTechno && TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType())->CanManualReload)
-			frame = pTechno->Ammo ? 5 : 4;
+			frame = pTechno->Ammo ? 6 : 5;
 
-		RectangleStruct rect { 0, 0, position.X + 20, position.Y + 20 };
 		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 			pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 
 		if (this->Hovering)
 		{
-			// TODO Draw text
+			auto location = Point2D { this->X + this->Width + 10, this->Y + 4 };
+			RectangleStruct drawRect = Drawing::GetTextDimensions(L"ManualReloadAmmo", location, 0, 3, 2);
+			location += Point2D { 5, 2 };
+			drawRect.Width += 8;
+			ColorStruct color { 0, 0, 0 };
+			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
+			DSurface::Composite->DrawRect(&drawRect, COLOR_WHITE);
+			DSurface::Composite->DrawText(L"ManualReloadAmmo", &location, COLOR_WHITE);
 		}
 	}
 }
@@ -154,7 +187,16 @@ void SelectedNotButtonClass::DrawInfo() const
 
 		if (this->Hovering)
 		{
-			// TODO Draw text
+			auto location = Point2D { this->X + this->Width + 10, this->Y - 3 };
+			wchar_t buffer[0x20];
+			swprintf_s(buffer, L"PowerMult:%5.2f", mult);
+			RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
+			location += Point2D { 5, 2 };
+			drawRect.Width += 8;
+			ColorStruct color { 0, 0, 0 };
+			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
+			DSurface::Composite->DrawRect(&drawRect, COLOR_WHITE);
+			DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
 		}
 	}
 	else if (this->ID == (SelectedInfoClass::StartID + 5)) // InfoIconD
@@ -177,7 +219,16 @@ void SelectedNotButtonClass::DrawInfo() const
 
 		if (this->Hovering)
 		{
-			// TODO Draw text
+			auto location = Point2D { this->X + this->Width + 10, this->Y - 3 };
+			wchar_t buffer[0x20];
+			swprintf_s(buffer, L"ArmorMult:%5.2f", mult);
+			RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
+			location += Point2D { 5, 2 };
+			drawRect.Width += 8;
+			ColorStruct color { 0, 0, 0 };
+			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
+			DSurface::Composite->DrawRect(&drawRect, COLOR_WHITE);
+			DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
 		}
 	}
 	else // InfoIconS
@@ -200,7 +251,16 @@ void SelectedNotButtonClass::DrawInfo() const
 
 		if (this->Hovering)
 		{
-			// TODO Draw text
+			auto location = Point2D { this->X + this->Width + 10, this->Y - 3 };
+			wchar_t buffer[0x20];
+			swprintf_s(buffer, L"SpeedMult:%5.2f", mult);
+			RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
+			location += Point2D { 5, 2 };
+			drawRect.Width += 8;
+			ColorStruct color { 0, 0, 0 };
+			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
+			DSurface::Composite->DrawRect(&drawRect, COLOR_WHITE);
+			DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
 		}
 	}
 }
