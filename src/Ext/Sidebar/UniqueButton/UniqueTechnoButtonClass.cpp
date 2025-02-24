@@ -142,7 +142,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 				ColorStruct fillColor { 200, 0, 255 };
 				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
 			}
-			else if (pTechno->IsUnderEMP())
+			else if (pTechno->IsUnderEMP() || pTechno->Deactivated)
 			{
 				ColorStruct fillColor { 128, 128, 128 };
 				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
@@ -255,7 +255,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 				ColorStruct fillColor { 200, 0, 255 };
 				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
 			}
-			else if (pSelect->IsUnderEMP())
+			else if (pSelect->IsUnderEMP() || pSelect->Deactivated)
 			{
 				ColorStruct fillColor { 128, 128, 128 };
 				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);

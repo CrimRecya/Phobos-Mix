@@ -1,6 +1,7 @@
 #include "SelectedInfoClass.h"
 
 #include <AircraftClass.h>
+#include <FactoryClass.h>
 #include <SpawnManagerClass.h>
 #include <SuperClass.h>
 #include <MessageListClass.h>
@@ -384,6 +385,96 @@ void SelectedInfoClass::GetValuesForDisplay(TechnoClass* pThis, ObjectTypeClass*
 		value = (value * fakeValue / maxValue);
 		maxValue = fakeValue;
 	}
+}
+
+TechnoStatus SelectedInfoClass::GetCurrentStatus(TechnoClass* pThis)
+{
+	const auto pOwner = pThis->Owner;
+	ObjectTypeClass* pDisguise = nullptr;
+
+	if ((!pOwner || !pOwner->IsAlliedWith(HouseClass::CurrentPlayer())) && !HouseClass::IsCurrentPlayerObserver())
+	{
+		pDisguise = pThis->Disguise;
+
+		if (!abstract_cast<TechnoClass*>(pDisguise))
+			return TechnoStatus::Unknown;
+	}
+
+	const auto mission = pThis->CurrentMission;
+
+	if (pThis->IsUnderEMP() || pThis->Deactivated)
+		return TechnoStatus::Deactive;
+
+	if (pDisguise)
+	{
+		if (const auto pFoot = abstract_cast<FootClass*>(pThis))
+		{
+			if (pFoot->LocomotorSource)
+				return TechnoStatus::Locomotor;
+
+			if (pFoot->Locomotor->Is_Moving_Now())
+				return TechnoStatus::Move;
+		}
+
+		return TechnoStatus::Guard;
+	}
+
+	if (const auto pBuilding = abstract_cast<BuildingClass*>(pThis))
+	{
+		if (!pOwner->IsControlledByHuman())
+		{
+			if (const auto pFactory = pBuilding->Factory)
+			{
+				if (const auto pProduct = pFactory->Object)
+					return TechnoStatus::Produce;
+			}
+		}
+		else if (pBuilding->IsPrimaryFactory)
+		{
+			const auto pBuildingType = pBuilding->Type;
+			const auto factoryType = pBuildingType->Factory;
+
+			if (const auto pFactory = pOwner->GetPrimaryFactory(factoryType, pBuildingType->Naval, BuildCat::DontCare))
+			{
+				if (const auto pProduct = pFactory->Object)
+					return TechnoStatus::Produce;
+			}
+
+			if (factoryType == AbstractType::BuildingType)
+			{
+				if (const auto pFactory = pOwner->Primary_ForDefenses)
+				{
+					if (const auto pProduct = pFactory->Object)
+						return TechnoStatus::Produce;
+				}
+			}
+		}
+	}
+	else if (const auto pFoot = abstract_cast<FootClass*>(pThis))
+	{
+		if (pFoot->LocomotorSource)
+			return TechnoStatus::Locomotor;
+		else if (pFoot->MegaMission == Mission::AttackMove)
+			return TechnoStatus::AttackMove;
+		else if (mission == Mission::Area_Guard && abstract_cast<FootClass*>(pFoot->ArchiveTarget))
+			return TechnoStatus::FollowGuard;
+	}
+
+	switch (mission)
+	{
+	case Mission::ParadropApproach:
+		return TechnoStatus::Paradrop;
+	case Mission::ParadropOverfly:
+	case Mission::SpyplaneApproach:
+	case Mission::SpyplaneOverfly:
+		return TechnoStatus::Move;
+	default:
+		break;
+	}
+
+	const auto status = static_cast<TechnoStatus>(mission);
+
+	return (status > TechnoStatus::None || status < TechnoStatus::Sleep) ? TechnoStatus::Unknown : status;
 }
 
 inline int SelectedInfoClass::GetMaxCameo() const

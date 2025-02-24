@@ -51,17 +51,16 @@ void SelectedColumnClass::DrawInfo() const
 
 	const auto pType = pThis->GetTechnoType();
 	const auto pExt = TechnoExt::ExtMap.Find(pThis);
-	const bool canDisplayAll = pThis->Owner && pThis->Owner->IsAlliedWith(HouseClass::CurrentPlayer()) || HouseClass::IsCurrentPlayerObserver();
 
 	auto getDisplayType = [&]() -> ObjectTypeClass*
 	{
-		if (!canDisplayAll)
+		const auto pOwner = pThis->Owner;
+
+		if ((!pOwner || !pOwner->IsAlliedWith(HouseClass::CurrentPlayer())) && !HouseClass::IsCurrentPlayerObserver())
 		{
 			if (pThis->IsDisguisedAs(HouseClass::CurrentPlayer()))
 			{
-				const auto pDisguiseType = TechnoTypeExt::GetTechnoType(pThis->Disguise);
-
-				if (const auto pDisguiseTypeExt = TechnoTypeExt::ExtMap.Find(pDisguiseType))
+				if (const auto pDisguiseTypeExt = TechnoTypeExt::ExtMap.Find(TechnoTypeExt::GetTechnoType(pThis->Disguise)))
 				{
 					if (const auto pFakeType = pDisguiseTypeExt->FakeOf.Get())
 						return pFakeType;
@@ -187,6 +186,13 @@ void SelectedColumnClass::DrawInfo() const
 		DSurface::Composite->DrawTextA(L"/", &surfaceRect, &position, color, 0, printType);
 	}
 
+	position += Point2D { -20, 22 };
+	{
+		const auto status = static_cast<int>(SelectedInfoClass::GetCurrentStatus(pThis));
+		const auto text = GeneralUtils::LoadStringUnlessMissing(SelectedInfoClass::StatusEntry[status], SelectedInfoClass::Status[status]);
+		DSurface::Composite->DrawTextA(text, &surfaceRect, &position, COLOR_WHITE, 0, printType);
+	}
+
 	const auto pMainCameo = SelectedInfoClass::Instance.MainCameo;
 
 	if (!pMainCameo)
@@ -206,84 +212,83 @@ void SelectedColumnClass::DrawInfo() const
 		}
 		else
 		{
-			surfaceRect = RectangleStruct { 0, 0, pMainCameo->X + pMainCameo->Width, pMainCameo->Y + pMainCameo->Height};
+			position = Point2D { pMainCameo->X, pMainCameo->Y };
+			const auto cameoRect = RectangleStruct { 0, 0, pMainCameo->X + pMainCameo->Width, pMainCameo->Y + pMainCameo->Height};
 			const auto pPal = pDisplayTypeExt ? pDisplayTypeExt->CameoPal.GetOrDefaultConvert(FileSystem::CAMEO_PAL) : FileSystem::CAMEO_PAL();
-			DSurface::Composite->DrawSHP(pPal, pSHP, 0, &position, &surfaceRect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+			DSurface::Composite->DrawSHP(pPal, pSHP, 0, &position, &cameoRect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 		}
 	}
 
-	// TODO status
-
-	if (canDisplayAll)
+	if (pThis->IsIronCurtained())
 	{
-		if (pThis->IsIronCurtained())
+		const auto timer = &pThis->IronCurtainTimer;
+		const auto ratio = static_cast<double>(timer->GetTimeLeft()) / timer->TimeLeft;
+		drawRect.Width = static_cast<int>(drawRect.Width * ratio + 0.5);
+		ColorStruct fillColor { 50, 50, 50 };
+		DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 20);
+	}
+	else
+	{
+		const auto pRules = RulesClass::Instance();
+		const auto ratio = pThis->GetHealthPercentage();
+		int time = Unsorted::CurrentFrame - pExt->LastHurtFrame;
+
+		if (ratio < pRules->ConditionRed)
 		{
-			ColorStruct fillColor { 50, 50, 50 };
-			DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 20);
+			ColorStruct fillColor { 255, 0, 0 };
+			int trans = 40 - time;
+
+			if (trans < 0)
+			{
+				const int round = time % 60;
+				trans = ((round <= 20) ? 0 : ((round <= 40) ? (round - 20) : (60 - round)));
+			}
+
+			if (trans > 0)
+				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, trans);
 		}
-		else
+		else if (ratio < pRules->ConditionYellow)
 		{
-			const auto pRules = RulesClass::Instance();
-			const auto ratio = pThis->GetHealthPercentage();
-			int time = Unsorted::CurrentFrame - pExt->LastHurtFrame;
+			ColorStruct fillColor { 255, 0, 0 };
+			int trans = 30 - time;
 
-			if (ratio < pRules->ConditionRed)
+			if (trans < 0)
 			{
-				ColorStruct fillColor { 255, 0, 0 };
-				int trans = 40 - time;
-
-				if (trans < 0)
-				{
-					const int round = time % 60;
-					trans = ((round <= 20) ? 0 : ((round <= 40) ? (round - 20) : (60 - round)));
-				}
-
-				if (trans > 0)
-					DSurface::Composite->FillRectTrans(&drawRect, &fillColor, trans);
-			}
-			else if (ratio < pRules->ConditionYellow)
-			{
-				ColorStruct fillColor { 255, 0, 0 };
-				int trans = 30 - time;
-
-				if (trans < 0)
-				{
-					const int round = time % 160;
-					trans = ((round <= 140) ? 0 : ((round <= 150) ? (round - 140) : (160 - round)));
-				}
-
-				if (trans > 0)
-					DSurface::Composite->FillRectTrans(&drawRect, &fillColor, trans);
-			}
-			else if (time < 20)
-			{
-				ColorStruct fillColor { 255, 0, 0 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, (20 - time));
+				const int round = time % 160;
+				trans = ((round <= 140) ? 0 : ((round <= 150) ? (round - 140) : (160 - round)));
 			}
 
-			time = Unsorted::CurrentFrame - pThis->LastFireBulletFrame;
+			if (trans > 0)
+				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, trans);
+		}
+		else if (time < 20)
+		{
+			ColorStruct fillColor { 255, 0, 0 };
+			DSurface::Composite->FillRectTrans(&drawRect, &fillColor, (20 - time));
+		}
 
-			if (time < 20)
-			{
-				ColorStruct fillColor { 255, 255, 0 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 20 - time);
-			}
+		time = Unsorted::CurrentFrame - pThis->LastFireBulletFrame;
 
-			if (pThis->AirstrikeTintStage)
-			{
-				ColorStruct fillColor { 255, 50, 0 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
-			}
-			else if (pThis->DrainingMe || pThis->LocomotorSource)
-			{
-				ColorStruct fillColor { 200, 0, 255 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
-			}
-			else if (pThis->IsUnderEMP())
-			{
-				ColorStruct fillColor { 128, 128, 128 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
-			}
+		if (time < 20)
+		{
+			ColorStruct fillColor { 255, 255, 0 };
+			DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 20 - time);
+		}
+
+		if (pThis->AirstrikeTintStage)
+		{
+			ColorStruct fillColor { 255, 50, 0 };
+			DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
+		}
+		else if (pThis->DrainingMe || pThis->LocomotorSource)
+		{
+			ColorStruct fillColor { 200, 0, 255 };
+			DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
+		}
+		else if (pThis->IsUnderEMP() || pThis->Deactivated)
+		{
+			ColorStruct fillColor { 128, 128, 128 };
+			DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
 		}
 	}
 
@@ -377,13 +382,18 @@ void SelectedBottomClass::DrawInfo() const
 
 	location.X += 95;
 	{
-		wchar_t buffer[0x20];
-		const auto frame = Unsorted::CurrentFrame();
-		const auto second = frame / 15;
-		const auto minute = second / 60;
-		const auto hour = minute / 60;
+		const auto& timer = ScenarioClass::Instance->ElapsedTimer;
+		auto time = timer.TimeLeft;
 
-		if (hour)
+		if (timer.StartTime != -1)
+			time += SystemTimer::GetTime() - timer.StartTime;
+
+		const auto second = time / 60;
+		const auto minute = second / 60;
+
+		wchar_t buffer[0x20];
+
+		if (const auto hour = minute / 60)
 			swprintf_s(buffer, L"%d:%02d:%02d", hour, minute % 60, second % 60);
 		else
 			swprintf_s(buffer, L"%02d:%02d", minute % 60, second % 60);
