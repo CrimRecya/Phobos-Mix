@@ -30,15 +30,15 @@ public:
 	{
 		char DataBuffer[104];
 
-		struct ToggleAggressiveStance
-		{
-			TargetClass Who;
-		} ToggleAggressiveStance;
-
 		struct ManualReloadEvent
 		{
 			TargetClass Who;
 		} ManualReloadEvent;
+
+		struct ToggleAggressiveStance
+		{
+			TargetClass Who;
+		} ToggleAggressiveStance;
 	};
 
 	bool AddEvent();
