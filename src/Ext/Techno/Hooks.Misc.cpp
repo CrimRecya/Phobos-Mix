@@ -145,7 +145,7 @@ DEFINE_HOOK(0x6B79BF, SpawnManagerClass_AI_CheckRepairDone, 0x5)
 	if (!pThis->Target)
 		return ResetTarget;
 
-	if (pThis->Owner->CombatDamage(-1) < 0)
+	if (TechnoTypeExt::ExtMap.Find(pThis->Owner->GetTechnoType())->Spawner_ReturnOnRepairDone)
 	{
 		auto pTarget = abstract_cast<TechnoClass*>(pThis->Target);
 
