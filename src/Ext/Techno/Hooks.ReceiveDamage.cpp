@@ -28,6 +28,7 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 	const auto pTypeExt = pExt->TypeExtData;
 	const auto pType = pTypeExt->OwnerObject();
 	const auto pWHExt = WarheadTypeExt::ExtMap.Find(args->WH);
+
 	const auto pSourceHouse = args->SourceHouse;
 	const auto pTargetHouse = pThis->Owner;
 

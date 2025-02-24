@@ -167,9 +167,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->TemporalLifeDisplay_Buildings_Pips.Read(exINI, GameStrings::AudioVisual, "TemporalLifeDisplay.Buildings.Pips");
 	this->ProgressDisplay_Others_PipsShape.Read(exINI, GameStrings::AudioVisual, "ProgressDisplay.Others.PipsShape");
 	this->ProgressDisplay_Buildings_PipsShape.Read(exINI, GameStrings::AudioVisual, "ProgressDisplay.Buildings.PipsShape");
-	this->DamageOwnerMultiplier.Read(exINI, GameStrings::CombatDamage, "DamageOwnerMultiplier");
-	this->DamageAlliesMultiplier.Read(exINI, GameStrings::CombatDamage, "DamageAlliesMultiplier");
-	this->DamageEnemiesMultiplier.Read(exINI, GameStrings::CombatDamage, "DamageEnemiesMultiplier");
 	this->ExtendedAircraftMissions.Read(exINI, GameStrings::General, "ExtendedAircraftMissions");
 	this->CheckExtraBaseNormal.Read(exINI, GameStrings::General, "CheckExtraBaseNormal");
 	this->Cameo_AlwaysExist.Read(exINI, GameStrings::AudioVisual, "Cameo.AlwaysExist");
@@ -295,6 +292,10 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->AttackMove_IgnoreWeaponCheck.Read(exINI, GameStrings::General, "AttackMove.IgnoreWeaponCheck");
 	this->AttackMove_StopWhenTargetAcquired.Read(exINI, GameStrings::General, "AttackMove.StopWhenTargetAcquired");
 
+	this->DamageOwnerMultiplier.Read(exINI, GameStrings::CombatDamage, "DamageOwnerMultiplier");
+	this->DamageAlliesMultiplier.Read(exINI, GameStrings::CombatDamage, "DamageAlliesMultiplier");
+	this->DamageEnemiesMultiplier.Read(exINI, GameStrings::CombatDamage, "DamageEnemiesMultiplier");
+
 	this->AircraftLevelLightMultiplier.Read(exINI, GameStrings::AudioVisual, "AircraftLevelLightMultiplier");
 	this->JumpjetLevelLightMultiplier.Read(exINI, GameStrings::AudioVisual, "JumpjetLevelLightMultiplier");
 	this->JumpjetTilt.Read(exINI, GameStrings::AudioVisual, "JumpjetTilt");
@@ -321,7 +322,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->UseFixedVoxelLighting.Read(exINI, GameStrings::AudioVisual, "UseFixedVoxelLighting");
 
-	this->NoTurret_EarlyTurnToTarget.Read(exINI, GameStrings::General, "NoTurret.EarlyTurnToTarget");
+	this->NoTurret_TrackTarget.Read(exINI, GameStrings::General, "NoTurret.TrackTarget");
 
 	this->GatherWhenMCVDeploy.Read(exINI, GameStrings::General, "GatherWhenMCVDeploy");
 	this->AIFireSale.Read(exINI, GameStrings::General, "AIFireSale");
@@ -491,9 +492,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->TemporalLifeDisplay_Buildings_Pips)
 		.Process(this->ProgressDisplay_Others_PipsShape)
 		.Process(this->ProgressDisplay_Buildings_PipsShape)
-		.Process(this->DamageOwnerMultiplier)
-		.Process(this->DamageAlliesMultiplier)
-		.Process(this->DamageEnemiesMultiplier)
 		.Process(this->ExtendedAircraftMissions)
 		.Process(this->CheckExtraBaseNormal)
 		.Process(this->Cameo_AlwaysExist)
@@ -611,6 +609,9 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->DistributeTargetingFrame_AIOnly)
 		.Process(this->AttackMove_IgnoreWeaponCheck)
 		.Process(this->AttackMove_StopWhenTargetAcquired)
+		.Process(this->DamageOwnerMultiplier)
+		.Process(this->DamageAlliesMultiplier)
+		.Process(this->DamageEnemiesMultiplier)
 		.Process(this->AircraftLevelLightMultiplier)
 		.Process(this->JumpjetLevelLightMultiplier)
 		.Process(this->JumpjetTilt)
@@ -631,7 +632,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->EndDistributionModeSound)
 		.Process(this->AddDistributionModeCommandSound)
 		.Process(this->UseFixedVoxelLighting)
-		.Process(this->NoTurret_EarlyTurnToTarget)
+		.Process(this->NoTurret_TrackTarget)
 		.Process(this->GatherWhenMCVDeploy)
 		.Process(this->EnableAggressiveStance)
 		.Process(this->AIFireSale)

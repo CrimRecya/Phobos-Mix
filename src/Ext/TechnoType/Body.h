@@ -188,7 +188,7 @@ public:
 		Nullable<bool> Insignia_ShowEnemy;
 		std::vector<Promotable<SHPStruct*>> Insignia_Weapon;
 		std::vector<Promotable<int>> InsigniaFrame_Weapon;
-		std::vector<Vector3D<int>> InsigniaFrames_Weapon;
+		std::vector<Valueable<Vector3D<int>>> InsigniaFrames_Weapon;
 
 		Nullable<bool> JumpjetTilt;
 		Valueable<double> JumpjetTilt_ForwardAccelFactor;
@@ -287,7 +287,8 @@ public:
 		Valueable<bool> CanManualReload_ResetROF;
 		Valueable<WarheadTypeClass*> CanManualReload_DetonateWarhead;
 		Valueable<int> CanManualReload_DetonateConsume;
-		Nullable<bool> NoTurret_EarlyTurnToTarget;
+
+		Nullable<bool> NoTurret_TrackTarget;
 
 		Valueable<int> Spawner_RecycleRange;
 		Valueable<AnimTypeClass*> Spawner_RecycleAnim;
@@ -634,7 +635,8 @@ public:
 			, CanManualReload_ResetROF { true }
 			, CanManualReload_DetonateWarhead {}
 			, CanManualReload_DetonateConsume { 0 }
-			, NoTurret_EarlyTurnToTarget {}
+
+			, NoTurret_TrackTarget {}
 
 			, Spawner_RecycleRange { -1 }
 			, Spawner_RecycleAnim { nullptr }

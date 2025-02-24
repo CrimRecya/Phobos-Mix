@@ -276,6 +276,7 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Particle_AlphaImageIsLightFlash.Read(exINI, pSection, "Particle.AlphaImageIsLightFlash");
 
 	this->MergeBuildingDamage.Read(exINI, pSection, "MergeBuildingDamage");
+
 	this->DamageOwnerMultiplier.Read(exINI, pSection, "DamageOwnerMultiplier");
 	this->DamageAlliesMultiplier.Read(exINI, pSection, "DamageAlliesMultiplier");
 	this->DamageEnemiesMultiplier.Read(exINI, pSection, "DamageEnemiesMultiplier");
@@ -527,6 +528,7 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->RemoveInflictedLocomotor)
 
 		.Process(this->MergeBuildingDamage)
+
 		.Process(this->DamageOwnerMultiplier)
 		.Process(this->DamageAlliesMultiplier)
 		.Process(this->DamageEnemiesMultiplier)

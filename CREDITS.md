@@ -396,21 +396,22 @@ This page lists all the individual contributions to the project by their author.
   - Fix for sidebar not updating queued unit numbers when on hold
   - New Parabola trajectory
   - Enhanced Bombard trajectory
-  - Technos will maintain a suitable distance after firing
-  - Several new Infotypes, no display in specific status and a new single frame display method
+  - No turret unit turn to the target
+  - Damage multiplier for different houses
   - Projectile subject to ground check before firing
-  - Technos recount current burst index when change the firing weapon
   - New Disperse trajectory
   - New Engrave trajectory
   - New Tracing trajectory
+  - Technos recount current burst index when change the firing weapon
+  - Technos will maintain a suitable distance after firing
+  - Units will not always stuck in the factory
+  - Jumpjet Climbing Logic Enhancement
+  - Several new Infotypes, no display in specific status and a new single frame display method
   - Display factories, superweapons, iron curtain and temporal progress on specific technos
-  - Damage multiplier for different houses
   - Customized Vehicle Turret Rotation
-  - Jumpjet climbing logic enhancement
   - Building placing and deploying logic enhancement
   - Techno base normal and new placing grids
   - Grey cameo preview and cameo overlays
-  - Units will not always stuck in the factory
   - Optimize aircrafts stop action and allow they using area guard and attack moving
   - Exclusive Sidebar for Superweapons
   - Observer sidebar in skirmish game mode
@@ -419,7 +420,6 @@ This page lists all the individual contributions to the project by their author.
   - Aggressive attack move mission
   - No rearm and reload in EMP or temporal
   - Manually empty and reload ammo
-  - No turret unit turn to the target
   - Sell or undeploy building on impact
   - Extended gattling rate down logic
   - Allow merging AOE damage to buildings into one
@@ -455,6 +455,7 @@ This page lists all the individual contributions to the project by their author.
   - Weapon range finding in cylinder
   - Units are now unable to kick out from a factory that is in construction process
   - No turret unit turn to the target
+  - Units are now unable to kick out from a factory that is in construction process
 - **tyuah8** - Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix
 - **Aephiex**
   - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory

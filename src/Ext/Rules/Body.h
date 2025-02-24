@@ -123,9 +123,6 @@ public:
 		Valueable<int> TemporalLifeDisplay_Buildings_Pips;
 		Valueable<SHPStruct*> ProgressDisplay_Others_PipsShape;
 		Valueable<SHPStruct*> ProgressDisplay_Buildings_PipsShape;
-		Valueable<double> DamageOwnerMultiplier;
-		Valueable<double> DamageAlliesMultiplier;
-		Valueable<double> DamageEnemiesMultiplier;
 		Valueable<bool> ExtendedAircraftMissions;
 		Valueable<bool> CheckExtraBaseNormal;
 		Valueable<bool> Cameo_AlwaysExist;
@@ -255,6 +252,10 @@ public:
 		Valueable<bool> AttackMove_IgnoreWeaponCheck;
 		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 
+		Valueable<double> DamageOwnerMultiplier;
+		Valueable<double> DamageAlliesMultiplier;
+		Valueable<double> DamageEnemiesMultiplier;
+
 		Valueable<double> AircraftLevelLightMultiplier;
 		Valueable<double> JumpjetLevelLightMultiplier;
 
@@ -278,6 +279,7 @@ public:
 		Nullable<Vector3D<float>> VoxelLightSource;
 		// Nullable<Vector3D<float>> VoxelShadowLightSource;
 		Valueable<bool> UseFixedVoxelLighting;
+		Valueable<bool> NoTurret_TrackTarget;
 
 		Valueable<bool> NoTurret_EarlyTurnToTarget;
 
@@ -386,9 +388,6 @@ public:
 			, TemporalLifeDisplay_Buildings_Pips { 5 }
 			, ProgressDisplay_Others_PipsShape { FileSystem::PIPS_SHP }
 			, ProgressDisplay_Buildings_PipsShape { FileSystem::PIPS_SHP }
-			, DamageOwnerMultiplier { 1.0 }
-			, DamageAlliesMultiplier { 1.0 }
-			, DamageEnemiesMultiplier { 1.0 }
 			, ExtendedAircraftMissions { false }
 			, CheckExtraBaseNormal { false }
 			, Cameo_AlwaysExist { false }
@@ -509,6 +508,10 @@ public:
 			, DistributeTargetingFrame_AIOnly { true }
 			, AttackMove_IgnoreWeaponCheck { false }
 			, AttackMove_StopWhenTargetAcquired {}
+
+			, DamageOwnerMultiplier { 1.0 }
+			, DamageAlliesMultiplier { 1.0 }
+			, DamageEnemiesMultiplier { 1.0 }
 			, AircraftLevelLightMultiplier { 1.0 }
 			, JumpjetLevelLightMultiplier { 0.0 }
 			, JumpjetTilt { false }
@@ -529,7 +532,7 @@ public:
 			, EndDistributionModeSound { -1 }
 			, AddDistributionModeCommandSound { -1 }
 			, UseFixedVoxelLighting { false }
-			, NoTurret_EarlyTurnToTarget { false }
+			, NoTurret_TrackTarget { false }
 			, GatherWhenMCVDeploy { true }
 			, AIFireSale { true }
 			, AIFireSaleDelay { 0 }
