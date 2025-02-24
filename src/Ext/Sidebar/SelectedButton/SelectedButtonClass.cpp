@@ -35,16 +35,16 @@ bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 	{
 		if (this->ID == (SelectedInfoClass::StartID + 1)) // PushButton
 		{
-/*			const auto& vec = ObjectClass::CurrentObjects();
+			const auto& vec = ObjectClass::CurrentObjects();
 
 			if (vec.Count > 0)
 			{
 				if (const auto pTechno = abstract_cast<TechnoClass*>(ObjectClass::CurrentObjects->Items[0]))
 				{
 					if (pTechno->Owner->IsControlledByCurrentPlayer())
-						; // TODO event
+						EventExt::RaiseToggleAggressiveStance(pTechno);
 				}
-			}*/
+			}
 		}
 		else // AmmoButton
 		{

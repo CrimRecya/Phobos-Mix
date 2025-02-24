@@ -511,12 +511,28 @@ bool TechnoExt::ExtData::GetAggressiveStance() const
 void TechnoExt::ExtData::ToggleAggressiveStance()
 {
 	this->AggressiveStance = !this->AggressiveStance;
+	const auto pThis = this->OwnerObject();
 
 	if (!this->AggressiveStance)
 	{
-		const auto pThis = this->OwnerObject();
+		pThis->QueueVoice(this->TypeExtData->VoiceExitAggressiveStance.Get());
 		pThis->QueueMission(Mission::Guard, false);
 		pThis->SetTarget(nullptr);
+	}
+	else
+	{
+		const auto pTechnoType = this->TypeExtData->OwnerObject();
+		int voiceIndex = this->TypeExtData->VoiceEnterAggressiveStance.Get();
+
+		if (voiceIndex < 0)
+		{
+			const auto& voiceList = pTechnoType->VoiceAttack.Count ? pTechnoType->VoiceAttack : pTechnoType->VoiceMove;
+
+			if (const auto count = voiceList.Count)
+				voiceIndex = voiceList.GetItem(Randomizer::Global().Random() % count);
+		}
+
+		pThis->QueueVoice(voiceIndex);
 	}
 }
 

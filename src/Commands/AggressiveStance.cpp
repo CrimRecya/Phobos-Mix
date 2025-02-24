@@ -70,10 +70,7 @@ void AggressiveStanceClass::Execute(WWKey eInput) const
 		if (isAllSelectedUnitAggressiveStance)
 		{
 			for (const auto& pTechno : TechnoVectorAggressive)
-			{
 				EventExt::RaiseToggleAggressiveStance(pTechno);
-				pTechno->QueueVoice(TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType())->VoiceExitAggressiveStance.Get());
-			}
 
 			wchar_t buffer[0x100];
 			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:AGGRESSIVE_STANCE_OFF", L"%i unit(s) ceased Aggressive Stance."), TechnoVectorAggressive.size());
@@ -82,21 +79,7 @@ void AggressiveStanceClass::Execute(WWKey eInput) const
 		else
 		{
 			for (const auto& pTechno : TechnoVectorNonAggressive)
-			{
 				EventExt::RaiseToggleAggressiveStance(pTechno);
-				const auto pTechnoType = pTechno->GetTechnoType();
-				int voiceIndex = TechnoTypeExt::ExtMap.Find(pTechnoType)->VoiceEnterAggressiveStance.Get();
-
-				if (voiceIndex < 0)
-				{
-					const auto& voiceList = pTechnoType->VoiceAttack.Count ? pTechnoType->VoiceAttack : pTechnoType->VoiceMove;
-
-					if (const auto count = voiceList.Count)
-						voiceIndex = voiceList.GetItem(Randomizer::Global().Random() % count);
-				}
-
-				pTechno->QueueVoice(voiceIndex);
-			}
 
 			wchar_t buffer[0x100];
 			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:AGGRESSIVE_STANCE_ON", L"%i unit(s) entered Aggressive Stance."), TechnoVectorNonAggressive.size());
