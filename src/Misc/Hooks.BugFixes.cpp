@@ -1289,6 +1289,15 @@ DEFINE_HOOK(0x719F17, EndPiggyback_PowerOn, 0x5) // Teleport
 	return 0;
 }
 
+// Fix the bug that Bombers can't get EXP if they cloak before the missiles hit the target.
+// Add checks for bRemoved.
+DEFINE_HOOK(0x7077FD, TechnoClass_PointerExpired_SpawnOwnerFix, 0x6)
+{
+	GET_STACK(bool, removed, STACK_OFFSET(0x20, 0x8));
+	// Skip the reset for SpawnOwner if !removed.
+	return removed ? 0 : 0x707803;
+}
+
 // Suppress Ares' swizzle warning
 size_t __fastcall HexStr2Int_replacement(const char* str)
 {
