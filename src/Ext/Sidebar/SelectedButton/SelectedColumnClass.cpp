@@ -106,7 +106,7 @@ void SelectedColumnClass::DrawInfo() const
 	{
 		int value = -1, maxValue = 0;
 		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_UpperType.Get() : DisplayInfoType::Shield;
-		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue);
+		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue); // TODO Divisor
 
 		const bool valid = value >= 0 && maxValue > 0;
 		const auto ratio = valid ? static_cast<double>(value) / maxValue : 1.0;
@@ -148,7 +148,7 @@ void SelectedColumnClass::DrawInfo() const
 	{
 		int value = -1, maxValue = 0;
 		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_BelowType.Get() : DisplayInfoType::Health;
-		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue);
+		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue); // TODO Divisor
 
 		const bool valid = value >= 0 && maxValue > 0;
 		const auto ratio = valid ? static_cast<double>(value) / maxValue : 1.0;

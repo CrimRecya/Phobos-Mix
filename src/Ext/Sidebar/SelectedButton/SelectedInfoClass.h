@@ -107,7 +107,7 @@ public:
 	SelectedBottomClass* MainBottom { nullptr };
 
 	SelectedCameoClass* Cameos[20] { };
-	std::vector<SelectRecordStruct> CurrentSelectCameo { };
+	std::vector<SelectRecordStruct> CurrentSelectCameo { }; // TODO Scroll
 	int Hovering { -1 };
 	int MaxCameo { 0 };
 

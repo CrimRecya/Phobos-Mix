@@ -68,7 +68,7 @@ bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 void SelectedButtonClass::DrawInfo() const
 {
 	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
-	const auto pSHP = pSideExt->SelectedInfo_Button.Get();
+	const auto pSHP = pSideExt->SelectedInfo_Button.Get(); // TODO Per techno
 
 	if (!pSHP || pSHP->Frames < 7)
 		return;
