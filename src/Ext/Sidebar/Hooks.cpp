@@ -1,9 +1,18 @@
 #include "Body.h"
+#include "SWSidebar/SWSidebarClass.h"
+#include "UniqueButton/UniqueTechnoColumnClass.h"
+#include "SelectedButton/SelectedInfoClass.h"
 
 #include <HouseClass.h>
 #include <FactoryClass.h>
 #include <FileSystem.h>
+
 #include <Ext/Side/Body.h>
+#include <Ext/House/Body.h>
+#include <Ext/TechnoType/Body.h>
+#include <Ext/Scenario/Body.h>
+#include <Utilities/Macro.h>
+#include <Utilities/ShapeTextPrinter.h>
 
 DEFINE_HOOK(0x6A593E, SidebarClass_InitForHouse_AdditionalFiles, 0x5)
 {
@@ -97,3 +106,171 @@ DEFINE_HOOK(0x72FCB5, InitSideRectangles_CenterBackground, 0x5)
 
 	return 0;
 }
+
+#pragma region DrawGreyCameoExtraCover
+
+DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
+{
+	GET(const bool, greyCameo, EBX);
+	GET(const int, destX, ESI);
+	GET(const int, destY, EBP);
+	GET_STACK(const RectangleStruct, boundingRect, STACK_OFFSET(0x48C, -0x3E0));
+	GET_STACK(TechnoTypeClass* const, pType, STACK_OFFSET(0x48C, -0x458));
+
+	const auto position = Point2D { destX + 30, destY + 24 };
+	const auto pRulesExt = RulesExt::Global();
+	const auto& frames = pRulesExt->Cameo_OverlayFrames;
+	const auto frameSize = frames.size();
+
+	if (greyCameo && frameSize > 2) // Only draw extras over grey cameos
+	{
+		auto frame = frames[2];
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+
+		if (frameSize > 3 && pTypeExt && pTypeExt->IsGreyCameoForCurrentPlayer)
+		{
+			if (const auto CameoPCX = pTypeExt->GreyCameoPCX.GetSurface())
+			{
+				auto drawRect = RectangleStruct { destX, destY, 60, 48 };
+				PCX::Instance->BlitToSurface(&drawRect, DSurface::Sidebar, CameoPCX);
+			}
+
+			frame = frames[3];
+		}
+
+		if (frame >= 0)
+		{
+			DSurface::Sidebar->DrawSHP(
+				pRulesExt->Cameo_OverlayPalette.GetOrDefaultConvert(FileSystem::PALETTE_PAL),
+				pRulesExt->Cameo_OverlayShapes,
+				frame,
+				&position,
+				&boundingRect,
+				BlitterFlags(0x600),
+				0, 0,
+				ZGradient::Ground,
+				1000, 0, 0, 0, 0, 0);
+		}
+	}
+
+	if (const auto pBuildingType = abstract_cast<BuildingTypeClass*>(pType)) // Only count owned buildings
+	{
+		const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType);
+
+		if (Phobos::Config::AutomaticPlacingBuilding && frameSize > 1 && frames[1] >= 0 && !greyCameo && pTypeExt->AutoBuilding.Get(RulesExt::Global()->AutoBuilding))
+		{
+			DSurface::Sidebar->DrawSHP(
+				pRulesExt->Cameo_OverlayPalette.GetOrDefaultConvert(FileSystem::PALETTE_PAL),
+				pRulesExt->Cameo_OverlayShapes,
+				frames[1],
+				&position,
+				&boundingRect,
+				BlitterFlags(0x600),
+				0, 0,
+				ZGradient::Ground,
+				1000, 0, 0, 0, 0, 0);
+		}
+
+		const bool statistics = Phobos::Config::ShowBuildingStatistics
+			&& pTypeExt->Cameo_ShouldCount.Get(pBuildingType->BuildCat != BuildCat::Combat || pBuildingType->BuildLimit != INT_MAX);
+
+		if ((frameSize && frames[0] >= 0) || statistics)
+		{
+			if (const auto count = HouseExt::CountOwnedPresentWithDeployOrUpgrade(HouseClass::CurrentPlayer(), pBuildingType, true))
+			{
+				if (frameSize && frames[0] >= 0)
+				{
+					DSurface::Sidebar->DrawSHP(
+						pRulesExt->Cameo_OverlayPalette.GetOrDefaultConvert(FileSystem::PALETTE_PAL),
+						pRulesExt->Cameo_OverlayShapes,
+						frames[0],
+						&position,
+						&boundingRect,
+						BlitterFlags(0x600),
+						0, 0,
+						ZGradient::Ground,
+						1000, 0, 0, 0, 0, 0);
+				}
+
+				if (statistics)
+				{
+					GET_STACK(RectangleStruct, surfaceRect, STACK_OFFSET(0x48C, -0x438));
+
+					const COLORREF color = Drawing::RGB_To_Int(Drawing::TooltipColor);
+					const TextPrintType printType = TextPrintType::Background | TextPrintType::FullShadow | TextPrintType::Point8;
+					auto textPosition = Point2D { destX, destY + 1 };
+
+					wchar_t text[0x20];
+					swprintf_s(text, L"%d", count);
+					DSurface::Sidebar->DrawTextA(text, &surfaceRect, &textPosition, color, 0, printType);
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
+#pragma region ObserverDiplomacyHouses
+
+DEFINE_HOOK(0x6A557A, SidebarClass_Init_IO_RecordDiplomacyHouses1, 0x5)
+{
+	enum { SkipGameCode = 0x6A5830, ContinueGameCode = 0x6A558D };
+
+	const GameMode mode = SessionClass::Instance->GameMode;
+
+	return (mode == GameMode::Skirmish || mode == GameMode::LAN || mode == GameMode::Internet) ? ContinueGameCode : SkipGameCode;
+}
+
+DEFINE_HOOK(0x6A55BF, SidebarClass_Init_IO_RecordDiplomacyHouses2, 0x7)
+{
+	enum { ContinueLoop = 0x6A55CF, BreakLoop = 0x6A55C8 };
+
+	GET(HouseClass*, pHouse, EAX);
+
+	return (pHouse->IsHumanPlayer || HouseClass::CurrentPlayer == HouseClass::Observer) ? BreakLoop : ContinueLoop;
+}
+
+DEFINE_HOOK(0x6A57F6, SidebarClass_Init_IO_RecordDiplomacyHouses3, 0x7)
+{
+	enum { ContinueLoop = 0x6A580E, MeetCondition = 0x6A57FF };
+
+	GET(HouseClass*, pHouse, EAX);
+
+	return (pHouse->IsHumanPlayer || HouseClass::CurrentPlayer == HouseClass::Observer) ? MeetCondition : ContinueLoop;
+}
+
+#pragma endregion
+
+#pragma region NewButtonsRelated
+
+DEFINE_HOOK(0x692419, DisplayClass_ProcessClickCoords_SkipOnNewButtons, 0x7)
+{
+	enum { DoNothing = 0x6925FC };
+
+	return (SWSidebarClass::IsEnabled() && SWSidebarClass::Instance.CurrentColumn
+		|| SWSidebarClass::Instance.ToggleButton && SWSidebarClass::Instance.ToggleButton->IsHovering
+		|| UniqueTechnoColumnClass::Instance.Hovering >= 0
+		|| SelectedInfoClass::Instance.IsHovering)
+		? DoNothing : 0;
+}
+
+DEFINE_HOOK(0x6A5082, SidebarClass_InitClear_InitializeNewButtons, 0x5)
+{
+	SWSidebarClass::Instance.InitClear();
+	UniqueTechnoColumnClass::Instance.InitClear();
+	SelectedInfoClass::Instance.InitClear();
+	return 0;
+}
+
+DEFINE_HOOK(0x6A5839, SidebarClass_InitIO_InitializeNewButtons, 0x5)
+{
+	SWSidebarClass::Instance.InitIO();
+	UniqueTechnoColumnClass::Instance.InitIO();
+	SelectedInfoClass::Instance.InitIO();
+	return 0;
+}
+
+#pragma endregion

@@ -1,7 +1,6 @@
 #include "Body.h"
 
 #include <AircraftClass.h>
-
 #include <Ext/WeaponType/Body.h>
 
 // Reimplements the game function with few changes / optimizations
@@ -64,7 +63,14 @@ DEFINE_HOOK(0x6F7248, TechnoClass_InRange_WeaponRange, 0x6)
 	GET(TechnoClass*, pThis, ESI);
 	GET(WeaponTypeClass*, pWeapon, EBX);
 
-	R->EDI(WeaponTypeExt::GetRangeWithModifiers(pWeapon, pThis));
+	int range = 0;
+
+	if (const auto keepRange = WeaponTypeExt::GetTechnoKeepRange(pWeapon, pThis, false))
+		range = keepRange;
+	else
+		range = WeaponTypeExt::GetRangeWithModifiers(pWeapon, pThis);
+
+	R->EDI(range);
 
 	return SkipGameCode;
 }

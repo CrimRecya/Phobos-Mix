@@ -154,9 +154,13 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - OverlayTypes now read and use `ZAdjust` if specified in their `artmd.ini` entry.
 - Setting `[AudioVisual] -> ColorAddUse8BitRGB` to true makes game treat values from `[ColorAdd]` as 8-bit RGB (0-255) instead of RGB565 (0-31 for red & blue, 0-63 for green). This works for `LaserTargetColor`, `IronCurtainColor`, `BerserkColor` and `ForceShieldColor`.
 - Weapons with `AA=true` Projectile can now correctly fire at air units when both firer and target are over a bridge.
+- Buildings with foundation bigger than 1x1 can now recycle spawned correctly.
+- Fix the bug that parasite will vanish if it missed its target when its previous cell is occupied.
+- Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory.
 - Fixed disguised units not using the correct palette if target has custom palette.
 - Building upgrades now consistently use building's `PowerUpN` animation settings corresponding to the upgrade's `PowersUpToLevel` where possible.
 - Subterranean units are no longer allowed to perform deploy functions like firing weapons or `IsSimpleDeployer` while burrowed or burrowing, they will instead emerge first like they do for transport unloading.
+- Enable the observer data panel, which could only be displayed in multiplayer games, to also be displayed in skirmish games.
 - The otherwise unused setting `[AI] -> PowerSurplus` (defaults to 50) which determines how much surplus power AI players will strive to have can be restored by setting `[AI] -> EnablePowerSurplus` to true.
 - Planning paths are now shown for all units under player control or when `[GlobalControls] -> DebugPlanningPaths=yes` in singleplayer game modes.
 - Fixed `Temporal=true` Warheads potentially crashing game if used to attack `Slaved=true` infantry.
@@ -166,6 +170,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fixed Nuke & Dominator Level lighting not applying to AircraftTypes.
 - Projectiles created from `AirburstWeapon` now remember the WeaponType and can apply radiation etc.
 - Fixed damaged aircraft not repairing on `UnitReload=true` docks unless they land on the dock first.
+- Enable the observer data panel, which could only be displayed in multiplayer games, to also be displayed in skirmish games.
 - Certain global tileset indices (`ShorePieces`, `WaterSet`, `CliffSet`, `WaterCliffs`, `WaterBridge`, `BridgeSet` and `WoodBridgeSet`) can now be toggled to be parsed for lunar theater by setting `[General] -> ApplyLunarFixes` to true in `lunarmd.ini`. Do note that enabling this without fixing f.ex `WoodBridgeTileSet` pointing to a tileset with `TilesInSet=0` will cause issues in-game.
 - Fixed infantry `SecondaryFire` / `SecondaryProne` sequences being displayed in water instead of `WetAttack`.
 - Fixed objects with ally target and `AttackFriendlies=true` having their target reset every frame, particularly AI-owned buildings.
@@ -181,12 +186,15 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
   - Aircraft with `AirportBound=no` continue moving forward.
 - Now in air team members will use the 2D distance instead of the 3D distance to judge whether have reached the mission destination, so as to prevent the problem that the mission is stuck and cannot continue in some cases (such as when the jumpjet stops on the building).
 - Unit `Speed` setting now accepts floating-point values. Internally parsed values are clamped down to maximum of 100, multiplied by 256 and divided by 100, the result (which at this point is converted to an integer) then clamped down to maximum of 255 giving effective internal speed value range of 0 to 255, e.g leptons traveled per game frame.
+- `AirburstWeapon` now supports `IsLaser` (with Ares `LaserThickness`), `IsElectricBolt` (with Phobos `Bolt.Disable1`, `Bolt.Disable2`, `Bolt.Disable3`, `Bolt.Arcs`, without Ares `Bolt.Color1` 、`Bolt.Color2` 、`Bolt.Color3`), `IsRadBeam` (with Ares `Beam.Color` 、`Beam.Duration` 、`Beam.Amplitude` 、`Beam.IsHouseColor`), and `AttachedParticleSystem`.
 - Subterranean movement now benefits from speed multipliers from all sources such as veterancy, AttachEffect etc.
 - Aircraft will now behave as expected according to it's `MovementZone` and `SpeedType` when moving onto different surfaces. In particular, this fixes erratic behavior when vanilla aircraft is ordered to move onto water surface and instead the movement order changes to a shore nearby.
 - Allowed `AuxBuilding` to count building upgrades.
 - Fix the bug that parasite will vanish if it missed its target when its previous cell is occupied.
 - Prevent the units with locomotors that cause problems from entering the tank bunker.
+- Fixed `MovementZone=Subterannean` harvesters being unable to find docks if in area enclosed by water, cliffs etc.
 - Fix an issue where a unit will leave an impassable invisible barrier in its original position when it is teleported by ChronoSphere onto an uncrushable unit and self destruct.
+- Fix an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface.
 
 ## Fixes / interactions with other extensions
 
@@ -241,7 +249,7 @@ LandingDir=     ; Direction type (integers from 0-255). Accepts negative values 
 
 ### Extended Aircraft Missions
 
-- Aircraft will now be able to use waypoints.
+- Aircraft will now be able to use waypoints and fly towards the water surface normally.
 - When a `guard` command (`[G]` by default) is issued, the aircraft will search for targets around the current location and return immediately when target is not found, target is destroyed or ammos are depleted.
   - If the target is destroyed but ammos are not depleted yet, it will also return because the aircraft's command is one-time.
 - When an `attack move` command (`[Ctrl]+[Shift]`) is issued, the aircraft will move towards the destination and search for nearby targets on the route for attack. Once ammo is depleted or the destination is reached, it will return.
@@ -835,6 +843,19 @@ Explodes.KillPassengers=true ; boolean
 Explodes.DuringBuildup=true  ; boolean
 ```
 
+### Infantry firing while moving
+- In vanilla, there is a hardcoded behavior that the infantries can not fire until they stop, even if they have `OpportunityFire=yes` set. Now you can bypass this restriction by using the following flag.
+  - Mind that you still need `OpportunityFire=yes` to make them acquire target when moving. However, if `OpportunityFire=no` is set, they can still do that if you use the "ctrl+shift" command, just like the units on the ground do.
+  - Additionally, the behavior that "rocketeers can not fire when they have buildings beneath them" is also caused by this hardcode. You can use the flag to bypass this behavior as well.
+  - The vanilla flag `JumpJetTurn` will affect the visual behavior when the infantry is firing while moving. You need to set it to **no** if you want to make the infantry always facing the target during the attack.
+  - Setting this flag on types except infantry is useless.
+
+In `rulesmd.ini`:
+```ini
+[SOMETECHNO]                 ; InfantryType
+FiringByPassMovingCheck=true ; boolean
+```
+
 ### Iron Curtain & Force Shield effects on organics customization
 
 - In vanilla game, when Iron Curtain is applied on `Organic=true` units like squids or infantry, they could only get killed instantly by `C4Warhead`. This behavior is now unhardcoded and can be set with `IronCurtain.EffectOnOrganics` globally and on per-TechnoType basis with `IronCurtain.Effect`. Following values are respected:
@@ -1084,6 +1105,47 @@ ForbidParallelAIQueues.Building=no  ; boolean
 
 [SOMETECHNO]                        ; TechnoType
 ForbidParallelAIQueues=false        ; boolean
+```
+
+### Jumpjet Climbing Logic Enhancement
+
+- You can now let the jumpjets increase their height earlier by set `JumpjetClimbPredictHeight` to true or simply let them skip the stop check by set `JumpjetClimbWithoutCutOut` to true.
+
+In `rulesmd.ini`:
+```ini
+[General]
+JumpjetClimbPredictHeight=false  ; boolean
+JumpjetClimbWithoutCutOut=false  ; boolean
+```
+
+### Check building adjacent by all technos
+
+- You can now set `CheckExtraBaseNormal` to true to use every technos to expand the construction scope of the base.
+  - `ExtraBaseNormal` controls whether our own buildings can be place around it like vanilla `BaseNormal` do.
+  - `ExtraBaseForAllyBuilding` controls whether ally buildings can be place around it like vanilla `EligibileForAllyBuilding` do.
+
+In `rulesmd.ini`:
+```ini
+[General]
+CheckExtraBaseNormal=false      ; boolean
+
+[SOMETECHNO]                    ; TechnoType
+ExtraBaseNormal=false           ; boolean
+ExtraBaseForAllyBuilding=false  ; boolean
+```
+
+```{note}
+- Do not assign this to too many technos.
+```
+
+### Buildable-upon TechnoTypes
+
+- Now technos have `CanBeBuiltOn=true` can simply removed when building is placed on them.
+
+In `rulesmd.ini`:
+```ini
+[SOMETECHNO]         ; TechnoType
+CanBeBuiltOn=false   ; boolean
 ```
 
 ## Terrains

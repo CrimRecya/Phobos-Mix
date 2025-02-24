@@ -7,10 +7,12 @@
 #include <Ext/Anim/Body.h>
 #include <Ext/Scenario/Body.h>
 #include <Ext/WeaponType/Body.h>
+#include <Ext/House/Body.h>
 
 #include <Utilities/AresFunctions.h>
 
 TechnoExt::ExtContainer TechnoExt::ExtMap;
+UnitClass* TechnoExt::Deployer = nullptr;
 
 TechnoExt::ExtData::~ExtData()
 {
@@ -21,6 +23,24 @@ TechnoExt::ExtData::~ExtData()
 	if (pTypeExt->AutoDeath_Behavior.isset())
 	{
 		auto& vec = ScenarioExt::Global()->AutoDeathObjects;
+		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
+	}
+
+	if (RulesExt::Global()->ExtendedBuildingPlacing && pThis->WhatAmI() == AbstractType::Unit && pType->DeploysInto)
+	{
+		auto& vec = HouseExt::ExtMap.Find(pThis->Owner)->OwnedDeployingUnits;
+		vec.erase(std::remove(vec.begin(), vec.end(), pThis), vec.end());
+	}
+
+	if (RulesExt::Global()->CheckExtraBaseNormal && pTypeExt->ExtraBaseNormal)
+	{
+		auto& vec = ScenarioExt::Global()->BaseNormalTechnos;
+		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
+	}
+
+	if (pTypeExt->UniqueTechno)
+	{
+		auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
 		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
 	}
 
@@ -139,14 +159,11 @@ CoordStruct TechnoExt::PassengerKickOutLocation(TechnoClass* pThis, FootClass* p
 	if (maxAttempts < 1)
 		maxAttempts = 1;
 
-	CellClass* pCell;
-	CellStruct placeCoords = CellStruct::Empty;
-	auto pTypePassenger = pPassenger->GetTechnoType();
-	CoordStruct finalLocation = CoordStruct::Empty;
-	short extraDistanceX = 1;
-	short extraDistanceY = 1;
-	SpeedType speedType = pTypePassenger->SpeedType;
-	MovementZone movementZone = pTypePassenger->MovementZone;
+	const auto pTypePassenger = pPassenger->GetTechnoType();
+	auto placeCoords = CellStruct::Empty;
+	short extraDistance = 1;
+	auto speedType = pTypePassenger->SpeedType;
+	auto movementZone = pTypePassenger->MovementZone;
 
 	if (pTypePassenger->WhatAmI() == AbstractType::AircraftType)
 	{
@@ -155,20 +172,25 @@ CoordStruct TechnoExt::PassengerKickOutLocation(TechnoClass* pThis, FootClass* p
 	}
 	do
 	{
-		placeCoords = pThis->GetCell()->MapCoords - CellStruct { (short)(extraDistanceX / 2), (short)(extraDistanceY / 2) };
-		placeCoords = MapClass::Instance->NearByLocation(placeCoords, speedType, -1, movementZone, false, extraDistanceX, extraDistanceY, true, false, false, false, CellStruct::Empty, false, false);
+		placeCoords = pThis->GetMapCoords() - CellStruct { static_cast<short>(extraDistance / 2), static_cast<short>(extraDistance / 2) };
+		placeCoords = MapClass::Instance->NearByLocation(placeCoords, speedType, -1, movementZone, false, extraDistance, extraDistance, true, false, false, false, CellStruct::Empty, false, false);
 
-		pCell = MapClass::Instance->GetCellAt(placeCoords);
-		extraDistanceX += 1;
-		extraDistanceY += 1;
+		if (placeCoords == CellStruct::Empty)
+			return CoordStruct::Empty;
+
+		const auto pCell = MapClass::Instance->GetCellAt(placeCoords);
+
+		if (pThis->IsCellOccupied(pCell, FacingType::None, -1, nullptr, false) == Move::OK)
+			break;
+
+		extraDistance++;
 	}
-	while (extraDistanceX < maxAttempts && (pThis->IsCellOccupied(pCell, FacingType::None, -1, nullptr, false) != Move::OK) && pCell->MapCoords != CellStruct::Empty);
+	while (extraDistance <= maxAttempts);
 
-	pCell = MapClass::Instance->TryGetCellAt(placeCoords);
-	if (pCell)
-		finalLocation = pCell->GetCoordsWithBridge();
+	if (const auto pCell = MapClass::Instance->TryGetCellAt(placeCoords))
+		return pCell->GetCoordsWithBridge();
 
-	return finalLocation;
+	return CoordStruct::Empty;
 }
 
 bool TechnoExt::AllowedTargetByZone(TechnoClass* pThis, TechnoClass* pTarget, TargetZoneScanType zoneScanType, WeaponTypeClass* pWeapon, bool useZone, int zone)
@@ -203,7 +225,11 @@ bool TechnoExt::AllowedTargetByZone(TechnoClass* pThis, TechnoClass* pTarget, Ta
 			auto cellStruct = MapClass::Instance->NearByLocation(CellClass::Coord2Cell(pTarget->Location),
 				speedType, -1, mZone, false, 1, 1, true,
 				false, false, speedType != SpeedType::Float, CellStruct::Empty, false, false);
-			auto const pCell = MapClass::Instance->GetCellAt(cellStruct);
+
+			if (cellStruct == CellStruct::Empty)
+				return false;
+
+			auto const pCell = MapClass::Instance->TryGetCellAt(cellStruct);
 
 			if (!pCell)
 				return false;
@@ -344,21 +370,16 @@ bool TechnoExt::CanDeployIntoBuilding(UnitClass* pThis, bool noDeploysIntoDefaul
 	if (!pDeployType)
 		return noDeploysIntoDefaultValue;
 
-	bool canDeploy = true;
 	auto mapCoords = CellClass::Coord2Cell(pThis->GetCoords());
 
 	if (pDeployType->GetFoundationWidth() > 2 || pDeployType->GetFoundationHeight(false) > 2)
 		mapCoords += CellStruct { -1, -1 };
 
-	pThis->Mark(MarkType::Up);
-
-	pThis->Locomotor->Mark_All_Occupation_Bits(MarkType::Up);
-
-	if (!pDeployType->CanCreateHere(mapCoords, pThis->Owner))
-		canDeploy = false;
-
-	pThis->Locomotor->Mark_All_Occupation_Bits(MarkType::Down);
-	pThis->Mark(MarkType::Down);
+	// The vanilla game used an inappropriate approach here, resulting in potential risk of desync.
+	// Now, through additional checks, we can directly exclude the unit who want to deploy.
+	TechnoExt::Deployer = pThis;
+	const bool canDeploy = pDeployType->CanCreateHere(mapCoords, pThis->Owner);
+	TechnoExt::Deployer = nullptr;
 
 	return canDeploy;
 }
@@ -473,6 +494,81 @@ int TechnoExt::ExtData::GetAttachedEffectCumulativeCount(AttachEffectTypeClass* 
 	return foundCount;
 }
 
+void TechnoExt::ExtData::InitAggressiveStance()
+{
+	this->AggressiveStance = this->TypeExtData->AggressiveStance.Get();
+}
+
+bool TechnoExt::ExtData::GetAggressiveStance() const
+{
+	// if this is a passenger then obey the configuration of the transport
+	if (auto pTransport = this->OwnerObject()->Transporter)
+		return TechnoExt::ExtMap.Find(pTransport)->GetAggressiveStance();
+
+	return this->AggressiveStance;
+}
+
+void TechnoExt::ExtData::ToggleAggressiveStance()
+{
+	this->AggressiveStance = !this->AggressiveStance;
+	const auto pThis = this->OwnerObject();
+
+	if (!this->AggressiveStance)
+	{
+		pThis->QueueVoice(this->TypeExtData->VoiceExitAggressiveStance.Get());
+		pThis->QueueMission(Mission::Guard, false);
+		pThis->SetTarget(nullptr);
+	}
+	else
+	{
+		const auto pTechnoType = this->TypeExtData->OwnerObject();
+		int voiceIndex = this->TypeExtData->VoiceEnterAggressiveStance.Get();
+
+		if (voiceIndex < 0)
+		{
+			const auto& voiceList = pTechnoType->VoiceAttack.Count ? pTechnoType->VoiceAttack : pTechnoType->VoiceMove;
+
+			if (const auto count = voiceList.Count)
+				voiceIndex = voiceList.GetItem(Randomizer::Global().Random() % count);
+		}
+
+		pThis->QueueVoice(voiceIndex);
+	}
+}
+
+bool TechnoExt::ExtData::CanToggleAggressiveStance()
+{
+	if (!RulesExt::Global()->EnableAggressiveStance)
+		return false;
+
+	const auto pTypeExt = this->TypeExtData;
+
+	if (!pTypeExt->AggressiveStance_Togglable.isset())
+	{
+		// Only techno that are armed and open-topped can be aggressive stance.
+		if (!this->OwnerObject()->IsArmed() && !pTypeExt->OwnerObject()->OpenTopped)
+		{
+			pTypeExt->AggressiveStance_Togglable = false;
+			return false;
+		}
+
+		// Engineers and Agents are default to not allow aggressive stance.
+		if (auto pInfantryTypeClass = abstract_cast<InfantryTypeClass*>(pTypeExt->OwnerObject()))
+		{
+			if (pInfantryTypeClass->Engineer || pInfantryTypeClass->Agent)
+			{
+				pTypeExt->AggressiveStance_Togglable = false;
+				return false;
+			}
+		}
+
+		pTypeExt->AggressiveStance_Togglable = true;
+		return true;
+	}
+
+	return pTypeExt->AggressiveStance_Togglable.Get(true);
+}
+
 // =============================
 // load / save
 
@@ -485,6 +581,8 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->LaserTrails)
 		.Process(this->AttachedEffects)
 		.Process(this->AE)
+		.Process(this->SubterraneanHarvFreshFromFactory)
+		.Process(this->SubterraneanHarvRallyDest)
 		.Process(this->ReceiveDamage)
 		.Process(this->PassengerDeletionTimer)
 		.Process(this->CurrentShieldType)
@@ -503,14 +601,47 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->LastRearmWasFullDelay)
 		.Process(this->CanCloakDuringRearm)
 		.Process(this->WHAnimRemainingCreationInterval)
+		.Process(this->UnitIdleIsSelected)
+		.Process(this->UnitIdleActionTimer)
+		.Process(this->UnitIdleActionGapTimer)
+		.Process(this->UnitAutoDeployTimer)
+		.Process(this->LastWeaponType)
+		.Process(this->LastWeaponFLH)
+		.Process(this->LastHurtFrame)
+		.Process(this->BeControlledThreatFrame)
+		.Process(this->LastTargetID)
+		.Process(this->AccumulatedGattlingValue)
+		.Process(this->ShouldUpdateGattlingValue)
+		.Process(this->ScatteringStopFrame)
+		.Process(this->MyTargetingFrame)
+		.Process(this->AttackMoveFollowerTempCount)
+		.Process(this->AutoTargetedWallCell)
+		.Process(this->HasCachedClickMission)
+		.Process(this->CachedMission)
+		.Process(this->CachedCell)
+		.Process(this->CachedTarget)
+		.Process(this->HasCachedClickEvent)
+		.Process(this->CachedEventType)
 		.Process(this->FiringObstacleCell)
 		.Process(this->IsDetachingForCloak)
 		.Process(this->OriginalPassengerOwner)
 		.Process(this->HasRemainingWarpInDelay)
 		.Process(this->LastWarpInDelay)
 		.Process(this->IsBeingChronoSphered)
+		.Process(this->AggressiveStance)
 		.Process(this->KeepTargetOnMove)
 		;
+}
+
+void TechnoExt::ExtData::InvalidatePointer(void* ptr, bool bRemoved)
+{
+	if (this->HasCachedClickMission && this->CachedTarget == ptr)
+	{
+		this->HasCachedClickMission = false;
+		this->CachedMission = Mission::None;
+		this->CachedCell = nullptr;
+		this->CachedTarget = nullptr;
+	}
 }
 
 void TechnoExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)

@@ -149,7 +149,8 @@ Matrix3D* __stdcall JumpjetLocomotionClass_Draw_Matrix(ILocomotion* iloco, Matri
 	// Man, what can I say, you don't want to stick your rotor into the ground
 	auto slope_idx = MapClass::Instance->GetCellAt(linked->Location)->SlopeIndex;
 	*ret = Matrix3D::VoxelRampMatrix[onGround ? slope_idx : 0];
-	auto curf = pThis->LocomotionFacing.Current();
+	// Only use LocomotionFacing for general Jumpjet to avoid the problem that ground units being lifted will turn to attacker weirdly.
+	auto curf = linked->IsAttackedByLocomotor ? linked->PrimaryFacing.Current() : pThis->LocomotionFacing.Current();
 	ret->RotateZ((float)curf.GetRadian<32>());
 	float arf = linked->AngleRotatedForwards;
 	float ars = linked->AngleRotatedSideways;
@@ -175,6 +176,48 @@ Matrix3D* __stdcall JumpjetLocomotionClass_Draw_Matrix(ILocomotion* iloco, Matri
 			// No more translation because I don't like it
 			ret->RotateX(ars);
 			ret->RotateY(arf);
+		}
+	}
+	else
+	{
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(linked->GetTechnoType());
+
+		if (pTypeExt->JumpjetTilt.Get(RulesExt::Global()->JumpjetTilt)
+			&& !onGround && linked->IsAlive && linked->Health > 0 && !linked->IsAttackedByLocomotor)
+		{
+			if (pThis->CurrentSpeed > 0.0)
+			{
+				constexpr auto maxTilt = static_cast<float>(Math::HalfPi / 2);
+				constexpr auto baseSpeed = 32;
+				constexpr auto baseTilt = Math::HalfPi / 4;
+
+				constexpr auto forwardBaseTilt = baseTilt / baseSpeed;
+				const auto forwardSpeedFactor = pThis->CurrentSpeed * pTypeExt->JumpjetTilt_ForwardSpeedFactor;
+				const auto forwardAccelFactor = pThis->Accel * pTypeExt->JumpjetTilt_ForwardAccelFactor;
+
+				arf += std::min(maxTilt, static_cast<float>((forwardAccelFactor + forwardSpeedFactor) * forwardBaseTilt));
+
+				const auto& locoFace = pThis->LocomotionFacing;
+
+				if (locoFace.IsRotating())
+				{
+					constexpr auto baseTurnRaw = 32768;
+
+					constexpr auto sidewaysBaseTilt = baseTilt / (baseTurnRaw * baseSpeed);
+					const auto sidewaysSpeedFactor = pThis->CurrentSpeed * pTypeExt->JumpjetTilt_SidewaysSpeedFactor;
+					const auto sidewaysRotationFactor = static_cast<short>(locoFace.Difference().Raw) * pTypeExt->JumpjetTilt_SidewaysRotationFactor;
+
+					ars += Math::clamp(static_cast<float>(sidewaysSpeedFactor * sidewaysRotationFactor * sidewaysBaseTilt), -maxTilt, maxTilt);
+				}
+			}
+
+			if (std::abs(ars) >= 0.005 || std::abs(arf) >= 0.005)
+			{
+				if (pIndex) *pIndex = -1;
+
+				ret->RotateX(ars);
+				ret->RotateY(arf);
+			}
 		}
 	}
 

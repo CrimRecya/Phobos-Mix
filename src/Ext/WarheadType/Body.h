@@ -68,6 +68,7 @@ public:
 		Valueable<bool> Crit_SuppressWhenIntercepted;
 
 		Nullable<AnimTypeClass*> MindControl_Anim;
+		Nullable<int> MindControl_ThreatDelay;
 
 		Valueable<bool> Shield_Penetrate;
 		Valueable<bool> Shield_Break;
@@ -138,12 +139,27 @@ public:
 		Valueable<bool> InflictLocomotor;
 		Valueable<bool> RemoveInflictedLocomotor;
 
+		Valueable<bool> AffectsOnFloor;
+		Valueable<bool> AffectsInAir;
+		Valueable<bool> AffectsUnderground;
+		Valueable<bool> PlayAnimUnderground;
+		Valueable<bool> PlayAnimAboveSurface;
+		Valueable<bool> CellSpread_Cylinder;
+		Valueable<bool> LightChanging;
+		Valueable<int> SetAmbientLight;
+		Valueable<int> SetAmbientRed;
+		Valueable<int> SetAmbientGreen;
+		Valueable<int> SetAmbientBlue;
+		Valueable<bool> ReduceTiberium;
+
 		Valueable<bool> Nonprovocative;
 
 		Nullable<int> CombatLightDetailLevel;
 		Valueable<double> CombatLightChance;
 		Valueable<bool> CLIsBlack;
 		Nullable<bool> Particle_AlphaImageIsLightFlash;
+
+		Nullable<bool> MergeBuildingDamage;
 
 		Nullable<double> DamageOwnerMultiplier;
 		Nullable<double> DamageAlliesMultiplier;
@@ -153,6 +169,11 @@ public:
 		ValueableVector<WeaponTypeClass*> SuppressRevengeWeapons_Types;
 		Valueable<bool> SuppressReflectDamage;
 		ValueableVector<AttachEffectTypeClass*> SuppressReflectDamage_Types;
+
+		Valueable<bool> BuildingSell;
+		Valueable<bool> BuildingSell_IgnoreUnsellable;
+		Valueable<bool> BuildingUndeploy;
+		Valueable<bool> BuildingUndeploy_Leave;
 
 		Nullable<bool> CombatAlert_Suppress;
 
@@ -227,6 +248,7 @@ public:
 			, Crit_SuppressWhenIntercepted { false }
 
 			, MindControl_Anim {}
+			, MindControl_ThreatDelay {}
 
 			, Shield_Penetrate { false }
 			, Shield_Break { false }
@@ -297,12 +319,27 @@ public:
 			, InflictLocomotor { false }
 			, RemoveInflictedLocomotor { false }
 
+			, AffectsOnFloor { true }
+			, AffectsInAir { true }
+			, AffectsUnderground { false }
+			, PlayAnimUnderground { true }
+			, PlayAnimAboveSurface { false }
+			, CellSpread_Cylinder { false }
+			, LightChanging { false }
+			, SetAmbientLight { -1 }
+			, SetAmbientRed { -1 }
+			, SetAmbientGreen { -1 }
+			, SetAmbientBlue { -1 }
+			, ReduceTiberium { false }
+
 			, Nonprovocative { false }
 
 			, CombatLightDetailLevel {}
 			, CombatLightChance { 1.0 }
 		    , CLIsBlack { false }
 			, Particle_AlphaImageIsLightFlash {}
+
+			, MergeBuildingDamage {}
 
 			, DamageOwnerMultiplier {}
 			, DamageAlliesMultiplier {}
@@ -312,6 +349,11 @@ public:
 			, SuppressRevengeWeapons_Types {}
 			, SuppressReflectDamage { false }
 			, SuppressReflectDamage_Types {}
+
+			, BuildingSell { false }
+			, BuildingSell_IgnoreUnsellable { false }
+			, BuildingUndeploy { false }
+			, BuildingUndeploy_Leave { false }
 
 			, CombatAlert_Suppress {}
 
@@ -363,6 +405,7 @@ public:
 		void ApplyCrit(HouseClass* pHouse, TechnoClass* pTarget, TechnoClass* Owner, TechnoExt::ExtData* pTargetExt);
 		void ApplyShieldModifiers(TechnoClass* pTarget, TechnoExt::ExtData* pTargetExt);
 		void ApplyAttachEffects(TechnoClass* pTarget, HouseClass* pInvokerHouse, TechnoClass* pInvoker);
+		void ApplyBuildingUndeploy(TechnoClass* pTarget);
 		double GetCritChance(TechnoClass* pFirer) const;
 	};
 

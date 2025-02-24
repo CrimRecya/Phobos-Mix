@@ -1,5 +1,6 @@
 #include <JumpjetLocomotionClass.h>
 #include <UnitClass.h>
+#include <BuildingClass.h>
 #include <Utilities/Macro.h>
 #include <Ext/TechnoType/Body.h>
 #include <Ext/WeaponType/Body.h>
@@ -228,4 +229,159 @@ DEFINE_HOOK(0x54DAC4, JumpjetLocomotionClass_EndPiggyback_Blyat, 0x6)
 	}
 
 	return 0;
+}
+
+// Let the jumpjet increase their height earlier or simply skip the stop check
+namespace JumpjetRushHelpers
+{
+	bool Skip = false;
+	int GetJumpjetHeightWithOccupyTechno(CellClass* pCell); // Replace sub_485080
+	int JumpjetLocomotionPredictHeight(JumpjetLocomotionClass* pThis); // Replace sub_54D820
+}
+
+int JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(CellClass* pCell)
+{
+	if (const auto pBuilding = pCell->GetBuilding())
+	{
+		auto dim2 = CoordStruct::Empty;
+		pBuilding->Type->Dimension2(&dim2);
+		return dim2.Z;
+	}
+
+	int height = 0;
+
+	if (pCell->FindTechnoNearestTo(Point2D::Empty, false))
+		height += 85; // Vanilla
+
+	if (pCell->ContainsBridge())
+		height += CellClass::BridgeHeight;
+
+	return height;
+}
+
+int JumpjetRushHelpers::JumpjetLocomotionPredictHeight(JumpjetLocomotionClass* pThis)
+{
+	const auto pFoot = pThis->LinkedTo;
+	const auto pLocation = &pFoot->Location;
+
+	// Initial
+	auto curCoord = Point2D { pLocation->X, pLocation->Y };
+	auto pCurCell = MapClass::Instance->GetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
+	auto maxHeight = pCurCell->GetFloorHeight(Point2D { curCoord.X, curCoord.Y }) + JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(pCurCell);
+
+	// If is moving
+	if (pThis->CurrentSpeed > 0.0)
+	{
+		const auto checkLength = (pThis->LocomotionFacing.IsRotating() || !pFoot->Destination) ? Unsorted::LeptonsPerCell
+			: Math::min((Unsorted::LeptonsPerCell * 5), pFoot->DistanceFrom(pFoot->Destination));
+		const auto angle = -pThis->LocomotionFacing.Current().GetRadian<65536>();
+		const auto checkCoord = Point2D { static_cast<int>(checkLength * cos(angle) + 0.5), static_cast<int>(checkLength * sin(angle) + 0.5) };
+		const auto largeStep = Math::max(abs(checkCoord.X), abs(checkCoord.Y));
+		const auto checkSteps = (largeStep > Unsorted::LeptonsPerCell) ? (largeStep / Unsorted::LeptonsPerCell + 1) : 1;
+		const auto stepCoord = Point2D { (checkCoord.X / checkSteps), (checkCoord.Y / checkSteps) };
+
+		// Check forward
+		auto lastCoord = curCoord;
+		curCoord += stepCoord;
+		pCurCell = MapClass::Instance->GetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
+		auto newHeight = pCurCell->GetFloorHeight(Point2D { curCoord.X, curCoord.Y }) + JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(pCurCell);
+
+		if (newHeight > maxHeight)
+			maxHeight = newHeight;
+
+		// "Anti-Aliasing"
+		if ((curCoord.X >> 8) != (lastCoord.X >> 8) && (curCoord.Y >> 8) != (lastCoord.Y >> 8))
+		{
+			bool lastX = (abs(stepCoord.X) > abs(stepCoord.Y))
+				? (((curCoord.Y - ((stepCoord.X > 0)
+					? (curCoord.X & 0XFF)
+					: ((curCoord.X & 0XFF) - Unsorted::LeptonsPerCell))
+				* checkCoord.Y / checkCoord.X) >> 8) == (curCoord.Y >> 8))
+				: (((curCoord.X - ((stepCoord.Y > 0)
+					? (curCoord.Y & 0XFF)
+					: ((curCoord.Y & 0XFF) - Unsorted::LeptonsPerCell))
+				* checkCoord.X / checkCoord.Y) >> 8) != (curCoord.X >> 8));
+
+			if (const auto pCheckCell = MapClass::Instance->TryGetCellAt(lastX
+				? CellStruct { static_cast<short>(lastCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) }
+				: CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(lastCoord.Y >> 8) }))
+			{
+				const auto checkHeight = (pCheckCell->Level * Unsorted::LevelHeight) + JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(pCheckCell);
+
+				if (checkHeight > maxHeight)
+					maxHeight = checkHeight;
+			}
+		}
+
+		// The forward cell is not so high, keep moving
+		if ((pLocation->Z - maxHeight) >= pFoot->GetTechnoType()->JumpjetHeight)
+			JumpjetRushHelpers::Skip = true;
+
+		// Check further
+		for (int i = 1; i < checkSteps; ++i)
+		{
+			lastCoord = curCoord;
+			curCoord += stepCoord;
+			pCurCell = MapClass::Instance->TryGetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
+
+			if (!pCurCell)
+				return maxHeight;
+
+			newHeight = pCurCell->GetFloorHeight(Point2D { curCoord.X, curCoord.Y }) + JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(pCurCell);
+
+			if (newHeight > maxHeight)
+				maxHeight = newHeight;
+
+			// "Anti-Aliasing"
+			if ((curCoord.X >> 8) != (lastCoord.X >> 8) && (curCoord.Y >> 8) != (lastCoord.Y >> 8))
+			{
+				bool lastX = (abs(stepCoord.X) > abs(stepCoord.Y))
+					? (((curCoord.Y - ((stepCoord.X > 0)
+						? (curCoord.X & 0XFF)
+						: ((curCoord.X & 0XFF) - Unsorted::LeptonsPerCell))
+					* checkCoord.Y / checkCoord.X) >> 8) == (curCoord.Y >> 8))
+					: (((curCoord.X - ((stepCoord.Y > 0)
+						? (curCoord.Y & 0XFF)
+						: ((curCoord.Y & 0XFF) - Unsorted::LeptonsPerCell))
+					* checkCoord.X / checkCoord.Y) >> 8) != (curCoord.X >> 8));
+
+				if (const auto pCheckCell = MapClass::Instance->TryGetCellAt(lastX
+					? CellStruct { static_cast<short>(lastCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) }
+					: CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(lastCoord.Y >> 8) }))
+				{
+					const auto checkHeight = (pCheckCell->Level * Unsorted::LevelHeight) + JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(pCheckCell);
+
+					if (checkHeight > maxHeight)
+						maxHeight = checkHeight;
+				}
+			}
+		}
+	}
+
+	return maxHeight;
+}
+
+DEFINE_HOOK(0x54D827, JumpjetLocomotionClass_sub_54D820_PredictHeight, 0x8)
+{
+	enum { SkipVanillaCalculate = 0x54D928 };
+
+	GET(JumpjetLocomotionClass*, pThis, ESI);
+
+	if (!RulesExt::Global()->JumpjetClimbPredictHeight)
+		return 0;
+
+	R->EAX(JumpjetRushHelpers::JumpjetLocomotionPredictHeight(pThis));
+	return SkipVanillaCalculate;
+}
+
+DEFINE_HOOK(0x54D4C0, JumpjetLocomotionClass_sub_54D0F0_NoStuck, 0x6)
+{
+	enum { SkipCheckStop = 0x54D52F };
+
+	if (JumpjetRushHelpers::Skip)
+		JumpjetRushHelpers::Skip = false;
+	else if (!RulesExt::Global()->JumpjetClimbWithoutCutOut)
+		return 0;
+
+	return SkipCheckStop;
 }

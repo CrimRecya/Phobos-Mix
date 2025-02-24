@@ -8,6 +8,10 @@
 #include <Ext/TEvent/Body.h>
 #include <Ext/House/Body.h>
 
+#include <VoxClass.h>
+#include <RadarEventClass.h>
+#include <TacticalClass.h>
+
 namespace ReceiveDamageTemp
 {
 	bool SkipLowDamageCheck = false;
@@ -49,7 +53,7 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 	}
 
 	// Raise Combat Alert
-	if (pRules->CombatAlert && *args->Damage > 1)
+	if (*args->Damage && (MapClass::GetTotalDamage(*args->Damage, args->WH, pType->Armor, args->DistanceToEpicenter) > 0))
 	{
 		auto raiseCombatAlert = [&]()
 		{
@@ -96,7 +100,11 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 			if (index != -1)
 				VoxClass::PlayIndex(index);
 		};
-		raiseCombatAlert();
+
+		if (pRules->CombatAlert)
+			raiseCombatAlert();
+
+		pExt->LastHurtFrame = Unsorted::CurrentFrame;
 	}
 
 	// Shield Receive Damage

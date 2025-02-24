@@ -67,17 +67,19 @@ DEFINE_HOOK(0x458623, BuildingClass_KillOccupiers_Replace_MuzzleFix, 0x7)
 
 DEFINE_HOOK(0x6D528A, TacticalClass_DrawPlacement_PlacementPreview, 0x6)
 {
-	auto pRules = RulesExt::Global();
+	if (Phobos::Config::DrawAdjacentBoundary)
+		BuildingTypeExt::DrawAdjacentLines();
 
-	if (!pRules->PlacementPreview || !Phobos::Config::ShowPlacementPreview)
+	auto pRulesExt = RulesExt::Global();
+
+	if (!pRulesExt->PlacementPreview || !Phobos::Config::ShowPlacementPreview)
 		return 0;
 
 	auto pBuilding = specific_cast<BuildingClass*>(DisplayClass::Instance->CurrentBuilding);
-	auto pType = pBuilding ? pBuilding->Type : nullptr;
+	auto pType = specific_cast<BuildingTypeClass*>(DisplayClass::Instance->CurrentBuildingType);
 	auto pTypeExt = pType ? BuildingTypeExt::ExtMap.Find(pType) : nullptr;
-	bool isShow = pTypeExt && pTypeExt->PlacementPreview;
 
-	if (isShow)
+	if (pBuilding && pTypeExt && pTypeExt->PlacementPreview)
 	{
 		CellClass* pCell = nullptr;
 		{
@@ -107,7 +109,6 @@ DEFINE_HOOK(0x6D528A, TacticalClass_DrawPlacement_PlacementPreview, 0x6)
 			nImageFrame = Math::clamp(pTypeExt->PlacementPreview_ShapeFrame.Get(nImageFrame), 0, (int)pImage->Frames);
 		}
 
-
 		Point2D point;
 		{
 			CoordStruct offset = pTypeExt->PlacementPreview_Offset;
@@ -119,7 +120,7 @@ DEFINE_HOOK(0x6D528A, TacticalClass_DrawPlacement_PlacementPreview, 0x6)
 			point.Y += offset.Y;
 		}
 
-		BlitterFlags blitFlags = pTypeExt->PlacementPreview_Translucency.Get(pRules->PlacementPreview_Translucency) |
+		BlitterFlags blitFlags = pTypeExt->PlacementPreview_Translucency.Get(pRulesExt->PlacementPreview_Translucency) |
 			BlitterFlags::Centered | BlitterFlags::Nonzero | BlitterFlags::MultiPass;
 
 		ConvertClass* pPalette = pTypeExt->PlacementPreview_Remap.Get()
@@ -217,45 +218,3 @@ DEFINE_HOOK(0x5F5416, ObjectClass_ReceiveDamage_CanC4DamageRounding, 0x6)
 
 	return SkipGameCode;
 }
-
-#pragma region BuildingProximity
-
-namespace ProximityTemp
-{
-	BuildingTypeClass* pType = nullptr;
-}
-
-DEFINE_HOOK(0x4A8F20, DisplayClass_BuildingProximityCheck_SetContext, 0x5)
-{
-	GET(BuildingTypeClass*, pType, ESI);
-
-	ProximityTemp::pType = pType;
-
-	return 0;
-}
-
-DEFINE_HOOK(0x4A8FD7, DisplayClass_BuildingProximityCheck_BuildArea, 0x6)
-{
-	enum { SkipBuilding = 0x4A902C };
-
-	GET(BuildingClass*, pCellBuilding, ESI);
-
-	auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pCellBuilding->Type);
-
-	if (pTypeExt->NoBuildAreaOnBuildup && pCellBuilding->CurrentMission == Mission::Construction)
-		return SkipBuilding;
-
-	auto const& pBuildingsAllowed = BuildingTypeExt::ExtMap.Find(ProximityTemp::pType)->Adjacent_Allowed;
-
-	if (pBuildingsAllowed.size() > 0 && !pBuildingsAllowed.Contains(pCellBuilding->Type))
-		return SkipBuilding;
-
-	auto const& pBuildingsDisallowed = BuildingTypeExt::ExtMap.Find(ProximityTemp::pType)->Adjacent_Disallowed;
-
-	if (pBuildingsDisallowed.size() > 0 && pBuildingsDisallowed.Contains(pCellBuilding->Type))
-		return SkipBuilding;
-
-	return 0;
-}
-
-#pragma endregion
