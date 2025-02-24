@@ -129,10 +129,24 @@ void WarheadTypeExt::ExtData::Detonate(TechnoClass* pOwner, HouseClass* pHouse, 
 		{
 			if (auto pTarget = abstract_cast<TechnoClass*>(pBullet->Target))
 			{
+				double dist = 0.0;
+				auto bulletCoords = pBullet->GetCoords();
+				auto targetCoords = pTarget->GetCoords();
+
+				if (this->CellSpread_Cylinder)
+					dist = Point2D{ bulletCoords.X - targetCoords.X, bulletCoords.Y - targetCoords.Y }.Magnitude();
+				else
+					dist = bulletCoords.DistanceFrom(targetCoords);
+
 				// Starkku: We should only detonate on the target if the bullet, at the moment of detonation is within acceptable distance of the target.
 				// Ares uses 64 leptons / quarter of a cell as a tolerance, so for sake of consistency we're gonna do the same here.
-				if (pBullet->DistanceFrom(pTarget) < Unsorted::LeptonsPerCell / 4)
+				if (dist < Unsorted::LeptonsPerCell / 4
+					&& (this->AffectsInAir && pTarget->IsInAir()
+					|| this->AffectsOnFloor && pTarget->IsOnFloor()
+					|| this->AffectsUnderground && pTarget->InWhichLayer() == Layer::Underground))
+				{
 					this->DetonateOnOneUnit(pHouse, pTarget, pOwner, bulletWasIntercepted);
+				}
 			}
 		}
 		else if (this->DamageAreaTarget)
@@ -140,6 +154,40 @@ void WarheadTypeExt::ExtData::Detonate(TechnoClass* pOwner, HouseClass* pHouse, 
 			if (coords.DistanceFrom(this->DamageAreaTarget->GetCoords()) < Unsorted::LeptonsPerCell / 4)
 				this->DetonateOnOneUnit(pHouse, this->DamageAreaTarget, pOwner, bulletWasIntercepted);
 		}
+	}
+
+	if (this->LightChanging)
+	{
+		if (this->SetAmbientLight >= 0)
+		{
+			ScenarioClass::Instance->AmbientOriginal = this->SetAmbientLight;
+
+			if (!LightningStorm::Active)
+			{
+				ScenarioClass::Instance->AmbientCurrent = this->SetAmbientLight;
+				ScenarioClass::Instance->AmbientTarget = ScenarioClass::Instance->AmbientOriginal;
+			}
+		}
+
+		if (this->SetAmbientRed >= 0)
+		{
+			ScenarioClass::RecalcLighting(10 * this->SetAmbientRed, 10 * ScenarioClass::Instance->NormalLighting.Tint.Green, 10 * ScenarioClass::Instance->NormalLighting.Tint.Blue, 0);
+			ScenarioClass::Instance->NormalLighting.Tint.Red = this->SetAmbientRed;
+		}
+
+		if (this->SetAmbientGreen >= 0)
+		{
+			ScenarioClass::RecalcLighting(10 * ScenarioClass::Instance->NormalLighting.Tint.Red, 10 * this->SetAmbientGreen, 10 * ScenarioClass::Instance->NormalLighting.Tint.Blue, 0);
+			ScenarioClass::Instance->NormalLighting.Tint.Green = this->SetAmbientGreen;
+		}
+
+		if (this->SetAmbientBlue >= 0)
+		{
+			ScenarioClass::RecalcLighting(10 * ScenarioClass::Instance->NormalLighting.Tint.Red, 10 * ScenarioClass::Instance->NormalLighting.Tint.Green, 10 * this->SetAmbientBlue, 0);
+			ScenarioClass::Instance->NormalLighting.Tint.Blue = this->SetAmbientBlue;
+		}
+
+		ScenarioClass::Instance->UpdateLighting();
 	}
 }
 
@@ -170,6 +218,9 @@ void WarheadTypeExt::ExtData::DetonateOnOneUnit(HouseClass* pHouse, TechnoClass*
 	if (this->AttachEffects.AttachTypes.size() > 0 || this->AttachEffects.RemoveTypes.size() > 0 || this->AttachEffects.RemoveGroups.size() > 0)
 		this->ApplyAttachEffects(pTarget, pHouse, pOwner);
 
+	if (this->BuildingSell || this->BuildingUndeploy)
+		this->ApplyBuildingUndeploy(pTarget);
+
 #ifdef LOCO_TEST_WARHEADS
 	if (this->InflictLocomotor)
 		this->ApplyLocomotorInfliction(pTarget);
@@ -178,6 +229,102 @@ void WarheadTypeExt::ExtData::DetonateOnOneUnit(HouseClass* pHouse, TechnoClass*
 		this->ApplyLocomotorInflictionReset(pTarget);
 #endif
 
+}
+
+void WarheadTypeExt::ExtData::ApplyBuildingUndeploy(TechnoClass* pTarget)
+{
+	const auto pBuilding = abstract_cast<BuildingClass*>(pTarget);
+
+	if (!pBuilding || !pBuilding->IsAlive || pBuilding->Health <= 0 || !pBuilding->IsOnMap || pBuilding->InLimbo)
+		return;
+
+	const auto mission = pBuilding->CurrentMission;
+
+	if (mission == Mission::Construction || mission == Mission::Selling)
+		return;
+
+	if (this->BuildingSell)
+	{
+		if ((pBuilding->CanBeSold() && !pBuilding->IsStrange()) || this->BuildingSell_IgnoreUnsellable)
+			pBuilding->Sell(1);
+
+		return;
+	}
+
+	const auto pType = pBuilding->Type;
+
+	if (!pType->UndeploysInto || (pType->ConstructionYard && !GameModeOptionsClass::Instance->MCVRedeploy))
+		return;
+
+	auto cell = pBuilding->GetMapCoords();
+	const auto width = pType->GetFoundationWidth();
+	const auto height = pType->GetFoundationHeight(false);
+
+	if (width > 2 || height > 2)
+		cell += CellStruct { 1, 1 };
+
+	if (this->BuildingUndeploy_Leave)
+	{
+		const auto pHouse = pBuilding->Owner;
+		const auto pItems = Helpers::Alex::getCellSpreadItems(pBuilding->GetCoords(), 20);
+
+		// Divide the surrounding units into 16 directions and record their costs
+		int record[16] = {0};
+
+		for (const auto& pItem : pItems)
+		{
+			// Only armed units that are not considered allies will be recorded
+			if ((!pHouse || !pHouse->IsAlliedWith(pItem)) && pItem->IsArmed())
+				record[pBuilding->GetTargetDirection(pItem).GetValue<4>()] += pItem->GetTechnoType()->Cost;
+		}
+
+		int costs = 0;
+		int dir = 0;
+
+		// Starting from 16, prevent negative numbers
+		for (int i = 16; i < 32; ++i)
+		{
+			int newCosts = 0;
+
+			// Assign weights to values in the direction
+			// The highest value being 8 times in the positive direction
+			// And the lowest value being 0 times in the opposite direction
+			// The greater difference between positive direction to both sides, the lower value it is
+			for (int j = -7; j < 8; ++j)
+				newCosts += ((8 - abs(j)) * record[(i + j) & 15]);
+
+			// Record the direction with the highest weight
+			if (newCosts > costs)
+			{
+				dir = (i - 16);
+				costs = newCosts;
+			}
+		}
+
+		// If there is no threat in the surrounding area, randomly select one side
+		if (!costs)
+			dir = ScenarioClass::Instance->Random.RandomRanged(0, 15);
+
+		// Reverse the direction and convert it into radians
+		const double radian = -(((dir - 4) / 16.0) * Math::TwoPi);
+
+		// Base on a location about 14 grids away
+		cell.X -= static_cast<short>(14 * cos(radian));
+		cell.Y += static_cast<short>(14 * sin(radian));
+
+		// Find a location where the conyard can be deployed
+		const auto newCell = MapClass::Instance->NearByLocation(cell, pType->UndeploysInto->SpeedType, -1, pType->UndeploysInto->MovementZone,
+			false, (width + 2), (height + 2), false, false, false, false, CellStruct::Empty, false, false);
+
+		// If it can find a more suitable location, go to the new one
+		if (newCell != CellStruct::Empty)
+			cell = newCell;
+	}
+
+	if (const auto pCell = MapClass::Instance->TryGetCellAt(cell))
+		pBuilding->SetArchiveTarget(pCell);
+
+	pBuilding->Sell(1);
 }
 
 void WarheadTypeExt::ExtData::ApplyShieldModifiers(TechnoClass* pTarget, TechnoExt::ExtData* pTargetExt = nullptr)
@@ -388,14 +535,14 @@ void WarheadTypeExt::ExtData::InterceptBullets(TechnoClass* pOwner, WeaponTypeCl
 	{
 		for (auto const pBullet : *BulletClass::Array)
 		{
-			if (pBullet->Location.DistanceFrom(coords) > cellSpread * Unsorted::LeptonsPerCell)
-				continue;
-
 			auto const pBulletExt = BulletExt::ExtMap.Find(pBullet);
 			auto const pBulletTypeExt = pBulletExt->TypeExtData;
 
 			// Cells don't know about bullets that may or may not be located on them so it has to be this way.
-			if (pBulletTypeExt && pBulletTypeExt->Interceptable)
+			if (!pBulletTypeExt || !pBulletTypeExt->Interceptable)
+				continue;
+
+			if (pBullet->Location.DistanceFrom(coords) <= cellSpread * Unsorted::LeptonsPerCell)
 				pBulletExt->InterceptBullet(pOwner, pWeapon);
 		}
 	}

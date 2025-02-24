@@ -1,5 +1,7 @@
 #include "Body.h"
+#include <Ext/Techno/Body.h>
 
+#include <Ext/WeaponType/Body.h>
 #include <Utilities/Macro.h>
 
 // Ares reimplements the bullet obstacle logic so need to get creative to add any new functionality for that in Phobos.
@@ -23,11 +25,11 @@ public:
 	}
 
 	static CellClass* FindFirstObstacle(CoordStruct const& pSourceCoords, CoordStruct const& pTargetCoords, AbstractClass const* const pSource,
-		AbstractClass const* const pTarget, HouseClass* pOwner, BulletTypeClass* pBulletType, bool isTargetingCheck = false)
+		AbstractClass const* const pTarget, HouseClass* pOwner, BulletTypeClass* pBulletType, bool isTargetingCheck = false, bool subjectToGround = false)
 	{
 		BulletTypeExt::ExtData* pBulletTypeExt = BulletTypeExt::ExtMap.Find(pBulletType);
 
-		if (SubjectToObstacles(pBulletType, pBulletTypeExt))
+		if (SubjectToObstacles(pBulletType, pBulletTypeExt) || subjectToGround)
 		{
 			auto sourceCell = CellClass::Coord2Cell(pSourceCoords);
 			auto const pSourceCell = MapClass::Instance->GetCellAt(sourceCell);
@@ -46,6 +48,9 @@ public:
 				if (auto const pCell = GetObstacle(pSourceCell, pTargetCell, pCellCur, crdCur, pSource, pTarget, pOwner, pBulletType, pBulletTypeExt, isTargetingCheck))
 					return pCell;
 
+				if (subjectToGround && crdCur.Z < MapClass::Instance->GetCellFloorHeight(crdCur))
+					return pCellCur;
+
 				crdCur += step;
 				pCellCur = MapClass::Instance->GetCellAt(crdCur);
 			}
@@ -55,10 +60,10 @@ public:
 	}
 
 	static CellClass* FindFirstImpenetrableObstacle(CoordStruct const& pSourceCoords, CoordStruct const& pTargetCoords, AbstractClass const* const pSource,
-		AbstractClass const* const pTarget, HouseClass* pOwner, WeaponTypeClass* pWeapon, bool isTargetingCheck = false)
+		AbstractClass const* const pTarget, HouseClass* pOwner, WeaponTypeClass* pWeapon, bool isTargetingCheck = false, bool subjectToGround = false)
 	{
 		// Does not currently need further checks.
-		return FindFirstObstacle(pSourceCoords, pTargetCoords, pSource, pTarget, pOwner, pWeapon->Projectile, isTargetingCheck);
+		return FindFirstObstacle(pSourceCoords, pTargetCoords, pSource, pTarget, pOwner, pWeapon->Projectile, isTargetingCheck, subjectToGround);
 	}
 
 	static bool SubjectToObstacles(BulletTypeClass* pBulletType, BulletTypeExt::ExtData*& pBulletTypeExt)
@@ -82,6 +87,27 @@ public:
 
 		return false;
 	}
+
+	static CoordStruct AddFLHToSourceCoords(const CoordStruct sourceCoords, TechnoClass* const pTechno, AbstractClass* const pTarget, bool& subjectToGround)
+	{
+		if (!subjectToGround)
+			return sourceCoords;
+
+		if (pTechno->IsInAir() || pTarget->IsInAir())
+		{
+			subjectToGround = false;
+			return sourceCoords;
+		}
+
+		auto coords = sourceCoords;
+		coords.Z = MapClass::Instance->GetCellFloorHeight(sourceCoords);
+		auto point = Point2D { sourceCoords.X, sourceCoords.Y };
+
+		if (MapClass::Instance->GetTargetCell(point)->ContainsBridge())
+			coords.Z += CellClass::BridgeHeight;
+
+		return coords + pTechno->GetFLH(pTechno->SelectWeapon(pTarget), CoordStruct::Empty) - pTechno->GetRenderCoords();
+	}
 };
 
 // Hooks
@@ -97,7 +123,7 @@ DEFINE_HOOK(0x4688A9, BulletClass_Unlimbo_Obstacles, 0x6)
 	if (pThis->Type->Inviso)
 	{
 		auto const pOwner = pThis->Owner ? pThis->Owner->Owner : BulletExt::ExtMap.Find(pThis)->FirerHouse;
-		const auto pObstacleCell = BulletObstacleHelper::FindFirstObstacle(*sourceCoords, targetCoords, pThis->Owner, pThis->Target, pOwner, pThis->Type, false);
+		const auto pObstacleCell = BulletObstacleHelper::FindFirstObstacle(*sourceCoords, targetCoords, pThis->Owner, pThis->Target, pOwner, pThis->Type, false, false);
 
 		if (pObstacleCell)
 		{
@@ -134,7 +160,6 @@ DEFINE_HOOK(0x468C86, BulletClass_ShouldExplode_Obstacles, 0xA)
 			return Explode;
 	}
 
-
 	// Restore overridden instructions.
 	R->EAX(pThis->GetHeight());
 	return SkipGameCode;
@@ -154,6 +179,22 @@ DEFINE_HOOK(0x6F7261, TechnoClass_InRange_SetContext, 0x5)
 	return 0;
 }
 
+DEFINE_HOOK(0x6F737F, TechnoClass_InRange_WeaponMinimumRange, 0x6)
+{
+	enum { SkipGameCode = 0x6F7385 };
+
+	GET(WeaponTypeClass*, pWeapon, EDX);
+
+	auto pTechno = InRangeTemp::Techno;
+
+	if (const auto keepRange = WeaponTypeExt::GetTechnoKeepRange(pWeapon, pTechno, true))
+		R->ECX(keepRange);
+	else
+		return 0;
+
+	return SkipGameCode;
+}
+
 DEFINE_HOOK(0x6F7647, TechnoClass_InRange_Obstacles, 0x5)
 {
 	GET_BASE(WeaponTypeClass*, pWeapon, 0x10);
@@ -166,7 +207,11 @@ DEFINE_HOOK(0x6F7647, TechnoClass_InRange_Obstacles, 0x5)
 	auto pTechno = InRangeTemp::Techno;
 
 	if (!pObstacleCell)
-		pObstacleCell = BulletObstacleHelper::FindFirstImpenetrableObstacle(*pSourceCoords, targetCoords, pTechno, pTarget, pTechno->Owner, pWeapon, true);
+	{
+		auto subjectToGround = BulletTypeExt::ExtMap.Find(pWeapon->Projectile)->SubjectToGround.Get(); // Make AI search for suitable attack locations.
+		const auto newSourceCoords = BulletObstacleHelper::AddFLHToSourceCoords(*pSourceCoords, pTechno, pTarget, subjectToGround);
+		pObstacleCell = BulletObstacleHelper::FindFirstImpenetrableObstacle(newSourceCoords, targetCoords, pTechno, pTarget, pTechno->Owner, pWeapon, true, subjectToGround);
+	}
 
 	InRangeTemp::Techno = nullptr;
 

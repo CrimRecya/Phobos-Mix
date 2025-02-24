@@ -28,6 +28,8 @@ public:
 		std::vector<LaserTrailClass> LaserTrails;
 		bool SnappedToTarget; // Used for custom trajectory projectile target snap checks
 		int DamageNumberOffset;
+		TechnoClass* LimboedLauncher;
+		DirType LimboedDir;
 
 		TrajectoryPointer Trajectory;
 
@@ -42,6 +44,8 @@ public:
 			, Trajectory { nullptr }
 			, SnappedToTarget { false }
 			, DamageNumberOffset { INT32_MIN }
+			, LimboedLauncher { nullptr }
+			, LimboedDir { 0 }
 		{ }
 
 		virtual ~ExtData() = default;
@@ -68,4 +72,13 @@ public:
 	};
 
 	static ExtContainer ExtMap;
+
+	static void SimulatedFiringUnlimbo(BulletClass* pBullet, HouseClass* pHouse, WeaponTypeClass* pWeapon, const CoordStruct& sourceCoords, bool randomVelocity);
+	static void SimulatedFiringEffects(BulletClass* pBullet, HouseClass* pHouse, ObjectClass* pAttach, bool firingEffect, bool visualEffect);
+	static inline void SimulatedFiringAnim(BulletClass* pBullet, HouseClass* pHouse, ObjectClass* pAttach);
+	static inline void SimulatedFiringReport(BulletClass* pBullet);
+	static inline void SimulatedFiringLaser(BulletClass* pBullet, HouseClass* pHouse);
+	static inline void SimulatedFiringElectricBolt(BulletClass* pBullet);
+	static inline void SimulatedFiringRadBeam(BulletClass* pBullet, HouseClass* pHouse);
+	static inline void SimulatedFiringParticleSystem(BulletClass* pBullet, HouseClass* pHouse);
 };

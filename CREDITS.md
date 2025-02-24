@@ -133,6 +133,7 @@ This page lists all the individual contributions to the project by their author.
   - Shared ammo logic
   - Customizable FLH when infantry is prone or deployed
   - Initial strength for cloned infantry
+  - Grant new superweapons in superweapons
   - Map Events 604 & 605 for checking if a specific Techno enters in a cell
 - **Starkku**:
   - Misc. minor bugfixes & improvements
@@ -241,6 +242,8 @@ This page lists all the individual contributions to the project by their author.
   - Customizable ChronoSphere teleport delays for units
   - Allowed and disallowed types for `FactoryPlant`
   - Forbidding parallel AI queues for specific TechnoTypes
+  - Vehicles keeping target on move command
+  - Reimplemented `Airburst` & `Splits` logic with more customization options
   - Nonprovocative Warheads
   - Customizing effect of level lighting on air units
   - Reimplemented `Airburst` & `Splits` logic with more customization options
@@ -351,6 +354,8 @@ This page lists all the individual contributions to the project by their author.
    - Tunnel/Walk/Mech locomotor being stuck when moving too fast bugfix
    - Assign Super Weapon cameo to any sidebar tab
    - Fix impassable invisible barrier created by chronosphere on uncrushable unit.
+   - Fix amphibious harvesters can not automatically return to refineries with `WaterBound`
+   - Exclusive SuperWeapon Sidebar
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**
    - Customizable ShowTimer priority of superweapons
@@ -377,6 +382,8 @@ This page lists all the individual contributions to the project by their author.
   - Re-enable the Veinhole Monster and Weeds from TS
   - Recreate the weed-charging of SWs like the TS Chemical Missile
   - Allow to change the speed of gas particles
+- **NaotoYuuki**
+  - Vertical & meteor trajectory projectile prototypes
 - **CrimRecya**
   - Fix `LimboKill` not working reliably
   - Allow using waypoints, area guard and attack move with aircraft
@@ -384,10 +391,41 @@ This page lists all the individual contributions to the project by their author.
   - Fix aircraft `MovementZone` and `SpeedType` inconsistencies
   - Use 2D distance instead of 3D to check whether in air team members have arrived destination
   - Enhanced Straight trajectory
-  - Enable Building Production Queue
+  - Enable building production queue
   - Fix for sidebar not updating queued unit numbers when on hold
   - New Parabola trajectory
   - Enhanced Bombard trajectory
+  - No turret unit turn to the target
+  - Damage multiplier for different houses
+  - Projectile subject to ground check before firing
+  - New Disperse trajectory
+  - New Engrave trajectory
+  - New Tracing trajectory
+  - Technos recount current burst index when change the firing weapon
+  - Technos will maintain a suitable distance after firing
+  - Units will not always stuck in the factory
+  - Jumpjet Climbing Logic Enhancement
+  - Several new Infotypes, no display in specific status and a new single frame display method
+  - Display factories, superweapons, iron curtain and temporal progress on specific technos
+  - Customized Vehicle Turret Rotation
+  - Exclusive SuperWeapon Sidebar
+  - Observer sidebar in skirmish game mode
+  - Building placing and deploying logic enhancement
+  - Techno base normal and new placing grids
+  - Grey cameo preview and cameo overlays
+  - Optimize aircrafts stop action and allow they using area guard and attack moving
+  - Exclusive Sidebar for Superweapons
+  - Draw visual effects for airburst weapons
+  - Delay automatic attack on the controlled unit
+  - Aggressive attack move mission
+  - No rearm and reload in EMP or temporal
+  - Manually empty and reload ammo
+  - Sell or undeploy building on impact
+  - Extended gattling rate down logic
+  - Allow merging AOE damage to buildings into one
+  - Distribution click action mode
+  - Jumpjet Tilts While Moving
+  - Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll
 - **Ollerus**
   - Build limit group enhancement
   - Customizable rocker amplitude
@@ -407,8 +445,21 @@ This page lists all the individual contributions to the project by their author.
   - Parasite returning bug fix
   - Bunkerable checks dehardcode
   - Prevent the units with locomotors that cause problems from entering the tank bunker
+  - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller
+  - `Spawner.RecycleRange`
+  - `Spawner.RecycleAnim`
+  - Fixed the bug that spawned can not return to buildings with foundation bigger than 1x1
+  - `CellSpread.Cylinder`
+  - `AffectsInAir` and `AffectsOnFloor`
+  - Infantry fire while moving
+  - Weapon range finding in cylinder
+  - Units are now unable to kick out from a factory that is in construction process
+  - No turret unit turn to the target
+  - Units are now unable to kick out from a factory that is in construction process
 - **tyuah8** - Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix
-- **Aephiex** - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
+- **Aephiex**
+  - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
+  - Aggressive stance toggle command (auto target unarmed enemy buildings)
 - **Multfinite** - Allow to toggle main exception handler via command line argument `-ExceptionHandler=boolean`
 - **Ares developers**
   - YRpp and Syringe which are used, save/load, project foundation and generally useful code from Ares

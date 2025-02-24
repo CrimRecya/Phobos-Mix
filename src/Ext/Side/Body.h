@@ -36,6 +36,16 @@ public:
 		Nullable<int> ToolTip_Background_Opacity;
 		Nullable<float> ToolTip_Background_BlurSize;
 		Valueable<int> BriefingTheme;
+		PhobosPCXFile SuperWeaponSidebar_OnPCX;
+		PhobosPCXFile SuperWeaponSidebar_OffPCX;
+		PhobosPCXFile SuperWeaponSidebar_TopPCX;
+		PhobosPCXFile SuperWeaponSidebar_CenterPCX;
+		PhobosPCXFile SuperWeaponSidebar_BottomPCX;
+		Valueable<SHPStruct*> SelectedInfo_Main;
+		Valueable<SHPStruct*> SelectedInfo_Buff;
+		Valueable<SHPStruct*> SelectedInfo_Button;
+		Valueable<SHPStruct*> SelectedInfo_Bottom;
+		CustomPalette SelectedInfo_Palette;
 
 		ExtData(SideClass* OwnerObject) : Extension<SideClass>(OwnerObject)
 			, ArrayIndex { -1 }
@@ -58,6 +68,16 @@ public:
 			, ToolTip_Background_Opacity { }
 			, ToolTip_Background_BlurSize { }
 			, BriefingTheme { -1 }
+			, SuperWeaponSidebar_OnPCX {}
+			, SuperWeaponSidebar_OffPCX {}
+			, SuperWeaponSidebar_TopPCX {}
+			, SuperWeaponSidebar_CenterPCX {}
+			, SuperWeaponSidebar_BottomPCX {}
+			, SelectedInfo_Main { nullptr }
+			, SelectedInfo_Buff { nullptr }
+			, SelectedInfo_Button { nullptr }
+			, SelectedInfo_Bottom { nullptr }
+			, SelectedInfo_Palette {}
 		{ }
 
 		virtual ~ExtData() = default;

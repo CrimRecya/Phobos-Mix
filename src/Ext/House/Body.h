@@ -9,6 +9,15 @@
 
 #include <map>
 
+struct PlacingBuildingStruct
+{
+	BuildingTypeClass* Type;
+	BuildingTypeClass* DrawType;
+	int Times;
+	CDTimerClass Timer;
+	CellStruct TopLeft;
+};
+
 class HouseExt
 {
 public:
@@ -23,6 +32,11 @@ public:
 	public:
 		std::map<int, int> PowerPlantEnhancers;
 		std::vector<BuildingClass*> OwnedLimboDeliveredBuildings;
+
+		std::vector<UnitClass*> OwnedDeployingUnits;
+		PlacingBuildingStruct Common;
+		PlacingBuildingStruct Combat;
+		int LastRefineryBuildFrame;
 
 		CounterClass LimboAircraft;  // Currently owned aircraft in limbo
 		CounterClass LimboBuildings; // Currently owned buildings in limbo
@@ -63,9 +77,15 @@ public:
 		};
 		std::vector<SWExt> SuperExts;
 
+		CDTimerClass SpyEffect_RadarJamTimer;
+
 		ExtData(HouseClass* OwnerObject) : Extension<HouseClass>(OwnerObject)
 			, PowerPlantEnhancers {}
 			, OwnedLimboDeliveredBuildings {}
+			, OwnedDeployingUnits {}
+			, Common { nullptr, nullptr, 0 }
+			, Combat { nullptr, nullptr, 0 }
+			, LastRefineryBuildFrame { 0 }
 			, LimboAircraft {}
 			, LimboBuildings {}
 			, LimboInfantry {}
@@ -89,6 +109,7 @@ public:
 			, AIFireSaleDelayTimer {}
 			, SuspendedEMPulseSWs {}
 			, SuperExts(SuperWeaponTypeClass::Array->Count)
+			, SpyEffect_RadarJamTimer {}
 		{ }
 
 		bool OwnsLimboDeliveredBuilding(BuildingClass* pBuilding);
@@ -183,4 +204,10 @@ public:
 
 	static CanBuildResult BuildLimitGroupCheck(const HouseClass* pThis, const TechnoTypeClass* pItem, bool buildLimitOnly, bool includeQueued);
 	static bool ReachedBuildLimit(const HouseClass* pHouse, const TechnoTypeClass* pType, bool ignoreQueued);
+	static int CountOwnedPresentExt(HouseClass* pHouse, TechnoTypeClass* pTechnoType, bool upgrade = false, bool deploy = false);
+	static int CountOwnedPresentWithDeploy(HouseClass* pHouse, UnitTypeClass* pUnitType, bool deploy = false);
+	static int CountOwnedPresentWithDeployOrUpgrade(HouseClass* pHouse, BuildingTypeClass* pBuildingType, bool upgrade = false, bool deploy = false);
+	static int CountOwnedNowWithDeployOrUpgrade(HouseClass* pHouse, BuildingTypeClass* pBuildingType, bool upgrade = true, bool deploy = true);
+	static bool CheckOwnerBitfieldForCurrentPlayer(TechnoTypeClass* pType);
+	static void RecheckOwnerBitfieldForCurrentPlayer();
 };

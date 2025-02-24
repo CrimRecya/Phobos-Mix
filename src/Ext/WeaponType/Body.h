@@ -2,6 +2,7 @@
 #include <BulletClass.h>
 #include <WeaponTypeClass.h>
 #include <DiskLaserClass.h>
+#include <EBolt.h>
 #include <Helpers/Macro.h>
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
@@ -49,6 +50,8 @@ public:
 		ValueableVector<bool> ExtraWarheads_FullDetonation;
 		Nullable<WarheadTypeClass*> AmbientDamage_Warhead;
 		Valueable<bool> AmbientDamage_IgnoreTarget;
+		AEAttachInfoTypeClass AttachEffects;
+		Valueable<bool> AttachEffect_Enable;
 		ValueableVector<AttachEffectTypeClass*> AttachEffect_RequiredTypes;
 		ValueableVector<AttachEffectTypeClass*> AttachEffect_DisallowedTypes;
 		std::vector<std::string> AttachEffect_RequiredGroups;
@@ -59,7 +62,24 @@ public:
 		ValueableVector<int> AttachEffect_DisallowedMaxCounts;
 		Valueable<bool> AttachEffect_CheckOnFirer;
 		Valueable<bool> AttachEffect_IgnoreFromSameSource;
+		Valueable<Leptons> KeepRange;
+		Valueable<bool> KeepRange_AllowAI;
+		Valueable<bool> KeepRange_AllowPlayer;
+		Nullable<bool> CylinderRangefinding;
+		Nullable<bool> AttackIronCurtain;
+		Valueable<bool> Burst_NoDelay;
+		Valueable<bool> UnlimboDetonate;
+		Valueable<bool> UnlimboDetonate_Force;
+		Valueable<bool> ResetGattlingValue;
+		Valueable<bool> AddtionalDamage_GattlingValue;
+		Valueable<double> AddtionalDamage_GattlingValue_Mult;
 		Valueable<bool> KickOutPassengers;
+
+		Nullable<ColorStruct> Beam_Color;
+		Valueable<int> Beam_Duration;
+		Valueable<double> Beam_Amplitude;
+		Valueable<bool> Beam_IsHouseColor;
+		Valueable<int> LaserThickness;
 
 		ExtData(WeaponTypeClass* OwnerObject) : Extension<WeaponTypeClass>(OwnerObject)
 			, DiskLaser_Radius { DiskLaserClass::Radius }
@@ -90,6 +110,8 @@ public:
 			, ExtraWarheads_FullDetonation {}
 			, AmbientDamage_Warhead {}
 			, AmbientDamage_IgnoreTarget { false }
+			, AttachEffects {}
+			, AttachEffect_Enable { false }
 			, AttachEffect_RequiredTypes {}
 			, AttachEffect_DisallowedTypes {}
 			, AttachEffect_RequiredGroups {}
@@ -100,7 +122,23 @@ public:
 			, AttachEffect_DisallowedMaxCounts {}
 			, AttachEffect_CheckOnFirer { false }
 			, AttachEffect_IgnoreFromSameSource { false }
+			, KeepRange { Leptons(0) }
+			, KeepRange_AllowAI { false }
+			, KeepRange_AllowPlayer { false }
+			, CylinderRangefinding {}
+			, AttackIronCurtain {}
+			, Burst_NoDelay { false }
+			, UnlimboDetonate { false }
+			, UnlimboDetonate_Force { false }
+			, ResetGattlingValue { false }
+			, AddtionalDamage_GattlingValue { false }
+			, AddtionalDamage_GattlingValue_Mult { 1.0 }
 			, KickOutPassengers { true }
+			, Beam_Color {}
+			, Beam_Duration { 15 }
+			, Beam_Amplitude { 40.0 }
+			, Beam_IsHouseColor { false }
+			, LaserThickness { 3 }
 		{ }
 
 		int GetBurstDelay(int burstIndex) const;
@@ -136,6 +174,8 @@ public:
 	static bool SaveGlobals(PhobosStreamWriter& Stm);
 
 	static double OldRadius;
+	static PhobosMap<EBolt*, const WeaponTypeExt::ExtData*> BoltWeaponMap;
+	static const WeaponTypeExt::ExtData* BoltWeaponType;
 
 	static void DetonateAt(WeaponTypeClass* pThis, AbstractClass* pTarget, TechnoClass* pOwner, HouseClass* pFiringHouse = nullptr);
 	static void DetonateAt(WeaponTypeClass* pThis, AbstractClass* pTarget, TechnoClass* pOwner, int damage, HouseClass* pFiringHouse = nullptr);
@@ -143,4 +183,5 @@ public:
 	static void DetonateAt(WeaponTypeClass* pThis, const CoordStruct& coords, TechnoClass* pOwner, int damage, HouseClass* pFiringHouse = nullptr, AbstractClass* pTarget = nullptr);
 	static int GetRangeWithModifiers(WeaponTypeClass* pThis, TechnoClass* pFirer);
 	static int GetRangeWithModifiers(WeaponTypeClass* pThis, TechnoClass* pFirer, int range);
+	static int GetTechnoKeepRange(WeaponTypeClass* pThis, TechnoClass* pFirer, bool mode);
 };

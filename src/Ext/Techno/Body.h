@@ -28,6 +28,8 @@ public:
 		std::vector<LaserTrailClass> LaserTrails;
 		std::vector<std::unique_ptr<AttachEffectClass>> AttachedEffects;
 		AttachEffectTechnoProperties AE;
+		bool SubterraneanHarvFreshFromFactory;
+		AbstractClass* SubterraneanHarvRallyDest;
 		bool ReceiveDamage;
 		bool LastKillWasTeamTarget;
 		CDTimerClass PassengerDeletionTimer;
@@ -48,7 +50,27 @@ public:
 		bool LastRearmWasFullDelay;
 		bool CanCloakDuringRearm; // Current rearm timer was started by DecloakToFire=no weapon.
 		int WHAnimRemainingCreationInterval;
-		bool CanCurrentlyDeployIntoBuilding; // Only set on UnitClass technos with DeploysInto set in multiplayer games, recalculated once per frame so no need to serialize.
+		bool UnitIdleIsSelected;
+		CDTimerClass UnitIdleActionTimer;
+		CDTimerClass UnitIdleActionGapTimer;
+		CDTimerClass UnitAutoDeployTimer;
+		WeaponTypeClass* LastWeaponType;
+		CoordStruct LastWeaponFLH;
+		int LastHurtFrame;
+		int BeControlledThreatFrame;
+		DWORD LastTargetID;
+		int AccumulatedGattlingValue;
+		bool ShouldUpdateGattlingValue;
+		int ScatteringStopFrame;
+		int MyTargetingFrame;
+		int AttackMoveFollowerTempCount;
+		CellClass* AutoTargetedWallCell;
+		bool HasCachedClickMission;
+		Mission CachedMission;
+		AbstractClass* CachedCell;
+		AbstractClass* CachedTarget;
+		bool HasCachedClickEvent;
+		EventType CachedEventType;
 		CellClass* FiringObstacleCell; // Set on firing if there is an obstacle cell between target and techno, used for updating WaveClass target etc.
 		bool IsDetachingForCloak; // Used for checking animation detaching, set to true before calling Detach_All() on techno when this anim is attached to and to false after when cloaking only.
 
@@ -60,12 +82,16 @@ public:
 		bool IsBeingChronoSphered;             // Set to true on units currently being ChronoSphered, does not apply to Ares-ChronoSphere'd buildings or Chrono reinforcements.
 		bool KeepTargetOnMove;
 
+		bool AggressiveStance;                  // Aggressive stance that will auto target buildings
+
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
 			, Shield {}
 			, LaserTrails {}
 			, AttachedEffects {}
 			, AE {}
+			, SubterraneanHarvFreshFromFactory { false }
+			, SubterraneanHarvRallyDest { nullptr }
 			, ReceiveDamage { false }
 			, LastKillWasTeamTarget { false }
 			, PassengerDeletionTimer {}
@@ -86,13 +112,34 @@ public:
 			, LastRearmWasFullDelay { false }
 			, CanCloakDuringRearm { false }
 			, WHAnimRemainingCreationInterval { 0 }
-			, CanCurrentlyDeployIntoBuilding { false }
+			, UnitIdleIsSelected { false }
+			, UnitIdleActionTimer {}
+			, UnitIdleActionGapTimer {}
+			, UnitAutoDeployTimer {}
+			, LastWeaponType {}
+			, LastWeaponFLH {}
+			, LastHurtFrame { 0 }
+			, BeControlledThreatFrame { 0 }
+			, LastTargetID { 0xFFFFFFFF }
+			, AccumulatedGattlingValue { 0 }
+			, ShouldUpdateGattlingValue { false }
+			, ScatteringStopFrame { 0 }
+			, MyTargetingFrame { ScenarioClass::Instance->Random.RandomRanged(0,15) }
+			, AttackMoveFollowerTempCount { 0 }
+			, AutoTargetedWallCell{ nullptr }
+			, HasCachedClickMission { false }
+			, CachedMission { Mission::None }
+			, CachedCell { nullptr }
+			, CachedTarget { nullptr }
+			, HasCachedClickEvent { false }
+			, CachedEventType { EventType::LAST_EVENT }
 			, FiringObstacleCell {}
 			, IsDetachingForCloak { false }
 			, OriginalPassengerOwner {}
 			, HasRemainingWarpInDelay { false }
 			, LastWarpInDelay { 0 }
 			, IsBeingChronoSphered { false }
+			, AggressiveStance { false }
 			, KeepTargetOnMove { false }
 		{ }
 
@@ -108,20 +155,35 @@ public:
 		void UpdateTypeData(TechnoTypeClass* currentType);
 		void UpdateLaserTrails();
 		void UpdateAttachEffects();
+		void UpdateGattlingRateDownReset();
 		void UpdateCumulativeAttachEffects(AttachEffectTypeClass* pAttachEffectType, AttachEffectClass* pRemoved = nullptr);
 		void RecalculateStatMultipliers();
 		void UpdateTemporal();
 		void UpdateMindControlAnim();
+		void UpdateRecountBurst();
+		void UpdateRearmInEMPState();
+		void UpdateRearmInTemporal();
 		void InitializeLaserTrails();
 		void InitializeAttachEffects();
 		void UpdateSelfOwnedAttachEffects();
 		bool HasAttachedEffects(std::vector<AttachEffectTypeClass*> attachEffectTypes, bool requireAll, bool ignoreSameSource, TechnoClass* pInvoker, AbstractClass* pSource, std::vector<int> const* minCounts, std::vector<int> const* maxCounts) const;
 		int GetAttachedEffectCumulativeCount(AttachEffectTypeClass* pAttachEffectType, bool ignoreSameSource = false, TechnoClass* pInvoker = nullptr, AbstractClass* pSource = nullptr) const;
+		void InitializeDisplayInfo();
+		void StopIdleAction();
+		void ApplyIdleAction();
+		void ManualIdleAction();
+		void StopRotateWithNewROT(int ROT = -1);
+		void UpdateCachedClick();
 
 		virtual ~ExtData() override;
-		virtual void InvalidatePointer(void* ptr, bool bRemoved) override { }
+		virtual void InvalidatePointer(void* ptr, bool bRemoved) override;
 		virtual void LoadFromStream(PhobosStreamReader& Stm) override;
 		virtual void SaveToStream(PhobosStreamWriter& Stm) override;
+
+		void InitAggressiveStance();
+		bool GetAggressiveStance() const;
+		void ToggleAggressiveStance();
+		bool CanToggleAggressiveStance();
 
 	private:
 		template <typename T>
@@ -135,7 +197,23 @@ public:
 		~ExtContainer();
 	};
 
+	struct DrawFrameStruct
+	{
+		int TopLength;
+		int TopFrame;
+		SHPStruct* TopPipSHP;
+		int MidLength;
+		int MidFrame;
+		SHPStruct* MidPipSHP;
+		int MaxLength;
+		int BrdFrame;
+		Point2D* Location;
+		RectangleStruct* Bounds;
+	};
+
 	static ExtContainer ExtMap;
+
+	static UnitClass* Deployer;
 
 	static bool LoadGlobals(PhobosStreamReader& Stm);
 	static bool SaveGlobals(PhobosStreamWriter& Stm);
@@ -171,6 +249,12 @@ public:
 	static int GetCustomTintColor(TechnoClass* pThis);
 	static int GetCustomTintIntensity(TechnoClass* pThis);
 	static void ApplyCustomTintValues(TechnoClass* pThis, int& color, int& intensity);
+	static void DrawFactoryProgress(BuildingClass* pThis, RectangleStruct* pBounds, Point2D basePosition);
+	static void DrawSuperProgress(BuildingClass* pThis, RectangleStruct* pBounds, Point2D basePosition);
+	static void DrawIronCurtainProgress(TechnoClass* pThis, RectangleStruct* pBounds, Point2D basePosition, bool isBuilding, bool isInfantry);
+	static void DrawTemporalProgress(TechnoClass* pThis, RectangleStruct* pBounds, Point2D basePosition, bool isBuilding, bool isInfantry);
+	static void DrawVanillaStyleFootBar(DrawFrameStruct* pDraw);
+	static void DrawVanillaStyleBuildingBar(DrawFrameStruct* pDraw);
 	static Point2D GetScreenLocation(TechnoClass* pThis);
 	static Point2D GetFootSelectBracketPosition(TechnoClass* pThis, Anchor anchor);
 	static Point2D GetBuildingSelectBracketPosition(TechnoClass* pThis, BuildingSelectBracketPosition bracketPosition);

@@ -595,6 +595,7 @@ bool ScriptExt::EvaluateObjectWithMask(TechnoClass* pTechno, int mask, int attac
 	BuildingTypeClass* pTypeBuilding = pTechno->WhatAmI() == AbstractType::Building ? static_cast<BuildingTypeClass*>(pTechnoType) : nullptr;
 	BuildingTypeExt::ExtData* pBuildingTypeExt = nullptr;
 	UnitTypeClass* pTypeUnit = pTechno->WhatAmI() == AbstractType::Unit ? static_cast<UnitTypeClass*>(pTechnoType) : nullptr;
+	BuildingTypeClass* pTypeUnitDeploysIntoType = pTypeUnit && pTypeUnit->DeploysInto ? pTypeUnit->DeploysInto : nullptr;
 	WeaponTypeClass* pWeaponPrimary = nullptr;
 	WeaponTypeClass* pWeaponSecondary = nullptr;
 	TechnoClass* pTarget = nullptr;
@@ -1112,6 +1113,44 @@ bool ScriptExt::EvaluateObjectWithMask(TechnoClass* pTechno, int mask, int attac
 		{
 			return true;
 		}
+
+		break;
+
+	case 37:
+		// Factorys on land
+
+		if (!pTechno->Owner->IsNeutral()
+			&& (pTypeBuilding && pTypeBuilding->Factory != AbstractType::None
+			|| pTypeUnitDeploysIntoType && pTypeUnitDeploysIntoType->Factory != AbstractType::None)
+			&& pTechno->GetCell()->LandType != LandType::Water)
+		{
+			return true;
+		}
+
+		break;
+
+	case 38:
+		// Buildings on land
+
+		if (!pTechno->Owner->IsNeutral()
+			&& (pTypeBuilding || pTypeUnitDeploysIntoType)
+			&& pTechno->GetCell()->LandType != LandType::Water)
+		{
+			return true;
+		}
+
+		break;
+
+	case 39:
+		// All technos on land
+
+		if (!pTechno->Owner->IsNeutral()
+			&& pTechno->GetCell()->LandType != LandType::Water)
+		{
+			return true;
+		}
+
+		break;
 
 	default:
 		break;

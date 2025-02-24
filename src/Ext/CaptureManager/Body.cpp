@@ -1,5 +1,7 @@
 #include "Body.h"
 
+#include <Ext/Techno/Body.h>
+
 bool CaptureManagerExt::CanCapture(CaptureManagerClass* pManager, TechnoClass* pTarget)
 {
 	if (pManager->MaxControlNodes == 1)
@@ -47,6 +49,9 @@ bool CaptureManagerExt::FreeUnit(CaptureManagerClass* pManager, TechnoClass* pTa
 				auto pOriginOwner = pNode->OriginalOwner->Defeated ?
 					HouseClass::FindNeutral() : pNode->OriginalOwner;
 
+				if (const auto pExt = TechnoExt::ExtMap.Find(pTarget))
+					pExt->BeControlledThreatFrame = 0;
+
 				pTarget->SetOwningHouse(pOriginOwner, !silent);
 				pManager->DecideUnitFate(pTarget);
 				pTarget->MindControlledBy = nullptr;
@@ -64,7 +69,7 @@ bool CaptureManagerExt::FreeUnit(CaptureManagerClass* pManager, TechnoClass* pTa
 }
 
 bool CaptureManagerExt::CaptureUnit(CaptureManagerClass* pManager, TechnoClass* pTarget,
-	bool bRemoveFirst, AnimTypeClass* pControlledAnimType, bool silent)
+	bool bRemoveFirst, AnimTypeClass* pControlledAnimType, bool silent, int threatDelay)
 {
 	if (CaptureManagerExt::CanCapture(pManager, pTarget))
 	{
@@ -80,14 +85,19 @@ bool CaptureManagerExt::CaptureUnit(CaptureManagerClass* pManager, TechnoClass* 
 					CaptureManagerExt::FreeUnit(pManager, pManager->ControlNodes[0]->Unit);
 		}
 
-		auto pControlNode = GameCreate<ControlNode>();
-		if (pControlNode)
+		if (auto pControlNode = GameCreate<ControlNode>())
 		{
 			pControlNode->OriginalOwner = pTarget->Owner;
 			pControlNode->Unit = pTarget;
 
 			pManager->ControlNodes.AddItem(pControlNode);
 			pControlNode->LinkDrawTimer.Start(RulesClass::Instance->MindControlAttackLineFrames);
+
+			if (threatDelay > 0)
+			{
+				if (const auto pExt = TechnoExt::ExtMap.Find(pTarget))
+					pExt->BeControlledThreatFrame = Unsorted::CurrentFrame() + threatDelay;
+			}
 
 			if (pTarget->SetOwningHouse(pManager->Owner->Owner, !silent))
 			{
@@ -113,19 +123,17 @@ bool CaptureManagerExt::CaptureUnit(CaptureManagerClass* pManager, TechnoClass* 
 
 					if (pBld)
 						pAnim->ZAdjust = -1024;
-
 				}
 
 				return true;
 			}
-
 		}
 	}
 
 	return false;
 }
 
-bool CaptureManagerExt::CaptureUnit(CaptureManagerClass* pManager, AbstractClass* pTechno, AnimTypeClass* pControlledAnimType)
+bool CaptureManagerExt::CaptureUnit(CaptureManagerClass* pManager, AbstractClass* pTechno, AnimTypeClass* pControlledAnimType, int threatDelay)
 {
 	if (const auto pTarget = generic_cast<TechnoClass*>(pTechno))
 	{
@@ -133,7 +141,7 @@ bool CaptureManagerExt::CaptureUnit(CaptureManagerClass* pManager, AbstractClass
 		if (auto pTechnoTypeExt = TechnoTypeExt::ExtMap.Find(pManager->Owner->GetTechnoType()))
 			bRemoveFirst = pTechnoTypeExt->MultiMindControl_ReleaseVictim;
 
-		return CaptureManagerExt::CaptureUnit(pManager, pTarget, bRemoveFirst, pControlledAnimType);
+		return CaptureManagerExt::CaptureUnit(pManager, pTarget, bRemoveFirst, pControlledAnimType, false, threatDelay);
 	}
 
 	return false;

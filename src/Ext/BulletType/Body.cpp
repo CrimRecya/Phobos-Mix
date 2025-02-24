@@ -53,6 +53,18 @@ void BulletTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Arcing_AllowElevationInaccuracy.Read(exINI, pSection, "Arcing.AllowElevationInaccuracy");
 	this->ReturnWeapon.Read<true>(exINI, pSection, "ReturnWeapon");
 
+	this->SubjectToGround.Read(exINI, pSection, "SubjectToGround");
+
+	this->AU.Read(exINI, pSection, "AU");
+	this->BallisticScatter_IncreaseByRange.Read(exINI, pSection, "BallisticScatter.IncreaseByRange");
+	this->BallisticScatter_MinRange.Read(exINI, pSection, "BallisticScatter.MinRange");
+	this->BallisticScatter_MaxRange.Read(exINI, pSection, "BallisticScatter.MaxRange");
+	this->BallisticScatter_Min_InMinRange.Read(exINI, pSection, "BallisticScatter.Min.InMinRange");
+	this->BallisticScatter_Min_InMaxRange.Read(exINI, pSection, "BallisticScatter.Min.InMaxRange");
+	this->BallisticScatter_Max_InMinRange.Read(exINI, pSection, "BallisticScatter.Max.InMinRange");
+	this->BallisticScatter_Max_InMaxRange.Read(exINI, pSection, "BallisticScatter.Max.InMaxRange");
+	this->BallisticScatter_Chance.Read(exINI, pSection, "BallisticScatter.Chance");
+
 	this->Splits.Read(exINI, pSection, "Splits");
 	this->AirburstSpread.Read(exINI, pSection, "AirburstSpread");
 	this->RetargetAccuracy.Read(exINI, pSection, "RetargetAccuracy");
@@ -138,6 +150,16 @@ void BulletTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AAOnly)
 		.Process(this->Arcing_AllowElevationInaccuracy)
 		.Process(this->ReturnWeapon)
+		.Process(this->SubjectToGround)
+		.Process(this->AU)
+		.Process(this->BallisticScatter_IncreaseByRange)
+		.Process(this->BallisticScatter_MinRange)
+		.Process(this->BallisticScatter_MaxRange)
+		.Process(this->BallisticScatter_Min_InMinRange)
+		.Process(this->BallisticScatter_Min_InMaxRange)
+		.Process(this->BallisticScatter_Max_InMinRange)
+		.Process(this->BallisticScatter_Max_InMaxRange)
+		.Process(this->BallisticScatter_Chance)
 		.Process(this->Splits)
 		.Process(this->AirburstSpread)
 		.Process(this->RetargetAccuracy)
@@ -150,7 +172,6 @@ void BulletTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Splits_TargetCellRange)
 		.Process(this->Splits_UseWeaponTargeting)
 		.Process(this->AirburstWeapon_ApplyFirepowerMult)
-
 
 		.Process(this->TrajectoryType) // just keep this shit at last
 		;

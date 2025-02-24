@@ -1,4 +1,5 @@
 #include "Body.h"
+#include "Ext/House/Body.h"
 
 #include <BitFont.h>
 
@@ -339,9 +340,74 @@ bool BuildingExt::ExtData::HandleInfiltrate(HouseClass* pInfiltratorHouse, int m
 		idx = this->TypeExtData->SpyEffect_InfiltratorSuperWeapon;
 		if (idx >= 0)
 			launchTheSWHere(pInfiltratorHouse->Supers.Items[idx], pInfiltratorHouse);
+
+		auto jamTime = this->TypeExtData->SpyEffect_RadarJamDuration;
+
+		if (jamTime > 0)
+		{
+			pVictimHouse->RecheckRadar = true;
+			auto pVictimExt = HouseExt::ExtMap.Find(pVictimHouse);
+			if (pVictimExt->SpyEffect_RadarJamTimer.TimeLeft < jamTime)
+			{
+				pVictimExt->SpyEffect_RadarJamTimer.Stop();
+				pVictimExt->SpyEffect_RadarJamTimer.Start(jamTime);
+			}
+		}
 	}
 
 	return true;
+}
+
+void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
+{
+	if (const auto pTechno = pThis->GetNthLink())
+	{
+		if (const auto pUnit = abstract_cast<UnitClass*>(pTechno))
+		{
+			if (!pUnit->IsTether && pUnit->GetCurrentSpeed() <= 0)
+			{
+				if (const auto pTeam = pUnit->Team)
+					pTeam->LiberateMember(pUnit);
+
+				pThis->SendCommand(RadioCommand::NotifyUnlink, pUnit);
+				pUnit->QueueMission(Mission::Guard, false);
+				return; // one after another
+			}
+		}
+	}
+
+	auto buffer = CoordStruct::Empty;
+	auto pCell = MapClass::Instance->GetCellAt(*pThis->GetExitCoords(&buffer, 0));
+	int i = 0;
+
+	while (true)
+	{
+		for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
+		{
+			if (const auto pUnit = abstract_cast<UnitClass*>(pObject))
+			{
+				if (pThis->Owner != pUnit->Owner || pUnit->IsTether)
+					continue;
+
+				const auto height = pUnit->GetHeight();
+
+				if (height < 0 || height > Unsorted::CellHeight)
+					continue;
+
+				if (const auto pTeam = pUnit->Team)
+					pTeam->LiberateMember(pUnit);
+
+				pThis->SendCommand(RadioCommand::RequestLink, pUnit);
+				pThis->QueueMission(Mission::Unload, false);
+				return; // one after another
+			}
+		}
+
+		if (++i >= 2)
+			return; // no stuck
+
+		pCell = pCell->GetNeighbourCell(FacingType::East);
+	}
 }
 
 // Get all cells covered by the building, optionally including those covered by OccupyHeight.
