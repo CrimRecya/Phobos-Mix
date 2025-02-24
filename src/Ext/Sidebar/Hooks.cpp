@@ -107,16 +107,6 @@ DEFINE_HOOK(0x72FCB5, InitSideRectangles_CenterBackground, 0x5)
 	return 0;
 }
 
-#pragma region MarkRedraw
-
-DEFINE_HOOK(0x4F92DD, HouseClass_Update_RedrawSidebarWhenRecheckTechTree, 0x5)
-{
-	SidebarClass::Instance->SidebarBackgroundNeedsRedraw = true;
-	return 0;
-}
-
-#pragma endregion
-
 #pragma region DrawGreyCameoExtraCover
 
 DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
