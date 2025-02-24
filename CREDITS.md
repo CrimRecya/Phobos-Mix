@@ -381,7 +381,6 @@ This page lists all the individual contributions to the project by their author.
   - Allow to change the speed of gas particles
 - **CrimRecya**
   - Fix `LimboKill` not working reliably
-  - Exclusive SuperWeapon Sidebar
   - Allow using waypoints, area guard and attack move with aircraft
   - Fix `Stop` command not working so well in some cases
   - Fix aircraft `MovementZone` and `SpeedType` inconsistencies
@@ -404,6 +403,7 @@ This page lists all the individual contributions to the project by their author.
   - Several new Infotypes, no display in specific status and a new single frame display method
   - Display factories, superweapons, iron curtain and temporal progress on specific technos
   - Customized Vehicle Turret Rotation
+  - Exclusive SuperWeapon Sidebar
   - Observer sidebar in skirmish game mode
   - Building placing and deploying logic enhancement
   - Techno base normal and new placing grids
