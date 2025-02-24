@@ -18,6 +18,7 @@ void EventExt::RespondEvent()
 	{
 	case EventTypeExt::ManualReload:
 		this->RespondToManualReloadEvent();
+		break;
 	case EventTypeExt::ToggleAggressiveStance:
 		this->RespondToToggleAggressiveStance();
 		break;
