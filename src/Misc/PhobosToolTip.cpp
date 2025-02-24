@@ -1,7 +1,6 @@
 #include <Helpers/Macro.h>
 
 #include "PhobosToolTip.h"
-#include "TacticalButtons.h"
 
 #include <AircraftClass.h>
 #include <BuildingClass.h>
@@ -21,6 +20,7 @@
 #include <Ext/Scenario/Body.h>
 #include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
 #include <Ext/Sidebar/UniqueButton/UniqueTechnoColumnClass.h>
+#include <Ext/Sidebar/SelectedButton/SelectedInfoClass.h>
 
 #include <sstream>
 #include <iomanip>
@@ -251,21 +251,6 @@ DEFINE_HOOK(0x4AE51E, DisplayClass_GetToolTip_HelpText, 0x6)
 {
 	enum { ApplyToolTip = 0x4AE69D };
 
-	const auto pButtons = &TacticalButtonsClass::Instance;
-	const auto buttonIndex = pButtons->GetButtonIndex();
-
-	if (buttonIndex >= 0)
-	{
-		if (!buttonIndex)
-			R->EAX(0);
-		else if (pButtons->IndexInSelectButtons())
-			R->EAX(pButtons->HoveredSelected);
-		else
-			R->EAX(0);
-
-		return ApplyToolTip;
-	}
-
 	if (SWSidebarClass::IsEnabled())
 	{
 		if (const auto button = SWSidebarClass::Instance.CurrentButton)
@@ -304,6 +289,12 @@ DEFINE_HOOK(0x4AE51E, DisplayClass_GetToolTip_HelpText, 0x6)
 			R->EAX(vec[uniqueIndex]->TypeExtData->OwnerObject()->UIName);
 			return ApplyToolTip;
 		}
+	}
+
+	if (SelectedInfoClass::Instance.IsHovering)
+	{
+		R->EAX(0);
+		return ApplyToolTip;
 	}
 
 	return 0;

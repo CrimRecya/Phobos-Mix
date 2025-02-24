@@ -1,6 +1,6 @@
 #include "SelectedInfo.h"
 
-#include <Misc/TacticalButtons.h>
+#include <Ext/Sidebar/SelectedButton/SelectedInfoClass.h>
 
 const char* SelectedInfoCommandClass::GetName() const
 {
@@ -24,5 +24,5 @@ const wchar_t* SelectedInfoCommandClass::GetUIDescription() const
 
 void SelectedInfoCommandClass::Execute(WWKey eInput) const
 {
-	TacticalButtonsClass::Instance.SelectedSwitch();
+	SelectedInfoClass::Instance.SwitchVisible();
 }

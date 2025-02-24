@@ -12,6 +12,8 @@ void UniqueTechnoColumnClass::InitClear()
 			pButton = nullptr;
 		}
 	}
+
+	this->Hovering = -1;
 }
 
 void UniqueTechnoColumnClass::InitIO()
@@ -23,7 +25,7 @@ void UniqueTechnoColumnClass::InitIO()
 
 	for (int i = 0; i < 8; ++i)
 	{
-		const auto pButton = GameCreate<UniqueTechnoButtonClass>(UniqueTechnoButtonClass::StartID + i, position.X, position.Y, 60, 48);
+		const auto pButton = GameCreate<UniqueTechnoButtonClass>(UniqueTechnoColumnClass::StartID + i, position.X, position.Y);
 		position.Y += 50;
 
 		pButton->Zap();
@@ -38,7 +40,7 @@ void UniqueTechnoColumnClass::SwitchVisible()
 
 	for (int i = 0; i < 8; ++i)
 	{
-		if (auto& pButton = this->Buttons[i])
+		if (const auto& pButton = this->Buttons[i])
 			pButton->Disabled = !this->Visible;
 	}
 }

@@ -23,27 +23,9 @@ public:
 	// Button index N/A : Message Lists
 	bool MouseIsOverMessageLists(const Point2D* pMousePosition);
 
-	// Button index N/A : FPS Counter
-	void FPSCounterDraw();
-
 	// Button index N/A : Show Current Info
 	void CurrentSelectPathDraw();
 	void CurrentSelectInfoDraw();
-
-	// Button index 11-100 : Select buttons
-	bool IndexInSelectButtons();
-	inline void AddToCurrentSelect(TechnoTypeExt::ExtData* pTypeExt, int count, int checkIndex);
-	BSurface* SearchMissingCameo(AbstractType absType, SHPStruct* pSHP);
-	void SelectedTrigger(int buttonIndex, bool select);
-	void SelectedUpdate();
-	void SelectedDraw();
-	void SelectedSwitch();
-
-	struct SelectRecordStruct
-	{
-		TechnoTypeExt::ExtData* TypeExt { nullptr };
-		int Count { 0 };
-	};
 
 	// TODO New buttons
 
@@ -53,15 +35,7 @@ public:
 	// Button index N/A : Message Lists
 	bool OnMessages { false };
 
-	// Button index N/A : FPS Counter
-
 	// Button index N/A : Show Current Info
-
-	// Button index 11-100 : Select buttons
-	bool UpdateSelect { false };
-	int RecordIndex { 11 };
-	std::vector<SelectRecordStruct> CurrentSelectCameo {};
-	const wchar_t* HoveredSelected { nullptr };
 
 	// TODO New buttons
 

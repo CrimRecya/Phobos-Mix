@@ -506,7 +506,11 @@ DEFINE_HOOK(0x51D43F, InfantryClass_Scatter_ScatterRecord, 0x6)
 	GET(InfantryClass* const, pThis, ESI);
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x50, -0x38));
 
-	pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
+	if (pThis->CurrentMission == Mission::Area_Guard && pThis->ArchiveTarget == pThis->GetCell())
+		pThis->SetArchiveTarget(MapClass::Instance->GetCellAt(cell));
+	else
+		pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
+
 	TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame() + 60;
 
 	return ProcessNow;
@@ -527,7 +531,12 @@ DEFINE_HOOK(0x51D487, InfantryClass_Scatter_EnhancedScatter, 0x6)
 	if (cell != CellStruct::Empty)
 	{
 		pThis->QueueMission(Mission::Move, false);
-		pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
+
+		if (pThis->CurrentMission == Mission::Area_Guard && pThis->ArchiveTarget == pThis->GetCell())
+			pThis->SetArchiveTarget(MapClass::Instance->GetCellAt(cell));
+		else
+			pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
+
 		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame() + 60;
 	}
 
@@ -541,7 +550,10 @@ DEFINE_HOOK(0x743C91, UnitClass_Scatter_ScatterRecord, 0x7)
 	GET(UnitClass* const, pThis, EBP);
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x58, 0x4));
 
-	pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
+	if (pThis->CurrentMission == Mission::Area_Guard && pThis->ArchiveTarget == pThis->GetCell())
+		pThis->SetArchiveTarget(MapClass::Instance->GetCellAt(cell));
+	else
+		pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
 
 	if (RulesExt::Global()->ExtendedScatterAction)
 		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame() + 60;
@@ -563,7 +575,11 @@ DEFINE_HOOK(0x743E08, UnitClass_Scatter_EnhancedScatter, 0x7)
 
 	if (cell != CellStruct::Empty)
 	{
-		pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
+		if (pThis->CurrentMission == Mission::Area_Guard && pThis->ArchiveTarget == pThis->GetCell())
+			pThis->SetArchiveTarget(MapClass::Instance->GetCellAt(cell));
+		else
+			pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
+
 		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame() + 60;
 	}
 
