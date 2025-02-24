@@ -183,7 +183,7 @@ public:
 		Nullable<bool> Insignia_ShowEnemy;
 		std::vector<Promotable<SHPStruct*>> Insignia_Weapon;
 		std::vector<Promotable<int>> InsigniaFrame_Weapon;
-		std::vector<Vector3D<int>> InsigniaFrames_Weapon;
+		std::vector<Valueable<Vector3D<int>>> InsigniaFrames_Weapon;
 
 		Nullable<bool> TiltsWhenCrushes_Vehicles;
 		Nullable<bool> TiltsWhenCrushes_Overlays;
@@ -233,6 +233,8 @@ public:
 		ValueableVector<int> BuildLimitGroup_ExtraLimit_Nums;
 		ValueableVector<int> BuildLimitGroup_ExtraLimit_MaxCount;
 		Valueable<int> BuildLimitGroup_ExtraLimit_MaxNum;
+
+		Nullable<bool> NoTurret_TrackTarget;
 
 		Nullable<AnimTypeClass*> Wake;
 		Nullable<AnimTypeClass*> Wake_Grapple;
@@ -470,6 +472,8 @@ public:
 			, BuildLimitGroup_ExtraLimit_Nums {}
 			, BuildLimitGroup_ExtraLimit_MaxCount {}
 			, BuildLimitGroup_ExtraLimit_MaxNum { 0 }
+
+			, NoTurret_TrackTarget {}
 
 			, Wake { }
 			, Wake_Grapple { }
