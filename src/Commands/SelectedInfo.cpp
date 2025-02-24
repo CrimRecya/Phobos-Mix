@@ -14,7 +14,7 @@ const wchar_t* SelectedInfoCommandClass::GetUIName() const
 
 const wchar_t* SelectedInfoCommandClass::GetUICategory() const
 {
-	return CATEGORY_CONTROL;
+	return CATEGORY_INTERFACE;
 }
 
 const wchar_t* SelectedInfoCommandClass::GetUIDescription() const
