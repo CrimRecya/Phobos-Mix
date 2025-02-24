@@ -147,6 +147,7 @@ public:
 		Nullable<bool> Particle_AlphaImageIsLightFlash;
 
 		Nullable<bool> MergeBuildingDamage;
+
 		Nullable<double> DamageOwnerMultiplier;
 		Nullable<double> DamageAlliesMultiplier;
 		Nullable<double> DamageEnemiesMultiplier;
@@ -313,6 +314,7 @@ public:
 			, Particle_AlphaImageIsLightFlash {}
 
 			, MergeBuildingDamage {}
+
 			, DamageOwnerMultiplier {}
 			, DamageAlliesMultiplier {}
 			, DamageEnemiesMultiplier {}

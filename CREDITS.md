@@ -391,13 +391,14 @@ This page lists all the individual contributions to the project by their author.
   - Fix for sidebar not updating queued unit numbers when on hold
   - New Parabola trajectory
   - Enhanced Bombard trajectory
+  - No turret unit turn to the target
+  - Damage multiplier for different houses
   - Projectile subject to ground check before firing
   - New Disperse trajectory
   - New Engrave trajectory
   - New Tracing trajectory
   - Technos recount current burst index when change the firing weapon
   - Technos will maintain a suitable distance after firing
-  - Damage multiplier for different houses
   - Units will not always stuck in the factory
   - Jumpjet Climbing Logic Enhancement
   - Several new Infotypes, no display in specific status and a new single frame display method
@@ -412,7 +413,6 @@ This page lists all the individual contributions to the project by their author.
   - Aggressive attack move mission
   - No rearm and reload in EMP or temporal
   - Manually empty and reload ammo
-  - No turret unit turn to the target
   - Sell or undeploy building on impact
   - Extended gattling rate down logic
   - Allow merging AOE damage to buildings into one
@@ -438,8 +438,8 @@ This page lists all the individual contributions to the project by their author.
   - Parasite returning bug fix
   - Bunkerable checks dehardcode
   - Prevent the units with locomotors that cause problems from entering the tank bunker
-  - Units are now unable to kick out from a factory that is in construction process
   - No turret unit turn to the target
+  - Units are now unable to kick out from a factory that is in construction process
 - **tyuah8** - Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix
 - **Aephiex** - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
 - **Multfinite** - Allow to toggle main exception handler via command line argument `-ExceptionHandler=boolean`
