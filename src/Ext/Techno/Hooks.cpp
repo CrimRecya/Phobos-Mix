@@ -142,6 +142,7 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	pExt->InitializeLaserTrails();
 	pExt->InitializeAttachEffects();
 	pExt->InitializeDisplayInfo();
+	pExt->InitAggressiveStance();
 
 	if (RulesExt::Global()->CheckExtraBaseNormal && pExt->TypeExtData->ExtraBaseNormal)
 		ScenarioExt::Global()->BaseNormalTechnos.push_back(pExt);
@@ -149,7 +150,8 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	if (pExt->TypeExtData->UniqueTechno && pThis->Owner->IsControlledByCurrentPlayer())
 		ScenarioExt::Global()->OwnedUniqueTechnos.push_back(pExt);
 
-	pExt->InitAggressiveStance();
+	if (pExt->TypeExtData->Harvester_Counted)
+		HouseExt::ExtMap.Find(pThis->Owner)->OwnedCountedHarvesters.push_back(pThis);
 
 	return 0;
 }

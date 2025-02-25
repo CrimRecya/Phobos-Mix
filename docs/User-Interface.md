@@ -364,17 +364,10 @@ PlacementGrid.WaterFrames=1,0,0  ; integer, zero-based frame index - have techno
 - Writes currently hovered or last selected object info in log and shows a message. See [this](Miscellanous.md#dump-object-info) for details.
 - For localization add `TXT_DUMP_OBJECT_INFO` and `TXT_DUMP_OBJECT_INFO_DESC` into your `.csf` file.
 
-### `[ ]` Next Idle Harvester
+### `[ ]` Toggle Frame By Frame Mode
 
-- Selects and centers the camera on the next TechnoType that is counted via the [harvester counter](#harvester-counter) and is currently idle.
-- For localization add `TXT_NEXT_IDLE_HARVESTER` and `TXT_NEXT_IDLE_HARVESTER_DESC` into your `.csf` file.
-
-### `[ ]` Quicksave
-
-- Save the current singleplayer game.
-- For localization, add `TXT_QUICKSAVE`, `TXT_QUICKSAVE_DESC`, `TXT_QUICKSAVE_SUFFIX` and `MSG:NotAvailableInMultiplayer` into your `.csf` file.
-  - These vanilla CSF entries will be used: `TXT_SAVING_GAME`, `TXT_GAME_WAS_SAVED` and `TXT_ERROR_SAVING_GAME`.
-  - The save should be looks like `Allied Mission 25: Esther's Money - QuickSaved`.
+- Switches on/off [frame by frame mode](Miscellanous.md#frame-step-in).
+- For localization add `TXT_FRAME_BY_FRAME` and `TXT_FRAME_BY_FRAME_DESC` into your `.csf` file.
 
 ### `[ ]` Save Variables
 
@@ -392,14 +385,22 @@ PlacementGrid.WaterFrames=1,0,0  ; integer, zero-based frame index - have techno
 - For localization add `TXT_DIGITAL_DISPLAY` and `TXT_DIGITAL_DISPLAY_DESC` into your `.csf` file.
 
 ### `[ ]` Select Captured Units
+
 - Select the units within the current screen that are captured by non-permanent mind-controller.
 - If selected any unit, `MSG:SelectCaptured` is logged on the left-top of the screen, otherwise `MSG:NothingSelected` is logged.
 - For localization add `MSG:SelectCaptured`, `TXT_SELECT_CAPTURED` and `TXT_SELECT_CAPTURED_DESC` into your `.csf` file.
 
-### `[ ]` Toggle Frame By Frame Mode
+### `[ ]` Next Idle Harvester
 
-- Switches on/off [frame by frame mode](Miscellanous.md#frame-step-in).
-- For localization add `TXT_FRAME_BY_FRAME` and `TXT_FRAME_BY_FRAME_DESC` into your `.csf` file.
+- Selects and centers the camera on the next TechnoType that is counted via the [harvester counter](#harvester-counter) and is currently idle.
+- For localization add `TXT_NEXT_IDLE_HARVESTER` and `TXT_NEXT_IDLE_HARVESTER_DESC` into your `.csf` file.
+
+### `[ ]` Quicksave
+
+- Save the current singleplayer game.
+- For localization, add `TXT_QUICKSAVE`, `TXT_QUICKSAVE_DESC`, `TXT_QUICKSAVE_SUFFIX` and `MSG:NotAvailableInMultiplayer` into your `.csf` file.
+  - These vanilla CSF entries will be used: `TXT_SAVING_GAME`, `TXT_GAME_WAS_SAVED` and `TXT_ERROR_SAVING_GAME`.
+  - The save should be looks like `Allied Mission 25: Esther's Money - QuickSaved`.
 
 ### `[ ]` Exclusive SW Sidebar Shortcuts
 - Switches visible/invisible [this](#Exclusive-sidebar-for-superweapons).

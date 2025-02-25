@@ -30,6 +30,7 @@ public:
 		AttachEffectTechnoProperties AE;
 		bool SubterraneanHarvFreshFromFactory;
 		AbstractClass* SubterraneanHarvRallyDest;
+		int AnimRefCount; // Used to keep track of how many times this techno is referenced in anims f.ex Invoker, ParentBuilding etc., for pointer invalidation.
 		bool ReceiveDamage;
 		bool LastKillWasTeamTarget;
 		CDTimerClass PassengerDeletionTimer;
@@ -92,6 +93,7 @@ public:
 			, AE {}
 			, SubterraneanHarvFreshFromFactory { false }
 			, SubterraneanHarvRallyDest { nullptr }
+			, AnimRefCount { 0 }
 			, ReceiveDamage { false }
 			, LastKillWasTeamTarget { false }
 			, PassengerDeletionTimer {}
@@ -223,6 +225,7 @@ public:
 
 	static bool IsHarvesting(TechnoClass* pThis);
 	static bool HasAvailableDock(TechnoClass* pThis);
+	static bool HasRadioLinkWithDock(TechnoClass* pThis);
 
 	static CoordStruct GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct flh, bool turretFLH = false);
 
