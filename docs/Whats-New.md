@@ -351,15 +351,14 @@ New:
 - Distribution click action mode (by CrimRecya)
 - Jumpjet Tilts While Moving (by CrimRecya)
 - Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll (by CrimRecya)
-- Raise alert when technos are taking damage (by TaranDahl)
 - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller. (by TaranDahl)
-- Recycle spawned in long-range (by TaranDahl)
-- Play an anim when recycling a spawned (by TaranDahl)
+- Recycle spawner in long-range (by TaranDahl)
+- Play an anim when recycling a spawner (by TaranDahl)
+- Recycle the spawner on other FLH (by TaranDahl)
 - CellSpread in cylinder shape (by TaranDahl)
 - CellSpread damage check if victim is in air (by TaranDahl)
 - Toggle waypoint for building and aircraft (by TaranDahl)
 - Weapon range finding in cylinder (by TaranDahl)
-- Buildings with foundation bigger than 1x1 can now recycle spawned correctly (by TaranDahl)
 - Infantry firing while moving (by TaranDahl)
 - Fix the bug that parasite will vanish if it missed its target when its previous cell is occupied (by TaranDahl)
 - Grant new superweapons in superweapons (by FS-21).
@@ -373,6 +372,7 @@ Vanilla fixes:
 - Fix an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface (by NetsuNegi)
 - Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory (by CrimRecya & TaranDahl)
 - Observer sidebar in skirmish game mode (by CrimRecya)
+- Buildings with foundation bigger than 1x1 can now recycle spawned correctly (by TaranDahl)
 
 Fixes / interactions with other extensions:
 - Allowed `AuxBuilding` and Ares' `SW.Aux/NegBuildings` to count building upgrades (by Ollerus)

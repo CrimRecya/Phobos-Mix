@@ -296,6 +296,8 @@ public:
 
 		Valueable<int> Spawner_RecycleRange;
 		Valueable<AnimTypeClass*> Spawner_RecycleAnim;
+		Valueable<CoordStruct> Spawner_RecycleFLH;
+		Valueable<bool> Spawner_RecycleOnTurret;
 		Nullable<int> AINormalTargetingDelay;
 		Nullable<int> PlayerNormalTargetingDelay;
 		Nullable<int> AIGuardAreaTargetingDelay;
@@ -648,6 +650,8 @@ public:
 
 			, Spawner_RecycleRange { -1 }
 			, Spawner_RecycleAnim { nullptr }
+			, Spawner_RecycleFLH { {0,0,0} }
+			, Spawner_RecycleOnTurret { false }
 			, AINormalTargetingDelay {}
 			, PlayerNormalTargetingDelay {}
 			, AIGuardAreaTargetingDelay {}

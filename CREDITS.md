@@ -445,10 +445,11 @@ This page lists all the individual contributions to the project by their author.
   - Parasite returning bug fix
   - Bunkerable checks dehardcode
   - Prevent the units with locomotors that cause problems from entering the tank bunker
-  - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller
-  - `Spawner.RecycleRange`
-  - `Spawner.RecycleAnim`
+  - Recycle spawner in long-range
+  - Play an anim when recycling a spawner
+  - Recycle the spawner on other FLH
   - Fixed the bug that spawned can not return to buildings with foundation bigger than 1x1
+  - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller
   - `CellSpread.Cylinder`
   - `AffectsInAir` and `AffectsOnFloor`
   - Infantry fire while moving

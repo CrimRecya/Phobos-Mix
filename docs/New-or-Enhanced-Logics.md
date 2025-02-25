@@ -189,7 +189,7 @@ DisableRadDamageOnBuildings=false  ; boolean
 
 [SOMEWEAPON]                       ; WeaponType
 RadType=Radiation                  ; RadType to use instead of default of [Radiation]
-                                   
+
 [SOMERADTYPE]                      ; RadType
 RadDurationMultiple=1              ; integer
 RadApplicationDelay=16             ; integer
@@ -1449,6 +1449,8 @@ TabIndex=1  ; integer
 - If `Spawner.AttackImmediately` is set to true, spawned aircraft will assume attack mission immediately after being spawned instead of waiting for the remaining aircraft to spawn first.
 - `Spawner.RecycleRange` defines the range (in lepton) that the spawned is considered close enough to the spawner to be recycled.
 - `Spawner.RecycleAnim` can be used to play an anim on the spawned location when it is recycled.
+- `Spawner.RecycleFLH` defines the relative position to the carrier that the spawner will head to.
+  - `Spawner.RecycleOnTurret` defines if the FLH is relative to the turret rather than the body.
 
 In `rulesmd.ini`:
 ```ini
@@ -1459,6 +1461,8 @@ Spawner.DelayFrames=             ; integer, game frames
 Spawner.AttackImmediately=false  ; boolean
 Spawner.RecycleRange=-1          ; integer, range in lepton
 Spawner.RecycleAnim=             ; Animation
+Spawner.RecycleFLH=              ; integer - Forward,Lateral,Height.
+Spawner.RecycleOnTurret=false    ; boolean
 ```
 
 ### Automatic passenger deletion
