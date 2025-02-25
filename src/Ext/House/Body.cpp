@@ -277,14 +277,11 @@ size_t HouseExt::FindBuildableIndex(
 int HouseExt::ActiveHarvesterCount(HouseClass* pThis)
 {
 	int result = 0;
+	auto const pExt = HouseExt::ExtMap.Find(pThis);
 
-	for (auto pTechno : *TechnoClass::Array)
+	for (auto const pTechno : pExt->OwnedCountedHarvesters)
 	{
-		if (pTechno->Owner == pThis)
-		{
-			auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
-			result += pTypeExt->Harvester_Counted && TechnoExt::IsHarvesting(pTechno);
-		}
+		result += TechnoExt::IsHarvesting(pTechno);
 	}
 
 	return result;
@@ -293,9 +290,13 @@ int HouseExt::ActiveHarvesterCount(HouseClass* pThis)
 int HouseExt::TotalHarvesterCount(HouseClass* pThis)
 {
 	int result = 0;
+	auto const pExt = HouseExt::ExtMap.Find(pThis);
 
-	for (auto pType : RulesExt::Global()->HarvesterTypes)
-		result += pThis->CountOwnedAndPresent(pType);
+	for (auto const pTechno : pExt->OwnedCountedHarvesters)
+	{
+		auto const pExt = TechnoExt::ExtMap.Find(pTechno);
+		result += pExt->HasBeenPlacedOnMap;
+	}
 
 	return result;
 }
@@ -784,6 +785,7 @@ void HouseExt::ExtData::Serialize(T& Stm)
 	Stm
 		.Process(this->PowerPlantEnhancers)
 		.Process(this->OwnedLimboDeliveredBuildings)
+		.Process(this->OwnedCountedHarvesters)
 		.Process(this->OwnedDeployingUnits)
 		.Process(this->Common)
 		.Process(this->Combat)

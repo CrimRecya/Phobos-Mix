@@ -28,6 +28,7 @@ public:
 		std::vector<LaserTrailClass> LaserTrails;
 		std::vector<std::unique_ptr<AttachEffectClass>> AttachedEffects;
 		AttachEffectTechnoProperties AE;
+		int AnimRefCount; // Used to keep track of how many times this techno is referenced in anims f.ex Invoker, ParentBuilding etc., for pointer invalidation.
 		bool ReceiveDamage;
 		bool LastKillWasTeamTarget;
 		CDTimerClass PassengerDeletionTimer;
@@ -77,6 +78,7 @@ public:
 			, LaserTrails {}
 			, AttachedEffects {}
 			, AE {}
+			, AnimRefCount { 0 }
 			, ReceiveDamage { false }
 			, LastKillWasTeamTarget { false }
 			, PassengerDeletionTimer {}
@@ -192,6 +194,7 @@ public:
 
 	static bool IsHarvesting(TechnoClass* pThis);
 	static bool HasAvailableDock(TechnoClass* pThis);
+	static bool HasRadioLinkWithDock(TechnoClass* pThis);
 
 	static CoordStruct GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct flh, bool turretFLH = false);
 

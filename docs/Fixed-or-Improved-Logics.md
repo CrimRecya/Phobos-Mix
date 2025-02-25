@@ -1329,7 +1329,7 @@ DrawTurretShadow=false  ; boolean
 
 In `artmd.ini`:
 ```ini
-[SOMEUNIT]      ; UnitType
+[SOMEVEHICLE]   ; VehicleType
 TurretShadow=   ; boolean
 ```
 
@@ -1386,15 +1386,15 @@ Due to technical constraints, units that use `Convert.Deploy` from [Ares’ Type
 
 ### Unit Without Turret Always Turn To Target
 
-- Now vehicles (exclude jumpjets) without turret will attempt to turn to the target while the weapon is cooling down, rather than after the weapon has cooled down, by setting to `NoTurret.TrackTarget` true.
+- Now vehicles (exclude jumpjets) without turret will attempt to turn to the target while the weapon is cooling down, rather than after the weapon has cooled down, by setting `NoTurret.TrackTarget` to true.
 
 In `rulesmd.ini`:
 ```ini
 [General]
 NoTurret.TrackTarget=false   ; boolean
 
-[SOMEUNIT]                   ; UnitType
-NoTurret.TrackTarget=        ; boolean, defaults to [General]->NoTurret.TrackTarget
+[SOMEVEHICLE]                ; VehicleType
+NoTurret.TrackTarget=        ; boolean, defaults to [General] -> NoTurret.TrackTarget
 ```
 
 ## Veinholes & Weeds
@@ -1768,20 +1768,20 @@ DropPod properties can now be customized on a per-InfantryType basis.
 In `rulesmd.ini`:
 ```ini
 [SOMEINFANTRY]                ; InfantryType
-DropPod.Angle =               ; double, default to [General] -> DropPodAngle, measured in radians
-DropPod.AtmosphereEntry =     ; anim, default to [AudioVisual] -> AtmosphereEntry
-DropPod.GroundAnim =          ; 2 anims, default to [General] -> DropPod
-DropPod.AirImage =            ; SHP file, the pod's shape, default to POD
-DropPod.Height =              ; int, default to [General] -> DropPodHeight
-DropPod.Puff =                ; anim, default to [AudioVisual] -> DropPodPuff
-DropPod.Speed =               ; int, default to [General] -> DropPodSpeed
-DropPod.Trailer =             ; anim, default to [General] -> DropPodTrailer, which by default is SMOKEY
-DropPod.Trailer.Attached =    ; boolean, default to no
-DropPod.Trailer.SpawnDelay =  ; int, number of frames between each spawn of DropPod.Trailer, default to 6
-DropPod.Weapon =              ; weapon, default to [General] -> DropPodWeapon
-DropPod.Weapon.HitLandOnly =  ; boolean, default to no
+DropPod.Angle=                ; double, default to [General] -> DropPodAngle, measured in radians
+DropPod.AtmosphereEntry=      ; anim, default to [AudioVisual] -> AtmosphereEntry
+DropPod.GroundAnim=           ; 2 anims, default to [General] -> DropPod
+DropPod.AirImage=             ; SHP file, the pod's shape, default to POD
+DropPod.Height=               ; int, default to [General] -> DropPodHeight
+DropPod.Puff=                 ; anim, default to [AudioVisual] -> DropPodPuff
+DropPod.Speed=                ; int, default to [General] -> DropPodSpeed
+DropPod.Trailer=              ; anim, default to [General] -> DropPodTrailer, which by default is SMOKEY
+DropPod.Trailer.Attached=     ; boolean, default to no
+DropPod.Trailer.SpawnDelay=   ; int, number of frames between each spawn of DropPod.Trailer, default to 6
+DropPod.Weapon=               ; weapon, default to [General] -> DropPodWeapon
+DropPod.Weapon.HitLandOnly=   ; boolean, default to no
 ```
 
 ```{note}
-`[General] -> DropPodTrailer`is [Ares features](https://ares-developers.github.io/Ares-docs/new/droppod.html).
+`[General] -> DropPodTrailer` is [Ares features](https://ares-developers.github.io/Ares-docs/new/droppod.html).
 ```
