@@ -86,8 +86,8 @@ void SelectedButtonClass::DrawInfo() const
 	{
 		int frame = 1;
 
-		if (pTechno && TechnoExt::ExtMap.Find(pTechno)->CanToggleAggressiveStance())
-			frame = !TechnoExt::ExtMap.Find(pTechno)->GetAggressiveStance() ? 3 : 2;
+		if (pTechnoExt && pTechnoExt->CanToggleAggressiveStance())
+			frame = !pTechnoExt->GetAggressiveStance() ? 3 : 2;
 
 		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 			pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
