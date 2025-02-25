@@ -25,6 +25,7 @@
 
 #include <Utilities/Macro.h>
 #include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
+#include <Ext/Sidebar/SelectedButton/SelectedInfoClass.h>
 
 DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 {
@@ -83,6 +84,9 @@ static void MouseWheelDownCommand()
 
 	if (DistributionModeHoldDownCommandClass::Enabled)
 		DistributionModeHoldDownCommandClass::DistributionSpreadModeReduce();
+
+	if (SelectedInfoClass::Instance.IsHovering)
+		SelectedInfoClass::Instance.ScrollRight();
 }
 
 static void MouseWheelUpCommand()
@@ -91,6 +95,9 @@ static void MouseWheelUpCommand()
 
 	if (DistributionModeHoldDownCommandClass::Enabled)
 		DistributionModeHoldDownCommandClass::DistributionSpreadModeExpand();
+
+	if (SelectedInfoClass::Instance.IsHovering)
+		SelectedInfoClass::Instance.ScrollLeft();
 }
 
 DEFINE_HOOK(0x777998, Game_WndProc_ScrollMouseWheel, 0x6)
@@ -111,7 +118,8 @@ static inline bool CheckSkipScrollSidebar()
 		|| !Phobos::Config::ScrollSidebarStripWhenHoldCtrl && InputManagerClass::Instance->IsForceFireKeyPressed()
 		|| !Phobos::Config::ScrollSidebarStripWhenHoldShift && InputManagerClass::Instance->IsForceSelectKeyPressed()
 		|| !Phobos::Config::ScrollSidebarStripInTactical && WWMouseClass::Instance->XY1.X < Make_Global<int>(0xB0CE30) // TacticalClass::view_bound.Width
-		|| DistributionModeHoldDownCommandClass::Enabled;
+		|| DistributionModeHoldDownCommandClass::Enabled
+		|| SelectedInfoClass::Instance.IsHovering;
 }
 
 DEFINE_HOOK(0x533F50, Game_ScrollSidebar_Skip, 0x5)

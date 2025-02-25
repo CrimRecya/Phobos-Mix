@@ -53,7 +53,7 @@ public:
 	static constexpr int StartID = 2300;
 	static constexpr const wchar_t* Status[35] =
 	{
-		L"Sleep", L"Attack", L"Move", L"QMove", L"Retreat",
+		L"Sleep", L"Attack", L"Move", L"QueueMove", L"Retreat",
 		L"Guard", L"Sticky", L"Enter", L"Capture", L"Eaten",
 		L"Harvest", L"AreaGuard", L"Return", L"Stop", L"Ambush",
 		L"Hunt", L"Unload", L"Sabotage", L"Construction", L"Selling",
@@ -63,7 +63,7 @@ public:
 	};
 	static constexpr const char* StatusEntry[35] =
 	{
-		"Status:Sleep", "Status:Attack", "Status:Move", "Status:QMove", "Status:Retreat",
+		"Status:Sleep", "Status:Attack", "Status:Move", "Status:QueueMove", "Status:Retreat",
 		"Status:Guard", "Status:Sticky", "Status:Enter", "Status:Capture", "Status:Eaten",
 		"Status:Harvest", "Status:AreaGuard", "Status:Return", "Status:Stop", "Status:Ambush",
 		"Status:Hunt", "Status:Unload", "Status:Sabotage", "Status:Construction", "Status:Selling",
@@ -85,7 +85,11 @@ public:
 	static TechnoStatus GetCurrentStatus(TechnoClass* pThis);
 
 	inline int GetMaxCameo() const;
+
 	void DrawInfo();
+
+	void ScrollLeft();
+	void ScrollRight();
 
 	struct SelectRecordStruct
 	{
@@ -108,8 +112,8 @@ public:
 
 	SelectedCameoClass* Cameos[20] { };
 	std::vector<SelectRecordStruct> CurrentSelectCameo { }; // TODO Scroll
-	int Hovering { -1 };
 	int MaxCameo { 0 };
+	int Current { 0 };
 
 	bool ShouldUpdate { false };
 	bool SingleSelect { true };

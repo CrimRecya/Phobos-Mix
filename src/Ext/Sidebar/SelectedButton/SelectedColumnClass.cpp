@@ -106,10 +106,21 @@ void SelectedColumnClass::DrawInfo() const
 	{
 		int value = -1, maxValue = 0;
 		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_UpperType.Get() : DisplayInfoType::Shield;
-		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue); // TODO Divisor
+		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue);
 
 		const bool valid = value >= 0 && maxValue > 0;
 		const auto ratio = valid ? static_cast<double>(value) / maxValue : 1.0;
+
+		if (valid && pDisplayTypeExt)
+		{
+			const auto divisor = pDisplayTypeExt->SelectedInfo_UpperDivisor.Get();
+
+			if (divisor > 1)
+			{
+				value = Math::max(value / divisor, value ? 1 : 0);
+				maxValue = Math::max(maxValue / divisor, 1);
+			}
+		}
 
 		if (!pDisplayTypeExt || pDisplayTypeExt->SelectedInfo_UpperColor.Get() == ColorStruct{ 0, 0, 0 })
 			color = (ratio > RulesClass::Instance->ConditionYellow) ? 0x67EC : (ratio > RulesClass::Instance->ConditionRed ? 0xFFEC : 0xF986);
@@ -148,10 +159,21 @@ void SelectedColumnClass::DrawInfo() const
 	{
 		int value = -1, maxValue = 0;
 		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_BelowType.Get() : DisplayInfoType::Health;
-		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue); // TODO Divisor
+		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue);
 
 		const bool valid = value >= 0 && maxValue > 0;
 		const auto ratio = valid ? static_cast<double>(value) / maxValue : 1.0;
+
+		if (valid && pDisplayTypeExt)
+		{
+			const auto divisor = pDisplayTypeExt->SelectedInfo_BelowDivisor.Get();
+
+			if (divisor > 1)
+			{
+				value = Math::max(value / divisor, value ? 1 : 0);
+				maxValue = Math::max(maxValue / divisor, 1);
+			}
+		}
 
 		if (!pDisplayTypeExt || pDisplayTypeExt->SelectedInfo_BelowColor.Get() == ColorStruct{ 0, 0, 0 })
 			color = (ratio > RulesClass::Instance->ConditionYellow) ? 0x67EC : (ratio > RulesClass::Instance->ConditionRed ? 0xFFEC : 0xF986);
@@ -343,7 +365,7 @@ void SelectedBottomClass::DrawInfo() const
 	if (const auto pSHP = pSideExt->SelectedInfo_Bottom.Get())
 	{
 		const auto position = Point2D { this->X, this->Y };
-		const auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
+		const auto rect = RectangleStruct { 0, 0, this->X + 236, this->Y + this->Height };
 		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 			pSHP, 0, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 	}
