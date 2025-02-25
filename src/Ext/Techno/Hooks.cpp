@@ -6,6 +6,7 @@
 #include <TunnelLocomotionClass.h>
 
 #include <Ext/BuildingType/Body.h>
+#include <Ext/House/Body.h>
 #include <Ext/Scenario/Body.h>
 #include <Ext/WarheadType/Body.h>
 #include <Ext/WeaponType/Body.h>
