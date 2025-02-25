@@ -921,13 +921,12 @@ DEFINE_HOOK(0x4D962B, FootClass_SetDestination_RecycleFLH, 0x5)
 	GET(FootClass* const, pThis, EBP);
 	GET(CoordStruct*, pDestCrd, EAX);
 
-	auto pCarrier = pThis->SpawnOwner;
+	const auto pCarrier = pThis->SpawnOwner;
 
 	if (pCarrier && pCarrier == pThis->Destination) // This is a spawner returning to its carrier.
 	{
-		auto pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
-		auto deltaCrd = TechnoExt::GetFLHAbsoluteCoords(pCarrier, pCarrierTypeExt->Spawner_RecycleFLH, pCarrierTypeExt->Spawner_RecycleOnTurret) - pCarrier->GetCoords();
-		*pDestCrd += deltaCrd;
+		const auto pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
+		*pDestCrd += TechnoExt::GetFLHAbsoluteCoords(pCarrier, pCarrierTypeExt->Spawner_RecycleFLH, pCarrierTypeExt->Spawner_RecycleOnTurret) - pCarrier->GetCoords();
 	}
 
 	return 0;
