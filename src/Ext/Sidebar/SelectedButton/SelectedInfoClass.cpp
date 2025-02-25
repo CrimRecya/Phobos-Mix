@@ -69,8 +69,8 @@ void SelectedInfoClass::InitClear()
 		}
 	}
 
-	this->Hovering = -1;
 	this->MaxCameo = 0;
+	this->Current = 0;
 	this->ShouldUpdate = false;
 	this->SingleSelect = true;
 	this->IsHovering = false;
@@ -201,9 +201,6 @@ void SelectedInfoClass::UpdateVisible()
 	if (const auto& pButton = this->InfoIconS)
 		pButton->Disabled = disabled;
 
-	if (const auto& pButton = this->MainBottom)
-		pButton->Disabled = !Phobos::Config::SelectedDisplay_Enable;
-
 	disabled = !Phobos::Config::SelectedDisplay_Enable || this->SingleSelect;
 	const int size = this->CurrentSelectCameo.size();
 
@@ -211,6 +208,28 @@ void SelectedInfoClass::UpdateVisible()
 	{
 		if (const auto& pButton = this->Cameos[i])
 			pButton->Disabled = disabled || (i >= size);
+	}
+
+	const int overflow = size - this->GetMaxCameo();
+	int cameoCount = 0;
+
+	if (overflow > 0)
+	{
+		if (this->Current > overflow)
+			this->Current = overflow;
+
+		cameoCount = this->GetMaxCameo();
+	}
+	else
+	{
+		this->Current = 0;
+		cameoCount = size;
+	}
+
+	if (const auto& pButton = this->MainBottom)
+	{
+		pButton->Disabled = !Phobos::Config::SelectedDisplay_Enable;
+		pButton->Width = std::max(236, cameoCount * 60);
 	}
 }
 
@@ -524,6 +543,22 @@ void SelectedInfoClass::DrawInfo()
 
 	if (const auto& pButton = this->MainBottom)
 		pButton->DrawInfo();
+}
+
+void SelectedInfoClass::ScrollLeft()
+{
+	if (this->Current > 0)
+		--this->Current;
+}
+
+void SelectedInfoClass::ScrollRight()
+{
+	const int overflow = this->CurrentSelectCameo.size() - this->GetMaxCameo();
+
+	if (overflow <= 0)
+		this->Current = 0;
+	else if (this->Current < overflow)
+		++this->Current;
 }
 
 // ----------------------------------------

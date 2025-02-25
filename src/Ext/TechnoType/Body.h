@@ -269,8 +269,11 @@ public:
 		PhobosPCXFile GreyCameoPCX;
 		Valueable<DisplayInfoType> SelectedInfo_UpperType;
 		Valueable<ColorStruct> SelectedInfo_UpperColor;
+		Valueable<int> SelectedInfo_UpperDivisor;
 		Valueable<DisplayInfoType> SelectedInfo_BelowType;
 		Valueable<ColorStruct> SelectedInfo_BelowColor;
+		Valueable<int> SelectedInfo_BelowDivisor;
+		Nullable<SHPStruct*> SelectedInfo_Button;
 		Valueable<TechnoTypeClass*> FakeOf;
 		CustomPalette CameoPal;
 		Nullable<bool> NoRearm_UnderEMP;
@@ -618,8 +621,11 @@ public:
 			, GreyCameoPCX {}
 			, SelectedInfo_UpperType { DisplayInfoType::Shield }
 			, SelectedInfo_UpperColor { { 153, 153, 255 } }
+			, SelectedInfo_UpperDivisor {}
 			, SelectedInfo_BelowType { DisplayInfoType::Health }
 			, SelectedInfo_BelowColor { { 0, 0, 0 } }
+			, SelectedInfo_BelowDivisor {}
+			, SelectedInfo_Button {}
 			, FakeOf {}
 			, CameoPal {}
 			, NoRearm_UnderEMP {}

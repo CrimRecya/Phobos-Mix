@@ -18,7 +18,6 @@ void SelectedCameoClass::OnMouseEnter()
 	this->Height += 10;
 	this->Hovering = true;
 	SelectedInfoClass::Instance.IsHovering = true;
-	SelectedInfoClass::Instance.Hovering = this->GetButtonIndex();
 	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
 }
 
@@ -28,7 +27,6 @@ void SelectedCameoClass::OnMouseLeave()
 	this->Height -= 10;
 	this->Hovering = false;
 	SelectedInfoClass::Instance.IsHovering = false;
-	SelectedInfoClass::Instance.Hovering = -1;
 	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
 }
 
@@ -37,7 +35,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 	if (this->Disabled)
 		return false;
 
-	const auto pTypeExt = SelectedInfoClass::Instance.CurrentSelectCameo[this->GetButtonIndex()].TypeExt;
+	const auto pTypeExt = SelectedInfoClass::Instance.CurrentSelectCameo[this->GetButtonIndex() + SelectedInfoClass::Instance.Current].TypeExt;
 	const auto groupID = pTypeExt->GetSelectionGroupID();
 
 	if (flags & GadgetFlag::LeftPress)
@@ -149,7 +147,7 @@ void SelectedCameoClass::DrawInfo() const
 	if (this->Disabled)
 		return;
 
-	const auto pSelect = SelectedInfoClass::Instance.CurrentSelectCameo[this->GetButtonIndex()];
+	const auto pSelect = SelectedInfoClass::Instance.CurrentSelectCameo[this->GetButtonIndex() + SelectedInfoClass::Instance.Current];
 	const auto pTypeExt = pSelect.TypeExt;
 
 	if (const auto CameoPCX = pTypeExt->CameoPCX.GetSurface())

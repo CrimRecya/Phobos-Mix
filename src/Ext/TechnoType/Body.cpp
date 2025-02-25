@@ -711,8 +711,11 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->UIDescription_Unbuildable.Read(exINI, pSection, "UIDescription.Unbuildable");
 	this->SelectedInfo_UpperType.Read(exINI, pSection, "SelectedInfo.UpperType");
 	this->SelectedInfo_UpperColor.Read(exINI, pSection, "SelectedInfo.UpperColor");
+	this->SelectedInfo_UpperDivisor.Read(exINI, pSection, "SelectedInfo.UpperDivisor");
 	this->SelectedInfo_BelowType.Read(exINI, pSection, "SelectedInfo.BelowType");
 	this->SelectedInfo_BelowColor.Read(exINI, pSection, "SelectedInfo.BelowColor");
+	this->SelectedInfo_BelowDivisor.Read(exINI, pSection, "SelectedInfo.BelowDivisor");
+	this->SelectedInfo_Button.Read(exINI, pSection, "SelectedInfo.Button");
 	this->FakeOf.Read(exINI, pSection, "FakeOf");
 	this->NoRearm_UnderEMP.Read(exINI, pSection, "NoRearm.UnderEMP");
 	this->NoRearm_Temporal.Read(exINI, pSection, "NoRearm.Temporal");
@@ -1211,8 +1214,11 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->GreyCameoPCX)
 		.Process(this->SelectedInfo_UpperType)
 		.Process(this->SelectedInfo_UpperColor)
+		.Process(this->SelectedInfo_UpperDivisor)
 		.Process(this->SelectedInfo_BelowType)
 		.Process(this->SelectedInfo_BelowColor)
+		.Process(this->SelectedInfo_BelowDivisor)
+		.Process(this->SelectedInfo_Button)
 		.Process(this->FakeOf)
 		.Process(this->CameoPal)
 		.Process(this->NoRearm_UnderEMP)

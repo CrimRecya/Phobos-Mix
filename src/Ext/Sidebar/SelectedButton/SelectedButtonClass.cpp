@@ -67,8 +67,11 @@ bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 
 void SelectedButtonClass::DrawInfo() const
 {
+	const auto pObject = ObjectClass::CurrentObjects->Items[0];
+	const auto pTechno = abstract_cast<TechnoClass*>(pObject);
+	const auto pTechnoExt = TechnoExt::ExtMap.Find(pTechno);
 	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
-	const auto pSHP = pSideExt->SelectedInfo_Button.Get(); // TODO Per techno
+	const auto pSHP = pTechnoExt ? pTechnoExt->TypeExtData->SelectedInfo_Button.Get(pSideExt->SelectedInfo_Button.Get()) : pSideExt->SelectedInfo_Button.Get();
 
 	if (!pSHP || pSHP->Frames < 7)
 		return;
@@ -78,9 +81,6 @@ void SelectedButtonClass::DrawInfo() const
 
 	DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 		pSHP, 0, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
-
-	const auto pObject = ObjectClass::CurrentObjects->Items[0];
-	const auto pTechno = abstract_cast<TechnoClass*>(pObject);
 
 	if (this->ID == (SelectedInfoClass::StartID + 1)) // PushButton
 	{
@@ -108,7 +108,7 @@ void SelectedButtonClass::DrawInfo() const
 	{
 		int frame = 4;
 
-		if (pTechno && TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType())->CanManualReload)
+		if (pTechnoExt && pTechnoExt->TypeExtData->CanManualReload)
 			frame = pTechno->Ammo ? 6 : 5;
 
 		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
