@@ -151,7 +151,7 @@ void SelectedInfoClass::InitIO()
 	}
 
 	this->ShouldUpdate = true;
-	this->MaxCameo = std::min(20, DSurface::Composite->GetWidth() / 150);
+	this->MaxCameo = std::min(Phobos::Config::SelectedDisplay_MaxCameo, DSurface::Composite->GetWidth() / 60);
 
 	for (int i = this->GetMaxCameo(); i < 20; ++i)
 	{
@@ -160,20 +160,24 @@ void SelectedInfoClass::InitIO()
 	}
 }
 
-void SelectedInfoClass::SwitchVisible()
+void SelectedInfoClass::SwitchExpand()
 {
-	Phobos::Config::SelectedDisplay_Enable = !Phobos::Config::SelectedDisplay_Enable;
-
+	Phobos::Config::SelectedDisplay_Expand = !Phobos::Config::SelectedDisplay_Expand;
+	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
 	this->UpdateVisible();
-
-	const auto message = Phobos::Config::SelectedDisplay_Enable
-		? GeneralUtils::LoadStringUnlessMissing("TXT_SELECT_VISIBLE", L"Set select info visible.")
-		: GeneralUtils::LoadStringUnlessMissing("TXT_SELECT_INVISIBLE", L"Set select info invisible.");
 
 	if (Phobos::Config::SelectedDisplay_Enable)
 		this->ShouldUpdate = true;
+}
 
-	MessageListClass::Instance->PrintMessage(message, RulesClass::Instance->MessageDelay, HouseClass::CurrentPlayer->ColorSchemeIndex, true);
+void SelectedInfoClass::SwitchVisible()
+{
+	Phobos::Config::SelectedDisplay_Enable = !Phobos::Config::SelectedDisplay_Enable;
+	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
+	this->UpdateVisible();
+
+	if (Phobos::Config::SelectedDisplay_Enable)
+		this->ShouldUpdate = true;
 }
 
 void SelectedInfoClass::UpdateVisible()
@@ -202,7 +206,11 @@ void SelectedInfoClass::UpdateVisible()
 		pButton->Disabled = disabled;
 
 	disabled = !Phobos::Config::SelectedDisplay_Enable || this->SingleSelect;
-	const int size = this->CurrentSelectCameo.size();
+	int size = this->CurrentSelectCameo.size();
+	int cameoCount = 0;
+
+	if (size == 1 || Phobos::Config::SelectedDisplay_Expand)
+		size = ObjectClass::CurrentObjects->Count;
 
 	for (int i = 0; i < this->GetMaxCameo(); ++i)
 	{
@@ -211,7 +219,6 @@ void SelectedInfoClass::UpdateVisible()
 	}
 
 	const int overflow = size - this->GetMaxCameo();
-	int cameoCount = 0;
 
 	if (overflow > 0)
 	{
@@ -496,16 +503,8 @@ TechnoStatus SelectedInfoClass::GetCurrentStatus(TechnoClass* pThis)
 	return (status > TechnoStatus::None || status < TechnoStatus::Sleep) ? TechnoStatus::Unknown : status;
 }
 
-inline int SelectedInfoClass::GetMaxCameo() const
-{
-	return this->MaxCameo;
-}
-
 void SelectedInfoClass::DrawInfo()
 {
-	if (!Phobos::Config::SelectedDisplay_Enable)
-		return;
-
 	if (this->ShouldUpdate)
 		this->UpdateSelected();
 
@@ -545,19 +544,43 @@ void SelectedInfoClass::DrawInfo()
 		pButton->DrawInfo();
 }
 
+int SelectedInfoClass::GetMaxCameo() const
+{
+	return this->MaxCameo;
+}
+
+bool SelectedInfoClass::CanScrollLeft() const
+{
+	if (this->SingleSelect)
+		return false;
+
+	return this->Current > 0;
+}
+
+bool SelectedInfoClass::CanScrollRight() const
+{
+	if (this->SingleSelect)
+		return false;
+
+	int size = this->CurrentSelectCameo.size();
+
+	if (size == 1 || Phobos::Config::SelectedDisplay_Expand)
+		size = ObjectClass::CurrentObjects->Count;
+
+	const int overflow = size - this->GetMaxCameo();
+
+	return this->Current < overflow;
+}
+
 void SelectedInfoClass::ScrollLeft()
 {
-	if (this->Current > 0)
+	if (this->CanScrollLeft())
 		--this->Current;
 }
 
 void SelectedInfoClass::ScrollRight()
 {
-	const int overflow = this->CurrentSelectCameo.size() - this->GetMaxCameo();
-
-	if (overflow <= 0)
-		this->Current = 0;
-	else if (this->Current < overflow)
+	if (this->CanScrollRight())
 		++this->Current;
 }
 

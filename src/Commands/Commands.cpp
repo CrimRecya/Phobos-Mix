@@ -39,6 +39,7 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<ToggleDesignatorRangeCommandClass>();
 	MakeCommand<SelectCapturedCommandClass>();
 	MakeCommand<SelectedInfoCommandClass>();
+	MakeCommand<SelectedExpandCommandClass>();
 	MakeCommand<HerosInfoCommandClass>();
 	MakeCommand<AutoBuildingCommandClass>();
 

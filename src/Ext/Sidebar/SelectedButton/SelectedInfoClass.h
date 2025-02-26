@@ -75,6 +75,7 @@ public:
 	void InitClear();
 	void InitIO();
 
+	void SwitchExpand();
 	void SwitchVisible();
 	void UpdateVisible();
 	void UpdateSelected();
@@ -84,10 +85,11 @@ public:
 	static void GetValuesForDisplay(TechnoClass* pThis, ObjectTypeClass* pFakeType, DisplayInfoType infoType, int& value, int& maxValue);
 	static TechnoStatus GetCurrentStatus(TechnoClass* pThis);
 
-	inline int GetMaxCameo() const;
-
 	void DrawInfo();
 
+	int GetMaxCameo() const;
+	bool CanScrollLeft() const;
+	bool CanScrollRight() const;
 	void ScrollLeft();
 	void ScrollRight();
 
@@ -111,7 +113,7 @@ public:
 	SelectedBottomClass* MainBottom { nullptr };
 
 	SelectedCameoClass* Cameos[20] { };
-	std::vector<SelectRecordStruct> CurrentSelectCameo { }; // TODO Scroll
+	std::vector<SelectRecordStruct> CurrentSelectCameo { };
 	int MaxCameo { 0 };
 	int Current { 0 };
 
