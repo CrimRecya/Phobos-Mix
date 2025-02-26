@@ -85,9 +85,7 @@ public:
 		static bool ShowPlacementPreview;
 		static bool EnableBuildingPlacementPreview;
 		static bool DigitalDisplay_Enable;
-		static bool SelectedDisplay_Enable;
 		static bool MessageDisplayInCenter;
-		static bool AutomaticPlacingBuilding;
 		static bool ShowBuildingStatistics;
 		static bool DrawAdjacentBoundary;
 		static bool RealTimeTimers;
@@ -105,14 +103,17 @@ public:
 		static bool HideLightFlashEffects;
 		static bool ShowFlashOnSelecting;
 		static bool UnitPowerDrain;
-		static bool ScrollSidebarStripInTactical;
+		static bool SelectedDisplay_Enable;
+		static bool SelectedDisplay_Expand;
+		static int SelectedDisplay_MaxCameo;
 		static bool AllowDistributionCommand;
 		static int DistributionSpreadMode;
 		static int DistributionFilterMode;
-		static bool ScrollSidebarStripWhenHoldKey;
+		static bool ScrollSidebarStripInTactical;
 		static bool ScrollSidebarStripWhenHoldAlt;
 		static bool ScrollSidebarStripWhenHoldCtrl;
 		static bool ScrollSidebarStripWhenHoldShift;
+		static bool AutomaticPlacingBuilding;
 	};
 
 	class Misc

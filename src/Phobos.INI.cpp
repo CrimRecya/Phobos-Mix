@@ -50,10 +50,8 @@ bool Phobos::Config::ShowPlanningPath = false;
 bool Phobos::Config::ArtImageSwap = false;
 bool Phobos::Config::ShowPlacementPreview = false;
 bool Phobos::Config::DigitalDisplay_Enable = false;
-bool Phobos::Config::SelectedDisplay_Enable = false;
 bool Phobos::Config::MessageDisplayInCenter = false;
 bool Phobos::Config::ShowBuildingStatistics = false;
-bool Phobos::Config::AutomaticPlacingBuilding = true;
 bool Phobos::Config::DrawAdjacentBoundary = false;
 bool Phobos::Config::RealTimeTimers = false;
 bool Phobos::Config::RealTimeTimers_Adaptive = false;
@@ -69,14 +67,17 @@ bool Phobos::Config::ShowWeedsCounter = false;
 bool Phobos::Config::HideLightFlashEffects = true;
 bool Phobos::Config::ShowFlashOnSelecting = false;
 bool Phobos::Config::UnitPowerDrain = false;
-bool Phobos::Config::ScrollSidebarStripInTactical = true;
+bool Phobos::Config::SelectedDisplay_Enable = false;
+bool Phobos::Config::SelectedDisplay_Expand = false;
+int Phobos::Config::SelectedDisplay_MaxCameo = 10;
 bool Phobos::Config::AllowDistributionCommand = false;
 int Phobos::Config::DistributionSpreadMode = 2;
 int Phobos::Config::DistributionFilterMode = 2;
-bool Phobos::Config::ScrollSidebarStripWhenHoldKey = true;
+bool Phobos::Config::ScrollSidebarStripInTactical = true;
 bool Phobos::Config::ScrollSidebarStripWhenHoldAlt = true;
 bool Phobos::Config::ScrollSidebarStripWhenHoldCtrl = true;
 bool Phobos::Config::ScrollSidebarStripWhenHoldShift = true;
+bool Phobos::Config::AutomaticPlacingBuilding = true;
 
 bool Phobos::Misc::CustomGS = false;
 int Phobos::Misc::CustomGS_ChangeInterval[7] = { -1, -1, -1, -1, -1, -1, -1 };
@@ -92,7 +93,6 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 	Phobos::Config::RealTimeTimers = CCINIClass::INI_RA2MD->ReadBool("Phobos", "RealTimeTimers", false);
 	Phobos::Config::RealTimeTimers_Adaptive = CCINIClass::INI_RA2MD->ReadBool("Phobos", "RealTimeTimers.Adaptive", false);
 	Phobos::Config::DigitalDisplay_Enable = CCINIClass::INI_RA2MD->ReadBool("Phobos", "DigitalDisplay.Enable", false);
-	Phobos::Config::SelectedDisplay_Enable = CCINIClass::INI_RA2MD->ReadBool("Phobos", "SelectedDisplay.Enable", false);
 	Phobos::Config::MessageDisplayInCenter = CCINIClass::INI_RA2MD->ReadBool("Phobos", "MessageDisplayInCenter", false);
 	Phobos::Config::ShowBuildingStatistics = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ShowBuildingStatistics", false);
 	Phobos::Config::DrawAdjacentBoundary = CCINIClass::INI_RA2MD->ReadBool("Phobos", "DrawAdjacentBoundary", false);
@@ -137,6 +137,14 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 		Phobos::UI::DisableEmptySpawnPositions =
 			ini_uimd.ReadBool("LoadingScreen", "DisableEmptySpawnPositions", false);
 	}
+
+	Phobos::Config::SelectedDisplay_Enable = CCINIClass::INI_RA2MD->ReadBool("Phobos", "SelectedDisplay.Enable", false);
+
+	Phobos::Config::SelectedDisplay_Expand = CCINIClass::INI_RA2MD->ReadBool("Phobos", "SelectedDisplay.Expand", false);
+
+	Phobos::Config::SelectedDisplay_MaxCameo = CCINIClass::INI_RA2MD->ReadInteger("Phobos", "SelectedDisplay.MaxCameo", 10);
+
+	Phobos::Config::SelectedDisplay_MaxCameo = std::clamp(Phobos::Config::SelectedDisplay_MaxCameo, 4, 20);
 
 	// ToolTips
 	{
