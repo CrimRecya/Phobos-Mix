@@ -326,6 +326,7 @@ New:
 - Bunkerable checks dehardcode (by TaranDahl)
 - No turret unit turn to the target (by CrimRecya & TaranDahl)
 - Damage multiplier for different houses (by CrimRecya)
+- Customizable duration for electric bolts (by Starkku)
 - Projectile subject to ground check before firing (by CrimRecya)
 - New Disperse trajectory (by CrimRecya)
 - New Engrave trajectory (by CrimRecya)
