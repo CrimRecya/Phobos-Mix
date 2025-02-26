@@ -48,7 +48,6 @@ public:
 		Nullable<int> AISuperWeaponDelay;
 		Valueable<bool> UseGlobalRadApplicationDelay;
 		Valueable<int> RadApplicationDelay_Building;
-		Valueable<bool> DisableRadDamageOnBuildings;
 		Valueable<int> RadBuildingDamageMaxCount;
 		Valueable<bool> RadSiteWarhead_Detonate;
 		Valueable<bool> RadSiteWarhead_Detonate_Full;
@@ -318,7 +317,6 @@ public:
 			, AISuperWeaponDelay {}
 			, UseGlobalRadApplicationDelay { true }
 			, RadApplicationDelay_Building { 0 }
-			, DisableRadDamageOnBuildings { false }
 			, RadBuildingDamageMaxCount { -1 }
 			, RadSiteWarhead_Detonate { false }
 			, RadSiteWarhead_Detonate_Full { true }
@@ -595,5 +593,4 @@ public:
 	{
 		Global()->InvalidatePointer(ptr, removed);
 	}
-
 };
