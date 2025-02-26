@@ -217,12 +217,18 @@ void SelectedCameoClass::DrawInfo() const
 		if (const auto pType = pSelect->GetTechnoType())
 		{
 			drawCameo(TechnoTypeExt::ExtMap.Find(pType));
+
 			const auto pRules = RulesClass::Instance();
 			const auto ratio = static_cast<double>(pSelect->Health) / pType->Strength;
+
 			RectangleStruct drawRect { this->X, this->Y, 60, 48 };
-			drawRect.Width = static_cast<int>(drawRect.Width * ratio + 0.5);
-			auto fillColor = (ratio > pRules->ConditionYellow) ? ColorStruct { 0, 255, 0 } : (ratio > pRules->ConditionRed ? ColorStruct { 255, 255, 0 } : ColorStruct { 255, 0, 0 });
-			DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 20);
+			const int height = static_cast<int>(drawRect.Height * ratio + 0.5);
+
+			drawRect.Y += drawRect.Height - height;
+			drawRect.Height = height;
+
+			auto fillColor = (ratio > pRules->ConditionYellow) ? ColorStruct { 0, 200, 0 } : (ratio > pRules->ConditionRed ? ColorStruct { 200, 200, 0 } : ColorStruct { 200, 0, 0 });
+			DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 10);
 		}
 
 		return;

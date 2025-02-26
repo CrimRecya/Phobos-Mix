@@ -31,6 +31,8 @@ void SelectedButtonClass::OnMouseLeave()
 
 bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
 {
+	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
+
 	if (flags & GadgetFlag::LeftPress)
 	{
 		if (this->ID == (SelectedInfoClass::StartID + 1)) // PushButton
