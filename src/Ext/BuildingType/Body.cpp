@@ -441,8 +441,8 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 		{
 			const auto pUnit = static_cast<UnitClass*>(pCheckedTechno);
 
-			if (pUnit->Deployed)
-				pUnit->Undeploy();
+			if (pUnit->Deployed && !(pUnit->Deploying || pUnit->Undeploying))
+				pUnit->QueueMission(Mission::Unload, false);
 
 			pUnit->SetDestination(pDestinationCell, true);
 		}
