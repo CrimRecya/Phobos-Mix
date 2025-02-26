@@ -457,10 +457,12 @@ This page lists all the individual contributions to the project by their author.
   - Units are now unable to kick out from a factory that is in construction process
   - No turret unit turn to the target
   - Units are now unable to kick out from a factory that is in construction process
-- **tyuah8** - Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix
 - **Aephiex**
   - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
   - Aggressive stance toggle command (auto target unarmed enemy buildings)
+- **tyuah8**
+  - Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix
+  - Destroyed unit leaves sensors bugfix
 - **Multfinite** - Allow to toggle main exception handler via command line argument `-ExceptionHandler=boolean`
 - **Ares developers**
   - YRpp and Syringe which are used, save/load, project foundation and generally useful code from Ares

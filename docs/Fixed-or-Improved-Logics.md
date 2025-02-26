@@ -194,6 +194,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Prevent the units with locomotors that cause problems from entering the tank bunker.
 - Fixed `MovementZone=Subterannean` harvesters being unable to find docks if in area enclosed by water, cliffs etc.
 - Fix an issue where a unit will leave an impassable invisible barrier in its original position when it is teleported by ChronoSphere onto an uncrushable unit and self destruct.
+- Fix the bug that destroyed unit may leaves sensors.
 - Fix an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface.
 
 ## Fixes / interactions with other extensions
