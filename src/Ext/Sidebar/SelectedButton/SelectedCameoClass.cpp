@@ -35,20 +35,20 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 	if (this->Disabled)
 		return false;
 
-	const auto& selects = SelectedInfoClass::Instance.CurrentSelectCameo;
-	const auto& current = ObjectClass::CurrentObjects();
-	const int counts = current.Count;
+	const auto& currentSelects = SelectedInfoClass::Instance.CurrentSelectCameo;
+	const auto& currentObjects = ObjectClass::CurrentObjects();
+	const int counts = currentObjects.Count;
 
-	if (selects.size() == 1 || Phobos::Config::SelectedDisplay_Expand)
+	if (currentSelects.size() == 1 || Phobos::Config::SelectedDisplay_Expand)
 	{
-		const auto pSelect = current.Items[this->GetButtonIndex() + SelectedInfoClass::Instance.Current];
+		const auto pSelect = currentObjects.Items[this->GetButtonIndex() + SelectedInfoClass::Instance.Current];
 
 		if (flags & GadgetFlag::LeftPress)
 		{
 			std::vector<ObjectClass*> deselects;
 			deselects.reserve(counts);
 
-			for (const auto& pCurrent : current)
+			for (const auto& pCurrent : currentObjects)
 			{
 				if (pCurrent != pSelect)
 					deselects.push_back(pCurrent);
@@ -64,7 +64,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 	}
 	else
 	{
-		const auto pTypeExt = selects[this->GetButtonIndex() + SelectedInfoClass::Instance.Current].TypeExt;
+		const auto pTypeExt = currentSelects[this->GetButtonIndex() + SelectedInfoClass::Instance.Current].TypeExt;
 		const auto groupID = pTypeExt->GetSelectionGroupID();
 
 		if (flags & GadgetFlag::LeftPress)
@@ -74,7 +74,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 				std::vector<ObjectClass*> deselects;
 				deselects.reserve(counts);
 
-				for (const auto& pCurrent : current)
+				for (const auto& pCurrent : currentObjects)
 				{
 					if (const auto pCurrentTypeExt = TechnoTypeExt::ExtMap.Find(pCurrent->GetTechnoType()))
 					{
@@ -95,7 +95,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 				std::vector<ObjectClass*> deselects;
 				deselects.reserve(counts);
 
-				for (const auto& pCurrent : current)
+				for (const auto& pCurrent : currentObjects)
 				{
 					if (const auto pCurrentTypeExt = TechnoTypeExt::ExtMap.Find(pCurrent->GetTechnoType()))
 					{
@@ -129,7 +129,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 				std::vector<ObjectClass*> deselects;
 				deselects.reserve(counts);
 
-				for (const auto& pCurrent : current)
+				for (const auto& pCurrent : currentObjects)
 				{
 					if (const auto pCurrentTypeExt = TechnoTypeExt::ExtMap.Find(pCurrent->GetTechnoType()))
 					{
@@ -148,7 +148,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 				std::vector<ObjectClass*> selects;
 				selects.reserve(counts);
 
-				for (const auto& pCurrent : current)
+				for (const auto& pCurrent : currentObjects)
 				{
 					if (const auto pCurrentTypeExt = TechnoTypeExt::ExtMap.Find(pCurrent->GetTechnoType()))
 					{
