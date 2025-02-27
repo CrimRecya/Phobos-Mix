@@ -37,6 +37,7 @@ void UniqueTechnoColumnClass::InitIO()
 void UniqueTechnoColumnClass::SwitchVisible()
 {
 	this->Visible = !this->Visible;
+	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
 
 	for (int i = 0; i < 8; ++i)
 	{

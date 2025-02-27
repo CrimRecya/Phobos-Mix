@@ -40,6 +40,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 	if (this->Disabled)
 		return false;
 
+	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
 	const auto& currentSelects = SelectedInfoClass::Instance.CurrentSelectCameo;
 	const auto& currentObjects = ObjectClass::CurrentObjects();
 	const int counts = currentObjects.Count;
@@ -257,7 +258,7 @@ void SelectedCameoClass::DrawInfo() const
 			TechnoExt::GetValuesForDisplay(pTechno, pTypeExt->SelectedInfo_CameoType.Get(), value, maxValue);
 
 			rect.Y += 4;
-			rect.Width = static_cast<int>(50 * (value <= -1 || maxValue <= 0 ? 1.0 : static_cast<double>(value) / maxValue) + 0.5);
+			rect.Width = static_cast<int>(50 * ((value <= -1 || maxValue <= 0) ? 1.0 : (static_cast<double>(value) / maxValue)) + 0.5);
 			--rect.Height;
 			DSurface::Composite->FillRect(&rect, COLOR_WHITE);
 		}

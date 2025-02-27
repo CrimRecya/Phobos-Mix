@@ -34,8 +34,6 @@ bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 	if (SelectedInfoClass::Instance.ShouldUpdate)
 		SelectedInfoClass::Instance.UpdateSelected();
 
-	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
-
 	if (flags & GadgetFlag::LeftPress)
 	{
 		if (this->ID == (SelectedInfoClass::StartID + 1)) // PushButton
@@ -47,7 +45,10 @@ bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 				if (const auto pTechno = abstract_cast<TechnoClass*>(ObjectClass::CurrentObjects->Items[0]))
 				{
 					if (pTechno->Owner->IsControlledByCurrentPlayer())
+					{
+						VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
 						EventExt::RaiseToggleAggressiveStance(pTechno);
+					}
 				}
 			}
 		}
@@ -60,7 +61,10 @@ bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 				if (const auto pTechno = abstract_cast<TechnoClass*>(ObjectClass::CurrentObjects->Items[0]))
 				{
 					if (pTechno->Owner->IsControlledByCurrentPlayer())
+					{
+						VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
 						EventExt::RaiseManualReloadEvent(pTechno);
+					}
 				}
 			}
 		}
