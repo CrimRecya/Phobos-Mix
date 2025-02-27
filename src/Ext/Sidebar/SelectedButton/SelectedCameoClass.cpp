@@ -32,6 +32,9 @@ void SelectedCameoClass::OnMouseLeave()
 
 bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
 {
+	if (SelectedInfoClass::Instance.ShouldUpdate)
+		SelectedInfoClass::Instance.UpdateSelected();
+
 	if (this->Disabled)
 		return false;
 
