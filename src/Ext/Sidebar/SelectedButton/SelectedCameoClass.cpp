@@ -220,18 +220,40 @@ void SelectedCameoClass::DrawInfo() const
 		if (const auto pType = pSelect->GetTechnoType())
 		{
 			drawCameo(TechnoTypeExt::ExtMap.Find(pType));
-
+			const auto pTechno = static_cast<TechnoClass*>(pSelect);
 			const auto pRules = RulesClass::Instance();
-			const auto ratio = static_cast<double>(pSelect->Health) / pType->Strength;
 
-			RectangleStruct drawRect { this->X, this->Y, 60, 48 };
-			const int height = static_cast<int>(drawRect.Height * ratio + 0.5);
+			const auto ratio = static_cast<double>(pTechno->Health) / pType->Strength;
+			auto rect = RectangleStruct { this->X + 4, this->Y + 2, 52, 8 };
+			DSurface::Composite->FillRect(&rect, COLOR_BLACK);
 
-			drawRect.Y += drawRect.Height - height;
-			drawRect.Height = height;
+			rect = RectangleStruct { rect.X + 1, rect.Y + 1, static_cast<int>(50 * ratio + 0.5), 3 };
+			const auto color = (ratio > pRules->ConditionYellow) ? 0x67EC : (ratio > pRules->ConditionRed ? 0xFFEC : 0xF986);
+			DSurface::Composite->FillRect(&rect, color);
 
-			auto fillColor = (ratio > pRules->ConditionYellow) ? ColorStruct { 0, 200, 0 } : (ratio > pRules->ConditionRed ? ColorStruct { 200, 200, 0 } : ColorStruct { 200, 0, 0 });
-			DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 10);
+			const auto pExt = TechnoExt::ExtMap.Find(pTechno);
+			const auto pShield = pExt->Shield.get();
+
+			if (pShield && !pShield->IsBrokenAndNonRespawning())
+			{
+				rect.Width = static_cast<int>(50 * (static_cast<double>(pShield->GetHP()) / pShield->GetType()->Strength.Get()) + 0.5);
+				ColorStruct fillColor { 153, 153, 255 };
+				DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
+			}
+
+			if (pTechno->IsIronCurtained())
+			{
+				const auto& timer = pTechno->IronCurtainTimer;
+				rect.Width = static_cast<int>(50 * (static_cast<double>(timer.GetTimeLeft()) / timer.TimeLeft) + 0.5);
+				ColorStruct fillColor { 200, 50, 50 };
+				DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
+			}
+
+			const auto max = pType->GetPipMax();
+			rect.Y += 4;
+			rect.Width = max > 0 ? static_cast<int>(50 * (static_cast<double>(pTechno->GetPipFillLevel()) / max) + 0.5) : 50;
+			--rect.Height;
+			DSurface::Composite->FillRect(&rect, COLOR_WHITE);
 		}
 
 		return;

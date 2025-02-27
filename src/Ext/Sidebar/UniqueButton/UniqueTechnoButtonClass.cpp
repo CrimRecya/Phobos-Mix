@@ -178,8 +178,8 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 
 		if (pTechno->IsIronCurtained())
 		{
-			const auto timer = &pTechno->IronCurtainTimer;
-			ratio = static_cast<double>(timer->GetTimeLeft()) / timer->TimeLeft;
+			const auto& timer = pTechno->IronCurtainTimer;
+			ratio = static_cast<double>(timer.GetTimeLeft()) / timer.TimeLeft;
 			rect.Width = static_cast<int>(50 * ratio + 0.5);
 			ColorStruct fillColor { 200, 50, 50 };
 			DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
@@ -302,8 +302,8 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 
 		if (pSelect->IsIronCurtained())
 		{
-			const auto timer = &pSelect->IronCurtainTimer;
-			ratio = static_cast<double>(timer->GetTimeLeft()) / timer->TimeLeft;
+			const auto& timer = pTechno->IronCurtainTimer;
+			ratio = static_cast<double>(timer.GetTimeLeft()) / timer.TimeLeft;
 			rect.Width = static_cast<int>(50 * ratio + 0.5);
 			ColorStruct fillColor { 200, 50, 50 };
 			DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
