@@ -79,7 +79,7 @@ public:
 	void SwitchVisible();
 	void UpdateVisible();
 	void UpdateSelected();
-	void AddToSelected(TechnoTypeExt::ExtData* pTypeExt, int count, int checkIndex);
+	void AddToSelected(TechnoTypeExt::ExtData* pTypeExt, int count);
 
 	static BSurface* SearchMissingCameo(AbstractType absType, SHPStruct* pSHP);
 	static void GetValuesForDisplay(TechnoClass* pThis, ObjectTypeClass* pFakeType, DisplayInfoType infoType, int& value, int& maxValue);
