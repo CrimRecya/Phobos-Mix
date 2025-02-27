@@ -132,7 +132,7 @@ void SelectedInfoClass::InitIO()
 	}
 
 	{
-		const auto pButton = GameCreate<SelectedBottomClass>(SelectedInfoClass::StartID + 6, 0, bottom - 21, 236, 21);
+		const auto pButton = GameCreate<SelectedBottomClass>(SelectedInfoClass::StartID + 7, 0, bottom - 21, 236, 21);
 		pButton->Zap();
 		GScreenClass::Instance->AddButton(pButton);
 		this->MainBottom = pButton;
@@ -151,7 +151,7 @@ void SelectedInfoClass::InitIO()
 	}
 
 	this->ShouldUpdate = true;
-	this->MaxCameo = std::min(Phobos::Config::SelectedDisplay_MaxCameo, DSurface::Composite->GetWidth() / 60);
+	this->MaxCameo = std::min(Phobos::Config::SelectedDisplay_MaxCameo, (DSurface::Composite->GetWidth() - 150) / 60);
 
 	for (int i = this->GetMaxCameo(); i < 20; ++i)
 	{
