@@ -43,26 +43,19 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 		seIns.UpdateSelected();
 
 	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
-	const auto& currentObjects = ObjectClass::CurrentObjects();
-	const int counts = currentObjects.Count;
+	const auto& seCST = seIns.CurrentSelectTechno;
 
 	if (seIns.CurrentSelectCameo.size() == 1 || Phobos::Config::SelectedDisplay_Expand)
 	{
-		const auto pSelect = seIns.CurrentSelectTechno[this->GetButtonIndex() + seIns.Current]->OwnerObject();
+		const auto pSelect = seCST[this->GetButtonIndex() + seIns.Current]->OwnerObject();
 
 		if (flags & GadgetFlag::LeftPress)
 		{
-			std::vector<ObjectClass*> deselects;
-			deselects.reserve(counts);
-
-			for (const auto& pCurrent : currentObjects)
+			for (const auto& pCurrent : seCST)
 			{
-				if (pCurrent != pSelect)
-					deselects.push_back(pCurrent);
+				if (pCurrent->OwnerObject() != pSelect)
+					pCurrent->OwnerObject()->Deselect();
 			}
-
-			for (const auto& pDeselect : deselects)
-				pDeselect->Deselect();
 		}
 		else if (flags & GadgetFlag::RightPress)
 		{
@@ -72,52 +65,31 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 	else
 	{
 		const auto pTypeExt = seIns.CurrentSelectCameo[this->GetButtonIndex() + seIns.Current].TypeExt;
-		const auto groupID = pTypeExt->GetSelectionGroupID();
 
 		if (flags & GadgetFlag::LeftPress)
 		{
 			if (static_cast<int>(modifier) & static_cast<int>(KeyModifier::Shift))
 			{
-				std::vector<ObjectClass*> deselects;
-				deselects.reserve(counts);
-
-				for (const auto& pCurrent : currentObjects)
+				for (const auto& pCurrent : seCST)
 				{
-					if (const auto pCurrentTypeExt = TechnoTypeExt::ExtMap.Find(pCurrent->GetTechnoType()))
-					{
-						if (pCurrentTypeExt->GetSelectionGroupID() == groupID)
-							continue;
-					}
-
-					deselects.push_back(pCurrent);
+					if (pCurrent->TypeExtData != pTypeExt)
+						pCurrent->OwnerObject()->Deselect();
 				}
-
-				for (const auto& pDeselect : deselects)
-					pDeselect->Deselect();
 			}
 			else
 			{
-				std::vector<ObjectClass*> selects;
-				selects.reserve(counts);
-				std::vector<ObjectClass*> deselects;
-				deselects.reserve(counts);
+				std::vector<TechnoClass*> selects;
 
-				for (const auto& pCurrent : currentObjects)
+				for (const auto& pCurrent : seCST)
 				{
-					if (const auto pCurrentTypeExt = TechnoTypeExt::ExtMap.Find(pCurrent->GetTechnoType()))
+					if (pCurrent->TypeExtData == pTypeExt)
 					{
-						if (pCurrentTypeExt->GetSelectionGroupID() == groupID)
-						{
-							selects.push_back(pCurrent);
-							continue;
-						}
+						selects.push_back(pCurrent->OwnerObject());
+						continue;
 					}
 
-					deselects.push_back(pCurrent);
+					pCurrent->OwnerObject()->Deselect();
 				}
-
-				for (const auto& pDeselect : deselects)
-					pDeselect->Deselect();
 
 				const int size = selects.size();
 				const int random = Unsorted::CurrentFrame % size;
@@ -133,35 +105,20 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 		{
 			if (static_cast<int>(modifier) & static_cast<int>(KeyModifier::Shift))
 			{
-				std::vector<ObjectClass*> deselects;
-				deselects.reserve(counts);
-
-				for (const auto& pCurrent : currentObjects)
+				for (const auto& pCurrent : seCST)
 				{
-					if (const auto pCurrentTypeExt = TechnoTypeExt::ExtMap.Find(pCurrent->GetTechnoType()))
-					{
-						if (pCurrentTypeExt->GetSelectionGroupID() != groupID)
-							continue;
-					}
-
-					deselects.push_back(pCurrent);
+					if (pCurrent->TypeExtData == pTypeExt)
+						pCurrent->OwnerObject()->Deselect();
 				}
-
-				for (const auto& pDeselect : deselects)
-					pDeselect->Deselect();
 			}
 			else
 			{
-				std::vector<ObjectClass*> selects;
-				selects.reserve(counts);
+				std::vector<TechnoClass*> selects;
 
-				for (const auto& pCurrent : currentObjects)
+				for (const auto& pCurrent : seCST)
 				{
-					if (const auto pCurrentTypeExt = TechnoTypeExt::ExtMap.Find(pCurrent->GetTechnoType()))
-					{
-						if (pCurrentTypeExt->GetSelectionGroupID() == groupID)
-							selects.push_back(pCurrent);
-					}
+					if (pCurrent->TypeExtData == pTypeExt)
+						selects.push_back(pCurrent->OwnerObject());
 				}
 
 				selects[Unsorted::CurrentFrame % selects.size()]->Deselect();

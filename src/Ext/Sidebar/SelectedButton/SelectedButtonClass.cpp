@@ -31,29 +31,45 @@ void SelectedButtonClass::OnMouseLeave()
 
 bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
 {
-	if (SelectedInfoClass::Instance.ShouldUpdate)
-		SelectedInfoClass::Instance.UpdateSelected();
+	auto& seIns = SelectedInfoClass::Instance;
+
+	if (seIns.ShouldUpdate)
+		seIns.UpdateSelected();
+
+	const auto& vec = seIns.CurrentSelectTechno;
+
+	if (vec.empty())
+		return false;
 
 	if (flags & GadgetFlag::LeftPress)
 	{
-		if (this->ID != (SelectedInfoClass::StartID + 1)) // AmmoButton
+		if (this->ID == (SelectedInfoClass::StartID + 1)) // PushButton
 		{
-			const auto& vec = ObjectClass::CurrentObjects();
+/*			const auto pExt = vec[0];
+			const auto pTechno = pExt->OwnerObject();
 
-			if (vec.Count > 0)
+			if (pTechno->Owner->IsControlledByCurrentPlayer() && pTechno->IsAlive && !pTechno->Berzerk)
 			{
-				if (const auto pTechno = abstract_cast<TechnoClass*>(vec.Items[0]))
+				if (pExt->CanToggleAggressiveStance())
 				{
-					if (pTechno->Owner->IsControlledByCurrentPlayer() && pTechno->Ammo > 0 && pTechno->IsAlive && !pTechno->Berzerk)
-					{
-						const auto pType = pTechno->GetTechnoType();
+					VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
+					EventExt::RaiseToggleAggressiveStance(pTechno);
+				}
+			}*/
+		}
+		else // AmmoButton
+		{
+			const auto pExt = vec[0];
+			const auto pTechno = pExt->OwnerObject();
 
-						if (pTechno->Ammo != pType->Ammo && TechnoTypeExt::ExtMap.Find(pType)->CanManualReload)
-						{
-							VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
-							EventExt::RaiseManualReloadEvent(pTechno);
-						}
-					}
+			if (pTechno->Owner->IsControlledByCurrentPlayer() && pTechno->Ammo > 0 && pTechno->IsAlive && !pTechno->Berzerk)
+			{
+				const auto pTypeExt = pExt->TypeExtData;
+
+				if (pTechno->Ammo != pTypeExt->OwnerObject()->Ammo && pTypeExt->CanManualReload)
+				{
+					VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
+					EventExt::RaiseManualReloadEvent(pTechno);
 				}
 			}
 		}
@@ -65,12 +81,11 @@ bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 
 void SelectedButtonClass::DrawInfo() const
 {
-	const auto pObject = ObjectClass::CurrentObjects->Items[0];
-	const auto pTechno = abstract_cast<TechnoClass*>(pObject);
-	const auto pTechnoExt = TechnoExt::ExtMap.Find(pTechno);
-	const auto pTypeExt = pTechnoExt->TypeExtData;
+	const auto pExt = SelectedInfoClass::Instance.CurrentSelectTechno[0];
+	const auto pTechno = pExt->OwnerObject();
+	const auto pTypeExt = pExt->TypeExtData;
 	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
-	const auto pSHP = pTechnoExt ? pTypeExt->SelectedInfo_Button.Get(pSideExt->SelectedInfo_Button.Get()) : pSideExt->SelectedInfo_Button.Get();
+	const auto pSHP = pTypeExt->SelectedInfo_Button.Get(pSideExt->SelectedInfo_Button.Get());
 
 	if (!pSHP || pSHP->Frames < 7)
 		return;
@@ -85,8 +100,8 @@ void SelectedButtonClass::DrawInfo() const
 	{
 		int frame = 1;
 
-		if (false)
-			frame = false ? 3 : 2;
+//		if (pExt->CanToggleAggressiveStance() && pTechno->IsAlive && !pTechno->Berzerk)
+//			frame = !pExt->GetAggressiveStance() ? 3 : 2;
 
 		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 			pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
@@ -107,7 +122,7 @@ void SelectedButtonClass::DrawInfo() const
 	{
 		int frame = 4;
 
-		if (pTechnoExt && pTypeExt->CanManualReload && pTechno->IsAlive && !pTechno->Berzerk && pTechno->Ammo != pTechno->GetTechnoType()->Ammo)
+		if (pTypeExt->CanManualReload && pTechno->IsAlive && !pTechno->Berzerk && pTechno->Ammo != pTechno->GetTechnoType()->Ammo)
 			frame = pTechno->Ammo ? 6 : 5;
 
 		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
@@ -163,16 +178,12 @@ void SelectedNotButtonClass::DrawInfo() const
 		return;
 
 	const auto position = Point2D { this->X, this->Y };
-	const auto pObject = ObjectClass::CurrentObjects->Items[0];
-	const auto pTechno = abstract_cast<TechnoClass*>(pObject);
+	const auto pExt = SelectedInfoClass::Instance.CurrentSelectTechno[0];
+	const auto pTechno = pExt->OwnerObject();
 
 	if (this->ID == (SelectedInfoClass::StartID + 4)) // InfoIconA
 	{
-		double mult = 1.0;
-
-		if (const auto pExt = TechnoExt::ExtMap.Find(pTechno))
-			mult = pTechno->FirepowerMultiplier * pExt->AE.FirepowerMultiplier * (pTechno->HasAbility(Ability::Firepower) ? RulesClass::Instance->VeteranCombat : 1.0);
-
+		const double mult = pTechno->FirepowerMultiplier * pExt->AE.FirepowerMultiplier * (pTechno->HasAbility(Ability::Firepower) ? RulesClass::Instance->VeteranCombat : 1.0);
 		int frame = 0;
 
 		if (mult - 1.0 > 1e-10)
@@ -200,11 +211,7 @@ void SelectedNotButtonClass::DrawInfo() const
 	}
 	else if (this->ID == (SelectedInfoClass::StartID + 5)) // InfoIconD
 	{
-		double mult = 1.0;
-
-		if (const auto pExt = TechnoExt::ExtMap.Find(pTechno))
-			mult = pTechno->ArmorMultiplier * pExt->AE.ArmorMultiplier * (pTechno->HasAbility(Ability::Stronger) ? RulesClass::Instance->VeteranArmor : 1.0);
-
+		const auto mult = pTechno->ArmorMultiplier * pExt->AE.ArmorMultiplier * (pTechno->HasAbility(Ability::Stronger) ? RulesClass::Instance->VeteranArmor : 1.0);
 		int frame = 5;
 
 		if (mult - 1.0 > 1e-10)
@@ -234,7 +241,7 @@ void SelectedNotButtonClass::DrawInfo() const
 	{
 		double mult = 1.0;
 
-		if (const auto pFoot = abstract_cast<FootClass*>(pObject))
+		if (const auto pFoot = abstract_cast<FootClass*>(pTechno))
 			mult = pFoot->SpeedMultiplier * TechnoExt::ExtMap.Find(pFoot)->AE.SpeedMultiplier * (pFoot->HasAbility(Ability::Faster) ? RulesClass::Instance->VeteranSpeed : 1.0);
 
 		int frame = 10;
