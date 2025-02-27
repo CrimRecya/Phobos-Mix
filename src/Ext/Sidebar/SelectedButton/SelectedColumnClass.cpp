@@ -44,13 +44,9 @@ void SelectedColumnClass::DrawInfo() const
 			pMainSHP, 0, &position, &surfaceRect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 	}
 
-	const auto pThis = abstract_cast<TechnoClass*>(ObjectClass::CurrentObjects->Items[0]);
-
-	if (!pThis)
-		return;
-
-	const auto pType = pThis->GetTechnoType();
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pExt = SelectedInfoClass::Instance.CurrentSelectTechno[0];
+	const auto pTypeExt = pExt->TypeExtData;
+	const auto pThis = pExt->OwnerObject();
 
 	auto getDisplayType = [&]() -> ObjectTypeClass*
 	{
@@ -69,11 +65,11 @@ void SelectedColumnClass::DrawInfo() const
 				return pThis->Disguise;
 			}
 
-			if (const auto pFakeType = pExt->TypeExtData->FakeOf.Get())
+			if (const auto pFakeType = pTypeExt->FakeOf.Get())
 				return pFakeType;
 		}
 
-		return pType;
+		return pTypeExt->OwnerObject();
 	};
 
 	const auto pDisplayType = getDisplayType();

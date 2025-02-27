@@ -250,11 +250,9 @@ void SelectedInfoClass::UpdateSelected()
 	if (this->CurrentSelectTechno.size())
 		this->CurrentSelectTechno.clear();
 
-	const auto& vec = ObjectClass::CurrentObjects();
 	std::map<int, SelectRecordStruct> CurrentSelectBuffer;
-	this->SingleSelect = vec.Count <= 1;
 
-	for (const auto& pCurrent : vec)
+	for (const auto& pCurrent : ObjectClass::CurrentObjects())
 	{
 		if (const auto pType = pCurrent->GetTechnoType())
 		{
@@ -280,6 +278,7 @@ void SelectedInfoClass::UpdateSelected()
 			return pSelectA->OwnerObject()->UniqueID < pSelectB->OwnerObject()->UniqueID;
 		});
 
+	this->SingleSelect = CurrentSelectTechno.size() <= 1;
 	this->UpdateVisible();
 }
 
@@ -288,7 +287,7 @@ void SelectedInfoClass::DrawInfo()
 	if (this->ShouldUpdate)
 		this->UpdateSelected();
 
-	if (ObjectClass::CurrentObjects->Count > 0)
+	if (!CurrentSelectTechno.empty())
 	{
 		if (this->SingleSelect)
 		{
