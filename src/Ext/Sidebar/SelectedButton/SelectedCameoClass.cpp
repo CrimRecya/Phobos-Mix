@@ -34,20 +34,21 @@ void SelectedCameoClass::OnMouseLeave()
 
 bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
 {
-	if (SelectedInfoClass::Instance.ShouldUpdate)
-		SelectedInfoClass::Instance.UpdateSelected();
-
 	if (this->Disabled)
 		return false;
 
+	auto& seIns = SelectedInfoClass::Instance;
+
+	if (seIns.ShouldUpdate)
+		seIns.UpdateSelected();
+
 	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
-	const auto& currentSelects = SelectedInfoClass::Instance.CurrentSelectCameo;
 	const auto& currentObjects = ObjectClass::CurrentObjects();
 	const int counts = currentObjects.Count;
 
-	if (currentSelects.size() == 1 || Phobos::Config::SelectedDisplay_Expand)
+	if (seIns.CurrentSelectCameo.size() == 1 || Phobos::Config::SelectedDisplay_Expand)
 	{
-		const auto pSelect = currentObjects.Items[this->GetButtonIndex() + SelectedInfoClass::Instance.Current];
+		const auto pSelect = seIns.CurrentSelectTechno[this->GetButtonIndex() + seIns.Current]->OwnerObject();
 
 		if (flags & GadgetFlag::LeftPress)
 		{
@@ -70,7 +71,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 	}
 	else
 	{
-		const auto pTypeExt = currentSelects[this->GetButtonIndex() + SelectedInfoClass::Instance.Current].TypeExt;
+		const auto pTypeExt = seIns.CurrentSelectCameo[this->GetButtonIndex() + seIns.Current].TypeExt;
 		const auto groupID = pTypeExt->GetSelectionGroupID();
 
 		if (flags & GadgetFlag::LeftPress)
@@ -182,8 +183,6 @@ void SelectedCameoClass::DrawInfo() const
 	if (this->Disabled)
 		return;
 
-	const auto& selects = SelectedInfoClass::Instance.CurrentSelectCameo;
-
 	auto drawCameo = [this](TechnoTypeExt::ExtData* pTypeExt)
 	{
 		if (const auto CameoPCX = pTypeExt->CameoPCX.GetSurface())
@@ -216,9 +215,12 @@ void SelectedCameoClass::DrawInfo() const
 		DSurface::Composite->FillRectTrans(&fillRect, &fillColor, 60);
 	};
 
-	if (selects.size() == 1 || Phobos::Config::SelectedDisplay_Expand)
+	const auto& seIns = SelectedInfoClass::Instance;
+
+	if (seIns.CurrentSelectCameo.size() == 1 || Phobos::Config::SelectedDisplay_Expand)
 	{
-		const auto pSelect = ObjectClass::CurrentObjects->Items[this->GetButtonIndex() + SelectedInfoClass::Instance.Current];
+		const auto pExt = seIns.CurrentSelectTechno[this->GetButtonIndex() + seIns.Current];
+		const auto pSelect = pExt->OwnerObject();
 
 		if (const auto pType = pSelect->GetTechnoType())
 		{
@@ -235,8 +237,6 @@ void SelectedCameoClass::DrawInfo() const
 			rect = RectangleStruct { rect.X + 1, rect.Y + 1, static_cast<int>(50 * ratio + 0.5), 3 };
 			const auto color = (ratio > pRules->ConditionYellow) ? 0x67EC : (ratio > pRules->ConditionRed ? 0xFFEC : 0xF986);
 			DSurface::Composite->FillRect(&rect, color);
-
-			const auto pExt = TechnoExt::ExtMap.Find(pTechno);
 			const auto pShield = pExt->Shield.get();
 
 			if (pShield && !pShield->IsBrokenAndNonRespawning())
@@ -266,7 +266,7 @@ void SelectedCameoClass::DrawInfo() const
 		return;
 	}
 
-	const auto pSelect = selects[this->GetButtonIndex() + SelectedInfoClass::Instance.Current];
+	const auto pSelect = seIns.CurrentSelectCameo[this->GetButtonIndex() + seIns.Current];
 	drawCameo(pSelect.TypeExt);
 	const int count = pSelect.Count;
 

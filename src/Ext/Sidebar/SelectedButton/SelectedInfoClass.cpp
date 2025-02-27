@@ -210,7 +210,7 @@ void SelectedInfoClass::UpdateVisible()
 	int cameoCount = 0;
 
 	if (size == 1 || Phobos::Config::SelectedDisplay_Expand)
-		size = ObjectClass::CurrentObjects->Count;
+		size = this->CurrentSelectTechno.size();
 
 	for (int i = 0; i < this->GetMaxCameo(); ++i)
 	{
@@ -247,48 +247,81 @@ void SelectedInfoClass::UpdateSelected()
 	if (this->CurrentSelectCameo.size())
 		this->CurrentSelectCameo.clear();
 
-	std::map<int, int> CurrentSelect;
-	std::unordered_map<int, TechnoTypeExt::ExtData*> ExtIDMap;
+	if (this->CurrentSelectTechno.size())
+		this->CurrentSelectTechno.clear();
 
 	const auto& vec = ObjectClass::CurrentObjects();
+	std::map<int, SelectRecordStruct> CurrentSelectBuffer;
 	this->SingleSelect = vec.Count <= 1;
 
 	for (const auto& pCurrent : vec)
 	{
 		if (const auto pType = pCurrent->GetTechnoType())
 		{
-			++CurrentSelect[pType->UniqueID];
-			ExtIDMap[pType->UniqueID] = TechnoTypeExt::ExtMap.Find(pType);
+			const auto count = CurrentSelectBuffer.contains(pType->UniqueID) ? CurrentSelectBuffer.at(pType->UniqueID).Count : 0;
+			CurrentSelectBuffer[pType->UniqueID] = SelectRecordStruct { TechnoTypeExt::ExtMap.Find(pType), count + 1 };
+			this->CurrentSelectTechno.emplace_back(TechnoExt::ExtMap.Find(static_cast<TechnoClass*>(pCurrent)));
 		}
 	}
 
-	if (CurrentSelect.size())
+	if (CurrentSelectBuffer.size())
 	{
-		for (const auto& [index, count] : CurrentSelect)
-		{
-			if (ExtIDMap.contains(index))
-				this->AddToSelected(ExtIDMap.at(index), count);
-		}
+		for (const auto& [ID, Record] : CurrentSelectBuffer)
+			this->CurrentSelectCameo.push_back(Record);
 	}
+
+	std::sort(CurrentSelectTechno.begin(), CurrentSelectTechno.end(),
+		[](const TechnoExt::ExtData* const pSelectA, const TechnoExt::ExtData* const pSelectB)
+		{
+			const auto uniqueA = pSelectA->TypeExtData->OwnerObject()->UniqueID;
+			const auto uniqueB = pSelectB->TypeExtData->OwnerObject()->UniqueID;
+			if (uniqueA < uniqueB) return true;
+			if (uniqueA > uniqueB) return false;
+			return pSelectA->OwnerObject()->UniqueID < pSelectB->OwnerObject()->UniqueID;
+		});
 
 	this->UpdateVisible();
 }
 
-void SelectedInfoClass::AddToSelected(TechnoTypeExt::ExtData* pTypeExt, int count)
+void SelectedInfoClass::DrawInfo()
 {
-	const auto groupID = pTypeExt->GetSelectionGroupID();
-	const int currentCounts = this->CurrentSelectCameo.size();
+	if (this->ShouldUpdate)
+		this->UpdateSelected();
 
-	for (int i = 0; i < currentCounts; ++i)
+	if (ObjectClass::CurrentObjects->Count > 0)
 	{
-		if (this->CurrentSelectCameo[i].TypeExt->GetSelectionGroupID() == groupID)
+		if (this->SingleSelect)
 		{
-			this->CurrentSelectCameo[i].Count += count;
-			return;
+			if (const auto& pButton = this->MainColumn)
+				pButton->DrawInfo();
+
+			if (const auto& pButton = this->PushButton)
+				pButton->DrawInfo();
+
+			if (const auto& pButton = this->AmmoButton)
+				pButton->DrawInfo();
+
+			if (const auto& pButton = this->InfoIconA)
+				pButton->DrawInfo();
+
+			if (const auto& pButton = this->InfoIconD)
+				pButton->DrawInfo();
+
+			if (const auto& pButton = this->InfoIconS)
+				pButton->DrawInfo();
+		}
+		else
+		{
+			for (int i = 0; i < this->GetMaxCameo(); ++i)
+			{
+				if (const auto& pButton = this->Cameos[i])
+					pButton->DrawInfo();
+			}
 		}
 	}
 
-	this->CurrentSelectCameo.emplace_back(SelectRecordStruct { pTypeExt, count });
+	if (const auto& pButton = this->MainBottom)
+		pButton->DrawInfo();
 }
 
 BSurface* SelectedInfoClass::SearchMissingCameo(AbstractType absType, SHPStruct* pSHP)
@@ -460,47 +493,6 @@ TechnoStatus SelectedInfoClass::GetCurrentStatus(TechnoClass* pThis)
 	return (status > TechnoStatus::None || status < TechnoStatus::Sleep) ? TechnoStatus::Unknown : status;
 }
 
-void SelectedInfoClass::DrawInfo()
-{
-	if (this->ShouldUpdate)
-		this->UpdateSelected();
-
-	if (ObjectClass::CurrentObjects->Count > 0)
-	{
-		if (this->SingleSelect)
-		{
-			if (const auto& pButton = this->MainColumn)
-				pButton->DrawInfo();
-
-			if (const auto& pButton = this->PushButton)
-				pButton->DrawInfo();
-
-			if (const auto& pButton = this->AmmoButton)
-				pButton->DrawInfo();
-
-			if (const auto& pButton = this->InfoIconA)
-				pButton->DrawInfo();
-
-			if (const auto& pButton = this->InfoIconD)
-				pButton->DrawInfo();
-
-			if (const auto& pButton = this->InfoIconS)
-				pButton->DrawInfo();
-		}
-		else
-		{
-			for (int i = 0; i < this->GetMaxCameo(); ++i)
-			{
-				if (const auto& pButton = this->Cameos[i])
-					pButton->DrawInfo();
-			}
-		}
-	}
-
-	if (const auto& pButton = this->MainBottom)
-		pButton->DrawInfo();
-}
-
 int SelectedInfoClass::GetMaxCameo() const
 {
 	return this->MaxCameo;
@@ -522,7 +514,7 @@ bool SelectedInfoClass::CanScrollRight() const
 	int size = this->CurrentSelectCameo.size();
 
 	if (size == 1 || Phobos::Config::SelectedDisplay_Expand)
-		size = ObjectClass::CurrentObjects->Count;
+		size = this->CurrentSelectTechno.size();
 
 	const int overflow = size - this->GetMaxCameo();
 

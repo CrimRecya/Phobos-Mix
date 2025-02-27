@@ -79,13 +79,11 @@ public:
 	void SwitchVisible();
 	void UpdateVisible();
 	void UpdateSelected();
-	void AddToSelected(TechnoTypeExt::ExtData* pTypeExt, int count);
+	void DrawInfo();
 
 	static BSurface* SearchMissingCameo(AbstractType absType, SHPStruct* pSHP);
 	static void GetValuesForDisplay(TechnoClass* pThis, ObjectTypeClass* pFakeType, DisplayInfoType infoType, int& value, int& maxValue);
 	static TechnoStatus GetCurrentStatus(TechnoClass* pThis);
-
-	void DrawInfo();
 
 	int GetMaxCameo() const;
 	bool CanScrollLeft() const;
@@ -114,6 +112,7 @@ public:
 
 	SelectedCameoClass* Cameos[20] { };
 	std::vector<SelectRecordStruct> CurrentSelectCameo { };
+	std::vector<TechnoExt::ExtData*> CurrentSelectTechno { };
 	int MaxCameo { 0 };
 	int Current { 0 };
 
