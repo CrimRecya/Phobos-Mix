@@ -395,6 +395,7 @@ bool UniqueTechnoButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier 
 	if (index >= static_cast<int>(vec.size()))
 		return false;
 
+	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
 	auto pSelect = vec[index]->OwnerObject();
 
 	for (auto pTrans = pSelect->Transporter; pTrans; pTrans = pTrans->Transporter)

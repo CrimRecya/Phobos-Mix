@@ -210,12 +210,12 @@ void SelectedColumnClass::DrawInfo() const
 
 	{
 		int value = -1, maxValue = 0;
-		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_CameoType.Get() : DisplayInfoType::Health;
+		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_CameoType.Get() : DisplayInfoType::Ammo;
 		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue);
 
-		auto drawRect = RectangleStruct { 6, position.Y + 20, static_cast<int>(200 * (value <= -1 || maxValue <= 0 ? 1.0 : static_cast<double>(value) / maxValue) + 0.5), 18 };
-		ColorStruct drawColor { 0, 0, 0 };
-		DSurface::Composite->FillRectTrans(&drawRect, &drawColor, 30);
+		auto drawRect = RectangleStruct { 10, position.Y + 24, static_cast<int>(180 * ((value <= -1 || maxValue <= 0) ? 1.0 : (static_cast<double>(value) / maxValue)) + 0.5), 15 };
+		ColorStruct drawColor { 255, 255, 255 };
+		DSurface::Composite->FillRectTrans(&drawRect, &drawColor, 25);
 	}
 
 	position += Point2D { -20, 22 };
