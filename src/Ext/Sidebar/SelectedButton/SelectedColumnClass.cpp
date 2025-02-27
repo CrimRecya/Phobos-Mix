@@ -208,6 +208,16 @@ void SelectedColumnClass::DrawInfo() const
 		DSurface::Composite->DrawTextA(L"/", &surfaceRect, &position, color, 0, printType);
 	}
 
+	{
+		int value = -1, maxValue = 0;
+		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_CameoType.Get() : DisplayInfoType::Health;
+		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue);
+
+		auto drawRect = RectangleStruct { 6, position.Y + 20, static_cast<int>(200 * (value <= -1 || maxValue <= 0 ? 1.0 : static_cast<double>(value) / maxValue) + 0.5), 18 };
+		ColorStruct drawColor { 0, 0, 0 };
+		DSurface::Composite->FillRectTrans(&drawRect, &drawColor, 30);
+	}
+
 	position += Point2D { -20, 22 };
 	{
 		const auto status = static_cast<int>(SelectedInfoClass::GetCurrentStatus(pThis));
@@ -220,16 +230,16 @@ void SelectedColumnClass::DrawInfo() const
 	if (!pMainCameo)
 		return;
 
-	auto drawRect = RectangleStruct { pMainCameo->X, pMainCameo->Y, pMainCameo->Width, pMainCameo->Height};
-
 	if (const auto pCameoPCX = pDisplayTypeExt ? pDisplayTypeExt->CameoPCX.GetSurface() : nullptr)
 	{
+		auto drawRect = RectangleStruct { pMainCameo->X, pMainCameo->Y, pMainCameo->Width, pMainCameo->Height};
 		PCX::Instance->BlitToSurface(&drawRect, DSurface::Composite, pCameoPCX);
 	}
 	else if (const auto pSHP = pDisplayType->GetCameo())
 	{
 		if (const auto MissingCameoPCX = SelectedInfoClass::SearchMissingCameo(pDisplayType->WhatAmI(), pSHP))
 		{
+			auto drawRect = RectangleStruct { pMainCameo->X, pMainCameo->Y, pMainCameo->Width, pMainCameo->Height};
 			PCX::Instance->BlitToSurface(&drawRect, DSurface::Composite, MissingCameoPCX);
 		}
 		else

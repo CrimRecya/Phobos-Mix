@@ -266,6 +266,7 @@ public:
 		Valueable<DisplayInfoType> SelectedInfo_BelowType;
 		Valueable<ColorStruct> SelectedInfo_BelowColor;
 		Valueable<int> SelectedInfo_BelowDivisor;
+		Valueable<DisplayInfoType> SelectedInfo_CameoType;
 		Nullable<SHPStruct*> SelectedInfo_Button;
 		Valueable<TechnoTypeClass*> FakeOf;
 		CustomPalette CameoPal;
@@ -560,6 +561,7 @@ public:
 			, SelectedInfo_BelowType { DisplayInfoType::Health }
 			, SelectedInfo_BelowColor { { 0, 0, 0 } }
 			, SelectedInfo_BelowDivisor {}
+			, SelectedInfo_CameoType { DisplayInfoType::Ammo }
 			, SelectedInfo_Button {}
 			, FakeOf {}
 			, CameoPal {}
