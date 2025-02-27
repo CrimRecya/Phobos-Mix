@@ -42,7 +42,7 @@ bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 
 			if (vec.Count > 0)
 			{
-				if (const auto pTechno = abstract_cast<TechnoClass*>(ObjectClass::CurrentObjects->Items[0]))
+				if (const auto pTechno = abstract_cast<TechnoClass*>(vec.Items[0]))
 				{
 					if (pTechno->Owner->IsControlledByCurrentPlayer() && pTechno->IsAlive && !pTechno->Berzerk)
 					{
