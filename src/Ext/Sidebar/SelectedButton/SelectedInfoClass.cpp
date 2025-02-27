@@ -247,81 +247,39 @@ void SelectedInfoClass::UpdateSelected()
 	if (this->CurrentSelectCameo.size())
 		this->CurrentSelectCameo.clear();
 
-	this->CurrentSelectCameo.reserve(10);
-
-	std::map<int, int> CurrentSelectInfantry;
-	std::map<int, int> CurrentSelectUnit;
-	std::map<int, int> CurrentSelectAircraft;
-	std::map<int, int> CurrentSelectBuilding;
+	std::map<int, int> CurrentSelect;
+	std::unordered_map<int, TechnoTypeExt::ExtData*> ExtIDMap;
 
 	const auto& vec = ObjectClass::CurrentObjects();
 	this->SingleSelect = vec.Count <= 1;
 
 	for (const auto& pCurrent : vec)
 	{
-		const auto absType = pCurrent->WhatAmI();
-
-		if (absType == AbstractType::Infantry)
-			++CurrentSelectInfantry[static_cast<InfantryClass*>(pCurrent)->Type->ArrayIndex];
-		else if (absType == AbstractType::Unit)
-			++CurrentSelectUnit[static_cast<UnitClass*>(pCurrent)->Type->ArrayIndex];
-		else if (absType == AbstractType::Aircraft)
-			++CurrentSelectAircraft[static_cast<AircraftClass*>(pCurrent)->Type->ArrayIndex];
-		else if (absType == AbstractType::Building)
-			++CurrentSelectBuilding[static_cast<BuildingClass*>(pCurrent)->Type->ArrayIndex];
-	}
-
-	if (CurrentSelectInfantry.size())
-	{
-		for (const auto& [index, count] : CurrentSelectInfantry)
+		if (const auto pType = pCurrent->GetTechnoType())
 		{
-			if (const auto pTypeExt = TechnoTypeExt::ExtMap.Find(InfantryTypeClass::Array->Items[index]))
-				this->AddToSelected(pTypeExt, count, 0);
+			++CurrentSelect[pType->UniqueID];
+			ExtIDMap[pType->UniqueID] = TechnoTypeExt::ExtMap.Find(pType);
 		}
 	}
 
-	if (CurrentSelectUnit.size())
+	if (CurrentSelect.size())
 	{
-		const int checkStart = this->CurrentSelectCameo.size();
-
-		for (const auto& [index, count] : CurrentSelectUnit)
+		for (const auto& [index, count] : CurrentSelect)
 		{
-			if (const auto pTypeExt = TechnoTypeExt::ExtMap.Find(UnitTypeClass::Array->Items[index]))
-				this->AddToSelected(pTypeExt, count, checkStart);
-		}
-	}
-
-	if (CurrentSelectAircraft.size())
-	{
-		const int checkStart = this->CurrentSelectCameo.size();
-
-		for (const auto& [index, count] : CurrentSelectAircraft)
-		{
-			if (const auto pTypeExt = TechnoTypeExt::ExtMap.Find(AircraftTypeClass::Array->Items[index]))
-				this->AddToSelected(pTypeExt, count, checkStart);
-		}
-	}
-
-	if (CurrentSelectBuilding.size())
-	{
-		const int checkStart = this->CurrentSelectCameo.size();
-
-		for (const auto& [index, count] : CurrentSelectBuilding)
-		{
-			if (const auto pTypeExt = TechnoTypeExt::ExtMap.Find(BuildingTypeClass::Array->Items[index]))
-				this->AddToSelected(pTypeExt, count, checkStart);
+			if (ExtIDMap.contains(index))
+				this->AddToSelected(ExtIDMap.at(index), count);
 		}
 	}
 
 	this->UpdateVisible();
 }
 
-void SelectedInfoClass::AddToSelected(TechnoTypeExt::ExtData* pTypeExt, int count, int checkIndex)
+void SelectedInfoClass::AddToSelected(TechnoTypeExt::ExtData* pTypeExt, int count)
 {
 	const auto groupID = pTypeExt->GetSelectionGroupID();
 	const int currentCounts = this->CurrentSelectCameo.size();
 
-	for (int i = checkIndex; i < currentCounts; ++i)
+	for (int i = 0; i < currentCounts; ++i)
 	{
 		if (this->CurrentSelectCameo[i].TypeExt->GetSelectionGroupID() == groupID)
 		{
@@ -330,8 +288,7 @@ void SelectedInfoClass::AddToSelected(TechnoTypeExt::ExtData* pTypeExt, int coun
 		}
 	}
 
-	SelectRecordStruct select { pTypeExt, count };
-	this->CurrentSelectCameo.push_back(select);
+	this->CurrentSelectCameo.emplace_back(SelectRecordStruct { pTypeExt, count });
 }
 
 BSurface* SelectedInfoClass::SearchMissingCameo(AbstractType absType, SHPStruct* pSHP)
