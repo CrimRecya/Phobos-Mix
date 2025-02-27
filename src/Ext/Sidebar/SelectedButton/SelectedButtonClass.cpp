@@ -31,6 +31,9 @@ void SelectedButtonClass::OnMouseLeave()
 
 bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
 {
+	if (SelectedInfoClass::Instance.ShouldUpdate)
+		SelectedInfoClass::Instance.UpdateSelected();
+
 	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
 
 	if (flags & GadgetFlag::LeftPress)
