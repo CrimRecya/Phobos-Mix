@@ -713,6 +713,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->SelectedInfo_BelowType.Read(exINI, pSection, "SelectedInfo.BelowType");
 	this->SelectedInfo_BelowColor.Read(exINI, pSection, "SelectedInfo.BelowColor");
 	this->SelectedInfo_BelowDivisor.Read(exINI, pSection, "SelectedInfo.BelowDivisor");
+	this->SelectedInfo_CameoType.Read(exINI, pSection, "SelectedInfo.CameoType");
 	this->SelectedInfo_Button.Read(exINI, pSection, "SelectedInfo.Button");
 	this->FakeOf.Read(exINI, pSection, "FakeOf");
 	this->NoRearm_UnderEMP.Read(exINI, pSection, "NoRearm.UnderEMP");
@@ -1218,6 +1219,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->SelectedInfo_BelowType)
 		.Process(this->SelectedInfo_BelowColor)
 		.Process(this->SelectedInfo_BelowDivisor)
+		.Process(this->SelectedInfo_CameoType)
 		.Process(this->SelectedInfo_Button)
 		.Process(this->FakeOf)
 		.Process(this->CameoPal)

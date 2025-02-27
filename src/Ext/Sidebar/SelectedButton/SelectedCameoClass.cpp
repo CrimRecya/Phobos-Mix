@@ -1,6 +1,8 @@
 #include "SelectedCameoClass.h"
 #include "SelectedInfoClass.h"
 
+#include "SpawnManagerClass.h"
+
 SelectedCameoClass::SelectedCameoClass(unsigned int id, int x, int y)
 	: ControlClass(id, x, y, 60, 48, (GadgetFlag::LeftPress | GadgetFlag::RightPress), false)
 {
@@ -219,7 +221,9 @@ void SelectedCameoClass::DrawInfo() const
 
 		if (const auto pType = pSelect->GetTechnoType())
 		{
-			drawCameo(TechnoTypeExt::ExtMap.Find(pType));
+			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+			drawCameo(pTypeExt);
+
 			const auto pTechno = static_cast<TechnoClass*>(pSelect);
 			const auto pRules = RulesClass::Instance();
 
@@ -249,9 +253,11 @@ void SelectedCameoClass::DrawInfo() const
 				DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
 			}
 
-			const auto max = pType->GetPipMax();
+			int value = -1, maxValue = 0;
+			TechnoExt::GetValuesForDisplay(pTechno, pTypeExt->SelectedInfo_CameoType.Get(), value, maxValue);
+
 			rect.Y += 4;
-			rect.Width = max > 0 ? static_cast<int>(50 * (static_cast<double>(pTechno->GetPipFillLevel()) / max) + 0.5) : 50;
+			rect.Width = static_cast<int>(50 * (value <= -1 || maxValue <= 0 ? 1.0 : static_cast<double>(value) / maxValue) + 0.5);
 			--rect.Height;
 			DSurface::Composite->FillRect(&rect, COLOR_WHITE);
 		}
