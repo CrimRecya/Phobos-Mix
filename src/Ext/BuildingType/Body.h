@@ -82,6 +82,8 @@ public:
 
 		Nullable<Point2D> BarracksExitCell;
 
+		Valueable<bool> HasSecondaryRallyPoint;
+
 		ExtData(BuildingTypeClass* OwnerObject) : Extension<BuildingTypeClass>(OwnerObject)
 			, PowersUp_Owner { AffectedHouse::Owner }
 			, PowersUp_Buildings {}
@@ -132,6 +134,7 @@ public:
 			, Adjacent_Allowed {}
 			, Adjacent_Disallowed {}
 			, BarracksExitCell {}
+			, HasSecondaryRallyPoint { false }
 		{ }
 
 		// Ares 0.A functions
