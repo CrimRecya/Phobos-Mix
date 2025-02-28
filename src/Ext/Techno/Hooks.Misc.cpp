@@ -499,29 +499,6 @@ DEFINE_HOOK(0x6F88BF, TechnoClass_CanAutoTargetObject_AttackMindControlledDelay,
 
 #pragma endregion
 
-#pragma region NoTurretUnitAlwaysTurnToTarget
-
-DEFINE_HOOK(0x7410BB, UnitClass_GetFireError_CheckFacingError, 0x8)
-{
-	enum { NoNeedToCheck = 0x74132B, ContinueCheck = 0x7410C3 };
-
-	GET(const FireError, fireError, EAX);
-
-	if (fireError == FireError::OK)
-		return ContinueCheck;
-
-	GET(UnitClass* const, pThis, ESI);
-
-	const auto pType = pThis->Type;
-
-	if (!TechnoTypeExt::ExtMap.Find(pType)->NoTurret_TrackTarget.Get(RulesExt::Global()->NoTurret_TrackTarget))
-		return NoNeedToCheck;
-
-	return (fireError == FireError::REARM && !pType->Turret && !pThis->IsWarpingIn()) ? ContinueCheck : NoNeedToCheck;
-}
-
-#pragma endregion
-
 #pragma region ExtendedGattlingRateDown
 
 DEFINE_HOOK(0x70DE40, BuildingClass_sub_70DE40_GattlingRateDownDelay, 0xA)
@@ -620,6 +597,29 @@ DEFINE_HOOK(0x70E01E, TechnoClass_sub_70E000_GattlingRateDownDelay, 0x6)
 	newValue -= (rateDown * remain);
 	pThis->GattlingValue = (newValue <= 0) ? 0 : newValue;
 	return SkipGameCode;
+}
+
+#pragma endregion
+
+#pragma region NoTurretUnitAlwaysTurnToTarget
+
+DEFINE_HOOK(0x7410BB, UnitClass_GetFireError_CheckFacingError, 0x8)
+{
+	enum { NoNeedToCheck = 0x74132B, ContinueCheck = 0x7410C3 };
+
+	GET(const FireError, fireError, EAX);
+
+	if (fireError == FireError::OK)
+		return ContinueCheck;
+
+	GET(UnitClass* const, pThis, ESI);
+
+	const auto pType = pThis->Type;
+
+	if (!TechnoTypeExt::ExtMap.Find(pType)->NoTurret_TrackTarget.Get(RulesExt::Global()->NoTurret_TrackTarget))
+		return NoNeedToCheck;
+
+	return (fireError == FireError::REARM && !pType->Turret && !pThis->IsWarpingIn()) ? ContinueCheck : NoNeedToCheck;
 }
 
 #pragma endregion
