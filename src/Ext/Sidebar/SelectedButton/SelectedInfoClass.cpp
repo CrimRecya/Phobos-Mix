@@ -60,6 +60,30 @@ void SelectedInfoClass::InitClear()
 		this->MainBottom = nullptr;
 	}
 
+	if (this->ToggleV)
+	{
+		GScreenClass::Instance->RemoveButton(this->ToggleV);
+		this->ToggleV = nullptr;
+	}
+
+	if (this->ToggleE)
+	{
+		GScreenClass::Instance->RemoveButton(this->ToggleE);
+		this->ToggleE = nullptr;
+	}
+
+	if (this->ScrollL)
+	{
+		GScreenClass::Instance->RemoveButton(this->ScrollL);
+		this->ScrollL = nullptr;
+	}
+
+	if (this->ScrollR)
+	{
+		GScreenClass::Instance->RemoveButton(this->ScrollR);
+		this->ScrollR = nullptr;
+	}
+
 	for (int i = 0; i < 20; ++i)
 	{
 		if (auto& pButton = this->Cameos[i])
@@ -132,10 +156,38 @@ void SelectedInfoClass::InitIO()
 	}
 
 	{
-		const auto pButton = GameCreate<SelectedBottomClass>(SelectedInfoClass::StartID + 7, 0, bottom - 21, 236, 21);
+		const auto pButton = GameCreate<SelectedBottomClass>(SelectedInfoClass::StartID + 7, 0, bottom - 21, 289, 21);
 		pButton->Zap();
 		GScreenClass::Instance->AddButton(pButton);
 		this->MainBottom = pButton;
+	}
+
+	{
+		const auto pButton = GameCreate<SelectedToggleClass>(SelectedInfoClass::StartID + 8, Phobos::Config::SelectedDisplay_Enable ? 238 : 2, bottom - 17);
+		pButton->Zap();
+		GScreenClass::Instance->AddButton(pButton);
+		this->ToggleV = pButton;
+	}
+
+	{
+		const auto pButton = GameCreate<SelectedToggleClass>(SelectedInfoClass::StartID + 9, 250, bottom - 17);
+		pButton->Zap();
+		GScreenClass::Instance->AddButton(pButton);
+		this->ToggleE = pButton;
+	}
+
+	{
+		const auto pButton = GameCreate<SelectedScrollClass>(SelectedInfoClass::StartID + 30, 262, bottom - 17);
+		pButton->Zap();
+		GScreenClass::Instance->AddButton(pButton);
+		this->ScrollL = pButton;
+	}
+
+	{
+		const auto pButton = GameCreate<SelectedScrollClass>(SelectedInfoClass::StartID + 31, 274, bottom - 17);
+		pButton->Zap();
+		GScreenClass::Instance->AddButton(pButton);
+		this->ScrollR = pButton;
 	}
 
 	Point2D position { 0, (bottom - 69) };
@@ -162,12 +214,13 @@ void SelectedInfoClass::InitIO()
 
 void SelectedInfoClass::SwitchExpand()
 {
+	if (!Phobos::Config::SelectedDisplay_Enable)
+		return;
+
 	Phobos::Config::SelectedDisplay_Expand = !Phobos::Config::SelectedDisplay_Expand;
 	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
 	this->UpdateVisible();
-
-	if (Phobos::Config::SelectedDisplay_Enable)
-		this->ShouldUpdate = true;
+	this->ShouldUpdate = true;
 }
 
 void SelectedInfoClass::SwitchVisible()
@@ -182,7 +235,8 @@ void SelectedInfoClass::SwitchVisible()
 
 void SelectedInfoClass::UpdateVisible()
 {
-	auto disabled = !Phobos::Config::SelectedDisplay_Enable || !this->SingleSelect;
+	const bool enable = Phobos::Config::SelectedDisplay_Enable;
+	auto disabled = !enable || !this->SingleSelect;
 
 	if (const auto& pButton = this->MainColumn)
 		pButton->Disabled = disabled;
@@ -205,7 +259,7 @@ void SelectedInfoClass::UpdateVisible()
 	if (const auto& pButton = this->InfoIconS)
 		pButton->Disabled = disabled;
 
-	disabled = !Phobos::Config::SelectedDisplay_Enable || this->SingleSelect;
+	disabled = !enable || this->SingleSelect;
 	int size = this->CurrentSelectCameo.size();
 	int cameoCount = 0;
 
@@ -234,10 +288,19 @@ void SelectedInfoClass::UpdateVisible()
 	}
 
 	if (const auto& pButton = this->MainBottom)
-	{
-		pButton->Disabled = !Phobos::Config::SelectedDisplay_Enable;
-		pButton->Width = std::max(236, cameoCount * 60);
-	}
+		pButton->Width = std::max((enable ? (this->SingleSelect ? 253 : 289) : 17), cameoCount * 60);
+
+	if (const auto& pButton = this->ToggleV)
+		pButton->X = enable ? 238 : 2;
+
+	if (const auto& pButton = this->ToggleE)
+		pButton->Disabled = disabled;
+
+	if (const auto& pButton = this->ScrollL)
+		pButton->Disabled = disabled;
+
+	if (const auto& pButton = this->ScrollR)
+		pButton->Disabled = disabled;
 }
 
 void SelectedInfoClass::UpdateSelected()
@@ -284,43 +347,63 @@ void SelectedInfoClass::UpdateSelected()
 
 void SelectedInfoClass::DrawInfo()
 {
-	if (this->ShouldUpdate)
-		this->UpdateSelected();
+	const bool drawAll = Phobos::Config::SelectedDisplay_Enable;
 
-	if (!CurrentSelectTechno.empty())
+	if (drawAll)
 	{
-		if (this->SingleSelect)
+		if (this->ShouldUpdate)
+			this->UpdateSelected();
+
+		if (!CurrentSelectTechno.empty())
 		{
-			if (const auto& pButton = this->MainColumn)
-				pButton->DrawInfo();
-
-			if (const auto& pButton = this->PushButton)
-				pButton->DrawInfo();
-
-			if (const auto& pButton = this->AmmoButton)
-				pButton->DrawInfo();
-
-			if (const auto& pButton = this->InfoIconA)
-				pButton->DrawInfo();
-
-			if (const auto& pButton = this->InfoIconD)
-				pButton->DrawInfo();
-
-			if (const auto& pButton = this->InfoIconS)
-				pButton->DrawInfo();
-		}
-		else
-		{
-			for (int i = 0; i < this->GetMaxCameo(); ++i)
+			if (this->SingleSelect)
 			{
-				if (const auto& pButton = this->Cameos[i])
+				if (const auto& pButton = this->MainColumn)
 					pButton->DrawInfo();
+
+				if (const auto& pButton = this->PushButton)
+					pButton->DrawInfo();
+
+				if (const auto& pButton = this->AmmoButton)
+					pButton->DrawInfo();
+
+				if (const auto& pButton = this->InfoIconA)
+					pButton->DrawInfo();
+
+				if (const auto& pButton = this->InfoIconD)
+					pButton->DrawInfo();
+
+				if (const auto& pButton = this->InfoIconS)
+					pButton->DrawInfo();
+			}
+			else
+			{
+				for (int i = 0; i < this->GetMaxCameo(); ++i)
+				{
+					if (const auto& pButton = this->Cameos[i])
+						pButton->DrawInfo();
+				}
 			}
 		}
 	}
 
 	if (const auto& pButton = this->MainBottom)
 		pButton->DrawInfo();
+
+	if (const auto& pButton = this->ToggleV)
+		pButton->DrawInfo();
+
+	if (drawAll && !this->SingleSelect)
+	{
+		if (const auto& pButton = this->ToggleE)
+			pButton->DrawInfo();
+
+		if (const auto& pButton = this->ScrollL)
+			pButton->DrawInfo();
+
+		if (const auto& pButton = this->ScrollR)
+			pButton->DrawInfo();
+	}
 }
 
 BSurface* SelectedInfoClass::SearchMissingCameo(AbstractType absType, SHPStruct* pSHP)
@@ -520,16 +603,26 @@ bool SelectedInfoClass::CanScrollRight() const
 	return this->Current < overflow;
 }
 
-void SelectedInfoClass::ScrollLeft()
+bool SelectedInfoClass::ScrollLeft()
 {
 	if (this->CanScrollLeft())
+	{
 		--this->Current;
+		return true;
+	}
+
+	return false;
 }
 
-void SelectedInfoClass::ScrollRight()
+bool SelectedInfoClass::ScrollRight()
 {
 	if (this->CanScrollRight())
+	{
 		++this->Current;
+		return true;
+	}
+
+	return false;
 }
 
 // ----------------------------------------

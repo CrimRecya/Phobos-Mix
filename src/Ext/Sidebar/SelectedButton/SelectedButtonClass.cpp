@@ -270,3 +270,122 @@ void SelectedNotButtonClass::DrawInfo() const
 		}
 	}
 }
+
+// ----------------------------------------
+
+SelectedToggleClass::SelectedToggleClass(unsigned int id, int x, int y)
+	: ControlClass(id, x, y, 10, 14, GadgetFlag::LeftPress, false)
+{
+	this->Disabled = (id == (SelectedInfoClass::StartID + 9)) && (!Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect);
+}
+
+bool SelectedToggleClass::Draw(bool forced)
+{
+	return false;
+}
+
+void SelectedToggleClass::OnMouseEnter()
+{
+	this->Hovering = true;
+	SelectedInfoClass::Instance.IsHovering = true;
+	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+}
+
+void SelectedToggleClass::OnMouseLeave()
+{
+	this->Hovering = false;
+	SelectedInfoClass::Instance.IsHovering = false;
+	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+}
+
+bool SelectedToggleClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
+{
+	if (flags & GadgetFlag::LeftPress)
+	{
+		if (this->ID == (SelectedInfoClass::StartID + 8)) // Toggle on/off
+			SelectedInfoClass::Instance.SwitchVisible();
+		else // Toggle expand/storage
+			SelectedInfoClass::Instance.SwitchExpand();
+	}
+
+	reinterpret_cast<bool(__thiscall*)(ControlClass*, GadgetFlag, DWORD*, KeyModifier)>(0x48E5A0)(this, flags, pKey, KeyModifier::None);
+	return true;
+}
+
+void SelectedToggleClass::DrawInfo() const
+{
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
+	const auto pSHP = pSideExt->SelectedInfo_Toggle.Get();
+
+	if (!pSHP || pSHP->Frames < 4)
+		return;
+
+	const auto position = Point2D { this->X, this->Y };
+	const auto frame = this->ID == (SelectedInfoClass::StartID + 8) ? (Phobos::Config::SelectedDisplay_Enable ? 1 : 0) : (Phobos::Config::SelectedDisplay_Expand ? 3 : 2);
+	DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
+		pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+}
+
+// ----------------------------------------
+
+SelectedScrollClass::SelectedScrollClass(unsigned int id, int x, int y)
+	: ControlClass(id, x, y, 10, 14, GadgetFlag::LeftPress, false)
+{
+	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect;
+}
+
+bool SelectedScrollClass::Draw(bool forced)
+{
+	return false;
+}
+
+void SelectedScrollClass::OnMouseEnter()
+{
+	this->Hovering = true;
+	SelectedInfoClass::Instance.IsHovering = true;
+	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+}
+
+void SelectedScrollClass::OnMouseLeave()
+{
+	this->Hovering = false;
+	SelectedInfoClass::Instance.IsHovering = false;
+	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+}
+
+bool SelectedScrollClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
+{
+	if (flags & GadgetFlag::LeftPress)
+	{
+		if (this->ID == (SelectedInfoClass::StartID + 30)) // Scroll left
+		{
+			if (SelectedInfoClass::Instance.ScrollLeft())
+				VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
+		}
+		else // Scroll right
+		{
+			if (SelectedInfoClass::Instance.ScrollRight())
+				VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
+		}
+	}
+
+	reinterpret_cast<bool(__thiscall*)(ControlClass*, GadgetFlag, DWORD*, KeyModifier)>(0x48E5A0)(this, flags, pKey, KeyModifier::None);
+	return true;
+}
+
+void SelectedScrollClass::DrawInfo() const
+{
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
+	const auto pSHP = pSideExt->SelectedInfo_Toggle.Get();
+
+	if (!pSHP || pSHP->Frames < 8)
+		return;
+
+	const auto position = Point2D { this->X, this->Y };
+	auto& seIns = SelectedInfoClass::Instance;
+	const auto frame = this->ID == (SelectedInfoClass::StartID + 30) ? (seIns.CanScrollLeft() ? 4 : 5) : (seIns.CanScrollRight() ? 6 : 7);
+	DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
+		pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+}

@@ -51,6 +51,7 @@ void SideExt::ExtData::LoadFromINIFile(CCINIClass* pINI)
 	this->SelectedInfo_Buff.Read(exINI, pSection, "SelectedInfo.Buff");
 	this->SelectedInfo_Button.Read(exINI, pSection, "SelectedInfo.Button");
 	this->SelectedInfo_Bottom.Read(exINI, pSection, "SelectedInfo.Bottom");
+	this->SelectedInfo_Toggle.Read(exINI, pSection, "SelectedInfo.Toggle");
 	this->SelectedInfo_Palette.LoadFromINI(pINI, pSection, "SelectedInfo.Palette");
 }
 
@@ -90,6 +91,7 @@ void SideExt::ExtData::Serialize(T& Stm)
 		.Process(this->SelectedInfo_Buff)
 		.Process(this->SelectedInfo_Button)
 		.Process(this->SelectedInfo_Bottom)
+		.Process(this->SelectedInfo_Toggle)
 		.Process(this->SelectedInfo_Palette)
 		;
 }

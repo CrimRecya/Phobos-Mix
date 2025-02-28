@@ -169,7 +169,7 @@ void SelectedCameoClass::DrawInfo() const
 		if (this->Hovering)
 			fillRect.Height += 10;
 
-		DSurface::Composite->FillRectTrans(&fillRect, &fillColor, 60);
+		DSurface::Composite->FillRectTrans(&fillRect, &fillColor, 30);
 	};
 
 	const auto& seIns = SelectedInfoClass::Instance;
@@ -177,65 +177,61 @@ void SelectedCameoClass::DrawInfo() const
 	if (seIns.CurrentSelectCameo.size() == 1 || Phobos::Config::SelectedDisplay_Expand)
 	{
 		const auto pExt = seIns.CurrentSelectTechno[this->GetButtonIndex() + seIns.Current];
-		const auto pSelect = pExt->OwnerObject();
+		const auto pTechno = pExt->OwnerObject();
+		const auto pType = pTechno->GetTechnoType();
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 
-		if (const auto pType = pSelect->GetTechnoType())
+		drawCameo(pTypeExt);
+
+		const auto pRules = RulesClass::Instance();
+		const auto ratio = static_cast<double>(pTechno->Health) / pType->Strength;
+		auto rect = RectangleStruct { this->X + 4, this->Y + 2, 52, 8 };
+		DSurface::Composite->FillRect(&rect, COLOR_BLACK);
+
+		rect = RectangleStruct { rect.X + 1, rect.Y + 1, static_cast<int>(50 * ratio + 0.5), 3 };
+		const auto color = (ratio > pRules->ConditionYellow) ? 0x67EC : (ratio > pRules->ConditionRed ? 0xFFEC : 0xF986);
+		DSurface::Composite->FillRect(&rect, color);
+		const auto pShield = pExt->Shield.get();
+
+		if (pShield && !pShield->IsBrokenAndNonRespawning())
 		{
-			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-			drawCameo(pTypeExt);
-
-			const auto pTechno = static_cast<TechnoClass*>(pSelect);
-			const auto pRules = RulesClass::Instance();
-
-			const auto ratio = static_cast<double>(pTechno->Health) / pType->Strength;
-			auto rect = RectangleStruct { this->X + 4, this->Y + 2, 52, 8 };
-			DSurface::Composite->FillRect(&rect, COLOR_BLACK);
-
-			rect = RectangleStruct { rect.X + 1, rect.Y + 1, static_cast<int>(50 * ratio + 0.5), 3 };
-			const auto color = (ratio > pRules->ConditionYellow) ? 0x67EC : (ratio > pRules->ConditionRed ? 0xFFEC : 0xF986);
-			DSurface::Composite->FillRect(&rect, color);
-			const auto pShield = pExt->Shield.get();
-
-			if (pShield && !pShield->IsBrokenAndNonRespawning())
-			{
-				rect.Width = static_cast<int>(50 * (static_cast<double>(pShield->GetHP()) / pShield->GetType()->Strength.Get()) + 0.5);
-				ColorStruct fillColor { 153, 153, 255 };
-				DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
-			}
-
-			if (pTechno->IsIronCurtained())
-			{
-				const auto& timer = pTechno->IronCurtainTimer;
-				rect.Width = static_cast<int>(50 * (static_cast<double>(timer.GetTimeLeft()) / timer.TimeLeft) + 0.5);
-				ColorStruct fillColor { 200, 50, 50 };
-				DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
-			}
-
-			int value = -1, maxValue = 0;
-			TechnoExt::GetValuesForDisplay(pTechno, pTypeExt->SelectedInfo_CameoType.Get(), value, maxValue);
-
-			rect.Y += 4;
-			rect.Width = static_cast<int>(50 * ((value <= -1 || maxValue <= 0) ? 1.0 : (static_cast<double>(value) / maxValue)) + 0.5);
-			--rect.Height;
-			DSurface::Composite->FillRect(&rect, COLOR_WHITE);
+			rect.Width = static_cast<int>(50 * (static_cast<double>(pShield->GetHP()) / pShield->GetType()->Strength.Get()) + 0.5);
+			ColorStruct fillColor { 153, 153, 255 };
+			DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
 		}
 
-		return;
+		if (pTechno->IsIronCurtained())
+		{
+			const auto& timer = pTechno->IronCurtainTimer;
+			rect.Width = static_cast<int>(50 * (static_cast<double>(timer.GetTimeLeft()) / timer.TimeLeft) + 0.5);
+			ColorStruct fillColor { 200, 50, 50 };
+			DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
+		}
+
+		int value = -1, maxValue = 0;
+		TechnoExt::GetValuesForDisplay(pTechno, pTypeExt->SelectedInfo_CameoType.Get(), value, maxValue);
+
+		rect.Y += 4;
+		rect.Width = static_cast<int>(50 * ((value <= -1 || maxValue <= 0) ? 1.0 : (static_cast<double>(value) / maxValue)) + 0.5);
+		--rect.Height;
+		DSurface::Composite->FillRect(&rect, COLOR_WHITE);
 	}
-
-	const auto pSelect = seIns.CurrentSelectCameo[this->GetButtonIndex() + seIns.Current];
-	drawCameo(pSelect.TypeExt);
-	const int count = pSelect.Count;
-
-	if (count > 1)
+	else
 	{
-		wchar_t text[0x20];
-		swprintf_s(text, L"%d", count);
-		TextPrintType printType = TextPrintType::Background | TextPrintType::FullShadow | TextPrintType::Point8;
-		const COLORREF color = Drawing::RGB_To_Int(Drawing::TooltipColor);
-		Point2D textPosition { this->X + 1, this->Y + 1 };
-		RectangleStruct surfaceRect { 0, 0, this->X + this->Width, this->Y + this->Height };
-		DSurface::Composite->DrawTextA(text, &surfaceRect, &textPosition, color, 0, printType);
+		const auto pSelect = seIns.CurrentSelectCameo[this->GetButtonIndex() + seIns.Current];
+		drawCameo(pSelect.TypeExt);
+		const int count = pSelect.Count;
+
+		if (count > 1)
+		{
+			wchar_t text[0x20];
+			swprintf_s(text, L"%d", count);
+			TextPrintType printType = TextPrintType::Background | TextPrintType::FullShadow | TextPrintType::Point8;
+			const COLORREF color = Drawing::RGB_To_Int(Drawing::TooltipColor);
+			Point2D textPosition { this->X + 1, this->Y + 1 };
+			RectangleStruct surfaceRect { 0, 0, this->X + this->Width, this->Y + this->Height };
+			DSurface::Composite->DrawTextA(text, &surfaceRect, &textPosition, color, 0, printType);
+		}
 	}
 }
 

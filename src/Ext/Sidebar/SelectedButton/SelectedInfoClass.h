@@ -88,8 +88,8 @@ public:
 	int GetMaxCameo() const;
 	bool CanScrollLeft() const;
 	bool CanScrollRight() const;
-	void ScrollLeft();
-	void ScrollRight();
+	bool ScrollLeft();
+	bool ScrollRight();
 
 	struct SelectRecordStruct
 	{
@@ -109,6 +109,11 @@ public:
 	SelectedNotButtonClass* InfoIconS { nullptr };
 
 	SelectedBottomClass* MainBottom { nullptr };
+
+	SelectedToggleClass* ToggleV { nullptr };
+	SelectedToggleClass* ToggleE { nullptr };
+	SelectedScrollClass* ScrollL { nullptr };
+	SelectedScrollClass* ScrollR { nullptr };
 
 	SelectedCameoClass* Cameos[20] { };
 	std::vector<SelectRecordStruct> CurrentSelectCameo { };
