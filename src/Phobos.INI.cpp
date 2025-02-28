@@ -144,7 +144,7 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 
 	Phobos::Config::SelectedDisplay_MaxCameo = CCINIClass::INI_RA2MD->ReadInteger("Phobos", "SelectedDisplay.MaxCameo", 10);
 
-	Phobos::Config::SelectedDisplay_MaxCameo = std::clamp(Phobos::Config::SelectedDisplay_MaxCameo, 4, 20);
+	Phobos::Config::SelectedDisplay_MaxCameo = std::clamp(Phobos::Config::SelectedDisplay_MaxCameo, 5, 20);
 
 	// ToolTips
 	{

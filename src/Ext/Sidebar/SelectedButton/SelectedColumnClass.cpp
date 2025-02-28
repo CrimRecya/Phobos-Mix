@@ -14,7 +14,7 @@ SelectedColumnClass::SelectedColumnClass(unsigned int id, int x, int y, int widt
 
 bool SelectedColumnClass::Draw(bool forced)
 {
-	if (!ScenarioClass::Instance->UserInputLocked && Phobos::Config::SelectedDisplay_Enable)
+	if (!ScenarioClass::Instance->UserInputLocked)
 		SelectedInfoClass::Instance.DrawInfo();
 
 	return true;
@@ -294,14 +294,19 @@ void SelectedBottomClass::OnMouseLeave()
 void SelectedBottomClass::DrawInfo() const
 {
 	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
+	const auto pSHP = pSideExt->SelectedInfo_Bottom.Get();
 
-	if (const auto pSHP = pSideExt->SelectedInfo_Bottom.Get())
+	if (pSHP && pSHP->Frames >= 3)
 	{
 		const auto position = Point2D { this->X, this->Y };
-		const auto rect = RectangleStruct { 0, 0, this->X + 236, this->Y + this->Height };
+		const auto frame = Phobos::Config::SelectedDisplay_Enable ? (SelectedInfoClass::Instance.SingleSelect ? 1 : 2) : 0;
 		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
-			pSHP, 0, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+			pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 	}
+
+	if (!Phobos::Config::SelectedDisplay_Enable)
+		return;
 
 	const auto fps = FPSCounter::CurrentFrameRate();
 	const auto gameSpeed = GameOptionsClass::Instance->GameSpeed;
@@ -321,21 +326,22 @@ void SelectedBottomClass::DrawInfo() const
 			color = 0x9FEC;
 	}
 
-	auto location = Point2D { this->X + 12, this->Y + 3 };
+	TextPrintType printType = TextPrintType::Center | TextPrintType::Point8;
+	auto location = Point2D { this->X + 38, this->Y + 4 };
 	{
 		wchar_t buffer[0x20];
 		swprintf_s(buffer, L"FPS: %u", fps);
-		DSurface::Composite->DrawText(buffer, &location, color);
+		DSurface::Composite->DrawTextA(buffer, &rect, &location, color, 0, printType);
 	}
 
-	location.X += 77;
+	location.X += 86;
 	{
 		wchar_t buffer[0x20];
-		swprintf_s(buffer, L"Avg: %.2lf", FPSCounter::GetAverageFrameRate());
-		DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
+		swprintf_s(buffer, L"AVG: %.2lf", FPSCounter::GetAverageFrameRate());
+		DSurface::Composite->DrawTextA(buffer, &rect, &location, COLOR_WHITE, 0, printType);
 	}
 
-	location.X += 95;
+	location.X += 80;
 	{
 		const auto& timer = ScenarioClass::Instance->ElapsedTimer;
 		auto time = timer.TimeLeft;
@@ -353,6 +359,6 @@ void SelectedBottomClass::DrawInfo() const
 		else
 			swprintf_s(buffer, L"%02d:%02d", minute % 60, second % 60);
 
-		DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
+		DSurface::Composite->DrawTextA(buffer, &rect, &location, COLOR_WHITE, 0, printType);
 	}
 }
