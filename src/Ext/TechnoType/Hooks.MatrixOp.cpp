@@ -15,7 +15,7 @@
 
 constexpr reference<double, 0xB1D008> const Pixel_Per_Lepton {};
 
-#pragma region FLH_Turrets
+#pragma region Turret
 
 void TechnoTypeExt::ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor)
 {
@@ -55,11 +55,58 @@ DEFINE_HOOK(0x73B780, UnitClass_DrawVXL_TurretMultiOffset, 0x0)
 }
 
 
+namespace MultiTur
+{
+	TechnoClass* pThis = nullptr;
+	TechnoTypeClass* pTypeToDraw = nullptr;
+	Matrix3D mtx;
+}
+
+Matrix3D* PostTurretOffsetProcess(TechnoClass* pThis, Matrix3D mtx, CoordStruct* offset, double factor, Matrix3D& outBuffer)
+{
+	float x = static_cast<float>(offset->X * factor);
+	float y = static_cast<float>(offset->Y * factor);
+	float z = static_cast<float>(offset->Z * factor);
+	mtx.Translate(x, y, z);
+	Vector3D<float> nHVAFrameIdx_4;
+	Vector3D<float> v111;
+	Vector3D<float> v120;
+	Matrix3D ret;
+	Matrix3D v130;
+	Matrix3D result;
+	auto a2 = ((((pThis->SecondaryFacing.Current().Raw >> 10) + 1) >> 1) & 0x1F) - 8;
+	nHVAFrameIdx_4.X = a2 * -0.1963495408493621;
+	a2 = ((((pThis->PrimaryFacing.Current().Raw >> 10) + 1) >> 1) & 0x1F) - 8;
+	auto v95 = nHVAFrameIdx_4.X - a2 * -0.1963495408493621;
+	mtx.RotateZ(v95);
+	v111.X = -mtx.Row[0].W;
+	v120.Y = mtx.Row[1].W;
+	memcpy(&ret, &mtx, sizeof(ret));
+	v120.Z = mtx.Row[2].W;
+	v111.Y = -mtx.Row[1].W;
+	v120.X = mtx.Row[0].W;
+	v111.Z = -mtx.Row[2].W;
+	nHVAFrameIdx_4 = v111;
+	mtx.Translate(nHVAFrameIdx_4);
+	a2 = ((((pThis->BarrelFacing.Current().Raw >> 10) + 1) >> 1) & 0x1F) - 8;
+	auto v96 = -(a2 * -0.1963495408493621);
+	ret.RotateY(v96);
+	ret.Translate(v120);
+	auto v31 = reinterpret_cast<Matrix3D * (__thiscall*)(Matrix3D*)>(0x754BE0)(&v130);
+	memcpy(&outBuffer, Matrix3D::MatrixMultiply(&result, v31, &mtx), sizeof(outBuffer));
+	return &outBuffer;
+}
+
 DEFINE_HOOK(0x73BA4C, UnitClass_DrawVXL_TurretMultiOffset1, 0x0)
 {
 	LEA_STACK(Matrix3D*, mtx, STACK_OFFSET(0x1D0, -0x13C));
 	GET(TechnoTypeClass*, technoType, EBX);
+	GET(TechnoClass*, pThis, EBP);
 
+	CoordStruct crd = CoordStruct({ -50,0,0 });
+	PostTurretOffsetProcess(pThis, *mtx, &crd, 1.0, MultiTur::mtx);
+	MultiTur::pThis = pThis;
+	MultiTur::pTypeToDraw = technoType;
 	TechnoTypeExt::ApplyTurretOffset(technoType, mtx, Pixel_Per_Lepton);
 
 	return 0x73BA68;
@@ -106,6 +153,40 @@ DEFINE_HOOK(0x73CCE1, UnitClass_DrawSHP_TurretOffest, 0x6)
 
 	return 0;
 }
+
+DEFINE_HOOK(0x73BE11, UnitClass_DrawAsVXL_MultiTurDrawing, 0x7)
+{
+	GET(UnitClass*, pThis, EBP);
+	GET_STACK(int, flags, STACK_OFFSET(0x1C4, -0x198));
+	GET_STACK(int, brightness, STACK_OFFSET(0x1C4, 0x1C));
+	GET_STACK(Point2D, centerPoint, STACK_OFFSET(0x1C4, -0x194));
+	GET_STACK(RectangleStruct, rect, STACK_OFFSET(0x1C4, -0x164));
+	GET_STACK(int, hvaFrameIdx, STACK_OFFSET(0x1C4, -0x18C));
+
+	if (pThis != MultiTur::pThis)
+		return 0;
+
+	MultiTur::pThis = nullptr;
+
+	if (strcmpi(MultiTur::pTypeToDraw->ID, "HCRUIS") != 0)
+		return 0;
+
+	Point2D point = Point2D({ 0,0 });
+	pThis->Draw_A_VXL(
+		&MultiTur::pTypeToDraw->TurretVoxel,
+		hvaFrameIdx,
+		flags,
+		(IndexClass<int, int>*)(&MultiTur::pTypeToDraw->VoxelTurretWeaponCache),
+		&rect,
+		&point,
+		&MultiTur::mtx,
+		brightness,
+		10240,
+		0);
+
+	return 0;
+}
+
 
 #pragma endregion
 
