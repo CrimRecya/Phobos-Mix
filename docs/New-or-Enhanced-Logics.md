@@ -782,9 +782,9 @@ Currently interceptor weapons with projectiles that do not have `Inviso=true` wi
     - In `Trajectory=Straight`, it refers to the whole distance speed of the projectile and it has no restrictions.
     - In `Trajectory=Bombard`, it refers to the initial speed of the projectile and it has no restrictions.
     - In `Trajectory=Disperse`, it refers to the final speed of the projectile and it has no restrictions. `Trajectory.Speed` will be fixed at 192 by setting `Trajectory.Disperse.UniqueCurve=true`.
-    - In `Trajectory=Engrave`, it refers to the engrave speed of the projectile and it cannot exceed 128. Recommend set as about 40.
+    - In `Trajectory=Engrave`, it refers to the horizontal engrave speed of the projectile and it cannot exceed 128. Recommend set as about 40.
     - In `Trajectory=Parabola`, it refers to the horizontal velocity of the projectile and is only used for modes 0, 3, or 5 and it has no restrictions.
-    - In `Trajectory=Tracing`, it refers to the speed of tracing and turning around of the projectile.
+    - In `Trajectory=Tracing`, it refers to the speed of tracing and turning around of the projectile, it has no restrictions.
 
 In `rulesmd.ini`:
 ```ini
@@ -1013,8 +1013,8 @@ Trajectory.Disperse.WeaponDoRepeat=false        ; boolean
 #### Engrave trajectory
 
 - Visually, like the thermal lance. Calling it 'trajectory' may not be appropriate. It does not read the settings on the weapon.
-  - `Trajectory.Engrave.SourceCoord` controls the starting point of engraving line segment. Taking the target as the coordinate center. Specifically, it will start from the firing position when set to 0,0 . The height of the point will always at ground level.
-  - `Trajectory.Engrave.TargetCoord` controls the end point of engraving line segment. Taking the target as the coordinate center. The height of the point will always at ground level.
+  - `Trajectory.Engrave.SourceCoord` controls the starting point of engraving line segment. Taking the target as the coordinate center. Specifically, it will start from the firing position when set to 0,0 . The height of the point will always at ground level, unless `Trajectory.Engrave.ConfineOnGround` is set to false.
+  - `Trajectory.Engrave.TargetCoord` controls the end point of engraving line segment. Taking the target as the coordinate center. The height of the point will always at ground level, unless `Trajectory.Engrave.ConfineOnGround` is set to false.
     - `Trajectory.Engrave.MirrorCoord` controls whether `Trajectory.Engrave.SourceCoord` and `Trajectory.Engrave.TargetCoord` need to mirror the lateral value to adapt to the current FLH.
   - `Trajectory.Engrave.UseDisperseCoord` controls whether the emission position of the engrave laser need to replaced with the FLH of its superior's dispersed trajectory, which set `Trajectory.Disperse.RecordSourceCoord` to true.
   - `Trajectory.Engrave.ApplyRangeModifiers` controls whether any applicable weapon range modifiers from the firer are applied to the engrave process.
@@ -1037,7 +1037,9 @@ Trajectory.Disperse.WeaponDoRepeat=false        ; boolean
     - `Trajectory.Engrave.ProximityDirect` controls whether let the target receive damage instead of detonating the warhead.
     - `Trajectory.Engrave.ProximityMedial` controls whether to detonate `Trajectory.Engrave.ProximityWarhead` at the bullet's location rather than the proximity target's location.
     - `Trajectory.Engrave.ProximityAllies` controls whether allies will also trigger the proximity fuse.
+    - `Trajectory.Engrave.ProximityFlight` controls whether to count units in the air.
     - `Trajectory.Engrave.ProximitySuicide` controls whether the projectile will self destruct after the number of proximity fuse times has been exhausted. If `Trajectory.Engrave.ProximityImpact` set to 0, this will not be enabled.
+  - `Trajectory.Engrave.ConfineOnGround` controls whether the height of the projectile will always at ground level.
 
 In `rulesmd.ini`:
 ```ini
@@ -1068,11 +1070,14 @@ Trajectory.Engrave.ProximityRadius=0.7         ; floating point value
 Trajectory.Engrave.ProximityDirect=false       ; boolean
 Trajectory.Engrave.ProximityMedial=false       ; boolean
 Trajectory.Engrave.ProximityAllies=false       ; boolean
+Trajectory.Engrave.ProximityFlight=false       ; boolean
 Trajectory.Engrave.ProximitySuicide=false      ; boolean
+Trajectory.Engrave.ConfineOnGround=true        ; boolean
 ```
 
 ```{note}
 - It's best not to let it be intercepted.
+- Make sure you set a low `Trajectory.Engrave.ProximityRadius` value unless necessary.
 ```
 
 #### Parabola trajectory
@@ -1146,14 +1151,15 @@ Trajectory.Parabola.AxisOfRotation=0,0,1        ; integer - Forward,Lateral,Heig
   - `Trajectory.Tracing.TolerantTime` controls how long the projectile will detonate after losing the target. If it is 0, it will detonate directly when switching targets.
   - `Trajectory.Tracing.ROT` controls the rotational speed of the projectile. When it is negative, it will follow the direction of movement. When it is 0, it will always face the target. When it is positive, it will rotate towards the target according to this speed. If `Trajectory.Tracing.BulletSpin=true`, the direction of rotation is determined by its positive or negative sign, and the speed of rotation is determined by its value.
   - `Trajectory.Tracing.BulletSpin` controls whether the projectile will continuously rotate itself like `TurretSpin`.
-  - `Trajectory.Tracing.PeacefullyVanish` controls whether the projectile disappears directly when it is about to detonate, without producing animation or causing damage
-  - `Trajectory.Tracing.TraceTheTarget` controls whether the target tracked by the projectile is the target of the projectile, and the tracing weapons will be fired by the unit towards the projectile. Otherwise, it will trace the firer, and the tracing weapons will be fired from the projectile towards the target. At the same time, the projectile will detonate if the firer dies.
+  - `Trajectory.Tracing.PeacefulVanish` controls whether the projectile disappears directly when it is about to detonate, without producing animation or causing damage
+  - `Trajectory.Tracing.TraceTheTarget` controls whether the target tracked by the projectile is the target of the projectile. Otherwise, it will trace the firer, and at the same time, the projectile will detonate if the firer dies.
   - `Trajectory.Tracing.CreateAtTarget` controls whether the projectile is directly generated at the target position.
   - `Trajectory.Tracing.CreateCoord` controls the generate position. Not related to `Trajectory.Tracing.TraceMode`.
   - `Trajectory.Tracing.OffsetCoord` controls the tracing position on its target, use `Trajectory.Tracing.TraceMode` determines the specific location.
   - `Trajectory.Tracing.WeaponCoord` controls the FLH where the projectile fires the weapon when `Trajectory.Tracing.TraceTheTarget=false`.
   - `Trajectory.Tracing.UseDisperseCoord` controls whether the fire position of `Trajectory.Tracing.Weapons` need to replaced with the FLH of its superior's dispersed trajectory, which set `Trajectory.Disperse.RecordSourceCoord` to true (Only if the weapon should be fired from the unit position).
   - `Trajectory.Tracing.AllowFirerTurning` controls whether the projectile allow for significant changes in the orientation of the firer, otherwise it will disappear.
+  - `Trajectory.Tracing.WeaponFromFirer` controls whether the tracing weapons will be fired by the firer towards the projectile. Otherwise, the tracing weapons will be fired from the projectile towards the target.
   - `Trajectory.Tracing.Weapons` defines the tracing weapons of the projectile.
     - `Trajectory.Tracing.WeaponCount` controls how many times the projectile can fire the corresponding weapon. Set to a negative value means unlimited times. If set to zero, the cooling will be calculated directly without firing the tracing weapon. If the quantity is less than `Trajectory.Tracing.Weapons`, the last value in the list will be used.
     - `Trajectory.Tracing.WeaponDelay` controls the delay after firing the corresponding weapon, at least 1 frame. If the quantity is less than `Trajectory.Tracing.Weapons`, the last value in the list will be used.
@@ -1173,7 +1179,7 @@ Trajectory.Tracing.TheDuration=0            ; integer
 Trajectory.Tracing.TolerantTime=-1          ; integer
 Trajectory.Tracing.ROT=-1                   ; integer
 Trajectory.Tracing.BulletSpin=false         ; boolean
-Trajectory.Tracing.PeacefullyVanish=false   ; boolean
+Trajectory.Tracing.PeacefulVanish=false     ; boolean
 Trajectory.Tracing.TraceTheTarget=true      ; boolean
 Trajectory.Tracing.CreateAtTarget=false     ; boolean
 Trajectory.Tracing.CreateCoord=0,0,0        ; integer - Forward,Lateral,Height
@@ -1181,6 +1187,7 @@ Trajectory.Tracing.OffsetCoord=0,0,0        ; integer - Forward,Lateral,Height
 Trajectory.Tracing.WeaponCoord=0,0,0        ; integer - Forward,Lateral,Height
 Trajectory.Tracing.UseDisperseCoord=false   ; boolean
 Trajectory.Tracing.AllowFirerTurning=true   ; boolean
+Trajectory.Tracing.WeaponFromFirer=true     ; boolean
 Trajectory.Tracing.Weapons=                 ; list of WeaponTypes
 Trajectory.Tracing.WeaponCount=             ; list of integers
 Trajectory.Tracing.WeaponDelay=             ; list of integers
