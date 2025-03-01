@@ -2,6 +2,8 @@
 
 #include <cstddef>
 #include <stdint.h>
+#include <TechnoClass.h>
+#include <TargetClass.h>
 
 #include <TargetClass.h>
 
@@ -11,9 +13,11 @@ enum class EventTypeExt : uint8_t
 	// CnCNet reserved Events from 0x30 to 0x3F
 	// Ares used Events 0x60 and 0x61
 
+	ManualReload = 0x80,
+	ToggleAggressiveStance = 0x81,
 	AssignSecondaryRallyPoint = 0x82,
 
-	FIRST = AssignSecondaryRallyPoint,
+	FIRST = ManualReload,
 	LAST = AssignSecondaryRallyPoint
 };
 
@@ -29,6 +33,16 @@ public:
 	{
 		char DataBuffer[104];
 
+		struct ManualReloadEvent
+		{
+			TargetClass Who;
+		} ManualReloadEvent;
+
+		struct ToggleAggressiveStance
+		{
+			TargetClass Who;
+		} ToggleAggressiveStance;
+		
 		struct AssignSecondaryRallyPoint
 		{
 			TargetClass Whom1;
@@ -38,6 +52,12 @@ public:
 
 	bool AddEvent();
 	void RespondEvent();
+
+	static void RaiseManualReloadEvent(TechnoClass* pTechno);
+	void RespondToManualReloadEvent();
+
+	static void RaiseToggleAggressiveStance(TechnoClass* pTechno);
+	void RespondToToggleAggressiveStance();
 
 	static size_t GetDataSize(EventTypeExt type);
 	static bool IsValidType(EventTypeExt type);

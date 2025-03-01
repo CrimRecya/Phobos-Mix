@@ -968,6 +968,55 @@ DEFINE_HOOK(0x5B11DD, MechLocomotionClass_ProcessMoving_SlowdownDistance, 0x9)
 	return distance >= pLinkedTo->GetCurrentSpeed() ? KeepMoving : CloseEnough;
 }
 
+// Jumpjet infantry will no longer acts stupid when assigned a attack mission.
+DEFINE_HOOK(0x51AB5C, InfantryClass_SetDestination_JJInfFix, 0x6)
+{
+	enum { FuncRet = 0x51B1D7 };
+
+	GET(InfantryClass* const, pThis, EBP);
+	GET(AbstractClass* const, pDest, EBX);
+
+	auto pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor);
+
+	if (pThis->Type->BalloonHover && !pDest && pThis->Destination && pJumpjetLoco && pThis->Target)
+	{
+		if (pThis->IsCloseEnoughToAttack(pThis->Target))
+		{
+			auto crd = pThis->GetCoords();
+			pJumpjetLoco->DestinationCoords.X = crd.X;
+			pJumpjetLoco->DestinationCoords.Y = crd.Y;
+			pJumpjetLoco->CurrentSpeed = 0;
+			pJumpjetLoco->MaxSpeed = 0;
+			pThis->AbortMotion();
+		}
+
+		pThis->ForceMission(Mission::Attack);
+		return FuncRet;
+	}
+
+	return 0;
+}
+
+// For vehicles. If in range, then stop.
+DEFINE_HOOK(0x741A66, UnitClass_SetDestination_JJVehFix, 0x5)
+{
+	GET(UnitClass* const, pThis, EBP);
+
+	auto pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor);
+
+	if (pThis->IsCloseEnough(pThis->Target, pThis->SelectWeapon(pThis->Target)) && pJumpjetLoco)
+	{
+		auto crd = pThis->GetCoords();
+		pJumpjetLoco->DestinationCoords.X = crd.X;
+		pJumpjetLoco->DestinationCoords.Y = crd.Y;
+		pJumpjetLoco->CurrentSpeed = 0;
+		pJumpjetLoco->MaxSpeed = 0;
+		pThis->AbortMotion();
+	}
+
+	return 0;
+}
+
 DEFINE_JUMP(LJMP, 0x517FF5, 0x518016); // Warhead with InfDeath=9 versus infantry in air
 
 // Fixes docks not repairing docked aircraft unless they enter the dock first e.g just built ones.
@@ -1104,6 +1153,25 @@ DEFINE_HOOK(0x71872C, TeleportLocomotionClass_MakeRoom_OccupationFix, 0x9)
 
 #pragma endregion
 
+#pragma region AmphibiousHarvester
+
+DEFINE_HOOK(0x73ED66, UnitClass_Mission_Harvest_PathfindingFix, 0x5)
+{
+	GET(UnitClass*, pThis, EBP);
+	REF_STACK(SpeedType, speedType, STACK_OFFSET(0xA0, -0x98));
+	REF_STACK(int, currentZoneType, STACK_OFFSET(0xA0, -0x94));
+	REF_STACK(MovementZone, movementZone, STACK_OFFSET(0xA0, -0x90));
+
+	const auto pType = pThis->Type;
+	speedType = pType->SpeedType;
+	movementZone = pType->MovementZone;
+	currentZoneType = MapClass::Instance->GetMovementZoneType(pThis->GetMapCoords(), movementZone, pThis->OnBridge);
+
+	return 0;
+}
+
+#pragma endregion
+
 #pragma region StopEventFix
 
 DEFINE_HOOK(0x4C75DA, EventClass_RespondToEvent_Stop, 0x6)
@@ -1216,6 +1284,15 @@ DEFINE_HOOK(0x719F17, EndPiggyback_PowerOn, 0x5) // Teleport
 	return 0;
 }
 
+// Fix the bug that Bombers can't get EXP if they cloak before the missiles hit the target.
+// Add checks for bRemoved.
+DEFINE_HOOK(0x7077FD, TechnoClass_PointerExpired_SpawnOwnerFix, 0x6)
+{
+	GET_STACK(bool, removed, STACK_OFFSET(0x20, 0x8));
+	// Skip the reset for SpawnOwner if !removed.
+	return removed ? 0 : 0x707803;
+}
+
 // Suppress Ares' swizzle warning
 size_t __fastcall HexStr2Int_replacement(const char* str)
 {
@@ -1224,3 +1301,105 @@ size_t __fastcall HexStr2Int_replacement(const char* str)
 }
 DEFINE_JUMP(CALL, 0x6E8305, GET_OFFSET(HexStr2Int_replacement)); // TaskForce
 DEFINE_JUMP(CALL, 0x6E5FA6, GET_OFFSET(HexStr2Int_replacement)); // TagType
+
+// In theory, a projectile with Inviso=yes should detonate at the center of the target the next frame after firing, assuming it is not intercepted.
+// In fact, when the target is moving at high speed, the projectile may have to delay multiple frames to hit, or even fail and hit the ground.
+// I didn't study the specific reasons for this, but this hook does solve the problem.
+// Netsu_Negi told me this method, and I verified it.
+DEFINE_HOOK(0x467C1C, BulletClass_Update_InvisoLatencyFix, 0x6)
+{
+	GET(BulletTypeClass*, pType, EAX);
+	R->CL(RulesExt::Global()->InvisoLatencyFix ? (pType->Inviso || pType->Ranged) : pType->Ranged);
+	return 0x467C22;
+}
+
+#pragma region Sensors
+
+DEFINE_HOOK(0x4DE839, FootClass_AddSensorsAt_Record, 0x6)
+{
+	GET(FootClass*, pThis, ESI);
+	LEA_STACK(CellStruct*, cell, STACK_OFFSET(0x34, 0x4));
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	pExt->LastSensorsMapCoords = *cell;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x4D8606, FootClass_UpdatePosition_Sensors, 0x6)
+{
+	enum { SkipGameCode = 0x4D8627 };
+
+	GET(FootClass*, pThis, ESI);
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto currentCell = pThis->GetMapCoords();
+
+	if (pExt->LastSensorsMapCoords != currentCell)
+	{
+		pThis->RemoveSensorsAt(pExt->LastSensorsMapCoords);
+		pThis->AddSensorsAt(currentCell);
+	}
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x4DB36C, FootClass_Limbo_RemoveSensors, 0x5)
+{
+	enum { SkipGameCode = 0x4DB37C };
+
+	GET(FootClass*, pThis, EDI);
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+
+	pThis->RemoveSensorsAt(pExt->LastSensorsMapCoords);
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x4DBEE7, FootClass_SetOwningHouse_RemoveSensors, 0x6)
+{
+	enum { SkipGameCode = 0x4DBF01 };
+
+	GET(FootClass*, pThis, ESI);
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+
+	pThis->RemoveSensorsAt(pExt->LastSensorsMapCoords);
+
+	return SkipGameCode;
+}
+
+// Bugfix: Jumpjet detect cloaked objects beneath
+DEFINE_HOOK(0x54C036, JumpjetLocomotionClass_State3_UpdateSensors, 0x7)
+{
+	GET(FootClass* const, pLinkedTo, ECX);
+	GET(CellStruct const, currentCell, EAX);
+
+	// Copied from FootClass::UpdatePosition
+	if (pLinkedTo->GetTechnoType()->SensorsSight)
+	{
+		const auto pExt = TechnoExt::ExtMap.Find(pLinkedTo);
+		CellStruct const lastCell = pExt->LastSensorsMapCoords;
+
+		if (lastCell != currentCell)
+		{
+			pLinkedTo->RemoveSensorsAt(lastCell);
+			pLinkedTo->AddSensorsAt(currentCell);
+		}
+	}
+	// Something more may be missing
+
+	return 0;
+}
+
+DEFINE_HOOK(0x54D06F, JumpjetLocomotionClass_ProcessCrashing_RemoveSensors, 0x5)
+{
+	GET(FootClass*, pLinkedTo, EAX);
+
+	if (pLinkedTo->GetTechnoType()->SensorsSight)
+	{
+		const auto pExt = TechnoExt::ExtMap.Find(pLinkedTo);
+		pLinkedTo->RemoveSensorsAt(pExt->LastSensorsMapCoords);
+	}
+
+	return 0;
+}
+
+#pragma endregion

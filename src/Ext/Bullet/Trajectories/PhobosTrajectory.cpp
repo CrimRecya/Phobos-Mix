@@ -7,7 +7,10 @@
 
 #include "StraightTrajectory.h"
 #include "BombardTrajectory.h"
+#include "DisperseTrajectory.h"
+#include "EngraveTrajectory.h"
 #include "ParabolaTrajectory.h"
+#include "TracingTrajectory.h"
 
 TrajectoryTypePointer::TrajectoryTypePointer(TrajectoryFlag flag)
 {
@@ -19,8 +22,17 @@ TrajectoryTypePointer::TrajectoryTypePointer(TrajectoryFlag flag)
 	case TrajectoryFlag::Bombard:
 		_ptr = std::make_unique<BombardTrajectoryType>();
 		return;
+	case TrajectoryFlag::Disperse:
+		_ptr = std::make_unique<DisperseTrajectoryType>();
+		return;
+	case TrajectoryFlag::Engrave:
+		_ptr = std::make_unique<EngraveTrajectoryType>();
+		return;
 	case TrajectoryFlag::Parabola:
 		_ptr = std::make_unique<ParabolaTrajectoryType>();
+		return;
+	case TrajectoryFlag::Tracing:
+		_ptr = std::make_unique<TracingTrajectoryType>();
 		return;
 	}
 	_ptr.reset();
@@ -37,7 +49,10 @@ namespace detail
 			{
 				{"Straight", TrajectoryFlag::Straight},
 				{"Bombard" ,TrajectoryFlag::Bombard},
+				{"Disperse", TrajectoryFlag::Disperse},
+				{"Engrave" ,TrajectoryFlag::Engrave},
 				{"Parabola", TrajectoryFlag::Parabola},
+				{"Tracing" ,TrajectoryFlag::Tracing},
 			};
 			for (auto [name, flag] : FlagNames)
 			{
@@ -116,8 +131,17 @@ bool TrajectoryPointer::Load(PhobosStreamReader& Stm, bool registerForChange)
 		case TrajectoryFlag::Bombard:
 			_ptr = std::make_unique<BombardTrajectory>(noinit_t {});
 			break;
+		case TrajectoryFlag::Disperse:
+			_ptr = std::make_unique<DisperseTrajectory>(noinit_t {});
+			break;
+		case TrajectoryFlag::Engrave:
+			_ptr = std::make_unique<EngraveTrajectory>(noinit_t {});
+			break;
 		case TrajectoryFlag::Parabola:
 			_ptr = std::make_unique<ParabolaTrajectory>(noinit_t {});
+			break;
+		case TrajectoryFlag::Tracing:
+			_ptr = std::make_unique<TracingTrajectory>(noinit_t {});
 			break;
 		default:
 			_ptr.reset();

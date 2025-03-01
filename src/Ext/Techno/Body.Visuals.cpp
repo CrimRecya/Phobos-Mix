@@ -2,7 +2,10 @@
 
 #include <TacticalClass.h>
 #include <SpawnManagerClass.h>
-
+#include <FactoryClass.h>
+#include <SuperClass.h>
+#include <Ext/SWType/Body.h>
+#include <Ext/House/Body.h>
 #include <Utilities/EnumFunctions.h>
 
 void TechnoExt::DrawSelfHealPips(TechnoClass* pThis, Point2D* pLocation, RectangleStruct* pBounds)
@@ -197,8 +200,349 @@ void TechnoExt::DrawInsignia(TechnoClass* pThis, Point2D* pLocation, RectangleSt
 	return;
 }
 
+void TechnoExt::DrawFactoryProgress(BuildingClass* pThis, RectangleStruct* pBounds, Point2D basePosition)
+{
+	const RulesExt::ExtData* const pRulesExt = RulesExt::Global();
 
+	if (!pRulesExt->FactoryProgressDisplay)
+		return;
 
+	const auto pType = pThis->Type;
+	const auto pHouse = pThis->Owner;
+	FactoryClass* pPrimaryFactory = nullptr;
+	FactoryClass* pSecondaryFactory = nullptr;
+
+	if (pHouse->IsControlledByHuman())
+	{
+		if (!pThis->IsPrimaryFactory)
+			return;
+
+		switch (pType->Factory)
+		{
+		case AbstractType::BuildingType:
+			pPrimaryFactory = pHouse->Primary_ForBuildings;
+			pSecondaryFactory = pHouse->Primary_ForDefenses;
+			break;
+		case AbstractType::InfantryType:
+			pPrimaryFactory = pHouse->Primary_ForInfantry;
+			break;
+		case AbstractType::UnitType:
+			pPrimaryFactory = pType->Naval ? pHouse->Primary_ForShips : pHouse->Primary_ForVehicles;
+			break;
+		case AbstractType::AircraftType:
+			pPrimaryFactory = pHouse->Primary_ForAircraft;
+			break;
+		default:
+			return;
+		}
+	}
+	else // AIs have no Primary factories
+	{
+		pPrimaryFactory = pThis->Factory;
+
+		if (!pPrimaryFactory)
+			return;
+	}
+
+	const bool havePrimary = pPrimaryFactory && pPrimaryFactory->Object;
+	const bool haveSecondary = pSecondaryFactory && pSecondaryFactory->Object;
+
+	if (!havePrimary && !haveSecondary)
+		return;
+
+	const auto maxLength = pType->GetFoundationHeight(false) * 15 >> 1;
+	const auto location = basePosition + Point2D { 6, (3 + pType->PixelSelectionBracketDelta) } + pRulesExt->FactoryProgressDisplay_Offset.Get();
+
+	if (havePrimary)
+	{
+		auto position = location;
+
+		DrawFrameStruct pDraw
+		{
+			static_cast<int>((static_cast<double>(pPrimaryFactory->GetProgress()) / 54) * maxLength),
+			pRulesExt->FactoryProgressDisplay_Pips,
+			pRulesExt->ProgressDisplay_Buildings_PipsShape.Get(),
+			0,
+			-1,
+			nullptr,
+			maxLength,
+			0,
+			&position,
+			pBounds
+		};
+
+		TechnoExt::DrawVanillaStyleBuildingBar(&pDraw);
+	}
+
+	if (haveSecondary)
+	{
+		auto position = havePrimary ? location + Point2D { 6, 3 } : location;
+
+		DrawFrameStruct pDraw
+		{
+			static_cast<int>((static_cast<double>(pSecondaryFactory->GetProgress()) / 54) * maxLength),
+			pRulesExt->FactoryProgressDisplay_Pips,
+			pRulesExt->ProgressDisplay_Buildings_PipsShape.Get(),
+			0,
+			-1,
+			nullptr,
+			maxLength,
+			0,
+			&position,
+			pBounds
+		};
+
+		TechnoExt::DrawVanillaStyleBuildingBar(&pDraw);
+	}
+}
+
+void TechnoExt::DrawSuperProgress(BuildingClass* pThis, RectangleStruct* pBounds, Point2D basePosition)
+{
+	const auto pRulesExt = RulesExt::Global();
+
+	if (!pRulesExt->MainSWProgressDisplay)
+		return;
+
+	const auto pType = pThis->Type;
+	const auto pOwner = pThis->Owner;
+	const auto superIndex = pType->SuperWeapon;
+	const auto pSuper = (superIndex != -1) ? pOwner->Supers.GetItem(superIndex) : nullptr;
+
+	if (!pSuper || !SWTypeExt::ExtMap.Find(pSuper->Type)->IsAvailable(pOwner))
+		return;
+
+	const auto maxLength = pType->GetFoundationHeight(false) * 15 >> 1;
+	auto position = basePosition + Point2D { 6, (3 + pType->PixelSelectionBracketDelta) } + pRulesExt->MainSWProgressDisplay_Offset.Get();
+
+	DrawFrameStruct pDraw
+	{
+		static_cast<int>((static_cast<double>(pSuper->AnimStage()) / 54) * maxLength),
+		pRulesExt->MainSWProgressDisplay_Pips,
+		pRulesExt->ProgressDisplay_Buildings_PipsShape.Get(),
+		0,
+		-1,
+		nullptr,
+		maxLength,
+		0,
+		&position,
+		pBounds
+	};
+
+	TechnoExt::DrawVanillaStyleBuildingBar(&pDraw);
+}
+
+void TechnoExt::DrawIronCurtainProgress(TechnoClass* pThis, RectangleStruct* pBounds, Point2D basePosition, bool isBuilding, bool isInfantry)
+{
+	if (!pThis->IsIronCurtained())
+		return;
+
+	const auto pRulesExt = RulesExt::Global();
+
+	if (!pRulesExt->InvulnerableDisplay)
+		return;
+
+	const auto timer = &pThis->IronCurtainTimer;
+
+	if (isBuilding)
+	{
+		const auto pBuilding = static_cast<BuildingClass*>(pThis);
+		const auto pType = pBuilding->Type;
+		const auto maxLength = pType->GetFoundationHeight(false) * 15 >> 1;
+		const auto offset = pRulesExt->InvulnerableDisplay_Buildings_Offset.Get();
+		auto position = basePosition + Point2D { offset.X, pType->PixelSelectionBracketDelta + offset.Y };
+
+		DrawFrameStruct pDraw
+		{
+			static_cast<int>((static_cast<double>(timer->GetTimeLeft()) / timer->TimeLeft) * maxLength + 0.99),
+			(pThis->ForceShielded ? pRulesExt->InvulnerableDisplay_Buildings_Pips.Get().X : pRulesExt->InvulnerableDisplay_Buildings_Pips.Get().Y),
+			pRulesExt->ProgressDisplay_Buildings_PipsShape.Get(),
+			0,
+			-1,
+			nullptr,
+			maxLength,
+			-1,
+			&position,
+			pBounds
+		};
+
+		if (offset == Point2D::Empty && (pThis->IsSelected || pThis->IsMouseHovering)) // Layer fix
+		{
+			RulesClass* const pRules = RulesClass::Instance;
+			const auto ratio = pBuilding->GetHealthPercentage();
+			pDraw.MidLength = static_cast<int>(ratio * maxLength);
+			pDraw.MidFrame = (ratio > pRules->ConditionYellow) ? 1 : (ratio > pRules->ConditionRed ? 2 : 4);
+			pDraw.MidPipSHP = FileSystem::PIPS_SHP;
+			pDraw.BrdFrame = 0;
+		}
+
+		TechnoExt::DrawVanillaStyleBuildingBar(&pDraw);
+	}
+	else
+	{
+		const int maxLength = isInfantry ? 8 : 17;
+		auto position = basePosition + Point2D { 0, pThis->GetTechnoType()->PixelSelectionBracketDelta + 2 } + pRulesExt->InvulnerableDisplay_Others_Offset.Get();
+
+		DrawFrameStruct pDraw
+		{
+			static_cast<int>((static_cast<double>(timer->GetTimeLeft()) / timer->TimeLeft) * maxLength + 0.99),
+			(pThis->ForceShielded ? pRulesExt->InvulnerableDisplay_Others_Pips.Get().X : pRulesExt->InvulnerableDisplay_Others_Pips.Get().Y),
+			pRulesExt->ProgressDisplay_Others_PipsShape.Get(),
+			0,
+			-1,
+			nullptr,
+			maxLength,
+			-1,
+			&position,
+			pBounds
+		};
+
+		TechnoExt::DrawVanillaStyleFootBar(&pDraw);
+	}
+}
+
+void TechnoExt::DrawTemporalProgress(TechnoClass* pThis, RectangleStruct* pBounds, Point2D basePosition, bool isBuilding, bool isInfantry)
+{
+	const auto pTemporal = pThis->TemporalTargetingMe;
+
+	if (!pTemporal)
+		return;
+
+	const auto pRulesExt = RulesExt::Global();
+
+	if (!pRulesExt->TemporalLifeDisplay)
+		return;
+
+	if (isBuilding)
+	{
+		const auto pBuilding = static_cast<BuildingClass*>(pThis);
+		const auto pType = pBuilding->Type;
+		const auto maxLength = pType->GetFoundationHeight(false) * 15 >> 1;
+		const auto offset = pRulesExt->TemporalLifeDisplay_Buildings_Offset.Get();
+		auto position = basePosition + Point2D { offset.X, pType->PixelSelectionBracketDelta + offset.Y };
+
+		DrawFrameStruct pDraw
+		{
+			static_cast<int>((static_cast<double>(pTemporal->WarpRemaining) / (pType->Strength * 10)) * maxLength + 0.99),
+			pRulesExt->TemporalLifeDisplay_Buildings_Pips,
+			pRulesExt->ProgressDisplay_Buildings_PipsShape.Get(),
+			0,
+			-1,
+			nullptr,
+			maxLength,
+			-1,
+			&position,
+			pBounds
+		};
+
+		if (offset == Point2D::Empty && (pThis->IsSelected || pThis->IsMouseHovering)) // Layer fix
+		{
+			RulesClass* const pRules = RulesClass::Instance;
+			const auto ratio = pBuilding->GetHealthPercentage();
+			pDraw.MidLength = static_cast<int>(ratio * maxLength);
+			pDraw.MidFrame = (ratio > pRules->ConditionYellow) ? 1 : (ratio > pRules->ConditionRed ? 2 : 4);
+			pDraw.MidPipSHP = FileSystem::PIPS_SHP;
+			pDraw.BrdFrame = 0;
+		}
+
+		TechnoExt::DrawVanillaStyleBuildingBar(&pDraw);
+	}
+	else
+	{
+		const int maxLength = isInfantry ? 8 : 17;
+		const auto pType = pThis->GetTechnoType();
+		auto position = basePosition + Point2D { 0, (pType->PixelSelectionBracketDelta + 2) } + pRulesExt->TemporalLifeDisplay_Others_Offset.Get();
+
+		DrawFrameStruct pDraw
+		{
+			static_cast<int>((static_cast<double>(pTemporal->WarpRemaining) / (pType->Strength * 10)) * maxLength + 0.99),
+			pRulesExt->TemporalLifeDisplay_Others_Pips,
+			pRulesExt->ProgressDisplay_Others_PipsShape.Get(),
+			0,
+			-1,
+			nullptr,
+			maxLength,
+			-1,
+			&position,
+			pBounds
+		};
+
+		TechnoExt::DrawVanillaStyleFootBar(&pDraw);
+	}
+}
+
+void TechnoExt::DrawVanillaStyleFootBar(DrawFrameStruct* pDraw)
+{
+	const auto pLocation = pDraw->Location;
+	const auto pBounds = pDraw->Bounds;
+
+	if (pDraw->BrdFrame >= 0)
+	{
+		pLocation->X += 17;
+		DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, FileSystem::PIPBRD_SHP, pDraw->BrdFrame, pLocation, pBounds, BlitterFlags(0xE00), 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+		pLocation->X -= 15;
+	}
+	else
+	{
+		pLocation->X += 2;
+	}
+
+	pLocation->Y += 1;
+
+	const auto topLength = pDraw->TopLength;
+	const auto midLength = pDraw->MidLength;
+	const auto maxLength = pDraw->MaxLength;
+
+	auto length = topLength > maxLength ? maxLength : topLength;
+
+	if (pDraw->TopFrame >= 0 && pDraw->TopPipSHP)
+	{
+		for (auto drawIdx = length; drawIdx > 0 ; --drawIdx, pLocation->X += 2)
+			DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, pDraw->TopPipSHP, pDraw->TopFrame, pLocation, pBounds, BlitterFlags(0x600), 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+	}
+
+	length = midLength > maxLength ? maxLength - length : midLength - length;
+
+	if (pDraw->MidFrame >= 0 && pDraw->MidPipSHP)
+	{
+		for (auto drawIdx = length; drawIdx > 0 ; --drawIdx, pLocation->X += 2)
+			DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, pDraw->MidPipSHP, pDraw->MidFrame, pLocation, pBounds, BlitterFlags(0x600), 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+	}
+}
+
+void TechnoExt::DrawVanillaStyleBuildingBar(DrawFrameStruct* pDraw)
+{
+	const auto pLocation = pDraw->Location;
+	++pLocation->X;
+	const auto pBounds = pDraw->Bounds;
+
+	const auto topLength = pDraw->TopLength;
+	const auto midLength = pDraw->MidLength;
+	const auto maxLength = pDraw->MaxLength;
+
+	auto length = topLength > maxLength ? maxLength : topLength;
+
+	if (pDraw->TopFrame >= 0 && pDraw->TopPipSHP)
+	{
+		for (auto drawIdx = length; drawIdx > 0 ; --drawIdx, pLocation->X -= 4, pLocation->Y += 2)
+			DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, pDraw->TopPipSHP, pDraw->TopFrame, pLocation, pBounds, BlitterFlags(0x600), 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+	}
+
+	length = midLength > maxLength ? maxLength - length : midLength - length;
+
+	if (pDraw->MidFrame >= 0 && pDraw->MidPipSHP)
+	{
+		for (auto drawIdx = length; drawIdx > 0 ; --drawIdx, pLocation->X -= 4, pLocation->Y += 2)
+			DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, pDraw->MidPipSHP, pDraw->MidFrame, pLocation, pBounds, BlitterFlags(0x600), 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+	}
+
+	length = length >= 0 ? maxLength - midLength : maxLength - topLength;
+
+	if (pDraw->BrdFrame >= 0)
+	{
+		for (auto drawIdx = length; drawIdx > 0 ; --drawIdx, pLocation->X -= 4, pLocation->Y += 2)
+			DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, FileSystem::PIPS_SHP, pDraw->BrdFrame, pLocation, pBounds, BlitterFlags(0x600), 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+	}
+}
 
 Point2D TechnoExt::GetScreenLocation(TechnoClass* pThis)
 {
@@ -331,18 +675,23 @@ void TechnoExt::ProcessDigitalDisplays(TechnoClass* pThis)
 		if (!HouseClass::IsCurrentPlayerObserver() && !EnumFunctions::CanTargetHouse(pDisplayType->VisibleToHouses, pThis->Owner, HouseClass::CurrentPlayer))
 			continue;
 
+		if (!pDisplayType->VisibleInSpecialState && (pThis->TemporalTargetingMe || pThis->IsIronCurtained()))
+			continue;
+
 		int value = -1;
-		int maxValue = -1;
+		int maxValue = 0;
 
 		GetValuesForDisplay(pThis, pDisplayType->InfoType, value, maxValue);
 
-		if (value == -1 || maxValue == -1)
+		if (value <= -1 || maxValue <= 0)
 			continue;
 
-		if (pDisplayType->ValueScaleDivisor > 1)
+		const auto divisor = pDisplayType->ValueScaleDivisor.Get(pDisplayType->ValueAsTimer ? 15 : 1);
+
+		if (divisor > 1)
 		{
-			value = Math::max(value / pDisplayType->ValueScaleDivisor, value != 0 ? 1 : 0);
-			maxValue = Math::max(maxValue / pDisplayType->ValueScaleDivisor, maxValue != 0 ? 1 : 0);
+			value = Math::max(value / divisor, value ? 1 : 0);
+			maxValue = Math::max(maxValue / divisor, 1);
 		}
 
 		const bool isBuilding = pThis->WhatAmI() == AbstractType::Building;
@@ -375,54 +724,51 @@ void TechnoExt::GetValuesForDisplay(TechnoClass* pThis, DisplayInfoType infoType
 	}
 	case DisplayInfoType::Shield:
 	{
-		if (pExt->Shield == nullptr || pExt->Shield->IsBrokenAndNonRespawning())
+		const auto pShield = pExt->Shield.get();
+
+		if (!pShield || pShield->IsBrokenAndNonRespawning())
 			return;
 
-		value = pExt->Shield->GetHP();
-		maxValue = pExt->Shield->GetType()->Strength.Get();
+		value = pShield->GetHP();
+		maxValue = pShield->GetType()->Strength.Get();
 		break;
 	}
 	case DisplayInfoType::Ammo:
 	{
-		if (pType->Ammo <= 0)
-			return;
-
 		value = pThis->Ammo;
 		maxValue = pType->Ammo;
 		break;
 	}
 	case DisplayInfoType::MindControl:
 	{
-		if (pThis->CaptureManager == nullptr)
+		const auto pCaptureManager = pThis->CaptureManager;
+
+		if (!pCaptureManager)
 			return;
 
-		value = pThis->CaptureManager->ControlNodes.Count;
-		maxValue = pThis->CaptureManager->MaxControlNodes;
+		value = pCaptureManager->ControlNodes.Count;
+		maxValue = pCaptureManager->MaxControlNodes;
 		break;
 	}
 	case DisplayInfoType::Spawns:
 	{
-		if (pThis->SpawnManager == nullptr || pType->Spawns == nullptr || pType->SpawnsNumber <= 0)
+		const auto pSpawnManager = pThis->SpawnManager;
+
+		if (!pSpawnManager || !pType->Spawns)
 			return;
 
-		value = pThis->SpawnManager->CountAliveSpawns();
+		value = pSpawnManager->CountAliveSpawns();
 		maxValue = pType->SpawnsNumber;
 		break;
 	}
 	case DisplayInfoType::Passengers:
 	{
-		if (pType->Passengers <= 0)
-			return;
-
 		value = pThis->Passengers.NumPassengers;
 		maxValue = pType->Passengers;
 		break;
 	}
 	case DisplayInfoType::Tiberium:
 	{
-		if (pType->Storage <= 0)
-			return;
-
 		value = static_cast<int>(pThis->Tiberium.GetTotalAmount());
 		maxValue = pType->Storage;
 		break;
@@ -438,13 +784,12 @@ void TechnoExt::GetValuesForDisplay(TechnoClass* pThis, DisplayInfoType infoType
 		if (pThis->WhatAmI() != AbstractType::Building)
 			return;
 
-		const auto pBuildingType = abstract_cast<BuildingTypeClass*>(pType);
-		const auto pBuilding = abstract_cast<BuildingClass*>(pThis);
+		const auto pBuildingType = static_cast<BuildingTypeClass*>(pType);
 
 		if (!pBuildingType->CanBeOccupied)
 			return;
 
-		value = pBuilding->Occupants.Count;
+		value = static_cast<BuildingClass*>(pThis)->Occupants.Count;
 		maxValue = pBuildingType->MaxNumberOccupants;
 		break;
 	}
@@ -453,8 +798,171 @@ void TechnoExt::GetValuesForDisplay(TechnoClass* pThis, DisplayInfoType infoType
 		if (!pType->IsGattling)
 			return;
 
-		value = pThis->CurrentGattlingStage;
+		value = pThis->GattlingValue ? pThis->CurrentGattlingStage + 1 : 0;
 		maxValue = pType->WeaponStages;
+		break;
+	}
+	case DisplayInfoType::ROF:
+	{
+		if (!pThis->IsArmed())
+			return;
+
+		const auto& timer = pThis->RearmTimer;
+		value = timer.GetTimeLeft();
+		maxValue = timer.TimeLeft;
+		break;
+	}
+	case DisplayInfoType::Reload:
+	{
+		if (pType->Ammo <= 0)
+			return;
+
+		value = (pThis->Ammo >= pType->Ammo) ? 0 : pThis->ReloadTimer.GetTimeLeft();
+		maxValue = (pThis->Ammo || pType->EmptyReload <= 0) ? pType->Reload : pType->EmptyReload;
+		break;
+	}
+	case DisplayInfoType::SpawnTimer:
+	{
+		const auto pSpawnManager = pThis->SpawnManager;
+
+		if (!pSpawnManager || !pType->Spawns || pType->SpawnsNumber <= 0)
+			return;
+
+		value = 0;
+
+		for (int i = 0; i < pType->SpawnsNumber; i++)
+		{
+			const auto pSpawnNode = pSpawnManager->SpawnedNodes[i];
+
+			if (pSpawnNode->Status != SpawnNodeStatus::Dead)
+				continue;
+
+			const auto thisValue = pSpawnNode->SpawnTimer.GetTimeLeft();
+
+			if (thisValue < value || !value)
+				value = thisValue;
+		}
+
+		maxValue = pSpawnManager->RegenRate;
+		break;
+	}
+	case DisplayInfoType::GattlingTimer:
+	{
+		if (!pType->IsGattling)
+			return;
+
+		const auto thisStage = pThis->CurrentGattlingStage;
+		const auto& stage = pThis->Veterancy.IsElite() ? pType->EliteStage : pType->WeaponStage;
+
+		value = pThis->GattlingValue;
+		maxValue = stage[thisStage];
+
+		if (thisStage > 0)
+		{
+			value -= stage[thisStage - 1];
+			maxValue -= stage[thisStage - 1];
+		}
+
+		break;
+	}
+	case DisplayInfoType::ProduceCash:
+	{
+		if (pThis->WhatAmI() != AbstractType::Building || static_cast<BuildingTypeClass*>(pType)->ProduceCashAmount <= 0)
+			return;
+
+		const auto& timer = static_cast<BuildingClass*>(pThis)->CashProductionTimer;
+		value = timer.GetTimeLeft();
+		maxValue = timer.TimeLeft;
+		break;
+	}
+	case DisplayInfoType::PassengerKill:
+	{
+		if (!pExt->TypeExtData->PassengerDeletionType)
+			return;
+
+		const auto& timer = pExt->PassengerDeletionTimer;
+		value = timer.GetTimeLeft();
+		maxValue = timer.TimeLeft;
+		break;
+	}
+	case DisplayInfoType::AutoDeath:
+	{
+		const auto pTypeExt = pExt->TypeExtData;
+
+		if (!pTypeExt->AutoDeath_Behavior.isset())
+			return;
+
+		if (pTypeExt->AutoDeath_AfterDelay > 0)
+		{
+			const auto& timer = pExt->AutoDeathTimer;
+			value = timer.GetTimeLeft();
+			maxValue = timer.TimeLeft;
+		}
+		else if (pTypeExt->AutoDeath_OnAmmoDepletion)
+		{
+			value = pThis->Ammo;
+			maxValue = pType->Ammo;
+		}
+
+		break;
+	}
+	case DisplayInfoType::SuperWeapon:
+	{
+		if (pThis->WhatAmI() != AbstractType::Building)
+			return;
+
+		const auto pHouse = pThis->Owner;
+
+		if (!pHouse)
+			return;
+
+		const auto pBuildingType = static_cast<BuildingTypeClass*>(pType);
+
+		if (pBuildingType->SuperWeapon != -1)
+		{
+			const auto& timer = pHouse->Supers.GetItem(pBuildingType->SuperWeapon)->RechargeTimer;
+			value = timer.GetTimeLeft();
+			maxValue = timer.TimeLeft;
+		}
+		else if (pBuildingType->SuperWeapon2 != -1)
+		{
+			const auto& timer = pHouse->Supers.GetItem(pBuildingType->SuperWeapon2)->RechargeTimer;
+			value = timer.GetTimeLeft();
+			maxValue = timer.TimeLeft;
+		}
+		else
+		{
+			const auto& superWeapons = BuildingTypeExt::ExtMap.Find(pBuildingType)->SuperWeapons;
+
+			if (superWeapons.size() > 0)
+			{
+				const auto& timer = pHouse->Supers.GetItem(superWeapons[0])->RechargeTimer;
+				value = timer.GetTimeLeft();
+				maxValue = timer.TimeLeft;
+			}
+		}
+
+		break;
+	}
+	case DisplayInfoType::IronCurtain:
+	{
+		if (!pThis->IsIronCurtained())
+			return;
+
+		const auto& timer = pThis->IronCurtainTimer;
+		value = timer.GetTimeLeft();
+		maxValue = timer.TimeLeft;
+		break;
+	}
+	case DisplayInfoType::TemporalLife:
+	{
+		const auto pTemporal = pThis->TemporalTargetingMe;
+
+		if (!pTemporal)
+			return;
+
+		value = pTemporal->WarpRemaining;
+		maxValue = pType->Strength * 10;
 		break;
 	}
 	default:
