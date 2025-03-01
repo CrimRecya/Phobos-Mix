@@ -45,6 +45,7 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<SelectedExpandCommandClass>();
 	MakeCommand<HerosInfoCommandClass>();
 	MakeCommand<AutoBuildingCommandClass>();
+	MakeCommand<AutoBuildingCombatCommandClass>();
 
 	if (Phobos::Config::AllowDistributionCommand)
 	{

@@ -545,10 +545,12 @@ bool BuildingTypeExt::IsSameBuildingType(BuildingTypeClass* pType1, BuildingType
 
 bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 {
-	if ((!Phobos::Config::AutomaticPlacingBuilding && pBuilding->Type->BuildCat != BuildCat::Combat || !Phobos::Config::AutomaticPlacingCombatBuilding && pBuilding->Type->BuildCat == BuildCat::Combat))
+	const auto pType = pBuilding->Type;
+	const auto isDefense = pType->BuildCat == BuildCat::Combat;
+
+	if (isDefense ? !Phobos::Config::AutomaticPlacingCombatBuilding : !Phobos::Config::AutomaticPlacingBuilding)
 		return false;
 
-	const auto pType = pBuilding->Type;
 	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
 
 	if (!pTypeExt->AutoBuilding.Get(RulesExt::Global()->AutoBuilding) || pType->LaserFence || pType->Gate || pType->ToTile)
@@ -681,7 +683,6 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 	const auto height = pType->GetFoundationHeight(true) + doubleGap;
 	const auto speedType = pType->SpeedType == SpeedType::Float ? SpeedType::Float : SpeedType::Track;
 	const auto buildable = speedType != SpeedType::Float;
-	const auto isDefense = pType->BuildCat == BuildCat::Combat;
 
 	/*
 	auto tryBuildAt = [&](DynamicVectorClass<BuildingClass*>& vector, bool baseNormal)
@@ -734,7 +735,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 			{
 				auto currentCell = baseCell + *it;
 
-				if (pType->CanCreateHere(currentCell, pHouse) && canBuildHere(cell))
+				if (pType->CanCreateHere(currentCell, pHouse) && canBuildHere(currentCell))
 					cells.AddItem(currentCell);
 			}
 

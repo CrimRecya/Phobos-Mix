@@ -49,13 +49,11 @@ DEFINE_HOOK(0x6DAB20, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint2, 0x
 	if (SecondaryRallyPoint::ArchiveTarget)
 	{
 		R->ECX(SecondaryRallyPoint::ArchiveTarget);
-		SecondaryRallyPoint::ArchiveTarget = nullptr;
 		return ret;
 	}
 	else
 	{
 		R->ECX(SecondaryRallyPoint::SecondaryArchiveTarget);
-		SecondaryRallyPoint::SecondaryArchiveTarget = nullptr;
 		return ret;
 	}
 }
@@ -66,6 +64,32 @@ DEFINE_HOOK(0x6DAD45, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint3, 0x
 	{
 		R->EDI(SecondaryRallyPoint::pBuilding);
 		return 0x6DAAC0;
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x6DAC80, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint4, 0x8)
+{
+	if (!SecondaryRallyPoint::ArchiveTarget)
+	{
+		R->CL(255);
+		R->DL(255);
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x6DAC92, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint5, 0x6)
+{
+	if (SecondaryRallyPoint::ArchiveTarget)
+	{
+		SecondaryRallyPoint::ArchiveTarget = nullptr;
+	}
+	else
+	{
+		R->AL(255);
+		SecondaryRallyPoint::SecondaryArchiveTarget = nullptr;
 	}
 
 	return 0;
