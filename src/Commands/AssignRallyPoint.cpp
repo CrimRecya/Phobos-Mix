@@ -40,7 +40,8 @@ void AssignRallyPointCommandClass::Execute(WWKey eInput) const
 	{
 		if (auto pBuilding = abstract_cast<BuildingClass*>(pCurrent))
 		{
-			if (pBuilding->Owner)
+			if (pBuilding->Owner->IsControlledByCurrentPlayer()
+				&& pBuilding->IsUnitFactory())
 		}
 	}
 

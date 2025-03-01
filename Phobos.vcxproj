@@ -19,7 +19,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Commands\AssignRallyPoint.cpp" />
-    <ClCompile Include="src\Commands\AssignSecondaryRallyPoint.cpp" />
     <ClCompile Include="src\Commands\ToggleAutoBuildingCombat.cpp" />
     <ClCompile Include="src\Ext\Building\Hooks.AutoBuilding.cpp" />
     <ClCompile Include="src\Ext\TechnoType\Hooks.MatrixOp.cpp" />
@@ -189,7 +188,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Commands\AssignRallyPoint.h" />
-    <ClInclude Include="src\Commands\AssignSecondaryRallyPoint.h" />
     <ClInclude Include="src\Commands\ToggleAutoBuildingCombat.h" />
     <ClInclude Include="src\New\Entity\AttachEffectClass.h" />
     <ClInclude Include="src\New\Type\AttachEffectTypeClass.h" />
