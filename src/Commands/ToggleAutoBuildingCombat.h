@@ -3,7 +3,7 @@
 #include "Commands.h"
 
 // The example command class
-class DummyCommandClass : public CommandClass
+class ToggleAutoBuildingCombatCommandClass : public CommandClass
 {
 public:
 	// CommandClass

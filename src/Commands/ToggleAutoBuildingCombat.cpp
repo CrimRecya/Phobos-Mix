@@ -1,28 +1,28 @@
-#include "Dummy.h"
+#include "ToggleAutoBuildingCombat.h"
 
 #include <Utilities/Debug.h>
 
-const char* DummyCommandClass::GetName() const
+const char* ToggleAutoBuildingCombatCommandClass::GetName() const
 {
-	return "Phobos Dummy";
+	return "ToggleAutoBuildingCombat";
 }
 
-const wchar_t* DummyCommandClass::GetUIName() const
+const wchar_t* ToggleAutoBuildingCombatCommandClass::GetUIName() const
 {
-	return L"Phobos Dummy";
+	return L"Toggle auto building of combat tab";
 }
 
-const wchar_t* DummyCommandClass::GetUICategory() const
+const wchar_t* ToggleAutoBuildingCombatCommandClass::GetUICategory() const
 {
 	return CATEGORY_DEVELOPMENT
 }
 
-const wchar_t* DummyCommandClass::GetUIDescription() const
+const wchar_t* ToggleAutoBuildingCombatCommandClass::GetUIDescription() const
 {
-	return L"Dummy";
+	return L"Toggle auto building of the building types in combat tab";
 }
 
-void DummyCommandClass::Execute(WWKey eInput) const
+void ToggleAutoBuildingCombatCommandClass::Execute(WWKey eInput) const
 {
 	Debug::Log("[Phobos] Dummy command runs.\n");
 	MessageListClass::Instance->PrintMessage(L"[Phobos] Dummy command runs.");

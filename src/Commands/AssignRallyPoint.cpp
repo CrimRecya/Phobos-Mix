@@ -1,5 +1,12 @@
 #include "AssignRallyPoint.h"
 
+#include "DisplayClass.h"
+#include "WWMouseClass.h"
+#include "MapClass.h"
+#include "Surface.h"
+#include "HouseClass.h"
+#include "BuildingClass.h"
+
 #include <Utilities/Debug.h>
 
 const char* AssignRallyPointCommandClass::GetName() const
@@ -19,10 +26,72 @@ const wchar_t* AssignRallyPointCommandClass::GetUICategory() const
 
 const wchar_t* AssignRallyPointCommandClass::GetUIDescription() const
 {
-	return L"Dummy";
+	return L"Assign the rally point of selected buildings to the mouse pointing coords.";
 }
 
 void AssignRallyPointCommandClass::Execute(WWKey eInput) const
+{
+	if (!ObjectClass::CurrentObjects().Count)
+		return;
+
+	DynamicVectorClass<BuildingClass*> buildings;
+
+	for (auto pCurrent : ObjectClass::CurrentObjects())
+	{
+		if (auto pBuilding = abstract_cast<BuildingClass*>(pCurrent))
+		{
+			if (pBuilding->Owner)
+		}
+	}
+
+	Point2D mouseCrd;
+	WWMouseClass::Instance->GetCoords(&mouseCrd);
+	auto screenCrd = mouseCrd - Point2D({ DSurface::ViewBounds->X ,DSurface::ViewBounds->Y });
+	CellStruct cellBuffer;
+	CoordStruct coordBuffer;
+	ObjectClass* pObjectBuffer;
+	bool foggedBuffer;
+	bool shroudedBuffer;
+	DisplayClass::Instance->ProcessClickCoords(&screenCrd, &cellBuffer, &coordBuffer, &pObjectBuffer, (BYTE*)(&foggedBuffer), (BYTE*)(&shroudedBuffer));
+
+	AbstractClass* pPointed;
+
+	if (pObjectBuffer)
+	{
+		pPointed = (AbstractClass*)pObjectBuffer;
+	}
+	else if (MapClass::Instance->IsWithinUsableArea(cellBuffer, false))
+	{
+		pPointed = (AbstractClass*)MapClass::Instance->GetCellAt(cellBuffer);
+	}
+
+	if (pPointed)
+	{
+
+	}
+}
+
+const char* AssignSecondaryRallyPointCommandClass::GetName() const
+{
+	return "AssignSecondaryRallyPoint";
+}
+
+const wchar_t* AssignSecondaryRallyPointCommandClass::GetUIName() const
+{
+	return L"Assign secondary rally point";
+}
+
+const wchar_t* AssignSecondaryRallyPointCommandClass::GetUICategory() const
+{
+	return CATEGORY_DEVELOPMENT
+}
+
+const wchar_t* AssignSecondaryRallyPointCommandClass::GetUIDescription() const
+{
+	return L"Assign the secondary rally point of selected buildings to the mouse pointing coords.";
+}
+
+void AssignSecondaryRallyPointCommandClass::Execute(WWKey eInput) const
 {
 	Debug::Log("[Phobos] Dummy command runs.\n");
 	MessageListClass::Instance->PrintMessage(L"[Phobos] Dummy command runs.");
