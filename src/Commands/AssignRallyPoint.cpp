@@ -8,6 +8,10 @@
 #include "BuildingClass.h"
 #include "EventClass.h"
 
+#include "Ext/BuildingType/Body.h"
+#include "Ext/Building/Body.h"
+#include "Ext/Event/Body.h"
+
 #include <Utilities/Debug.h>
 
 const char* AssignRallyPointCommandClass::GetName() const
@@ -107,6 +111,60 @@ const wchar_t* AssignSecondaryRallyPointCommandClass::GetUIDescription() const
 
 void AssignSecondaryRallyPointCommandClass::Execute(WWKey eInput) const
 {
-	Debug::Log("[Phobos] Dummy command runs.\n");
-	MessageListClass::Instance->PrintMessage(L"[Phobos] Dummy command runs.");
+	if (!ObjectClass::CurrentObjects().Count)
+		return;
+
+	// Get current buildings.
+	DynamicVectorClass<BuildingClass*> buildings;
+
+	for (auto pCurrent : ObjectClass::CurrentObjects())
+	{
+		if (auto pBuilding = abstract_cast<BuildingClass*>(pCurrent))
+		{
+			if (pBuilding->Owner->IsControlledByCurrentPlayer() && BuildingTypeExt::ExtMap.Find(pBuilding->Type)->HasSecondaryRallyPoint)
+				buildings.AddItem(pBuilding);
+		}
+	}
+
+	if (!buildings.Count)
+		return;
+
+	// Get pointed object.
+	Point2D mouseCrd;
+	WWMouseClass::Instance->GetCoords(&mouseCrd);
+	auto screenCrd = mouseCrd - Point2D({ DSurface::ViewBounds->X ,DSurface::ViewBounds->Y });
+	CellStruct cellBuffer;
+	CoordStruct coordBuffer;
+	ObjectClass* pObjectBuffer;
+	bool foggedBuffer;
+	bool shroudedBuffer;
+	DisplayClass::Instance->ProcessClickCoords(&screenCrd, &cellBuffer, &coordBuffer, &pObjectBuffer, (BYTE*)(&foggedBuffer), (BYTE*)(&shroudedBuffer));
+
+	AbstractClass* pPointed = nullptr;
+
+	if (pObjectBuffer)
+	{
+		pPointed = (AbstractClass*)pObjectBuffer;
+	}
+	else if (MapClass::Instance->IsWithinUsableArea(cellBuffer, false))
+	{
+		pPointed = (AbstractClass*)MapClass::Instance->GetCellAt(cellBuffer);
+	}
+
+	if (!pPointed)
+		return;
+
+	// Raise event to assign rally point.
+	for (auto pBuilding : buildings)
+	{
+		TargetClass target1 = TargetClass(pBuilding);
+		TargetClass target2 = TargetClass(pPointed);
+
+		// For some Ares reason, setting the type in the CTOR call will crash the game.
+		// Thus we do it here manually.
+		EventClass event = EventClass(pBuilding->GetOwningHouseIndex(), EventType::Archive, target1, target2);
+		event.Type = (EventType)(EventTypeExt::AssignSecondaryRallyPoint);
+
+		EventClass::AddEvent(event);
+	}
 }

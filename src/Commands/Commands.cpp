@@ -21,6 +21,7 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<ToggleDigitalDisplayCommandClass>();
 	MakeCommand<ToggleDesignatorRangeCommandClass>();
 	MakeCommand<AssignRallyPointCommandClass>();
+	MakeCommand<AssignSecondaryRallyPointCommandClass>();
 
 	if (Phobos::Config::DevelopmentCommands)
 	{

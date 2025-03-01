@@ -70,3 +70,20 @@ DEFINE_HOOK(0x6DAD45, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint3, 0x
 
 	return 0;
 }
+
+DEFINE_HOOK(0x455D50, BuildingClass_SetDestination_ResetSecondaryRallyPoint, 0xA)
+{
+	GET(BuildingClass*, pThis, ECX);
+	GET_STACK(AbstractClass*, pTarget, STACK_OFFSET(0, 0x4));
+
+	if (!pTarget)
+		BuildingExt::ExtMap.Find(pThis)->SecondaryArchiveTarget = nullptr;
+
+	return 0;
+}
+
+// isunitfactory = true
+DEFINE_HOOK(0x455DA0, TEST, 0x6)
+{
+	return 0x455DCD;
+}

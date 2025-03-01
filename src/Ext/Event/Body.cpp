@@ -1,8 +1,14 @@
-/*
+
 #include "Body.h"
 
 #include <Helpers/Macro.h>
 #include <EventClass.h>
+#include <BuildingClass.h>
+#include <FootClass.h>
+
+#include <Ext/Building/Body.h>
+
+#include <Utilities/Debug.h>
 
 bool EventExt::AddEvent()
 {
@@ -13,8 +19,13 @@ void EventExt::RespondEvent()
 {
 	switch (this->Type)
 	{
-	case EventTypeExt::Sample:
-		// Place the handler here
+	case EventTypeExt::AssignSecondaryRallyPoint:
+		auto pBuilding = this->AssignSecondaryRallyPoint.Whom1.As_Building();
+		auto pFocus = this->AssignSecondaryRallyPoint.Whom2.As_Abstract();
+
+		if (pBuilding && pBuilding->IsAlive)
+			BuildingExt::ExtMap.Find(pBuilding)->SecondaryArchiveTarget = pFocus;
+
 		break;
 	}
 }
@@ -23,8 +34,8 @@ size_t EventExt::GetDataSize(EventTypeExt type)
 {
 	switch (type)
 	{
-	case EventTypeExt::Sample:
-		return sizeof(EventExt::Sample);
+	case EventTypeExt::AssignSecondaryRallyPoint:
+		return sizeof(EventExt::AssignSecondaryRallyPoint);
 	}
 
 	return 0;
@@ -98,4 +109,3 @@ DEFINE_HOOK(0x64C30E, sub_64BDD0_GetEventSize2, 0x6)
 
 	return 0;
 }
-*/
