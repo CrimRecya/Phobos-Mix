@@ -6,6 +6,7 @@
 #include "Surface.h"
 #include "HouseClass.h"
 #include "BuildingClass.h"
+#include "EventClass.h"
 
 #include <Utilities/Debug.h>
 
@@ -34,17 +35,22 @@ void AssignRallyPointCommandClass::Execute(WWKey eInput) const
 	if (!ObjectClass::CurrentObjects().Count)
 		return;
 
+	// Get current buildings.
 	DynamicVectorClass<BuildingClass*> buildings;
 
 	for (auto pCurrent : ObjectClass::CurrentObjects())
 	{
 		if (auto pBuilding = abstract_cast<BuildingClass*>(pCurrent))
 		{
-			if (pBuilding->Owner->IsControlledByCurrentPlayer()
-				&& pBuilding->IsUnitFactory())
+			if (pBuilding->Owner->IsControlledByCurrentPlayer() && pBuilding->IsUnitFactory())
+				buildings.AddItem(pBuilding);
 		}
 	}
 
+	if (!buildings.Count)
+		return;
+
+	// Get pointed object.
 	Point2D mouseCrd;
 	WWMouseClass::Instance->GetCoords(&mouseCrd);
 	auto screenCrd = mouseCrd - Point2D({ DSurface::ViewBounds->X ,DSurface::ViewBounds->Y });
@@ -55,7 +61,7 @@ void AssignRallyPointCommandClass::Execute(WWKey eInput) const
 	bool shroudedBuffer;
 	DisplayClass::Instance->ProcessClickCoords(&screenCrd, &cellBuffer, &coordBuffer, &pObjectBuffer, (BYTE*)(&foggedBuffer), (BYTE*)(&shroudedBuffer));
 
-	AbstractClass* pPointed;
+	AbstractClass* pPointed = nullptr;
 
 	if (pObjectBuffer)
 	{
@@ -66,9 +72,16 @@ void AssignRallyPointCommandClass::Execute(WWKey eInput) const
 		pPointed = (AbstractClass*)MapClass::Instance->GetCellAt(cellBuffer);
 	}
 
-	if (pPointed)
-	{
+	if (!pPointed)
+		return;
 
+	// Raise event to assign rally point.
+	for (auto pBuilding : buildings)
+	{
+		TargetClass target1 = TargetClass(pBuilding);
+		TargetClass target2 = TargetClass(pPointed);
+		EventClass event = EventClass(pBuilding->GetOwningHouseIndex(), EventType::Archive, target1, target2);
+		EventClass::AddEvent(event);
 	}
 }
 
@@ -84,7 +97,7 @@ const wchar_t* AssignSecondaryRallyPointCommandClass::GetUIName() const
 
 const wchar_t* AssignSecondaryRallyPointCommandClass::GetUICategory() const
 {
-	return CATEGORY_DEVELOPMENT
+	return CATEGORY_DEVELOPMENT;
 }
 
 const wchar_t* AssignSecondaryRallyPointCommandClass::GetUIDescription() const

@@ -14,7 +14,7 @@ const wchar_t* ToggleAutoBuildingCombatCommandClass::GetUIName() const
 
 const wchar_t* ToggleAutoBuildingCombatCommandClass::GetUICategory() const
 {
-	return CATEGORY_DEVELOPMENT
+	return CATEGORY_DEVELOPMENT;
 }
 
 const wchar_t* ToggleAutoBuildingCombatCommandClass::GetUIDescription() const

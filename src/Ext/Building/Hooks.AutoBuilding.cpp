@@ -15,7 +15,7 @@ namespace SecondaryRallyPoint
 {
 	BuildingClass* pBuilding = nullptr;
 	AbstractClass* ArchiveTarget = nullptr;
-	AbstractClass* SecondaryArchiveTarget = false;
+	AbstractClass* SecondaryArchiveTarget = nullptr;
 }
 
 DEFINE_HOOK(0x6DAAB2, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint1, 0x6)
