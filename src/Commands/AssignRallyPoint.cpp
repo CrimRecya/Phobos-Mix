@@ -26,7 +26,7 @@ const wchar_t* AssignRallyPointCommandClass::GetUIName() const
 
 const wchar_t* AssignRallyPointCommandClass::GetUICategory() const
 {
-	return CATEGORY_DEVELOPMENT;
+	return CATEGORY_CONTROL;
 }
 
 const wchar_t* AssignRallyPointCommandClass::GetUIDescription() const
@@ -101,7 +101,7 @@ const wchar_t* AssignSecondaryRallyPointCommandClass::GetUIName() const
 
 const wchar_t* AssignSecondaryRallyPointCommandClass::GetUICategory() const
 {
-	return CATEGORY_DEVELOPMENT;
+	return CATEGORY_CONTROL;
 }
 
 const wchar_t* AssignSecondaryRallyPointCommandClass::GetUIDescription() const

@@ -24,6 +24,7 @@ void EventExt::RespondEvent()
 	switch (this->Type)
 	{
 	case EventTypeExt::AssignSecondaryRallyPoint:
+	{
 		auto pBuilding = this->AssignSecondaryRallyPoint.Whom1.As_Building();
 		auto pFocus = this->AssignSecondaryRallyPoint.Whom2.As_Abstract();
 
@@ -31,6 +32,7 @@ void EventExt::RespondEvent()
 			BuildingExt::ExtMap.Find(pBuilding)->SecondaryArchiveTarget = pFocus;
 
 		break;
+	}
 
 	case EventTypeExt::ManualReload:
 		this->RespondToManualReloadEvent();

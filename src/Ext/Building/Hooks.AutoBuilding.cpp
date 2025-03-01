@@ -81,9 +81,3 @@ DEFINE_HOOK(0x455D50, BuildingClass_SetDestination_ResetSecondaryRallyPoint, 0xA
 
 	return 0;
 }
-
-// isunitfactory = true
-DEFINE_HOOK(0x455DA0, TEST, 0x6)
-{
-	return 0x455DCD;
-}

@@ -9,6 +9,10 @@
 #include <Ext/SWType/Body.h>
 #include <Ext/Scenario/Body.h>
 
+#include <Helpers/Enumerators.h>
+
+#include <random>
+
 BuildingTypeExt::ExtContainer BuildingTypeExt::ExtMap;
 
 // Assuming SuperWeapon & SuperWeapon2 are used (for the moment)
@@ -541,7 +545,7 @@ bool BuildingTypeExt::IsSameBuildingType(BuildingTypeClass* pType1, BuildingType
 
 bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 {
-	if (!Phobos::Config::AutomaticPlacingBuilding)
+	if ((!Phobos::Config::AutomaticPlacingBuilding && pBuilding->Type->BuildCat != BuildCat::Combat || !Phobos::Config::AutomaticPlacingCombatBuilding && pBuilding->Type->BuildCat == BuildCat::Combat))
 		return false;
 
 	const auto pType = pBuilding->Type;
@@ -677,7 +681,9 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 	const auto height = pType->GetFoundationHeight(true) + doubleGap;
 	const auto speedType = pType->SpeedType == SpeedType::Float ? SpeedType::Float : SpeedType::Track;
 	const auto buildable = speedType != SpeedType::Float;
+	const auto isDefense = pType->BuildCat == BuildCat::Combat;
 
+	/*
 	auto tryBuildAt = [&](DynamicVectorClass<BuildingClass*>& vector, bool baseNormal)
 	{
 		for (const auto& pBase : vector)
@@ -709,12 +715,72 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 		}
 
 		return false;
-	};
+	};*/
 
-	if (pHouse->ConYards.Count > 0 && tryBuildAt(pHouse->ConYards, false))
-		return true;
+	auto tryBuildAt = [&](CellStruct baseCell, unsigned int range = 5)
+		{
+			if (baseCell == CellStruct::Empty)
+				return false;
 
-	return tryBuildAt(pHouse->Buildings, true);
+			// TODO The construction area does not actually need to be so large, the surrounding space should be able to be occupied by other things
+			// TODO It would be better if the Buildable check could be fit with ExtendedBuildingPlacing within this function.
+			// TODO Similarly, it would be better if the following Adjacent & NoShroud check could be made within this function.
+			// TODO Implement the gap.
+			auto cell = CellStruct::Empty;
+
+			DynamicVectorClass<CellStruct> cells;
+
+			for (CellSpreadEnumerator it(range); it; ++it)
+			{
+				auto currentCell = baseCell + *it;
+
+				if (pType->CanCreateHere(currentCell, pHouse) && canBuildHere(cell))
+					cells.AddItem(currentCell);
+			}
+
+			int count = cells.Count;
+
+			if (!count)
+				return false;
+
+			addPlaceEvent(cells.GetItem(((int)&cells) % cells.Count));
+			return true;
+		};
+
+	if (pHouse->ConYards.Count > 0)
+	{
+		DynamicVectorClass<CellStruct> cells;
+		CellStruct primaryCell = CellStruct::Empty;
+
+		for (auto pConYard : pHouse->ConYards)
+		{
+			auto pArchiveTarget = isDefense ? pConYard->ArchiveTarget : BuildingExt::ExtMap.Find(pConYard)->SecondaryArchiveTarget;
+
+			if (!pArchiveTarget)
+				pArchiveTarget = pConYard;
+
+			auto rallyCell = CellClass::Coord2Cell(pArchiveTarget->GetCoords());
+
+			if (rallyCell == CellStruct::Empty)
+				continue;
+
+			cells.AddItem(rallyCell);
+
+			if (pConYard->Factory == (isDefense ? pHouse->Primary_ForDefenses : pHouse->Primary_ForBuildings))
+				primaryCell = rallyCell;
+		}
+
+		if (tryBuildAt(primaryCell))
+			return true;
+
+		for (auto cell : cells)
+		{
+			if (tryBuildAt(cell))
+				return true;
+		}
+	}
+
+	return false;
 }
 
 bool BuildingTypeExt::BuildLimboBuilding(BuildingClass* pBuilding)
