@@ -196,6 +196,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fix an issue where a unit will leave an impassable invisible barrier in its original position when it is teleported by ChronoSphere onto an uncrushable unit and self destruct.
 - Fix the bug that destroyed unit may leaves sensors.
 - Fix an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface.
+- Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles.
 
 ## Fixes / interactions with other extensions
 

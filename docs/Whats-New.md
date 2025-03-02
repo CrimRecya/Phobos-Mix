@@ -352,6 +352,7 @@ New:
 - Distribution click action mode (by CrimRecya)
 - Jumpjet Tilts While Moving (by CrimRecya)
 - Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll (by CrimRecya)
+- Laser, electric bolt and rad beam scatter (by CrimRecya)
 - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller. (by TaranDahl)
 - Recycle spawner in long-range (by TaranDahl)
 - Play an anim when recycling a spawner (by TaranDahl)
@@ -373,6 +374,7 @@ Vanilla fixes:
 - Fix an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface (by NetsuNegi)
 - Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory (by CrimRecya & TaranDahl)
 - Observer sidebar in skirmish game mode (by CrimRecya)
+- Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles (by CrimRecya)
 - Buildings with foundation bigger than 1x1 can now recycle spawned correctly (by TaranDahl)
 
 Fixes / interactions with other extensions:
