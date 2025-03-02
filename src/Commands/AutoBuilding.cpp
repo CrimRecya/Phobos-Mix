@@ -43,7 +43,7 @@ const char* AutoBuildingCombatCommandClass::GetName() const
 
 const wchar_t* AutoBuildingCombatCommandClass::GetUIName() const
 {
-	return L"Toggle Auto Building of Combat Tab";
+	return GeneralUtils::LoadStringUnlessMissing("TXT_AUTO_BUILD_COMBAT", L"Toggle Auto Building Combat");
 }
 
 const wchar_t* AutoBuildingCombatCommandClass::GetUICategory() const
@@ -53,7 +53,7 @@ const wchar_t* AutoBuildingCombatCommandClass::GetUICategory() const
 
 const wchar_t* AutoBuildingCombatCommandClass::GetUIDescription() const
 {
-	return GeneralUtils::LoadStringUnlessMissing("TXT_AUTO_COMBAT_BUILD_DESC", L"Toggle on/off automatically place combat building");
+	return GeneralUtils::LoadStringUnlessMissing("TXT_AUTO_BUILD_COMBAT_DESC", L"Toggle on/off automatically place combat building");
 }
 
 void AutoBuildingCombatCommandClass::Execute(WWKey eInput) const
