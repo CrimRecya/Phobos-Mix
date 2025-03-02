@@ -103,7 +103,6 @@ public:
 		Valueable<int> Turret_IdleRestartMax;
 		Valueable<int> Turret_IdleIntervalMin;
 		Valueable<int> Turret_IdleIntervalMax;
-		Valueable<bool> RecountBurst;
 		Valueable<bool> FactoryProgressDisplay;
 		Valueable<bool> MainSWProgressDisplay;
 		Valueable<bool> InvulnerableDisplay;
@@ -278,6 +277,7 @@ public:
 		// Nullable<Vector3D<float>> VoxelShadowLightSource;
 		Valueable<bool> UseFixedVoxelLighting;
 
+		Valueable<bool> RecountBurst;
 		Valueable<bool> NoRearm_UnderEMP;
 		Valueable<bool> NoRearm_Temporal;
 		Valueable<bool> NoReload_UnderEMP;
@@ -370,7 +370,6 @@ public:
 			, Turret_IdleRestartMax { 300 }
 			, Turret_IdleIntervalMin { 150 }
 			, Turret_IdleIntervalMax { 450 }
-			, RecountBurst { false }
 			, FactoryProgressDisplay { false }
 			, MainSWProgressDisplay { false }
 			, InvulnerableDisplay { false }
@@ -531,6 +530,7 @@ public:
 			, EndDistributionModeSound { -1 }
 			, AddDistributionModeCommandSound { -1 }
 			, UseFixedVoxelLighting { false }
+			, RecountBurst { false }
 			, NoRearm_UnderEMP { false }
 			, NoRearm_Temporal { false }
 			, NoReload_UnderEMP { false }

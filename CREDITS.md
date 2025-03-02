@@ -398,11 +398,11 @@ This page lists all the individual contributions to the project by their author.
   - Extended gattling rate down logic
   - Sell or undeploy building on impact
   - Draw visual effects for airburst weapons
+  - Technos recount current burst index when change the firing weapon
   - Projectile subject to ground check before firing
   - New Disperse trajectory
   - New Engrave trajectory
   - New Tracing trajectory
-  - Technos recount current burst index when change the firing weapon
   - Technos will maintain a suitable distance after firing
   - Units will not always stuck in the factory
   - Jumpjet Climbing Logic Enhancement

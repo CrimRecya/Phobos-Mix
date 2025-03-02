@@ -236,6 +236,8 @@ public:
 
 		AEAttachInfoTypeClass AttachEffects;
 
+		Nullable<bool> RecountBurst;
+
 		ValueableVector<TechnoTypeClass*> BuildLimitGroup_Types;
 		ValueableVector<int> BuildLimitGroup_Nums;
 		Valueable<int> BuildLimitGroup_Factor;
@@ -246,7 +248,6 @@ public:
 		ValueableVector<int> BuildLimitGroup_ExtraLimit_MaxCount;
 		Valueable<int> BuildLimitGroup_ExtraLimit_MaxNum;
 
-		Nullable<bool> RecountBurst;
 		Nullable<bool> Turret_IdleRotate;
 		Nullable<bool> Turret_PointToMouse;
 		Nullable<int> TurretROT;
@@ -591,6 +592,8 @@ public:
 
 			, AttachEffects {}
 
+			, RecountBurst {}
+
 			, BuildLimitGroup_Types {}
 			, BuildLimitGroup_Nums {}
 			, BuildLimitGroup_Factor { 1 }
@@ -601,7 +604,6 @@ public:
 			, BuildLimitGroup_ExtraLimit_MaxCount {}
 			, BuildLimitGroup_ExtraLimit_MaxNum { 0 }
 
-			, RecountBurst {}
 			, Turret_IdleRotate {}
 			, Turret_PointToMouse {}
 			, TurretROT {}

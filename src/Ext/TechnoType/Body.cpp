@@ -681,6 +681,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->RevengeWeapon.Read<true>(exINI, pSection, "RevengeWeapon");
 	this->RevengeWeapon_AffectsHouses.Read(exINI, pSection, "RevengeWeapon.AffectsHouses");
 
+	this->RecountBurst.Read(exINI, pSection, "RecountBurst");
+
 	this->BuildLimitGroup_Types.Read(exINI, pSection, "BuildLimitGroup.Types");
 	this->BuildLimitGroup_Nums.Read(exINI, pSection, "BuildLimitGroup.Nums");
 	this->BuildLimitGroup_Factor.Read(exINI, pSection, "BuildLimitGroup.Factor");
@@ -691,7 +693,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->BuildLimitGroup_ExtraLimit_MaxCount.Read(exINI, pSection, "BuildLimitGroup.ExtraLimit.MaxCount");
 	this->BuildLimitGroup_ExtraLimit_MaxNum.Read(exINI, pSection, "BuildLimitGroup.ExtraLimit.MaxNum");
 
-	this->RecountBurst.Read(exINI, pSection, "RecountBurst");
 	this->Turret_IdleRotate.Read(exINI, pSection, "Turret.IdleRotate");
 	this->Turret_PointToMouse.Read(exINI, pSection, "Turret.PointToMouse");
 	this->TurretROT.Read(exINI, pSection, "TurretROT");
@@ -1182,6 +1183,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->AttachEffects)
 
+		.Process(this->RecountBurst)
+
 		.Process(this->BuildLimitGroup_Types)
 		.Process(this->BuildLimitGroup_Nums)
 		.Process(this->BuildLimitGroup_Factor)
@@ -1192,7 +1195,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->BuildLimitGroup_ExtraLimit_MaxCount)
 		.Process(this->BuildLimitGroup_ExtraLimit_MaxNum)
 
-		.Process(this->RecountBurst)
 		.Process(this->Turret_IdleRotate)
 		.Process(this->Turret_PointToMouse)
 		.Process(this->TurretROT)
