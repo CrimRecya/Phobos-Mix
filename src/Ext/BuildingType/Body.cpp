@@ -541,10 +541,12 @@ bool BuildingTypeExt::IsSameBuildingType(BuildingTypeClass* pType1, BuildingType
 
 bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 {
-	if (!Phobos::Config::AutomaticPlacingBuilding)
+	const auto pType = pBuilding->Type;
+	const auto isDefense = pType->BuildCat == BuildCat::Combat;
+
+	if (isDefense ? !Phobos::Config::AutomaticPlacingCombatBuilding : !Phobos::Config::AutomaticPlacingBuilding)
 		return false;
 
-	const auto pType = pBuilding->Type;
 	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
 
 	if (!pTypeExt->AutoBuilding.Get(RulesExt::Global()->AutoBuilding) || pType->LaserFence || pType->Gate || pType->ToTile)
@@ -671,6 +673,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 		return false;
 	}
 
+	/*
 	const auto buildGap = static_cast<short>(pTypeExt->AutoBuilding_Gap + pType->ProtectWithWall ? 1 : 0);
 	const auto doubleGap = buildGap * 2;
 	const auto width = pType->GetFoundationWidth() + doubleGap;
@@ -693,7 +696,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 			// TODO The construction area does not actually need to be so large, the surrounding space should be able to be occupied by other things
 			// TODO It would be better if the Buildable check could be fit with ExtendedBuildingPlacing within this function.
 			// TODO Similarly, it would be better if the following Adjacent & NoShroud check could be made within this function.
-			auto cell = pType->PlaceAnywhere ? baseCell : MapClass::Instance->NearByLocation(baseCell, speedType, -1, MovementZone::Normal, false,
+			auto cell = MapClass::Instance->NearByLocation(baseCell, speedType, -1, MovementZone::Normal, false,
 				width, height, false, false, false, false, CellStruct::Empty, false, buildable);
 
 			if (cell == CellStruct::Empty)
@@ -709,12 +712,76 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 		}
 
 		return false;
-	};
+	};*/
 
-	if (pHouse->ConYards.Count > 0 && tryBuildAt(pHouse->ConYards, false))
-		return true;
+	if (pHouse->ConYards.Count > 0)
+	{
+		const auto width = static_cast<short>(pType->GetFoundationWidth() / 2);
+		const auto height = static_cast<short>(pType->GetFoundationHeight(true) / 2);
 
-	return tryBuildAt(pHouse->Buildings, true);
+		auto tryBuildAt = [&](CellStruct baseCell, unsigned int range = 5)
+		{
+			if (baseCell == CellStruct::Empty)
+				return false;
+
+			// TODO The construction area does not actually need to be so large, the surrounding space should be able to be occupied by other things
+			// TODO It would be better if the Buildable check could be fit with ExtendedBuildingPlacing within this function.
+			// TODO Similarly, it would be better if the following Adjacent & NoShroud check could be made within this function.
+			// TODO Implement the gap.
+			baseCell -= CellStruct { width, height };
+			DynamicVectorClass<CellStruct> cells;
+
+			for (CellSpreadEnumerator it(range); it; ++it)
+			{
+				auto currentCell = baseCell + *it;
+
+				if (pType->CanCreateHere(currentCell, pHouse) && canBuildHere(currentCell))
+					cells.AddItem(currentCell);
+			}
+
+			int count = cells.Count;
+
+			if (!count)
+				return false;
+
+			addPlaceEvent(cells.GetItem((reinterpret_cast<unsigned int>(&cells) >> 2) % cells.Count));
+			return true;
+		};
+
+		DynamicVectorClass<CellStruct> cells;
+		cells.Reserve(pHouse->ConYards.Count);
+		CellStruct primaryCell = CellStruct::Empty;
+
+		for (auto pConYard : pHouse->ConYards)
+		{
+			auto pArchiveTarget = isDefense && BuildingTypeExt::ExtMap.Find(pConYard->Type)->HasSecondaryRallyPoint
+				? BuildingExt::ExtMap.Find(pConYard)->SecondaryArchiveTarget : pConYard->ArchiveTarget;
+
+			if (!pArchiveTarget)
+				pArchiveTarget = pConYard;
+
+			auto rallyCell = CellClass::Coord2Cell(pArchiveTarget->GetCoords());
+
+			if (rallyCell == CellStruct::Empty)
+				continue;
+
+			cells.AddItem(rallyCell);
+
+			if (pConYard->IsPrimaryFactory)
+				primaryCell = rallyCell;
+		}
+
+		if (tryBuildAt(primaryCell))
+			return true;
+
+		for (auto cell : cells)
+		{
+			if (tryBuildAt(cell))
+				return true;
+		}
+	}
+
+	return false;
 }
 
 bool BuildingTypeExt::BuildLimboBuilding(BuildingClass* pBuilding)
@@ -918,6 +985,8 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->BarracksExitCell.Read(exINI, pSection, "BarracksExitCell");
 
+	this->HasSecondaryRallyPoint.Read(exINI, pSection, "HasSecondaryRallyPoint");
+
 	if (pThis->NumberOfDocks > 0)
 	{
 		this->AircraftDockingDirs.clear();
@@ -1058,6 +1127,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Adjacent_AllowedExtra)
 		.Process(this->Adjacent_DisallowedExtra)
 		.Process(this->BarracksExitCell)
+		.Process(this->HasSecondaryRallyPoint)
 		;
 }
 

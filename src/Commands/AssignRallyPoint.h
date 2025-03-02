@@ -2,8 +2,7 @@
 
 #include "Commands.h"
 
-// The select info display command class
-class AutoBuildingCommandClass : public CommandClass
+class AssignRallyPointCommandClass : public CommandClass
 {
 public:
 	// CommandClass
@@ -14,7 +13,7 @@ public:
 	virtual void Execute(WWKey eInput) const override;
 };
 
-class AutoBuildingCombatCommandClass : public CommandClass
+class AssignSecondaryRallyPointCommandClass : public CommandClass
 {
 public:
 	// CommandClass
