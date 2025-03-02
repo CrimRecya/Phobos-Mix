@@ -385,6 +385,7 @@ This page lists all the individual contributions to the project by their author.
   - Fix `Stop` command not working so well in some cases
   - Fix aircraft `MovementZone` and `SpeedType` inconsistencies
   - Use 2D distance instead of 3D to check whether in air team members have arrived destination
+  - No rearm and reload in EMP or temporal
   - Enhanced Straight trajectory
   - Enable building production queue
   - Fix for sidebar not updating queued unit numbers when on hold
@@ -393,6 +394,8 @@ This page lists all the individual contributions to the project by their author.
   - No turret unit turn to the target
   - Damage multiplier for different houses
   - Extended gattling rate down logic
+  - Sell or undeploy building on impact
+  - Draw visual effects for airburst weapons
   - Projectile subject to ground check before firing
   - New Disperse trajectory
   - New Engrave trajectory
@@ -409,12 +412,10 @@ This page lists all the individual contributions to the project by their author.
   - Building placing and deploying logic enhancement
   - Techno base normal and new placing grids
   - Grey cameo preview and cameo overlays
-  - Draw visual effects for airburst weapons
   - Delay automatic attack on the controlled unit
   - Aggressive attack move mission
   - No rearm and reload in EMP or temporal
   - Manually empty and reload ammo
-  - Sell or undeploy building on impact
   - Allow merging AOE damage to buildings into one
   - Distribution click action mode
   - Jumpjet Tilts While Moving

@@ -287,6 +287,10 @@ public:
 		Valueable<WarheadTypeClass*> CanManualReload_DetonateWarhead;
 		Valueable<int> CanManualReload_DetonateConsume;
 
+		Nullable<bool> NoRearm_UnderEMP;
+		Nullable<bool> NoRearm_Temporal;
+		Nullable<bool> NoReload_UnderEMP;
+		Nullable<bool> NoReload_Temporal;
 		Nullable<bool> NoTurret_TrackTarget;
 
 		Nullable<AnimTypeClass*> Wake;
@@ -582,6 +586,10 @@ public:
 			, CanManualReload_DetonateWarhead {}
 			, CanManualReload_DetonateConsume { 0 }
 
+			, NoRearm_UnderEMP {}
+			, NoRearm_Temporal {}
+			, NoReload_UnderEMP {}
+			, NoReload_Temporal {}
 			, NoTurret_TrackTarget {}
 
 			, Wake { }

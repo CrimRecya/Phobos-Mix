@@ -241,6 +241,11 @@ public:
 		Nullable<Vector3D<float>> VoxelLightSource;
 		// Nullable<Vector3D<float>> VoxelShadowLightSource;
 		Valueable<bool> UseFixedVoxelLighting;
+
+		Valueable<bool> NoRearm_UnderEMP;
+		Valueable<bool> NoRearm_Temporal;
+		Valueable<bool> NoReload_UnderEMP;
+		Valueable<bool> NoReload_Temporal;
 		Valueable<bool> NoTurret_TrackTarget;
 
 		Valueable<bool> GatherWhenMCVDeploy;
@@ -450,6 +455,10 @@ public:
 			, EndDistributionModeSound { -1 }
 			, AddDistributionModeCommandSound { -1 }
 			, UseFixedVoxelLighting { false }
+			, NoRearm_UnderEMP { false }
+			, NoRearm_Temporal { false }
+			, NoReload_UnderEMP { false }
+			, NoReload_Temporal { false }
 			, NoTurret_TrackTarget { false }
 			, GatherWhenMCVDeploy { true }
 			, AIFireSale { true }

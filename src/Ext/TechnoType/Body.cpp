@@ -726,6 +726,10 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->CanManualReload_DetonateWarhead.Read(exINI, pSection, "CanManualReload.DetonateWarhead");
 	this->CanManualReload_DetonateConsume.Read(exINI, pSection, "CanManualReload.DetonateConsume");
 
+	this->NoRearm_UnderEMP.Read(exINI, pSection, "NoRearm.UnderEMP");
+	this->NoRearm_Temporal.Read(exINI, pSection, "NoRearm.Temporal");
+	this->NoReload_UnderEMP.Read(exINI, pSection, "NoReload.UnderEMP");
+	this->NoReload_Temporal.Read(exINI, pSection, "NoReload.Temporal");
 	this->NoTurret_TrackTarget.Read(exINI, pSection, "NoTurret.TrackTarget");
 
 	this->Wake.Read(exINI, pSection, "Wake");
@@ -1172,6 +1176,10 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->CanManualReload_DetonateWarhead)
 		.Process(this->CanManualReload_DetonateConsume)
 
+		.Process(this->NoRearm_UnderEMP)
+		.Process(this->NoRearm_Temporal)
+		.Process(this->NoReload_UnderEMP)
+		.Process(this->NoReload_Temporal)
 		.Process(this->NoTurret_TrackTarget)
 
 		.Process(this->Wake)
