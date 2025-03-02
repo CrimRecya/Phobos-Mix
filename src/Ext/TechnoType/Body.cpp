@@ -686,7 +686,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->BuildLimitGroup_ExtraLimit_MaxCount.Read(exINI, pSection, "BuildLimitGroup.ExtraLimit.MaxCount");
 	this->BuildLimitGroup_ExtraLimit_MaxNum.Read(exINI, pSection, "BuildLimitGroup.ExtraLimit.MaxNum");
 
-	this->RecountBurst.Read(exINI, pSection, "RecountBurst");
 	this->Turret_IdleRotate.Read(exINI, pSection, "Turret.IdleRotate");
 	this->Turret_PointToMouse.Read(exINI, pSection, "Turret.PointToMouse");
 	this->TurretROT.Read(exINI, pSection, "TurretROT");
@@ -1128,7 +1127,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->BuildLimitGroup_ExtraLimit_MaxCount)
 		.Process(this->BuildLimitGroup_ExtraLimit_MaxNum)
 
-		.Process(this->RecountBurst)
 		.Process(this->Turret_IdleRotate)
 		.Process(this->Turret_PointToMouse)
 		.Process(this->TurretROT)

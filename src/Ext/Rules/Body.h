@@ -103,7 +103,6 @@ public:
 		Valueable<int> Turret_IdleRestartMax;
 		Valueable<int> Turret_IdleIntervalMin;
 		Valueable<int> Turret_IdleIntervalMax;
-		Valueable<bool> RecountBurst;
 		Valueable<bool> FactoryProgressDisplay;
 		Valueable<bool> MainSWProgressDisplay;
 		Valueable<bool> InvulnerableDisplay;
@@ -327,7 +326,6 @@ public:
 			, Turret_IdleRestartMax { 300 }
 			, Turret_IdleIntervalMin { 150 }
 			, Turret_IdleIntervalMax { 450 }
-			, RecountBurst { false }
 			, FactoryProgressDisplay { false }
 			, MainSWProgressDisplay { false }
 			, InvulnerableDisplay { false }

@@ -149,7 +149,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->Turret_IdleRestartMax.Read(exINI, GameStrings::AudioVisual, "Turret.IdleRestartMax");
 	this->Turret_IdleIntervalMin.Read(exINI, GameStrings::AudioVisual, "Turret.IdleIntervalMin");
 	this->Turret_IdleIntervalMax.Read(exINI, GameStrings::AudioVisual, "Turret.IdleIntervalMax");
-	this->RecountBurst.Read(exINI, GameStrings::General, "RecountBurst");
 	this->FactoryProgressDisplay.Read(exINI, GameStrings::AudioVisual, "FactoryProgressDisplay");
 	this->MainSWProgressDisplay.Read(exINI, GameStrings::AudioVisual, "MainSWProgressDisplay");
 	this->InvulnerableDisplay.Read(exINI, GameStrings::AudioVisual, "InvulnerableDisplay");
@@ -433,7 +432,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->Turret_IdleRestartMax)
 		.Process(this->Turret_IdleIntervalMin)
 		.Process(this->Turret_IdleIntervalMax)
-		.Process(this->RecountBurst)
 		.Process(this->FactoryProgressDisplay)
 		.Process(this->MainSWProgressDisplay)
 		.Process(this->InvulnerableDisplay)
