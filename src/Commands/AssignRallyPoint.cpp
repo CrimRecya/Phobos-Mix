@@ -1,6 +1,6 @@
 #include "AssignRallyPoint.h"
 
-#include "DisplayClass.h"
+#include "MouseClass.h"
 #include "WWMouseClass.h"
 #include "MapClass.h"
 #include "Surface.h"
