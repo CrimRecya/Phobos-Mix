@@ -709,10 +709,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->SelectedInfo_CameoType.Read(exINI, pSection, "SelectedInfo.CameoType");
 	this->SelectedInfo_Button.Read(exINI, pSection, "SelectedInfo.Button");
 	this->FakeOf.Read(exINI, pSection, "FakeOf");
-	this->NoRearm_UnderEMP.Read(exINI, pSection, "NoRearm.UnderEMP");
-	this->NoRearm_Temporal.Read(exINI, pSection, "NoRearm.Temporal");
-	this->NoReload_UnderEMP.Read(exINI, pSection, "NoReload.UnderEMP");
-	this->NoReload_Temporal.Read(exINI, pSection, "NoReload.Temporal");
 	this->RateDown_Delay.Read(exINI, pSection, "RateDown.Delay");
 	this->RateDown_Reset.Read(exINI, pSection, "RateDown.Reset");
 	this->RateDown_Cover_Value.Read(exINI, pSection, "RateDown.Cover.Value");
@@ -1159,10 +1155,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->SelectedInfo_Button)
 		.Process(this->FakeOf)
 		.Process(this->CameoPal)
-		.Process(this->NoRearm_UnderEMP)
-		.Process(this->NoRearm_Temporal)
-		.Process(this->NoReload_UnderEMP)
-		.Process(this->NoReload_Temporal)
 		.Process(this->RateDown_Delay)
 		.Process(this->RateDown_Reset)
 		.Process(this->RateDown_Cover_Value)
