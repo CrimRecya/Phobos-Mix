@@ -396,6 +396,8 @@ This page lists all the individual contributions to the project by their author.
   - No turret unit turn to the target
   - Damage multiplier for different houses
   - Extended gattling rate down logic
+  - Sell or undeploy building on impact
+  - Draw visual effects for airburst weapons
   - Projectile subject to ground check before firing
   - New Disperse trajectory
   - New Engrave trajectory
@@ -414,12 +416,10 @@ This page lists all the individual contributions to the project by their author.
   - Grey cameo preview and cameo overlays
   - Optimize aircrafts stop action and allow they using area guard and attack moving
   - Exclusive Sidebar for Superweapons
-  - Draw visual effects for airburst weapons
   - Delay automatic attack on the controlled unit
   - Aggressive attack move mission
   - No rearm and reload in EMP or temporal
   - Manually empty and reload ammo
-  - Sell or undeploy building on impact
   - Allow merging AOE damage to buildings into one
   - Distribution click action mode
   - Jumpjet Tilts While Moving

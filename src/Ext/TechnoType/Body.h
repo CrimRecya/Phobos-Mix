@@ -277,10 +277,6 @@ public:
 		Nullable<SHPStruct*> SelectedInfo_Button;
 		Valueable<TechnoTypeClass*> FakeOf;
 		CustomPalette CameoPal;
-		Nullable<bool> NoRearm_UnderEMP;
-		Nullable<bool> NoRearm_Temporal;
-		Nullable<bool> NoReload_UnderEMP;
-		Nullable<bool> NoReload_Temporal;
 		Valueable<int> RateDown_Delay;
 		Valueable<bool> RateDown_Reset;
 		Valueable<int> RateDown_Cover_Value;
@@ -293,6 +289,10 @@ public:
 		Valueable<WarheadTypeClass*> CanManualReload_DetonateWarhead;
 		Valueable<int> CanManualReload_DetonateConsume;
 
+		Nullable<bool> NoRearm_UnderEMP;
+		Nullable<bool> NoRearm_Temporal;
+		Nullable<bool> NoReload_UnderEMP;
+		Nullable<bool> NoReload_Temporal;
 		Nullable<bool> NoTurret_TrackTarget;
 
 		Valueable<int> Spawner_RecycleRange;
@@ -632,10 +632,6 @@ public:
 			, SelectedInfo_Button {}
 			, FakeOf {}
 			, CameoPal {}
-			, NoRearm_UnderEMP {}
-			, NoRearm_Temporal {}
-			, NoReload_UnderEMP {}
-			, NoReload_Temporal {}
 			, RateDown_Delay { 0 }
 			, RateDown_Reset { false }
 			, RateDown_Cover_Value { 0 }
@@ -648,6 +644,10 @@ public:
 			, CanManualReload_DetonateWarhead {}
 			, CanManualReload_DetonateConsume { 0 }
 
+			, NoRearm_UnderEMP {}
+			, NoRearm_Temporal {}
+			, NoReload_UnderEMP {}
+			, NoReload_Temporal {}
 			, NoTurret_TrackTarget {}
 
 			, Spawner_RecycleRange { -1 }
