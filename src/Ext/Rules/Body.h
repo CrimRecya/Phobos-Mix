@@ -240,8 +240,6 @@ public:
 		Valueable<bool> UseFixedVoxelLighting;
 		Valueable<bool> NoTurret_TrackTarget;
 
-		Valueable<bool> NoTurret_EarlyTurnToTarget;
-
 		Valueable<bool> GatherWhenMCVDeploy;
 		Valueable<bool> AIFireSale;
 		Valueable<int> AIFireSaleDelay;
