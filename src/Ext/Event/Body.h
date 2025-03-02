@@ -5,6 +5,8 @@
 #include <TechnoClass.h>
 #include <TargetClass.h>
 
+#include <TargetClass.h>
+
 enum class EventTypeExt : uint8_t
 {
 	// Vanilla game used Events from 0x00 to 0x2F
@@ -13,9 +15,10 @@ enum class EventTypeExt : uint8_t
 
 	ManualReload = 0x80,
 	ToggleAggressiveStance = 0x81,
+	AssignSecondaryRallyPoint = 0x82,
 
 	FIRST = ManualReload,
-	LAST = ToggleAggressiveStance
+	LAST = AssignSecondaryRallyPoint
 };
 
 #pragma pack(push, 1)
@@ -39,6 +42,12 @@ public:
 		{
 			TargetClass Who;
 		} ToggleAggressiveStance;
+
+		struct AssignSecondaryRallyPoint
+		{
+			TargetClass Who;
+			TargetClass Whom;
+		} AssignSecondaryRallyPoint;
 	};
 
 	bool AddEvent();
@@ -50,6 +59,9 @@ public:
 	static void RaiseToggleAggressiveStance(TechnoClass* pTechno);
 	void RespondToToggleAggressiveStance();
 
+	static void RaiseAssignSecondaryRallyPoint(BuildingClass* pBuilding, AbstractClass* pTarget);
+	void RespondToAssignSecondaryRallyPoint();
+
 	static size_t GetDataSize(EventTypeExt type);
 	static bool IsValidType(EventTypeExt type);
 };
@@ -57,3 +69,4 @@ public:
 static_assert(sizeof(EventExt) == 111);
 static_assert(offsetof(EventExt, DataBuffer) == 7);
 #pragma pack(pop)
+

@@ -114,6 +114,7 @@ public:
 		static bool ScrollSidebarStripWhenHoldCtrl;
 		static bool ScrollSidebarStripWhenHoldShift;
 		static bool AutomaticPlacingBuilding;
+		static bool AutomaticPlacingCombatBuilding;
 	};
 
 	class Misc

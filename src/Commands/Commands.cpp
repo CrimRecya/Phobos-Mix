@@ -9,6 +9,7 @@
 #include "ToggleDigitalDisplay.h"
 #include "ToggleDesignatorRange.h"
 #include "SaveVariablesToFile.h"
+#include "AssignRallyPoint.h"
 #include "SelectCaptured.h"
 #include "SelectedInfo.h"
 #include "HerosInfo.h"
@@ -41,7 +42,10 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<SelectedInfoCommandClass>();
 	MakeCommand<SelectedExpandCommandClass>();
 	MakeCommand<HerosInfoCommandClass>();
+	MakeCommand<AssignRallyPointCommandClass>();
+	MakeCommand<AssignSecondaryRallyPointCommandClass>();
 	MakeCommand<AutoBuildingCommandClass>();
+	MakeCommand<AutoBuildingCombatCommandClass>();
 
 	if (Phobos::Config::AllowDistributionCommand)
 	{

@@ -1,7 +1,14 @@
+
 #include "Body.h"
 
 #include <Helpers/Macro.h>
 #include <EventClass.h>
+#include <BuildingClass.h>
+#include <FootClass.h>
+
+#include <Ext/Building/Body.h>
+
+#include <Utilities/Debug.h>
 #include <HouseClass.h>
 
 #include "Ext/Techno/Body.h"
@@ -16,9 +23,14 @@ void EventExt::RespondEvent()
 {
 	switch (this->Type)
 	{
+	case EventTypeExt::AssignSecondaryRallyPoint:
+		this->EventExt::RespondToAssignSecondaryRallyPoint();
+		break;
+
 	case EventTypeExt::ManualReload:
 		this->RespondToManualReloadEvent();
 		break;
+
 	case EventTypeExt::ToggleAggressiveStance:
 		this->RespondToToggleAggressiveStance();
 		break;
@@ -91,6 +103,27 @@ void EventExt::RespondToToggleAggressiveStance()
 	}
 }
 
+void EventExt::RaiseAssignSecondaryRallyPoint(BuildingClass* pBuilding, AbstractClass* pTarget)
+{
+	EventExt eventExt {};
+	eventExt.Type = EventTypeExt::AssignSecondaryRallyPoint;
+	eventExt.HouseIndex = static_cast<char>(pBuilding->Owner->ArrayIndex);
+	eventExt.Frame = Unsorted::CurrentFrame;
+	eventExt.AssignSecondaryRallyPoint.Who = TargetClass(pBuilding);
+	eventExt.AssignSecondaryRallyPoint.Whom = TargetClass(pTarget);
+	eventExt.AddEvent();
+	Debug::LogGame("Adding event ASSIGN_BLDRALLY\n");
+}
+
+void EventExt::RespondToAssignSecondaryRallyPoint()
+{
+	if (const auto pBuilding = this->AssignSecondaryRallyPoint.Who.As_Building())
+	{
+		if (pBuilding->IsAlive && BuildingTypeExt::ExtMap.Find(pBuilding->Type)->HasSecondaryRallyPoint)
+			BuildingExt::ExtMap.Find(pBuilding)->SecondaryArchiveTarget = this->AssignSecondaryRallyPoint.Whom.As_Abstract();
+	}
+}
+
 size_t EventExt::GetDataSize(EventTypeExt type)
 {
 	switch (type)
@@ -99,6 +132,8 @@ size_t EventExt::GetDataSize(EventTypeExt type)
 		return sizeof(EventExt::ManualReloadEvent);
 	case EventTypeExt::ToggleAggressiveStance:
 		return sizeof(EventExt::ToggleAggressiveStance);
+	case EventTypeExt::AssignSecondaryRallyPoint:
+		return sizeof(EventExt::AssignSecondaryRallyPoint);
 	}
 
 	return 0;

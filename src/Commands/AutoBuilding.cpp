@@ -35,3 +35,35 @@ void AutoBuildingCommandClass::Execute(WWKey eInput) const
 		SidebarClass::Instance->RepaintSidebar(tabIndex);
 	}
 }
+
+const char* AutoBuildingCombatCommandClass::GetName() const
+{
+	return "Auto Combat Building";
+}
+
+const wchar_t* AutoBuildingCombatCommandClass::GetUIName() const
+{
+	return L"Toggle Auto Building of Combat Tab";
+}
+
+const wchar_t* AutoBuildingCombatCommandClass::GetUICategory() const
+{
+	return CATEGORY_CONTROL;
+}
+
+const wchar_t* AutoBuildingCombatCommandClass::GetUIDescription() const
+{
+	return GeneralUtils::LoadStringUnlessMissing("TXT_AUTO_COMBAT_BUILD_DESC", L"Toggle on/off automatically place combat building");
+}
+
+void AutoBuildingCombatCommandClass::Execute(WWKey eInput) const
+{
+	Phobos::Config::AutomaticPlacingCombatBuilding = !Phobos::Config::AutomaticPlacingCombatBuilding;
+	const int tabIndex = SidebarClass::Instance->ActiveTabIndex;
+
+	if (!tabIndex || tabIndex == 1)
+	{
+		SidebarClass::Instance->SidebarBackgroundNeedsRedraw = true;
+		SidebarClass::Instance->RepaintSidebar(tabIndex);
+	}
+}

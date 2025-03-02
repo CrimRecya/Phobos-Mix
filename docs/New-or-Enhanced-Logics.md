@@ -1604,7 +1604,7 @@ OpenTopped.ShareTransportTarget=true      ; boolean
 - It is now possible to disable the fallback to `(Elite)Secondary` weapon from `(Elite)Primary` weapon if it cannot fire at the chosen target by setting `NoSecondaryWeaponFallback` to true (defaults to false). `NoSecondaryWeaponFallback.AllowAA` controls whether or not fallback because of projectile `AA` setting and target being in air is still allowed. This does not apply to special cases where `(Elite)Secondary` weapon is always chosen, including but not necessarily limited to the following:
   - `OpenTransportWeapon=1` on an unit firing from inside `OpenTopped=true` transport.
   - `NoAmmoWeapon=1` on an unit with `Ammo` value higher than 0 and current ammo count lower or  equal to `NoAmmoAmount`.
-  - Deployed `IsSimpleDeployer=true` units with`DeployFireWeapon=1` set or omitted.
+  - Deployed `IsSimpleDeployer=true` units with `DeployFireWeapon=1` set or omitted.
   - `DrainWeapon=true` weapons against enemy `Drainable=yes` buildings.
   - Units with `IsLocomotor=true` set on `Warhead` of `(Elite)Primary` weapon against buildings.
   - Weapons with `ElectricAssault=true` set on `Warhead` against `Overpowerable=true` buildings belonging to owner or allies.
@@ -2039,7 +2039,7 @@ CanManualReload.DetonateConsume=0   ; integer
 
 ### Extended gattling rate down logic
 
-- Now you can customize some effects of RateDown.
+- Now you can customize some effects of `RateDown`.
   - `RateDown.Delay` controls the delay before using `RateDown` to reduce the gattling value.
   - `RateDown.Reset` controls whether to reset the gattling value directly when the techno has no target or changes targets.
   - `RateDown.Cover.Value` replaces the original `RateDown` when techno's ammo is lower than `RateDown.Cover.AmmoBelow`.
@@ -2571,4 +2571,18 @@ In `rulesmd.ini`:
 KeepRange=0                  ; floating point value
 KeepRange.AllowAI=false      ; boolean
 KeepRange.AllowPlayer=false  ; boolean
+```
+
+### Visual effect scatter
+
+- You can now add a random offset to visual effect's (`IsLaser=true`, `IsElectricBolt=true` or `IsRadBeam=true`) target location if set `VisualScatter` to true.
+
+In `rulesmd.ini`:
+```ini
+[AudioVisual]
+VisualScatter.Min=0.03  ; floating point value, distance in cells
+VisualScatter.Max=0.13  ; floating point value, distance in cells
+
+[SOMEWEAPON]            ; WeaponType
+VisualScatter=false     ; boolean
 ```
