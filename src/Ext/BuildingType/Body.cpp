@@ -9,10 +9,6 @@
 #include <Ext/SWType/Body.h>
 #include <Ext/Scenario/Body.h>
 
-#include <Helpers/Enumerators.h>
-
-#include <random>
-
 BuildingTypeExt::ExtContainer BuildingTypeExt::ExtMap;
 
 // Assuming SuperWeapon & SuperWeapon2 are used (for the moment)
@@ -677,6 +673,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 		return false;
 	}
 
+	/*
 	const auto buildGap = static_cast<short>(pTypeExt->AutoBuilding_Gap + pType->ProtectWithWall ? 1 : 0);
 	const auto doubleGap = buildGap * 2;
 	const auto width = pType->GetFoundationWidth() + doubleGap;
@@ -684,7 +681,6 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 	const auto speedType = pType->SpeedType == SpeedType::Float ? SpeedType::Float : SpeedType::Track;
 	const auto buildable = speedType != SpeedType::Float;
 
-	/*
 	auto tryBuildAt = [&](DynamicVectorClass<BuildingClass*>& vector, bool baseNormal)
 	{
 		for (const auto& pBase : vector)
@@ -700,7 +696,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 			// TODO The construction area does not actually need to be so large, the surrounding space should be able to be occupied by other things
 			// TODO It would be better if the Buildable check could be fit with ExtendedBuildingPlacing within this function.
 			// TODO Similarly, it would be better if the following Adjacent & NoShroud check could be made within this function.
-			auto cell = pType->PlaceAnywhere ? baseCell : MapClass::Instance->NearByLocation(baseCell, speedType, -1, MovementZone::Normal, false,
+			auto cell = MapClass::Instance->NearByLocation(baseCell, speedType, -1, MovementZone::Normal, false,
 				width, height, false, false, false, false, CellStruct::Empty, false, buildable);
 
 			if (cell == CellStruct::Empty)
@@ -718,7 +714,12 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 		return false;
 	};*/
 
-	auto tryBuildAt = [&](CellStruct baseCell, unsigned int range = 5)
+	if (pHouse->ConYards.Count > 0)
+	{
+		const auto width = static_cast<short>(pType->GetFoundationWidth() / 2);
+		const auto height = static_cast<short>(pType->GetFoundationHeight(true) / 2);
+
+		auto tryBuildAt = [&](CellStruct baseCell, unsigned int range = 5)
 		{
 			if (baseCell == CellStruct::Empty)
 				return false;
@@ -727,8 +728,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 			// TODO It would be better if the Buildable check could be fit with ExtendedBuildingPlacing within this function.
 			// TODO Similarly, it would be better if the following Adjacent & NoShroud check could be made within this function.
 			// TODO Implement the gap.
-			auto cell = CellStruct::Empty;
-
+			baseCell -= CellStruct { width, height };
 			DynamicVectorClass<CellStruct> cells;
 
 			for (CellSpreadEnumerator it(range); it; ++it)
@@ -744,18 +744,18 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 			if (!count)
 				return false;
 
-			addPlaceEvent(cells.GetItem(((int)&cells) % cells.Count));
+			addPlaceEvent(cells.GetItem((reinterpret_cast<unsigned int>(&cells) >> 2) % cells.Count));
 			return true;
 		};
 
-	if (pHouse->ConYards.Count > 0)
-	{
 		DynamicVectorClass<CellStruct> cells;
+		cells.Reserve(pHouse->ConYards.Count);
 		CellStruct primaryCell = CellStruct::Empty;
 
 		for (auto pConYard : pHouse->ConYards)
 		{
-			auto pArchiveTarget = isDefense ? pConYard->ArchiveTarget : BuildingExt::ExtMap.Find(pConYard)->SecondaryArchiveTarget;
+			auto pArchiveTarget = isDefense && BuildingTypeExt::ExtMap.Find(pConYard->Type)->HasSecondaryRallyPoint
+				? BuildingExt::ExtMap.Find(pConYard)->SecondaryArchiveTarget : pConYard->ArchiveTarget;
 
 			if (!pArchiveTarget)
 				pArchiveTarget = pConYard;
@@ -767,7 +767,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 
 			cells.AddItem(rallyCell);
 
-			if (pConYard->Factory == (isDefense ? pHouse->Primary_ForDefenses : pHouse->Primary_ForBuildings))
+			if (pConYard->IsPrimaryFactory)
 				primaryCell = rallyCell;
 		}
 

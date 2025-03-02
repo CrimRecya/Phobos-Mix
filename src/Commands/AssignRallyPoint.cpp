@@ -36,15 +36,15 @@ const wchar_t* AssignRallyPointCommandClass::GetUIDescription() const
 
 void AssignRallyPointCommandClass::Execute(WWKey eInput) const
 {
-	if (!ObjectClass::CurrentObjects().Count)
+	if (!ObjectClass::CurrentObjects->Count)
 		return;
 
 	// Get current buildings.
 	DynamicVectorClass<BuildingClass*> buildings;
 
-	for (auto pCurrent : ObjectClass::CurrentObjects())
+	for (const auto& pCurrent : ObjectClass::CurrentObjects())
 	{
-		if (auto pBuilding = abstract_cast<BuildingClass*>(pCurrent))
+		if (const auto& pBuilding = abstract_cast<BuildingClass*>(pCurrent))
 		{
 			if (pBuilding->Owner->IsControlledByCurrentPlayer() && pBuilding->IsUnitFactory())
 				buildings.AddItem(pBuilding);
@@ -55,37 +55,19 @@ void AssignRallyPointCommandClass::Execute(WWKey eInput) const
 		return;
 
 	// Get pointed object.
-	Point2D mouseCrd;
-	WWMouseClass::Instance->GetCoords(&mouseCrd);
-	auto screenCrd = mouseCrd - Point2D({ DSurface::ViewBounds->X ,DSurface::ViewBounds->Y });
-	CellStruct cellBuffer;
-	CoordStruct coordBuffer;
-	ObjectClass* pObjectBuffer;
-	bool foggedBuffer;
-	bool shroudedBuffer;
-	DisplayClass::Instance->ProcessClickCoords(&screenCrd, &cellBuffer, &coordBuffer, &pObjectBuffer, (BYTE*)(&foggedBuffer), (BYTE*)(&shroudedBuffer));
+	auto point = WWMouseClass::Instance->XY1 - Point2D { DSurface::ViewBounds->X, DSurface::ViewBounds->Y };
+	auto cell = CellStruct::Empty;
+	auto coords = CoordStruct::Empty;
+	ObjectClass* pObj = nullptr;
+	BYTE fogged = 0;
+	BYTE shrouded = 0;
 
-	AbstractClass* pPointed = nullptr;
+	DisplayClass::Instance->ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
 
-	if (pObjectBuffer)
+	if (AbstractClass* pPointed = pObj ? static_cast<AbstractClass*>(pObj) : (MapClass::Instance->IsWithinUsableArea(cell, false) ? MapClass::Instance->GetCellAt(cell) : nullptr))
 	{
-		pPointed = (AbstractClass*)pObjectBuffer;
-	}
-	else if (MapClass::Instance->IsWithinUsableArea(cellBuffer, false))
-	{
-		pPointed = (AbstractClass*)MapClass::Instance->GetCellAt(cellBuffer);
-	}
-
-	if (!pPointed)
-		return;
-
-	// Raise event to assign rally point.
-	for (auto pBuilding : buildings)
-	{
-		TargetClass target1 = TargetClass(pBuilding);
-		TargetClass target2 = TargetClass(pPointed);
-		EventClass event = EventClass(pBuilding->GetOwningHouseIndex(), EventType::Archive, target1, target2);
-		EventClass::AddEvent(event);
+		for (const auto& pBuilding : buildings)
+			EventClass::AddEvent(EventClass(pBuilding->GetOwningHouseIndex(), EventType::Archive, TargetClass(pBuilding), TargetClass(pPointed)));
 	}
 }
 
@@ -111,15 +93,15 @@ const wchar_t* AssignSecondaryRallyPointCommandClass::GetUIDescription() const
 
 void AssignSecondaryRallyPointCommandClass::Execute(WWKey eInput) const
 {
-	if (!ObjectClass::CurrentObjects().Count)
+	if (!ObjectClass::CurrentObjects->Count)
 		return;
 
 	// Get current buildings.
 	DynamicVectorClass<BuildingClass*> buildings;
 
-	for (auto pCurrent : ObjectClass::CurrentObjects())
+	for (const auto& pCurrent : ObjectClass::CurrentObjects())
 	{
-		if (auto pBuilding = abstract_cast<BuildingClass*>(pCurrent))
+		if (const auto& pBuilding = abstract_cast<BuildingClass*>(pCurrent))
 		{
 			if (pBuilding->Owner->IsControlledByCurrentPlayer() && BuildingTypeExt::ExtMap.Find(pBuilding->Type)->HasSecondaryRallyPoint)
 				buildings.AddItem(pBuilding);
@@ -130,41 +112,18 @@ void AssignSecondaryRallyPointCommandClass::Execute(WWKey eInput) const
 		return;
 
 	// Get pointed object.
-	Point2D mouseCrd;
-	WWMouseClass::Instance->GetCoords(&mouseCrd);
-	auto screenCrd = mouseCrd - Point2D({ DSurface::ViewBounds->X ,DSurface::ViewBounds->Y });
-	CellStruct cellBuffer;
-	CoordStruct coordBuffer;
-	ObjectClass* pObjectBuffer;
-	bool foggedBuffer;
-	bool shroudedBuffer;
-	DisplayClass::Instance->ProcessClickCoords(&screenCrd, &cellBuffer, &coordBuffer, &pObjectBuffer, (BYTE*)(&foggedBuffer), (BYTE*)(&shroudedBuffer));
+	auto point = WWMouseClass::Instance->XY1 - Point2D { DSurface::ViewBounds->X, DSurface::ViewBounds->Y };
+	auto cell = CellStruct::Empty;
+	auto coords = CoordStruct::Empty;
+	ObjectClass* pObj = nullptr;
+	BYTE fogged = 0;
+	BYTE shrouded = 0;
 
-	AbstractClass* pPointed = nullptr;
+	DisplayClass::Instance->ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
 
-	if (pObjectBuffer)
+	if (AbstractClass* pPointed = pObj ? static_cast<AbstractClass*>(pObj) : (MapClass::Instance->IsWithinUsableArea(cell, false) ? MapClass::Instance->GetCellAt(cell) : nullptr))
 	{
-		pPointed = (AbstractClass*)pObjectBuffer;
-	}
-	else if (MapClass::Instance->IsWithinUsableArea(cellBuffer, false))
-	{
-		pPointed = (AbstractClass*)MapClass::Instance->GetCellAt(cellBuffer);
-	}
-
-	if (!pPointed)
-		return;
-
-	// Raise event to assign rally point.
-	for (auto pBuilding : buildings)
-	{
-		TargetClass target1 = TargetClass(pBuilding);
-		TargetClass target2 = TargetClass(pPointed);
-
-		// For some Ares reason, setting the type in the CTOR call will crash the game.
-		// Thus we do it here manually.
-		EventClass event = EventClass(pBuilding->GetOwningHouseIndex(), EventType::Archive, target1, target2);
-		event.Type = (EventType)(EventTypeExt::AssignSecondaryRallyPoint);
-
-		EventClass::AddEvent(event);
+		for (const auto& pBuilding : buildings)
+			EventExt::RaiseAssignSecondaryRallyPoint(pBuilding, pPointed);
 	}
 }

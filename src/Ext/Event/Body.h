@@ -42,11 +42,11 @@ public:
 		{
 			TargetClass Who;
 		} ToggleAggressiveStance;
-		
+
 		struct AssignSecondaryRallyPoint
 		{
-			TargetClass Whom1;
-			TargetClass Whom2;
+			TargetClass Who;
+			TargetClass Whom;
 		} AssignSecondaryRallyPoint;
 	};
 
@@ -58,6 +58,9 @@ public:
 
 	static void RaiseToggleAggressiveStance(TechnoClass* pTechno);
 	void RespondToToggleAggressiveStance();
+
+	static void RaiseAssignSecondaryRallyPoint(BuildingClass* pBuilding, AbstractClass* pTarget);
+	void RespondToAssignSecondaryRallyPoint();
 
 	static size_t GetDataSize(EventTypeExt type);
 	static bool IsValidType(EventTypeExt type);

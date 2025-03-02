@@ -24,20 +24,13 @@ void EventExt::RespondEvent()
 	switch (this->Type)
 	{
 	case EventTypeExt::AssignSecondaryRallyPoint:
-	{
-		auto pBuilding = this->AssignSecondaryRallyPoint.Whom1.As_Building();
-		auto pFocus = this->AssignSecondaryRallyPoint.Whom2.As_Abstract();
-
-		if (pBuilding && pBuilding->IsAlive)
-			BuildingExt::ExtMap.Find(pBuilding)->SecondaryArchiveTarget = pFocus;
-
+		this->EventExt::RespondToAssignSecondaryRallyPoint();
 		break;
-	}
 
 	case EventTypeExt::ManualReload:
 		this->RespondToManualReloadEvent();
 		break;
-		
+
 	case EventTypeExt::ToggleAggressiveStance:
 		this->RespondToToggleAggressiveStance();
 		break;
@@ -107,6 +100,27 @@ void EventExt::RespondToToggleAggressiveStance()
 			if (pTechnoExt->CanToggleAggressiveStance())
 				pTechnoExt->ToggleAggressiveStance();
 		}
+	}
+}
+
+void EventExt::RaiseAssignSecondaryRallyPoint(BuildingClass* pBuilding, AbstractClass* pTarget)
+{
+	EventExt eventExt {};
+	eventExt.Type = EventTypeExt::AssignSecondaryRallyPoint;
+	eventExt.HouseIndex = static_cast<char>(pBuilding->Owner->ArrayIndex);
+	eventExt.Frame = Unsorted::CurrentFrame;
+	eventExt.AssignSecondaryRallyPoint.Who = TargetClass(pBuilding);
+	eventExt.AssignSecondaryRallyPoint.Whom = TargetClass(pTarget);
+	eventExt.AddEvent();
+	Debug::LogGame("Adding event ASSIGN_BLDRALLY\n");
+}
+
+void EventExt::RespondToAssignSecondaryRallyPoint()
+{
+	if (const auto pBuilding = this->AssignSecondaryRallyPoint.Who.As_Building())
+	{
+		if (pBuilding->IsAlive && BuildingTypeExt::ExtMap.Find(pBuilding->Type)->HasSecondaryRallyPoint)
+			BuildingExt::ExtMap.Find(pBuilding)->SecondaryArchiveTarget = this->AssignSecondaryRallyPoint.Whom.As_Abstract();
 	}
 }
 

@@ -38,12 +38,12 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<QuickSaveCommandClass>();
 	MakeCommand<ToggleDigitalDisplayCommandClass>();
 	MakeCommand<ToggleDesignatorRangeCommandClass>();
-	MakeCommand<AssignRallyPointCommandClass>();
-	MakeCommand<AssignSecondaryRallyPointCommandClass>();
 	MakeCommand<SelectCapturedCommandClass>();
 	MakeCommand<SelectedInfoCommandClass>();
 	MakeCommand<SelectedExpandCommandClass>();
 	MakeCommand<HerosInfoCommandClass>();
+	MakeCommand<AssignRallyPointCommandClass>();
+	MakeCommand<AssignSecondaryRallyPointCommandClass>();
 	MakeCommand<AutoBuildingCommandClass>();
 	MakeCommand<AutoBuildingCombatCommandClass>();
 

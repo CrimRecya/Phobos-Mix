@@ -1,15 +1,6 @@
 #include "Body.h"
 
-#include <BulletClass.h>
-#include <UnitClass.h>
-#include <SuperClass.h>
-#include <GameOptionsClass.h>
-#include <Ext/Anim/Body.h>
-#include <Ext/House/Body.h>
-#include <Ext/SWType/Body.h>
-#include <Ext/WarheadType/Body.h>
 #include <TacticalClass.h>
-#include <PlanningTokenClass.h>
 
 namespace SecondaryRallyPoint
 {
@@ -24,46 +15,37 @@ DEFINE_HOOK(0x6DAAB2, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint1, 0x
 
 	GET(BuildingClass*, pBuilding, EDI);
 
-	int ret = SkipDraw;
 	SecondaryRallyPoint::pBuilding = pBuilding;
 
-	if (auto pRally = pBuilding->ArchiveTarget)
+	if (const auto pRally = pBuilding->ArchiveTarget)
 	{
 		SecondaryRallyPoint::ArchiveTarget = pRally;
-		ret = DoDraw;
+		return DoDraw;
 	}
-
-	if (auto pSecondaryRally = BuildingExt::ExtMap.Find(pBuilding)->SecondaryArchiveTarget)
+	else if (const auto pSecondaryRally = BuildingExt::ExtMap.Find(pBuilding)->SecondaryArchiveTarget)
 	{
 		SecondaryRallyPoint::SecondaryArchiveTarget = pSecondaryRally;
-		ret = DoDraw;
+		return DoDraw;
 	}
 
-	return ret;
+	return SkipDraw;
 }
 
 DEFINE_HOOK(0x6DAB20, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint2, 0x6)
 {
-	enum { ret = 0x6DAB26 };
-
-	if (SecondaryRallyPoint::ArchiveTarget)
-	{
-		R->ECX(SecondaryRallyPoint::ArchiveTarget);
-		return ret;
-	}
-	else
-	{
-		R->ECX(SecondaryRallyPoint::SecondaryArchiveTarget);
-		return ret;
-	}
+	enum { SkipGameCode = 0x6DAB26 };
+	R->ECX(SecondaryRallyPoint::ArchiveTarget ? SecondaryRallyPoint::ArchiveTarget : SecondaryRallyPoint::SecondaryArchiveTarget);
+	return SkipGameCode;
 }
 
 DEFINE_HOOK(0x6DAD45, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint3, 0x5)
 {
+	enum { SkipGameCode = 0x6DAAC0 };
+
 	if (SecondaryRallyPoint::SecondaryArchiveTarget)
 	{
 		R->EDI(SecondaryRallyPoint::pBuilding);
-		return 0x6DAAC0;
+		return SkipGameCode;
 	}
 
 	return 0;

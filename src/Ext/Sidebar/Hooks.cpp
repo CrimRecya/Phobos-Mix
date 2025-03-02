@@ -167,7 +167,7 @@ DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
 	{
 		const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType);
 
-		if ((Phobos::Config::AutomaticPlacingBuilding && pBuildingType->BuildCat!=BuildCat::Combat|| Phobos::Config::AutomaticPlacingCombatBuilding && pBuildingType->BuildCat == BuildCat::Combat)
+		if ((pBuildingType->BuildCat != BuildCat::Combat ? Phobos::Config::AutomaticPlacingBuilding : Phobos::Config::AutomaticPlacingCombatBuilding)
 			&& frameSize > 1 && frames[1] >= 0
 			&& !greyCameo
 			&& pTypeExt->AutoBuilding.Get(RulesExt::Global()->AutoBuilding))
