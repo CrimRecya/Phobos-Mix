@@ -352,12 +352,14 @@ New:
 - Distribution click action mode (by CrimRecya)
 - Jumpjet Tilts While Moving (by CrimRecya)
 - Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll (by CrimRecya)
+- Laser, electric bolt and rad beam scatter (by CrimRecya)
 
 Vanilla fixes:
 - Prevent the units with locomotors that cause problems from entering the tank bunker (by TaranDahl)
 - Fix an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface (by NetsuNegi)
 - Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory (by CrimRecya & TaranDahl)
 - Observer sidebar in skirmish game mode (by CrimRecya)
+- Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles (by CrimRecya)
 
 Fixes / interactions with other extensions:
 - Allowed `AuxBuilding` and Ares' `SW.Aux/NegBuildings` to count building upgrades (by Ollerus)

@@ -419,6 +419,8 @@ This page lists all the individual contributions to the project by their author.
   - Distribution click action mode
   - Jumpjet Tilts While Moving
   - Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll
+  - Laser, electric bolt and rad beam scatter
+  - Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles
 - **Ollerus**:
   - Build limit group enhancement
   - Customizable rocker amplitude
