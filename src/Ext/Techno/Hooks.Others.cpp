@@ -159,43 +159,6 @@ DEFINE_HOOK(0x4FD538, HouseClass_AIHouseUpdate_CheckAIBaseCenter, 0x7)
 
 #pragma endregion
 
-#pragma region KickOutStuckUnits
-
-// Kick out stuck units when the factory building is not busy
-DEFINE_HOOK(0x450248, BuildingClass_UpdateFactory_KickOutStuckUnits, 0x6)
-{
-	GET(BuildingClass*, pThis, ESI);
-
-	if (!(Unsorted::CurrentFrame % 15))
-	{
-		const auto pType = pThis->Type;
-
-		if (pType->Factory == AbstractType::UnitType && pType->WeaponsFactory && !pType->Naval && pThis->QueuedMission != Mission::Unload)
-		{
-			const auto mission = pThis->CurrentMission;
-
-			if (mission == Mission::Guard || (mission == Mission::Unload && pThis->MissionStatus == 1))
-				BuildingExt::KickOutStuckUnits(pThis);
-		}
-	}
-
-	return 0;
-}
-
-// Should not kick out units if the factory building is in construction process
-DEFINE_HOOK(0x4444A0, BuildingClass_KickOutUnit_NoKickOutInConstruction, 0xA)
-{
-	enum { ThisIsOK = 0x444565, ThisIsNotOK = 0x4444B3};
-
-	GET(BuildingClass* const, pThis, ESI);
-
-	const auto mission = pThis->GetCurrentMission();
-
-	return (mission == Mission::Unload || mission == Mission::Construction) ? ThisIsNotOK : ThisIsOK;
-}
-
-#pragma endregion
-
 #pragma region AirBarrier
 
 void __fastcall FindMovingInfOrVeh(CellClass* const pCell, const AbstractType findType)
