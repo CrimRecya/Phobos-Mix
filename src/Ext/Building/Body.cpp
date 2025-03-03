@@ -358,6 +358,7 @@ bool BuildingExt::ExtData::HandleInfiltrate(HouseClass* pInfiltratorHouse, int m
 	return true;
 }
 
+// For unit's weapons factory only
 void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 {
 	if (const auto pTechno = pThis->GetNthLink())
@@ -406,6 +407,7 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 		if (++i >= 2)
 			return; // no stuck
 
+		// Continue checking towards the bottom right corner
 		pCell = pCell->GetNeighbourCell(FacingType::East);
 	}
 }

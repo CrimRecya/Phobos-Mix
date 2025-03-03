@@ -155,8 +155,6 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Setting `[AudioVisual] -> ColorAddUse8BitRGB` to true makes game treat values from `[ColorAdd]` as 8-bit RGB (0-255) instead of RGB565 (0-31 for red & blue, 0-63 for green). This works for `LaserTargetColor`, `IronCurtainColor`, `BerserkColor` and `ForceShieldColor`.
 - Weapons with `AA=true` Projectile can now correctly fire at air units when both firer and target are over a bridge.
 - Buildings with foundation bigger than 1x1 can now recycle spawned correctly.
-- Fix the bug that parasite will vanish if it missed its target when its previous cell is occupied.
-- Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory.
 - Fixed disguised units not using the correct palette if target has custom palette.
 - Building upgrades now consistently use building's `PowerUpN` animation settings corresponding to the upgrade's `PowersUpToLevel` where possible.
 - Subterranean units are no longer allowed to perform deploy functions like firing weapons or `IsSimpleDeployer` while burrowed or burrowing, they will instead emerge first like they do for transport unloading.
@@ -197,6 +195,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fix the bug that destroyed unit may leaves sensors.
 - Fix an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface.
 - Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles.
+- Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory.
 
 ## Fixes / interactions with other extensions
 
