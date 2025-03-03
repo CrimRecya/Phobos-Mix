@@ -40,18 +40,18 @@ void AssignRallyPointCommandClass::Execute(WWKey eInput) const
 		return;
 
 	// Get current buildings.
-	DynamicVectorClass<BuildingClass*> buildings;
+	std::vector<BuildingClass*> buildings;
 
 	for (const auto& pCurrent : ObjectClass::CurrentObjects())
 	{
 		if (const auto& pBuilding = abstract_cast<BuildingClass*>(pCurrent))
 		{
-			if (pBuilding->Owner->IsControlledByCurrentPlayer() && pBuilding->IsUnitFactory())
-				buildings.AddItem(pBuilding);
+			if (pBuilding->Owner->IsControlledByCurrentPlayer())
+				buildings.push_back(pBuilding);
 		}
 	}
 
-	if (!buildings.Count)
+	if (buildings.empty())
 		return;
 
 	// Get pointed object.
@@ -64,7 +64,7 @@ void AssignRallyPointCommandClass::Execute(WWKey eInput) const
 
 	DisplayClass::Instance->ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
 
-	if (AbstractClass* pPointed = pObj ? static_cast<AbstractClass*>(pObj) : (MapClass::Instance->IsWithinUsableArea(cell, false) ? MapClass::Instance->GetCellAt(cell) : nullptr))
+	if (const auto pPointed = pObj ? static_cast<AbstractClass*>(pObj) : (MapClass::Instance->IsWithinUsableArea(cell, false) ? MapClass::Instance->TryGetCellAt(cell) : nullptr))
 	{
 		for (const auto& pBuilding : buildings)
 			EventClass::AddEvent(EventClass(pBuilding->GetOwningHouseIndex(), EventType::Archive, TargetClass(pBuilding), TargetClass(pPointed)));
@@ -97,18 +97,18 @@ void AssignSecondaryRallyPointCommandClass::Execute(WWKey eInput) const
 		return;
 
 	// Get current buildings.
-	DynamicVectorClass<BuildingClass*> buildings;
+	std::vector<BuildingClass*> buildings;
 
 	for (const auto& pCurrent : ObjectClass::CurrentObjects())
 	{
 		if (const auto& pBuilding = abstract_cast<BuildingClass*>(pCurrent))
 		{
 			if (pBuilding->Owner->IsControlledByCurrentPlayer() && BuildingTypeExt::ExtMap.Find(pBuilding->Type)->HasSecondaryRallyPoint)
-				buildings.AddItem(pBuilding);
+				buildings.push_back(pBuilding);
 		}
 	}
 
-	if (!buildings.Count)
+	if (buildings.empty())
 		return;
 
 	// Get pointed object.
@@ -121,7 +121,7 @@ void AssignSecondaryRallyPointCommandClass::Execute(WWKey eInput) const
 
 	DisplayClass::Instance->ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
 
-	if (AbstractClass* pPointed = pObj ? static_cast<AbstractClass*>(pObj) : (MapClass::Instance->IsWithinUsableArea(cell, false) ? MapClass::Instance->GetCellAt(cell) : nullptr))
+	if (const auto pPointed = pObj ? static_cast<AbstractClass*>(pObj) : (MapClass::Instance->IsWithinUsableArea(cell, false) ? MapClass::Instance->TryGetCellAt(cell) : nullptr))
 	{
 		for (const auto& pBuilding : buildings)
 			EventExt::RaiseAssignSecondaryRallyPoint(pBuilding, pPointed);

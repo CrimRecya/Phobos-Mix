@@ -23,16 +23,16 @@ void EventExt::RespondEvent()
 {
 	switch (this->Type)
 	{
-	case EventTypeExt::AssignSecondaryRallyPoint:
-		this->EventExt::RespondToAssignSecondaryRallyPoint();
-		break;
-
 	case EventTypeExt::ManualReload:
 		this->RespondToManualReloadEvent();
 		break;
 
 	case EventTypeExt::ToggleAggressiveStance:
 		this->RespondToToggleAggressiveStance();
+		break;
+
+	case EventTypeExt::AssignSecondaryRallyPoint:
+		this->RespondToAssignSecondaryRallyPoint();
 		break;
 	}
 }

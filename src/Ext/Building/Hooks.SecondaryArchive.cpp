@@ -15,37 +15,38 @@ DEFINE_HOOK(0x6DAAB2, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint1, 0x
 
 	GET(BuildingClass*, pBuilding, EDI);
 
+	if (pBuilding->CurrentMission == Mission::Selling)
+		return SkipDraw;
+
 	SecondaryRallyPoint::pBuilding = pBuilding;
+	const auto pRally = pBuilding->ArchiveTarget;
+	const auto pSecondaryRally = BuildingExt::ExtMap.Find(pBuilding)->SecondaryArchiveTarget;
 
-	if (const auto pRally = pBuilding->ArchiveTarget)
-	{
+	if (pRally)
 		SecondaryRallyPoint::ArchiveTarget = pRally;
-		return DoDraw;
-	}
-	else if (const auto pSecondaryRally = BuildingExt::ExtMap.Find(pBuilding)->SecondaryArchiveTarget)
-	{
-		SecondaryRallyPoint::SecondaryArchiveTarget = pSecondaryRally;
-		return DoDraw;
-	}
 
-	return SkipDraw;
+	if (pSecondaryRally)
+		SecondaryRallyPoint::SecondaryArchiveTarget = pSecondaryRally;
+
+	return pRally || pSecondaryRally ? DoDraw : SkipDraw;
 }
 
 DEFINE_HOOK(0x6DAB20, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint2, 0x6)
 {
-	enum { SkipGameCode = 0x6DAB26 };
+	enum { SetArchiveTarget = 0x6DAB26 };
 	R->ECX(SecondaryRallyPoint::ArchiveTarget ? SecondaryRallyPoint::ArchiveTarget : SecondaryRallyPoint::SecondaryArchiveTarget);
-	return SkipGameCode;
+	return SetArchiveTarget;
 }
 
 DEFINE_HOOK(0x6DAD45, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint3, 0x5)
 {
-	enum { SkipGameCode = 0x6DAAC0 };
+	enum { DrawAgain = 0x6DAAC0 };
 
-	if (SecondaryRallyPoint::SecondaryArchiveTarget)
+	if (SecondaryRallyPoint::SecondaryArchiveTarget && SecondaryRallyPoint::pBuilding)
 	{
 		R->EDI(SecondaryRallyPoint::pBuilding);
-		return SkipGameCode;
+		SecondaryRallyPoint::pBuilding = nullptr;
+		return DrawAgain;
 	}
 
 	return 0;
