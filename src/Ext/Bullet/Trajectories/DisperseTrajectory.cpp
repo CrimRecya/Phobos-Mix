@@ -870,12 +870,7 @@ bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 		for (size_t weaponNum = 0; weaponNum < validWeapons; weaponNum++)
 		{
 			size_t curIndex = weaponNum;
-			int burstCount = 0;
-
-			if (static_cast<int>(burstSize) > this->ThisWeaponIndex)
-				burstCount = pType->WeaponBurst[this->ThisWeaponIndex];
-			else
-				burstCount = pType->WeaponBurst[burstSize - 1];
+			const auto burstCount = static_cast<int>(burstSize) > this->ThisWeaponIndex ? pType->WeaponBurst[this->ThisWeaponIndex] : pType->WeaponBurst[burstSize - 1];
 
 			if (burstCount <= 0)
 				continue;
@@ -919,16 +914,15 @@ bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 			const auto centerCoords = pType->WeaponLocation ? pBullet->Location : pBullet->TargetCoords;
 			const auto centerCell = CellClass::Coord2Cell(centerCoords);
 
-			std::vector<TechnoClass*> validTechnos;
-			std::vector<ObjectClass*> validObjects;
-			std::vector<CellClass*> validCells;
+			std::vector<AbstractClass*> validTechnos;
+			std::vector<AbstractClass*> validObjects;
+			std::vector<AbstractClass*> validCells;
 
 			const bool checkTechnos = (pWeaponExt->CanTarget & AffectedTarget::AllContents) != AffectedTarget::None;
 			const bool checkObjects = pType->WeaponMarginal;
 			const bool checkCells = (pWeaponExt->CanTarget & AffectedTarget::AllCells) != AffectedTarget::None;
 
-			const int rangeSide = pWeapon->Range >> 7;
-			const size_t initialSize = rangeSide * rangeSide;
+			const size_t initialSize = pWeapon->Range >> 7;
 
 			if (checkTechnos)
 				validTechnos.reserve(initialSize);
@@ -941,6 +935,8 @@ bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 
 			if (pType->WeaponHolistic || !this->TargetInTheAir || checkCells)
 			{
+				std::set<BuildingClass*> insertedBuilding;
+
 				for (CellSpreadEnumerator thisCell(static_cast<size_t>((static_cast<double>(pWeapon->Range) / Unsorted::LeptonsPerCell) + 0.99)); thisCell; ++thisCell)
 				{
 					if (const auto pCell = MapClass::Instance->TryGetCellAt(*thisCell + centerCell))
@@ -984,12 +980,14 @@ bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 							if (pType->WeaponTendency && pTechno == pTarget)
 								continue;
 
-							if (pTechno->WhatAmI() == AbstractType::Building)
+							const auto isBuilding = pTechno->WhatAmI() == AbstractType::Building;
+
+							if (isBuilding)
 							{
 								if (static_cast<BuildingClass*>(pTechno)->Type->InvisibleInGame)
 									continue;
 
-								if (std::find(validTechnos.begin(), validTechnos.end(), pTechno) != validTechnos.end())
+								if (insertedBuilding.contains(static_cast<BuildingClass*>(pTechno)))
 									continue;
 							}
 
@@ -1017,6 +1015,9 @@ bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 								continue;
 
 							validTechnos.push_back(pTechno);
+
+							if (isBuilding)
+								insertedBuilding.insert(static_cast<BuildingClass*>(pTechno));
 						}
 					}
 				}
@@ -1066,144 +1067,74 @@ bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 				}
 			}
 
-			int validTechnoNums = validTechnos.size();
-			int validObjectNums = validObjects.size();
-			int validCellNums = validCells.size();
+			int burstRemain = burstCount - burstNow;
 			std::vector<AbstractClass*> validTargets;
-			validTargets.reserve(burstCount);
+			validTargets.reserve(burstRemain);
+			std::vector<AbstractClass*>* vectors[3] = { &validTechnos, &validObjects, &validCells };
 
-			// TODO Simplify these codes
 			if (pType->WeaponDoRepeat)
 			{
-				if (validTechnoNums)
+				for (const auto pVector : vectors)
 				{
-					int currentCount = burstNow + validTechnoNums;
+					if (pVector->empty())
+						continue;
 
-					for (; currentCount <= burstCount; currentCount += validTechnoNums)
+					const int size = pVector->size();
+					const int base = burstRemain / size;
+					const int remainder = burstRemain % size;
+
+					if (remainder && size > 1)
 					{
-						for (int burstNum = 0; burstNum < validTechnoNums; ++burstNum)
+						for (int i = size - 1; i > 0; --i)
 						{
-							const auto pNewTarget = validTechnos[burstNum];
-							validTargets.push_back(pNewTarget);
+							const int j = ScenarioClass::Instance->Random.RandomRanged(0, i);
+
+							if (i != j)
+								std::swap((*pVector)[i], (*pVector)[j]);
 						}
 					}
 
-					for (auto burstNum = currentCount - validTechnoNums; burstNum < burstCount; ++burstNum)
+					for (int i = 0; i < size; ++i)
 					{
-						const auto randomIndex = ScenarioClass::Instance->Random.RandomRanged(0, validTechnoNums - 1);
-						const auto pNewTarget = validTechnos[randomIndex];
-						validTargets.push_back(pNewTarget);
-						std::swap(validTechnos[randomIndex], validTechnos[--validTechnoNums]);
-					}
-				}
-				else if (validObjectNums)
-				{
-					int currentCount = burstNow + validObjectNums;
+						int count = base + (i < remainder ? 1 : 0);
 
-					for (; currentCount <= burstCount; currentCount += validObjectNums)
-					{
-						for (int burstNum = 0; burstNum < validObjectNums; ++burstNum)
-						{
-							const auto pNewTarget = validObjects[burstNum];
-							validTargets.push_back(pNewTarget);
-						}
+						for (int j = 0; j < count; ++j)
+							validTargets.push_back((*pVector)[i]);
 					}
 
-					for (auto burstNum = currentCount - validObjectNums; burstNum < burstCount; ++burstNum)
-					{
-						const auto randomIndex = ScenarioClass::Instance->Random.RandomRanged(0, validObjectNums - 1);
-						const auto pNewTarget = validObjects[randomIndex];
-						validTargets.push_back(pNewTarget);
-						std::swap(validObjects[randomIndex], validObjects[--validObjectNums]);
-					}
-				}
-				else if (validCellNums)
-				{
-					int currentCount = burstNow + validCellNums;
-
-					for (; currentCount <= burstCount; currentCount += validCellNums)
-					{
-						for (int burstNum = 0; burstNum < validCellNums; ++burstNum)
-						{
-							const auto pNewTarget = validCells[burstNum];
-							validTargets.push_back(pNewTarget);
-						}
-					}
-
-					for (auto burstNum = currentCount - validCellNums; burstNum < burstCount; ++burstNum)
-					{
-						const auto randomIndex = ScenarioClass::Instance->Random.RandomRanged(0, validCellNums - 1);
-						const auto pNewTarget = validCells[randomIndex];
-						validTargets.push_back(pNewTarget);
-						std::swap(validCells[randomIndex], validCells[--validCellNums]);
-					}
+					break;
 				}
 			}
 			else
 			{
-				if (burstCount - burstNow >= validTechnoNums)
+				for (const auto pVector : vectors)
 				{
-					for (int burstNum = 0; burstNum < validTechnoNums; ++burstNum)
+					if (burstRemain <= 0)
+						break;
+
+					if (pVector->empty())
+						continue;
+
+					const int size = pVector->size();
+					const int take = Math::min(burstRemain, size);
+
+					if (take != size && size > 1)
 					{
-						const auto pNewTarget = validTechnos[burstNum];
-						validTargets.push_back(pNewTarget);
-					}
-
-					const auto currentCount1 = burstNow + validTechnoNums;
-
-					if (burstCount - currentCount1 >= validObjectNums)
-					{
-						for (int burstNum = 0; burstNum < validObjectNums; ++burstNum)
+						for (int i = size - 1; i > 0; --i)
 						{
-							const auto pNewTarget = validObjects[burstNum];
-							validTargets.push_back(pNewTarget);
-						}
+							const int j = ScenarioClass::Instance->Random.RandomRanged(0, i);
 
-						const auto currentCount2 = currentCount1 + validObjectNums;
-
-						if (burstCount - currentCount2 >= validCellNums)
-						{
-							for (int burstNum = 0; burstNum < validCellNums; ++burstNum)
-							{
-								const auto pNewTarget = validCells[burstNum];
-								validTargets.push_back(pNewTarget);
-							}
-						}
-						else
-						{
-							for (auto burstNum = currentCount2; burstNum < burstCount; ++burstNum)
-							{
-								const auto randomIndex = ScenarioClass::Instance->Random.RandomRanged(0, validCellNums - 1);
-								const auto pNewTarget = validCells[randomIndex];
-								validTargets.push_back(pNewTarget);
-								std::swap(validCells[randomIndex], validCells[--validCellNums]);
-							}
+							if (i != j)
+								std::swap((*pVector)[i], (*pVector)[j]);
 						}
 					}
-					else
-					{
-						for (auto burstNum = currentCount1; burstNum < burstCount; ++burstNum)
-						{
-							const auto randomIndex = ScenarioClass::Instance->Random.RandomRanged(0, validObjectNums - 1);
-							const auto pNewTarget = validObjects[randomIndex];
-							validTargets.push_back(pNewTarget);
-							std::swap(validObjects[randomIndex], validObjects[--validObjectNums]);
-						}
-					}
-				}
-				else
-				{
-					for (auto burstNum = burstNow; burstNum < burstCount; ++burstNum)
-					{
-						const auto randomIndex = ScenarioClass::Instance->Random.RandomRanged(0, validTechnoNums - 1);
-						const auto pNewTarget = validTechnos[randomIndex];
-						validTargets.push_back(pNewTarget);
-						std::swap(validTechnos[randomIndex], validTechnos[--validTechnoNums]);
-					}
+
+					validTargets.insert(validTargets.end(), pVector->begin(), pVector->begin() + take);
+					burstRemain -= take;
 				}
 			}
 
-			if (validTargets.empty() && pTarget)
+			if (validTargets.empty() && pTarget && burstNow != 1)
 				validTargets.push_back(pTarget);
 
 			for (const auto& pNewTarget : validTargets)
