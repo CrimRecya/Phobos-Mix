@@ -129,11 +129,13 @@ DEFINE_HOOK(0x73BE11, UnitClass_DrawAsVXL_MultiTurDrawing, 0x7)
 
 	MultiTur::pThis = nullptr;
 
+	// 仅供测试
 	if (strcmpi(MultiTur::pTypeToDraw->ID, "HCRUIS") != 0)
 		return 0;
 
 	Point2D point = centerPoint + Point2D({ 10,10 });
 
+	// 这个函数应该就是画一个vxl组件
 	pThis->Draw_A_VXL(
 		&MultiTur::pTypeToDraw->TurretVoxel,
 		hvaFrameIdx,
@@ -158,6 +160,7 @@ DEFINE_HOOK(0x73BE11, UnitClass_DrawAsVXL_MultiTurDrawing, 0x7)
 		10240,
 		0);
 
+	// 暂时先跳过原有的绘制
 	// return 0;
 	R->EDI(brightness);
 	R->ESI(flags);
