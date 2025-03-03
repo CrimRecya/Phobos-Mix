@@ -62,7 +62,9 @@ namespace MultiTur
 	Matrix3D mtx;
 }
 
-Matrix3D* PostTurretOffsetProcess(TechnoClass* pThis, Matrix3D mtx, CoordStruct* offset, double factor, Matrix3D& outBuffer)
+// 这个算得可能还是有问题
+// 抄的73BA4C往后的代码
+Matrix3D* TurMatrixCalculation(TechnoClass* pThis, Matrix3D mtx, CoordStruct* offset, double factor, Matrix3D& outBuffer)
 {
 	float x = static_cast<float>(offset->X * factor);
 	float y = static_cast<float>(offset->Y * factor);
@@ -103,13 +105,69 @@ DEFINE_HOOK(0x73BA4C, UnitClass_DrawVXL_TurretMultiOffset1, 0x0)
 	GET(TechnoTypeClass*, technoType, EBX);
 	GET(TechnoClass*, pThis, EBP);
 
-	CoordStruct crd = CoordStruct({ -50,0,0 });
-	PostTurretOffsetProcess(pThis, *mtx, &crd, 1.0, MultiTur::mtx);
+	// 也有可能这里有问题
+	CoordStruct crd = CoordStruct({ 0,0,0 });
+	TurMatrixCalculation(pThis, *mtx, &crd, 1.0, MultiTur::mtx);
 	MultiTur::pThis = pThis;
 	MultiTur::pTypeToDraw = technoType;
 	TechnoTypeExt::ApplyTurretOffset(technoType, mtx, Pixel_Per_Lepton);
 
 	return 0x73BA68;
+}
+
+DEFINE_HOOK(0x73BE11, UnitClass_DrawAsVXL_MultiTurDrawing, 0x7)
+{
+	GET(UnitClass*, pThis, EBP);
+	GET_STACK(int, flags, STACK_OFFSET(0x1C4, -0x198));
+	GET_STACK(int, brightness, STACK_OFFSET(0x1C4, 0x1C));
+	GET_STACK(Point2D, centerPoint, STACK_OFFSET(0x1C4, -0x194));
+	GET_STACK(RectangleStruct, rect, STACK_OFFSET(0x1C4, -0x164));
+	GET_STACK(int, hvaFrameIdx, STACK_OFFSET(0x1C4, -0x18C));
+
+	if (pThis != MultiTur::pThis)
+		return 0;
+
+	MultiTur::pThis = nullptr;
+
+	if (strcmpi(MultiTur::pTypeToDraw->ID, "HCRUIS") != 0)
+		return 0;
+
+	Point2D point = centerPoint + Point2D({ 10,10 });
+
+	pThis->Draw_A_VXL(
+		&MultiTur::pTypeToDraw->TurretVoxel,
+		hvaFrameIdx,
+		flags,
+		(IndexClass<int, int>*)(&MultiTur::pTypeToDraw->VoxelTurretWeaponCache),
+		&rect,
+		&centerPoint,
+		&MultiTur::mtx,
+		brightness,
+		10240,
+		0);
+
+	pThis->Draw_A_VXL(
+		&MultiTur::pTypeToDraw->TurretVoxel,
+		hvaFrameIdx,
+		flags,
+		(IndexClass<int, int>*)(&MultiTur::pTypeToDraw->VoxelTurretWeaponCache),
+		&rect,
+		&point,
+		&MultiTur::mtx,
+		brightness,
+		10240,
+		0);
+
+	// return 0;
+	R->EDI(brightness);
+	R->ESI(flags);
+	return 0x73BE55;
+}
+
+// 没有这个钩子的话只有炮塔角度变化才会画
+DEFINE_HOOK(0x73BA12, TEST, 0x6)
+{
+	return 0x73BA4C;
 }
 
 DEFINE_HOOK(0x73C890, UnitClass_DrawSHP_BarrelMultiOffset, 0x0)
@@ -153,40 +211,6 @@ DEFINE_HOOK(0x73CCE1, UnitClass_DrawSHP_TurretOffest, 0x6)
 
 	return 0;
 }
-
-DEFINE_HOOK(0x73BE11, UnitClass_DrawAsVXL_MultiTurDrawing, 0x7)
-{
-	GET(UnitClass*, pThis, EBP);
-	GET_STACK(int, flags, STACK_OFFSET(0x1C4, -0x198));
-	GET_STACK(int, brightness, STACK_OFFSET(0x1C4, 0x1C));
-	GET_STACK(Point2D, centerPoint, STACK_OFFSET(0x1C4, -0x194));
-	GET_STACK(RectangleStruct, rect, STACK_OFFSET(0x1C4, -0x164));
-	GET_STACK(int, hvaFrameIdx, STACK_OFFSET(0x1C4, -0x18C));
-
-	if (pThis != MultiTur::pThis)
-		return 0;
-
-	MultiTur::pThis = nullptr;
-
-	if (strcmpi(MultiTur::pTypeToDraw->ID, "HCRUIS") != 0)
-		return 0;
-
-	Point2D point = Point2D({ 0,0 });
-	pThis->Draw_A_VXL(
-		&MultiTur::pTypeToDraw->TurretVoxel,
-		hvaFrameIdx,
-		flags,
-		(IndexClass<int, int>*)(&MultiTur::pTypeToDraw->VoxelTurretWeaponCache),
-		&rect,
-		&point,
-		&MultiTur::mtx,
-		brightness,
-		10240,
-		0);
-
-	return 0;
-}
-
 
 #pragma endregion
 
