@@ -46,7 +46,7 @@ void AssignRallyPointCommandClass::Execute(WWKey eInput) const
 	{
 		if (const auto& pBuilding = abstract_cast<BuildingClass*>(pCurrent))
 		{
-			if (pBuilding->Owner->IsControlledByCurrentPlayer())
+			if (pBuilding->Owner->IsControlledByCurrentPlayer() && pBuilding->IsUnitFactory())
 				buildings.push_back(pBuilding);
 		}
 	}
