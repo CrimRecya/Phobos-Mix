@@ -565,6 +565,7 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 				}
 			}
 		}
+
 		if (RulesExt::Global()->CheckExtraBaseNormal)
 		{
 			const auto& vecUnits = ScenarioExt::Global()->BaseNormalTechnos;
@@ -589,9 +590,12 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 		}
 	}
 
+	if (startCell == CellStruct::Empty)
+		return CellStruct::Empty;
+
 	const auto topLeftOffset = CellStruct { static_cast<short>(pType->GetFoundationWidth() / 2), static_cast<short>(pType->GetFoundationHeight(true) / 2) };
 	const auto difference = rallyCell - startCell;
-	const auto cell = startCell + difference * (pType->Adjacent / difference.Magnitude() + 0.5) - topLeftOffset;
+	const auto cell = difference != CellStruct::Empty ? startCell + difference * ((pType->Adjacent + 2) / difference.Magnitude()) - topLeftOffset : startCell - topLeftOffset;
 
 	if (pType->PlaceAnywhere)
 		return cell;
@@ -604,7 +608,7 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 	if (pType->Adjacent < buildGap)
 		return CellStruct::Empty;
 
-	return BuildingTypeExt::NearbyPlacingLocation(pType, cell, pHouse, buildGap);
+	return BuildingTypeExt::NearbyPlacingLocation(pType, cell, pHouse, buildGap, true, true);
 }
 
 // The function that requires synchronization prohibits checking *shroud*
