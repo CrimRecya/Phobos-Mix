@@ -9,6 +9,7 @@
 #include <UnitClass.h>
 #include <Utilities/AresHelper.h>
 #include <Utilities/Macro.h>
+#include <Ext/Techno/Body.h>
 
 #include "Body.h"
 
@@ -54,123 +55,104 @@ DEFINE_HOOK(0x73B780, UnitClass_DrawVXL_TurretMultiOffset, 0x0)
 	return 0x73B790;
 }
 
-
-namespace MultiTur
+DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 {
-	TechnoClass* pThis = nullptr;
-	TechnoTypeClass* pTypeToDraw = nullptr;
-	Matrix3D mtx;
+	enum { SkipGameCode = 0x73BC26 };
+
+	GET_STACK(const bool, haveTurretCache, STACK_OFFSET(0x1C4, -0x1B3));
+	GET_STACK(const bool, haveBarrelVXL, STACK_OFFSET(0x1C4, -0x1B2));
+	GET(const bool, haveBarrelCache, EAX);
+	LEA_STACK(Matrix3D* const, pMtx_buffer1, STACK_OFFSET(0x1C4, -0x130));
+	LEA_STACK(Matrix3D* const, pMtx_turret, STACK_OFFSET(0x1C4, -0xF0));
+	LEA_STACK(Matrix3D* const, pMtx_barrel, STACK_OFFSET(0x1C4, -0x90));
+
+	if (haveTurretCache && (!haveBarrelVXL || haveBarrelCache))
+	{
+		memcpy(pMtx_turret, pMtx_buffer1, sizeof(*pMtx_turret));
+		memcpy(pMtx_barrel, pMtx_buffer1, sizeof(*pMtx_barrel));
+	}
+	else
+	{
+		GET(UnitClass* const, pThis, EBP);
+		GET(UnitTypeClass* const, pType, EBX);
+		LEA_STACK(Matrix3D* const, pMtx_buffer2, STACK_OFFSET(0x1C4, -0xC0));
+		LEA_STACK(Matrix3D* const, pMtx_buffer3, STACK_OFFSET(0x1C4, -0x60));
+		LEA_STACK(Matrix3D* const, pMtx_buffer4, STACK_OFFSET(0x1C4, -0x30));
+
+		// Turret
+		TechnoTypeExt::ApplyTurretOffset(pType, pMtx_buffer1, Pixel_Per_Lepton);
+		pMtx_buffer1->RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - pThis->PrimaryFacing.Current().GetRadian<32>()));
+		memcpy(pMtx_buffer2, pMtx_buffer1, sizeof(*pMtx_buffer2));
+		memcpy(pMtx_buffer4, &Matrix3D::VoxelDefaultMatrix, sizeof(*pMtx_buffer4));
+		memcpy(pMtx_turret, Matrix3D::MatrixMultiply(pMtx_buffer3, pMtx_buffer4, pMtx_buffer1), sizeof(*pMtx_turret));
+
+		// Barrel
+		pMtx_buffer2->Translate(-pMtx_buffer1->Row[0].W, -pMtx_buffer1->Row[1].W, -pMtx_buffer1->Row[2].W);
+		pMtx_buffer2->RotateY(static_cast<float>(-pThis->BarrelFacing.Current().GetRadian<32>()));
+		pMtx_buffer2->Translate(pMtx_buffer1->Row[0].W, pMtx_buffer1->Row[1].W, pMtx_buffer1->Row[2].W);
+		memcpy(pMtx_buffer3, &Matrix3D::VoxelDefaultMatrix, sizeof(*pMtx_buffer3));
+		memcpy(pMtx_barrel, Matrix3D::MatrixMultiply(pMtx_buffer4, pMtx_buffer3, pMtx_buffer2), sizeof(*pMtx_barrel));
+	}
+
+	return SkipGameCode;
 }
 
-// 这个算得可能还是有问题
-// 抄的73BA4C往后的代码
-Matrix3D* TurMatrixCalculation(TechnoClass* pThis, Matrix3D mtx, CoordStruct* offset, double factor, Matrix3D& outBuffer)
+DEFINE_HOOK(0x73BD79, UnitClass_DrawAsVXL_RewriteDrawSingleTurret, 0x6)
 {
-	float x = static_cast<float>(offset->X * factor);
-	float y = static_cast<float>(offset->Y * factor);
-	float z = static_cast<float>(offset->Z * factor);
-	mtx.Translate(x, y, z);
-	Vector3D<float> nHVAFrameIdx_4;
-	Vector3D<float> v111;
-	Vector3D<float> v120;
-	Matrix3D ret;
-	Matrix3D v130;
-	Matrix3D result;
-	auto a2 = ((((pThis->SecondaryFacing.Current().Raw >> 10) + 1) >> 1) & 0x1F) - 8;
-	nHVAFrameIdx_4.X = a2 * -0.1963495408493621;
-	a2 = ((((pThis->PrimaryFacing.Current().Raw >> 10) + 1) >> 1) & 0x1F) - 8;
-	auto v95 = nHVAFrameIdx_4.X - a2 * -0.1963495408493621;
-	mtx.RotateZ(v95);
-	v111.X = -mtx.Row[0].W;
-	v120.Y = mtx.Row[1].W;
-	memcpy(&ret, &mtx, sizeof(ret));
-	v120.Z = mtx.Row[2].W;
-	v111.Y = -mtx.Row[1].W;
-	v120.X = mtx.Row[0].W;
-	v111.Z = -mtx.Row[2].W;
-	nHVAFrameIdx_4 = v111;
-	mtx.Translate(nHVAFrameIdx_4);
-	a2 = ((((pThis->BarrelFacing.Current().Raw >> 10) + 1) >> 1) & 0x1F) - 8;
-	auto v96 = -(a2 * -0.1963495408493621);
-	ret.RotateY(v96);
-	ret.Translate(v120);
-	auto v31 = reinterpret_cast<Matrix3D * (__thiscall*)(Matrix3D*)>(0x754BE0)(&v130);
-	memcpy(&outBuffer, Matrix3D::MatrixMultiply(&result, v31, &mtx), sizeof(outBuffer));
-	return &outBuffer;
-}
+	enum { SkipGameCode = 0x73BEA4 };
 
-DEFINE_HOOK(0x73BA4C, UnitClass_DrawVXL_TurretMultiOffset1, 0x0)
-{
-	LEA_STACK(Matrix3D*, mtx, STACK_OFFSET(0x1D0, -0x13C));
-	GET(TechnoTypeClass*, technoType, EBX);
-	GET(TechnoClass*, pThis, EBP);
+	GET(UnitClass* const, pThis, EBP);
+	GET(UnitTypeClass* const, pType, EBX);
+	GET_STACK(const int, flags, STACK_OFFSET(0x1C4, -0x198));
+	GET_STACK(const int, brightness, STACK_OFFSET(0x1C4, 0x1C));
+	GET_STACK(const int, hvaFrameIdx, STACK_OFFSET(0x1C4, -0x18C));
+	LEA_STACK(Point2D* const, center, STACK_OFFSET(0x1C4, -0x194));
+	LEA_STACK(RectangleStruct* const, rect, STACK_OFFSET(0x1C4, -0x164));
+	LEA_STACK(Matrix3D* const, pMtx_turret, STACK_OFFSET(0x1C4, -0xF0));
+	LEA_STACK(Matrix3D* const, pMtx_barrel, STACK_OFFSET(0x1C4, -0x90));
 
-	// 也有可能这里有问题
-	CoordStruct crd = CoordStruct({ 0,0,0 });
-	TurMatrixCalculation(pThis, *mtx, &crd, 1.0, MultiTur::mtx);
-	MultiTur::pThis = pThis;
-	MultiTur::pTypeToDraw = technoType;
-	TechnoTypeExt::ApplyTurretOffset(technoType, mtx, Pixel_Per_Lepton);
+	bool notDrawBarrelYet = true;
+	const bool canDrawBarrel = pType->BarrelVoxel.VXL && pType->BarrelVoxel.HVA;
 
-	return 0x73BA68;
-}
+	// Barrel behind
+	if (canDrawBarrel) // Adjusted the inspection sequence
+	{
+		const auto dir = pThis->SecondaryFacing.Current().GetFacing<4>();
 
-DEFINE_HOOK(0x73BE11, UnitClass_DrawAsVXL_MultiTurDrawing, 0x7)
-{
-	GET(UnitClass*, pThis, EBP);
-	GET_STACK(int, flags, STACK_OFFSET(0x1C4, -0x198));
-	GET_STACK(int, brightness, STACK_OFFSET(0x1C4, 0x1C));
-	GET_STACK(Point2D, centerPoint, STACK_OFFSET(0x1C4, -0x194));
-	GET_STACK(RectangleStruct, rect, STACK_OFFSET(0x1C4, -0x164));
-	GET_STACK(int, hvaFrameIdx, STACK_OFFSET(0x1C4, -0x18C));
+		if (dir == 0 || dir == 3)
+		{
+			pThis->Draw_A_VXL(&pType->BarrelVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretBarrelCache),
+				rect, center, pMtx_barrel, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
 
-	if (pThis != MultiTur::pThis)
-		return 0;
+			notDrawBarrelYet = false;
+		}
+	}
 
-	MultiTur::pThis = nullptr;
+	// Turret
+	pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
+		rect, center, pMtx_turret, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
 
-	// 仅供测试
-	if (strcmpi(MultiTur::pTypeToDraw->ID, "HCRUIS") != 0)
-		return 0;
+	if (!strcmpi(pType->ID, "HCRUIS"))
+	{
+		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+		auto turCrd1st = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->TurretOffset.Get(), false);
+		auto turCrd2nd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->TurretOffset.Get() * -1, false);
+		auto deltaCrd = turCrd2nd - turCrd1st;
+		auto deltaCrdScreen = TacticalClass::CoordsToScreen(deltaCrd);
+		auto turScreenCrd2nd = *center + deltaCrdScreen;
 
-	Point2D point = centerPoint + Point2D({ 10,10 });
+		pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
+			rect, &turScreenCrd2nd, pMtx_turret, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+	}
 
-	// 这个函数应该就是画一个vxl组件
-	pThis->Draw_A_VXL(
-		&MultiTur::pTypeToDraw->TurretVoxel,
-		hvaFrameIdx,
-		flags,
-		(IndexClass<int, int>*)(&MultiTur::pTypeToDraw->VoxelTurretWeaponCache),
-		&rect,
-		&centerPoint,
-		&MultiTur::mtx,
-		brightness,
-		10240,
-		0);
+	// Barrel above
+	if (canDrawBarrel && notDrawBarrelYet) // Adjusted the inspection sequence
+	{
+		pThis->Draw_A_VXL(&pType->BarrelVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretBarrelCache),
+			rect, center, pMtx_barrel, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+	}
 
-	pThis->Draw_A_VXL(
-		&MultiTur::pTypeToDraw->TurretVoxel,
-		hvaFrameIdx,
-		flags,
-		(IndexClass<int, int>*)(&MultiTur::pTypeToDraw->VoxelTurretWeaponCache),
-		&rect,
-		&point,
-		&MultiTur::mtx,
-		brightness,
-		10240,
-		0);
-
-	// 暂时先跳过原有的绘制
-	// return 0;
-	R->EDI(brightness);
-	R->ESI(flags);
-	return 0x73BE55;
-}
-
-// 没有这个钩子的话只有炮塔角度变化才会画
-DEFINE_HOOK(0x73BA12, TEST, 0x6)
-{
-	return 0x73BA4C;
+	return SkipGameCode;
 }
 
 DEFINE_HOOK(0x73C890, UnitClass_DrawSHP_BarrelMultiOffset, 0x0)
