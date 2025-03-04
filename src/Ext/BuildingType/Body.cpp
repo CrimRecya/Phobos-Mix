@@ -610,31 +610,31 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 // The function that requires synchronization prohibits checking *shroud*
 CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, CellStruct cell, HouseClass* pHouse, int buildGap, bool checkAdjacent, bool checkShroud)
 {
-	std::unordered_map<CellStruct, int> checkedCells;
+	std::unordered_map<int, int> checkedCells;
 	checkedCells.reserve(29);
 
 	// Basic
-	auto canExistHere = [&checkedCells, &pType ,&pHouse](CellStruct currentCell)
+	auto canExistHere = [&](CellStruct currentCell)
 	{
 		for (auto pFoundation = pType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
 		{
 			const auto checkCell = currentCell + *pFoundation;
 
-			if (checkedCells[checkCell] & 0x10)
+			if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x10)
 				return false;
-			else if (checkedCells[checkCell] & 0x1)
+			else if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x1)
 				continue;
 
 			if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
 			{
 				if (pCell->CanThisExistHere(pType->SpeedType, pType, pHouse))
 				{
-					checkedCells[checkCell] |= 0x1;
+					checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x1;
 					continue;
 				}
 			}
 
-			checkedCells[checkCell] |= 0x10;
+			checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x10;
 			return false;
 		}
 
@@ -645,7 +645,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 	const auto width = pType->GetFoundationWidth();
 	const auto height = pType->GetFoundationHeight(true);
 
-	auto canSplitHere = [&checkedCells, &pType ,&pHouse, &buildGap, &width, &height](CellStruct currentCell)
+	auto canSplitHere = [&](CellStruct currentCell)
 	{
 		const auto maxX = currentCell.X + buildGap + width;
 		const auto maxY = currentCell.Y + buildGap + height;
@@ -658,21 +658,21 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 			{
 				const auto checkCell = CellStruct { static_cast<short>(x), static_cast<short>(y) };
 
-				if (checkedCells[checkCell] & 0x20)
+				if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x20)
 					return false;
-				else if (checkedCells[checkCell] & 0x2)
+				else if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x2)
 					continue;
 
 				if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
 				{
 					if (const auto pCellBuilding = pCell->GetBuilding())
 					{
-						checkedCells[checkCell] |= 0x20;
+						checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x20;
 						return false;
 					}
 				}
 
-				checkedCells[checkCell] |= 0x2;
+				checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x2;
 			}
 		}
 
@@ -722,14 +722,14 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 					continue;
 
 				const auto checkCell = pTechno->GetMapCoords();
-				checkedCells[checkCell] |= 0x4;
+				checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x4;
 			}
 		}
 	}
 
 	const auto range = pType->Adjacent + 1;
 
-	auto canBuildHere = [&checkedCells, &pType, &pTypeExt ,&pHouse, &range, &width, &height](CellStruct currentCell)
+	auto canBuildHere = [&](CellStruct currentCell)
 	{
 		const auto maxX = currentCell.X + range + width;
 		const auto maxY = currentCell.Y + range + height;
@@ -742,9 +742,9 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 			{
 				const auto checkCell = CellStruct { static_cast<short>(x), static_cast<short>(y) };
 
-				if (checkedCells[checkCell] & 0x4)
+				if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x4)
 					return true;
-				else if (checkedCells[checkCell] & 0x40)
+				else if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x40)
 					continue;
 
 				if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
@@ -773,7 +773,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 
 								if (pBuildingsDisallowed.empty() || !pBuildingsDisallowed.Contains(pCellBuilding->Type))
 								{
-									checkedCells[checkCell] |= 0x4;
+									checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x4;
 									return true;
 								}
 							}
@@ -781,7 +781,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 					}
 				}
 
-				checkedCells[checkCell] |= 0x40;
+				checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x40;
 			}
 		}
 
@@ -789,15 +789,15 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 	};
 
 	// Shroud 0x4A9070
-	auto canPlaceHere = [&checkedCells, &pType ,&pHouse](CellStruct currentCell)
+	auto canPlaceHere = [&](CellStruct currentCell)
 	{
 		for (auto pFoundation = pType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
 		{
 			const auto checkCell = currentCell + *pFoundation;
 
-			if (checkedCells[checkCell] & 0x80)
+			if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x80)
 				return false;
-			else if (checkedCells[checkCell] & 0x8)
+			else if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x8)
 				continue;
 
 			auto coords = CellClass::Cell2Coord(checkCell);
@@ -805,11 +805,11 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 
 			if (MapClass::Instance->IsLocationShrouded(coords))
 			{
-				checkedCells[checkCell] |= 0x80;
+				checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x80;
 				return false;
 			}
 
-			checkedCells[checkCell] |= 0x8;
+			checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x8;
 		}
 
 		return true;
