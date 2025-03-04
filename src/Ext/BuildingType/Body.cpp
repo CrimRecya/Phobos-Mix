@@ -539,6 +539,340 @@ bool BuildingTypeExt::IsSameBuildingType(BuildingTypeClass* pType1, BuildingType
 	return ((pType1->BuildCat != BuildCat::Combat) == (pType2->BuildCat != BuildCat::Combat));
 }
 
+CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, CellStruct rallyCell, HouseClass* pHouse)
+{
+	auto startCell = CellStruct::Empty;
+	{
+		auto distanceSquared = INT_MAX;
+		{
+			const auto& vecBlds = pHouse->Buildings;
+
+			if (vecBlds.Count > 0)
+			{
+				for (const auto& pBuilding : vecBlds)
+				{
+					if (pBuilding->Type->BaseNormal)
+					{
+						const auto mapCell = pBuilding->GetMapCoords();
+						const auto newDistanceSquared = static_cast<int>(mapCell.DistanceFromSquared(rallyCell));
+
+						if (newDistanceSquared < distanceSquared)
+						{
+							startCell = mapCell;
+							distanceSquared = newDistanceSquared;
+						}
+					}
+				}
+			}
+		}
+		if (RulesExt::Global()->CheckExtraBaseNormal)
+		{
+			const auto& vecUnits = ScenarioExt::Global()->BaseNormalTechnos;
+
+			if (!vecUnits.empty())
+			{
+				for (const auto& pUnitExt : vecUnits)
+				{
+					if (pHouse == pUnitExt->OwnerObject()->Owner)
+					{
+						const auto mapCell = pUnitExt->OwnerObject()->GetMapCoords();
+						const auto newDistanceSquared = static_cast<int>(mapCell.DistanceFromSquared(rallyCell));
+
+						if (newDistanceSquared < distanceSquared)
+						{
+							startCell = mapCell;
+							distanceSquared = newDistanceSquared;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	const auto topLeftOffset = CellStruct { static_cast<short>(pType->GetFoundationWidth() / 2), static_cast<short>(pType->GetFoundationHeight(true) / 2) };
+	const auto difference = rallyCell - startCell;
+	const auto cell = startCell + difference * (pType->Adjacent / difference.Magnitude() + 0.5) - topLeftOffset;
+
+	if (pType->PlaceAnywhere)
+		return cell;
+
+	auto buildGap = static_cast<short>(BuildingTypeExt::ExtMap.Find(pType)->AutoBuilding_Gap.Get());
+
+	if (pType->ProtectWithWall)
+		++buildGap;
+
+	if (pType->Adjacent < buildGap)
+		return CellStruct::Empty;
+
+	return BuildingTypeExt::NearbyPlacingLocation(pType, cell, pHouse, buildGap);
+}
+
+// The function that requires synchronization prohibits checking *shroud*
+CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, CellStruct cell, HouseClass* pHouse, int buildGap, bool checkAdjacent, bool checkShroud)
+{
+	std::unordered_map<CellStruct, int> checkedCells;
+	checkedCells.reserve(29);
+
+	// Basic
+	auto canExistHere = [&checkedCells, &pType ,&pHouse](CellStruct currentCell)
+	{
+		for (auto pFoundation = pType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+		{
+			const auto checkCell = currentCell + *pFoundation;
+
+			if (checkedCells[checkCell] & 0x10)
+				return false;
+			else if (checkedCells[checkCell] & 0x1)
+				continue;
+
+			if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
+			{
+				if (pCell->CanThisExistHere(pType->SpeedType, pType, pHouse))
+				{
+					checkedCells[checkCell] |= 0x1;
+					continue;
+				}
+			}
+
+			checkedCells[checkCell] |= 0x10;
+			return false;
+		}
+
+		return true;
+	};
+
+	// Gap
+	const auto width = pType->GetFoundationWidth();
+	const auto height = pType->GetFoundationHeight(true);
+
+	auto canSplitHere = [&checkedCells, &pType ,&pHouse, &buildGap, &width, &height](CellStruct currentCell)
+	{
+		const auto maxX = currentCell.X + buildGap + width;
+		const auto maxY = currentCell.Y + buildGap + height;
+		const auto minX = currentCell.X - buildGap;
+		const auto minY = currentCell.Y - buildGap;
+
+		for (int x = minX; x < maxX; ++x)
+		{
+			for (int y = minY; y < maxY; ++y)
+			{
+				const auto checkCell = CellStruct { static_cast<short>(x), static_cast<short>(y) };
+
+				if (checkedCells[checkCell] & 0x20)
+					return false;
+				else if (checkedCells[checkCell] & 0x2)
+					continue;
+
+				if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
+				{
+					if (const auto pCellBuilding = pCell->GetBuilding())
+					{
+						checkedCells[checkCell] |= 0x20;
+						return false;
+					}
+				}
+
+				checkedCells[checkCell] |= 0x2;
+			}
+		}
+
+		return true;
+	};
+
+	// Adjacent 0x4A8EB0
+	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+
+	if (RulesExt::Global()->CheckExtraBaseNormal)
+	{
+		const auto& baseNormalTechnos = ScenarioExt::Global()->BaseNormalTechnos;
+
+		if (baseNormalTechnos.size())
+		{
+			for (const auto& pTechnoExt : baseNormalTechnos)
+			{
+				const auto pTechno = pTechnoExt->OwnerObject();
+
+				if (!TechnoExt::IsActive(pTechno))
+					continue;
+
+				const auto pTechnoTypeExt = pTechnoExt->TypeExtData;
+				auto canBeBaseNormal = [&]()
+				{
+					const auto pOwner = pTechno->Owner;
+
+					if (pOwner == pHouse)
+						return pTechnoTypeExt->ExtraBaseNormal.Get();
+					else if (RulesClass::Instance->BuildOffAlly && pOwner->IsAlliedWith(pHouse))
+						return pTechnoTypeExt->ExtraBaseForAllyBuilding.Get();
+
+					return false;
+				};
+
+				if (!canBeBaseNormal())
+					continue;
+
+				const auto& pExtraAllowed = pTypeExt->Adjacent_AllowedExtra;
+
+				if (pExtraAllowed.size() > 0 && !pExtraAllowed.Contains(pTechnoTypeExt->OwnerObject()))
+					continue;
+
+				const auto& pExtraDisallowed = pTypeExt->Adjacent_DisallowedExtra;
+
+				if (pExtraDisallowed.size() > 0 && pExtraDisallowed.Contains(pTechnoTypeExt->OwnerObject()))
+					continue;
+
+				const auto checkCell = pTechno->GetMapCoords();
+				checkedCells[checkCell] |= 0x4;
+			}
+		}
+	}
+
+	const auto range = pType->Adjacent + 1;
+
+	auto canBuildHere = [&checkedCells, &pType, &pTypeExt ,&pHouse, &range, &width, &height](CellStruct currentCell)
+	{
+		const auto maxX = currentCell.X + range + width;
+		const auto maxY = currentCell.Y + range + height;
+		const auto minX = currentCell.X - range;
+		const auto minY = currentCell.Y - range;
+
+		for (int x = minX; x < maxX; ++x)
+		{
+			for (int y = minY; y < maxY; ++y)
+			{
+				const auto checkCell = CellStruct { static_cast<short>(x), static_cast<short>(y) };
+
+				if (checkedCells[checkCell] & 0x4)
+					return true;
+				else if (checkedCells[checkCell] & 0x40)
+					continue;
+
+				if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
+				{
+					if (const auto pCellBuilding = pCell->GetBuilding())
+					{
+						auto canBeBaseNormal = [&]()
+						{
+							const auto pOwner = pCellBuilding->Owner;
+
+							if (pOwner == pHouse)
+								return pType->BaseNormal;
+							else if (RulesClass::Instance->BuildOffAlly && pOwner->IsAlliedWith(pHouse))
+								return pType->EligibileForAllyBuilding;
+
+							return false;
+						};
+
+						if (canBeBaseNormal() && (!BuildingTypeExt::ExtMap.Find(pCellBuilding->Type)->NoBuildAreaOnBuildup || pCellBuilding->CurrentMission != Mission::Construction))
+						{
+							auto const& pBuildingsAllowed = pTypeExt->Adjacent_Allowed;
+
+							if (pBuildingsAllowed.empty() || pBuildingsAllowed.Contains(pCellBuilding->Type))
+							{
+								auto const& pBuildingsDisallowed = pTypeExt->Adjacent_Disallowed;
+
+								if (pBuildingsDisallowed.empty() || !pBuildingsDisallowed.Contains(pCellBuilding->Type))
+								{
+									checkedCells[checkCell] |= 0x4;
+									return true;
+								}
+							}
+						}
+					}
+				}
+
+				checkedCells[checkCell] |= 0x40;
+			}
+		}
+
+		return false;
+	};
+
+	// Shroud 0x4A9070
+	auto canPlaceHere = [&checkedCells, &pType ,&pHouse](CellStruct currentCell)
+	{
+		for (auto pFoundation = pType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+		{
+			const auto checkCell = currentCell + *pFoundation;
+
+			if (checkedCells[checkCell] & 0x80)
+				return false;
+			else if (checkedCells[checkCell] & 0x8)
+				continue;
+
+			auto coords = CellClass::Cell2Coord(checkCell);
+			coords.Z = MapClass::Instance->GetCellFloorHeight(coords);
+
+			if (MapClass::Instance->IsLocationShrouded(coords))
+			{
+				checkedCells[checkCell] |= 0x80;
+				return false;
+			}
+
+			checkedCells[checkCell] |= 0x8;
+		}
+
+		return true;
+	};
+
+	auto isValidCellToPlace = [&](CellStruct currentCell)
+	{
+		return canExistHere(currentCell) && (buildGap <= 0 || canSplitHere(currentCell))
+			&& (!checkAdjacent || canBuildHere(currentCell)) && (!checkShroud || canPlaceHere(currentCell));
+	};
+
+    for (int n = 1; n <= 16; ++n) // r = 16
+	{
+        int x, y;
+
+        // Right side -> downward
+        x = cell.X + n;
+
+        for (y = cell.Y - n; y <= cell.Y + n - 1; ++y)
+		{
+			const CellStruct currentCell { static_cast<short>(x), static_cast<short>(y) };
+
+			if (isValidCellToPlace(currentCell))
+				return currentCell;
+		}
+
+        // Down side -> leftward
+        y = cell.Y + n;
+
+        for (x = cell.X + n; x >= cell.X - n + 1; --x)
+		{
+			const CellStruct currentCell { static_cast<short>(x), static_cast<short>(y) };
+
+			if (isValidCellToPlace(currentCell))
+				return currentCell;
+		}
+
+        // Left side -> upward
+        x = cell.X - n;
+
+        for (y = cell.Y + n; y >= cell.Y - n + 1; --y)
+		{
+			const CellStruct currentCell { static_cast<short>(x), static_cast<short>(y) };
+
+			if (isValidCellToPlace(currentCell))
+				return currentCell;
+		}
+
+        // Up side -> rightward
+        y = cell.Y - n;
+
+        for (x = cell.X - n; x <= cell.X + n - 1; ++x)
+		{
+			const CellStruct currentCell { static_cast<short>(x), static_cast<short>(y) };
+
+			if (isValidCellToPlace(currentCell))
+				return currentCell;
+		}
+    }
+
+	return CellStruct::Empty;
+}
+
 bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 {
 	const auto pType = pBuilding->Type;
@@ -556,16 +890,6 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 
 	if (pHouse->Buildings.Count <= 0)
 		return false;
-
-	const auto foundation = pType->GetFoundationData(true);
-
-	auto canBuildHere = [&pType, &pHouse, &foundation](CellStruct cell)
-	{
-		return reinterpret_cast<bool(__thiscall*)(MapClass*, BuildingTypeClass*, int, CellStruct*, CellStruct*)>(0x4A8EB0)(MapClass::Instance(),
-			pType, pHouse->ArrayIndex, foundation, &cell) // Adjacent
-			&& reinterpret_cast<bool(__thiscall*)(MapClass*, BuildingTypeClass*, int, CellStruct*, CellStruct*)>(0x4A9070)(MapClass::Instance(),
-			pType, pHouse->ArrayIndex, foundation, &cell); // NoShroud
-	};
 
 	const auto pHouseExt = HouseExt::ExtMap.Find(pHouse);
 
@@ -611,7 +935,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 				const auto outsideCell = baseCell + *pFoundation;
 				const auto pCell = MapClass::Instance->TryGetCellAt(outsideCell);
 
-				if (pCell && pCell->CanThisExistHere(pOwnedType->SpeedType, pOwnedType, pHouse) && canBuildHere(outsideCell))
+				if (pCell && pCell->CanThisExistHere(pOwnedType->SpeedType, pOwnedType, pHouse))
 				{
 					addPlaceEvent(outsideCell);
 					return true;
@@ -623,7 +947,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 				const auto outsideCell = baseCell + *pFoundation;
 				const auto pCell = MapClass::Instance->TryGetCellAt(outsideCell);
 
-				if (pCell && pCell->CanThisExistHere(pOwnedType->SpeedType, pOwnedType, pHouse) && canBuildHere(outsideCell))
+				if (pCell && pCell->CanThisExistHere(pOwnedType->SpeedType, pOwnedType, pHouse))
 					cell = outsideCell;
 			}
 
@@ -645,7 +969,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 
 			const auto cell = getMapCell(pOwned);
 
-			if (cell == CellStruct::Empty || pOwned->CurrentMission == Mission::Selling || !canBuildHere(cell))
+			if (cell == CellStruct::Empty || pOwned->CurrentMission == Mission::Selling)
 				continue;
 
 			addPlaceEvent(cell);
@@ -654,102 +978,25 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 
 		return false;
 	}
-	else if (pType->PlaceAnywhere)
-	{
-		for (const auto& pOwned : pHouse->Buildings)
-		{
-			if (!pOwned->Type->BaseNormal)
-				continue;
-
-			const auto cell = getMapCell(pOwned);
-
-			if (cell == CellStruct::Empty || !canBuildHere(cell))
-				continue;
-
-			addPlaceEvent(cell);
-			return true;
-		}
-
-		return false;
-	}
-
-	/*
-	const auto buildGap = static_cast<short>(pTypeExt->AutoBuilding_Gap + pType->ProtectWithWall ? 1 : 0);
-	const auto doubleGap = buildGap * 2;
-	const auto width = pType->GetFoundationWidth() + doubleGap;
-	const auto height = pType->GetFoundationHeight(true) + doubleGap;
-	const auto speedType = pType->SpeedType == SpeedType::Float ? SpeedType::Float : SpeedType::Track;
-	const auto buildable = speedType != SpeedType::Float;
-
-	auto tryBuildAt = [&](DynamicVectorClass<BuildingClass*>& vector, bool baseNormal)
-	{
-		for (const auto& pBase : vector)
-		{
-			if (baseNormal && !pBase->Type->BaseNormal)
-				continue;
-
-			const auto baseCell = getMapCell(pBase);
-
-			if (baseCell == CellStruct::Empty)
-				continue;
-
-			// TODO The construction area does not actually need to be so large, the surrounding space should be able to be occupied by other things
-			// TODO It would be better if the Buildable check could be fit with ExtendedBuildingPlacing within this function.
-			// TODO Similarly, it would be better if the following Adjacent & NoShroud check could be made within this function.
-			auto cell = MapClass::Instance->NearByLocation(baseCell, speedType, -1, MovementZone::Normal, false,
-				width, height, false, false, false, false, CellStruct::Empty, false, buildable);
-
-			if (cell == CellStruct::Empty)
-				return false;
-
-			cell += CellStruct { buildGap, buildGap };
-
-			if (!canBuildHere(cell))
-				continue;
-
-			addPlaceEvent(cell);
-			return true;
-		}
-
-		return false;
-	};*/
 
 	if (pHouse->ConYards.Count > 0)
 	{
-		const auto width = static_cast<short>(pType->GetFoundationWidth() / 2);
-		const auto height = static_cast<short>(pType->GetFoundationHeight(true) / 2);
-
-		auto tryBuildAt = [&](CellStruct baseCell, unsigned int range = 5)
+		auto tryBuildAt = [&pType, &pHouse, &addPlaceEvent](CellStruct baseCell)
 		{
 			if (baseCell == CellStruct::Empty)
 				return false;
 
-			// TODO The construction area does not actually need to be so large, the surrounding space should be able to be occupied by other things
-			// TODO It would be better if the Buildable check could be fit with ExtendedBuildingPlacing within this function.
-			// TODO Similarly, it would be better if the following Adjacent & NoShroud check could be made within this function.
-			// TODO Implement the gap.
-			baseCell -= CellStruct { width, height };
-			DynamicVectorClass<CellStruct> cells;
+			const auto placeCell = SimulatePlacingAction(pType, baseCell, pHouse);
 
-			for (CellSpreadEnumerator it(range); it; ++it)
-			{
-				auto currentCell = baseCell + *it;
-
-				if (pType->CanCreateHere(currentCell, pHouse) && canBuildHere(currentCell))
-					cells.AddItem(currentCell);
-			}
-
-			int count = cells.Count;
-
-			if (!count)
+			if (placeCell == CellStruct::Empty)
 				return false;
 
-			addPlaceEvent(cells.GetItem((reinterpret_cast<unsigned int>(&cells) >> 2) % cells.Count));
+			addPlaceEvent(placeCell);
 			return true;
 		};
 
-		DynamicVectorClass<CellStruct> cells;
-		cells.Reserve(pHouse->ConYards.Count);
+		std::vector<CellStruct> rallyCells;
+		rallyCells.reserve(pHouse->ConYards.Count);
 		CellStruct primaryCell = CellStruct::Empty;
 
 		for (auto pConYard : pHouse->ConYards)
@@ -765,7 +1012,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 			if (rallyCell == CellStruct::Empty)
 				continue;
 
-			cells.AddItem(rallyCell);
+			rallyCells.push_back(rallyCell);
 
 			if (pConYard->IsPrimaryFactory)
 				primaryCell = rallyCell;
@@ -774,9 +1021,9 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 		if (tryBuildAt(primaryCell))
 			return true;
 
-		for (auto cell : cells)
+		for (auto rallyCell : rallyCells)
 		{
-			if (tryBuildAt(cell))
+			if (tryBuildAt(rallyCell))
 				return true;
 		}
 	}
