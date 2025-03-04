@@ -18,17 +18,24 @@ constexpr reference<double, 0xB1D008> const Pixel_Per_Lepton {};
 
 #pragma region FLH_Turrets
 
-void TechnoTypeExt::ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor)
+void TechnoTypeExt::ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor, int turIdx)
 {
-	TechnoTypeExt::ExtMap.Find(pType)->ApplyTurretOffset(mtx, factor);
+	TechnoTypeExt::ExtMap.Find(pType)->ApplyTurretOffset(mtx, factor, turIdx);
 }
 
 DEFINE_HOOK(0x6F3C56, TechnoClass_GetFLH_TurretMultiOffset, 0x0)
 {
 	LEA_STACK(Matrix3D*, mtx, STACK_OFFSET(0xD8, -0x90));
 	GET(TechnoTypeClass*, technoType, EDX);
+	GET(TechnoClass*, pThis, EBX);
 
-	TechnoTypeExt::ApplyTurretOffset(technoType, mtx);
+	auto turIdx = -1;
+	auto pTypeExt = TechnoTypeExt::ExtMap.Find(technoType);
+
+	if (pTypeExt->BurstPerTurret > 0)
+		turIdx = ((pThis->CurrentBurstIndex / pTypeExt->BurstPerTurret) % (pTypeExt->ExtraTurretCount + 1)) - 1;
+
+	TechnoTypeExt::ApplyTurretOffset(technoType, mtx, 1.0, turIdx);
 
 	return 0x6F3C6D;
 }
@@ -132,17 +139,25 @@ DEFINE_HOOK(0x73BD79, UnitClass_DrawAsVXL_RewriteDrawSingleTurret, 0x6)
 	pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
 		rect, center, pMtx_turret, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
 
-	if (!strcmpi(pType->ID, "HCRUIS"))
-	{
-		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-		auto turCrd1st = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->TurretOffset.Get(), false);
-		auto turCrd2nd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->TurretOffset.Get() * -1, false);
-		auto deltaCrd = turCrd2nd - turCrd1st;
-		auto deltaCrdScreen = TacticalClass::CoordsToScreen(deltaCrd);
-		auto turScreenCrd2nd = *center + deltaCrdScreen;
+	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 
-		pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
-			rect, &turScreenCrd2nd, pMtx_turret, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+	//if (strcmpi(pType->ID, "HCRUIS");
+	auto exTurCount = pTypeExt->ExtraTurretCount;
+
+	if (exTurCount > 0)
+	{
+		auto turCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->TurretOffset.Get(), false);
+
+		for (int i = 0; i != exTurCount; ++i)
+		{
+			auto turCrd2nd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->ExtraTurretOffsets[i], false);
+			auto deltaCrd = turCrd2nd - turCrd;
+			auto deltaCrdScreen = TacticalClass::CoordsToScreen(deltaCrd);
+			auto turScreenCrd2nd = *center + deltaCrdScreen;
+
+			pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
+				rect, &turScreenCrd2nd, pMtx_turret, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+		}
 	}
 
 	// Barrel above
