@@ -369,6 +369,8 @@ void BulletExt::ExtData::Serialize(T& Stm)
 		.Process(this->LaserTrails)
 		.Process(this->SnappedToTarget)
 		.Process(this->DamageNumberOffset)
+		.Process(this->LimboedLauncher)
+		.Process(this->LimboedDir)
 
 		.Process(this->Trajectory) // Keep this shit at last
 		;

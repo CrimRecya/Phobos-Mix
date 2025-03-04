@@ -1,6 +1,7 @@
 #include "Body.h"
 #include <Ext/Bullet/Body.h>
 #include <Ext/Techno/Body.h>
+#include <SpawnManagerClass.h>
 
 WeaponTypeExt::ExtContainer WeaponTypeExt::ExtMap;
 
@@ -94,6 +95,7 @@ void WeaponTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->AreaFire_Target.Read(exINI, pSection, "AreaFire.Target");
 	this->FeedbackWeapon.Read<true>(exINI, pSection, "FeedbackWeapon");
 	this->Laser_IsSingleColor.Read(exINI, pSection, "IsSingleColor");
+	this->VisualScatter.Read(exINI, pSection, "VisualScatter");
 	this->ROF_RandomDelay.Read(exINI, pSection, "ROF.RandomDelay");
 	this->ChargeTurret_Delays.Read(exINI, pSection, "ChargeTurret.Delays");
 	this->OmniFire_TurnToTarget.Read(exINI, pSection, "OmniFire.TurnToTarget");
@@ -104,6 +106,11 @@ void WeaponTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->ExtraWarheads_FullDetonation.Read(exINI, pSection, "ExtraWarheads.FullDetonation");
 	this->AmbientDamage_Warhead.Read<true>(exINI, pSection, "AmbientDamage.Warhead");
 	this->AmbientDamage_IgnoreTarget.Read(exINI, pSection, "AmbientDamage.IgnoreTarget");
+
+	// AttachEffect
+	this->AttachEffects.LoadFromINI(pINI, pSection);
+	this->AttachEffect_Enable = (this->AttachEffects.AttachTypes.size() > 0 || this->AttachEffects.RemoveTypes.size() > 0 || this->AttachEffects.RemoveGroups.size() > 0);
+
 	this->AttachEffect_RequiredTypes.Read(exINI, pSection, "AttachEffect.RequiredTypes");
 	this->AttachEffect_DisallowedTypes.Read(exINI, pSection, "AttachEffect.DisallowedTypes");
 	exINI.ParseStringList(this->AttachEffect_RequiredGroups, pSection, "AttachEffect.RequiredGroups");
@@ -114,6 +121,17 @@ void WeaponTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->AttachEffect_DisallowedMaxCounts.Read(exINI, pSection, "AttachEffect.DisallowedMaxCounts");
 	this->AttachEffect_CheckOnFirer.Read(exINI, pSection, "AttachEffect.CheckOnFirer");
 	this->AttachEffect_IgnoreFromSameSource.Read(exINI, pSection, "AttachEffect.IgnoreFromSameSource");
+	this->KeepRange.Read(exINI, pSection, "KeepRange");
+	this->KeepRange_AllowAI.Read(exINI, pSection, "KeepRange.AllowAI");
+	this->KeepRange_AllowPlayer.Read(exINI, pSection, "KeepRange.AllowPlayer");
+	this->CylinderRangefinding.Read(exINI, pSection, "CylinderRangefinding");
+	this->AttackIronCurtain.Read(exINI, pSection, "AttackIronCurtain");
+	this->Burst_NoDelay.Read(exINI, pSection, "Burst.NoDelay");
+	this->UnlimboDetonate.Read(exINI, pSection, "UnlimboDetonate");
+	this->UnlimboDetonate_Force.Read(exINI, pSection, "UnlimboDetonate.Force");
+	this->ResetGattlingValue.Read(exINI, pSection, "ResetGattlingValue");
+	this->AddtionalDamage_GattlingValue.Read(exINI, pSection, "AddtionalDamage.GattlingValue");
+	this->AddtionalDamage_GattlingValue_Mult.Read(exINI, pSection, "AddtionalDamage.GattlingValue.Mult");
 	this->KickOutPassengers.Read(exINI, pSection, "KickOutPassengers");
 
 	this->Beam_Color.Read(exINI, pSection, "Beam.Color");
@@ -146,6 +164,7 @@ void WeaponTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AreaFire_Target)
 		.Process(this->FeedbackWeapon)
 		.Process(this->Laser_IsSingleColor)
+		.Process(this->VisualScatter)
 		.Process(this->ROF_RandomDelay)
 		.Process(this->ChargeTurret_Delays)
 		.Process(this->OmniFire_TurnToTarget)
@@ -156,6 +175,8 @@ void WeaponTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->ExtraWarheads_FullDetonation)
 		.Process(this->AmbientDamage_Warhead)
 		.Process(this->AmbientDamage_IgnoreTarget)
+		.Process(this->AttachEffects)
+		.Process(this->AttachEffect_Enable)
 		.Process(this->AttachEffect_RequiredTypes)
 		.Process(this->AttachEffect_DisallowedTypes)
 		.Process(this->AttachEffect_RequiredGroups)
@@ -166,6 +187,17 @@ void WeaponTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AttachEffect_DisallowedMaxCounts)
 		.Process(this->AttachEffect_CheckOnFirer)
 		.Process(this->AttachEffect_IgnoreFromSameSource)
+		.Process(this->KeepRange)
+		.Process(this->KeepRange_AllowAI)
+		.Process(this->KeepRange_AllowPlayer)
+		.Process(this->CylinderRangefinding)
+		.Process(this->AttackIronCurtain)
+		.Process(this->Burst_NoDelay)
+		.Process(this->UnlimboDetonate)
+		.Process(this->UnlimboDetonate_Force)
+		.Process(this->ResetGattlingValue)
+		.Process(this->AddtionalDamage_GattlingValue)
+		.Process(this->AddtionalDamage_GattlingValue_Mult)
 		.Process(this->KickOutPassengers)
 		.Process(this->Beam_Color)
 		.Process(this->Beam_Duration)
@@ -297,6 +329,68 @@ int WeaponTypeExt::GetRangeWithModifiers(WeaponTypeClass* pThis, TechnoClass* pF
 	range += extraRange;
 
 	return Math::max(range, 0);
+}
+
+int WeaponTypeExt::GetTechnoKeepRange(WeaponTypeClass* pThis, TechnoClass* pFirer, bool mode)
+{
+	const auto pExt = WeaponTypeExt::ExtMap.Find(pThis);
+
+	if (!pExt || !pFirer)
+		return 0;
+
+	const auto keepRange = pExt->KeepRange.Get();
+
+	if (!keepRange)
+		return 0;
+
+	const auto absType = pFirer->WhatAmI();
+
+	if (absType != AbstractType::Infantry && absType != AbstractType::Unit)
+		return 0;
+
+	const auto pHouse = pFirer->Owner;
+
+	if (pHouse && pHouse->IsControlledByHuman())
+	{
+		if (!pExt->KeepRange_AllowPlayer)
+			return 0;
+	}
+	else if (!pExt->KeepRange_AllowAI)
+	{
+		return 0;
+	}
+
+	if (!pFirer->RearmTimer.InProgress())
+	{
+		const auto spawnManager = pFirer->SpawnManager;
+
+		if (!spawnManager || spawnManager->Status != SpawnManagerStatus::CoolDown)
+			return 0;
+
+		const auto spawnsNumber = pFirer->GetTechnoType()->SpawnsNumber;
+
+		for (int i = 0; i < spawnsNumber; i++)
+		{
+			const auto status = spawnManager->SpawnedNodes[i]->Status;
+
+			if (status == SpawnNodeStatus::TakeOff || status == SpawnNodeStatus::Returning)
+				return 0;
+		}
+	}
+
+	if (mode)
+		return (keepRange > 0) ? keepRange : 0;
+
+	if (keepRange > 0)
+		return 0;
+
+	const auto checkRange = -keepRange - 128;
+	const auto pTarget = pFirer->Target;
+
+	if (pTarget && pFirer->DistanceFrom(pTarget) >= checkRange)
+		return (checkRange > 443) ? checkRange : 443; // 1.73 * Unsorted::LeptonsPerCell
+
+	return -keepRange;
 }
 
 // =============================

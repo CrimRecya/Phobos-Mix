@@ -429,7 +429,13 @@ DEFINE_HOOK(0x4DF3BA, FootClass_UpdateAttackMove_AircraftHoldAttackMoveTarget1, 
 	if (RulesExt::Global()->ExtendedAircraftMissions && pThis->WhatAmI() == AbstractType::Aircraft)
 		return HoldTarget;
 
-	return pThis->InAuxiliarySearchRange(pThis->Target) ? HoldTarget : LoseTarget;
+	const auto inSearchRange = pThis->InAuxiliarySearchRange(pThis->Target);
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+
+	if (pTypeExt && pTypeExt->AttackMove_PursuitTarget && inSearchRange)
+		pThis->SetDestination(pThis->Target, true);
+
+	return inSearchRange ? HoldTarget : LoseTarget;
 }
 
 DEFINE_HOOK(0x4DF42A, FootClass_UpdateAttackMove_AircraftHoldAttackMoveTarget2, 0x6) // When it have MegaTarget
@@ -505,6 +511,93 @@ AbstractClass* __fastcall AircraftClass_GreatestThreat(AircraftClass* pThis, voi
 	return pThis->FootClass::GreatestThreat(threatType, pSelectCoords, onlyTargetHouseEnemy);
 }
 DEFINE_JUMP(VTABLE, 0x7E2668, GET_OFFSET(AircraftClass_GreatestThreat))
+
+#pragma endregion
+
+#pragma region AircraftScatterCell
+
+DEFINE_HOOK(0x41847E, AircraftClass_MissionAttack_ScatterCell1, 0x6)
+{
+	enum { SkipScatter = 0x4184C2, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+DEFINE_HOOK(0x4186DD, AircraftClass_MissionAttack_ScatterCell2, 0x5)
+{
+	enum { SkipScatter = 0x418720, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+DEFINE_HOOK(0x41882C, AircraftClass_MissionAttack_ScatterCell3, 0x6)
+{
+	enum { SkipScatter = 0x418870, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+DEFINE_HOOK(0x41893B, AircraftClass_MissionAttack_ScatterCell4, 0x6)
+{
+	enum { SkipScatter = 0x41897F, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+DEFINE_HOOK(0x418A4A, AircraftClass_MissionAttack_ScatterCell5, 0x6)
+{
+	enum { SkipScatter = 0x418A8E, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+DEFINE_HOOK(0x418B46, AircraftClass_MissionAttack_ScatterCell6, 0x6)
+{
+	enum { SkipScatter = 0x418B8A, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+#pragma endregion
+
+#pragma region AircraftFlight
+
+DEFINE_HOOK(0x4CDF84, FlyLocomotionClass_UpdateLoaction_FlightCrash, 0x5)
+{
+	GET(int, deltaZ, ECX);
+	GET(FootClass* const, pLinkedTo, EAX);
+
+	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType()))
+	{
+		const int crashSpeed = pTypeExt->FlightCrash;
+
+		if (crashSpeed >= 0)
+			deltaZ = crashSpeed;
+	}
+
+	R->ECX(deltaZ);
+	return 0;
+}
+
+DEFINE_HOOK(0x4CDE96, FlyLocomotionClass_UpdateLoaction_FlightClimb, 0x6)
+{
+	GET(int, deltaZ, EAX);
+	GET(const int, bridgeHeight, EBX);
+	GET(const int, technoHeight, EDI);
+	GET(FootClass* const, pLinkedTo, ECX);
+
+	auto const pType = pLinkedTo->GetTechnoType();
+
+	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType))
+	{
+		const int climbSpeed = pTypeExt->FlightClimb;
+
+		if (climbSpeed >= 0)
+			deltaZ = climbSpeed;
+	}
+
+	const int extraHeight = bridgeHeight + technoHeight + deltaZ - pType->GetFlightLevel();
+
+	if (extraHeight > 0)
+		deltaZ -= extraHeight;
+
+	R->EAX(deltaZ);
+	return 0;
+}
 
 #pragma endregion
 
