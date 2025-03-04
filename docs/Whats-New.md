@@ -327,6 +327,11 @@ New:
 - No turret unit turn to the target (by CrimRecya & TaranDahl)
 - Damage multiplier for different houses (by CrimRecya)
 - Customizable duration for electric bolts (by Starkku)
+- Extended gattling rate down logic (by CrimRecya)
+- Sell or undeploy building on impact (by CrimRecya)
+- No rearm and reload in EMP or temporal (by CrimRecya)
+- Draw visual effects for airburst weapons (by CrimRecya)
+- Technos recount current burst index when change the firing weapon (by CrimRecya)
 
 Vanilla fixes:
 - Prevent the units with locomotors that cause problems from entering the tank bunker (by TaranDahl)
@@ -503,6 +508,7 @@ New:
 - Allow customizing charge turret delays per burst on a weapon (by Starkku)
 - Unit `Speed` setting now accepts floating point values (by Starkku)
 - Extending `Power` to all TechnoTypes (by Morton)
+- Shield armor inheritance customization (by Ollerus)
 
 Vanilla fixes:
 - Allow AI to repair structures built from base nodes/trigger action 125/SW delivery in single player missions (by Trsdy)
