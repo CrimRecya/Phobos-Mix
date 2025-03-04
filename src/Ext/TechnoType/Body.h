@@ -362,6 +362,10 @@ public:
 
 		Valueable<int> Power;
 
+		Valueable<int> ExtraTurretCount;
+		Valueable<int> BurstPerTurret;
+		std::vector<CoordStruct> ExtraTurretOffsets;
+
 		struct LaserTrailDataEntry
 		{
 			ValueableIdx<LaserTrailTypeClass> idxType;
@@ -717,6 +721,10 @@ public:
 			, KeepTargetOnMove_ExtraDistance { Leptons(0) }
 
 			, Power { }
+
+			, ExtraTurretCount { 0 }
+			, ExtraTurretOffsets { }
+			, BurstPerTurret { 0 }
 		{ }
 
 		virtual ~ExtData() = default;
@@ -728,7 +736,7 @@ public:
 		virtual void LoadFromStream(PhobosStreamReader& Stm) override;
 		virtual void SaveToStream(PhobosStreamWriter& Stm) override;
 
-		void ApplyTurretOffset(Matrix3D* mtx, double factor = 1.0);
+		void ApplyTurretOffset(Matrix3D* mtx, double factor = 1.0, int turIdx = -1);
 		DirStruct GetTurretDesiredDir(DirStruct defaultDir);
 		void SetTurretLimitedDir(FootClass* pThis, DirStruct desiredDir);
 		short GetTurretLimitedRaw(short currentDirectionRaw);
@@ -756,7 +764,7 @@ public:
 
 	static constexpr double AngleToRaw = (65536.0 / 360);
 
-	static void ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor = 1.0);
+	static void ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor = 1.0, int turIdx = -1);
 	static TechnoTypeClass* GetTechnoType(ObjectTypeClass* pType);
 
 	static TechnoClass* CreateUnit(TechnoTypeClass* pType, CoordStruct location, DirType facing, DirType* secondaryFacing, HouseClass* pOwner,

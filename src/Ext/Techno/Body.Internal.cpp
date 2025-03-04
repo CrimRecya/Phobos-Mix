@@ -36,7 +36,7 @@ void TechnoExt::ObjectKilledBy(TechnoClass* pVictim, TechnoClass* pKiller)
 }
 
 // reversed from 6F3D60
-CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct pCoord, bool isOnTurret)
+CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct pCoord, bool isOnTurret, int turIdx)
 {
 	auto const pType = pThis->GetTechnoType();
 	auto const pFoot = abstract_cast<FootClass*>(pThis);
@@ -51,7 +51,7 @@ CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct pCoo
 	// Steps 2-3: turret offset and rotation
 	if (isOnTurret && pThis->HasTurret())
 	{
-		TechnoTypeExt::ApplyTurretOffset(pType, &mtx);
+		TechnoTypeExt::ApplyTurretOffset(pType, &mtx, 1.0, turIdx);
 
 		double turretRad = pThis->TurretFacing().GetRadian<32>();
 		double bodyRad = pThis->PrimaryFacing.Current().GetRadian<32>();
