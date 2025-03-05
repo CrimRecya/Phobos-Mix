@@ -593,9 +593,12 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 	if (startCell == CellStruct::Empty)
 		return CellStruct::Empty;
 
-	const auto topLeftOffset = CellStruct { static_cast<short>(pType->GetFoundationWidth() / 2), static_cast<short>(pType->GetFoundationHeight(true) / 2) };
+	const auto width = static_cast<short>(pType->GetFoundationWidth() / 2);
+	const auto height = static_cast<short>(pType->GetFoundationHeight(true) / 2);
+	const auto length = Math::max(width, height) + 2;
+	const auto topLeftOffset = CellStruct { width, height };
 	const auto difference = rallyCell - startCell;
-	const auto cell = difference != CellStruct::Empty ? startCell + difference * ((pType->Adjacent + 2) / difference.Magnitude()) - topLeftOffset : startCell - topLeftOffset;
+	const auto cell = difference != CellStruct::Empty ? startCell + difference * ((pType->Adjacent + length) / difference.Magnitude()) - topLeftOffset : startCell - topLeftOffset;
 
 	if (pType->PlaceAnywhere)
 		return cell;
@@ -615,75 +618,41 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, CellStruct cell, HouseClass* pHouse, int buildGap, bool checkAdjacent, bool checkShroud)
 {
 	std::unordered_map<int, int> checkedCells;
-	checkedCells.reserve(29);
+	checkedCells.reserve(53);
 
 	// Basic
 	auto canExistHere = [&](CellStruct currentCell)
 	{
-		for (auto pFoundation = pType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+		for (auto pFoundation = pType->GetFoundationData(true); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
 		{
 			const auto checkCell = currentCell + *pFoundation;
+			const auto cellIndex = MapClass::GetCellIndex(checkCell);
+			const auto flag = checkedCells[cellIndex];
 
-			if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x10)
+			if (flag & 0xB0)
 				return false;
-			else if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x1)
+			else if (flag & 0x1)
 				continue;
 
 			if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
 			{
 				if (pCell->CanThisExistHere(pType->SpeedType, pType, pHouse))
 				{
-					checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x1;
+					checkedCells[cellIndex] |= 0x1;
 					continue;
 				}
 			}
 
-			checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x10;
+			checkedCells[cellIndex] |= 0x10;
 			return false;
 		}
 
 		return true;
 	};
 
-	// Gap
+	// Adjacent 0x4A8EB0
 	const auto width = pType->GetFoundationWidth();
 	const auto height = pType->GetFoundationHeight(true);
-
-	auto canSplitHere = [&](CellStruct currentCell)
-	{
-		const auto maxX = currentCell.X + buildGap + width;
-		const auto maxY = currentCell.Y + buildGap + height;
-		const auto minX = currentCell.X - buildGap;
-		const auto minY = currentCell.Y - buildGap;
-
-		for (int x = minX; x < maxX; ++x)
-		{
-			for (int y = minY; y < maxY; ++y)
-			{
-				const auto checkCell = CellStruct { static_cast<short>(x), static_cast<short>(y) };
-
-				if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x20)
-					return false;
-				else if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x2)
-					continue;
-
-				if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
-				{
-					if (const auto pCellBuilding = pCell->GetBuilding())
-					{
-						checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x20;
-						return false;
-					}
-				}
-
-				checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x2;
-			}
-		}
-
-		return true;
-	};
-
-	// Adjacent 0x4A8EB0
 	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
 
 	if (RulesExt::Global()->CheckExtraBaseNormal)
@@ -725,8 +694,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 				if (pExtraDisallowed.size() > 0 && pExtraDisallowed.Contains(pTechnoTypeExt->OwnerObject()))
 					continue;
 
-				const auto checkCell = pTechno->GetMapCoords();
-				checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x4;
+				checkedCells[MapClass::GetCellIndex(pTechno->GetMapCoords())] |= 0x4;
 			}
 		}
 	}
@@ -745,10 +713,12 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 			for (int y = minY; y < maxY; ++y)
 			{
 				const auto checkCell = CellStruct { static_cast<short>(x), static_cast<short>(y) };
+				const auto cellIndex = MapClass::GetCellIndex(checkCell);
+				const auto flag = checkedCells[cellIndex];
 
-				if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x4)
+				if (flag & 0x4)
 					return true;
-				else if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x40)
+				else if (flag & 0x40)
 					continue;
 
 				if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
@@ -777,31 +747,72 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 
 								if (pBuildingsDisallowed.empty() || !pBuildingsDisallowed.Contains(pCellBuilding->Type))
 								{
-									checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x4;
+									checkedCells[cellIndex] |= 0x6;
 									return true;
 								}
 							}
 						}
+
+						checkedCells[cellIndex] |= 0x20;
 					}
 				}
 
-				checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x40;
+				checkedCells[cellIndex] |= 0x40;
 			}
 		}
 
 		return false;
 	};
 
+	// Gap
+	auto canSplitHere = [&](CellStruct currentCell)
+	{
+		const auto maxX = currentCell.X + buildGap + width;
+		const auto maxY = currentCell.Y + buildGap + height;
+		const auto minX = currentCell.X - buildGap;
+		const auto minY = currentCell.Y - buildGap;
+
+		for (int x = minX; x < maxX; ++x)
+		{
+			for (int y = minY; y < maxY; ++y)
+			{
+				const auto checkCell = CellStruct { static_cast<short>(x), static_cast<short>(y) };
+				const auto cellIndex = MapClass::GetCellIndex(checkCell);
+				const auto flag = checkedCells[cellIndex];
+
+				if (flag & 0xB0)
+					return false;
+				else if (flag & 0x2)
+					continue;
+
+				if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
+				{
+					if (pCell->GetBuilding())
+					{
+						checkedCells[cellIndex] |= 0x20;
+						return false;
+					}
+				}
+
+				checkedCells[cellIndex] |= 0x2;
+			}
+		}
+
+		return true;
+	};
+
 	// Shroud 0x4A9070
 	auto canPlaceHere = [&](CellStruct currentCell)
 	{
-		for (auto pFoundation = pType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+		for (auto pFoundation = pType->GetFoundationData(true); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
 		{
 			const auto checkCell = currentCell + *pFoundation;
+			const auto cellIndex = MapClass::GetCellIndex(checkCell);
+			const auto flag = checkedCells[cellIndex];
 
-			if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x80)
+			if (flag & 0xB0)
 				return false;
-			else if (checkedCells[MapClass::GetCellIndex(checkCell)] & 0x8)
+			else if (flag & 0x8)
 				continue;
 
 			auto coords = CellClass::Cell2Coord(checkCell);
@@ -809,11 +820,11 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 
 			if (MapClass::Instance->IsLocationShrouded(coords))
 			{
-				checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x80;
+				checkedCells[cellIndex] |= 0x80;
 				return false;
 			}
 
-			checkedCells[MapClass::GetCellIndex(checkCell)] |= 0x8;
+			checkedCells[cellIndex] |= 0x8;
 		}
 
 		return true;
@@ -821,8 +832,8 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 
 	auto isValidCellToPlace = [&](CellStruct currentCell)
 	{
-		return canExistHere(currentCell) && (buildGap <= 0 || canSplitHere(currentCell))
-			&& (!checkAdjacent || canBuildHere(currentCell)) && (!checkShroud || canPlaceHere(currentCell));
+		return canExistHere(currentCell) && (!checkAdjacent || canBuildHere(currentCell))
+			&& (buildGap <= 0 || canSplitHere(currentCell)) && (!checkShroud || canPlaceHere(currentCell));
 	};
 
     for (int n = 1; n <= 16; ++n) // r = 16
@@ -990,7 +1001,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 			if (baseCell == CellStruct::Empty)
 				return false;
 
-			const auto placeCell = SimulatePlacingAction(pType, baseCell, pHouse);
+			const auto placeCell = BuildingTypeExt::SimulatePlacingAction(pType, baseCell, pHouse);
 
 			if (placeCell == CellStruct::Empty)
 				return false;
