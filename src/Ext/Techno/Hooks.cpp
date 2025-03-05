@@ -672,7 +672,7 @@ DEFINE_HOOK(0x51BDCF, InfantryClass_Update_Reload, 0x7)
 		pThis->Reload();
 	}
 
-	return 0;
+	return 0x51BDD6;
 }
 
 #pragma endregion
