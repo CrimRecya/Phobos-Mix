@@ -27,7 +27,7 @@ void TechnoTypeExt::ExtData::Initialize()
 void TechnoTypeExt::ExtData::ApplyTurretOffset(Matrix3D* mtx, double factor, int turIdx)
 {
 	// Does not verify if the offset actually has all values parsed as it makes no difference, it will be 0 for the unparsed ones either way.
-	auto offset = turIdx < 0 ? (CoordStruct*)this->TurretOffset.GetEx() : &this->ExtraTurretOffsets[turIdx];
+	auto offset = turIdx < 0 ? static_cast<CoordStruct*>(this->TurretOffset.GetEx()) : &this->ExtraTurretOffsets[turIdx];
 	float x = static_cast<float>(offset->X * factor);
 	float y = static_cast<float>(offset->Y * factor);
 	float z = static_cast<float>(offset->Z * factor);
@@ -921,18 +921,18 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	}
 
 	// Extra turret offsets
-	this->ExtraTurretCount.Read(exArtINI, pSection, "ExtraTurretCount");
+	this->ExtraTurretCount.Read(exArtINI, pArtSection, "ExtraTurretCount");
 
 	if (this->ExtraTurretCount > 0)
 	{
-		for (int i = 0; i != this->ExtraTurretCount; ++i)
+		for (int i = 0; i < this->ExtraTurretCount; ++i)
 		{
 			Valueable<CoordStruct> extraTurretOffset;
 			_snprintf_s(tempBuffer, sizeof(tempBuffer), "ExtraTurretOffset%u", i);
-			extraTurretOffset.Read(exArtINI, pSection, tempBuffer);
+			extraTurretOffset.Read(exArtINI, pArtSection, tempBuffer);
 			this->ExtraTurretOffsets.push_back(extraTurretOffset);
 		}
-		this->BurstPerTurret.Read(exArtINI, pSection, "BurstPerTurret");
+		this->BurstPerTurret.Read(exArtINI, pArtSection, "BurstPerTurret");
 	}
 
 	// Parasitic types
@@ -1323,8 +1323,10 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->KeepTargetOnMove_ExtraDistance)
 
 		.Process(this->Power)
+
 		.Process(this->ExtraTurretCount)
 		.Process(this->ExtraTurretOffsets)
+		.Process(this->BurstPerTurret)
 		;
 }
 void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)

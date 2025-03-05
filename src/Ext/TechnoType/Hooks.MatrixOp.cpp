@@ -139,21 +139,15 @@ DEFINE_HOOK(0x73BD79, UnitClass_DrawAsVXL_RewriteDrawSingleTurret, 0x6)
 	pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
 		rect, center, pMtx_turret, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
 
-	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-
-	//if (strcmpi(pType->ID, "HCRUIS");
-	auto exTurCount = pTypeExt->ExtraTurretCount;
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	const auto exTurCount = pTypeExt->ExtraTurretCount.Get();
 
 	if (exTurCount > 0)
 	{
-		auto turCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->TurretOffset.Get(), false);
-
-		for (int i = 0; i != exTurCount; ++i)
+		for (int i = 0; i < exTurCount; ++i)
 		{
-			auto turCrd2nd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->ExtraTurretOffsets[i], false);
-			auto deltaCrd = turCrd2nd - turCrd;
-			auto deltaCrdScreen = TacticalClass::CoordsToScreen(deltaCrd);
-			auto turScreenCrd2nd = *center + deltaCrdScreen;
+			const auto deltaCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->ExtraTurretOffsets[i] - pTypeExt->TurretOffset.Get(), false);
+			auto turScreenCrd2nd = *center + TacticalClass::CoordsToScreen(deltaCrd);
 
 			pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
 				rect, &turScreenCrd2nd, pMtx_turret, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);

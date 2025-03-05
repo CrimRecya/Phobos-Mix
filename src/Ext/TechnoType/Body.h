@@ -363,8 +363,8 @@ public:
 		Valueable<int> Power;
 
 		Valueable<int> ExtraTurretCount;
-		Valueable<int> BurstPerTurret;
 		std::vector<CoordStruct> ExtraTurretOffsets;
+		Valueable<int> BurstPerTurret;
 
 		struct LaserTrailDataEntry
 		{
