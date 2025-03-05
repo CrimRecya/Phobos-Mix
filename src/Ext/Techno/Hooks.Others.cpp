@@ -844,7 +844,7 @@ DEFINE_HOOK(0x6B77B4, SpawnManagerClass_Update_RecycleSpawned, 0x7)
 
 	auto shouldRecycleSpawned = [&]()
 	{
-		const auto FLH = pCarrierTypeExt->Spawner_RecycleFLH.Get();
+		const auto& FLH = pCarrierTypeExt->Spawner_RecycleFLH.Get();
 		const auto recycleCrd = FLH != CoordStruct::Empty
 			? TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret)
 			: pCarrier->GetCoords();
