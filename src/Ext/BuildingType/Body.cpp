@@ -739,9 +739,9 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 							const auto pOwner = pCellBuilding->Owner;
 
 							if (pOwner == pHouse)
-								return pType->BaseNormal;
+								return pCellBuilding->Type->BaseNormal;
 							else if (RulesClass::Instance->BuildOffAlly && pOwner->IsAlliedWith(pHouse))
-								return pType->EligibileForAllyBuilding;
+								return pCellBuilding->Type->EligibileForAllyBuilding;
 
 							return false;
 						};
