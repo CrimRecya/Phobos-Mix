@@ -657,3 +657,22 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 }
 
 #pragma endregion
+
+
+#pragma region Reload
+
+DEFINE_HOOK(0x51BDCF, InfantryClass_Update_Reload, 0x7)
+{
+	GET(InfantryClass*, pThis, ESI);
+
+	R->EAX(pThis->InWhichLayer());
+
+	if (RulesExt::Global()->InTransportInfantryAmmoFix && AresHelper::CanUseAres && pThis->InLimbo)
+	{
+		pThis->Reload();
+	}
+
+	return 0;
+}
+
+#pragma endregion
