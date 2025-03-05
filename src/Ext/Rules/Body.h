@@ -199,7 +199,7 @@ public:
 
 		Valueable<bool> UpdateInLimbo_Occupier;
 		Valueable<bool> UpdateInLimbo_NormalPassenger;
-		Valueable<bool> UpdateInLimbo_Parasite;
+		Valueable<bool> UpdateInLimbo_LimboLaunch;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -350,7 +350,7 @@ public:
 			, InTransportInfantryAmmoFix { false }
 			, UpdateInLimbo_Occupier { false }
 			, UpdateInLimbo_NormalPassenger { false }
-			, UpdateInLimbo_Parasite { false }
+			, UpdateInLimbo_LimboLaunch { false }
 		{ }
 
 		virtual ~ExtData() = default;
