@@ -244,14 +244,6 @@ DEFINE_HOOK(0x4438B4, BuildingClass_SetRallyPoint_Naval, 0x6)
 	return NotNaval;
 }
 
-DEFINE_HOOK(0x6DAAB2, TacticalClass_DrawRallyPointLines_NoUndeployBlyat, 0x6)
-{
-	GET(BuildingClass*, pBld, EDI);
-	if (pBld->ArchiveTarget && pBld->CurrentMission != Mission::Selling)
-		return 0x6DAAC0;
-	return 0x6DAD45;
-}
-
 // bugfix: DeathWeapon not properly detonates
 // Author: Uranusian
 DEFINE_HOOK(0x70D77F, TechnoClass_FireDeathWeapon_ProjectileFix, 0x8)
@@ -968,6 +960,55 @@ DEFINE_HOOK(0x5B11DD, MechLocomotionClass_ProcessMoving_SlowdownDistance, 0x9)
 	return distance >= pLinkedTo->GetCurrentSpeed() ? KeepMoving : CloseEnough;
 }
 
+// Jumpjet infantry will no longer acts stupid when assigned a attack mission.
+DEFINE_HOOK(0x51AB5C, InfantryClass_SetDestination_JJInfFix, 0x6)
+{
+	enum { FuncRet = 0x51B1D7 };
+
+	GET(InfantryClass* const, pThis, EBP);
+	GET(AbstractClass* const, pDest, EBX);
+
+	auto pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor);
+
+	if (pThis->Type->BalloonHover && !pDest && pThis->Destination && pJumpjetLoco && pThis->Target)
+	{
+		if (pThis->IsCloseEnoughToAttack(pThis->Target))
+		{
+			auto crd = pThis->GetCoords();
+			pJumpjetLoco->DestinationCoords.X = crd.X;
+			pJumpjetLoco->DestinationCoords.Y = crd.Y;
+			pJumpjetLoco->CurrentSpeed = 0;
+			pJumpjetLoco->MaxSpeed = 0;
+			pThis->AbortMotion();
+		}
+
+		pThis->ForceMission(Mission::Attack);
+		return FuncRet;
+	}
+
+	return 0;
+}
+
+// For vehicles. If in range, then stop.
+DEFINE_HOOK(0x741A66, UnitClass_SetDestination_JJVehFix, 0x5)
+{
+	GET(UnitClass* const, pThis, EBP);
+
+	auto pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor);
+
+	if (pThis->IsCloseEnough(pThis->Target, pThis->SelectWeapon(pThis->Target)) && pJumpjetLoco)
+	{
+		auto crd = pThis->GetCoords();
+		pJumpjetLoco->DestinationCoords.X = crd.X;
+		pJumpjetLoco->DestinationCoords.Y = crd.Y;
+		pJumpjetLoco->CurrentSpeed = 0;
+		pJumpjetLoco->MaxSpeed = 0;
+		pThis->AbortMotion();
+	}
+
+	return 0;
+}
+
 DEFINE_JUMP(LJMP, 0x517FF5, 0x518016); // Warhead with InfDeath=9 versus infantry in air
 
 // Fixes docks not repairing docked aircraft unless they enter the dock first e.g just built ones.
@@ -1104,6 +1145,30 @@ DEFINE_HOOK(0x71872C, TeleportLocomotionClass_MakeRoom_OccupationFix, 0x9)
 
 #pragma endregion
 
+#pragma region AmphibiousHarvester
+
+DEFINE_HOOK(0x73ED66, UnitClass_Mission_Harvest_PathfindingFix, 0x5)
+{
+	GET(UnitClass*, pThis, EBP);
+
+	const auto pType = pThis->Type;
+
+	if (!pType->Teleporter)
+	{
+		REF_STACK(SpeedType, speedType, STACK_OFFSET(0xA0, -0x98));
+		REF_STACK(int, currentZoneType, STACK_OFFSET(0xA0, -0x94));
+		REF_STACK(MovementZone, movementZone, STACK_OFFSET(0xA0, -0x90));
+
+		speedType = pType->SpeedType;
+		movementZone = pType->MovementZone;
+		currentZoneType = MapClass::Instance->GetMovementZoneType(pThis->GetMapCoords(), movementZone, pThis->OnBridge);
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
 #pragma region StopEventFix
 
 DEFINE_HOOK(0x4C75DA, EventClass_RespondToEvent_Stop, 0x6)
@@ -1216,6 +1281,15 @@ DEFINE_HOOK(0x719F17, EndPiggyback_PowerOn, 0x5) // Teleport
 	return 0;
 }
 
+// Fix the bug that Bombers can't get EXP if they cloak before the missiles hit the target.
+// Add checks for bRemoved.
+DEFINE_HOOK(0x7077FD, TechnoClass_PointerExpired_SpawnOwnerFix, 0x6)
+{
+	GET_STACK(bool, removed, STACK_OFFSET(0x20, 0x8));
+	// Skip the reset for SpawnOwner if !removed.
+	return removed ? 0 : 0x707803;
+}
+
 // Suppress Ares' swizzle warning
 size_t __fastcall HexStr2Int_replacement(const char* str)
 {
@@ -1224,6 +1298,17 @@ size_t __fastcall HexStr2Int_replacement(const char* str)
 }
 DEFINE_JUMP(CALL, 0x6E8305, GET_OFFSET(HexStr2Int_replacement)); // TaskForce
 DEFINE_JUMP(CALL, 0x6E5FA6, GET_OFFSET(HexStr2Int_replacement)); // TagType
+
+// In theory, a projectile with Inviso=yes should detonate at the center of the target the next frame after firing, assuming it is not intercepted.
+// In fact, when the target is moving at high speed, the projectile may have to delay multiple frames to hit, or even fail and hit the ground.
+// I didn't study the specific reasons for this, but this hook does solve the problem.
+// Netsu_Negi told me this method, and I verified it.
+DEFINE_HOOK(0x467C1C, BulletClass_Update_InvisoLatencyFix, 0x6)
+{
+	GET(BulletTypeClass*, pType, EAX);
+	R->CL(RulesExt::Global()->InvisoLatencyFix ? (pType->Inviso || pType->Ranged) : pType->Ranged);
+	return 0x467C22;
+}
 
 #pragma region Sensors
 
@@ -1315,3 +1400,78 @@ DEFINE_HOOK(0x54D06F, JumpjetLocomotionClass_ProcessCrashing_RemoveSensors, 0x5)
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x688F8C, ScenarioClass_ScanPlaceUnit_CheckMovement, 0x5)
+{
+	enum { NotUsableArea = 0x688FB9 };
+
+	GET(TechnoClass*, pTechno, EBX);
+	LEA_STACK(CoordStruct*, pCoords, STACK_OFFSET(0x6C, -0x30));
+
+	if (pTechno->WhatAmI() == BuildingClass::AbsID)
+		return 0;
+
+	const auto pCell = MapClass::Instance->GetCellAt(*pCoords);
+	const auto pTechnoType = pTechno->GetTechnoType();
+
+	return pCell->IsClearToMove(pTechnoType->SpeedType, false, false, -1, pTechnoType->MovementZone, -1, 1) ? 0 : NotUsableArea;
+}
+
+DEFINE_HOOK(0x68927B, ScenarioClass_ScanPlaceUnit_CheckMovement2, 0x5)
+{
+	enum { NotUsableArea = 0x689295 };
+
+	GET(TechnoClass*, pTechno, EDI);
+	LEA_STACK(CoordStruct*, pCoords, STACK_OFFSET(0x6C, -0xC));
+
+	if (pTechno->WhatAmI() == BuildingClass::AbsID)
+		return 0;
+
+	const auto pCell = MapClass::Instance->GetCellAt(*pCoords);
+	const auto pTechnoType = pTechno->GetTechnoType();
+
+	return pCell->IsClearToMove(pTechnoType->SpeedType, false, false, -1, pTechnoType->MovementZone, -1, 1) ? 0 : NotUsableArea;
+}
+
+DEFINE_HOOK(0x446BF4, BuildingClass_Place_FreeUnit_NearByLocation, 0x6)
+{
+	enum { SkipGameCode = 0x446CD2 };
+
+	GET(BuildingClass*, pThis, EBP);
+	GET(UnitClass*, pFreeUnit, EDI);
+	LEA_STACK(CellStruct*, outBuffer, STACK_OFFSET(0x68, -0x4C));
+	const auto mapCoords = CellClass::Coord2Cell(pThis->Location);
+	const auto movementZone = pFreeUnit->Type->MovementZone;
+	const auto currentZone = MapClass::Instance->GetMovementZoneType(mapCoords, movementZone, false);
+
+	R->EAX(MapClass::Instance->NearByLocation(*outBuffer, mapCoords, pFreeUnit->Type->SpeedType, currentZone, movementZone, false, 1, 1, true, true, false, false, CellStruct::Empty, false, false));
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x446D42, BuildingClass_Place_FreeUnit_NearByLocation2, 0x6)
+{
+	enum { SkipGameCode = 0x446E15 };
+
+	GET(BuildingClass*, pThis, EBP);
+	GET(UnitClass*, pFreeUnit, EDI);
+	LEA_STACK(CellStruct*, outBuffer, STACK_OFFSET(0x68, -0x4C));
+	const auto mapCoords = CellClass::Coord2Cell(pThis->Location);
+	const auto movementZone = pFreeUnit->Type->MovementZone;
+	const auto currentZone = MapClass::Instance->GetMovementZoneType(mapCoords, movementZone, false);
+
+	R->EAX(MapClass::Instance->NearByLocation(*outBuffer, mapCoords, pFreeUnit->Type->SpeedType, currentZone, movementZone, false, 1, 1, false, true, false, false, CellStruct::Empty, false, false));
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x449462, BuildingClass_IsCellOccupied_UndeploysInto, 0x6)
+{
+	enum { SkipGameCode = 0x449487 };
+
+	GET(BuildingTypeClass*, pType, EAX);
+	LEA_STACK(CellStruct*, pDest, 0x4);
+	const auto pCell = MapClass::Instance->GetCellAt(*pDest);
+	const auto pUndeploysInto = pType->UndeploysInto;
+
+	R->AL(pCell->IsClearToMove(pUndeploysInto->SpeedType, false, false, -1, pUndeploysInto->MovementZone, -1, 1));
+	return SkipGameCode;
+}

@@ -24,8 +24,15 @@ public:
 	static bool(__stdcall* ConvertTypeTo)(TechnoClass* pFoot, TechnoTypeClass* pConvertTo);
 
 	static void(__stdcall* SpawnSurvivors)(FootClass* pThis, TechnoClass* pKiller, bool Select, bool IgnoreDefenses);
+
+	static int(__thiscall* RequirementsMet)(void* pAresHouseExt, TechnoTypeClass* pType);
+
+	static bool(__thiscall* IsTargetConstraintsEligible)(void*, HouseClass*, bool);
+
 	static std::function<AresSWTypeExtData* (SuperWeaponTypeClass*)> SWTypeExtMap_Find;
+
 private:
+
 	static constexpr bool _maybe = false;
 
 	static constexpr bool AresWasWrongAboutSpawnSurvivors = _maybe;
