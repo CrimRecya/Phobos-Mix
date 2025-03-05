@@ -190,6 +190,9 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Prevent the units with locomotors that cause problems from entering the tank bunker.
 - Fix an issue where a unit will leave an impassable invisible barrier in its original position when it is teleported by ChronoSphere onto an uncrushable unit and self destruct.
 - Fix the bug that destroyed unit may leaves sensors.
+- `FreeUnit` uses the unit's own `SpeedType` to find the spawn location.
+- The bug where naval ships as StartUnit might spawn on land has been fixed.
+- When a building undeploy, it will normally use the target VehicleType's pathfinding method to decide whether it can move to the target cell.
 - Fix an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface.
 - Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles.
 - Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory.
