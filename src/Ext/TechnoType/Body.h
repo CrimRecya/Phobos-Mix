@@ -256,6 +256,9 @@ public:
 
 		Valueable<int> Power;
 
+		Valueable<TechnoTypeClass*> WreckageType;
+		Nullable<double> WreckageInitialHealthPercent;
+
 		struct LaserTrailDataEntry
 		{
 			ValueableIdx<LaserTrailTypeClass> idxType;
@@ -504,6 +507,9 @@ public:
 			, KeepTargetOnMove_ExtraDistance { Leptons(0) }
 
 			, Power { }
+
+			, WreckageType { nullptr }
+			, WreckageInitialHealthPercent { }
 		{ }
 
 		virtual ~ExtData() = default;
