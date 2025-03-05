@@ -193,7 +193,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - `FreeUnit` uses the unit's own `SpeedType` to find the spawn location.
 - The bug where naval ships as StartUnit might spawn on land has been fixed.
 - When a building undeploy, it will normally use the target VehicleType's pathfinding method to decide whether it can move to the target cell.
-- Fix an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface.
+- Fix an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface. Units with `Teleporter=true` are not affected, as they can be used as long as set the refinery’s `Naval` to false.
 - Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles.
 - Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory.
 
