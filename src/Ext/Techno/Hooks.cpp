@@ -676,3 +676,53 @@ DEFINE_HOOK(0x51BDCF, InfantryClass_Update_Reload, 0x7)
 }
 
 #pragma endregion
+
+
+#pragma region UpdateInLimbo
+
+DEFINE_HOOK(0x522937, InfantryClass_EnterOccupyBuilding_KeepUpdate, 0xA)
+{
+	GET(InfantryClass*, pThis, ESI);
+
+	if (RulesExt::Global()->UpdateInLimbo_Occupier)
+		LogicClass::Instance->AddObject(pThis, false);
+
+	return 0;
+}
+
+DEFINE_HOOK(0x4733B6, PassengerClass_AddPassenger_KeepUpdate, 0x5)
+{
+	GET(InfantryClass*, pThis, ESI);
+
+	if (RulesExt::Global()->UpdateInLimbo_NormalPassenger)
+		LogicClass::Instance->AddObject(pThis, false);
+
+	return 0;
+}
+
+DEFINE_HOOK(0x4DB87E, FootClass_SetLocation_UpdatePassengerLocation, 0x6)
+{
+	return RulesExt::Global()->UpdateInLimbo_NormalPassenger ? 0x4DB888 : 0;
+}
+
+DEFINE_HOOK(0x62A0A0, ParasiteClass_Update_UpdateParasiteLocation, 0x7)
+{
+	GET(ParasiteClass*, pThis, ESI);
+
+	if (RulesExt::Global()->UpdateInLimbo_LimboLaunch)
+		pThis->Owner->SetLocation(pThis->Victim->Location);
+
+	return 0;
+}
+
+DEFINE_HOOK(0x6FF7F9, SITechnoClass_Fire_LimboLaunch, 0x6)
+{
+	GET(TechnoClass*, pThis, ESI);
+
+	if (RulesExt::Global()->UpdateInLimbo_LimboLaunch)
+		LogicClass::Instance->AddObject(pThis, false);
+
+	return 0;
+}
+
+#pragma

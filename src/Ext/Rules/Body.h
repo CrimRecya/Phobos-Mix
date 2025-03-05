@@ -197,6 +197,10 @@ public:
 
 		Valueable<bool> InTransportInfantryAmmoFix;
 
+		Valueable<bool> UpdateInLimbo_Occupier;
+		Valueable<bool> UpdateInLimbo_NormalPassenger;
+		Valueable<bool> UpdateInLimbo_Parasite;
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, InfantryGainSelfHealCap {}
@@ -343,7 +347,10 @@ public:
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
-			, InTransportInfantryAmmoFix { true }
+			, InTransportInfantryAmmoFix { false }
+			, UpdateInLimbo_Occupier { false }
+			, UpdateInLimbo_NormalPassenger { false }
+			, UpdateInLimbo_Parasite { false }
 		{ }
 
 		virtual ~ExtData() = default;
