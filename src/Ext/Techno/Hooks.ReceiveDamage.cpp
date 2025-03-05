@@ -343,3 +343,26 @@ DEFINE_HOOK(0x701E18, TechnoClass_ReceiveDamage_ReflectDamage, 0x7)
 
 	return 0;
 }
+
+
+#pragma region Wreckage
+
+DEFINE_HOOK(0x73847B, UnitClass_ReceiveDamage_Wreckage, 0xA)
+{
+	GET(UnitClass*, pThis, ESI);
+
+	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type);
+
+	if (auto pWreckageType = pTypeExt->WreckageType)
+	{
+		TechnoExt::ConvertToType(pThis, pWreckageType);
+	}
+	else
+	{
+		pThis->UnInit();
+	}
+
+	return R->Origin() + 0xA;
+}
+
+#pragma endregion
