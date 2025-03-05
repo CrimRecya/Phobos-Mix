@@ -542,6 +542,7 @@ bool BuildingTypeExt::IsSameBuildingType(BuildingTypeClass* pType1, BuildingType
 CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, CellStruct rallyCell, HouseClass* pHouse)
 {
 	auto startCell = CellStruct::Empty;
+	auto extraOffset = 0;
 	{
 		auto distanceSquared = INT_MAX;
 		{
@@ -551,7 +552,9 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 			{
 				for (const auto& pBuilding : vecBlds)
 				{
-					if (pBuilding->Type->BaseNormal)
+					const auto pBaseType = pBuilding->Type;
+
+					if (pBaseType->BaseNormal)
 					{
 						const auto mapCell = pBuilding->GetMapCoords();
 						const auto newDistanceSquared = static_cast<int>(mapCell.DistanceFromSquared(rallyCell));
@@ -559,6 +562,7 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 						if (newDistanceSquared < distanceSquared)
 						{
 							startCell = mapCell;
+							extraOffset = Math::max(pBaseType->GetFoundationWidth() / 2, pBaseType->GetFoundationHeight(true) / 2);
 							distanceSquared = newDistanceSquared;
 						}
 					}
@@ -574,14 +578,17 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 			{
 				for (const auto& pUnitExt : vecUnits)
 				{
-					if (pHouse == pUnitExt->OwnerObject()->Owner)
+					const auto pBase = pUnitExt->OwnerObject();
+
+					if (pHouse == pBase->Owner)
 					{
-						const auto mapCell = pUnitExt->OwnerObject()->GetMapCoords();
+						const auto mapCell = pBase->GetMapCoords();
 						const auto newDistanceSquared = static_cast<int>(mapCell.DistanceFromSquared(rallyCell));
 
 						if (newDistanceSquared < distanceSquared)
 						{
 							startCell = mapCell;
+							extraOffset = 0;
 							distanceSquared = newDistanceSquared;
 						}
 					}
@@ -595,13 +602,12 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 
 	const auto width = static_cast<short>(pType->GetFoundationWidth() / 2);
 	const auto height = static_cast<short>(pType->GetFoundationHeight(true) / 2);
-	const auto length = Math::max(width, height) + 2;
 	const auto topLeftOffset = CellStruct { width, height };
 	const auto difference = rallyCell - startCell;
-	const auto cell = difference != CellStruct::Empty ? startCell + difference * ((pType->Adjacent + length) / difference.Magnitude()) - topLeftOffset : startCell - topLeftOffset;
+	auto cell = startCell - topLeftOffset;
 
-	if (pType->PlaceAnywhere)
-		return cell;
+	if (difference != CellStruct::Empty)
+		cell += difference * Math::min((pType->Adjacent + Math::max(width, height) + extraOffset + 1) / Math::max(std::abs(difference.X), std::abs(difference.Y)), 1.0);
 
 	auto buildGap = static_cast<short>(BuildingTypeExt::ExtMap.Find(pType)->AutoBuilding_Gap.Get());
 
@@ -623,6 +629,9 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 	// Basic
 	auto canExistHere = [&](CellStruct currentCell)
 	{
+		if (pType->PlaceAnywhere)
+			return true;
+
 		for (auto pFoundation = pType->GetFoundationData(true); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
 		{
 			const auto checkCell = currentCell + *pFoundation;
