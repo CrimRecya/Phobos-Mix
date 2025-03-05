@@ -299,6 +299,12 @@ public:
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
+		Valueable<bool> InTransportInfantryAmmoFix;
+
+		Valueable<bool> UpdateInLimbo_Occupier;
+		Valueable<bool> UpdateInLimbo_NormalPassenger;
+		Valueable<bool> UpdateInLimbo_LimboLaunch;
+
 		Valueable<bool> InvisoLatencyFix;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
@@ -547,6 +553,10 @@ public:
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
+			, InTransportInfantryAmmoFix { false }
+			, UpdateInLimbo_Occupier { false }
+			, UpdateInLimbo_NormalPassenger { false }
+			, UpdateInLimbo_LimboLaunch { false }
 			, InvisoLatencyFix { false }
 		{ }
 
