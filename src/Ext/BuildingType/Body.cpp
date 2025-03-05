@@ -541,9 +541,12 @@ bool BuildingTypeExt::IsSameBuildingType(BuildingTypeClass* pType1, BuildingType
 
 CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, CellStruct rallyCell, HouseClass* pHouse)
 {
+	if (pType->Adjacent <= 0)
+		return CellStruct::Empty;
+
 	// First, find the nearest base normal building of your own
 	auto startCell = CellStruct::Empty;
-	auto extraOffset = 0;
+	auto extraOffset = CellStruct::Empty;
 	{
 		auto distanceSquared = INT_MAX;
 		{
@@ -557,13 +560,13 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 
 					if (pBaseType->BaseNormal)
 					{
-						const auto mapCell = pBuilding->GetMapCoords();
+						const auto mapCell = CellClass::Coord2Cell(pBuilding->GetCoords());
 						const auto newDistanceSquared = static_cast<int>(mapCell.DistanceFromSquared(rallyCell));
 
 						if (newDistanceSquared < distanceSquared)
 						{
 							startCell = mapCell;
-							extraOffset = Math::max(pBaseType->GetFoundationWidth() / 2, pBaseType->GetFoundationHeight(true) / 2);
+							extraOffset = CellStruct { pBaseType->GetFoundationWidth(), pBaseType->GetFoundationHeight(true) };
 							distanceSquared = newDistanceSquared;
 						}
 					}
@@ -589,7 +592,7 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 						if (newDistanceSquared < distanceSquared)
 						{
 							startCell = mapCell;
-							extraOffset = 0;
+							extraOffset = CellStruct { 1, 1 };
 							distanceSquared = newDistanceSquared;
 						}
 					}
@@ -602,17 +605,27 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 		return CellStruct::Empty;
 
 	// Calculate the nearest expandable cell to the rally point
-	const auto width = static_cast<short>(pType->GetFoundationWidth() / 2);
-	const auto height = static_cast<short>(pType->GetFoundationHeight(true) / 2);
-	const auto topLeftOffset = CellStruct { width, height };
+	const auto foundation = CellStruct { pType->GetFoundationWidth(), pType->GetFoundationHeight(true) };
+	const auto topLeftOffset = CellStruct { static_cast<short>(foundation.X / 2), static_cast<short>(foundation.Y / 2) };
 	const auto difference = rallyCell - startCell;
-	auto cell = startCell - topLeftOffset;
+	const auto absDifference = CellStruct { static_cast<short>(std::abs(difference.X)), static_cast<short>(std::abs(difference.Y)) };
 
-	if (difference != CellStruct::Empty)
-		cell += difference * Math::min((pType->Adjacent + Math::max(width, height) + extraOffset + 1) / Math::max(std::abs(difference.X), std::abs(difference.Y)), 1.0);
+	auto cell = startCell - topLeftOffset;
+	auto dXRatio = 1.0;
+	auto dYRatio = 1.0;
+	auto rangeX = pType->Adjacent + 1 + (foundation.X + extraOffset.X) / 2;
+	auto rangeY = pType->Adjacent + 1 + (foundation.Y + extraOffset.Y) / 2;
+
+	if (rangeX < difference.X)
+		dXRatio = static_cast<double>(rangeX) / std::abs(difference.X);
+
+	if (rangeY < difference.Y)
+		dYRatio = static_cast<double>(rangeY) / std::abs(difference.Y);
+
+	cell += difference * Math::min(Math::min(dXRatio, dYRatio), 1.0);
 
 	// Calculate building spacing
-	auto buildGap = static_cast<short>(BuildingTypeExt::ExtMap.Find(pType)->AutoBuilding_Gap.Get());
+	auto buildGap = BuildingTypeExt::ExtMap.Find(pType)->AutoBuilding_Gap.Get();
 
 	if (pType->ProtectWithWall)
 		++buildGap;
@@ -624,7 +637,7 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 	return BuildingTypeExt::NearbyPlacingLocation(pType, cell, pHouse, buildGap, true, true);
 }
 
-// The function that requires synchronization prohibits checking *shroud*
+// Not fit with *ToTile*. And function called this that requires synchronization prohibits checking *shroud*
 CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, CellStruct cell, HouseClass* pHouse, int buildGap, bool checkAdjacent, bool checkShroud)
 {
 	// Reduce performance consumption by recording cells that have already judged the conditions
@@ -671,7 +684,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 
 	// Adjacent 0x4A8EB0
 	const auto width = pType->GetFoundationWidth();
-	const auto height = pType->GetFoundationHeight(true);
+	const auto height = pType->GetFoundationHeight(false);
 	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
 
 	if (RulesExt::Global()->CheckExtraBaseNormal)
@@ -834,28 +847,36 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 	// Shroud 0x4A9070
 	auto canPlaceHere = [&](CellStruct currentCell)
 	{
-		for (auto pFoundation = pType->GetFoundationData(true); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+		const auto maxX = currentCell.X + width;
+		const auto maxY = currentCell.Y + height;
+		const auto minX = currentCell.X;
+		const auto minY = currentCell.Y;
+
+		for (int x = minX; x < maxX; ++x)
 		{
-			const auto checkCell = currentCell + *pFoundation;
-			const auto cellIndex = MapClass::GetCellIndex(checkCell);
-			const auto flag = checkedCells[cellIndex];
-
-			// All must be met
-			if (flag & 0xB0)
-				return false;
-			else if (flag & 0x8)
-				continue;
-
-			auto coords = CellClass::Cell2Coord(checkCell);
-			coords.Z = MapClass::Instance->GetCellFloorHeight(coords);
-
-			if (MapClass::Instance->IsLocationShrouded(coords))
+			for (int y = minY; y < maxY; ++y)
 			{
-				checkedCells[cellIndex] |= 0x80;
-				return false;
-			}
+				const auto checkCell = CellStruct { static_cast<short>(x), static_cast<short>(y) };
+				const auto cellIndex = MapClass::GetCellIndex(checkCell);
+				const auto flag = checkedCells[cellIndex];
 
-			checkedCells[cellIndex] |= 0x8;
+				// All must be met
+				if (flag & 0xB0)
+					return false;
+				else if (flag & 0x8)
+					continue;
+
+				auto coords = CellClass::Cell2Coord(checkCell);
+				coords.Z = MapClass::Instance->GetCellFloorHeight(coords);
+
+				if (MapClass::Instance->IsLocationShrouded(coords))
+				{
+					checkedCells[cellIndex] |= 0x80;
+					return false;
+				}
+
+				checkedCells[cellIndex] |= 0x8;
+			}
 		}
 
 		return true;
