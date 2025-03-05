@@ -144,9 +144,11 @@ DEFINE_HOOK(0x73BD79, UnitClass_DrawAsVXL_RewriteDrawSingleTurret, 0x6)
 
 	if (exTurCount > 0)
 	{
+		const auto turCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->TurretOffset.Get(), false);
+
 		for (int i = 0; i < exTurCount; ++i)
 		{
-			const auto deltaCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->ExtraTurretOffsets[i] - pTypeExt->TurretOffset.Get(), false);
+			const auto deltaCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->ExtraTurretOffsets[i], false) - turCrd;
 			auto turScreenCrd2nd = *center + TacticalClass::CoordsToScreen(deltaCrd);
 
 			pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
