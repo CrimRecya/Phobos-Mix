@@ -72,6 +72,12 @@ public:
 		"Status:Deactive", "Status:Locomotor", "Status:FollowGuard", "Status:Unknown", "Status:None"
 	};
 
+	struct SelectRecordStruct
+	{
+		TechnoTypeExt::ExtData* TypeExt { nullptr };
+		int Count { 0 };
+	};
+
 	void InitClear();
 	void InitIO();
 
@@ -79,6 +85,7 @@ public:
 	void SwitchVisible();
 	void UpdateVisible();
 	void UpdateSelected();
+	void UpdateRecordCameo(const SelectRecordStruct& Record);
 	void DrawInfo();
 
 	static BSurface* SearchMissingCameo(AbstractType absType, SHPStruct* pSHP);
@@ -90,12 +97,6 @@ public:
 	bool CanScrollRight() const;
 	bool ScrollLeft();
 	bool ScrollRight();
-
-	struct SelectRecordStruct
-	{
-		TechnoTypeExt::ExtData* TypeExt { nullptr };
-		int Count { 0 };
-	};
 
 	SelectedColumnClass* MainColumn { nullptr };
 

@@ -65,6 +65,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 	else
 	{
 		const auto pTypeExt = seIns.CurrentSelectCameo[this->GetButtonIndex() + seIns.Current].TypeExt;
+		const auto groupID = pTypeExt->GetSelectionGroupID();
 
 		if (flags & GadgetFlag::LeftPress)
 		{
@@ -72,7 +73,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 			{
 				for (const auto& pCurrent : seCST)
 				{
-					if (pCurrent->TypeExtData != pTypeExt)
+					if (pCurrent->TypeExtData->GetSelectionGroupID() != groupID)
 						pCurrent->OwnerObject()->Deselect();
 				}
 			}
@@ -82,7 +83,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 
 				for (const auto& pCurrent : seCST)
 				{
-					if (pCurrent->TypeExtData == pTypeExt)
+					if (pCurrent->TypeExtData->GetSelectionGroupID() == groupID)
 					{
 						selects.push_back(pCurrent->OwnerObject());
 						continue;
@@ -107,7 +108,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 			{
 				for (const auto& pCurrent : seCST)
 				{
-					if (pCurrent->TypeExtData == pTypeExt)
+					if (pCurrent->TypeExtData->GetSelectionGroupID() == groupID)
 						pCurrent->OwnerObject()->Deselect();
 				}
 			}
@@ -117,7 +118,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 
 				for (const auto& pCurrent : seCST)
 				{
-					if (pCurrent->TypeExtData == pTypeExt)
+					if (pCurrent->TypeExtData->GetSelectionGroupID() == groupID)
 						selects.push_back(pCurrent->OwnerObject());
 				}
 

@@ -6,6 +6,7 @@
 #include <SuperClass.h>
 #include <MessageListClass.h>
 
+#include <Ext/Side/Body.h>
 #include <Ext/BuildingType/Body.h>
 
 SelectedInfoClass SelectedInfoClass::Instance;
@@ -105,54 +106,76 @@ void SelectedInfoClass::InitIO()
 	if (Unsorted::ArmageddonMode)
 		return;
 
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pBottomSHP = pSideExt->SelectedInfo_Bottom.Get();
+
+	if (!pBottomSHP || pBottomSHP->Frames < 3)
+		return;
+
 	const auto bottom = DSurface::Composite->GetHeight() - 32;
-	{
-		const auto pButton = GameCreate<SelectedColumnClass>(SelectedInfoClass::StartID, 0, bottom - 100, 203, 79);
-		pButton->Zap();
-		GScreenClass::Instance->AddButton(pButton);
-		this->MainColumn = pButton;
-	}
 
+	if (const auto pMainSHP = pSideExt->SelectedInfo_Main.Get())
 	{
-		const auto pButton = GameCreate<SelectedButtonClass>(SelectedInfoClass::StartID + 1, 197, bottom - 79);
-		pButton->Zap();
-		GScreenClass::Instance->AddButton(pButton);
-		this->PushButton = pButton;
-	}
+		{
+			const auto pButton = GameCreate<SelectedColumnClass>(SelectedInfoClass::StartID, 0, bottom - 100, 203, 79);
+			pButton->Zap();
+			GScreenClass::Instance->AddButton(pButton);
+			this->MainColumn = pButton;
+		}
 
-	{
-		const auto pButton = GameCreate<SelectedButtonClass>(SelectedInfoClass::StartID + 2, 197, bottom - 50);
-		pButton->Zap();
-		GScreenClass::Instance->AddButton(pButton);
-		this->AmmoButton = pButton;
-	}
+		if (const auto pButtonSHP = pSideExt->SelectedInfo_Button.Get())
+		{
+			if (pButtonSHP->Frames >= 7)
+			{
+				{
+					const auto pButton = GameCreate<SelectedButtonClass>(SelectedInfoClass::StartID + 1, 197, bottom - 79);
+					pButton->Zap();
+					GScreenClass::Instance->AddButton(pButton);
+					this->PushButton = pButton;
+				}
 
-	{
-		const auto pButton = GameCreate<SelectedMainCameoClass>(SelectedInfoClass::StartID + 3, 6, bottom - 95);
-		pButton->Zap();
-		GScreenClass::Instance->AddButton(pButton);
-		this->MainCameo = pButton;
-	}
+				{
+					const auto pButton = GameCreate<SelectedButtonClass>(SelectedInfoClass::StartID + 2, 197, bottom - 50);
+					pButton->Zap();
+					GScreenClass::Instance->AddButton(pButton);
+					this->AmmoButton = pButton;
+				}
+			}
+		}
 
-	{
-		const auto pButton = GameCreate<SelectedNotButtonClass>(SelectedInfoClass::StartID + 4, 179, bottom - 93);
-		pButton->Zap();
-		GScreenClass::Instance->AddButton(pButton);
-		this->InfoIconA = pButton;
-	}
+		{
+			const auto pButton = GameCreate<SelectedMainCameoClass>(SelectedInfoClass::StartID + 3, 6, bottom - 95);
+			pButton->Zap();
+			GScreenClass::Instance->AddButton(pButton);
+			this->MainCameo = pButton;
+		}
 
-	{
-		const auto pButton = GameCreate<SelectedNotButtonClass>(SelectedInfoClass::StartID + 5, 179, bottom - 77);
-		pButton->Zap();
-		GScreenClass::Instance->AddButton(pButton);
-		this->InfoIconD = pButton;
-	}
+		if (const auto pBuffSHP = pSideExt->SelectedInfo_Buff.Get())
+		{
+			if (pBuffSHP->Frames >= 15)
+			{
+				{
+					const auto pButton = GameCreate<SelectedNotButtonClass>(SelectedInfoClass::StartID + 4, 179, bottom - 93);
+					pButton->Zap();
+					GScreenClass::Instance->AddButton(pButton);
+					this->InfoIconA = pButton;
+				}
 
-	{
-		const auto pButton = GameCreate<SelectedNotButtonClass>(SelectedInfoClass::StartID + 6, 179, bottom - 61);
-		pButton->Zap();
-		GScreenClass::Instance->AddButton(pButton);
-		this->InfoIconS = pButton;
+				{
+					const auto pButton = GameCreate<SelectedNotButtonClass>(SelectedInfoClass::StartID + 5, 179, bottom - 77);
+					pButton->Zap();
+					GScreenClass::Instance->AddButton(pButton);
+					this->InfoIconD = pButton;
+				}
+
+				{
+					const auto pButton = GameCreate<SelectedNotButtonClass>(SelectedInfoClass::StartID + 6, 179, bottom - 61);
+					pButton->Zap();
+					GScreenClass::Instance->AddButton(pButton);
+					this->InfoIconS = pButton;
+				}
+			}
+		}
 	}
 
 	{
@@ -313,25 +336,27 @@ void SelectedInfoClass::UpdateSelected()
 	if (this->CurrentSelectTechno.size())
 		this->CurrentSelectTechno.clear();
 
-	std::map<int, SelectRecordStruct> CurrentSelectBuffer;
-
-	for (const auto& pCurrent : ObjectClass::CurrentObjects())
 	{
-		if (const auto pType = pCurrent->GetTechnoType())
+		std::map<int, SelectRecordStruct> CurrentSelectBuffer;
+
+		for (const auto& pCurrent : ObjectClass::CurrentObjects())
 		{
-			const auto count = CurrentSelectBuffer.contains(pType->UniqueID) ? CurrentSelectBuffer.at(pType->UniqueID).Count : 0;
-			CurrentSelectBuffer[pType->UniqueID] = SelectRecordStruct { TechnoTypeExt::ExtMap.Find(pType), count + 1 };
-			this->CurrentSelectTechno.emplace_back(TechnoExt::ExtMap.Find(static_cast<TechnoClass*>(pCurrent)));
+			if (const auto pType = pCurrent->GetTechnoType())
+			{
+				const auto count = CurrentSelectBuffer.contains(pType->UniqueID) ? CurrentSelectBuffer.at(pType->UniqueID).Count : 0;
+				CurrentSelectBuffer[pType->UniqueID] = SelectRecordStruct { TechnoTypeExt::ExtMap.Find(pType), count + 1 };
+				this->CurrentSelectTechno.emplace_back(TechnoExt::ExtMap.Find(static_cast<TechnoClass*>(pCurrent)));
+			}
+		}
+
+		if (CurrentSelectBuffer.size())
+		{
+			for (const auto& [ID, Record] : CurrentSelectBuffer)
+				this->UpdateRecordCameo(Record);
 		}
 	}
 
-	if (CurrentSelectBuffer.size())
-	{
-		for (const auto& [ID, Record] : CurrentSelectBuffer)
-			this->CurrentSelectCameo.push_back(Record);
-	}
-
-	std::sort(CurrentSelectTechno.begin(), CurrentSelectTechno.end(),
+	std::sort(this->CurrentSelectTechno.begin(), this->CurrentSelectTechno.end(),
 		[](const TechnoExt::ExtData* const pSelectA, const TechnoExt::ExtData* const pSelectB)
 		{
 			const auto uniqueA = pSelectA->TypeExtData->OwnerObject()->UniqueID;
@@ -343,6 +368,23 @@ void SelectedInfoClass::UpdateSelected()
 
 	this->SingleSelect = CurrentSelectTechno.size() <= 1;
 	this->UpdateVisible();
+}
+
+void SelectedInfoClass::UpdateRecordCameo(const SelectRecordStruct& Record)
+{
+	const auto groupID = Record.TypeExt->GetSelectionGroupID();
+	const int currentCounts = this->CurrentSelectCameo.size();
+
+	for (int i = 0; i < currentCounts; ++i)
+	{
+		if (this->CurrentSelectCameo[i].TypeExt->GetSelectionGroupID() == groupID)
+		{
+			this->CurrentSelectCameo[i].Count += Record.Count;
+			return;
+		}
+	}
+
+	this->CurrentSelectCameo.push_back(Record);
 }
 
 void SelectedInfoClass::DrawInfo()
