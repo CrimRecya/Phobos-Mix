@@ -178,6 +178,8 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->BarracksExitCell.Read(exINI, pSection, "BarracksExitCell");
 
+	this->Refinery_UseNormalActiveAnim.Read(exArtINI, pArtSection, "Refinery.UseNormalActiveAnim");
+
 	if (pThis->NumberOfDocks > 0)
 	{
 		this->AircraftDockingDirs.clear();
@@ -302,6 +304,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Adjacent_Allowed)
 		.Process(this->Adjacent_Disallowed)
 		.Process(this->BarracksExitCell)
+		.Process(this->Refinery_UseNormalActiveAnim)
 		;
 }
 
