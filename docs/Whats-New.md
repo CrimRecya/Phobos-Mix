@@ -332,6 +332,7 @@ New:
 - No rearm and reload in EMP or temporal (by CrimRecya)
 - Draw visual effects for airburst weapons (by CrimRecya)
 - Technos recount current burst index when change the firing weapon (by CrimRecya)
+- Shield armor inheritance customization (by Ollerus)
 - Projectile subject to ground check before firing (by CrimRecya)
 - New Disperse trajectory (by CrimRecya)
 - New Engrave trajectory (by CrimRecya)
@@ -549,7 +550,6 @@ New:
 - Allow customizing charge turret delays per burst on a weapon (by Starkku)
 - Unit `Speed` setting now accepts floating point values (by Starkku)
 - Extending `Power` to all TechnoTypes (by Morton)
-- Shield armor inheritance customization (by Ollerus)
 
 Vanilla fixes:
 - Allow AI to repair structures built from base nodes/trigger action 125/SW delivery in single player missions (by Trsdy)
