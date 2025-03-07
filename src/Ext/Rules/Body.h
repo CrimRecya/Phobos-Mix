@@ -94,8 +94,6 @@ public:
 		Valueable<double> HeightShadowScaling_MinScale;
 		double AirShadowBaseScale_log;
 
-		Valueable<bool> JumpjetClimbPredictHeight;
-		Valueable<bool> JumpjetClimbWithoutCutOut;
 		Valueable<bool> ExpandTurretRotation;
 		Valueable<bool> Turret_IdleRotate;
 		Valueable<bool> Turret_PointToMouse;
@@ -249,6 +247,9 @@ public:
 		Valueable<bool> AttackMove_IgnoreWeaponCheck;
 		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 
+		Valueable<bool> JumpjetClimbPredictHeight;
+		Valueable<bool> JumpjetClimbWithoutCutOut;
+
 		Valueable<double> DamageOwnerMultiplier;
 		Valueable<double> DamageAlliesMultiplier;
 		Valueable<double> DamageEnemiesMultiplier;
@@ -367,8 +368,6 @@ public:
 			, HeightShadowScaling_MinScale { 0.0 }
 			, AirShadowBaseScale_log { 0.693376137 }
 
-			, JumpjetClimbPredictHeight { false }
-			, JumpjetClimbWithoutCutOut { false }
 			, ExpandTurretRotation { false }
 			, Turret_IdleRotate { false }
 			, Turret_PointToMouse { false }
@@ -513,6 +512,8 @@ public:
 			, AttackMove_IgnoreWeaponCheck { false }
 			, AttackMove_StopWhenTargetAcquired {}
 
+			, JumpjetClimbPredictHeight { false }
+			, JumpjetClimbWithoutCutOut { false }
 			, DamageOwnerMultiplier { 1.0 }
 			, DamageAlliesMultiplier { 1.0 }
 			, DamageEnemiesMultiplier { 1.0 }
