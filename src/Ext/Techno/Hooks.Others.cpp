@@ -1955,4 +1955,22 @@ DEFINE_HOOK(0x5F4032, ObjectClass_FallingDown_ToDead, 0x6)
 
 #pragma endregion
 
+#pragma region NoManualEject
+
+DEFINE_HOOK(0x73D6EC, UnitClass_Unload_NoManualEject, 0x6)
+{
+	enum { NoEject = 0x73DCD3 };
+	GET(TechnoTypeClass* const, pType, EAX);
+	return TechnoTypeExt::ExtMap.Find(pType)->NoManualEject.Get() ? NoEject : 0;
+}
+
+DEFINE_HOOK(0x740015, UnitClass_WhatAction_NoManualEject, 0x6)
+{
+	enum { NoEject = 0x7400F0 };
+	GET(TechnoTypeClass* const, pType, EAX);
+	return TechnoTypeExt::ExtMap.Find(pType)->NoManualEject.Get() ? NoEject : 0;
+}
+
+#pragma endregion
+
 // TODO Other contributors' impl

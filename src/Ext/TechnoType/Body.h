@@ -53,6 +53,7 @@ public:
 		Valueable<bool> MultiMindControl_ReleaseVictim;
 		Valueable<int> CameoPriority;
 		Valueable<bool> NoManualMove;
+		Valueable<bool> NoManualEject;
 		Nullable<int> InitialStrength;
 		Valueable<bool> ReloadInTransport;
 		Valueable<bool> ForbidParallelAIQueues;
@@ -413,6 +414,7 @@ public:
 			, MultiMindControl_ReleaseVictim { false }
 			, CameoPriority { 0 }
 			, NoManualMove { false }
+			, NoManualEject { false }
 			, InitialStrength {}
 			, ReloadInTransport { false }
 			, ForbidParallelAIQueues { false }
