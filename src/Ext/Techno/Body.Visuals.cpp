@@ -912,10 +912,6 @@ void TechnoExt::GetValuesForDisplay(TechnoClass* pThis, DisplayInfoType infoType
 			return;
 
 		const auto pHouse = pThis->Owner;
-
-		if (!pHouse)
-			return;
-
 		const auto pBuildingType = static_cast<BuildingTypeClass*>(pType);
 
 		if (pBuildingType->SuperWeapon != -1)
