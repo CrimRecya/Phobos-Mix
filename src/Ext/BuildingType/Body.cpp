@@ -1369,6 +1369,7 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	// Art
 	this->IsAnimDelayedBurst.Read(exArtINI, pArtSection, "IsAnimDelayedBurst");
 	this->ZShapePointMove_OnBuildup.Read(exArtINI, pArtSection, "ZShapePointMove.OnBuildup");
+	this->Refinery_UseNormalActiveAnim.Read(exArtINI, pArtSection, "Refinery.UseNormalActiveAnim");
 }
 
 void BuildingTypeExt::ExtData::CompleteInitialization()
@@ -1447,6 +1448,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Adjacent_DisallowedExtra)
 		.Process(this->BarracksExitCell)
 		.Process(this->HasSecondaryRallyPoint)
+		.Process(this->Refinery_UseNormalActiveAnim)
 		;
 }
 

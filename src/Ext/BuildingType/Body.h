@@ -101,6 +101,7 @@ public:
 		Nullable<Point2D> BarracksExitCell;
 
 		Valueable<bool> HasSecondaryRallyPoint;
+		Valueable<bool> Refinery_UseNormalActiveAnim;
 
 		ExtData(BuildingTypeClass* OwnerObject) : Extension<BuildingTypeClass>(OwnerObject)
 			, PowersUp_Owner { AffectedHouse::Owner }
@@ -168,6 +169,7 @@ public:
 			, Adjacent_DisallowedExtra {}
 			, BarracksExitCell {}
 			, HasSecondaryRallyPoint { false }
+			, Refinery_UseNormalActiveAnim { false }
 		{ }
 
 		// Ares 0.A functions
