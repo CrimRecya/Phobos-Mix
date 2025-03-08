@@ -129,10 +129,24 @@ void WarheadTypeExt::ExtData::Detonate(TechnoClass* pOwner, HouseClass* pHouse, 
 		{
 			if (auto pTarget = abstract_cast<TechnoClass*>(pBullet->Target))
 			{
+				double dist = 0.0;
+				auto bulletCoords = pBullet->GetCoords();
+				auto targetCoords = pTarget->GetCoords();
+
+				if (this->CellSpread_Cylinder)
+					dist = Point2D{ bulletCoords.X - targetCoords.X, bulletCoords.Y - targetCoords.Y }.Magnitude();
+				else
+					dist = bulletCoords.DistanceFrom(targetCoords);
+
 				// Starkku: We should only detonate on the target if the bullet, at the moment of detonation is within acceptable distance of the target.
 				// Ares uses 64 leptons / quarter of a cell as a tolerance, so for sake of consistency we're gonna do the same here.
-				if (pBullet->DistanceFrom(pTarget) < Unsorted::LeptonsPerCell / 4)
+				if (dist < Unsorted::LeptonsPerCell / 4
+					&& (this->AffectsInAir && pTarget->IsInAir()
+					|| this->AffectsOnFloor && pTarget->IsOnFloor()
+					|| this->AffectsUnderground && pTarget->InWhichLayer() == Layer::Underground))
+				{
 					this->DetonateOnOneUnit(pHouse, pTarget, pOwner, bulletWasIntercepted);
+				}
 			}
 		}
 		else if (this->DamageAreaTarget)
@@ -140,6 +154,40 @@ void WarheadTypeExt::ExtData::Detonate(TechnoClass* pOwner, HouseClass* pHouse, 
 			if (coords.DistanceFrom(this->DamageAreaTarget->GetCoords()) < Unsorted::LeptonsPerCell / 4)
 				this->DetonateOnOneUnit(pHouse, this->DamageAreaTarget, pOwner, bulletWasIntercepted);
 		}
+	}
+
+	if (this->LightChanging)
+	{
+		if (this->SetAmbientLight >= 0)
+		{
+			ScenarioClass::Instance->AmbientOriginal = this->SetAmbientLight;
+
+			if (!LightningStorm::Active)
+			{
+				ScenarioClass::Instance->AmbientCurrent = this->SetAmbientLight;
+				ScenarioClass::Instance->AmbientTarget = ScenarioClass::Instance->AmbientOriginal;
+			}
+		}
+
+		if (this->SetAmbientRed >= 0)
+		{
+			ScenarioClass::RecalcLighting(10 * this->SetAmbientRed, 10 * ScenarioClass::Instance->NormalLighting.Tint.Green, 10 * ScenarioClass::Instance->NormalLighting.Tint.Blue, 0);
+			ScenarioClass::Instance->NormalLighting.Tint.Red = this->SetAmbientRed;
+		}
+
+		if (this->SetAmbientGreen >= 0)
+		{
+			ScenarioClass::RecalcLighting(10 * ScenarioClass::Instance->NormalLighting.Tint.Red, 10 * this->SetAmbientGreen, 10 * ScenarioClass::Instance->NormalLighting.Tint.Blue, 0);
+			ScenarioClass::Instance->NormalLighting.Tint.Green = this->SetAmbientGreen;
+		}
+
+		if (this->SetAmbientBlue >= 0)
+		{
+			ScenarioClass::RecalcLighting(10 * ScenarioClass::Instance->NormalLighting.Tint.Red, 10 * ScenarioClass::Instance->NormalLighting.Tint.Green, 10 * this->SetAmbientBlue, 0);
+			ScenarioClass::Instance->NormalLighting.Tint.Blue = this->SetAmbientBlue;
+		}
+
+		ScenarioClass::Instance->UpdateLighting();
 	}
 }
 
@@ -454,6 +502,9 @@ void WarheadTypeExt::ExtData::ApplyCrit(HouseClass* pHouse, TechnoClass* pTarget
 
 	auto damage = this->Crit_ExtraDamage.Get();
 
+	if (this->Crit_ExtraDamage_ApplyFirepowerMult && pOwner)
+		damage = static_cast<int>(damage * pOwner->FirepowerMultiplier * TechnoExt::ExtMap.Find(pOwner)->AE.FirepowerMultiplier);
+
 	if (this->Crit_Warhead)
 	{
 		if (this->Crit_Warhead_FullDetonation)
@@ -490,14 +541,14 @@ void WarheadTypeExt::ExtData::InterceptBullets(TechnoClass* pOwner, WeaponTypeCl
 	{
 		for (auto const pBullet : *BulletClass::Array)
 		{
-			if (pBullet->Location.DistanceFrom(coords) > cellSpread * Unsorted::LeptonsPerCell)
-				continue;
-
 			auto const pBulletExt = BulletExt::ExtMap.Find(pBullet);
 			auto const pBulletTypeExt = pBulletExt->TypeExtData;
 
 			// Cells don't know about bullets that may or may not be located on them so it has to be this way.
-			if (pBulletTypeExt && pBulletTypeExt->Interceptable)
+			if (!pBulletTypeExt || !pBulletTypeExt->Interceptable)
+				continue;
+
+			if (pBullet->Location.DistanceFrom(coords) <= cellSpread * Unsorted::LeptonsPerCell)
 				pBulletExt->InterceptBullet(pOwner, pWeapon);
 		}
 	}
