@@ -10,7 +10,7 @@ enum class TrajectoryFlag : int
 	Invalid = -1,
 	Straight = 0,
 	Bombard = 1,
-	Disperse = 2,
+	Missile = 2,
 	Engrave = 3,
 	Parabola = 4,
 	Tracing = 5
@@ -23,40 +23,197 @@ enum class TrajectoryCheckReturnType : int
 	SatisfyGameCheck = 2,
 	Detonate = 3
 };
+
 class PhobosTrajectory;
 class PhobosTrajectoryType
 {
 public:
-	PhobosTrajectoryType() { }
+	PhobosTrajectoryType() :
+		Speed { 100.0 }
+		, Duration { 0 }
+		, TolerantTime { -1 }
+		, BulletROT { -1 }
+		, BulletSpin { false }
+		, BulletStable { false }
+		, BulletOnPlane { true }
+		, RetargetRadius { 0 }
+		, Synchronize { false }
+		, PeacefulVanish {}
+		, ApplyRangeModifiers { false }
+		, TargetSnapDistance { 0.5 }
+		, UseDisperseCoord { false }
+		, RecordSourceCoord { false }
+
+		, PassDetonate { false }
+		, PassDetonateWarhead {}
+		, PassDetonateDamage { 0 }
+		, PassDetonateDelay { 1 }
+		, PassDetonateInitialDelay { 0 }
+		, PassDetonateLocal { false }
+		, ProximityImpact { 0 }
+		, ProximityWarhead {}
+		, ProximityDamage { 0 }
+		, ProximityRadius { Leptons(179) }
+		, ProximityDirect { false }
+		, ProximityMedial { false }
+		, ProximityAllies { false }
+		, ProximityFlight { false }
+		, ThroughVehicles { true }
+		, ThroughBuilding { true }
+		, EdgeAttenuation { 1.0 }
+		, CountAttenuation { 1.0 }
+
+		, DisperseWeapons {}
+		, DisperseBursts {}
+		, DisperseCounts { 0 }
+		, DisperseDelays { 1 }
+		, DisperseCycle { -1 }
+		, DisperseInitialDelay { 0 }
+		, DisperseEffectiveRange { Leptons(0) }
+		, DisperseSeparate { false }
+		, DisperseRetarget { false }
+		, DisperseLocation { false }
+		, DisperseTendency { false }
+		, DisperseHolistic { false }
+		, DisperseMarginal { false }
+		, DisperseDoRepeat { false }
+		, DisperseSuicide { true }
+		, DisperseFromFirer {}
+		, DisperseFaceCheck { true }
+		, DisperseCoord { { 0, 0, 0 } }
+	{ }
 
 	virtual ~PhobosTrajectoryType() noexcept = default;
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
 	virtual bool Save(PhobosStreamWriter& Stm) const;
-	virtual TrajectoryFlag Flag() const = 0;
-	virtual void Read(CCINIClass* const pINI, const char* pSection) = 0;
+	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; };
+	virtual void Read(CCINIClass* const pINI, const char* pSection);
 	[[nodiscard]] virtual std::unique_ptr<PhobosTrajectory> CreateInstance() const = 0;
 
-	static std::vector<CellClass*> GetCellsInProximityRadius(BulletClass* pBullet, Leptons trajectoryProximityRange);
+	static std::vector<CellClass*> GetCellsInProximityRadius(const BulletClass* const pBullet, const Leptons trajectoryProximityRange);
+	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
+
 private:
-	static std::vector<CellStruct> GetCellsInRectangle(CellStruct bottomStaCell, CellStruct leftMidCell, CellStruct rightMidCell, CellStruct topEndCell);
+	template <typename T>
+	void Serialize(T& Stm);
 
 public:
-	Valueable<double> Trajectory_Speed { 100.0 };
+	Valueable<double> Speed;
+	Valueable<int> Duration;
+	Valueable<int> TolerantTime;
+	Valueable<int> BulletROT;
+	Valueable<bool> BulletSpin;
+	Valueable<bool> BulletStable;
+	Valueable<bool> BulletOnPlane;
+	Valueable<double> RetargetRadius;
+	Valueable<bool> Synchronize;
+	Nullable<bool> PeacefulVanish;
+	Valueable<bool> ApplyRangeModifiers;
+	Valueable<double> TargetSnapDistance;
+	Valueable<bool> UseDisperseCoord;
+	Valueable<bool> RecordSourceCoord;
+
+	Valueable<bool> PassDetonate;
+	Valueable<WarheadTypeClass*> PassDetonateWarhead;
+	Valueable<int> PassDetonateDamage;
+	Valueable<int> PassDetonateDelay;
+	Valueable<int> PassDetonateInitialDelay;
+	Valueable<bool> PassDetonateLocal;
+	Valueable<int> ProximityImpact;
+	Valueable<WarheadTypeClass*> ProximityWarhead;
+	Valueable<int> ProximityDamage;
+	Valueable<Leptons> ProximityRadius;
+	Valueable<bool> ProximityDirect;
+	Valueable<bool> ProximityMedial;
+	Valueable<bool> ProximityAllies;
+	Valueable<bool> ProximityFlight;
+	Valueable<bool> ThroughVehicles;
+	Valueable<bool> ThroughBuilding;
+	Valueable<double> EdgeAttenuation;
+	Valueable<double> CountAttenuation;
+
+	ValueableVector<WeaponTypeClass*> DisperseWeapons;
+	ValueableVector<int> DisperseBursts;
+	Valueable<int> DisperseCounts;
+	Valueable<int> DisperseDelays;
+	Valueable<int> DisperseCycle;
+	Valueable<int> DisperseInitialDelay;
+	Valueable<Leptons> DisperseEffectiveRange;
+	Valueable<bool> DisperseSeparate;
+	Valueable<bool> DisperseRetarget;
+	Valueable<bool> DisperseLocation;
+	Valueable<bool> DisperseTendency;
+	Valueable<bool> DisperseHolistic;
+	Valueable<bool> DisperseMarginal;
+	Valueable<bool> DisperseDoRepeat;
+	Valueable<bool> DisperseSuicide;
+	Nullable<bool> DisperseFromFirer;
+	Valueable<bool> DisperseFaceCheck;
+	Valueable<CoordStruct> DisperseCoord;
 };
 
 class PhobosTrajectory
 {
 public:
+	PhobosTrajectory(PhobosTrajectoryType const* trajType) :
+		Duration {}
+		, TolerantTimer {}
+		, FirepowerMult { 1.0 }
+		, AttenuationRange { 0 }
+		, FLHCoord {}
+		, BuildingCoord {}
+
+		, PassDetonateDamage { trajType->PassDetonateDamage }
+		, PassDetonateTimer {}
+		, ProximityImpact { trajType->ProximityImpact }
+		, ProximityDamage { trajType->ProximityDamage }
+		, ExtraCheck { nullptr }
+		, TheCasualty {}
+
+		, DisperseIndex { 0 }
+		, DisperseCount { 0 }
+		, DisperseCycle { trajType->DisperseCycle }
+		, DisperseTimer {}
+		, TargetInTheAir { false }
+		, TargetIsTechno { false }
+	{ }
+
 	virtual ~PhobosTrajectory() noexcept = default;
-	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) = 0;
-	virtual bool Save(PhobosStreamWriter& Stm) const = 0;
-	virtual TrajectoryFlag Flag() const = 0;
+	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
+	virtual bool Save(PhobosStreamWriter& Stm) const;
+	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; };
 	virtual void OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity) = 0;
 	virtual bool OnAI(BulletClass* pBullet) = 0;
 	virtual void OnAIPreDetonate(BulletClass* pBullet) = 0;
 	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) = 0;
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) = 0;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) = 0;
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
+	CDTimerClass Duration;
+	CDTimerClass TolerantTimer;
+	double FirepowerMult;
+	int AttenuationRange;
+	CoordStruct FLHCoord;
+	CoordStruct BuildingCoord;
+
+	int PassDetonateDamage;
+	CDTimerClass PassDetonateTimer;
+	int ProximityImpact;
+	int ProximityDamage;
+	TechnoClass* ExtraCheck; // No taken out for use in next frame
+	std::map<int, int> TheCasualty; // Only for recording existence
+
+	int DisperseIndex;
+	int DisperseCount;
+	int DisperseCycle;
+	CDTimerClass DisperseTimer;
+	bool TargetInTheAir;
+	bool TargetIsTechno;
 };
 
 /*

@@ -405,7 +405,7 @@ This page lists all the individual contributions to the project by their author.
   - Technos recount current burst index when change the firing weapon
   - Units will not always stuck in the factory
   - Projectile subject to ground check before firing
-  - New Disperse trajectory
+  - New Missile trajectory
   - New Engrave trajectory
   - New Tracing trajectory
   - Technos will maintain a suitable distance after firing

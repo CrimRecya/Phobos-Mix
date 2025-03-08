@@ -55,6 +55,7 @@ bool BombardTrajectoryType::Save(PhobosStreamWriter& Stm) const
 
 void BombardTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
+	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 
 	this->Height.Read(exINI, pSection, "Trajectory.Bombard.Height");
@@ -65,7 +66,7 @@ void BombardTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->FallScatter_Min.Read(exINI, pSection, "Trajectory.Bombard.FallScatter.Min");
 	this->FallScatter_Linear.Read(exINI, pSection, "Trajectory.Bombard.FallScatter.Linear");
 	this->FallSpeed.Read(exINI, pSection, "Trajectory.Bombard.FallSpeed");
-	this->FallSpeed = std::abs(this->FallSpeed.Get()) < 1e-10 ? this->Trajectory_Speed.Get() : this->FallSpeed.Get();
+	this->FallSpeed = std::abs(this->FallSpeed.Get()) < 1e-10 ? this->Speed.Get() : this->FallSpeed.Get();
 	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Bombard.DetonationDistance");
 	this->DetonationHeight.Read(exINI, pSection, "Trajectory.Bombard.DetonationHeight");
 	this->EarlyDetonation.Read(exINI, pSection, "Trajectory.Bombard.EarlyDetonation");
@@ -105,12 +106,14 @@ void BombardTrajectory::Serialize(T& Stm)
 
 bool BombardTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
+	this->PhobosTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool BombardTrajectory::Save(PhobosStreamWriter& Stm) const
 {
+	this->PhobosTrajectory::Save(Stm);
 	const_cast<BombardTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
@@ -167,7 +170,7 @@ void BombardTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 	const auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
-	const auto pCoords = pTarget ? pTarget->GetCoords() : pBullet->Data.Location;
+	const auto pCoords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
 
 	if (pCoords.DistanceFrom(pBullet->Location) <= pType->TargetSnapDistance.Get())
 	{
@@ -204,10 +207,10 @@ void BombardTrajectory::PrepareForOpenFire(BulletClass* pBullet)
 		pBullet->Velocity.X = static_cast<double>(middleLocation.X - pBullet->SourceCoords.X);
 		pBullet->Velocity.Y = static_cast<double>(middleLocation.Y - pBullet->SourceCoords.Y);
 		pBullet->Velocity.Z = static_cast<double>(middleLocation.Z - pBullet->SourceCoords.Z);
-		pBullet->Velocity *= pType->Trajectory_Speed / pBullet->Velocity.Magnitude();
+		pBullet->Velocity *= pType->Speed / pBullet->Velocity.Magnitude();
 
 		this->CalculateDisperseBurst(pBullet);
-		this->RemainingDistance += static_cast<int>(middleLocation.DistanceFrom(pBullet->SourceCoords) + pType->Trajectory_Speed);
+		this->RemainingDistance += static_cast<int>(middleLocation.DistanceFrom(pBullet->SourceCoords) + pType->Speed);
 	}
 	else
 	{
@@ -520,9 +523,9 @@ void BombardTrajectory::BulletVelocityChange(BulletClass* pBullet)
 
 	if (!this->IsFalling)
 	{
-		this->RemainingDistance -= static_cast<int>(pType->Trajectory_Speed);
+		this->RemainingDistance -= static_cast<int>(pType->Speed);
 
-		if (this->RemainingDistance < static_cast<int>(pType->Trajectory_Speed))
+		if (this->RemainingDistance < static_cast<int>(pType->Speed))
 		{
 			if (this->ToFalling)
 			{
@@ -578,7 +581,7 @@ void BombardTrajectory::BulletVelocityChange(BulletClass* pBullet)
 				if (pType->LeadTimeCalculate && pTarget)
 					this->LastTargetCoord = pTarget->GetCoords();
 
-				pBullet->Velocity *= this->RemainingDistance / pType->Trajectory_Speed;
+				pBullet->Velocity *= this->RemainingDistance / pType->Speed;
 			}
 		}
 	}

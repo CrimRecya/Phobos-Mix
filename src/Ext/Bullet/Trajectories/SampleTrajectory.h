@@ -15,19 +15,19 @@ public:
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Invalid; } // TrajectoryFlag
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 
-	Valueable<Leptons> TargetSnapDistance;
-
 private:
 	template <typename T>
 	void Serialize(T& Stm);
+
+public:
+	Valueable<Leptons> TargetSnapDistance;
 };
 
 class SampleTrajectory final : public PhobosTrajectory
 {
 public:
-	SampleTrajectory(noinit_t) { }
-
-	SampleTrajectory(SampleTrajectoryType const* trajType) : Type { trajType }
+	SampleTrajectory(SampleTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+		, Type { trajType }
 		, TargetSnapDistance { trajType->TargetSnapDistance }
 	{ }
 
@@ -41,10 +41,11 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) override;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) override;
 
-	SampleTrajectoryType const* Type;
-	Leptons TargetSnapDistance;
-
 private:
 	template <typename T>
 	void Serialize(T& Stm);
+
+public:
+	SampleTrajectoryType const* Type;
+	Leptons TargetSnapDistance;
 };

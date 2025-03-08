@@ -44,6 +44,11 @@ public:
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Straight; }
 
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
 	Valueable<Leptons> DetonationDistance;
 	Valueable<Leptons> TargetSnapDistance;
 	Valueable<bool> ApplyRangeModifiers;
@@ -74,18 +79,13 @@ public:
 	Valueable<int> ConfineAtHeight;
 	Valueable<double> EdgeAttenuation;
 	Valueable<double> CountAttenuation;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
 };
 
 class StraightTrajectory final : public PhobosTrajectory
 {
 public:
-	StraightTrajectory(noinit_t) { }
-
-	StraightTrajectory(StraightTrajectoryType const* trajType) : Type { trajType }
+	StraightTrajectory(StraightTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+		, Type { trajType }
 		, DetonationDistance { trajType->DetonationDistance }
 		, PassDetonateDamage { trajType->PassDetonateDamage }
 		, PassDetonateTimer {}
@@ -114,6 +114,26 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) override;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) override;
 
+	void PrepareForOpenFire(BulletClass* pBullet);
+	int GetVelocityZ(BulletClass* pBullet);
+	bool CalculateBulletVelocity(BulletClass* pBullet);
+	bool BulletPrepareCheck(BulletClass* pBullet);
+	bool BulletDetonatePreCheck(BulletClass* pBullet);
+	void BulletDetonateVelocityCheck(BulletClass* pBullet, HouseClass* pOwner);
+	void BulletDetonateLastCheck(BulletClass* pBullet, HouseClass* pOwner);
+	bool CheckThroughAndSubjectInCell(BulletClass* pBullet, CellClass* pCell, HouseClass* pOwner);
+	void CalculateNewDamage(BulletClass* pBullet);
+	void PassWithDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
+	void PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
+	int GetTheTrueDamage(int damage, BulletClass* pBullet, TechnoClass* pTechno, bool self);
+	double GetExtraDamageMultiplier(BulletClass* pBullet, TechnoClass* pTechno);
+	bool PassAndConfineAtHeight(BulletClass* pBullet);
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
 	const StraightTrajectoryType* Type;
 	Leptons DetonationDistance;
 	int PassDetonateDamage;
@@ -131,23 +151,4 @@ public:
 	int CurrentBurst;
 	int CountOfBurst;
 	int WaitOneFrame;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
-
-	void PrepareForOpenFire(BulletClass* pBullet);
-	int GetVelocityZ(BulletClass* pBullet);
-	bool CalculateBulletVelocity(BulletClass* pBullet);
-	bool BulletPrepareCheck(BulletClass* pBullet);
-	bool BulletDetonatePreCheck(BulletClass* pBullet);
-	void BulletDetonateVelocityCheck(BulletClass* pBullet, HouseClass* pOwner);
-	void BulletDetonateLastCheck(BulletClass* pBullet, HouseClass* pOwner);
-	bool CheckThroughAndSubjectInCell(BulletClass* pBullet, CellClass* pCell, HouseClass* pOwner);
-	void CalculateNewDamage(BulletClass* pBullet);
-	void PassWithDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
-	void PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
-	int GetTheTrueDamage(int damage, BulletClass* pBullet, TechnoClass* pTechno, bool self);
-	double GetExtraDamageMultiplier(BulletClass* pBullet, TechnoClass* pTechno);
-	bool PassAndConfineAtHeight(BulletClass* pBullet);
 };

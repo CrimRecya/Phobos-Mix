@@ -67,6 +67,7 @@ bool StraightTrajectoryType::Save(PhobosStreamWriter& Stm) const
 
 void StraightTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
+	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 
 	this->ApplyRangeModifiers.Read(exINI, pSection, "Trajectory.Straight.ApplyRangeModifiers");
@@ -129,12 +130,14 @@ void StraightTrajectory::Serialize(T& Stm)
 
 bool StraightTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
+	this->PhobosTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool StraightTrajectory::Save(PhobosStreamWriter& Stm) const
 {
+	this->PhobosTrajectory::Save(Stm);
 	const_cast<StraightTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
@@ -203,7 +206,7 @@ bool StraightTrajectory::OnAI(BulletClass* pBullet)
 	if (this->ProximityImpact != 0 && pType->ProximityRadius.Get() > 0)
 		this->PrepareForDetonateAt(pBullet, pOwner);
 
-	if (pType->Trajectory_Speed < 256.0 && pType->ConfineAtHeight > 0 && this->PassAndConfineAtHeight(pBullet))
+	if (pType->Speed < 256.0 && pType->ConfineAtHeight > 0 && this->PassAndConfineAtHeight(pBullet))
 		return true;
 
 	this->BulletDetonateLastCheck(pBullet, pOwner);
@@ -234,7 +237,7 @@ void StraightTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 		return;
 
 	const auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
-	const auto coords = pTarget ? pTarget->GetCoords() : pBullet->Data.Location;
+	const auto coords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
 
 	// Whether to snap to target?
 	if (coords.DistanceFrom(pBullet->Location) <= targetSnapDistance)
@@ -292,7 +295,7 @@ void StraightTrajectory::PrepareForOpenFire(BulletClass* pBullet)
 				const auto horizonDistanceSquared = theDistanceSquared - verticalDistanceSquared;
 				const auto horizonDistance = sqrt(horizonDistanceSquared);
 
-				const auto straightSpeedSquared = pType->Trajectory_Speed * pType->Trajectory_Speed;
+				const auto straightSpeedSquared = pType->Speed * pType->Speed;
 				const auto baseFactor = straightSpeedSquared - targetSpeedSquared;
 				const auto squareFactor = baseFactor * verticalDistanceSquared + straightSpeedSquared * horizonDistanceSquared;
 
@@ -331,7 +334,7 @@ void StraightTrajectory::PrepareForOpenFire(BulletClass* pBullet)
 	}
 
 	// Calculate the orientation of the coordinate system
-	if (!pType->LeadTimeCalculate && theTargetCoords == theSourceCoords && pBullet->Owner) // For disperse.
+	if (!pType->LeadTimeCalculate && theTargetCoords == theSourceCoords && pBullet->Owner) // For Missile.
 	{
 		const auto theOwnerCoords = pBullet->Owner->GetCoords();
 		rotateAngle = Math::atan2(theTargetCoords.Y - theOwnerCoords.Y , theTargetCoords.X - theOwnerCoords.X);
@@ -364,15 +367,15 @@ void StraightTrajectory::PrepareForOpenFire(BulletClass* pBullet)
 	if (pType->PassThrough)
 	{
 		if (this->DetonationDistance > 0)
-			this->RemainingDistance += static_cast<int>(this->DetonationDistance + pType->Trajectory_Speed);
+			this->RemainingDistance += static_cast<int>(this->DetonationDistance + pType->Speed);
 		else if (this->DetonationDistance < 0)
-			this->RemainingDistance += static_cast<int>(theSourceCoords.DistanceFrom(theTargetCoords) - this->DetonationDistance + pType->Trajectory_Speed);
+			this->RemainingDistance += static_cast<int>(theSourceCoords.DistanceFrom(theTargetCoords) - this->DetonationDistance + pType->Speed);
 		else
 			this->RemainingDistance = INT_MAX;
 	}
 	else
 	{
-		this->RemainingDistance += static_cast<int>(theSourceCoords.DistanceFrom(theTargetCoords) + pType->Trajectory_Speed);
+		this->RemainingDistance += static_cast<int>(theSourceCoords.DistanceFrom(theTargetCoords) + pType->Speed);
 	}
 
 	// Determine the firing velocity vector of the bullet
@@ -483,7 +486,7 @@ bool StraightTrajectory::CalculateBulletVelocity(BulletClass* pBullet)
 	const auto velocityLength = pBullet->Velocity.Magnitude();
 
 	if (velocityLength > 1e-10)
-		pBullet->Velocity *= this->Type->Trajectory_Speed / velocityLength;
+		pBullet->Velocity *= this->Type->Speed / velocityLength;
 	else
 		return true;
 
@@ -519,7 +522,7 @@ bool StraightTrajectory::BulletDetonatePreCheck(BulletClass* pBullet)
 		return true;
 
 	// Check the remaining travel distance of the bullet
-	this->RemainingDistance -= static_cast<int>(this->Type->Trajectory_Speed);
+	this->RemainingDistance -= static_cast<int>(this->Type->Speed);
 
 	if (this->RemainingDistance < 0)
 		return true;
@@ -549,13 +552,13 @@ void StraightTrajectory::BulletDetonateVelocityCheck(BulletClass* pBullet, House
 	double locationDistance = this->RemainingDistance;
 
 	// Check if the distance to the destination exceeds the speed limit
-	if (locationDistance < pType->Trajectory_Speed)
+	if (locationDistance < pType->Speed)
 		velocityCheck = true;
 
 	const bool checkThrough = (!pType->ThroughBuilding || !pType->ThroughVehicles);
 	const bool checkSubject = (pType->SubjectToGround || pBullet->Type->SubjectToWalls);
 
-	if (pType->Trajectory_Speed < 256.0) // Low speed with checkSubject was already done well.
+	if (pType->Speed < 256.0) // Low speed with checkSubject was already done well.
 	{
 		// Blocked by obstacles?
 		if (checkThrough && this->CheckThroughAndSubjectInCell(pBullet, MapClass::Instance->GetCellAt(pBullet->Location), pOwner))
@@ -609,8 +612,8 @@ void StraightTrajectory::BulletDetonateVelocityCheck(BulletClass* pBullet, House
 		this->RemainingDistance = 0;
 		locationDistance += 32.0;
 
-		if (locationDistance < pType->Trajectory_Speed)
-			pBullet->Velocity *= (locationDistance / pType->Trajectory_Speed);
+		if (locationDistance < pType->Speed)
+			pBullet->Velocity *= (locationDistance / pType->Speed);
 	}
 }
 

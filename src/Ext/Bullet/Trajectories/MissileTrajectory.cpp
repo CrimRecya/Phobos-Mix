@@ -1,4 +1,4 @@
-#include "DisperseTrajectory.h"
+#include "MissileTrajectory.h"
 #include "StraightTrajectory.h"
 #include "BombardTrajectory.h"
 #include "EngraveTrajectory.h"
@@ -21,13 +21,13 @@
 #include <Utilities/EnumFunctions.h>
 #include <Utilities/Helpers.Alex.h>
 
-std::unique_ptr<PhobosTrajectory> DisperseTrajectoryType::CreateInstance() const
+std::unique_ptr<PhobosTrajectory> MissileTrajectoryType::CreateInstance() const
 {
-	return std::make_unique<DisperseTrajectory>(this);
+	return std::make_unique<MissileTrajectory>(this);
 }
 
 template<typename T>
-void DisperseTrajectoryType::Serialize(T& Stm)
+void MissileTrajectoryType::Serialize(T& Stm)
 {
 	Stm
 		.Process(this->UniqueCurve)
@@ -71,70 +71,71 @@ void DisperseTrajectoryType::Serialize(T& Stm)
 		;
 }
 
-bool DisperseTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
+bool MissileTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
 	this->PhobosTrajectoryType::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
-bool DisperseTrajectoryType::Save(PhobosStreamWriter& Stm) const
+bool MissileTrajectoryType::Save(PhobosStreamWriter& Stm) const
 {
 	this->PhobosTrajectoryType::Save(Stm);
-	const_cast<DisperseTrajectoryType*>(this)->Serialize(Stm);
+	const_cast<MissileTrajectoryType*>(this)->Serialize(Stm);
 	return true;
 }
 
-void DisperseTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
+void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
+	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 
-	this->UniqueCurve.Read(exINI, pSection, "Trajectory.Disperse.UniqueCurve");
-	this->PreAimCoord.Read(exINI, pSection, "Trajectory.Disperse.PreAimCoord");
-	this->RotateCoord.Read(exINI, pSection, "Trajectory.Disperse.RotateCoord");
-	this->MirrorCoord.Read(exINI, pSection, "Trajectory.Disperse.MirrorCoord");
-	this->FacingCoord.Read(exINI, pSection, "Trajectory.Disperse.FacingCoord");
-	this->ReduceCoord.Read(exINI, pSection, "Trajectory.Disperse.ReduceCoord");
-	this->UseDisperseBurst.Read(exINI, pSection, "Trajectory.Disperse.UseDisperseBurst");
-	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.Disperse.AxisOfRotation");
-	this->LaunchSpeed.Read(exINI, pSection, "Trajectory.Disperse.LaunchSpeed");
+	this->UniqueCurve.Read(exINI, pSection, "Trajectory.Missile.UniqueCurve");
+	this->PreAimCoord.Read(exINI, pSection, "Trajectory.Missile.PreAimCoord");
+	this->RotateCoord.Read(exINI, pSection, "Trajectory.Missile.RotateCoord");
+	this->MirrorCoord.Read(exINI, pSection, "Trajectory.Missile.MirrorCoord");
+	this->FacingCoord.Read(exINI, pSection, "Trajectory.Missile.FacingCoord");
+	this->ReduceCoord.Read(exINI, pSection, "Trajectory.Missile.ReduceCoord");
+	this->UseDisperseBurst.Read(exINI, pSection, "Trajectory.Missile.UseDisperseBurst");
+	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.Missile.AxisOfRotation");
+	this->LaunchSpeed.Read(exINI, pSection, "Trajectory.Missile.LaunchSpeed");
 	this->LaunchSpeed = Math::max(0.001, this->LaunchSpeed);
-	this->Acceleration.Read(exINI, pSection, "Trajectory.Disperse.Acceleration");
-	this->ROT.Read(exINI, pSection, "Trajectory.Disperse.ROT");
+	this->Acceleration.Read(exINI, pSection, "Trajectory.Missile.Acceleration");
+	this->ROT.Read(exINI, pSection, "Trajectory.Missile.ROT");
 	this->ROT = Math::max(0.0, this->ROT);
-	this->LockDirection.Read(exINI, pSection, "Trajectory.Disperse.LockDirection");
-	this->CruiseEnable.Read(exINI, pSection, "Trajectory.Disperse.CruiseEnable");
-	this->CruiseUnableRange.Read(exINI, pSection, "Trajectory.Disperse.CruiseUnableRange");
+	this->LockDirection.Read(exINI, pSection, "Trajectory.Missile.LockDirection");
+	this->CruiseEnable.Read(exINI, pSection, "Trajectory.Missile.CruiseEnable");
+	this->CruiseUnableRange.Read(exINI, pSection, "Trajectory.Missile.CruiseUnableRange");
 	this->CruiseUnableRange = Leptons(Math::max(128, this->CruiseUnableRange.Get()));
-	this->CruiseAltitude.Read(exINI, pSection, "Trajectory.Disperse.CruiseAltitude");
-	this->CruiseAlongLevel.Read(exINI, pSection, "Trajectory.Disperse.CruiseAlongLevel");
-	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Disperse.LeadTimeCalculate");
-	this->RecordSourceCoord.Read(exINI, pSection, "Trajectory.Disperse.RecordSourceCoord");
-	this->RetargetAllies.Read(exINI, pSection, "Trajectory.Disperse.RetargetAllies");
-	this->RetargetRadius.Read(exINI, pSection, "Trajectory.Disperse.RetargetRadius");
-	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Disperse.TargetSnapDistance");
-	this->SuicideAboveRange.Read(exINI, pSection, "Trajectory.Disperse.SuicideAboveRange");
-	this->SuicideShortOfROT.Read(exINI, pSection, "Trajectory.Disperse.SuicideShortOfROT");
-	this->SuicideIfNoWeapon.Read(exINI, pSection, "Trajectory.Disperse.SuicideIfNoWeapon");
-	this->Weapons.Read(exINI, pSection, "Trajectory.Disperse.Weapons");
-	this->WeaponBurst.Read(exINI, pSection, "Trajectory.Disperse.WeaponBurst");
-	this->WeaponCount.Read(exINI, pSection, "Trajectory.Disperse.WeaponCount");
-	this->WeaponDelay.Read(exINI, pSection, "Trajectory.Disperse.WeaponDelay");
+	this->CruiseAltitude.Read(exINI, pSection, "Trajectory.Missile.CruiseAltitude");
+	this->CruiseAlongLevel.Read(exINI, pSection, "Trajectory.Missile.CruiseAlongLevel");
+	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Missile.LeadTimeCalculate");
+	this->RecordSourceCoord.Read(exINI, pSection, "Trajectory.Missile.RecordSourceCoord");
+	this->RetargetAllies.Read(exINI, pSection, "Trajectory.Missile.RetargetAllies");
+	this->RetargetRadius.Read(exINI, pSection, "Trajectory.Missile.RetargetRadius");
+	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Missile.TargetSnapDistance");
+	this->SuicideAboveRange.Read(exINI, pSection, "Trajectory.Missile.SuicideAboveRange");
+	this->SuicideShortOfROT.Read(exINI, pSection, "Trajectory.Missile.SuicideShortOfROT");
+	this->SuicideIfNoWeapon.Read(exINI, pSection, "Trajectory.Missile.SuicideIfNoWeapon");
+	this->Weapons.Read(exINI, pSection, "Trajectory.Missile.Weapons");
+	this->WeaponBurst.Read(exINI, pSection, "Trajectory.Missile.WeaponBurst");
+	this->WeaponCount.Read(exINI, pSection, "Trajectory.Missile.WeaponCount");
+	this->WeaponDelay.Read(exINI, pSection, "Trajectory.Missile.WeaponDelay");
 	this->WeaponDelay = Math::max(1, this->WeaponDelay);
-	this->WeaponInitialDelay.Read(exINI, pSection, "Trajectory.Disperse.WeaponInitialDelay");
-	this->WeaponEffectiveRange.Read(exINI, pSection, "Trajectory.Disperse.WeaponEffectiveRange");
-	this->WeaponSeparate.Read(exINI, pSection, "Trajectory.Disperse.WeaponSeparate");
-	this->WeaponRetarget.Read(exINI, pSection, "Trajectory.Disperse.WeaponRetarget");
-	this->WeaponLocation.Read(exINI, pSection, "Trajectory.Disperse.WeaponLocation");
-	this->WeaponTendency.Read(exINI, pSection, "Trajectory.Disperse.WeaponTendency");
-	this->WeaponHolistic.Read(exINI, pSection, "Trajectory.Disperse.WeaponHolistic");
-	this->WeaponMarginal.Read(exINI, pSection, "Trajectory.Disperse.WeaponMarginal");
-	this->WeaponToAllies.Read(exINI, pSection, "Trajectory.Disperse.WeaponToAllies");
-	this->WeaponDoRepeat.Read(exINI, pSection, "Trajectory.Disperse.WeaponDoRepeat");
+	this->WeaponInitialDelay.Read(exINI, pSection, "Trajectory.Missile.WeaponInitialDelay");
+	this->WeaponEffectiveRange.Read(exINI, pSection, "Trajectory.Missile.WeaponEffectiveRange");
+	this->WeaponSeparate.Read(exINI, pSection, "Trajectory.Missile.WeaponSeparate");
+	this->WeaponRetarget.Read(exINI, pSection, "Trajectory.Missile.WeaponRetarget");
+	this->WeaponLocation.Read(exINI, pSection, "Trajectory.Missile.WeaponLocation");
+	this->WeaponTendency.Read(exINI, pSection, "Trajectory.Missile.WeaponTendency");
+	this->WeaponHolistic.Read(exINI, pSection, "Trajectory.Missile.WeaponHolistic");
+	this->WeaponMarginal.Read(exINI, pSection, "Trajectory.Missile.WeaponMarginal");
+	this->WeaponToAllies.Read(exINI, pSection, "Trajectory.Missile.WeaponToAllies");
+	this->WeaponDoRepeat.Read(exINI, pSection, "Trajectory.Missile.WeaponDoRepeat");
 }
 
 template<typename T>
-void DisperseTrajectory::Serialize(T& Stm)
+void MissileTrajectory::Serialize(T& Stm)
 {
 	Stm
 		.Process(this->Type)
@@ -161,19 +162,21 @@ void DisperseTrajectory::Serialize(T& Stm)
 		;
 }
 
-bool DisperseTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
+bool MissileTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
+	this->PhobosTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
-bool DisperseTrajectory::Save(PhobosStreamWriter& Stm) const
+bool MissileTrajectory::Save(PhobosStreamWriter& Stm) const
 {
-	const_cast<DisperseTrajectory*>(this)->Serialize(Stm);
+	this->PhobosTrajectory::Save(Stm);
+	const_cast<MissileTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
 
-void DisperseTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity)
+void MissileTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity)
 {
 	const auto pType = this->Type;
 	this->WeaponTimer.Start(pType->WeaponInitialDelay > 0 ? pType->WeaponInitialDelay : 0);
@@ -258,7 +261,7 @@ void DisperseTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, Bu
 	}
 }
 
-bool DisperseTrajectory::OnAI(BulletClass* pBullet)
+bool MissileTrajectory::OnAI(BulletClass* pBullet)
 {
 	// Immediately detonate below ground level
 	if (MapClass::Instance->GetCellFloorHeight(pBullet->Location) > pBullet->Location.Z)
@@ -270,18 +273,18 @@ bool DisperseTrajectory::OnAI(BulletClass* pBullet)
 	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < (pType->UniqueCurve ? 154 : pType->TargetSnapDistance.Get()))
 		return true;
 
-	// Disperse the weapons
-	if (this->WeaponCount && (!pType->WeaponEffectiveRange.Get() || pBullet->TargetCoords.DistanceFrom(pBullet->Location) <= pType->WeaponEffectiveRange.Get()) && this->PrepareDisperseWeapon(pBullet))
+	// Missile the weapons
+	if (this->WeaponCount && (!pType->WeaponEffectiveRange.Get() || pBullet->TargetCoords.DistanceFrom(pBullet->Location) <= pType->WeaponEffectiveRange.Get()) && this->PrepareMissileWeapon(pBullet))
 		return true;
 
 	// Calculate new speed
 	return (pType->UniqueCurve ? this->CurveVelocityChange(pBullet) : this->NotCurveVelocityChange(pBullet));
 }
 
-void DisperseTrajectory::OnAIPreDetonate(BulletClass* pBullet)
+void MissileTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 {
 	const auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
-	const auto coords = pTarget ? pTarget->GetCoords() : pBullet->Data.Location;
+	const auto coords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
 	const auto pType = this->Type;
 
 	// Whether to snap to target?
@@ -296,11 +299,11 @@ void DisperseTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 	if (pType->WeaponEffectiveRange.Get() < 0 && this->WeaponCount)
 	{
 		this->WeaponTimer.StartTime = 0;
-		this->PrepareDisperseWeapon(pBullet);
+		this->PrepareMissileWeapon(pBullet);
 	}
 }
 
-void DisperseTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition)
+void MissileTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition)
 {
 	// We don't want to take the gravity into account
 	pSpeed->Z += BulletTypeExt::GetAdjustedGravity(pBullet->Type);
@@ -316,17 +319,17 @@ void DisperseTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpe
 		*pSpeed *= distance / velocity;
 }
 
-TrajectoryCheckReturnType DisperseTrajectory::OnAITargetCoordCheck(BulletClass* pBullet)
+TrajectoryCheckReturnType MissileTrajectory::OnAITargetCoordCheck(BulletClass* pBullet)
 {
 	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
-TrajectoryCheckReturnType DisperseTrajectory::OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno)
+TrajectoryCheckReturnType MissileTrajectory::OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno)
 {
 	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
-void DisperseTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno)
+void MissileTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno)
 {
 	const auto pExt = TechnoExt::ExtMap.Find(pTechno);
 
@@ -357,7 +360,7 @@ void DisperseTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pT
 	this->FLHCoord = pExt->LastWeaponFLH;
 }
 
-void DisperseTrajectory::InitializeBulletNotCurve(BulletClass* pBullet)
+void MissileTrajectory::InitializeBulletNotCurve(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 	double rotateAngle = 0.0;
@@ -415,7 +418,7 @@ void DisperseTrajectory::InitializeBulletNotCurve(BulletClass* pBullet)
 	}
 }
 
-inline bool DisperseTrajectory::CalculateReducedVelocity(BulletClass* pBullet, double rotateAngle)
+inline bool MissileTrajectory::CalculateReducedVelocity(BulletClass* pBullet, double rotateAngle)
 {
 	const auto pType = this->Type;
 
@@ -446,7 +449,7 @@ inline bool DisperseTrajectory::CalculateReducedVelocity(BulletClass* pBullet, d
 	return true;
 }
 
-inline BulletVelocity DisperseTrajectory::RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian)
+inline BulletVelocity MissileTrajectory::RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian)
 {
 	const auto theAxisLengthSquared = theAxis.MagnitudeSquared();
 
@@ -461,7 +464,7 @@ inline BulletVelocity DisperseTrajectory::RotateAboutTheAxis(const BulletVelocit
 	return ((theSpeed * cosRotate) + (theAxis * ((1 - cosRotate) * (theSpeed * theAxis))) + (theAxis.CrossProduct(theSpeed) * Math::sin(theRadian)));
 }
 
-bool DisperseTrajectory::CalculateBulletVelocity(BulletClass* pBullet, double trajectorySpeed)
+bool MissileTrajectory::CalculateBulletVelocity(BulletClass* pBullet, double trajectorySpeed)
 {
 	const auto velocityLength = pBullet->Velocity.Magnitude();
 
@@ -473,7 +476,7 @@ bool DisperseTrajectory::CalculateBulletVelocity(BulletClass* pBullet, double tr
 	return false;
 }
 
-bool DisperseTrajectory::BulletRetargetTechno(BulletClass* pBullet)
+bool MissileTrajectory::BulletRetargetTechno(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 	bool check = false;
@@ -641,19 +644,19 @@ bool DisperseTrajectory::BulletRetargetTechno(BulletClass* pBullet)
 	return false;
 }
 
-inline bool DisperseTrajectory::CheckTechnoIsInvalid(TechnoClass* pTechno)
+inline bool MissileTrajectory::CheckTechnoIsInvalid(TechnoClass* pTechno)
 {
 	// The target is alive
 	return (!pTechno->IsAlive || !pTechno->IsOnMap || pTechno->InLimbo || pTechno->IsSinking || pTechno->Health <= 0);
 }
 
-inline bool DisperseTrajectory::CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget)
+inline bool MissileTrajectory::CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget)
 {
 	// No check for CanTargetHouses
 	return !pWeaponExt || (EnumFunctions::IsTechnoEligible(pTarget, pWeaponExt->CanTarget) && pWeaponExt->HasRequiredAttachedEffects(pTarget, pFirer));
 }
 
-bool DisperseTrajectory::CurveVelocityChange(BulletClass* pBullet)
+bool MissileTrajectory::CurveVelocityChange(BulletClass* pBullet)
 {
 	const auto pTarget = pBullet->Target;
 	const auto pTargetTechno = abstract_cast<TechnoClass*>(pTarget);
@@ -740,7 +743,7 @@ bool DisperseTrajectory::CurveVelocityChange(BulletClass* pBullet)
 	return false;
 }
 
-bool DisperseTrajectory::NotCurveVelocityChange(BulletClass* pBullet)
+bool MissileTrajectory::NotCurveVelocityChange(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 
@@ -766,15 +769,15 @@ bool DisperseTrajectory::NotCurveVelocityChange(BulletClass* pBullet)
 		// Judging whether to accelerate or decelerate based on acceleration
 		if (pType->Acceleration > 0)
 		{
-			if (this->Speed >= pType->Trajectory_Speed)
+			if (this->Speed >= pType->Speed)
 			{
-				this->Speed = pType->Trajectory_Speed;
+				this->Speed = pType->Speed;
 				this->Accelerate = false;
 			}
 		}
-		else if (this->Speed <= pType->Trajectory_Speed)
+		else if (this->Speed <= pType->Speed)
 		{
-			this->Speed = pType->Trajectory_Speed;
+			this->Speed = pType->Speed;
 			this->Accelerate = false;
 		}
 
@@ -799,7 +802,7 @@ bool DisperseTrajectory::NotCurveVelocityChange(BulletClass* pBullet)
 	return velocityUp && this->CalculateBulletVelocity(pBullet, this->Speed);
 }
 
-bool DisperseTrajectory::StandardVelocityChange(BulletClass* pBullet)
+bool MissileTrajectory::StandardVelocityChange(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 	const auto pTarget = pBullet->Target;
@@ -814,9 +817,9 @@ bool DisperseTrajectory::StandardVelocityChange(BulletClass* pBullet)
 	pBullet->TargetCoords = targetLocation;
 
 	// If the speed is too low, it will cause the lead time calculation results to be too far away and unable to be used
-	if (pType->LeadTimeCalculate && checkValid && (pType->UniqueCurve || pType->Trajectory_Speed > 64.0))
+	if (pType->LeadTimeCalculate && checkValid && (pType->UniqueCurve || pType->Speed > 64.0))
 	{
-		const auto leadSpeed = (pType->Trajectory_Speed + this->Speed) / 2;
+		const auto leadSpeed = (pType->Speed + this->Speed) / 2;
 		const auto timeMult = targetLocation.DistanceFrom(pBullet->Location) / leadSpeed;
 		targetLocation += (targetLocation - this->LastTargetCoord) * timeMult;
 	}
@@ -847,7 +850,7 @@ bool DisperseTrajectory::StandardVelocityChange(BulletClass* pBullet)
 	return this->ChangeBulletVelocity(pBullet, targetLocation);
 }
 
-bool DisperseTrajectory::ChangeBulletVelocity(BulletClass* pBullet, const CoordStruct& targetLocation)
+bool MissileTrajectory::ChangeBulletVelocity(BulletClass* pBullet, const CoordStruct& targetLocation)
 {
 	const auto pType = this->Type;
 	const auto bulletVelocity = pBullet->Velocity;
@@ -889,7 +892,7 @@ bool DisperseTrajectory::ChangeBulletVelocity(BulletClass* pBullet, const CoordS
 	return false;
 }
 
-bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
+bool MissileTrajectory::PrepareMissileWeapon(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 
@@ -961,7 +964,7 @@ bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 				if (pTarget)
 				{
 					for (int burstNum = 0; burstNum < burstCount; burstNum++)
-						this->CreateDisperseBullets(pBullet, pWeapon, pTarget, pOwner, burstNum, burstCount);
+						this->CreateMissileBullets(pBullet, pWeapon, pTarget, pOwner, burstNum, burstCount);
 				}
 
 				continue;
@@ -972,7 +975,7 @@ bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 			// Prioritize attacking the original target once
 			if (pType->WeaponTendency && burstCount > 0 && pTarget)
 			{
-				this->CreateDisperseBullets(pBullet, pWeapon, pTarget, pOwner, burstNow, burstCount);
+				this->CreateMissileBullets(pBullet, pWeapon, pTarget, pOwner, burstNow, burstCount);
 				++burstNow;
 
 				if (burstCount <= 1)
@@ -1171,7 +1174,7 @@ bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 					break;
 				}
 			}
-			else // Disperse attacks on all optional targets
+			else // Missile attacks on all optional targets
 			{
 				for (const auto pVector : vectors)
 				{
@@ -1207,7 +1210,7 @@ bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 
 			for (const auto& pNewTarget : validTargets)
 			{
-				this->CreateDisperseBullets(pBullet, pWeapon, pNewTarget, pOwner, burstNow, burstCount);
+				this->CreateMissileBullets(pBullet, pWeapon, pNewTarget, pOwner, burstNow, burstCount);
 				++burstNow;
 			}
 		}
@@ -1217,7 +1220,7 @@ bool DisperseTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 	return pType->SuicideIfNoWeapon && !this->WeaponCount;
 }
 
-void DisperseTrajectory::CreateDisperseBullets(BulletClass* pBullet, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst)
+void MissileTrajectory::CreateMissileBullets(BulletClass* pBullet, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst)
 {
 	const auto finalDamage = static_cast<int>(pWeapon->Damage * this->FirepowerMult);
 
@@ -1231,15 +1234,15 @@ void DisperseTrajectory::CreateDisperseBullets(BulletClass* pBullet, WeaponTypeC
 		{
 			const auto flag = pTraj->Flag();
 
-			if (flag == TrajectoryFlag::Disperse)
+			if (flag == TrajectoryFlag::Missile)
 			{
-				const auto pTrajectory = static_cast<DisperseTrajectory*>(pTraj);
+				const auto pTrajectory = static_cast<MissileTrajectory*>(pTraj);
 				const auto pTrajType = pTrajectory->Type;
 				pTrajectory->FirepowerMult = this->FirepowerMult;
 
 				// The created bullet's velocity calculation has been completed, so we should stack the calculations.
 				if (pTrajectory->UseDisperseBurst && std::abs(pTrajType->RotateCoord) > 1e-10 && curBurst >= 0 && maxBurst > 1 && !pTrajType->UniqueCurve && pTrajectory->PreAimCoord != CoordStruct::Empty)
-					this->DisperseBurstSubstitution(pCreateBullet, pTrajType->AxisOfRotation.Get(), pTrajType->RotateCoord, curBurst, maxBurst, pTrajType->MirrorCoord);
+					this->MissileBurstSubstitution(pCreateBullet, pTrajType->AxisOfRotation.Get(), pTrajType->RotateCoord, curBurst, maxBurst, pTrajType->MirrorCoord);
 
 				if (pTrajType->RecordSourceCoord && pBullet->Owner && this->Type->RecordSourceCoord && this->FLHCoord != CoordStruct::Empty)
 				{
@@ -1265,7 +1268,7 @@ void DisperseTrajectory::CreateDisperseBullets(BulletClass* pBullet, WeaponTypeC
 					}
 					else
 					{
-						this->DisperseBurstSubstitution(pCreateBullet, pTrajType->AxisOfRotation.Get(), pTrajType->RotateCoord, curBurst, maxBurst, pTrajType->MirrorCoord);
+						this->MissileBurstSubstitution(pCreateBullet, pTrajType->AxisOfRotation.Get(), pTrajType->RotateCoord, curBurst, maxBurst, pTrajType->MirrorCoord);
 					}
 				}
 			}
@@ -1283,7 +1286,7 @@ void DisperseTrajectory::CreateDisperseBullets(BulletClass* pBullet, WeaponTypeC
 
 					// Bombard is quite special, in this case it needs to be calculated twice
 					if (!pTrajType->NoLaunch || !pTrajType->LeadTimeCalculate || !abstract_cast<FootClass*>(pTarget))
-						this->DisperseBurstSubstitution(pCreateBullet, pTrajType->AxisOfRotation.Get(), pTrajType->RotateCoord, curBurst, maxBurst, pTrajType->MirrorCoord);
+						this->MissileBurstSubstitution(pCreateBullet, pTrajType->AxisOfRotation.Get(), pTrajType->RotateCoord, curBurst, maxBurst, pTrajType->MirrorCoord);
 				}
 			}
 			else if (flag == TrajectoryFlag::Engrave)
@@ -1308,7 +1311,7 @@ void DisperseTrajectory::CreateDisperseBullets(BulletClass* pBullet, WeaponTypeC
 						const auto rotateAngle = Math::atan2(pBullet->TargetCoords.Y - theSource.Y , pBullet->TargetCoords.X - theSource.X);
 						pTrajectory->SetEngraveDirection(pCreateBullet, rotateAngle);
 						auto coordDistance = pCreateBullet->Velocity.Magnitude();
-						pCreateBullet->Velocity *= (coordDistance > 1e-10) ? (pTrajType->Trajectory_Speed / coordDistance) : 0;
+						pCreateBullet->Velocity *= (coordDistance > 1e-10) ? (pTrajType->Speed / coordDistance) : 0;
 					}
 				}
 				else
@@ -1332,7 +1335,7 @@ void DisperseTrajectory::CreateDisperseBullets(BulletClass* pBullet, WeaponTypeC
 					}
 					else
 					{
-						this->DisperseBurstSubstitution(pCreateBullet, pTrajType->AxisOfRotation.Get(), pTrajType->RotateCoord, curBurst, maxBurst, pTrajType->MirrorCoord);
+						this->MissileBurstSubstitution(pCreateBullet, pTrajType->AxisOfRotation.Get(), pTrajType->RotateCoord, curBurst, maxBurst, pTrajType->MirrorCoord);
 					}
 				}
 			}
@@ -1361,7 +1364,7 @@ void DisperseTrajectory::CreateDisperseBullets(BulletClass* pBullet, WeaponTypeC
 	}
 }
 
-void DisperseTrajectory::DisperseBurstSubstitution(BulletClass* pBullet, const CoordStruct& axis, double rotateCoord, int curBurst, int maxBurst, bool mirror)
+void MissileTrajectory::MissileBurstSubstitution(BulletClass* pBullet, const CoordStruct& axis, double rotateCoord, int curBurst, int maxBurst, bool mirror)
 {
 	const auto createBulletTargetToSource = pBullet->TargetCoords - pBullet->SourceCoords;
 	const auto rotateAngle = Math::atan2(createBulletTargetToSource.Y , createBulletTargetToSource.X);

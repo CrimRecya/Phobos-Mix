@@ -65,9 +65,10 @@ bool EngraveTrajectoryType::Save(PhobosStreamWriter& Stm) const
 
 void EngraveTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
+	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 
-	this->Trajectory_Speed = Math::min(128.0, this->Trajectory_Speed);
+	this->Speed = Math::min(128.0, this->Speed);
 	this->SourceCoord.Read(exINI, pSection, "Trajectory.Engrave.SourceCoord");
 	this->TargetCoord.Read(exINI, pSection, "Trajectory.Engrave.TargetCoord");
 	this->MirrorCoord.Read(exINI, pSection, "Trajectory.Engrave.MirrorCoord");
@@ -124,12 +125,14 @@ void EngraveTrajectory::Serialize(T& Stm)
 
 bool EngraveTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
+	this->PhobosTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool EngraveTrajectory::Save(PhobosStreamWriter& Stm) const
 {
+	this->PhobosTrajectory::Save(Stm);
 	const_cast<EngraveTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
@@ -165,7 +168,7 @@ void EngraveTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, Bul
 
 	// Substitute the speed to calculate velocity
 	auto coordDistance = pBullet->Velocity.Magnitude();
-	pBullet->Velocity *= (coordDistance > 1e-10) ? (pType->Trajectory_Speed / coordDistance) : 0;
+	pBullet->Velocity *= (coordDistance > 1e-10) ? (pType->Speed / coordDistance) : 0;
 
 	// Calculate additional range
 	if (pType->ApplyRangeModifiers && pTechno)
@@ -176,7 +179,7 @@ void EngraveTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, Bul
 
 	// Automatically calculate duration
 	if (this->Duration <= 0)
-		this->Duration = static_cast<int>(coordDistance / pType->Trajectory_Speed) + 1;
+		this->Duration = static_cast<int>(coordDistance / pType->Speed) + 1;
 }
 
 bool EngraveTrajectory::OnAI(BulletClass* pBullet)

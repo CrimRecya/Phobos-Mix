@@ -42,6 +42,11 @@ public:
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Parabola; }
 
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
 	Valueable<Leptons> DetonationDistance;
 	Valueable<Leptons> TargetSnapDistance;
 	Valueable<ParabolaFireMode> OpenFireMode;
@@ -60,18 +65,13 @@ public:
 	Valueable<bool> MirrorCoord;
 	Valueable<bool> UseDisperseBurst;
 	Valueable<CoordStruct> AxisOfRotation;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
 };
 
 class ParabolaTrajectory final : public PhobosTrajectory
 {
 public:
-	ParabolaTrajectory(noinit_t) { }
-
-	ParabolaTrajectory(ParabolaTrajectoryType const* trajType) : Type { trajType }
+	ParabolaTrajectory(ParabolaTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+		, Type { trajType }
 		, ThrowHeight { trajType->ThrowHeight > 0 ? trajType->ThrowHeight : 600 }
 		, BounceTimes { trajType->BounceTimes }
 		, OffsetCoord { trajType->OffsetCoord.Get() }
@@ -96,24 +96,6 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) override;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) override;
 
-	const ParabolaTrajectoryType* Type;
-	int ThrowHeight;
-	int BounceTimes;
-	CoordStruct OffsetCoord;
-	bool UseDisperseBurst;
-	bool ShouldDetonate;
-	bool ShouldBounce;
-	bool NeedExtraCheck;
-	CoordStruct LastTargetCoord;
-	int CurrentBurst;
-	int CountOfBurst;
-	int WaitOneFrame;
-	BulletVelocity LastVelocity;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
-
 	void PrepareForOpenFire(BulletClass* pBullet);
 	bool BulletPrepareCheck(BulletClass* pBullet);
 	void CalculateBulletVelocityRightNow(BulletClass* pBullet, CoordStruct* pSourceCoords, double gravity);
@@ -132,4 +114,23 @@ private:
 	bool BulletDetonatePreCheck(BulletClass* pBullet);
 	bool BulletDetonateLastCheck(BulletClass* pBullet, CellClass* pCell, double gravity, bool bounce);
 	void BulletDetonateEffectuate(BulletClass* pBullet, double velocityMult);
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
+	const ParabolaTrajectoryType* Type;
+	int ThrowHeight;
+	int BounceTimes;
+	CoordStruct OffsetCoord;
+	bool UseDisperseBurst;
+	bool ShouldDetonate;
+	bool ShouldBounce;
+	bool NeedExtraCheck;
+	CoordStruct LastTargetCoord;
+	int CurrentBurst;
+	int CountOfBurst;
+	int WaitOneFrame;
+	BulletVelocity LastVelocity;
 };

@@ -35,6 +35,11 @@ public:
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Bombard; }
 
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
 	Valueable<double> Height;
 	Valueable<double> FallPercent;
 	Valueable<double> FallPercentShift;
@@ -56,18 +61,13 @@ public:
 	Valueable<bool> UseDisperseBurst;
 	Valueable<CoordStruct> AxisOfRotation;
 	Valueable<bool> SubjectToGround;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
 };
 
 class BombardTrajectory final : public PhobosTrajectory
 {
 public:
-	BombardTrajectory(noinit_t) { }
-
-	BombardTrajectory(BombardTrajectoryType const* trajType) : Type { trajType }
+	BombardTrajectory(BombardTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+		, Type { trajType }
 		, Height { trajType->Height }
 		, FallPercent { trajType->FallPercent - trajType->FallPercentShift }
 		, OffsetCoord { trajType->OffsetCoord.Get() }
@@ -93,6 +93,22 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) override;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) override;
 
+	void PrepareForOpenFire(BulletClass* pBullet);
+	CoordStruct CalculateMiddleCoords(BulletClass* pBullet);
+	void CalculateTargetCoords(BulletClass* pBullet);
+	CoordStruct CalculateBulletLeadTime(BulletClass* pBullet);
+	void CalculateDisperseBurst(BulletClass* pBullet);
+	bool BulletPrepareCheck(BulletClass* pBullet);
+	bool BulletDetonatePreCheck(BulletClass* pBullet);
+	bool BulletDetonateRemainCheck(BulletClass* pBullet);
+	void BulletVelocityChange(BulletClass* pBullet);
+	void RefreshBulletLineTrail(BulletClass* pBullet);
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
 	const BombardTrajectoryType* Type;
 	double Height;
 	double FallPercent;
@@ -107,19 +123,4 @@ public:
 	int CurrentBurst;
 	double RotateAngle;
 	int WaitOneFrame;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
-
-	void PrepareForOpenFire(BulletClass* pBullet);
-	CoordStruct CalculateMiddleCoords(BulletClass* pBullet);
-	void CalculateTargetCoords(BulletClass* pBullet);
-	CoordStruct CalculateBulletLeadTime(BulletClass* pBullet);
-	void CalculateDisperseBurst(BulletClass* pBullet);
-	bool BulletPrepareCheck(BulletClass* pBullet);
-	bool BulletDetonatePreCheck(BulletClass* pBullet);
-	bool BulletDetonateRemainCheck(BulletClass* pBullet);
-	void BulletVelocityChange(BulletClass* pBullet);
-	void RefreshBulletLineTrail(BulletClass* pBullet);
 };

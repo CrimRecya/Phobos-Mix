@@ -53,6 +53,7 @@ bool ParabolaTrajectoryType::Save(PhobosStreamWriter& Stm) const
 
 void ParabolaTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
+	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 
 	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Parabola.DetonationDistance");
@@ -113,12 +114,14 @@ void ParabolaTrajectory::Serialize(T& Stm)
 
 bool ParabolaTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
+	this->PhobosTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool ParabolaTrajectory::Save(PhobosStreamWriter& Stm) const
 {
+	this->PhobosTrajectory::Save(Stm);
 	const_cast<ParabolaTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
@@ -186,7 +189,7 @@ void ParabolaTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 	if (targetSnapDistance > 0)
 	{
 		const auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
-		const auto coords = pTarget ? pTarget->GetCoords() : pBullet->Data.Location;
+		const auto coords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
 
 		if (coords.DistanceFrom(pBullet->Location) <= targetSnapDistance)
 		{
@@ -408,7 +411,7 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(BulletClass* pBullet, C
 	case ParabolaFireMode::SpeedAndHeight: // Fixed horizontal speed and fixed max height
 	{
 		// Step 1: Calculate the time when the projectile meets the target directly using horizontal velocity
-		const auto meetTime = this->SolveFixedSpeedMeetTime(pSourceCoords, &targetCoords, &offsetCoords, pType->Trajectory_Speed);
+		const auto meetTime = this->SolveFixedSpeedMeetTime(pSourceCoords, &targetCoords, &offsetCoords, pType->Speed);
 
 		// Step 2: Substitute the time into the calculation of the attack coordinates
 		pBullet->TargetCoords += (targetCoords - this->LastTargetCoord) * meetTime;
@@ -420,7 +423,7 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(BulletClass* pBullet, C
 
 		// Step 4: Calculate the ratio of horizontal velocity to horizontal distance
 		const auto horizontalDistance = Point2D { destinationCoords.X, destinationCoords.Y }.Magnitude();
-		const auto mult = horizontalDistance > 1e-10 ? pType->Trajectory_Speed / horizontalDistance : 1.0;
+		const auto mult = horizontalDistance > 1e-10 ? pType->Speed / horizontalDistance : 1.0;
 
 		// Step 5: Calculate the horizontal component of the projectile velocity
 		pBullet->Velocity.X = destinationCoords.X * mult;
@@ -478,7 +481,7 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(BulletClass* pBullet, C
 	case ParabolaFireMode::SpeedAndAngle: // Fixed horizontal speed and fixed fire angle
 	{
 		// Step 1: Calculate the time when the projectile meets the target directly using horizontal velocity
-		const auto meetTime = this->SolveFixedSpeedMeetTime(pSourceCoords, &targetCoords, &offsetCoords, pType->Trajectory_Speed);
+		const auto meetTime = this->SolveFixedSpeedMeetTime(pSourceCoords, &targetCoords, &offsetCoords, pType->Speed);
 
 		// Step 2: Substitute the time into the calculation of the attack coordinates
 		pBullet->TargetCoords += (targetCoords - this->LastTargetCoord) * meetTime;
@@ -490,7 +493,7 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(BulletClass* pBullet, C
 
 		// Step 4: Calculate the ratio of horizontal velocity to horizontal distance
 		const auto horizontalDistance = Point2D { destinationCoords.X, destinationCoords.Y }.Magnitude();
-		const auto mult = horizontalDistance > 1e-10 ? pType->Trajectory_Speed / horizontalDistance : 1.0;
+		const auto mult = horizontalDistance > 1e-10 ? pType->Speed / horizontalDistance : 1.0;
 
 		// Step 5: Calculate each horizontal component of the projectile velocity
 		pBullet->Velocity.X = destinationCoords.X * mult;
@@ -513,7 +516,7 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(BulletClass* pBullet, C
 	default: // Fixed horizontal speed and aim at the target
 	{
 		// Step 1: Calculate the time when the projectile meets the target directly using horizontal velocity
-		const auto meetTime = this->SolveFixedSpeedMeetTime(pSourceCoords, &targetCoords, &offsetCoords, pType->Trajectory_Speed);
+		const auto meetTime = this->SolveFixedSpeedMeetTime(pSourceCoords, &targetCoords, &offsetCoords, pType->Speed);
 
 		// Step 2: Substitute the time into the calculation of the attack coordinates
 		pBullet->TargetCoords += (targetCoords - this->LastTargetCoord) * meetTime;
@@ -525,12 +528,12 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(BulletClass* pBullet, C
 
 		// Step 4: Calculate the ratio of horizontal velocity to horizontal distance
 		const auto horizontalDistance = Point2D { destinationCoords.X, destinationCoords.Y }.Magnitude();
-		const auto mult = horizontalDistance > 1e-10 ? pType->Trajectory_Speed / horizontalDistance : 1.0;
+		const auto mult = horizontalDistance > 1e-10 ? pType->Speed / horizontalDistance : 1.0;
 
 		// Step 5: Calculate the projectile velocity
 		pBullet->Velocity.X = destinationCoords.X * mult;
 		pBullet->Velocity.Y = destinationCoords.Y * mult;
-		pBullet->Velocity.Z = destinationCoords.Z * mult + (gravity * horizontalDistance) / (2 * pType->Trajectory_Speed) + gravity / 2;
+		pBullet->Velocity.Z = destinationCoords.Z * mult + (gravity * horizontalDistance) / (2 * pType->Speed) + gravity / 2;
 
 		// Step 6: Record whether it requires additional checks during the flight
 		this->CheckIfNeedExtraCheck(pBullet);
@@ -610,7 +613,7 @@ void ParabolaTrajectory::CalculateBulletVelocityRightNow(BulletClass* pBullet, C
 		pBullet->Velocity.Z = sqrt(2 * gravity * (maxHeight - sourceHeight));
 
 		// Step 3: Calculate the ratio of horizontal velocity to horizontal distance
-		const auto mult = horizontalDistance > 1e-10 ? pType->Trajectory_Speed / horizontalDistance : 1.0;
+		const auto mult = horizontalDistance > 1e-10 ? pType->Speed / horizontalDistance : 1.0;
 
 		// Step 4: Calculate the horizontal component of the projectile velocity
 		pBullet->Velocity.X = distanceCoords.X * mult;
@@ -642,7 +645,7 @@ void ParabolaTrajectory::CalculateBulletVelocityRightNow(BulletClass* pBullet, C
 	case ParabolaFireMode::SpeedAndAngle: // Fixed horizontal speed and fixed fire angle
 	{
 		// Step 1: Calculate the ratio of horizontal velocity to horizontal distance
-		const auto mult = horizontalDistance > 1e-10 ? pType->Trajectory_Speed / horizontalDistance : 1.0;
+		const auto mult = horizontalDistance > 1e-10 ? pType->Speed / horizontalDistance : 1.0;
 
 		// Step 2: Calculate the horizontal component of the projectile velocity
 		pBullet->Velocity.X = distanceCoords.X * mult;
@@ -653,18 +656,18 @@ void ParabolaTrajectory::CalculateBulletVelocityRightNow(BulletClass* pBullet, C
 		radian = (radian >= Math::HalfPi || radian <= -Math::HalfPi) ? (Math::HalfPi / 3) : radian;
 
 		// Step 4: Calculate the vertical component of the projectile velocity
-		pBullet->Velocity.Z = pType->Trajectory_Speed * Math::tan(radian);
+		pBullet->Velocity.Z = pType->Speed * Math::tan(radian);
 		break;
 	}
 	default: // Fixed horizontal speed and aim at the target
 	{
 		// Step 1: Calculate the ratio of horizontal velocity to horizontal distance
-		const auto mult = horizontalDistance > 1e-10 ? pType->Trajectory_Speed / horizontalDistance : 1.0;
+		const auto mult = horizontalDistance > 1e-10 ? pType->Speed / horizontalDistance : 1.0;
 
 		// Step 2: Calculate the projectile velocity
 		pBullet->Velocity.X = distanceCoords.X * mult;
 		pBullet->Velocity.Y = distanceCoords.Y * mult;
-		pBullet->Velocity.Z = distanceCoords.Z * mult + (gravity * horizontalDistance) / (2 * pType->Trajectory_Speed);
+		pBullet->Velocity.Z = distanceCoords.Z * mult + (gravity * horizontalDistance) / (2 * pType->Speed);
 		break;
 	}
 	}
@@ -691,7 +694,7 @@ void ParabolaTrajectory::CheckIfNeedExtraCheck(BulletClass* pBullet)
 	}
 	default: // Fixed horizontal speed and blabla
 	{
-		this->NeedExtraCheck = pType->Trajectory_Speed > 256.0;
+		this->NeedExtraCheck = pType->Speed > 256.0;
 		break;
 	}
 	}

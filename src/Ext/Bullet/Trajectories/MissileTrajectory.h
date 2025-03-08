@@ -3,10 +3,10 @@
 #include "PhobosTrajectory.h"
 #include <Ext/WeaponType/Body.h>
 
-class DisperseTrajectoryType final : public PhobosTrajectoryType
+class MissileTrajectoryType final : public PhobosTrajectoryType
 {
 public:
-	DisperseTrajectoryType() : PhobosTrajectoryType()
+	MissileTrajectoryType() : PhobosTrajectoryType()
 		, UniqueCurve { false }
 		, PreAimCoord { { 0, 0, 0 } }
 		, RotateCoord { 0 }
@@ -51,8 +51,13 @@ public:
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual std::unique_ptr<PhobosTrajectory> CreateInstance() const override;
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
-	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Disperse; }
+	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Missile; }
 
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
 	Valueable<bool> UniqueCurve;
 	Valueable<CoordStruct> PreAimCoord;
 	Valueable<double> RotateCoord;
@@ -91,18 +96,13 @@ public:
 	Valueable<bool> WeaponMarginal;
 	Valueable<bool> WeaponToAllies;
 	Valueable<bool> WeaponDoRepeat;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
 };
 
-class DisperseTrajectory final : public PhobosTrajectory
+class MissileTrajectory final : public PhobosTrajectory
 {
 public:
-	DisperseTrajectory(noinit_t) { }
-
-	DisperseTrajectory(DisperseTrajectoryType const* trajType) : Type { trajType }
+	MissileTrajectory(MissileTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+		, Type { trajType }
 		, Speed { trajType->LaunchSpeed }
 		, PreAimCoord { trajType->PreAimCoord.Get() }
 		, UseDisperseBurst { trajType->UseDisperseBurst }
@@ -127,7 +127,7 @@ public:
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
-	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Disperse; }
+	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Missile; }
 	virtual void OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity) override;
 	virtual bool OnAI(BulletClass* pBullet) override;
 	virtual void OnAIPreDetonate(BulletClass* pBullet) override;
@@ -135,7 +135,28 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) override;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) override;
 
-	const DisperseTrajectoryType* Type;
+	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
+	void InitializeBulletNotCurve(BulletClass* pBullet);
+	inline bool CalculateReducedVelocity(BulletClass* pBullet, double rotateAngle);
+	inline BulletVelocity RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian);
+	bool CalculateBulletVelocity(BulletClass* pBullet, double trajectorySpeed);
+	bool BulletRetargetTechno(BulletClass* pBullet);
+	inline bool CheckTechnoIsInvalid(TechnoClass* pTechno);
+	inline bool CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget);
+	bool CurveVelocityChange(BulletClass* pBullet);
+	bool NotCurveVelocityChange(BulletClass* pBullet);
+	bool StandardVelocityChange(BulletClass* pBullet);
+	bool ChangeBulletVelocity(BulletClass* pBullet, const CoordStruct& targetLocation);
+	bool PrepareMissileWeapon(BulletClass* pBullet);
+	void CreateMissileBullets(BulletClass* pBullet, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst);
+	void MissileBurstSubstitution(BulletClass* pBullet, const CoordStruct& axis, double rotateCoord, int curBurst, int maxBurst, bool mirror);
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
+	const MissileTrajectoryType* Type;
 	double Speed;
 	CoordStruct PreAimCoord;
 	bool UseDisperseBurst;
@@ -156,24 +177,4 @@ public:
 	CoordStruct FLHCoord;
 	CoordStruct BuildingCoord;
 	double FirepowerMult;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
-
-	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
-	void InitializeBulletNotCurve(BulletClass* pBullet);
-	inline bool CalculateReducedVelocity(BulletClass* pBullet, double rotateAngle);
-	inline BulletVelocity RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian);
-	bool CalculateBulletVelocity(BulletClass* pBullet, double trajectorySpeed);
-	bool BulletRetargetTechno(BulletClass* pBullet);
-	inline bool CheckTechnoIsInvalid(TechnoClass* pTechno);
-	inline bool CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget);
-	bool CurveVelocityChange(BulletClass* pBullet);
-	bool NotCurveVelocityChange(BulletClass* pBullet);
-	bool StandardVelocityChange(BulletClass* pBullet);
-	bool ChangeBulletVelocity(BulletClass* pBullet, const CoordStruct& targetLocation);
-	bool PrepareDisperseWeapon(BulletClass* pBullet);
-	void CreateDisperseBullets(BulletClass* pBullet, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst);
-	void DisperseBurstSubstitution(BulletClass* pBullet, const CoordStruct& axis, double rotateCoord, int curBurst, int maxBurst, bool mirror);
 };

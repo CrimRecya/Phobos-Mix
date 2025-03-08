@@ -47,6 +47,11 @@ public:
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Tracing; }
 
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
 	Valueable<TraceTargetMode> TraceMode;
 	Valueable<int> TheDuration;
 	Valueable<int> TolerantTime;
@@ -70,18 +75,13 @@ public:
 	Valueable<bool> Synchronize;
 	Valueable<bool> SuicideAboveRange;
 	Valueable<bool> SuicideIfNoWeapon;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
 };
 
 class TracingTrajectory final : public PhobosTrajectory
 {
 public:
-	TracingTrajectory(noinit_t) { }
-
-	TracingTrajectory(TracingTrajectoryType const* trajType) : Type { trajType }
+	TracingTrajectory(TracingTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+		, Type { trajType }
 		, WeaponIndex { 0 }
 		, WeaponCount { 0 }
 		, WeaponCycle { trajType->WeaponCycle }
@@ -105,23 +105,6 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) override;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) override;
 
-	const TracingTrajectoryType* Type;
-	int WeaponIndex;
-	int WeaponCount;
-	int WeaponCycle;
-	CDTimerClass ExistTimer;
-	CDTimerClass WeaponTimer;
-	CDTimerClass TolerantTimer;
-	DWORD TechnoInTransport;
-	bool NotMainWeapon;
-	CoordStruct FLHCoord;
-	CoordStruct BuildingCoord;
-	double FirepowerMult;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
-
 	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
 	void SetSourceLocation(BulletClass* pBullet);
 	void InitializeDuration(BulletClass* pBullet, int duration);
@@ -134,4 +117,22 @@ private:
 	CoordStruct GetWeaponFireCoord(BulletClass* pBullet, TechnoClass* pTechno);
 	bool PrepareTracingWeapon(BulletClass* pBullet);
 	void CreateTracingBullets(BulletClass* pBullet, WeaponTypeClass* pWeapon);
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
+	const TracingTrajectoryType* Type;
+	int WeaponIndex;
+	int WeaponCount;
+	int WeaponCycle;
+	CDTimerClass ExistTimer;
+	CDTimerClass WeaponTimer;
+	CDTimerClass TolerantTimer;
+	DWORD TechnoInTransport;
+	bool NotMainWeapon;
+	CoordStruct FLHCoord;
+	CoordStruct BuildingCoord;
+	double FirepowerMult;
 };

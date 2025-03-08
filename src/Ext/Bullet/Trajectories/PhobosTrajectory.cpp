@@ -7,7 +7,7 @@
 
 #include "StraightTrajectory.h"
 #include "BombardTrajectory.h"
-#include "DisperseTrajectory.h"
+#include "MissileTrajectory.h"
 #include "EngraveTrajectory.h"
 #include "ParabolaTrajectory.h"
 #include "TracingTrajectory.h"
@@ -22,8 +22,8 @@ TrajectoryTypePointer::TrajectoryTypePointer(TrajectoryFlag flag)
 	case TrajectoryFlag::Bombard:
 		_ptr = std::make_unique<BombardTrajectoryType>();
 		return;
-	case TrajectoryFlag::Disperse:
-		_ptr = std::make_unique<DisperseTrajectoryType>();
+	case TrajectoryFlag::Missile:
+		_ptr = std::make_unique<MissileTrajectoryType>();
 		return;
 	case TrajectoryFlag::Engrave:
 		_ptr = std::make_unique<EngraveTrajectoryType>();
@@ -49,7 +49,7 @@ namespace detail
 			{
 				{"Straight", TrajectoryFlag::Straight},
 				{"Bombard" ,TrajectoryFlag::Bombard},
-				{"Disperse", TrajectoryFlag::Disperse},
+				{"Missile", TrajectoryFlag::Missile},
 				{"Engrave" ,TrajectoryFlag::Engrave},
 				{"Parabola", TrajectoryFlag::Parabola},
 				{"Tracing" ,TrajectoryFlag::Tracing},
@@ -80,11 +80,7 @@ void TrajectoryTypePointer::LoadFromINI(CCINIClass* pINI, const char* pSection)
 			std::construct_at(this, flag.Get());
 	}
 	if (_ptr)
-	{
-		_ptr->Trajectory_Speed.Read(exINI, pSection, "Trajectory.Speed");
-		_ptr->Trajectory_Speed = Math::max(0.001,_ptr->Trajectory_Speed);
 		_ptr->Read(pINI, pSection);
-	}
 }
 
 bool TrajectoryTypePointer::Load(PhobosStreamReader& Stm, bool RegisterForChange)
@@ -131,8 +127,8 @@ bool TrajectoryPointer::Load(PhobosStreamReader& Stm, bool registerForChange)
 		case TrajectoryFlag::Bombard:
 			_ptr = std::make_unique<BombardTrajectory>(noinit_t {});
 			break;
-		case TrajectoryFlag::Disperse:
-			_ptr = std::make_unique<DisperseTrajectory>(noinit_t {});
+		case TrajectoryFlag::Missile:
+			_ptr = std::make_unique<MissileTrajectory>(noinit_t {});
 			break;
 		case TrajectoryFlag::Engrave:
 			_ptr = std::make_unique<EngraveTrajectory>(noinit_t {});
@@ -172,7 +168,7 @@ bool TrajectoryPointer::Save(PhobosStreamWriter& Stm) const
 // ------------------------------------------------------------------------------ //
 
 // A rectangular shape with a custom width from the current frame to the next frame in length.
-std::vector<CellClass*> PhobosTrajectoryType::GetCellsInProximityRadius(BulletClass* pBullet, Leptons trajectoryProximityRange)
+std::vector<CellClass*> PhobosTrajectoryType::GetCellsInProximityRadius(const BulletClass* const pBullet, const Leptons trajectoryProximityRange)
 {
 	// Seems like the y-axis is reversed, but it's okay.
 	const CoordStruct walkCoord { static_cast<int>(pBullet->Velocity.X), static_cast<int>(pBullet->Velocity.Y), 0 };
@@ -224,7 +220,7 @@ std::vector<CellClass*> PhobosTrajectoryType::GetCellsInProximityRadius(BulletCl
 }
 
 // Can ONLY fill RECTANGLE. Record cells in the order of "draw left boundary, draw right boundary, fill middle, and move up one level".
-std::vector<CellStruct> PhobosTrajectoryType::GetCellsInRectangle(CellStruct bottomStaCell, CellStruct leftMidCell, CellStruct rightMidCell, CellStruct topEndCell)
+std::vector<CellStruct> PhobosTrajectoryType::GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell)
 {
 	std::vector<CellStruct> recCells;
 	const auto cellNums = (std::abs(topEndCell.Y - bottomStaCell.Y) + 1) * (std::abs(rightMidCell.X - leftMidCell.X) + 1);
@@ -448,19 +444,182 @@ std::vector<CellStruct> PhobosTrajectoryType::GetCellsInRectangle(CellStruct bot
 	return recCells;
 }
 
+// =============================
+// load / save
+
+void PhobosTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
+{
+	INI_EX exINI(pINI);
+
+	this->Speed.Read(exINI, pSection, "Trajectory.Speed");
+	this->Speed = Math::max(0.001, this->Speed);
+	this->Duration.Read(exINI, pSection, "Trajectory.Duration");
+	this->TolerantTime.Read(exINI, pSection, "Trajectory.TolerantTime");
+	this->BulletROT.Read(exINI, pSection, "Trajectory.BulletROT");
+	this->BulletSpin.Read(exINI, pSection, "Trajectory.BulletSpin");
+	this->BulletStable.Read(exINI, pSection, "Trajectory.BulletStable");
+	this->BulletOnPlane.Read(exINI, pSection, "Trajectory.BulletOnPlane");
+	this->RetargetRadius.Read(exINI, pSection, "Trajectory.RetargetRadius");
+	this->Synchronize.Read(exINI, pSection, "Trajectory.Synchronize");
+	this->PeacefulVanish.Read(exINI, pSection, "Trajectory.PeacefulVanish");
+	this->ApplyRangeModifiers.Read(exINI, pSection, "Trajectory.ApplyRangeModifiers");
+	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
+	this->UseDisperseCoord.Read(exINI, pSection, "Trajectory.UseDisperseCoord");
+	this->RecordSourceCoord.Read(exINI, pSection, "Trajectory.RecordSourceCoord");
+
+	this->PassDetonate.Read(exINI, pSection, "Trajectory.PassDetonate");
+	this->PassDetonateWarhead.Read<true>(exINI, pSection, "Trajectory.PassDetonateWarhead");
+	this->PassDetonateDamage.Read(exINI, pSection, "Trajectory.PassDetonateDamage");
+	this->PassDetonateDelay.Read(exINI, pSection, "Trajectory.PassDetonateDelay");
+	this->PassDetonateInitialDelay.Read(exINI, pSection, "Trajectory.PassDetonateInitialDelay");
+	this->PassDetonateLocal.Read(exINI, pSection, "Trajectory.PassDetonateLocal");
+	this->ProximityImpact.Read(exINI, pSection, "Trajectory.ProximityImpact");
+	this->ProximityWarhead.Read<true>(exINI, pSection, "Trajectory.ProximityWarhead");
+	this->ProximityDamage.Read(exINI, pSection, "Trajectory.ProximityDamage");
+	this->ProximityRadius.Read(exINI, pSection, "Trajectory.ProximityRadius");
+	this->ProximityDirect.Read(exINI, pSection, "Trajectory.ProximityDirect");
+	this->ProximityMedial.Read(exINI, pSection, "Trajectory.ProximityMedial");
+	this->ProximityAllies.Read(exINI, pSection, "Trajectory.ProximityAllies");
+	this->ProximityFlight.Read(exINI, pSection, "Trajectory.ProximityFlight");
+	this->ThroughVehicles.Read(exINI, pSection, "Trajectory.ThroughVehicles");
+	this->ThroughBuilding.Read(exINI, pSection, "Trajectory.ThroughBuilding");
+	this->EdgeAttenuation.Read(exINI, pSection, "Trajectory.EdgeAttenuation");
+	this->EdgeAttenuation = Math::max(0.0, this->EdgeAttenuation);
+	this->CountAttenuation.Read(exINI, pSection, "Trajectory.CountAttenuation");
+	this->CountAttenuation = Math::max(0.0, this->CountAttenuation);
+
+	this->DisperseWeapons.Read(exINI, pSection, "Trajectory.DisperseWeapons");
+	this->DisperseBursts.Read(exINI, pSection, "Trajectory.DisperseBursts");
+	this->DisperseCounts.Read(exINI, pSection, "Trajectory.DisperseCounts");
+	this->DisperseDelays.Read(exINI, pSection, "Trajectory.DisperseDelays");
+	this->DisperseCycle.Read(exINI, pSection, "Trajectory.DisperseCycle");
+	this->DisperseInitialDelay.Read(exINI, pSection, "Trajectory.DisperseInitialDelay");
+	this->DisperseEffectiveRange.Read(exINI, pSection, "Trajectory.DisperseEffectiveRange");
+	this->DisperseSeparate.Read(exINI, pSection, "Trajectory.DisperseSeparate");
+	this->DisperseRetarget.Read(exINI, pSection, "Trajectory.DisperseRetarget");
+	this->DisperseLocation.Read(exINI, pSection, "Trajectory.DisperseLocation");
+	this->DisperseTendency.Read(exINI, pSection, "Trajectory.DisperseTendency");
+	this->DisperseHolistic.Read(exINI, pSection, "Trajectory.DisperseHolistic");
+	this->DisperseMarginal.Read(exINI, pSection, "Trajectory.DisperseMarginal");
+	this->DisperseDoRepeat.Read(exINI, pSection, "Trajectory.DisperseDoRepeat");
+	this->DisperseSuicide.Read(exINI, pSection, "Trajectory.DisperseSuicide");
+	this->DisperseFromFirer.Read(exINI, pSection, "Trajectory.DisperseFromFirer");
+	this->DisperseFaceCheck.Read(exINI, pSection, "Trajectory.DisperseFaceCheck");
+	this->DisperseCoord.Read(exINI, pSection, "Trajectory.DisperseCoord");
+}
+
 bool PhobosTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	Stm
-		.Process(this->Trajectory_Speed);
+	this->Serialize(Stm);
 	return true;
 }
 
 bool PhobosTrajectoryType::Save(PhobosStreamWriter& Stm) const
 {
-	Stm
-		.Process(this->Trajectory_Speed);
+	const_cast<PhobosTrajectoryType*>(this)->Serialize(Stm);
 	return true;
 }
+
+template<typename T>
+void PhobosTrajectoryType::Serialize(T& Stm)
+{
+	Stm
+		.Process(this->Speed)
+		.Process(this->Duration)
+		.Process(this->TolerantTime)
+		.Process(this->BulletROT)
+		.Process(this->BulletSpin)
+		.Process(this->BulletStable)
+		.Process(this->BulletOnPlane)
+		.Process(this->RetargetRadius)
+		.Process(this->Synchronize)
+		.Process(this->PeacefulVanish)
+		.Process(this->ApplyRangeModifiers)
+		.Process(this->TargetSnapDistance)
+		.Process(this->UseDisperseCoord)
+		.Process(this->RecordSourceCoord)
+
+		.Process(this->PassDetonate)
+		.Process(this->PassDetonateWarhead)
+		.Process(this->PassDetonateDamage)
+		.Process(this->PassDetonateDelay)
+		.Process(this->PassDetonateInitialDelay)
+		.Process(this->PassDetonateLocal)
+		.Process(this->ProximityImpact)
+		.Process(this->ProximityWarhead)
+		.Process(this->ProximityDamage)
+		.Process(this->ProximityRadius)
+		.Process(this->ProximityDirect)
+		.Process(this->ProximityMedial)
+		.Process(this->ProximityAllies)
+		.Process(this->ProximityFlight)
+		.Process(this->ThroughVehicles)
+		.Process(this->ThroughBuilding)
+		.Process(this->EdgeAttenuation)
+		.Process(this->CountAttenuation)
+
+		.Process(this->DisperseWeapons)
+		.Process(this->DisperseBursts)
+		.Process(this->DisperseCounts)
+		.Process(this->DisperseDelays)
+		.Process(this->DisperseCycle)
+		.Process(this->DisperseInitialDelay)
+		.Process(this->DisperseEffectiveRange)
+		.Process(this->DisperseSeparate)
+		.Process(this->DisperseRetarget)
+		.Process(this->DisperseLocation)
+		.Process(this->DisperseTendency)
+		.Process(this->DisperseHolistic)
+		.Process(this->DisperseMarginal)
+		.Process(this->DisperseDoRepeat)
+		.Process(this->DisperseSuicide)
+		.Process(this->DisperseFromFirer)
+		.Process(this->DisperseFaceCheck)
+		.Process(this->DisperseCoord)
+		;
+}
+
+bool PhobosTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
+{
+	this->Serialize(Stm);
+	return true;
+}
+
+bool PhobosTrajectory::Save(PhobosStreamWriter& Stm) const
+{
+	const_cast<PhobosTrajectory*>(this)->Serialize(Stm);
+	return true;
+}
+
+template<typename T>
+void PhobosTrajectory::Serialize(T& Stm)
+{
+	Stm
+		.Process(this->Duration)
+		.Process(this->TolerantTimer)
+		.Process(this->FirepowerMult)
+		.Process(this->AttenuationRange)
+		.Process(this->FLHCoord)
+		.Process(this->BuildingCoord)
+
+		.Process(this->PassDetonateDamage)
+		.Process(this->PassDetonateTimer)
+		.Process(this->ProximityImpact)
+		.Process(this->ProximityDamage)
+		.Process(this->ExtraCheck)
+		.Process(this->TheCasualty)
+
+		.Process(this->DisperseIndex)
+		.Process(this->DisperseCount)
+		.Process(this->DisperseCycle)
+		.Process(this->DisperseTimer)
+		.Process(this->TargetInTheAir)
+		.Process(this->TargetIsTechno)
+		;
+}
+
+// =============================
+// hooks
 
 DEFINE_HOOK(0x4666F7, BulletClass_AI_Trajectories, 0x6)
 {

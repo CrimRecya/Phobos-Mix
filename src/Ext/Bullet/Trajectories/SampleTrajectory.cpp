@@ -34,6 +34,7 @@ bool SampleTrajectoryType::Save(PhobosStreamWriter& Stm) const
 // INI reading stuff
 void SampleTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
+	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Sample.TargetSnapDistance");
 }
@@ -50,12 +51,14 @@ void SampleTrajectory::Serialize(T& Stm)
 
 bool SampleTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
+	this->PhobosTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool SampleTrajectory::Save(PhobosStreamWriter& Stm) const
 {
+	this->PhobosTrajectory::Save(Stm);
 	const_cast<SampleTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
@@ -67,7 +70,7 @@ void SampleTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, Bull
 	pBullet->Velocity.X = static_cast<double>(pBullet->TargetCoords.X - pBullet->SourceCoords.X);
 	pBullet->Velocity.Y = static_cast<double>(pBullet->TargetCoords.Y - pBullet->SourceCoords.Y);
 	pBullet->Velocity.Z = static_cast<double>(pBullet->TargetCoords.Z - pBullet->SourceCoords.Z);
-	pBullet->Velocity *= this->Type->Trajectory_Speed / pBullet->Velocity.Magnitude();
+	pBullet->Velocity *= this->Type->Speed / pBullet->Velocity.Magnitude();
 }
 
 // Some early checks here, returns whether or not to detonate the bullet.
@@ -88,7 +91,7 @@ bool SampleTrajectory::OnAI(BulletClass* pBullet)
 void SampleTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 {
 	auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
-	auto pCoords = pTarget ? pTarget->GetCoords() : pBullet->Data.Location;
+	auto pCoords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
 
 	if (pCoords.DistanceFrom(pBullet->Location) <= this->TargetSnapDistance)
 	{

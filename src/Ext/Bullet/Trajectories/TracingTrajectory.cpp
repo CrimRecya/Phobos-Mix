@@ -1,6 +1,6 @@
 #include "TracingTrajectory.h"
 #include "StraightTrajectory.h"
-#include "DisperseTrajectory.h"
+#include "MissileTrajectory.h"
 #include "EngraveTrajectory.h"
 
 #include <AnimClass.h>
@@ -68,6 +68,7 @@ bool TracingTrajectoryType::Save(PhobosStreamWriter& Stm) const
 
 void TracingTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
+	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 
 	pINI->ReadString(pSection, "Trajectory.Tracing.TraceMode", "", Phobos::readBuffer);
@@ -132,12 +133,14 @@ void TracingTrajectory::Serialize(T& Stm)
 
 bool TracingTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
+	this->PhobosTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool TracingTrajectory::Save(PhobosStreamWriter& Stm) const
 {
+	this->PhobosTrajectory::Save(Stm);
 	const_cast<TracingTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
@@ -535,7 +538,7 @@ BulletVelocity TracingTrajectory::ChangeVelocity(BulletClass* pBullet)
 				auto rotateAngle = Math::atan2(distanceCoords.Y, distanceCoords.X);
 
 				if (std::abs(radius) > 1e-10)
-					rotateAngle += (pType->Trajectory_Speed / radius);
+					rotateAngle += (pType->Speed / radius);
 
 				theOffset.X = static_cast<int>(radius * Math::cos(rotateAngle));
 				theOffset.Y = static_cast<int>(radius * Math::sin(rotateAngle));
@@ -558,7 +561,7 @@ BulletVelocity TracingTrajectory::ChangeVelocity(BulletClass* pBullet)
 				auto rotateAngle = Math::atan2(distanceCoords.Y, distanceCoords.X);
 
 				if (std::abs(radius) > 1e-10)
-					rotateAngle -= (pType->Trajectory_Speed / radius);
+					rotateAngle -= (pType->Speed / radius);
 
 				theOffset.X = static_cast<int>(radius * Math::cos(rotateAngle));
 				theOffset.Y = static_cast<int>(radius * Math::sin(rotateAngle));
@@ -595,8 +598,8 @@ BulletVelocity TracingTrajectory::ChangeVelocity(BulletClass* pBullet)
 		static_cast<double>(distanceCoords.Z)
 	};
 
-	if (distance > pType->Trajectory_Speed)
-		velocity *= (pType->Trajectory_Speed / distance);
+	if (distance > pType->Speed)
+		velocity *= (pType->Speed / distance);
 
 	return velocity;
 }
@@ -775,9 +778,9 @@ void TracingTrajectory::CreateTracingBullets(BulletClass* pBullet, WeaponTypeCla
 				const auto pTrajectory = static_cast<StraightTrajectory*>(pTraj);
 				pTrajectory->FirepowerMult = this->FirepowerMult;
 			}
-			else if (flag == TrajectoryFlag::Disperse)
+			else if (flag == TrajectoryFlag::Missile)
 			{
-				const auto pTrajectory = static_cast<DisperseTrajectory*>(pTraj);
+				const auto pTrajectory = static_cast<MissileTrajectory*>(pTraj);
 				pTrajectory->FirepowerMult = this->FirepowerMult;
 			}
 			else if (flag == TrajectoryFlag::Engrave)

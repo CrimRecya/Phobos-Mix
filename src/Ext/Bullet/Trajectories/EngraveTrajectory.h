@@ -42,6 +42,11 @@ public:
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Engrave; }
 
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
 	Valueable<Point2D> SourceCoord;
 	Valueable<Point2D> TargetCoord;
 	Valueable<bool> MirrorCoord;
@@ -70,18 +75,13 @@ public:
 	Valueable<bool> ProximityFlight;
 	Valueable<bool> ProximitySuicide;
 	Valueable<bool> ConfineOnGround;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
 };
 
 class EngraveTrajectory final : public PhobosTrajectory
 {
 public:
-	EngraveTrajectory(noinit_t) { }
-
-	EngraveTrajectory(EngraveTrajectoryType const* trajType) : Type { trajType }
+	EngraveTrajectory(EngraveTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+		, Type { trajType }
 		, SourceCoord { trajType->SourceCoord.Get() }
 		, TargetCoord { trajType->TargetCoord.Get() }
 		, Duration { trajType->Duration }
@@ -106,6 +106,21 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) override;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) override;
 
+	void SetEngraveDirection(BulletClass* pBullet, double rotateAngle);
+	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
+	inline void CheckMirrorCoord(TechnoClass* pTechno);
+	bool InvalidFireCondition(BulletClass* pBullet, TechnoClass* pTechno);
+	int GetFloorCoordHeight(BulletClass* pBullet, const CoordStruct& coord);
+	bool PlaceOnCorrectHeight(BulletClass* pBullet);
+	void DrawEngraveLaser(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner);
+	inline void DetonateLaserWarhead(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner);
+	void PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+
+public:
 	const EngraveTrajectoryType* Type;
 	Point2D SourceCoord;
 	Point2D TargetCoord;
@@ -119,18 +134,4 @@ public:
 	CoordStruct StartCoord;
 	int ProximityImpact;
 	std::map<int, int> TheCasualty; // Only for recording existence
-
-	void SetEngraveDirection(BulletClass* pBullet, double rotateAngle);
-private:
-	template <typename T>
-	void Serialize(T& Stm);
-
-	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
-	inline void CheckMirrorCoord(TechnoClass* pTechno);
-	bool InvalidFireCondition(BulletClass* pBullet, TechnoClass* pTechno);
-	int GetFloorCoordHeight(BulletClass* pBullet, const CoordStruct& coord);
-	bool PlaceOnCorrectHeight(BulletClass* pBullet);
-	void DrawEngraveLaser(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner);
-	inline void DetonateLaserWarhead(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner);
-	void PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
 };
