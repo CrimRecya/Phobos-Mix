@@ -190,7 +190,7 @@ CoordStruct* __fastcall BuildingClass_GetFireCoords_Wrapper(BuildingClass* pThis
 	return pCrd;
 }
 
-DEFINE_JUMP(CALL6, 0x44D1F9, GET_OFFSET(BuildingClass_GetFireCoords_Wrapper));
+DEFINE_FUNCTION_JUMP(CALL6, 0x44D1F9, BuildingClass_GetFireCoords_Wrapper);
 
 DEFINE_HOOK(0x44D455, BuildingClass_Mission_Missile_EMPulseBulletWeapon, 0x8)
 {
@@ -205,10 +205,16 @@ DEFINE_HOOK(0x44D455, BuildingClass_Mission_Missile_EMPulseBulletWeapon, 0x8)
 #pragma endregion
 
 // Kick out stuck units when the factory building is not busy
+#pragma region KickOutStuckUnits
+
+// Kick out stuck units when the factory building is not busy, only factory buildings can enter this hook
 DEFINE_HOOK(0x450248, BuildingClass_UpdateFactory_KickOutStuckUnits, 0x6)
 {
 	GET(BuildingClass*, pThis, ESI);
 
+	// This is not a solution to the problem at its root
+	// Currently the root cause of the problem is not located
+	// So the idle weapon factory is asked to search every second for any units that are stuck
 	if (!(Unsorted::CurrentFrame() % 15)) // Check every 15 frames for factories
 	{
 		const auto pType = pThis->Type;
@@ -236,6 +242,8 @@ DEFINE_HOOK(0x4444A0, BuildingClass_KickOutUnit_NoKickOutInConstruction, 0xA)
 
 	return (mission == Mission::Unload || mission == Mission::Construction) ? ThisIsNotOK : ThisIsOK;
 }
+
+#pragma endregion
 
 // Ares didn't have something like 0x7397E4 in its UnitDelivery code
 DEFINE_HOOK(0x44FBBF, CreateBuildingFromINIFile_AfterCTOR_BeforeUnlimbo, 0x8)
@@ -792,7 +800,7 @@ bool __fastcall BuildingTypeClass_CanUseWaypoint(BuildingTypeClass* pThis)
 {
 	return RulesExt::Global()->BuildingWaypoints;
 }
-DEFINE_JUMP(VTABLE, 0x7E4610, GET_OFFSET(BuildingTypeClass_CanUseWaypoint))
+DEFINE_FUNCTION_JUMP(VTABLE, 0x7E4610, BuildingTypeClass_CanUseWaypoint)
 
 DEFINE_HOOK(0x4AE95E, DisplayClass_sub_4AE750_DisallowBuildingNonAttackPlanning, 0x5)
 {

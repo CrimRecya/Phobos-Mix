@@ -642,6 +642,7 @@ Vanilla fixes:
 - `FreeUnit` uses its own `SpeedType` to determine where to spawn (by NetsuNegi)
 - Fix the bug where naval ships set to `AllowedToStartInMultiplayer=yes` may spawn incorrectly on land (by NetsuNegi)
 - Fix the bug where pathfinding issues occur when a building performs undeploy (by NetsuNegi)
+- Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory (by CrimRecya & TaranDahl)
 
 Phobos fixes:
 - Fixed a few errors of calling for superweapon launch by `LaunchSW` or building infiltration (by Trsdy)
@@ -692,6 +693,7 @@ Phobos fixes:
 - Fixed `Ammo.AddOnDeploy` behavior inside tank bunkers for non-converters (by Fryone)
 - Fixed an issue that caused new attack and move script actions to pick buildings with `InvisibleInGame=yes` as targets (FS-21)
 - Fix `Insignia.Weapon` failing to parse in map (by Ollerus)
+- Fix `AltNextScenario` not taking effect (by FlyStar)
 
 Fixes / interactions with other extensions:
 - Weapons fired by EMPulse superweapons *(Ares feature)* now fully respect the firing building's FLH.
