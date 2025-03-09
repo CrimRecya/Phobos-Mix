@@ -1,9 +1,10 @@
 #pragma once
 
+#include <BulletClass.h>
+
+#include <Ext/WeaponType/Body.h>
 #include <Utilities/TemplateDef.h>
 #include <Utilities/Savegame.h>
-
-#include <BulletClass.h>
 
 enum class TrajectoryFlag : int
 {
@@ -80,7 +81,8 @@ public:
 		, DisperseDoRepeat { false }
 		, DisperseSuicide { true }
 		, DisperseFromFirer {}
-		, DisperseFaceCheck { true }
+		, DisperseFaceCheck { false }
+		, DisperseForceFire { true }
 		, DisperseCoord { { 0, 0, 0 } }
 
 		, RotateCoord { 0 }
@@ -100,12 +102,9 @@ public:
 	virtual ~PhobosTrajectoryType() noexcept = default;
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
 	virtual bool Save(PhobosStreamWriter& Stm) const;
-	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; };
+	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; }
 	virtual void Read(CCINIClass* const pINI, const char* pSection);
 	[[nodiscard]] virtual std::unique_ptr<PhobosTrajectory> CreateInstance() const = 0;
-
-	static std::vector<CellClass*> GetCellsInProximityRadius(const BulletClass* const pBullet, const Leptons trajectoryProximityRange);
-	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
 
 private:
 	template <typename T>
@@ -164,6 +163,7 @@ public:
 	Valueable<bool> DisperseSuicide;
 	Nullable<bool> DisperseFromFirer;
 	Valueable<bool> DisperseFaceCheck;
+	Valueable<bool> DisperseForceFire;
 	Valueable<PartialVector3D<int>> DisperseCoord;
 
 	Valueable<double> RotateCoord;
@@ -184,7 +184,7 @@ class PhobosTrajectory
 {
 public:
 	PhobosTrajectory(PhobosTrajectoryType const* trajType) :
-		Duration {}
+		DurationTimer {}
 		, TolerantTimer {}
 		, FirepowerMult { 1.0 }
 		, AttenuationRange { 0 }
@@ -210,6 +210,7 @@ public:
 		, CurrentBurst { 0 }
 		, CountOfBurst { 0 }
 		, WaitOneFrame { 0 }
+		, SubjectToGround { false }
 
 		, VirtualSourceCoord {}
 		, VirtualTargetCoord {}
@@ -220,13 +221,45 @@ public:
 	virtual ~PhobosTrajectory() noexcept = default;
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
 	virtual bool Save(PhobosStreamWriter& Stm) const;
-	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; };
-	virtual void OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity) = 0;
-	virtual bool OnAI(BulletClass* pBullet) = 0;
+	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; }
+	virtual void OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity);
+	virtual bool OnAI(BulletClass* pBullet);
+	virtual bool OnAIPreCheck(BulletClass* pBullet, HouseClass* pOwner);
+	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner);
+	virtual void OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner);
 	virtual void OnAIPreDetonate(BulletClass* pBullet) = 0;
 	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) = 0;
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) = 0;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) = 0;
+	virtual const PhobosTrajectoryType* GetType() const { return nullptr; }
+	virtual bool GetCanHitGround() const { return true; }
+	virtual CoordStruct GetRetargetCenter(const BulletClass* const pBullet) const { return pBullet->Location; }
+	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) = 0;
+
+	static inline double Get2DDistance(const CoordStruct& here, const CoordStruct& there);
+	static inline double Get2DVelocity(const BulletVelocity& velocity);
+	static inline void SetNewDamage(int& damage, double ratio);
+	static inline bool CheckTechnoIsInvalid(TechnoClass* pTechno);
+	static inline bool CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget);
+	static inline bool CheckWeaponValidness(HouseClass* pHouse, TechnoClass* pTechno, CellClass* pCell, AffectedHouse flags);
+	static std::vector<CellClass*> GetCellsInProximityRadius(const BulletClass* const pBullet, const Leptons trajectoryProximityRange);
+	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
+	static BulletVelocity RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian);
+	static void DisperseBurstSubstitution(BulletClass* pBullet, const CoordStruct& axis, double rotateCoord, int curBurst, int maxBurst, bool mirror);
+
+	bool BulletRetargetTechno(BulletClass* pBullet);
+	bool CheckThroughAndSubjectInCell(BulletClass* pBullet, CellClass* pCell, HouseClass* pOwner);
+	void CalculateNewDamage(BulletClass* pBullet);
+	void PassWithDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
+	void PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
+	int GetTheTrueDamage(int damage, BulletClass* pBullet, TechnoClass* pTechno, bool self);
+	double GetExtraDamageMultiplier(BulletClass* pBullet, TechnoClass* pTechno);
+	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
+	CoordStruct GetWeaponFireCoord(BulletClass* pBullet, TechnoClass* pTechno);
+	bool CheckFireFacing(BulletClass* pBullet);
+	bool PrepareDisperseWeapon(BulletClass* pBullet);
+	void FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner);
+	void CreateDisperseBullets(TechnoClass* pTechno, const CoordStruct& sourceCoord, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst);
 
 private:
 	template <typename T>
@@ -234,7 +267,7 @@ private:
 
 public:
 	BulletVelocity MovingVelocity;
-	CDTimerClass Duration;
+	CDTimerClass DurationTimer;
 	CDTimerClass TolerantTimer;
 	double FirepowerMult;
 	int AttenuationRange;
@@ -261,6 +294,7 @@ public:
 	int CurrentBurst;
 	int CountOfBurst;
 	int WaitOneFrame;
+	bool SubjectToGround;
 
 	CoordStruct VirtualSourceCoord;
 	CoordStruct VirtualTargetCoord;

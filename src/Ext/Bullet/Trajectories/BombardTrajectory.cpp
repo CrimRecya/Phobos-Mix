@@ -195,6 +195,15 @@ TrajectoryCheckReturnType BombardTrajectory::OnAITechnoCheck(BulletClass* pBulle
 	return TrajectoryCheckReturnType::SkipGameCheck; // Bypass game checks entirely.
 }
 
+void BombardTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)
+{
+	pBullet->SetTarget(pTarget);
+	pBullet->TargetCoords = pTarget->GetCoords();
+
+	if (this->Type->LeadTimeCalculate && !this->IsFalling)
+		this->LastTargetCoord = pBullet->TargetCoords;
+}
+
 void BombardTrajectory::PrepareForOpenFire(BulletClass* pBullet)
 {
 	const auto pType = this->Type;

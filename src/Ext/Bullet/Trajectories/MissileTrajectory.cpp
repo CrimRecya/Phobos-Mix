@@ -329,6 +329,26 @@ TrajectoryCheckReturnType MissileTrajectory::OnAITechnoCheck(BulletClass* pBulle
 	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
+CoordStruct MissileTrajectory::GetRetargetCenter(const BulletClass* const pBullet) const
+{
+	// When in the tracking phase, it only retarget within the range in front of it
+	if (!this->InStraight)
+		return pBullet->TargetCoords;
+
+	const auto futureVelocity = pBullet->Velocity * ((this->Type->RetargetRadius * Unsorted::LeptonsPerCell) / this->Speed);
+	return CoordStruct { pBullet->Location.X + static_cast<int>(futureVelocity.X), pBullet->Location.Y + static_cast<int>(futureVelocity.Y), pBullet->Location.Z };
+}
+
+void MissileTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)
+{
+	pBullet->SetTarget(pTarget);
+	pBullet->TargetCoords = pTarget->GetCoords();
+	this->LastTargetCoord = pBullet->TargetCoords;
+
+	if (this->Type->CruiseEnable)
+		this->CruiseEnable = true;
+}
+
 void MissileTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno)
 {
 	const auto pExt = TechnoExt::ExtMap.Find(pTechno);

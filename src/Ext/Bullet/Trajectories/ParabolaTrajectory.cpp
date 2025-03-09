@@ -222,6 +222,12 @@ TrajectoryCheckReturnType ParabolaTrajectory::OnAITechnoCheck(BulletClass* pBull
 	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
+void ParabolaTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)
+{
+	pBullet->SetTarget(pTarget);
+	pBullet->TargetCoords = pTarget->GetCoords();
+}
+
 void ParabolaTrajectory::PrepareForOpenFire(BulletClass* pBullet)
 {
 	const auto pType = this->Type;

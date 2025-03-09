@@ -125,3 +125,9 @@ TrajectoryCheckReturnType SampleTrajectory::OnAITechnoCheck(BulletClass* pBullet
 {
 	return TrajectoryCheckReturnType::ExecuteGameCheck; // Execute game checks.
 }
+
+void SampleTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)
+{
+	pBullet->SetTarget(pTarget);
+	pBullet->TargetCoords = pTarget->GetCoords();
+}

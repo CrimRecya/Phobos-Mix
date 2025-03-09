@@ -263,6 +263,12 @@ TrajectoryCheckReturnType StraightTrajectory::OnAITechnoCheck(BulletClass* pBull
 	return TrajectoryCheckReturnType::SkipGameCheck; // Bypass game checks entirely.
 }
 
+void StraightTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)
+{
+	pBullet->SetTarget(pTarget);
+	pBullet->TargetCoords = pTarget->GetCoords();
+}
+
 void StraightTrajectory::PrepareForOpenFire(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
@@ -778,7 +784,7 @@ void StraightTrajectory::PrepareForDetonateAt(BulletClass* pBullet, HouseClass* 
 
 	// Step 1: Find valid targets on the ground within range.
 	const auto radius = pType->ProximityRadius.Get();
-	std::vector<CellClass*> recCellClass = PhobosTrajectoryType::GetCellsInProximityRadius(pBullet, radius);
+	std::vector<CellClass*> recCellClass = PhobosTrajectory::GetCellsInProximityRadius(pBullet, radius);
 	const size_t cellSize = recCellClass.size() * 2;
 	size_t vectSize = cellSize;
 	size_t thisSize = 0;

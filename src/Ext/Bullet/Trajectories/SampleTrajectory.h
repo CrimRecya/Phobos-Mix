@@ -36,10 +36,17 @@ public:
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Invalid; } // TrajectoryFlag
 	virtual void OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity) override;
 	virtual bool OnAI(BulletClass* pBullet) override;
+	virtual bool OnAIPreCheck(BulletClass* pBullet, HouseClass* pOwner) override;
+	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner) override;
+	virtual void OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner) override;
 	virtual void OnAIPreDetonate(BulletClass* pBullet) override;
 	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) override;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) override;
+	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
+	virtual bool GetCanHitGround() const override { return this->SubjectToGround; }
+	virtual CoordStruct GetRetargetCenter(const BulletClass* const pBullet) const override { return pBullet->TargetCoords; }
+	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) override;
 
 private:
 	template <typename T>

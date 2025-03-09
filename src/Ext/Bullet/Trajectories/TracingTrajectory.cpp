@@ -228,6 +228,12 @@ TrajectoryCheckReturnType TracingTrajectory::OnAITechnoCheck(BulletClass* pBulle
 	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
+void TracingTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)
+{
+	pBullet->SetTarget(pTarget);
+	pBullet->TargetCoords = pTarget->GetCoords();
+}
+
 void TracingTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno)
 {
 	const auto pExt = TechnoExt::ExtMap.Find(pTechno);
@@ -363,7 +369,7 @@ bool TracingTrajectory::BulletDetonatePreCheck(BulletClass* pBullet)
 			if (pTarget && !(pTarget->IsInAir() ? pBullet->Type->AA : pBullet->Type->AG))
 				pTarget = nullptr;
 
-			pBullet->Target = pTarget;
+			pBullet->SetTarget(pTarget);
 		}
 	}
 
