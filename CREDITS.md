@@ -359,6 +359,7 @@ This page lists all the individual contributions to the project by their author.
    - Fix the bug where naval ships set to `AllowedToStartInMultiplayer=yes` may spawn incorrectly on land
    - Fix the bug where pathfinding issues occur when a building performs undeploy
    - Fix amphibious harvesters can not automatically return to refineries with `WaterBound`
+   - Fix [EIP 004C2C19](https://modenc.renegadeprojects.com/Internal_Error#eip_004C2C19) concerning the electric bolt
    - Exclusive SuperWeapon Sidebar
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**:
@@ -469,6 +470,7 @@ This page lists all the individual contributions to the project by their author.
   - Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix
   - Destroyed unit leaves sensors bugfix
 - **Multfinite** - Allow to toggle main exception handler via command line argument `-ExceptionHandler=boolean`
+- **hejiajun107, Xkein** - Fix a jumpjet crash related to voxel shadow drawing
 - **Ares developers**:
   - YRpp and Syringe which are used, save/load, project foundation and generally useful code from Ares
   - unfinished RadTypes code
