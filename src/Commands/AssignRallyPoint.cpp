@@ -21,7 +21,7 @@ const char* AssignRallyPointCommandClass::GetName() const
 
 const wchar_t* AssignRallyPointCommandClass::GetUIName() const
 {
-	return GeneralUtils::LoadStringUnlessMissing("TXT_ASSIGN_RALLY_POINT", L"Assign rally point");
+	return GeneralUtils::LoadStringUnlessMissing("TXT_ASSIGN_RALLY_POINT", L"Assign the rally point");
 }
 
 const wchar_t* AssignRallyPointCommandClass::GetUICategory() const
@@ -80,7 +80,7 @@ const char* AssignSecondaryRallyPointCommandClass::GetName() const
 
 const wchar_t* AssignSecondaryRallyPointCommandClass::GetUIName() const
 {
-	return GeneralUtils::LoadStringUnlessMissing("TXT_ASSIGN_2ND_RALLY_POINT", L"Assign rally point");
+	return GeneralUtils::LoadStringUnlessMissing("TXT_ASSIGN_2ND_RALLY_POINT", L"Assign 2nd rally point");
 }
 
 const wchar_t* AssignSecondaryRallyPointCommandClass::GetUICategory() const
@@ -90,7 +90,7 @@ const wchar_t* AssignSecondaryRallyPointCommandClass::GetUICategory() const
 
 const wchar_t* AssignSecondaryRallyPointCommandClass::GetUIDescription() const
 {
-	return GeneralUtils::LoadStringUnlessMissing("TXT_ASSIGN_2ND_RALLY_POINT_DESC", L"Assign the rally point of selected buildings to the mouse pointing coords.");
+	return GeneralUtils::LoadStringUnlessMissing("TXT_ASSIGN_2ND_RALLY_POINT_DESC", L"Assign 2nd rally point of selected buildings to the mouse pointing coords.");
 }
 
 void AssignSecondaryRallyPointCommandClass::Execute(WWKey eInput) const
