@@ -40,7 +40,7 @@ void MissileTrajectoryType::Serialize(T& Stm)
 		.Process(this->AxisOfRotation)
 		.Process(this->LaunchSpeed)
 		.Process(this->Acceleration)
-		.Process(this->ROT)
+		.Process(this->TurningSpeed)
 		.Process(this->LockDirection)
 		.Process(this->CruiseEnable)
 		.Process(this->CruiseUnableRange)
@@ -101,8 +101,8 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->LaunchSpeed.Read(exINI, pSection, "Trajectory.Missile.LaunchSpeed");
 	this->LaunchSpeed = Math::max(0.001, this->LaunchSpeed);
 	this->Acceleration.Read(exINI, pSection, "Trajectory.Missile.Acceleration");
-	this->ROT.Read(exINI, pSection, "Trajectory.Missile.ROT");
-	this->ROT = Math::max(0.0, this->ROT);
+	this->TurningSpeed.Read(exINI, pSection, "Trajectory.Missile.TurningSpeed");
+	this->TurningSpeed = Math::max(0.0, this->TurningSpeed);
 	this->LockDirection.Read(exINI, pSection, "Trajectory.Missile.LockDirection");
 	this->CruiseEnable.Read(exINI, pSection, "Trajectory.Missile.CruiseEnable");
 	this->CruiseUnableRange.Read(exINI, pSection, "Trajectory.Missile.CruiseUnableRange");
@@ -422,11 +422,11 @@ inline bool MissileTrajectory::CalculateReducedVelocity(BulletClass* pBullet, do
 {
 	const auto pType = this->Type;
 
-	if (!pType->ReduceCoord || pType->ROT <= 1e-10)
+	if (!pType->ReduceCoord || pType->TurningSpeed <= 1e-10)
 		return false;
 
 	// Check if its steering ability is sufficient
-	const auto coordMult = (this->OriginalDistance * pType->ROT / (Unsorted::LeptonsPerCell * 90 / 2));
+	const auto coordMult = (this->OriginalDistance * pType->TurningSpeed / (Unsorted::LeptonsPerCell * 90 / 2));
 
 	if (coordMult >= 1.0)
 		return false;
@@ -861,11 +861,11 @@ bool MissileTrajectory::ChangeBulletVelocity(BulletClass* pBullet, const CoordSt
 		static_cast<double>(targetLocation.Z - pBullet->Location.Z)
 	};
 
-	// Calculate the new velocity vector based on ROT
+	// Calculate the new velocity vector based on turning speed
 	const auto dotProduct = (targetVelocity * bulletVelocity);
 	const auto cosTheta = dotProduct / sqrt(targetVelocity.MagnitudeSquared() * bulletVelocity.MagnitudeSquared());
 	const auto radian = Math::acos(Math::clamp(cosTheta, -1.0, 1.0)); // Ensure that the result range of cos is correct
-	const auto turningRadius = (pType->UniqueCurve ? 10.0 : pType->ROT) * (Math::TwoPi / 360);
+	const auto turningRadius = (pType->UniqueCurve ? 10.0 : pType->TurningSpeed) * (Math::TwoPi / 360);
 
 	if (std::abs(radian) > turningRadius) // The angle that needs to be rotated is relatively large
 	{

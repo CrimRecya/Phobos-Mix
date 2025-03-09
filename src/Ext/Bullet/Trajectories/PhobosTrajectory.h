@@ -36,13 +36,14 @@ public:
 		, BulletSpin { false }
 		, BulletStable { false }
 		, BulletOnPlane { true }
+		, MirrorCoord { true }
 		, RetargetRadius { 0 }
 		, Synchronize { false }
 		, PeacefulVanish {}
 		, ApplyRangeModifiers { false }
-		, TargetSnapDistance { 0.5 }
 		, UseDisperseCoord { false }
 		, RecordSourceCoord { false }
+		, TargetSnapDistance { 0.5 }
 
 		, PassDetonate { false }
 		, PassDetonateWarhead {}
@@ -60,14 +61,14 @@ public:
 		, ProximityFlight { false }
 		, ThroughVehicles { true }
 		, ThroughBuilding { true }
-		, EdgeAttenuation { 1.0 }
-		, CountAttenuation { 1.0 }
+		, DamageEdgeAttenuation { 1.0 }
+		, DamageCountAttenuation { 1.0 }
 
 		, DisperseWeapons {}
 		, DisperseBursts {}
-		, DisperseCounts { 0 }
-		, DisperseDelays { 1 }
-		, DisperseCycle { -1 }
+		, DisperseCounts {}
+		, DisperseDelays {}
+		, DisperseCycle { 0 }
 		, DisperseInitialDelay { 0 }
 		, DisperseEffectiveRange { Leptons(0) }
 		, DisperseSeparate { false }
@@ -81,6 +82,19 @@ public:
 		, DisperseFromFirer {}
 		, DisperseFaceCheck { true }
 		, DisperseCoord { { 0, 0, 0 } }
+
+		, RotateCoord { 0 }
+		, OffsetCoord { { 0, 0, 0 } }
+		, AxisOfRotation { { 0, 0, 1 } }
+		, UseDisperseBurst { false }
+		, LeadTimeCalculate { false }
+		, EarlyDetonation { false }
+		, DetonationHeight { -1 }
+		, DetonationDistance { Leptons(102) }
+
+		, VirtualSourceCoord { { 0, 0, 0 } }
+		, VirtualTargetCoord { { 0, 0, 0 } }
+		, AllowFirerTurning { true }
 	{ }
 
 	virtual ~PhobosTrajectoryType() noexcept = default;
@@ -98,20 +112,21 @@ private:
 	void Serialize(T& Stm);
 
 public:
-	Valueable<double> Speed;
-	Valueable<int> Duration;
-	Valueable<int> TolerantTime;
-	Valueable<int> BulletROT;
-	Valueable<bool> BulletSpin;
-	Valueable<bool> BulletStable;
-	Valueable<bool> BulletOnPlane;
-	Valueable<double> RetargetRadius;
-	Valueable<bool> Synchronize;
-	Nullable<bool> PeacefulVanish;
-	Valueable<bool> ApplyRangeModifiers;
-	Valueable<double> TargetSnapDistance;
-	Valueable<bool> UseDisperseCoord;
-	Valueable<bool> RecordSourceCoord;
+	Valueable<double> Speed; // The speed that a projectile should reach
+	Valueable<int> Duration; // The existence time of projectile
+	Valueable<int> TolerantTime; // The tolerance time for the projectile to lose its target, after which it will explode
+	Valueable<int> BulletROT; // The rotational speed of the projectile image that does not affect the direction of movement
+	Valueable<bool> BulletSpin; // Image continue to rotate
+	Valueable<bool> BulletStable; // Image no longer rotate after launch
+	Valueable<bool> BulletOnPlane; // Image only rotates on the horizontal plane
+	Valueable<bool> MirrorCoord; // Mirror offset
+	Valueable<double> RetargetRadius; // Searching for a new target after losing it
+	Valueable<bool> Synchronize; // Synchronize the target of its launcher
+	Nullable<bool> PeacefulVanish; // Disappear directly when about to detonate
+	Valueable<bool> ApplyRangeModifiers; // Apply range bonus
+	Valueable<bool> UseDisperseCoord; // Use the recorded launch location
+	Valueable<bool> RecordSourceCoord; // Record the launch location
+	Valueable<double> TargetSnapDistance; // The distance that can be adsorbed onto the target
 
 	Valueable<bool> PassDetonate;
 	Valueable<WarheadTypeClass*> PassDetonateWarhead;
@@ -129,13 +144,13 @@ public:
 	Valueable<bool> ProximityFlight;
 	Valueable<bool> ThroughVehicles;
 	Valueable<bool> ThroughBuilding;
-	Valueable<double> EdgeAttenuation;
-	Valueable<double> CountAttenuation;
+	Valueable<double> DamageEdgeAttenuation;
+	Valueable<double> DamageCountAttenuation;
 
 	ValueableVector<WeaponTypeClass*> DisperseWeapons;
 	ValueableVector<int> DisperseBursts;
-	Valueable<int> DisperseCounts;
-	Valueable<int> DisperseDelays;
+	ValueableVector<int> DisperseCounts;
+	ValueableVector<int> DisperseDelays;
 	Valueable<int> DisperseCycle;
 	Valueable<int> DisperseInitialDelay;
 	Valueable<Leptons> DisperseEffectiveRange;
@@ -149,7 +164,20 @@ public:
 	Valueable<bool> DisperseSuicide;
 	Nullable<bool> DisperseFromFirer;
 	Valueable<bool> DisperseFaceCheck;
-	Valueable<CoordStruct> DisperseCoord;
+	Valueable<PartialVector3D<int>> DisperseCoord;
+
+	Valueable<double> RotateCoord;
+	Valueable<PartialVector3D<int>> OffsetCoord;
+	Valueable<PartialVector3D<int>> AxisOfRotation;
+	Valueable<bool> UseDisperseBurst;
+	Valueable<bool> LeadTimeCalculate;
+	Valueable<bool> EarlyDetonation;
+	Valueable<int> DetonationHeight;
+	Valueable<Leptons> DetonationDistance;
+
+	Valueable<PartialVector3D<int>> VirtualSourceCoord;
+	Valueable<PartialVector3D<int>> VirtualTargetCoord;
+	Valueable<bool> AllowFirerTurning;
 };
 
 class PhobosTrajectory
@@ -176,6 +204,17 @@ public:
 		, DisperseTimer {}
 		, TargetInTheAir { false }
 		, TargetIsTechno { false }
+
+		, OffsetCoord {}
+		, LastTargetCoord {}
+		, CurrentBurst { 0 }
+		, CountOfBurst { 0 }
+		, WaitOneFrame { 0 }
+
+		, VirtualSourceCoord {}
+		, VirtualTargetCoord {}
+		, TechnoInTransport { 0 }
+		, NotMainWeapon { false }
 	{ }
 
 	virtual ~PhobosTrajectory() noexcept = default;
@@ -194,10 +233,12 @@ private:
 	void Serialize(T& Stm);
 
 public:
+	BulletVelocity MovingVelocity;
 	CDTimerClass Duration;
 	CDTimerClass TolerantTimer;
 	double FirepowerMult;
 	int AttenuationRange;
+	int RemainingDistance;
 	CoordStruct FLHCoord;
 	CoordStruct BuildingCoord;
 
@@ -214,6 +255,17 @@ public:
 	CDTimerClass DisperseTimer;
 	bool TargetInTheAir;
 	bool TargetIsTechno;
+
+	CoordStruct OffsetCoord;
+	CoordStruct LastTargetCoord;
+	int CurrentBurst;
+	int CountOfBurst;
+	int WaitOneFrame;
+
+	CoordStruct VirtualSourceCoord;
+	CoordStruct VirtualTargetCoord;
+	DWORD TechnoInTransport;
+	bool NotMainWeapon;
 };
 
 /*

@@ -17,7 +17,7 @@ public:
 		, AxisOfRotation { { 0, 0, 1 } }
 		, LaunchSpeed { 0 }
 		, Acceleration { 10.0 }
-		, ROT { 10.0 }
+		, TurningSpeed { 10.0 }
 		, LockDirection { false }
 		, CruiseEnable { false }
 		, CruiseUnableRange { Leptons(1280) }
@@ -68,7 +68,7 @@ public:
 	Valueable<CoordStruct> AxisOfRotation;
 	Valueable<double> LaunchSpeed;
 	Valueable<double> Acceleration;
-	Valueable<double> ROT;
+	Valueable<double> TurningSpeed;
 	Valueable<bool> LockDirection;
 	Valueable<bool> CruiseEnable;
 	Valueable<Leptons> CruiseUnableRange;

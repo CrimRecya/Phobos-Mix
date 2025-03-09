@@ -459,13 +459,14 @@ void PhobosTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->BulletSpin.Read(exINI, pSection, "Trajectory.BulletSpin");
 	this->BulletStable.Read(exINI, pSection, "Trajectory.BulletStable");
 	this->BulletOnPlane.Read(exINI, pSection, "Trajectory.BulletOnPlane");
+	this->MirrorCoord.Read(exINI, pSection, "Trajectory.MirrorCoord");
 	this->RetargetRadius.Read(exINI, pSection, "Trajectory.RetargetRadius");
 	this->Synchronize.Read(exINI, pSection, "Trajectory.Synchronize");
 	this->PeacefulVanish.Read(exINI, pSection, "Trajectory.PeacefulVanish");
 	this->ApplyRangeModifiers.Read(exINI, pSection, "Trajectory.ApplyRangeModifiers");
-	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
 	this->UseDisperseCoord.Read(exINI, pSection, "Trajectory.UseDisperseCoord");
 	this->RecordSourceCoord.Read(exINI, pSection, "Trajectory.RecordSourceCoord");
+	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
 
 	this->PassDetonate.Read(exINI, pSection, "Trajectory.PassDetonate");
 	this->PassDetonateWarhead.Read<true>(exINI, pSection, "Trajectory.PassDetonateWarhead");
@@ -483,10 +484,10 @@ void PhobosTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->ProximityFlight.Read(exINI, pSection, "Trajectory.ProximityFlight");
 	this->ThroughVehicles.Read(exINI, pSection, "Trajectory.ThroughVehicles");
 	this->ThroughBuilding.Read(exINI, pSection, "Trajectory.ThroughBuilding");
-	this->EdgeAttenuation.Read(exINI, pSection, "Trajectory.EdgeAttenuation");
-	this->EdgeAttenuation = Math::max(0.0, this->EdgeAttenuation);
-	this->CountAttenuation.Read(exINI, pSection, "Trajectory.CountAttenuation");
-	this->CountAttenuation = Math::max(0.0, this->CountAttenuation);
+	this->DamageEdgeAttenuation.Read(exINI, pSection, "Trajectory.DamageEdgeAttenuation");
+	this->DamageEdgeAttenuation = Math::max(0.0, this->DamageEdgeAttenuation);
+	this->DamageCountAttenuation.Read(exINI, pSection, "Trajectory.DamageCountAttenuation");
+	this->DamageCountAttenuation = Math::max(0.0, this->DamageCountAttenuation);
 
 	this->DisperseWeapons.Read(exINI, pSection, "Trajectory.DisperseWeapons");
 	this->DisperseBursts.Read(exINI, pSection, "Trajectory.DisperseBursts");
@@ -506,6 +507,19 @@ void PhobosTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->DisperseFromFirer.Read(exINI, pSection, "Trajectory.DisperseFromFirer");
 	this->DisperseFaceCheck.Read(exINI, pSection, "Trajectory.DisperseFaceCheck");
 	this->DisperseCoord.Read(exINI, pSection, "Trajectory.DisperseCoord");
+
+	this->RotateCoord.Read(exINI, pSection, "Trajectory.RotateCoord");
+	this->OffsetCoord.Read(exINI, pSection, "Trajectory.OffsetCoord");
+	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.AxisOfRotation");
+	this->UseDisperseBurst.Read(exINI, pSection, "Trajectory.UseDisperseBurst");
+	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.LeadTimeCalculate");
+	this->EarlyDetonation.Read(exINI, pSection, "Trajectory.EarlyDetonation");
+	this->DetonationHeight.Read(exINI, pSection, "Trajectory.DetonationHeight");
+	this->DetonationDistance.Read(exINI, pSection, "Trajectory.DetonationDistance");
+
+//	this->VirtualSourceCoord.Read(exINI, pSection, "Trajectory.VirtualSourceCoord");
+//	this->VirtualTargetCoord.Read(exINI, pSection, "Trajectory.VirtualTargetCoord");
+	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.AllowFirerTurning");
 }
 
 bool PhobosTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
@@ -531,13 +545,14 @@ void PhobosTrajectoryType::Serialize(T& Stm)
 		.Process(this->BulletSpin)
 		.Process(this->BulletStable)
 		.Process(this->BulletOnPlane)
+		.Process(this->MirrorCoord)
 		.Process(this->RetargetRadius)
 		.Process(this->Synchronize)
 		.Process(this->PeacefulVanish)
 		.Process(this->ApplyRangeModifiers)
-		.Process(this->TargetSnapDistance)
 		.Process(this->UseDisperseCoord)
 		.Process(this->RecordSourceCoord)
+		.Process(this->TargetSnapDistance)
 
 		.Process(this->PassDetonate)
 		.Process(this->PassDetonateWarhead)
@@ -555,8 +570,8 @@ void PhobosTrajectoryType::Serialize(T& Stm)
 		.Process(this->ProximityFlight)
 		.Process(this->ThroughVehicles)
 		.Process(this->ThroughBuilding)
-		.Process(this->EdgeAttenuation)
-		.Process(this->CountAttenuation)
+		.Process(this->DamageEdgeAttenuation)
+		.Process(this->DamageCountAttenuation)
 
 		.Process(this->DisperseWeapons)
 		.Process(this->DisperseBursts)
@@ -576,6 +591,19 @@ void PhobosTrajectoryType::Serialize(T& Stm)
 		.Process(this->DisperseFromFirer)
 		.Process(this->DisperseFaceCheck)
 		.Process(this->DisperseCoord)
+
+		.Process(this->RotateCoord)
+		.Process(this->OffsetCoord)
+		.Process(this->AxisOfRotation)
+		.Process(this->UseDisperseBurst)
+		.Process(this->LeadTimeCalculate)
+		.Process(this->EarlyDetonation)
+		.Process(this->DetonationHeight)
+		.Process(this->DetonationDistance)
+
+		.Process(this->VirtualSourceCoord)
+		.Process(this->VirtualTargetCoord)
+		.Process(this->AllowFirerTurning)
 		;
 }
 
@@ -615,6 +643,17 @@ void PhobosTrajectory::Serialize(T& Stm)
 		.Process(this->DisperseTimer)
 		.Process(this->TargetInTheAir)
 		.Process(this->TargetIsTechno)
+
+		.Process(this->OffsetCoord)
+		.Process(this->LastTargetCoord)
+		.Process(this->CurrentBurst)
+		.Process(this->CountOfBurst)
+		.Process(this->WaitOneFrame)
+
+		.Process(this->VirtualSourceCoord)
+		.Process(this->VirtualTargetCoord)
+		.Process(this->TechnoInTransport)
+		.Process(this->NotMainWeapon)
 		;
 }
 
