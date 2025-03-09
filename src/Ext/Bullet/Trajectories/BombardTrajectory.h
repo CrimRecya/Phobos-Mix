@@ -2,10 +2,10 @@
 
 #include "PhobosTrajectory.h"
 
-class BombardTrajectoryType final : public PhobosTrajectoryType
+class BombardTrajectoryType final : public LiveShellTrajectoryType
 {
 public:
-	BombardTrajectoryType() : PhobosTrajectoryType()
+	BombardTrajectoryType() : LiveShellTrajectoryType()
 		, Height { 0.0 }
 		, FallPercent { 1.0 }
 		, FallPercentShift { 0.0 }
@@ -63,10 +63,10 @@ public:
 	Valueable<bool> SubjectToGround;
 };
 
-class BombardTrajectory final : public PhobosTrajectory
+class BombardTrajectory final : public LiveShellTrajectory
 {
 public:
-	BombardTrajectory(BombardTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+	BombardTrajectory(BombardTrajectoryType const* trajType) : LiveShellTrajectory(trajType)
 		, Type { trajType }
 		, Height { trajType->Height }
 		, FallPercent { trajType->FallPercent - trajType->FallPercentShift }

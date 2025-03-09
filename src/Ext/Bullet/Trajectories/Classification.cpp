@@ -1,0 +1,227 @@
+#include "Classification.h"
+
+#include <OverlayTypeClass.h>
+
+#include <Ext/Bullet/Body.h>
+#include <Ext/Techno/Body.h>
+
+void PhobosTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity)
+{
+	// Anyway, first reset the useless velocity
+	pBullet->Velocity = BulletVelocity::Empty;
+
+	// Without a target, the game will inevitably crash before, so no need to check here
+	const auto pTarget = pBullet->Target;
+
+	// Due to various ways of firing weapons, the true firer may have already died
+	const auto pFirer = pBullet->Owner;
+
+	// Just like GetTechnoType()
+	const auto pType = this->GetType();
+
+	// Record the status of the target
+	this->TargetIsTechno = (pTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None;
+	this->TargetInTheAir = (pTarget->AbstractFlags & AbstractFlags::Object) ? (static_cast<ObjectClass*>(pTarget)->GetHeight() > Unsorted::CellHeight) : false;
+
+	// Record some information of weapon
+	if (const auto pWeapon = pBullet->WeaponType)
+	{
+		this->AttenuationRange = pWeapon->Range;
+		this->CountOfBurst = pWeapon->Burst;
+
+		if (pType->ApplyRangeModifiers && pFirer)
+			this->AttenuationRange = WeaponTypeExt::GetRangeWithModifiers(pWeapon, pFirer);
+	}
+
+	// Record some information of firer
+	if (pFirer)
+	{
+		for (auto pTrans = pFirer->Transporter; pTrans; pTrans = pTrans->Transporter)
+			this->TechnoInTransport = pTrans->UniqueID;
+
+		this->CurrentBurst = pFirer->CurrentBurstIndex;
+		this->FirepowerMult = pFirer->FirepowerMultiplier * TechnoExt::ExtMap.Find(pFirer)->AE.FirepowerMultiplier;
+
+		const auto flag = this->Flag();
+
+		if (pType->DisperseWeapons.size() && pType->RecordSourceCoord || flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing)
+			this->GetTechnoFLHCoord(pBullet, pFirer);
+		else
+			this->NotMainWeapon = true;
+	}
+	else
+	{
+		this->NotMainWeapon = true;
+	}
+
+	// Initialize additional warheads
+	if (pType->PassDetonate)
+		this->PassDetonateTimer.Start(pType->PassDetonateInitialDelay > 0 ? pType->PassDetonateInitialDelay : 0);
+
+	// Initialize additional weapons
+	if (!pType->DisperseWeapons.empty() && !pType->DisperseCounts.empty() && this->DisperseCycle)
+	{
+		this->DisperseCount = pType->DisperseCounts[0];
+		this->DisperseTimer.Start(pType->DisperseInitialDelay);
+	}
+}
+
+bool PhobosTrajectory::OnAI(BulletClass* pBullet)
+{
+	const auto pFirer = pBullet->Owner;
+	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
+	const auto pType = this->GetType();
+
+	// Detonate the warhead at the current location
+	if (pType->PassDetonate)
+		this->PassWithDetonateAt(pBullet, pOwner);
+
+	// Detonate the warhead on the technos passing through
+	if (this->ProximityImpact != 0 && pType->ProximityRadius.Get() > 0)
+		this->PrepareForDetonateAt(pBullet, pOwner);
+
+	// Launch additional weapons towards the target
+	if (this->DisperseTimer.Completed() && this->CheckFireFacing(pBullet) && this->PrepareDisperseWeapon(pBullet))
+		return true;
+
+	return false;
+}
+
+// Check if it should be detonated immediately
+bool PhobosTrajectory::OnAIPreCheck(BulletClass* pBullet, HouseClass* pOwner)
+{
+	// If this value is not empty, it means that the projectile should be directly detonated at this time. This cannot be taken out here for use.
+	if (this->ExtraCheck)
+		return true;
+
+	// Check the remaining existence time
+	if (this->DurationTimer.Completed())
+		return true;
+
+	// Check the remaining travel distance of the bullet
+	this->RemainingDistance -= static_cast<int>(this->GetType()->Speed);
+
+	if (this->RemainingDistance < 0)
+		return true;
+
+	// Below ground level? (16 ->error range)
+	return BulletTypeExt::ExtMap.Find(pBullet->Type)->SubjectToGround && MapClass::Instance->GetCellFloorHeight(pBullet->Location) >= (pBullet->Location.Z + 16);
+}
+
+// If there is an obstacle on the route, the bullet should need to reduce its speed so it will not penetrate the obstacle.
+void PhobosTrajectory::OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner)
+{
+	// Let the distance slightly exceed
+	double locationDistance = 32.0;
+	bool velocityCheck = false;
+
+	const auto pType = this->GetType();
+	const bool checkThrough = (!pType->ThroughBuilding || !pType->ThroughVehicles);
+
+	// Low speed with checkSubject was already done well
+	if (pType->Speed < 256.0)
+	{
+		// Blocked by obstacles?
+		if (checkThrough && this->CheckThroughAndSubjectInCell(pBullet, MapClass::Instance->GetCellAt(pBullet->Location), pOwner))
+			velocityCheck = true;
+	}
+	else
+	{
+		// When in high speed, it's necessary to check each cell on the path that the next frame will pass through
+		const bool subjectToGround = this->GetCanHitGround();
+		const bool subjectToWalls = pBullet->Type->SubjectToWalls;
+		const bool checkSubject = (subjectToGround || subjectToWalls);
+
+		if (checkThrough || checkSubject)
+		{
+			const auto& theSourceCoords = pBullet->Location;
+			const CoordStruct theTargetCoords
+			{
+				pBullet->Location.X + static_cast<int>(pBullet->Velocity.X),
+				pBullet->Location.Y + static_cast<int>(pBullet->Velocity.Y),
+				pBullet->Location.Z + static_cast<int>(pBullet->Velocity.Z)
+			};
+
+			const auto sourceCell = CellClass::Coord2Cell(theSourceCoords);
+			const auto targetCell = CellClass::Coord2Cell(theTargetCoords);
+			const auto cellDist = sourceCell - targetCell;
+			const auto cellPace = CellStruct { static_cast<short>(std::abs(cellDist.X)), static_cast<short>(std::abs(cellDist.Y)) };
+
+			auto largePace = static_cast<size_t>(std::max(cellPace.X, cellPace.Y));
+			const auto stepCoord = !largePace ? CoordStruct::Empty : (theTargetCoords - theSourceCoords) * (1.0 / largePace);
+			auto curCoord = theSourceCoords;
+			auto pCurCell = MapClass::Instance->GetCellAt(sourceCell);
+
+			for (size_t i = 0; i < largePace; ++i)
+			{
+				if ((subjectToGround && (curCoord.Z + 16) < MapClass::Instance->GetCellFloorHeight(curCoord)) // Below ground level? (16 ->error range)
+					|| (subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array->GetItem(pCurCell->OverlayTypeIndex)->Wall) // Impact on the wall?
+					|| (checkThrough && this->CheckThroughAndSubjectInCell(pBullet, pCurCell, pOwner))) // Blocked by obstacles?
+				{
+					velocityCheck = true;
+					locationDistance += PhobosTrajectory::Get2DDistance(curCoord, theSourceCoords);
+					break;
+				}
+
+				curCoord += stepCoord;
+				pCurCell = MapClass::Instance->GetCellAt(curCoord);
+			}
+
+			// TODO Fire storm wall?
+		}
+	}
+
+	// Check if the bullet needs to slow down the speed
+	if (velocityCheck)
+	{
+		this->RemainingDistance = 0;
+		const auto velocity = PhobosTrajectory::Get2DVelocity(pBullet->Velocity);
+
+		// It may not be necessary to compare them again, but still do so
+		if (locationDistance < velocity)
+			pBullet->Velocity *= (locationDistance / velocity);
+	}
+	else if (this->RemainingDistance < pType->Speed)
+	{
+		// Check if the distance to the destination exceeds the speed limit
+		pBullet->Velocity *= this->RemainingDistance / pType->Speed;
+	}
+}
+
+// If the check result here is true, it only needs to be detonated in the next frame, without returning.
+void PhobosTrajectory::OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner)
+{
+	const auto pType = this->GetType();
+
+	// Obstacles were detected in the current frame here
+	const auto pDetonateAt = this->ExtraCheck;
+
+	if (!pDetonateAt)
+		return;
+
+	// Slow down and reset the target
+	const auto distance = pDetonateAt->GetCoords().DistanceFrom(pBullet->Location);
+	const auto velocity = pBullet->Velocity.Magnitude();
+
+	// Set the new target so that the snap function can take effect
+	this->SetBulletNewTarget(pBullet, pDetonateAt);
+
+	if (std::abs(velocity) > 1e-10 && distance < velocity)
+		pBullet->Velocity *= distance / velocity;
+
+	// Need to cause additional damage?
+	if (!this->ProximityImpact || !pType->ProximityWarhead)
+		return;
+
+	this->ProximityDetonateAt(pBullet, pOwner, pDetonateAt);
+}
+
+void PhobosTrajectory::OnAIPreDetonate(BulletClass* pBullet)
+{
+	if (this->GetType()->PeacefulVanish) // No damage, no anim...
+	{
+		pBullet->Health = 0;
+		pBullet->Limbo();
+		pBullet->UnInit();
+	}
+}

@@ -2,10 +2,10 @@
 
 #include "PhobosTrajectory.h"
 
-class StraightTrajectoryType final : public PhobosTrajectoryType
+class StraightTrajectoryType final : public LiveShellTrajectoryType
 {
 public:
-	StraightTrajectoryType() : PhobosTrajectoryType()
+	StraightTrajectoryType() : LiveShellTrajectoryType()
 		, DetonationDistance { Leptons(102) }
 		, TargetSnapDistance { Leptons(128) }
 		, ApplyRangeModifiers { false }
@@ -81,10 +81,10 @@ public:
 	Valueable<double> CountAttenuation;
 };
 
-class StraightTrajectory final : public PhobosTrajectory
+class StraightTrajectory final : public LiveShellTrajectory
 {
 public:
-	StraightTrajectory(StraightTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+	StraightTrajectory(StraightTrajectoryType const* trajType) : LiveShellTrajectory(trajType)
 		, Type { trajType }
 		, DetonationDistance { trajType->DetonationDistance }
 		, PassDetonateDamage { trajType->PassDetonateDamage }

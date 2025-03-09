@@ -2,7 +2,7 @@
 
 #include "PhobosTrajectory.h"
 
-enum class TraceTargetMode
+enum class TraceTargetMode : int
 {
 	Connection = 0,
 	Global = 1,
@@ -12,10 +12,10 @@ enum class TraceTargetMode
 	RotateCCW = 5,
 };
 
-class TracingTrajectoryType final : public PhobosTrajectoryType
+class TracingTrajectoryType final : public VirtualTrajectoryType
 {
 public:
-	TracingTrajectoryType() : PhobosTrajectoryType()
+	TracingTrajectoryType() : VirtualTrajectoryType()
 		, TraceMode { TraceTargetMode::Connection }
 		, TheDuration { 0 }
 		, TolerantTime { -1 }
@@ -77,10 +77,10 @@ public:
 	Valueable<bool> SuicideIfNoWeapon;
 };
 
-class TracingTrajectory final : public PhobosTrajectory
+class TracingTrajectory final : public VirtualTrajectory
 {
 public:
-	TracingTrajectory(TracingTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+	TracingTrajectory(TracingTrajectoryType const* trajType) : VirtualTrajectory(trajType)
 		, Type { trajType }
 		, WeaponIndex { 0 }
 		, WeaponCount { 0 }

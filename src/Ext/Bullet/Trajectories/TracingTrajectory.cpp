@@ -17,6 +17,37 @@
 #include <Utilities/EnumFunctions.h>
 #include <Utilities/Helpers.Alex.h>
 
+namespace detail
+{
+	template <>
+	inline bool read<TraceTargetMode>(TraceTargetMode& value, INI_EX& parser, const char* pSection, const char* pKey)
+	{
+		if (parser.ReadString(pSection, pKey))
+		{
+			static std::pair<const char*, TraceTargetMode> FlagNames[] =
+			{
+				{"Connection", TraceTargetMode::Connection},
+				{"Global", TraceTargetMode::Global},
+				{"Body", TraceTargetMode::Body},
+				{"Turret", TraceTargetMode::Turret},
+				{"RotateCW", TraceTargetMode::RotateCW},
+				{"RotateCCW", TraceTargetMode::RotateCCW},
+			};
+			for (auto [name, flag] : FlagNames)
+			{
+				if (_strcmpi(parser.value(), name) == 0)
+				{
+					value = flag;
+					return true;
+				}
+			}
+			Debug::INIParseFailed(pSection, pKey, parser.value(), "Expected a new trace target mode");
+		}
+
+		return false;
+	}
+}
+
 std::unique_ptr<PhobosTrajectory> TracingTrajectoryType::CreateInstance() const
 {
 	return std::make_unique<TracingTrajectory>(this);
@@ -71,22 +102,7 @@ void TracingTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 
-	pINI->ReadString(pSection, "Trajectory.Tracing.TraceMode", "", Phobos::readBuffer);
-	if (INIClass::IsBlank(Phobos::readBuffer))
-		this->TraceMode = TraceTargetMode::Connection;
-	else if (_stricmp(Phobos::readBuffer, "global") == 0)
-		this->TraceMode = TraceTargetMode::Global;
-	else if (_stricmp(Phobos::readBuffer, "body") == 0)
-		this->TraceMode = TraceTargetMode::Body;
-	else if (_stricmp(Phobos::readBuffer, "turret") == 0)
-		this->TraceMode = TraceTargetMode::Turret;
-	else if (_stricmp(Phobos::readBuffer, "rotatecw") == 0)
-		this->TraceMode = TraceTargetMode::RotateCW;
-	else if (_stricmp(Phobos::readBuffer, "rotateccw") == 0)
-		this->TraceMode = TraceTargetMode::RotateCCW;
-	else
-		this->TraceMode = TraceTargetMode::Connection;
-
+	this->TraceMode.Read(exINI, pSection, "Trajectory.Tracing.TraceMode");
 	this->TheDuration.Read(exINI, pSection, "Trajectory.Tracing.TheDuration");
 	this->TolerantTime.Read(exINI, pSection, "Trajectory.Tracing.TolerantTime");
 	this->ROT.Read(exINI, pSection, "Trajectory.Tracing.ROT");

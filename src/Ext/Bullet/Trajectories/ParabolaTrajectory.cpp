@@ -7,6 +7,37 @@
 #include <Ext/BulletType/Body.h>
 #include <Ext/WarheadType/Body.h>
 
+namespace detail
+{
+	template <>
+	inline bool read<ParabolaFireMode>(ParabolaFireMode& value, INI_EX& parser, const char* pSection, const char* pKey)
+	{
+		if (parser.ReadString(pSection, pKey))
+		{
+			static std::pair<const char*, ParabolaFireMode> FlagNames[] =
+			{
+				{"Speed", ParabolaFireMode::Speed},
+				{"Height", ParabolaFireMode::Height},
+				{"Angle", ParabolaFireMode::Angle},
+				{"SpeedAndHeight", ParabolaFireMode::SpeedAndHeight},
+				{"HeightAndAngle", ParabolaFireMode::HeightAndAngle},
+				{"SpeedAndAngle", ParabolaFireMode::SpeedAndAngle},
+			};
+			for (auto [name, flag] : FlagNames)
+			{
+				if (_strcmpi(parser.value(), name) == 0)
+				{
+					value = flag;
+					return true;
+				}
+			}
+			Debug::INIParseFailed(pSection, pKey, parser.value(), "Expected a new parabola fire mode");
+		}
+
+		return false;
+	}
+}
+
 std::unique_ptr<PhobosTrajectory> ParabolaTrajectoryType::CreateInstance() const
 {
 	return std::make_unique<ParabolaTrajectory>(this);
@@ -58,23 +89,7 @@ void ParabolaTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 
 	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Parabola.DetonationDistance");
 	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Parabola.TargetSnapDistance");
-
-	pINI->ReadString(pSection, "Trajectory.Parabola.OpenFireMode", "", Phobos::readBuffer);
-	if (INIClass::IsBlank(Phobos::readBuffer))
-		this->OpenFireMode = ParabolaFireMode::Speed;
-	else if (_stricmp(Phobos::readBuffer, "height") == 0)
-		this->OpenFireMode = ParabolaFireMode::Height;
-	else if (_stricmp(Phobos::readBuffer, "angle") == 0)
-		this->OpenFireMode = ParabolaFireMode::Angle;
-	else if (_stricmp(Phobos::readBuffer, "speedandheight") == 0)
-		this->OpenFireMode = ParabolaFireMode::SpeedAndHeight;
-	else if (_stricmp(Phobos::readBuffer, "heightandangle") == 0)
-		this->OpenFireMode = ParabolaFireMode::HeightAndAngle;
-	else if (_stricmp(Phobos::readBuffer, "speedandangle") == 0)
-		this->OpenFireMode = ParabolaFireMode::SpeedAndAngle;
-	else
-		this->OpenFireMode = ParabolaFireMode::Speed;
-
+	this->OpenFireMode.Read(exINI, pSection, "Trajectory.Parabola.OpenFireMode");
 	this->ThrowHeight.Read(exINI, pSection, "Trajectory.Parabola.ThrowHeight");
 	this->LaunchAngle.Read(exINI, pSection, "Trajectory.Parabola.LaunchAngle");
 	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Parabola.LeadTimeCalculate");

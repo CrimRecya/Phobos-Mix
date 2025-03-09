@@ -2,7 +2,7 @@
 
 #include "PhobosTrajectory.h"
 
-enum class ParabolaFireMode
+enum class ParabolaFireMode : int
 {
 	Speed = 0,
 	Height = 1,
@@ -12,10 +12,10 @@ enum class ParabolaFireMode
 	SpeedAndAngle = 5,
 };
 
-class ParabolaTrajectoryType final : public PhobosTrajectoryType
+class ParabolaTrajectoryType final : public LiveShellTrajectoryType
 {
 public:
-	ParabolaTrajectoryType() : PhobosTrajectoryType()
+	ParabolaTrajectoryType() : LiveShellTrajectoryType()
 		, DetonationDistance { Leptons(102) }
 		, TargetSnapDistance { Leptons(128) }
 		, OpenFireMode { ParabolaFireMode::Speed }
@@ -67,10 +67,10 @@ public:
 	Valueable<CoordStruct> AxisOfRotation;
 };
 
-class ParabolaTrajectory final : public PhobosTrajectory
+class ParabolaTrajectory final : public LiveShellTrajectory
 {
 public:
-	ParabolaTrajectory(ParabolaTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+	ParabolaTrajectory(ParabolaTrajectoryType const* trajType) : LiveShellTrajectory(trajType)
 		, Type { trajType }
 		, ThrowHeight { trajType->ThrowHeight > 0 ? trajType->ThrowHeight : 600 }
 		, BounceTimes { trajType->BounceTimes }

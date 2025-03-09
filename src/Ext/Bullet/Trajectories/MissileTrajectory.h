@@ -1,12 +1,13 @@
 #pragma once
 
 #include "PhobosTrajectory.h"
+
 #include <Ext/WeaponType/Body.h>
 
-class MissileTrajectoryType final : public PhobosTrajectoryType
+class MissileTrajectoryType final : public LiveShellTrajectoryType
 {
 public:
-	MissileTrajectoryType() : PhobosTrajectoryType()
+	MissileTrajectoryType() : LiveShellTrajectoryType()
 		, UniqueCurve { false }
 		, PreAimCoord { { 0, 0, 0 } }
 		, RotateCoord { 0 }
@@ -98,10 +99,10 @@ public:
 	Valueable<bool> WeaponDoRepeat;
 };
 
-class MissileTrajectory final : public PhobosTrajectory
+class MissileTrajectory final : public LiveShellTrajectory
 {
 public:
-	MissileTrajectory(MissileTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+	MissileTrajectory(MissileTrajectoryType const* trajType) : LiveShellTrajectory(trajType)
 		, Type { trajType }
 		, Speed { trajType->LaunchSpeed }
 		, PreAimCoord { trajType->PreAimCoord.Get() }

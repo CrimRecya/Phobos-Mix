@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Classification.h"
+
 #include <BulletClass.h>
 
 #include <Ext/WeaponType/Body.h>
@@ -44,7 +46,6 @@ public:
 		, ApplyRangeModifiers { false }
 		, UseDisperseCoord { false }
 		, RecordSourceCoord { false }
-		, TargetSnapDistance { 0.5 }
 
 		, PassDetonate { false }
 		, PassDetonateWarhead {}
@@ -93,6 +94,7 @@ public:
 		, EarlyDetonation { false }
 		, DetonationHeight { -1 }
 		, DetonationDistance { Leptons(102) }
+		, TargetSnapDistance { Leptons(128) }
 
 		, VirtualSourceCoord { { 0, 0, 0 } }
 		, VirtualTargetCoord { { 0, 0, 0 } }
@@ -125,7 +127,6 @@ public:
 	Valueable<bool> ApplyRangeModifiers; // Apply range bonus
 	Valueable<bool> UseDisperseCoord; // Use the recorded launch location
 	Valueable<bool> RecordSourceCoord; // Record the launch location
-	Valueable<double> TargetSnapDistance; // The distance that can be adsorbed onto the target
 
 	Valueable<bool> PassDetonate;
 	Valueable<WarheadTypeClass*> PassDetonateWarhead;
@@ -174,6 +175,7 @@ public:
 	Valueable<bool> EarlyDetonation;
 	Valueable<int> DetonationHeight;
 	Valueable<Leptons> DetonationDistance;
+	Valueable<Leptons> TargetSnapDistance;
 
 	Valueable<PartialVector3D<int>> VirtualSourceCoord;
 	Valueable<PartialVector3D<int>> VirtualTargetCoord;
@@ -184,10 +186,15 @@ class PhobosTrajectory
 {
 public:
 	PhobosTrajectory(PhobosTrajectoryType const* trajType) :
-		DurationTimer {}
+		MovingVelocity {}
+		, DurationTimer {}
 		, TolerantTimer {}
 		, FirepowerMult { 1.0 }
 		, AttenuationRange { 0 }
+		, RemainingDistance { 1 }
+		, TargetInTheAir { false }
+		, TargetIsTechno { false }
+		, NotMainWeapon { false }
 		, FLHCoord {}
 		, BuildingCoord {}
 
@@ -202,10 +209,7 @@ public:
 		, DisperseCount { 0 }
 		, DisperseCycle { trajType->DisperseCycle }
 		, DisperseTimer {}
-		, TargetInTheAir { false }
-		, TargetIsTechno { false }
 
-		, OffsetCoord {}
 		, LastTargetCoord {}
 		, CurrentBurst { 0 }
 		, CountOfBurst { 0 }
@@ -215,7 +219,6 @@ public:
 		, VirtualSourceCoord {}
 		, VirtualTargetCoord {}
 		, TechnoInTransport { 0 }
-		, NotMainWeapon { false }
 	{ }
 
 	virtual ~PhobosTrajectory() noexcept = default;
@@ -227,11 +230,12 @@ public:
 	virtual bool OnAIPreCheck(BulletClass* pBullet, HouseClass* pOwner);
 	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner);
 	virtual void OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner);
-	virtual void OnAIPreDetonate(BulletClass* pBullet) = 0;
-	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) = 0;
+	virtual void OnAIPreDetonate(BulletClass* pBullet);
+	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition);
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) = 0;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) = 0;
-	virtual const PhobosTrajectoryType* GetType() const { return nullptr; }
+	virtual const PhobosTrajectoryType* GetType() const = 0;
+	virtual bool OpenFire() = 0;
 	virtual bool GetCanHitGround() const { return true; }
 	virtual CoordStruct GetRetargetCenter(const BulletClass* const pBullet) const { return pBullet->Location; }
 	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) = 0;
@@ -244,14 +248,13 @@ public:
 	static inline bool CheckWeaponValidness(HouseClass* pHouse, TechnoClass* pTechno, CellClass* pCell, AffectedHouse flags);
 	static std::vector<CellClass*> GetCellsInProximityRadius(const BulletClass* const pBullet, const Leptons trajectoryProximityRange);
 	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
-	static BulletVelocity RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian);
-	static void DisperseBurstSubstitution(BulletClass* pBullet, const CoordStruct& axis, double rotateCoord, int curBurst, int maxBurst, bool mirror);
 
 	bool BulletRetargetTechno(BulletClass* pBullet);
 	bool CheckThroughAndSubjectInCell(BulletClass* pBullet, CellClass* pCell, HouseClass* pOwner);
 	void CalculateNewDamage(BulletClass* pBullet);
 	void PassWithDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
 	void PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
+	void ProximityDetonateAt(BulletClass* pBullet, HouseClass* pOwner, TechnoClass* pTarget);
 	int GetTheTrueDamage(int damage, BulletClass* pBullet, TechnoClass* pTechno, bool self);
 	double GetExtraDamageMultiplier(BulletClass* pBullet, TechnoClass* pTechno);
 	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
@@ -272,6 +275,9 @@ public:
 	double FirepowerMult;
 	int AttenuationRange;
 	int RemainingDistance;
+	bool TargetInTheAir;
+	bool TargetIsTechno;
+	bool NotMainWeapon;
 	CoordStruct FLHCoord;
 	CoordStruct BuildingCoord;
 
@@ -286,10 +292,7 @@ public:
 	int DisperseCount;
 	int DisperseCycle;
 	CDTimerClass DisperseTimer;
-	bool TargetInTheAir;
-	bool TargetIsTechno;
 
-	CoordStruct OffsetCoord;
 	CoordStruct LastTargetCoord;
 	int CurrentBurst;
 	int CountOfBurst;
@@ -299,7 +302,6 @@ public:
 	CoordStruct VirtualSourceCoord;
 	CoordStruct VirtualTargetCoord;
 	DWORD TechnoInTransport;
-	bool NotMainWeapon;
 };
 
 /*

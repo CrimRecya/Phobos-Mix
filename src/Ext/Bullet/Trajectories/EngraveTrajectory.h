@@ -2,10 +2,10 @@
 
 #include "PhobosTrajectory.h"
 
-class EngraveTrajectoryType final : public PhobosTrajectoryType
+class EngraveTrajectoryType final : public VirtualTrajectoryType
 {
 public:
-	EngraveTrajectoryType() : PhobosTrajectoryType()
+	EngraveTrajectoryType() : VirtualTrajectoryType()
 		, SourceCoord { { 0, 0 } }
 		, TargetCoord { { 0, 0 } }
 		, MirrorCoord { true }
@@ -77,10 +77,10 @@ public:
 	Valueable<bool> ConfineOnGround;
 };
 
-class EngraveTrajectory final : public PhobosTrajectory
+class EngraveTrajectory final : public VirtualTrajectory
 {
 public:
-	EngraveTrajectory(EngraveTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+	EngraveTrajectory(EngraveTrajectoryType const* trajType) : VirtualTrajectory(trajType)
 		, Type { trajType }
 		, SourceCoord { trajType->SourceCoord.Get() }
 		, TargetCoord { trajType->TargetCoord.Get() }
