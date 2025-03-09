@@ -102,6 +102,8 @@ public:
 
 		Valueable<bool> HasSecondaryRallyPoint;
 		Valueable<bool> Refinery_UseNormalActiveAnim;
+	
+		Valueable<bool> CloningFacility;
 
 		ExtData(BuildingTypeClass* OwnerObject) : Extension<BuildingTypeClass>(OwnerObject)
 			, PowersUp_Owner { AffectedHouse::Owner }
@@ -170,6 +172,7 @@ public:
 			, BarracksExitCell {}
 			, HasSecondaryRallyPoint { false }
 			, Refinery_UseNormalActiveAnim { false }
+			, CloningFacility { false }
 		{ }
 
 		// Ares 0.A functions

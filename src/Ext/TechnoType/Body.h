@@ -367,6 +367,9 @@ public:
 		std::vector<CoordStruct> ExtraTurretOffsets;
 		Valueable<int> BurstPerTurret;
 
+		Valueable<bool> Cloneable;
+		ValueableVector<BuildingTypeClass*> ClonedAt;
+
 		struct LaserTrailDataEntry
 		{
 			ValueableIdx<LaserTrailTypeClass> idxType;
@@ -727,6 +730,9 @@ public:
 			, ExtraTurretCount { 0 }
 			, ExtraTurretOffsets { }
 			, BurstPerTurret { 0 }
+
+			, Cloneable { true }
+			, ClonedAt { }
 		{ }
 
 		virtual ~ExtData() = default;
