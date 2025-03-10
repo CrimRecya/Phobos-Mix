@@ -179,6 +179,8 @@ public:
 		void StopRotateWithNewROT(int ROT = -1);
 		void UpdateCachedClick();
 
+		UnitTypeClass* GetUnitTypeExtra() const;
+
 		virtual ~ExtData() override;
 		virtual void InvalidatePointer(void* ptr, bool bRemoved) override;
 		virtual void LoadFromStream(PhobosStreamReader& Stm) override;
