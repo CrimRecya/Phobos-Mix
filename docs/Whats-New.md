@@ -333,6 +333,9 @@ New:
 - Draw visual effects for airburst weapons (by CrimRecya)
 - Technos recount current burst index when change the firing weapon (by CrimRecya)
 - Shield armor inheritance customization (by Ollerus)
+- Damaged unit image changes (by Fryone)
+- Customizable spawns queue (by TwinkleStar)
+- Initial spawns number (by TwinkleStar)
 - Projectile subject to ground check before firing (by CrimRecya)
 - New Disperse trajectory (by CrimRecya)
 - New Engrave trajectory (by CrimRecya)
@@ -696,6 +699,7 @@ Phobos fixes:
 - Fixed an issue that caused new attack and move script actions to pick buildings with `InvisibleInGame=yes` as targets (FS-21)
 - Fixed `Insignia.Weapon` failing to parse in map (by Ollerus)
 - Fixed `AltNextScenario` not taking effect (by FlyStar)
+- Fixed `DefaultDisguise` showing wrong house colors for different players (by NetsuNegi & Ollerus)
 
 Fixes / interactions with other extensions:
 - Weapons fired by EMPulse superweapons *(Ares feature)* now fully respect the firing building's FLH.

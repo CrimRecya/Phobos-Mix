@@ -796,6 +796,14 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->Power.Read(exINI, pSection, "Power");
 
+	this->Image_ConditionYellow.Read(exINI, pSection, "Image.ConditionYellow");
+	this->Image_ConditionRed.Read(exINI, pSection, "Image.ConditionRed");
+	this->WaterImage_ConditionYellow.Read(exINI, pSection, "WaterImage.ConditionYellow");
+	this->WaterImage_ConditionRed.Read(exINI, pSection, "WaterImage.ConditionRed");
+
+	this->InitialSpawnsNumber.Read(exINI, pSection, "InitialSpawnsNumber");
+	this->Spawns_Queue.Read(exINI, pSection, "Spawns.Queue");
+
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
 
@@ -1325,6 +1333,14 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->ExtraTurretCount)
 		.Process(this->ExtraTurretOffsets)
 		.Process(this->BurstPerTurret)
+
+    	.Process(this->Image_ConditionYellow)
+		.Process(this->Image_ConditionRed)
+		.Process(this->WaterImage_ConditionYellow)
+		.Process(this->WaterImage_ConditionRed)
+
+		.Process(this->InitialSpawnsNumber)
+		.Process(this->Spawns_Queue)
 		;
 }
 void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)
