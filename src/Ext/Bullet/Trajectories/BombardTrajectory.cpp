@@ -120,33 +120,17 @@ bool BombardTrajectory::Save(PhobosStreamWriter& Stm) const
 
 void BombardTrajectory::OnUnlimbo(BulletClass* pBullet)
 {
-	const auto pType = this->Type;
+	this->LiveShellTrajectory::OnUnlimbo(pBullet);
+
 	this->Height += pBullet->TargetCoords.Z;
 	// use scaling since RandomRanged only support int
-	this->FallPercent += ScenarioClass::Instance->Random.RandomRanged(0, static_cast<int>(200 * pType->FallPercentShift)) / 100.0;
+	this->FallPercent += ScenarioClass::Instance->Random.RandomRanged(0, static_cast<int>(200 * this->Type->FallPercentShift)) / 100.0;
 
 	// Record the initial target coordinates without offset
 	this->InitialTargetCoord = pBullet->TargetCoords;
-	this->LastTargetCoord = pBullet->TargetCoords;
-	pBullet->Velocity = BulletVelocity::Empty;
 
-	// Record some information
-	if (const auto pWeapon = pBullet->WeaponType)
-		this->CountOfBurst = pWeapon->Burst;
-
-	if (const auto pOwner = pBullet->Owner)
-	{
-		this->CurrentBurst = pOwner->CurrentBurstIndex;
-
-		if (pType->MirrorCoord && pOwner->CurrentBurstIndex % 2 == 1)
-			this->OffsetCoord.Y = -(this->OffsetCoord.Y);
-	}
-
-	// Wait, or launch immediately?
-	if (!pType->NoLaunch || !pType->LeadTimeCalculate || !abstract_cast<FootClass*>(pBullet->Target))
-		this->PrepareForOpenFire(pBullet);
-	else
-		this->WaitOneFrame = 2;
+	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
+		this->OpenFire(pBullet);
 }
 
 bool BombardTrajectory::OnAI(BulletClass* pBullet)
@@ -185,14 +169,15 @@ void BombardTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpee
 	pSpeed->Z += BulletTypeExt::GetAdjustedGravity(pBullet->Type); // We don't want to take the gravity into account
 }
 
-TrajectoryCheckReturnType BombardTrajectory::OnAITargetCoordCheck(BulletClass* pBullet)
+bool BombardTrajectory::OpenFire(BulletClass* pBullet)
 {
-	return TrajectoryCheckReturnType::SkipGameCheck; // Bypass game checks entirely.
-}
+	const auto pType = this->Type;
 
-TrajectoryCheckReturnType BombardTrajectory::OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno)
-{
-	return TrajectoryCheckReturnType::SkipGameCheck; // Bypass game checks entirely.
+	// Wait, or launch immediately?
+	if (!pType->NoLaunch || !pType->LeadTimeCalculate || !abstract_cast<FootClass*>(pBullet->Target))
+		this->PrepareForOpenFire(pBullet);
+	else
+		this->WaitOneFrame = 2;
 }
 
 void BombardTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)

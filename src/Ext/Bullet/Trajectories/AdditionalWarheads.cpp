@@ -4,32 +4,6 @@
 
 #include <Ext/WarheadType/Body.h>
 
-void PhobosTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition)
-{
-	*pSpeed = this->MovingVelocity; // This is for location calculation, and pBullet->Velocity is for image drawing
-}
-
-inline double PhobosTrajectory::Get2DDistance(const CoordStruct& here, const CoordStruct& there)
-{
-	return Point2D { here.X, here.Y }.DistanceFrom(Point2D { there.X, there.Y });
-}
-
-inline double PhobosTrajectory::Get2DVelocity(const BulletVelocity& velocity)
-{
-	return Vector2D<double>{ velocity.X, velocity.Y }.Magnitude();
-}
-
-inline void PhobosTrajectory::SetNewDamage(int& damage, double ratio)
-{
-	if (damage)
-	{
-		if (const auto newDamage = static_cast<int>(damage * ratio))
-			damage = newDamage;
-		else
-			damage = Math::sgn(damage);
-	}
-}
-
 inline bool PhobosTrajectory::CheckTechnoIsInvalid(TechnoClass* pTechno)
 {
 	// The target is alive
@@ -412,7 +386,7 @@ void PhobosTrajectory::PassWithDetonateAt(BulletClass* pBullet, HouseClass* pOwn
 	if (pType->PassDetonateLocal)
 		detonateCoords.Z = MapClass::Instance->GetCellFloorHeight(detonateCoords);
 
-	const auto damage = this->GetTheTrueDamage(this->PassDetonateDamage, pBullet, nullptr, false);
+	const auto damage = this->GetTheTrueDamage(this->PassDetonateDamage, pBullet, false);
 	WarheadTypeExt::DetonateAt(pWH, detonateCoords, pBullet->Owner, damage, pOwner);
 	this->CalculateNewDamage(pBullet);
 }
@@ -620,7 +594,7 @@ void PhobosTrajectory::PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pO
 void PhobosTrajectory::ProximityDetonateAt(BulletClass* pBullet, HouseClass* pOwner, TechnoClass* pTarget)
 {
 	const auto pType = this->GetType();
-	auto damage = this->GetTheTrueDamage(this->ProximityDamage, pBullet, pType->ProximityMedial ? nullptr : pTarget, false);
+	auto damage = this->GetTheTrueDamage(this->ProximityDamage, pBullet, false);
 
 	// Choose the method of causing damage
 	if (pType->ProximityDirect)
@@ -633,7 +607,7 @@ void PhobosTrajectory::ProximityDetonateAt(BulletClass* pBullet, HouseClass* pOw
 	this->CalculateNewDamage(pBullet);
 }
 
-int PhobosTrajectory::GetTheTrueDamage(int damage, BulletClass* pBullet, TechnoClass* pTechno, bool self)
+int PhobosTrajectory::GetTheTrueDamage(int damage, BulletClass* pBullet, bool self)
 {
 	if (damage == 0)
 		return 0;
@@ -643,7 +617,7 @@ int PhobosTrajectory::GetTheTrueDamage(int damage, BulletClass* pBullet, TechnoC
 	// Calculate damage distance attenuation
 	if (pType->DamageEdgeAttenuation != 1.0)
 	{
-		const auto damageMultiplier = this->GetExtraDamageMultiplier(pBullet, pTechno);
+		const auto damageMultiplier = this->GetExtraDamageMultiplier(pBullet);
 		const auto calculatedDamage = self ? damage * damageMultiplier : damage * this->FirepowerMult * damageMultiplier;
 		const auto signal = Math::sgn(calculatedDamage);
 		damage = static_cast<int>(calculatedDamage);
@@ -656,7 +630,7 @@ int PhobosTrajectory::GetTheTrueDamage(int damage, BulletClass* pBullet, TechnoC
 	return damage;
 }
 
-double PhobosTrajectory::GetExtraDamageMultiplier(BulletClass* pBullet, TechnoClass* pTechno)
+double PhobosTrajectory::GetExtraDamageMultiplier(BulletClass* pBullet)
 {
 	double damageMult = 1.0;
 	const auto distance = pBullet->Location.DistanceFrom(pBullet->SourceCoords);

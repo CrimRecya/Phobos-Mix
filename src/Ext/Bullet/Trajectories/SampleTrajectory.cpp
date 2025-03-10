@@ -36,6 +36,7 @@ void SampleTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
+
 	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Sample.TargetSnapDistance");
 }
 
@@ -63,14 +64,13 @@ bool SampleTrajectory::Save(PhobosStreamWriter& Stm) const
 	return true;
 }
 
-// Do some math here to set the initial speed or location of your bullet.
-// Be careful not to let the bullet speed too fast without other processing.
+// Record some information for your bullet.
 void SampleTrajectory::OnUnlimbo(BulletClass* pBullet)
 {
-	pBullet->Velocity.X = static_cast<double>(pBullet->TargetCoords.X - pBullet->SourceCoords.X);
-	pBullet->Velocity.Y = static_cast<double>(pBullet->TargetCoords.Y - pBullet->SourceCoords.Y);
-	pBullet->Velocity.Z = static_cast<double>(pBullet->TargetCoords.Z - pBullet->SourceCoords.Z);
-	pBullet->Velocity *= this->Type->Speed / pBullet->Velocity.Magnitude();
+	this->PhobosTrajectory::OnUnlimbo(pBullet);
+
+	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
+		this->OpenFire(pBullet);
 }
 
 // Some early checks here, returns whether or not to detonate the bullet.
@@ -124,6 +124,16 @@ TrajectoryCheckReturnType SampleTrajectory::OnAITargetCoordCheck(BulletClass* pB
 TrajectoryCheckReturnType SampleTrajectory::OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno)
 {
 	return TrajectoryCheckReturnType::ExecuteGameCheck; // Execute game checks.
+}
+
+// Do some math here to set the initial speed or location of your bullet.
+// Be careful not to let the bullet speed too fast without other processing.
+bool SampleTrajectory::OpenFire(BulletClass* pBullet)
+{
+	pBullet->Velocity.X = static_cast<double>(pBullet->TargetCoords.X - pBullet->SourceCoords.X);
+	pBullet->Velocity.Y = static_cast<double>(pBullet->TargetCoords.Y - pBullet->SourceCoords.Y);
+	pBullet->Velocity.Z = static_cast<double>(pBullet->TargetCoords.Z - pBullet->SourceCoords.Z);
+	pBullet->Velocity *= this->Type->Speed / pBullet->Velocity.Magnitude();
 }
 
 // How to do when should change to a new target

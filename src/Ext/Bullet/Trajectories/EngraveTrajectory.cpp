@@ -219,14 +219,9 @@ void EngraveTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpee
 	pSpeed->Z += BulletTypeExt::GetAdjustedGravity(pBullet->Type);
 }
 
-TrajectoryCheckReturnType EngraveTrajectory::OnAITargetCoordCheck(BulletClass* pBullet)
+bool EngraveTrajectory::OpenFire(BulletClass* pBullet)
 {
-	return TrajectoryCheckReturnType::SkipGameCheck;
-}
 
-TrajectoryCheckReturnType EngraveTrajectory::OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno)
-{
-	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
 void EngraveTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)

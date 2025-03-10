@@ -143,40 +143,25 @@ bool ParabolaTrajectory::Save(PhobosStreamWriter& Stm) const
 
 void ParabolaTrajectory::OnUnlimbo(BulletClass* pBullet)
 {
-	const auto pType = this->Type;
-	this->LastTargetCoord = pBullet->TargetCoords;
-	pBullet->Velocity = BulletVelocity::Empty;
-	const auto pTarget = abstract_cast<FootClass*>(pBullet->Target);
-	bool resetTarget = false;
+	this->LiveShellTrajectory::OnUnlimbo(pBullet);
 
 	// Special case: Set the target to the ground
-	if (pType->DetonationDistance.Get() <= -1e-10 && pTarget)
+	if (this->Type->DetonationDistance.Get() <= -1e-10)
 	{
-		if (const auto pCell = MapClass::Instance->TryGetCellAt(pTarget->GetCoords()))
+		const auto pTarget = pBullet->Target;
+
+		if (pTarget->AbstractFlags & AbstractFlags::Foot)
 		{
-			pBullet->Target = pCell;
-			pBullet->TargetCoords = pCell->GetCoords();
-			resetTarget = true;
+			if (const auto pCell = MapClass::Instance->TryGetCellAt(pTarget->GetCoords()))
+			{
+				pBullet->Target = pCell;
+				pBullet->TargetCoords = pCell->GetCoords();
+			}
 		}
 	}
 
-	// Record some information, and try to see if mirror offset is needed like Straight
-	if (const auto pWeapon = pBullet->WeaponType)
-		this->CountOfBurst = pWeapon->Burst;
-
-	if (const auto pFirer = pBullet->Owner)
-	{
-		this->CurrentBurst = pFirer->CurrentBurstIndex;
-
-		if (pType->MirrorCoord && pFirer->CurrentBurstIndex % 2 == 1)
-			this->OffsetCoord.Y = -(this->OffsetCoord.Y);
-	}
-
-	// Wait, or launch immediately?
-	if (!pType->LeadTimeCalculate || !pTarget || resetTarget)
-		this->PrepareForOpenFire(pBullet);
-	else
-		this->WaitOneFrame = 2;
+	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
+		this->OpenFire(pBullet);
 }
 
 bool ParabolaTrajectory::OnAI(BulletClass* pBullet)
@@ -227,14 +212,13 @@ void ParabolaTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpe
 	pSpeed->Z += BulletTypeExt::GetAdjustedGravity(pBullet->Type); // Seems like this is useless
 }
 
-TrajectoryCheckReturnType ParabolaTrajectory::OnAITargetCoordCheck(BulletClass* pBullet)
+bool ParabolaTrajectory::OpenFire(BulletClass* pBullet)
 {
-	return TrajectoryCheckReturnType::SkipGameCheck;
-}
-
-TrajectoryCheckReturnType ParabolaTrajectory::OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno)
-{
-	return TrajectoryCheckReturnType::SkipGameCheck;
+	// Wait, or launch immediately?
+	if (!this->Type->LeadTimeCalculate || !abstract_cast<FootClass*>(pBullet->Target))
+		this->PrepareForOpenFire(pBullet);
+	else
+		this->WaitOneFrame = 2;
 }
 
 void ParabolaTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)

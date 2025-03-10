@@ -78,10 +78,10 @@ bool PhobosTrajectory::OnAI(BulletClass* pBullet)
 		this->PrepareForDetonateAt(pBullet, pOwner);
 
 	// Launch additional weapons towards the target
-	if (this->DisperseTimer.Completed() && this->CheckFireFacing(pBullet) && this->PrepareDisperseWeapon(pBullet))
-		return true;
+	if (!this->DisperseTimer.Completed() || pType->DisperseEffectiveRange.Get() && pBullet->TargetCoords.DistanceFrom(pBullet->Location) > pType->DisperseEffectiveRange.Get())
+		return false;
 
-	return false;
+	return this->CheckFireFacing(pBullet) && this->PrepareDisperseWeapon(pBullet);
 }
 
 // Check if it should be detonated immediately
@@ -226,14 +226,78 @@ void PhobosTrajectory::OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner)
 
 void PhobosTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 {
+	const auto pType = this->GetType();
+
+	// Special circumstances, similar to airburst behavior
+	if (pType->DisperseEffectiveRange.Get() < 0)
+		this->PrepareDisperseWeapon(pBullet);
+
 	const auto flag = this->Flag();
 
 	// No damage, no anims...
-	if (this->GetType()->PeacefulVanish.Get(flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
+	if (pType->PeacefulVanish.Get(flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
 	{
 		pBullet->Health = 0;
 		pBullet->Limbo();
 		pBullet->UnInit();
+	}
+	else
+	{
+		// Calculate the current damage
+		pBullet->Health = this->GetTheTrueDamage(pBullet->Health, pBullet, true);
+	}
+}
+
+void PhobosTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition)
+{
+	*pSpeed = this->MovingVelocity; // This is for location calculation, and pBullet->Velocity is for image drawing
+}
+
+TrajectoryCheckReturnType PhobosTrajectory::OnAITargetCoordCheck(BulletClass* pBullet)
+{
+	return TrajectoryCheckReturnType::SkipGameCheck; // Bypass game checks entirely.
+}
+
+TrajectoryCheckReturnType PhobosTrajectory::OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno)
+{
+	return TrajectoryCheckReturnType::SkipGameCheck; // Bypass game checks entirely.
+}
+
+bool PhobosTrajectory::CalculateBulletVelocity(BulletClass* pBullet)
+{
+	const auto velocityLength = pBullet->Velocity.Magnitude();
+
+	if (velocityLength > 1e-10)
+		pBullet->Velocity *= this->GetType()->Speed / velocityLength;
+	else
+		return true;
+
+	return false;
+}
+
+inline double PhobosTrajectory::Get2DDistance(const CoordStruct& source, const CoordStruct& target)
+{
+	return Point2D { source.X, source.Y }.DistanceFrom(Point2D { target.X, target.Y });
+}
+
+inline double PhobosTrajectory::Get2DVelocity(const BulletVelocity& velocity)
+{
+	return Vector2D<double>{ velocity.X, velocity.Y }.Magnitude();
+}
+
+inline double PhobosTrajectory::Get2DOpRadian(const CoordStruct& source, const CoordStruct& target)
+{
+	return Math::atan2(target.Y - source.Y , target.X - source.X);
+}
+
+inline void PhobosTrajectory::SetNewDamage(int& damage, double ratio)
+{
+	if (damage)
+	{
+		if (const auto newDamage = static_cast<int>(damage * ratio))
+			damage = newDamage;
+		else
+			damage = Math::sgn(damage);
 	}
 }
 
@@ -312,6 +376,100 @@ void LiveShellTrajectory::OnUnlimbo(BulletClass* pBullet)
 	this->PhobosTrajectory::OnUnlimbo(pBullet);
 
 	this->LastTargetCoord = pBullet->TargetCoords;
+}
+
+void LiveShellTrajectory::OnAIPreDetonate(BulletClass* pBullet)
+{
+	// Can snap to target?
+	const auto targetSnapDistance = static_cast<const LiveShellTrajectoryType*>(this->GetType())->TargetSnapDistance.Get();
+
+	if (targetSnapDistance <= 0)
+		return;
+
+	const auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
+	const auto coords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
+
+	// Whether to snap to target?
+	if (coords.DistanceFrom(pBullet->Location) <= targetSnapDistance)
+	{
+		const auto pExt = BulletExt::ExtMap.Find(pBullet);
+		pExt->SnappedToTarget = true;
+		pBullet->SetLocation(coords);
+	}
+
+	this->PhobosTrajectory::OnAIPreDetonate(pBullet);
+}
+
+BulletVelocity LiveShellTrajectory::RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian)
+{
+	const auto theAxisLengthSquared = theAxis.MagnitudeSquared();
+
+	// Zero vector is not acceptable
+	if (std::abs(theAxisLengthSquared) < 1e-10)
+		return theSpeed;
+
+	// Rotate around the axis of rotation
+	theAxis *= 1 / sqrt(theAxisLengthSquared);
+	const auto cosRotate = Math::cos(theRadian);
+
+	return ((theSpeed * cosRotate) + (theAxis * ((1 - cosRotate) * (theSpeed * theAxis))) + (theAxis.CrossProduct(theSpeed) * Math::sin(theRadian)));
+}
+
+CoordStruct LiveShellTrajectory::GetOnlyStableOffsetCoords(double rotateRadian)
+{
+	const auto pType = static_cast<const LiveShellTrajectoryType*>(this->GetType());
+	auto offsetCoord = pType->OffsetCoord.Get();
+
+	if (pType->MirrorCoord && this->CurrentBurst & 1)
+		offsetCoord.Y = -(offsetCoord.Y);
+
+	return CoordStruct
+		{
+			static_cast<int>(offsetCoord.X * Math::cos(rotateRadian) + offsetCoord.Y * Math::sin(rotateRadian)),
+			static_cast<int>(offsetCoord.X * Math::sin(rotateRadian) - offsetCoord.Y * Math::cos(rotateRadian)),
+			offsetCoord.Z
+		};
+}
+
+CoordStruct LiveShellTrajectory::GetInaccurateTargetCoords(BulletClass* pBullet, const CoordStruct& baseCoord, double distance)
+{
+	const auto pTypeExt = BulletTypeExt::ExtMap.Find(pBullet->Type);
+	const auto offsetMult = 0.0004 * distance;
+	const auto offsetMin = static_cast<int>(offsetMult * pTypeExt->BallisticScatter_Min.Get(Leptons(0)));
+	const auto offsetMax = static_cast<int>(offsetMult * pTypeExt->BallisticScatter_Max.Get(Leptons(RulesClass::Instance->BallisticScatter)));
+	const auto offsetDistance = ScenarioClass::Instance->Random.RandomRanged(offsetMin, offsetMax);
+	return MapClass::GetRandomCoordsNear(baseCoord, offsetDistance, false);
+}
+
+void LiveShellTrajectory::DisperseBurstSubstitution(BulletClass* pBullet, double baseRadian)
+{
+	const auto pType = static_cast<const LiveShellTrajectoryType*>(this->GetType());
+	const auto axis = pType->AxisOfRotation.Get();
+
+	// Calculate the actual rotation axis
+	BulletVelocity rotationAxis
+	{
+		axis.X * Math::cos(baseRadian) + axis.Y * Math::sin(baseRadian),
+		axis.X * Math::sin(baseRadian) - axis.Y * Math::cos(baseRadian),
+		static_cast<double>(axis.Z)
+	};
+
+	double extraRotate = 0.0;
+
+	if (pType->MirrorCoord)
+	{
+		if (this->CurrentBurst & 1)
+			rotationAxis *= -1;
+
+		extraRotate = Math::Pi * (pType->RotateCoord * ((this->CurrentBurst / 2) / (this->CountOfBurst - 1.0) - 0.5)) / 180;
+	}
+	else
+	{
+		extraRotate = Math::Pi * (pType->RotateCoord * (this->CurrentBurst / (this->CountOfBurst - 1.0) - 0.5)) / 180;
+	}
+
+	// Rotate the selected angle
+	pBullet->Velocity = LiveShellTrajectory::RotateAboutTheAxis(pBullet->Velocity, rotationAxis, extraRotate);
 }
 
 template<typename T>

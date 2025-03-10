@@ -198,16 +198,18 @@ public:
 	virtual void OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner);
 	virtual void OnAIPreDetonate(BulletClass* pBullet);
 	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition);
-	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) = 0;
-	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) = 0;
+	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet);
+	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno);
 	virtual const PhobosTrajectoryType* GetType() const = 0;
 	virtual bool OpenFire(BulletClass* pBullet) = 0;
 	virtual bool GetCanHitGround() const { return true; }
 	virtual CoordStruct GetRetargetCenter(const BulletClass* const pBullet) const { return pBullet->Location; }
 	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) = 0;
+	virtual bool CalculateBulletVelocity(BulletClass* pBullet);
 
-	static inline double Get2DDistance(const CoordStruct& here, const CoordStruct& there);
+	static inline double Get2DDistance(const CoordStruct& source, const CoordStruct& target);
 	static inline double Get2DVelocity(const BulletVelocity& velocity);
+	static inline double Get2DOpRadian(const CoordStruct& source, const CoordStruct& target);
 	static inline void SetNewDamage(int& damage, double ratio);
 	static inline bool CheckTechnoIsInvalid(TechnoClass* pTechno);
 	static inline bool CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget);
@@ -221,8 +223,8 @@ public:
 	void PassWithDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
 	void PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
 	void ProximityDetonateAt(BulletClass* pBullet, HouseClass* pOwner, TechnoClass* pTarget);
-	int GetTheTrueDamage(int damage, BulletClass* pBullet, TechnoClass* pTechno, bool self);
-	double GetExtraDamageMultiplier(BulletClass* pBullet, TechnoClass* pTechno);
+	int GetTheTrueDamage(int damage, BulletClass* pBullet, bool self);
+	double GetExtraDamageMultiplier(BulletClass* pBullet);
 	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
 	CoordStruct GetWeaponFireCoord(BulletClass* pBullet, TechnoClass* pTechno);
 	bool CheckFireFacing(BulletClass* pBullet);

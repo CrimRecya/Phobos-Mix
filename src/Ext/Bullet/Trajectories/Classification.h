@@ -48,7 +48,13 @@ public:
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual void OnUnlimbo(BulletClass* pBullet) override;
-	virtual bool OpenFire(BulletClass* pBullet) override;
+	virtual void OnAIPreDetonate(BulletClass* pBullet) override;
+
+	static BulletVelocity RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian);
+
+	CoordStruct GetOnlyStableOffsetCoords(double rotateRadian);
+	CoordStruct GetInaccurateTargetCoords(BulletClass* pBullet, const CoordStruct& baseCoord, double distance);
+	void DisperseBurstSubstitution(BulletClass* pBullet, double baseRadian);
 
 private:
 	template <typename T>
@@ -94,7 +100,6 @@ public:
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual void OnUnlimbo(BulletClass* pBullet) override;
-	virtual bool OpenFire(BulletClass* pBullet) override;
 
 private:
 	template <typename T>

@@ -234,14 +234,9 @@ void TracingTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpee
 		pBullet->Velocity = *pSpeed;
 }
 
-TrajectoryCheckReturnType TracingTrajectory::OnAITargetCoordCheck(BulletClass* pBullet)
+bool TracingTrajectory::OpenFire(BulletClass* pBullet)
 {
-	return TrajectoryCheckReturnType::SkipGameCheck;
-}
 
-TrajectoryCheckReturnType TracingTrajectory::OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno)
-{
-	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
 void TracingTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)

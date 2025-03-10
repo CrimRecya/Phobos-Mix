@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PhobosTrajectory.h"
+#include "Classification.h"
 
 #include <Ext/WeaponType/Body.h>
 
@@ -136,29 +137,18 @@ public:
 	virtual void OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner) override;
 	virtual void OnAIPreDetonate(BulletClass* pBullet) override;
 	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
-	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) override;
-	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual bool OpenFire(BulletClass* pBullet) override;
-	virtual bool GetCanHitGround() const override { return true; }
 	virtual CoordStruct GetRetargetCenter(const BulletClass* const pBullet) const override;
 	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) override;
+	virtual bool CalculateBulletVelocity(BulletClass* pBullet) override;
 
-	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
 	void InitializeBulletNotCurve(BulletClass* pBullet);
 	inline bool CalculateReducedVelocity(BulletClass* pBullet, double rotateAngle);
-	inline BulletVelocity RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian);
-	bool CalculateBulletVelocity(BulletClass* pBullet, double trajectorySpeed);
-	bool BulletRetargetTechno(BulletClass* pBullet);
-	inline bool CheckTechnoIsInvalid(TechnoClass* pTechno);
-	inline bool CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget);
 	bool CurveVelocityChange(BulletClass* pBullet);
 	bool NotCurveVelocityChange(BulletClass* pBullet);
 	bool StandardVelocityChange(BulletClass* pBullet);
 	bool ChangeBulletVelocity(BulletClass* pBullet, const CoordStruct& targetLocation);
-	bool PrepareMissileWeapon(BulletClass* pBullet);
-	void CreateMissileBullets(BulletClass* pBullet, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst);
-	void MissileBurstSubstitution(BulletClass* pBullet, const CoordStruct& axis, double rotateCoord, int curBurst, int maxBurst, bool mirror);
 
 private:
 	template <typename T>

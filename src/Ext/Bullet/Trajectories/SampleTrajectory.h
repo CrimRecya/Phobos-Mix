@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PhobosTrajectory.h"
+#include "Classification.h"
 
 class SampleTrajectoryType final : public PhobosTrajectoryType
 {
