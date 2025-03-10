@@ -65,7 +65,7 @@ bool SampleTrajectory::Save(PhobosStreamWriter& Stm) const
 
 // Do some math here to set the initial speed or location of your bullet.
 // Be careful not to let the bullet speed too fast without other processing.
-void SampleTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity)
+void SampleTrajectory::OnUnlimbo(BulletClass* pBullet)
 {
 	pBullet->Velocity.X = static_cast<double>(pBullet->TargetCoords.X - pBullet->SourceCoords.X);
 	pBullet->Velocity.Y = static_cast<double>(pBullet->TargetCoords.Y - pBullet->SourceCoords.Y);
@@ -100,7 +100,7 @@ void SampleTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 	}
 }
 
-// Where you can update the bullet's speed and position.
+// Where you can update the bullet's speed and position. But I would recommend that you complete the calculation at OnAI().
 // pSpeed: From the basic `Velocity` of the bullet plus gravity. It is only used in the calculation of this frame and will not be retained to the next frame.
 // pPosition: From the current `Location` of the bullet, then the bullet will be set location to (*pSpeed + *pPosition). So don't use SetLocation here.
 // You can also do additional processing here so that the position of the bullet will not change with its true velocity.
@@ -126,6 +126,7 @@ TrajectoryCheckReturnType SampleTrajectory::OnAITechnoCheck(BulletClass* pBullet
 	return TrajectoryCheckReturnType::ExecuteGameCheck; // Execute game checks.
 }
 
+// How to do when should change to a new target
 void SampleTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)
 {
 	pBullet->SetTarget(pTarget);

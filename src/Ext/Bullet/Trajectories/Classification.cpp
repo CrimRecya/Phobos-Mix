@@ -5,7 +5,7 @@
 #include <Ext/Bullet/Body.h>
 #include <Ext/Techno/Body.h>
 
-void PhobosTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity)
+void PhobosTrajectory::OnUnlimbo(BulletClass* pBullet)
 {
 	// Anyway, first reset the useless velocity
 	pBullet->Velocity = BulletVelocity::Empty;
@@ -36,9 +36,6 @@ void PhobosTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, Bull
 	// Record some information of firer
 	if (pFirer)
 	{
-		for (auto pTrans = pFirer->Transporter; pTrans; pTrans = pTrans->Transporter)
-			this->TechnoInTransport = pTrans->UniqueID;
-
 		this->CurrentBurst = pFirer->CurrentBurstIndex;
 		this->FirepowerMult = pFirer->FirepowerMultiplier * TechnoExt::ExtMap.Find(pFirer)->AE.FirepowerMultiplier;
 
@@ -111,8 +108,7 @@ bool PhobosTrajectory::OnAIPreCheck(BulletClass* pBullet, HouseClass* pOwner)
 // If there is an obstacle on the route, the bullet should need to reduce its speed so it will not penetrate the obstacle.
 void PhobosTrajectory::OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner)
 {
-	// Let the distance slightly exceed
-	double locationDistance = 32.0;
+	double locationDistance = 0.0;
 	bool velocityCheck = false;
 
 	const auto pType = this->GetType();
@@ -158,8 +154,8 @@ void PhobosTrajectory::OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwne
 					|| (subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array->GetItem(pCurCell->OverlayTypeIndex)->Wall) // Impact on the wall?
 					|| (checkThrough && this->CheckThroughAndSubjectInCell(pBullet, pCurCell, pOwner))) // Blocked by obstacles?
 				{
+					locationDistance = PhobosTrajectory::Get2DDistance(curCoord, theSourceCoords);
 					velocityCheck = true;
-					locationDistance += PhobosTrajectory::Get2DDistance(curCoord, theSourceCoords);
 					break;
 				}
 
@@ -167,13 +163,25 @@ void PhobosTrajectory::OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwne
 				pCurCell = MapClass::Instance->GetCellAt(curCoord);
 			}
 
-			// TODO Fire storm wall?
+			const auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(theSourceCoords, theTargetCoords, pOwner);
+
+			if (fireStormCoords != CoordStruct::Empty)
+			{
+				const auto distance = PhobosTrajectory::Get2DDistance(fireStormCoords, theSourceCoords);
+
+				if (!velocityCheck || distance < locationDistance)
+					locationDistance = distance;
+
+				velocityCheck = true;
+			}
 		}
 	}
 
 	// Check if the bullet needs to slow down the speed
 	if (velocityCheck)
 	{
+		// Let the distance slightly exceed
+		locationDistance += 32.0;
 		this->RemainingDistance = 0;
 		const auto velocity = PhobosTrajectory::Get2DVelocity(pBullet->Velocity);
 
@@ -218,10 +226,155 @@ void PhobosTrajectory::OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner)
 
 void PhobosTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 {
-	if (this->GetType()->PeacefulVanish) // No damage, no anim...
+	const auto flag = this->Flag();
+
+	// No damage, no anims...
+	if (this->GetType()->PeacefulVanish.Get(flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
 	{
 		pBullet->Health = 0;
 		pBullet->Limbo();
 		pBullet->UnInit();
 	}
+}
+
+// ------------------------------------------------------------------------------ //
+
+template<typename T>
+void LiveShellTrajectoryType::Serialize(T& Stm)
+{
+	Stm
+		.Process(this->RotateCoord)
+		.Process(this->OffsetCoord)
+		.Process(this->AxisOfRotation)
+		.Process(this->LeadTimeCalculate)
+		.Process(this->SubjectToGround)
+		.Process(this->EarlyDetonation)
+		.Process(this->DetonationHeight)
+		.Process(this->DetonationDistance)
+		.Process(this->TargetSnapDistance)
+		;
+}
+
+bool LiveShellTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
+{
+	this->PhobosTrajectoryType::Load(Stm, false);
+	this->Serialize(Stm);
+	return true;
+}
+
+bool LiveShellTrajectoryType::Save(PhobosStreamWriter& Stm) const
+{
+	this->PhobosTrajectoryType::Save(Stm);
+	const_cast<LiveShellTrajectoryType*>(this)->Serialize(Stm);
+	return true;
+}
+/*
+void LiveShellTrajectoryType::Read(CCINIClass* const pINI, const char* pSection) // Read separately
+{
+	this->PhobosTrajectoryType::Read(pINI, pSection);
+	INI_EX exINI(pINI);
+
+	this->RotateCoord.Read(exINI, pSection, "Trajectory.RotateCoord");
+	this->OffsetCoord.Read(exINI, pSection, "Trajectory.OffsetCoord");
+	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.AxisOfRotation");
+	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.LeadTimeCalculate");
+	this->EarlyDetonation.Read(exINI, pSection, "Trajectory.EarlyDetonation");
+	this->DetonationHeight.Read(exINI, pSection, "Trajectory.DetonationHeight");
+	this->DetonationDistance.Read(exINI, pSection, "Trajectory.DetonationDistance");
+	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
+}
+*/
+template<typename T>
+void LiveShellTrajectory::Serialize(T& Stm)
+{
+	Stm
+		.Process(this->LastTargetCoord)
+		.Process(this->WaitOneFrame)
+		;
+}
+
+bool LiveShellTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
+{
+	this->PhobosTrajectory::Load(Stm, false);
+	this->Serialize(Stm);
+	return true;
+}
+
+bool LiveShellTrajectory::Save(PhobosStreamWriter& Stm) const
+{
+	this->PhobosTrajectory::Save(Stm);
+	const_cast<LiveShellTrajectory*>(this)->Serialize(Stm);
+	return true;
+}
+
+void LiveShellTrajectory::OnUnlimbo(BulletClass* pBullet)
+{
+	this->PhobosTrajectory::OnUnlimbo(pBullet);
+
+	this->LastTargetCoord = pBullet->TargetCoords;
+}
+
+template<typename T>
+void VirtualTrajectoryType::Serialize(T& Stm)
+{
+	Stm
+		.Process(this->VirtualSourceCoord)
+		.Process(this->VirtualTargetCoord)
+		.Process(this->AllowFirerTurning)
+		.Process(this->IgnoresFirestorm)
+		;
+}
+
+bool VirtualTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
+{
+	this->PhobosTrajectoryType::Load(Stm, false);
+	this->Serialize(Stm);
+	return true;
+}
+
+bool VirtualTrajectoryType::Save(PhobosStreamWriter& Stm) const
+{
+	this->PhobosTrajectoryType::Save(Stm);
+	const_cast<VirtualTrajectoryType*>(this)->Serialize(Stm);
+	return true;
+}
+/*
+void VirtualTrajectoryType::Read(CCINIClass* const pINI, const char* pSection) // Read separately
+{
+	this->PhobosTrajectoryType::Read(pINI, pSection);
+	INI_EX exINI(pINI);
+
+	this->VirtualSourceCoord.Read(exINI, pSection, "Trajectory.VirtualSourceCoord");
+	this->VirtualTargetCoord.Read(exINI, pSection, "Trajectory.VirtualTargetCoord");
+	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.AllowFirerTurning");
+}
+*/
+template<typename T>
+void VirtualTrajectory::Serialize(T& Stm)
+{
+	Stm
+		.Process(this->SurfaceFirerID)
+		;
+}
+
+bool VirtualTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
+{
+	this->PhobosTrajectory::Load(Stm, false);
+	this->Serialize(Stm);
+	return true;
+}
+
+bool VirtualTrajectory::Save(PhobosStreamWriter& Stm) const
+{
+	this->PhobosTrajectory::Save(Stm);
+	const_cast<VirtualTrajectory*>(this)->Serialize(Stm);
+	return true;
+}
+
+void VirtualTrajectory::OnUnlimbo(BulletClass* pBullet)
+{
+	this->PhobosTrajectory::OnUnlimbo(pBullet);
+
+	for (auto pTrans = pBullet->Owner; pTrans; pTrans = pTrans->Transporter)
+		this->SurfaceFirerID = pTrans->UniqueID;
 }

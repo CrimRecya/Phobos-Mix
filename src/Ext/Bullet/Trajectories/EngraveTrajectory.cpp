@@ -51,14 +51,14 @@ void EngraveTrajectoryType::Serialize(T& Stm)
 
 bool EngraveTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->PhobosTrajectoryType::Load(Stm, false);
+	this->VirtualTrajectoryType::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool EngraveTrajectoryType::Save(PhobosStreamWriter& Stm) const
 {
-	this->PhobosTrajectoryType::Save(Stm);
+	this->VirtualTrajectoryType::Save(Stm);
 	const_cast<EngraveTrajectoryType*>(this)->Serialize(Stm);
 	return true;
 }
@@ -125,19 +125,19 @@ void EngraveTrajectory::Serialize(T& Stm)
 
 bool EngraveTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->PhobosTrajectory::Load(Stm, false);
+	this->VirtualTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool EngraveTrajectory::Save(PhobosStreamWriter& Stm) const
 {
-	this->PhobosTrajectory::Save(Stm);
+	this->VirtualTrajectory::Save(Stm);
 	const_cast<EngraveTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
 
-void EngraveTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity)
+void EngraveTrajectory::OnUnlimbo(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 	this->LaserTimer.Start(0);

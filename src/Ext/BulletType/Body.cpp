@@ -98,7 +98,7 @@ void BulletTypeExt::ExtData::TrajectoryValidation() const
 	const char* pSection = pThis->ID;
 
 	// Trajectory validation combined with other projectile behaviour.
-	if (this->TrajectoryType)
+	if (const auto pTrajType = this->TrajectoryType.get())
 	{
 		if (pThis->Arcing)
 		{
@@ -122,6 +122,22 @@ void BulletTypeExt::ExtData::TrajectoryValidation() const
 		{
 			Debug::Log("[Developer warning] [%s] has Trajectory set together with Vertical. Vertical has been set to false.\n", pSection);
 			pThis->Vertical = false;
+		}
+
+		const auto flag = pTrajType->Flag();
+
+		if (flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing)
+		{
+			if (!pThis->IgnoresFirestorm)
+			{
+				static_cast<VirtualTrajectoryType*>(pTrajType)->IgnoresFirestorm = false;
+				pThis->IgnoresFirestorm = true; // The entity ignores this setting
+			}
+		}
+		else if (flag == TrajectoryFlag::Straight || flag == TrajectoryFlag::Bombard)
+		{
+			if (this->SubjectToGround)
+				static_cast<LiveShellTrajectoryType*>(pTrajType)->SubjectToGround = true;
 		}
 	}
 }

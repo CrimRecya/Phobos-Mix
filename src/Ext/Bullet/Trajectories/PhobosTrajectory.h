@@ -46,6 +46,7 @@ public:
 		, ApplyRangeModifiers { false }
 		, UseDisperseCoord { false }
 		, RecordSourceCoord { false }
+		, UseDisperseBurst { false }
 
 		, PassDetonate { false }
 		, PassDetonateWarhead {}
@@ -85,20 +86,6 @@ public:
 		, DisperseFaceCheck { false }
 		, DisperseForceFire { true }
 		, DisperseCoord { { 0, 0, 0 } }
-
-		, RotateCoord { 0 }
-		, OffsetCoord { { 0, 0, 0 } }
-		, AxisOfRotation { { 0, 0, 1 } }
-		, UseDisperseBurst { false }
-		, LeadTimeCalculate { false }
-		, EarlyDetonation { false }
-		, DetonationHeight { -1 }
-		, DetonationDistance { Leptons(102) }
-		, TargetSnapDistance { Leptons(128) }
-
-		, VirtualSourceCoord { { 0, 0, 0 } }
-		, VirtualTargetCoord { { 0, 0, 0 } }
-		, AllowFirerTurning { true }
 	{ }
 
 	virtual ~PhobosTrajectoryType() noexcept = default;
@@ -120,66 +107,53 @@ public:
 	Valueable<bool> BulletSpin; // Image continue to rotate
 	Valueable<bool> BulletStable; // Image no longer rotate after launch
 	Valueable<bool> BulletOnPlane; // Image only rotates on the horizontal plane
-	Valueable<bool> MirrorCoord; // Mirror offset
+	Valueable<bool> MirrorCoord; // Should mirror offset
 	Valueable<double> RetargetRadius; // Searching for a new target after losing it
 	Valueable<bool> Synchronize; // Synchronize the target of its launcher
 	Nullable<bool> PeacefulVanish; // Disappear directly when about to detonate
 	Valueable<bool> ApplyRangeModifiers; // Apply range bonus
 	Valueable<bool> UseDisperseCoord; // Use the recorded launch location
 	Valueable<bool> RecordSourceCoord; // Record the launch location
+	Valueable<bool> UseDisperseBurst; // Use disperse weapon burst count
 
-	Valueable<bool> PassDetonate;
-	Valueable<WarheadTypeClass*> PassDetonateWarhead;
-	Valueable<int> PassDetonateDamage;
-	Valueable<int> PassDetonateDelay;
-	Valueable<int> PassDetonateInitialDelay;
-	Valueable<bool> PassDetonateLocal;
-	Valueable<int> ProximityImpact;
-	Valueable<WarheadTypeClass*> ProximityWarhead;
-	Valueable<int> ProximityDamage;
-	Valueable<Leptons> ProximityRadius;
-	Valueable<bool> ProximityDirect;
-	Valueable<bool> ProximityMedial;
-	Valueable<bool> ProximityAllies;
-	Valueable<bool> ProximityFlight;
-	Valueable<bool> ThroughVehicles;
-	Valueable<bool> ThroughBuilding;
-	Valueable<double> DamageEdgeAttenuation;
-	Valueable<double> DamageCountAttenuation;
+	Valueable<bool> PassDetonate; // Detonate the warhead while moving
+	Valueable<WarheadTypeClass*> PassDetonateWarhead; // The pass warhead used
+	Valueable<int> PassDetonateDamage; // The damage caused by the pass warhead
+	Valueable<int> PassDetonateDelay; // Detonation interval
+	Valueable<int> PassDetonateInitialDelay; // Detonation initial delay
+	Valueable<bool> PassDetonateLocal; // Detonate at ground level
+	Valueable<int> ProximityImpact; // How many times can proximity warhead be triggered
+	Valueable<WarheadTypeClass*> ProximityWarhead; // The proximity warhead used
+	Valueable<int> ProximityDamage; // The damage caused by the proximity warhead
+	Valueable<Leptons> ProximityRadius; // How large is the scope of impact
+	Valueable<bool> ProximityDirect; // Not detonating the warhead, but directly causing it to receive the damage
+	Valueable<bool> ProximityMedial; // When judged as passing through, detonate at bullet position
+	Valueable<bool> ProximityAllies; // Does the friendly army accept the judgment
+	Valueable<bool> ProximityFlight; // Does the air forces accept the judgment
+	Valueable<bool> ThroughVehicles; // Vehicles judged as normal
+	Valueable<bool> ThroughBuilding; // Building judged as normal
+	Valueable<double> DamageEdgeAttenuation; // The ratio of distance to damage
+	Valueable<double> DamageCountAttenuation; // The ratio of count to damage
 
-	ValueableVector<WeaponTypeClass*> DisperseWeapons;
-	ValueableVector<int> DisperseBursts;
-	ValueableVector<int> DisperseCounts;
-	ValueableVector<int> DisperseDelays;
-	Valueable<int> DisperseCycle;
-	Valueable<int> DisperseInitialDelay;
-	Valueable<Leptons> DisperseEffectiveRange;
-	Valueable<bool> DisperseSeparate;
-	Valueable<bool> DisperseRetarget;
-	Valueable<bool> DisperseLocation;
-	Valueable<bool> DisperseTendency;
-	Valueable<bool> DisperseHolistic;
-	Valueable<bool> DisperseMarginal;
-	Valueable<bool> DisperseDoRepeat;
-	Valueable<bool> DisperseSuicide;
-	Nullable<bool> DisperseFromFirer;
-	Valueable<bool> DisperseFaceCheck;
-	Valueable<bool> DisperseForceFire;
-	Valueable<PartialVector3D<int>> DisperseCoord;
-
-	Valueable<double> RotateCoord;
-	Valueable<PartialVector3D<int>> OffsetCoord;
-	Valueable<PartialVector3D<int>> AxisOfRotation;
-	Valueable<bool> UseDisperseBurst;
-	Valueable<bool> LeadTimeCalculate;
-	Valueable<bool> EarlyDetonation;
-	Valueable<int> DetonationHeight;
-	Valueable<Leptons> DetonationDistance;
-	Valueable<Leptons> TargetSnapDistance;
-
-	Valueable<PartialVector3D<int>> VirtualSourceCoord;
-	Valueable<PartialVector3D<int>> VirtualTargetCoord;
-	Valueable<bool> AllowFirerTurning;
+	ValueableVector<WeaponTypeClass*> DisperseWeapons; // Weapons fired towards the surroundings
+	ValueableVector<int> DisperseBursts; // How many times does each weapon burst
+	ValueableVector<int> DisperseCounts; // How many times does each group fire
+	ValueableVector<int> DisperseDelays; // Cooling time after weapon launch
+	Valueable<int> DisperseCycle; // How many rounds of weapons can be fired
+	Valueable<int> DisperseInitialDelay; // How long will it take to start firing weapons
+	Valueable<Leptons> DisperseEffectiveRange; // How close should it get before start firing weapons
+	Valueable<bool> DisperseSeparate; // Launch by weapon or by group
+	Valueable<bool> DisperseRetarget; // Automatically research for targets
+	Valueable<bool> DisperseLocation; // Where to search for the enemy from
+	Valueable<bool> DisperseTendency; // The every first weapon will attack the original target
+	Valueable<bool> DisperseHolistic; // Can select targets from different locations
+	Valueable<bool> DisperseMarginal; // Can attack trees, stones, bullets, etc
+	Valueable<bool> DisperseDoRepeat; // Can repeatedly attack a same target
+	Valueable<bool> DisperseSuicide; // Self destruct after all weapons are launched
+	Nullable<bool> DisperseFromFirer; // Fire from the firer's position
+	Valueable<bool> DisperseFaceCheck; // Check the orientation before launching the weapon
+	Valueable<bool> DisperseForceFire; // Ignore the no target state before launching the weapon
+	Valueable<PartialVector3D<int>> DisperseCoord; // The firing position when fired from the bullet
 };
 
 class PhobosTrajectory
@@ -197,6 +171,8 @@ public:
 		, NotMainWeapon { false }
 		, FLHCoord {}
 		, BuildingCoord {}
+		, CurrentBurst { 0 }
+		, CountOfBurst { 0 }
 
 		, PassDetonateDamage { trajType->PassDetonateDamage }
 		, PassDetonateTimer {}
@@ -209,23 +185,13 @@ public:
 		, DisperseCount { 0 }
 		, DisperseCycle { trajType->DisperseCycle }
 		, DisperseTimer {}
-
-		, LastTargetCoord {}
-		, CurrentBurst { 0 }
-		, CountOfBurst { 0 }
-		, WaitOneFrame { 0 }
-		, SubjectToGround { false }
-
-		, VirtualSourceCoord {}
-		, VirtualTargetCoord {}
-		, TechnoInTransport { 0 }
 	{ }
 
 	virtual ~PhobosTrajectory() noexcept = default;
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
 	virtual bool Save(PhobosStreamWriter& Stm) const;
 	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; }
-	virtual void OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity);
+	virtual void OnUnlimbo(BulletClass* pBullet);
 	virtual bool OnAI(BulletClass* pBullet);
 	virtual bool OnAIPreCheck(BulletClass* pBullet, HouseClass* pOwner);
 	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner);
@@ -235,7 +201,7 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) = 0;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) = 0;
 	virtual const PhobosTrajectoryType* GetType() const = 0;
-	virtual bool OpenFire() = 0;
+	virtual bool OpenFire(BulletClass* pBullet) = 0;
 	virtual bool GetCanHitGround() const { return true; }
 	virtual CoordStruct GetRetargetCenter(const BulletClass* const pBullet) const { return pBullet->Location; }
 	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) = 0;
@@ -261,7 +227,7 @@ public:
 	CoordStruct GetWeaponFireCoord(BulletClass* pBullet, TechnoClass* pTechno);
 	bool CheckFireFacing(BulletClass* pBullet);
 	bool PrepareDisperseWeapon(BulletClass* pBullet);
-	void FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner);
+	bool FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner);
 	void CreateDisperseBullets(TechnoClass* pTechno, const CoordStruct& sourceCoord, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst);
 
 private:
@@ -269,39 +235,31 @@ private:
 	void Serialize(T& Stm);
 
 public:
-	BulletVelocity MovingVelocity;
-	CDTimerClass DurationTimer;
-	CDTimerClass TolerantTimer;
-	double FirepowerMult;
-	int AttenuationRange;
-	int RemainingDistance;
-	bool TargetInTheAir;
-	bool TargetIsTechno;
-	bool NotMainWeapon;
-	CoordStruct FLHCoord;
-	CoordStruct BuildingCoord;
+	BulletVelocity MovingVelocity; // The vector used for calculating speed
+	CDTimerClass DurationTimer; // Bullet existence timer
+	CDTimerClass TolerantTimer; // Target tolerance timer
+	double FirepowerMult; // Inherited firepower bonus
+	int AttenuationRange; // Maximum range
+	int RemainingDistance; // Remaining distance from the self explosion location
+	bool TargetInTheAir; // Is the original target the Air Force
+	bool TargetIsTechno; // Is the original target a techno type
+	bool NotMainWeapon; // Does it ignore the launcher
+	CoordStruct FLHCoord; // Launch FLH
+	CoordStruct BuildingCoord; // Offset on the building of launch FLH
+	int CurrentBurst; // Current burst index
+	int CountOfBurst; // Upper limit of burst counts
 
-	int PassDetonateDamage;
-	CDTimerClass PassDetonateTimer;
-	int ProximityImpact;
-	int ProximityDamage;
+	int PassDetonateDamage; // Current damage caused by the pass warhead
+	CDTimerClass PassDetonateTimer; // Detonation interval timer
+	int ProximityImpact; // How many times can proximity warhead be triggered
+	int ProximityDamage; // Current damage caused by the proximity warhead
 	TechnoClass* ExtraCheck; // No taken out for use in next frame
 	std::map<int, int> TheCasualty; // Only for recording existence
 
-	int DisperseIndex;
-	int DisperseCount;
-	int DisperseCycle;
-	CDTimerClass DisperseTimer;
-
-	CoordStruct LastTargetCoord;
-	int CurrentBurst;
-	int CountOfBurst;
-	int WaitOneFrame;
-	bool SubjectToGround;
-
-	CoordStruct VirtualSourceCoord;
-	CoordStruct VirtualTargetCoord;
-	DWORD TechnoInTransport;
+	int DisperseIndex; // Launch weapon group Index
+	int DisperseCount; // Launch weapon group remaining times
+	int DisperseCycle; // Launch weapon times remaining rounds
+	CDTimerClass DisperseTimer; // Cooling timer for launching weapons
 };
 
 /*

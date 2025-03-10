@@ -73,14 +73,14 @@ void MissileTrajectoryType::Serialize(T& Stm)
 
 bool MissileTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->PhobosTrajectoryType::Load(Stm, false);
+	this->LiveShellTrajectoryType::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool MissileTrajectoryType::Save(PhobosStreamWriter& Stm) const
 {
-	this->PhobosTrajectoryType::Save(Stm);
+	this->LiveShellTrajectoryType::Save(Stm);
 	const_cast<MissileTrajectoryType*>(this)->Serialize(Stm);
 	return true;
 }
@@ -164,19 +164,19 @@ void MissileTrajectory::Serialize(T& Stm)
 
 bool MissileTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->PhobosTrajectory::Load(Stm, false);
+	this->LiveShellTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool MissileTrajectory::Save(PhobosStreamWriter& Stm) const
 {
-	this->PhobosTrajectory::Save(Stm);
+	this->LiveShellTrajectory::Save(Stm);
 	const_cast<MissileTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
 
-void MissileTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity)
+void MissileTrajectory::OnUnlimbo(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 	this->WeaponTimer.Start(pType->WeaponInitialDelay > 0 ? pType->WeaponInitialDelay : 0);

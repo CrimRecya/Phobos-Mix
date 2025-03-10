@@ -34,7 +34,7 @@ public:
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Invalid; } // TrajectoryFlag
-	virtual void OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity) override;
+	virtual void OnUnlimbo(BulletClass* pBullet) override;
 	virtual bool OnAI(BulletClass* pBullet) override;
 	virtual bool OnAIPreCheck(BulletClass* pBullet, HouseClass* pOwner) override { return true; }
 	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner) override {};
@@ -44,7 +44,8 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) override;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
-	virtual bool GetCanHitGround() const override { return this->SubjectToGround; }
+	virtual bool OpenFire(BulletClass* pBullet) override;
+	virtual bool GetCanHitGround() const override { return true; }
 	virtual CoordStruct GetRetargetCenter(const BulletClass* const pBullet) const override { return pBullet->TargetCoords; }
 	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) override;
 

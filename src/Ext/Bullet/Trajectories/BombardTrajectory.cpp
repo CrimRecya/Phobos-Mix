@@ -41,14 +41,14 @@ void BombardTrajectoryType::Serialize(T& Stm)
 
 bool BombardTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->PhobosTrajectoryType::Load(Stm, false);
+	this->LiveShellTrajectoryType::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool BombardTrajectoryType::Save(PhobosStreamWriter& Stm) const
 {
-	this->PhobosTrajectoryType::Save(Stm);
+	this->LiveShellTrajectoryType::Save(Stm);
 	const_cast<BombardTrajectoryType*>(this)->Serialize(Stm);
 	return true;
 }
@@ -106,19 +106,19 @@ void BombardTrajectory::Serialize(T& Stm)
 
 bool BombardTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->PhobosTrajectory::Load(Stm, false);
+	this->LiveShellTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool BombardTrajectory::Save(PhobosStreamWriter& Stm) const
 {
-	this->PhobosTrajectory::Save(Stm);
+	this->LiveShellTrajectory::Save(Stm);
 	const_cast<BombardTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
 
-void BombardTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity)
+void BombardTrajectory::OnUnlimbo(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 	this->Height += pBullet->TargetCoords.Z;

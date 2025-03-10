@@ -173,8 +173,9 @@ void PhobosTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTec
 CoordStruct PhobosTrajectory::GetWeaponFireCoord(BulletClass* pBullet, TechnoClass* pTechno)
 {
 	const auto pType = this->GetType();
+	const auto flag = this->Flag();
 
-	if (pType->DisperseFromFirer)
+	if (pType->DisperseFromFirer.Get(flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
 	{
 		for (auto pTrans = pTechno->Transporter; pTrans; pTrans = pTrans->Transporter)
 			pTechno = pTrans;
@@ -226,6 +227,11 @@ bool PhobosTrajectory::CheckFireFacing(BulletClass* pBullet)
 	if (!pType->DisperseFaceCheck || pType->BulletROT < 0 || pType->BulletSpin)
 		return true;
 
+	const auto flag = this->Flag();
+
+	if (pType->DisperseFromFirer.Get(flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
+		return true;
+
 	const auto& theBullet = pBullet->Location;
 	const auto& theTarget = pBullet->TargetCoords;
 	const auto targetDir = DirStruct { Math::atan2(theTarget.Y - theBullet.Y, theTarget.X - theBullet.X) };
@@ -256,7 +262,9 @@ bool PhobosTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 		}
 
 		const auto fireCoord = this->GetWeaponFireCoord(pBullet, pFirer);
-		this->FireDisperseWeapon(pBullet, pFirer, fireCoord, pOwner);
+
+		if (!this->FireDisperseWeapon(pBullet, pFirer, fireCoord, pOwner))
+			return false;
 	}
 
 	if (const int validDelays = pType->DisperseDelays.size())
@@ -294,7 +302,7 @@ bool PhobosTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 	return pType->DisperseSuicide;
 }
 
-void PhobosTrajectory::FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner)
+bool PhobosTrajectory::FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner)
 {
 	const auto pType = this->GetType();
 
@@ -303,7 +311,10 @@ void PhobosTrajectory::FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFi
 	const int validBursts = pType->DisperseBursts.size();
 
 	if (!validWeapons || !validBursts)
-		return;
+		return true;
+
+	if (!pBullet->Target && !pType->DisperseForceFire)
+		return false;
 
 	// Set basic target
 	const auto pTarget = pBullet->Target ? pBullet->Target
@@ -332,10 +343,16 @@ void PhobosTrajectory::FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFi
 			continue;
 
 		// Only attack the bullet itself
-		if (pType->DisperseFromFirer)
+		const auto flag = this->Flag();
+
+		if (pType->DisperseFromFirer.Get(flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
 		{
-			for (int burstNum = 0; burstNum < burstCount; burstNum++)
-				this->CreateDisperseBullets(pFirer, sourceCoord, pWeapon, pBullet, pOwner, burstNum, burstCount);
+			// Launch only when the firer exist
+			if (pFirer)
+			{
+				for (int burstNum = 0; burstNum < burstCount; burstNum++)
+					this->CreateDisperseBullets(pFirer, sourceCoord, pWeapon, pBullet, pOwner, burstNum, burstCount);
+			}
 
 			continue;
 		}
@@ -356,7 +373,7 @@ void PhobosTrajectory::FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFi
 		int burstNow = 0;
 
 		// Prioritize attacking the original target once
-		if (pType->DisperseTendency && burstCount > 0 && pTarget)
+		if (pType->DisperseTendency && pTarget)
 		{
 			this->CreateDisperseBullets(pFirer, sourceCoord, pWeapon, pTarget, pOwner, burstNow, burstCount);
 			++burstNow;
@@ -455,32 +472,57 @@ void PhobosTrajectory::FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFi
 			}
 		}
 
-		if ((pType->DisperseHolistic || this->TargetInTheAir) && checkTechnos) // In air targets
+		if (pType->DisperseHolistic || this->TargetInTheAir) // In air targets
 		{
-			const auto airTracker = &AircraftTrackerClass::Instance;
-			airTracker->FillCurrentVector(MapClass::Instance->GetCellAt(centerCoords), Game::F2I(static_cast<double>(pWeapon->Range) / Unsorted::LeptonsPerCell));
-
-			for (auto pTechno = airTracker->Get(); pTechno; pTechno = airTracker->Get())
+			if (checkTechnos)
 			{
-				if (PhobosTrajectory::CheckTechnoIsInvalid(pTechno))
-					continue;
+				const auto airTracker = &AircraftTrackerClass::Instance;
+				airTracker->FillCurrentVector(MapClass::Instance->GetCellAt(centerCoords), Game::F2I(static_cast<double>(pWeapon->Range) / Unsorted::LeptonsPerCell));
 
-				const auto pTechnoType = pTechno->GetTechnoType();
+				for (auto pTechno = airTracker->Get(); pTechno; pTechno = airTracker->Get())
+				{
+					if (PhobosTrajectory::CheckTechnoIsInvalid(pTechno))
+						continue;
 
-				if (!pTechnoType->LegalTarget)
-					continue;
-				else if (pType->DisperseTendency && !pType->DisperseDoRepeat && pTechno == pTarget)
-					continue;
-				else if (centerCoords.DistanceFrom(pTechno->GetCoords()) > pWeapon->Range)
-					continue;
-				else if (MapClass::GetTotalDamage(100, pWeapon->Warhead, pTechnoType->Armor, 0) == 0)
-					continue;
-				else if (!PhobosTrajectory::CheckWeaponCanTarget(pWeaponExt, pFirer, pTechno))
-					continue;
-				else if (!PhobosTrajectory::CheckWeaponValidness(pOwner, pTechno, pTechno->GetCell(), pWeaponExt->CanTargetHouses))
-					continue;
+					const auto pTechnoType = pTechno->GetTechnoType();
 
-				validTechnos.push_back(pTechno);
+					if (!pTechnoType->LegalTarget)
+						continue;
+					else if (pType->DisperseTendency && !pType->DisperseDoRepeat && pTechno == pTarget)
+						continue;
+					else if (centerCoords.DistanceFrom(pTechno->GetCoords()) > pWeapon->Range)
+						continue;
+					else if (MapClass::GetTotalDamage(100, pWeapon->Warhead, pTechnoType->Armor, 0) == 0)
+						continue;
+					else if (!PhobosTrajectory::CheckWeaponCanTarget(pWeaponExt, pFirer, pTechno))
+						continue;
+					else if (!PhobosTrajectory::CheckWeaponValidness(pOwner, pTechno, pTechno->GetCell(), pWeaponExt->CanTargetHouses))
+						continue;
+
+					validTechnos.push_back(pTechno);
+				}
+			}
+
+			if (checkObjects)
+			{
+				for (auto const& pObject : *BulletClass::Array())
+				{
+					auto const pBulletExt = BulletExt::ExtMap.Find(pObject);
+					auto const pBulletTypeExt = pBulletExt->TypeExtData;
+
+					if (!pBulletTypeExt || !pBulletTypeExt->Interceptable)
+						continue;
+					else if (centerCoords.DistanceFrom(centerCoords) > pWeapon->Range)
+						continue;
+					else if (pBulletTypeExt->Armor.isset() && GeneralUtils::GetWarheadVersusArmor(pWeapon->Warhead, pBulletTypeExt->Armor.Get()) == 0.0)
+						continue;
+					else if (!EnumFunctions::CanTargetHouse(pWeaponExt->CanTargetHouses, pOwner, (pObject->Owner ? pObject->Owner->Owner : pBulletExt->FirerHouse)))
+						continue;
+					else if (pType->DisperseTendency && !pType->DisperseDoRepeat && pObject == pTarget)
+						continue;
+
+					validObjects.push_back(pObject);
+				}
 			}
 		}
 
@@ -564,21 +606,23 @@ void PhobosTrajectory::FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFi
 			++burstNow;
 		}
 	}
+
+	return true;
 }
 
 void PhobosTrajectory::CreateDisperseBullets(TechnoClass* pTechno, const CoordStruct& sourceCoord, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst)
 {
 	const auto finalDamage = static_cast<int>(pWeapon->Damage * this->FirepowerMult);
 
-	if (const auto pCreateBullet = pWeapon->Projectile->CreateBullet(pTarget, pTechno, finalDamage, pWeapon->Warhead, pWeapon->Speed, pWeapon->Bright))
+	if (const auto pBullet = pWeapon->Projectile->CreateBullet(pTarget, pTechno, finalDamage, pWeapon->Warhead, pWeapon->Speed, pWeapon->Bright))
 	{
-		const auto pExt = BulletExt::ExtMap.Find(pCreateBullet);
+		const auto pExt = BulletExt::ExtMap.Find(pBullet);
 
 		if (pExt->TypeExtData->TrajectoryType)
 			pExt->DispersedTrajectory = true;
 
 		// Record basic information
-		BulletExt::SimulatedFiringUnlimbo(pCreateBullet, pOwner, pWeapon, sourceCoord, false);
+		BulletExt::SimulatedFiringUnlimbo(pBullet, pOwner, pWeapon, sourceCoord, false);
 
 		// Record additional content for trajectory
 		if (const auto pTraj = pExt->Trajectory.get())
@@ -602,10 +646,10 @@ void PhobosTrajectory::CreateDisperseBullets(TechnoClass* pTechno, const CoordSt
 			}
 
 			pExt->DispersedTrajectory = false;
-			pTraj->OpenFire(); // Calculate TargetCoords before drawing laser, ebolt, etc
+			pTraj->OpenFire(pBullet); // Calculate TargetCoords before drawing laser, ebolt, etc
 		}
 
 		// Simulate the actual weapon launch effect
-		BulletExt::SimulatedFiringEffects(pCreateBullet, pOwner, nullptr, true, true);
+		BulletExt::SimulatedFiringEffects(pBullet, pOwner, nullptr, true, true);
 	}
 }

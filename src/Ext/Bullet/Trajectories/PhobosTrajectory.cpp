@@ -226,20 +226,6 @@ void PhobosTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->DisperseFaceCheck.Read(exINI, pSection, "Trajectory.DisperseFaceCheck");
 	this->DisperseForceFire.Read(exINI, pSection, "Trajectory.DisperseForceFire");
 	this->DisperseCoord.Read(exINI, pSection, "Trajectory.DisperseCoord");
-
-	this->RotateCoord.Read(exINI, pSection, "Trajectory.RotateCoord");
-	this->OffsetCoord.Read(exINI, pSection, "Trajectory.OffsetCoord");
-	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.AxisOfRotation");
-	this->UseDisperseBurst.Read(exINI, pSection, "Trajectory.UseDisperseBurst");
-	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.LeadTimeCalculate");
-	this->EarlyDetonation.Read(exINI, pSection, "Trajectory.EarlyDetonation");
-	this->DetonationHeight.Read(exINI, pSection, "Trajectory.DetonationHeight");
-	this->DetonationDistance.Read(exINI, pSection, "Trajectory.DetonationDistance");
-	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
-
-//	this->VirtualSourceCoord.Read(exINI, pSection, "Trajectory.VirtualSourceCoord");
-//	this->VirtualTargetCoord.Read(exINI, pSection, "Trajectory.VirtualTargetCoord");
-	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.AllowFirerTurning");
 }
 
 bool PhobosTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
@@ -311,20 +297,6 @@ void PhobosTrajectoryType::Serialize(T& Stm)
 		.Process(this->DisperseFaceCheck)
 		.Process(this->DisperseForceFire)
 		.Process(this->DisperseCoord)
-
-		.Process(this->RotateCoord)
-		.Process(this->OffsetCoord)
-		.Process(this->AxisOfRotation)
-		.Process(this->UseDisperseBurst)
-		.Process(this->LeadTimeCalculate)
-		.Process(this->EarlyDetonation)
-		.Process(this->DetonationHeight)
-		.Process(this->DetonationDistance)
-		.Process(this->TargetSnapDistance)
-
-		.Process(this->VirtualSourceCoord)
-		.Process(this->VirtualTargetCoord)
-		.Process(this->AllowFirerTurning)
 		;
 }
 
@@ -367,16 +339,6 @@ void PhobosTrajectory::Serialize(T& Stm)
 		.Process(this->DisperseCount)
 		.Process(this->DisperseCycle)
 		.Process(this->DisperseTimer)
-
-		.Process(this->LastTargetCoord)
-		.Process(this->CurrentBurst)
-		.Process(this->CountOfBurst)
-		.Process(this->WaitOneFrame)
-		.Process(this->SubjectToGround)
-
-		.Process(this->VirtualSourceCoord)
-		.Process(this->VirtualTargetCoord)
-		.Process(this->TechnoInTransport)
 		;
 }
 
@@ -506,8 +468,6 @@ DEFINE_HOOK(0x467927, BulletClass_AI_TechnoCheck_Trajectories, 0x5)
 DEFINE_HOOK(0x468B72, BulletClass_Unlimbo_Trajectories, 0x5)
 {
 	GET(BulletClass*, pThis, EBX);
-	GET_STACK(CoordStruct*, pCoord, STACK_OFFSET(0x54, 0x4));
-	GET_STACK(BulletVelocity*, pVelocity, STACK_OFFSET(0x54, 0x8));
 
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
 	auto const pTypeExt = pExt->TypeExtData;
@@ -515,7 +475,7 @@ DEFINE_HOOK(0x468B72, BulletClass_Unlimbo_Trajectories, 0x5)
 	if (pTypeExt && pTypeExt->TrajectoryType)
 	{
 		pExt->Trajectory = pTypeExt->TrajectoryType->CreateInstance();
-		pExt->Trajectory->OnUnlimbo(pThis, pCoord, pVelocity);
+		pExt->Trajectory->OnUnlimbo(pThis);
 	}
 
 	return 0;

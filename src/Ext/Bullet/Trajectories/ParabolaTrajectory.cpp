@@ -70,14 +70,14 @@ void ParabolaTrajectoryType::Serialize(T& Stm)
 
 bool ParabolaTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->PhobosTrajectoryType::Load(Stm, false);
+	this->LiveShellTrajectoryType::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool ParabolaTrajectoryType::Save(PhobosStreamWriter& Stm) const
 {
-	this->PhobosTrajectoryType::Save(Stm);
+	this->LiveShellTrajectoryType::Save(Stm);
 	const_cast<ParabolaTrajectoryType*>(this)->Serialize(Stm);
 	return true;
 }
@@ -129,19 +129,19 @@ void ParabolaTrajectory::Serialize(T& Stm)
 
 bool ParabolaTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->PhobosTrajectory::Load(Stm, false);
+	this->LiveShellTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool ParabolaTrajectory::Save(PhobosStreamWriter& Stm) const
 {
-	this->PhobosTrajectory::Save(Stm);
+	this->LiveShellTrajectory::Save(Stm);
 	const_cast<ParabolaTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
 
-void ParabolaTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity)
+void ParabolaTrajectory::OnUnlimbo(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 	this->LastTargetCoord = pBullet->TargetCoords;

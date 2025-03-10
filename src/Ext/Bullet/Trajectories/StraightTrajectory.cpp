@@ -53,14 +53,14 @@ void StraightTrajectoryType::Serialize(T& Stm)
 
 bool StraightTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->PhobosTrajectoryType::Load(Stm, false);
+	this->LiveShellTrajectoryType::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool StraightTrajectoryType::Save(PhobosStreamWriter& Stm) const
 {
-	this->PhobosTrajectoryType::Save(Stm);
+	this->LiveShellTrajectoryType::Save(Stm);
 	const_cast<StraightTrajectoryType*>(this)->Serialize(Stm);
 	return true;
 }
@@ -130,19 +130,19 @@ void StraightTrajectory::Serialize(T& Stm)
 
 bool StraightTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->PhobosTrajectory::Load(Stm, false);
+	this->LiveShellTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool StraightTrajectory::Save(PhobosStreamWriter& Stm) const
 {
-	this->PhobosTrajectory::Save(Stm);
+	this->LiveShellTrajectory::Save(Stm);
 	const_cast<StraightTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
 
-void StraightTrajectory::OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity)
+void StraightTrajectory::OnUnlimbo(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 	this->PassDetonateTimer.Start(pType->PassDetonateInitialDelay > 0 ? pType->PassDetonateInitialDelay : 0);
