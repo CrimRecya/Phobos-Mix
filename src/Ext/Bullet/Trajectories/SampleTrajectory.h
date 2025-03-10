@@ -12,7 +12,7 @@ public:
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
-	virtual std::unique_ptr<PhobosTrajectory> CreateInstance() const override;
+	virtual std::unique_ptr<PhobosTrajectory> CreateInstance(BulletClass* pBullet) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Invalid; } // TrajectoryFlag
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 
@@ -27,7 +27,9 @@ public:
 class SampleTrajectory final : public PhobosTrajectory
 {
 public:
-	SampleTrajectory(SampleTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+	SampleTrajectory(noinit_t) { }
+	SampleTrajectory(SampleTrajectoryType const* trajType, BulletClass* pBullet)
+		: PhobosTrajectory(trajType, pBullet)
 		, Type { trajType }
 		, TargetSnapDistance { trajType->TargetSnapDistance }
 	{ }

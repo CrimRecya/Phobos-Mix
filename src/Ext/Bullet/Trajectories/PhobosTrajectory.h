@@ -93,7 +93,7 @@ public:
 	virtual bool Save(PhobosStreamWriter& Stm) const;
 	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; }
 	virtual void Read(CCINIClass* const pINI, const char* pSection);
-	[[nodiscard]] virtual std::unique_ptr<PhobosTrajectory> CreateInstance() const = 0;
+	[[nodiscard]] virtual std::unique_ptr<PhobosTrajectory> CreateInstance(BulletClass* pBullet) const = 0;
 
 private:
 	template <typename T>
@@ -159,8 +159,10 @@ public:
 class PhobosTrajectory
 {
 public:
-	PhobosTrajectory(PhobosTrajectoryType const* trajType) :
-		MovingVelocity {}
+	PhobosTrajectory() { }
+	PhobosTrajectory(PhobosTrajectoryType const* trajType, BulletClass* pBullet) :
+		Bullet { pBullet }
+		, MovingVelocity {}
 		, DurationTimer {}
 		, TolerantTimer {}
 		, FirepowerMult { 1.0 }
@@ -197,9 +199,9 @@ public:
 	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner);
 	virtual void OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner);
 	virtual void OnAIPreDetonate(BulletClass* pBullet);
-	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition);
-	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet);
-	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno);
+	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) { *pSpeed = this->MovingVelocity; }
+	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) { return TrajectoryCheckReturnType::SkipGameCheck; }
+	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) { return TrajectoryCheckReturnType::SkipGameCheck; }
 	virtual const PhobosTrajectoryType* GetType() const = 0;
 	virtual bool OpenFire(BulletClass* pBullet) = 0;
 	virtual bool GetCanHitGround() const { return true; }
@@ -207,9 +209,9 @@ public:
 	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) = 0;
 	virtual bool CalculateBulletVelocity(BulletClass* pBullet);
 
-	static inline double Get2DDistance(const CoordStruct& source, const CoordStruct& target);
-	static inline double Get2DVelocity(const BulletVelocity& velocity);
-	static inline double Get2DOpRadian(const CoordStruct& source, const CoordStruct& target);
+	static inline double Get2DDistance(const CoordStruct& source, const CoordStruct& target) { return Point2D { source.X, source.Y }.DistanceFrom(Point2D { target.X, target.Y }); }
+	static inline double Get2DVelocity(const BulletVelocity& velocity) { return Vector2D<double>{ velocity.X, velocity.Y }.Magnitude(); }
+	static inline double Get2DOpRadian(const CoordStruct& source, const CoordStruct& target) { return Math::atan2(target.Y - source.Y , target.X - source.X); }
 	static inline void SetNewDamage(int& damage, double ratio);
 	static inline bool CheckTechnoIsInvalid(TechnoClass* pTechno);
 	static inline bool CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget);
@@ -237,6 +239,7 @@ private:
 	void Serialize(T& Stm);
 
 public:
+	BulletClass* Bullet;
 	BulletVelocity MovingVelocity; // The vector used for calculating speed
 	CDTimerClass DurationTimer; // Bullet existence timer
 	CDTimerClass TolerantTimer; // Target tolerance timer

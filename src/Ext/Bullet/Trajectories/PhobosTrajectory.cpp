@@ -474,7 +474,7 @@ DEFINE_HOOK(0x468B72, BulletClass_Unlimbo_Trajectories, 0x5)
 
 	if (pTypeExt && pTypeExt->TrajectoryType)
 	{
-		pExt->Trajectory = pTypeExt->TrajectoryType->CreateInstance();
+		pExt->Trajectory = pTypeExt->TrajectoryType->CreateInstance(pThis);
 		pExt->Trajectory->OnUnlimbo(pThis);
 	}
 

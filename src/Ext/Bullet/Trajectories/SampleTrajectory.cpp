@@ -3,9 +3,9 @@
 #include <Ext/Bullet/Body.h>
 
 // Create
-std::unique_ptr<PhobosTrajectory> SampleTrajectoryType::CreateInstance() const
+std::unique_ptr<PhobosTrajectory> SampleTrajectoryType::CreateInstance(BulletClass* pBullet) const
 {
-	return std::make_unique<SampleTrajectory>(this);
+	return std::make_unique<SampleTrajectory>(this, pBullet);
 }
 
 // Save and Load for type

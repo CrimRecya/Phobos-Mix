@@ -48,9 +48,9 @@ namespace detail
 	}
 }
 
-std::unique_ptr<PhobosTrajectory> TracingTrajectoryType::CreateInstance() const
+std::unique_ptr<PhobosTrajectory> TracingTrajectoryType::CreateInstance(BulletClass* pBullet) const
 {
-	return std::make_unique<TracingTrajectory>(this);
+	return std::make_unique<TracingTrajectory>(this, pBullet);
 }
 
 template<typename T>

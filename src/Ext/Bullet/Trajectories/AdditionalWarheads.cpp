@@ -4,6 +4,17 @@
 
 #include <Ext/WarheadType/Body.h>
 
+inline void PhobosTrajectory::SetNewDamage(int& damage, double ratio)
+{
+	if (damage)
+	{
+		if (const auto newDamage = static_cast<int>(damage * ratio))
+			damage = newDamage;
+		else
+			damage = Math::sgn(damage);
+	}
+}
+
 inline bool PhobosTrajectory::CheckTechnoIsInvalid(TechnoClass* pTechno)
 {
 	// The target is alive

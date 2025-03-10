@@ -38,9 +38,9 @@ namespace detail
 	}
 }
 
-std::unique_ptr<PhobosTrajectory> ParabolaTrajectoryType::CreateInstance() const
+std::unique_ptr<PhobosTrajectory> ParabolaTrajectoryType::CreateInstance(BulletClass* pBullet) const
 {
-	return std::make_unique<ParabolaTrajectory>(this);
+	return std::make_unique<ParabolaTrajectory>(this, pBullet);
 }
 
 template<typename T>

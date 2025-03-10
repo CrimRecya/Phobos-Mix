@@ -44,7 +44,7 @@ public:
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
-	virtual std::unique_ptr<PhobosTrajectory> CreateInstance() const override;
+	virtual std::unique_ptr<PhobosTrajectory> CreateInstance(BulletClass* pBullet) const override;
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Tracing; }
 
@@ -81,7 +81,9 @@ public:
 class TracingTrajectory final : public VirtualTrajectory
 {
 public:
-	TracingTrajectory(TracingTrajectoryType const* trajType) : VirtualTrajectory(trajType)
+	TracingTrajectory(noinit_t) { }
+	TracingTrajectory(TracingTrajectoryType const* trajType, BulletClass* pBullet)
+		: VirtualTrajectory(trajType, pBullet)
 		, Type { trajType }
 		, WeaponIndex { 0 }
 		, WeaponCount { 0 }

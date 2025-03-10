@@ -9,9 +9,9 @@
 #include <Ext/WarheadType/Body.h>
 #include <Ext/Techno/Body.h>
 
-std::unique_ptr<PhobosTrajectory> StraightTrajectoryType::CreateInstance() const
+std::unique_ptr<PhobosTrajectory> StraightTrajectoryType::CreateInstance(BulletClass* pBullet) const
 {
-	return std::make_unique<StraightTrajectory>(this);
+	return std::make_unique<StraightTrajectory>(this, pBullet);
 }
 
 template<typename T>

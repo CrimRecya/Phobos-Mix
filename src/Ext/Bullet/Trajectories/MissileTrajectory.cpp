@@ -21,9 +21,9 @@
 #include <Utilities/EnumFunctions.h>
 #include <Utilities/Helpers.Alex.h>
 
-std::unique_ptr<PhobosTrajectory> MissileTrajectoryType::CreateInstance() const
+std::unique_ptr<PhobosTrajectory> MissileTrajectoryType::CreateInstance(BulletClass* pBullet) const
 {
-	return std::make_unique<MissileTrajectory>(this);
+	return std::make_unique<MissileTrajectory>(this, pBullet);
 }
 
 template<typename T>

@@ -39,7 +39,7 @@ public:
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
-	virtual std::unique_ptr<PhobosTrajectory> CreateInstance() const override;
+	virtual std::unique_ptr<PhobosTrajectory> CreateInstance(BulletClass* pBullet) const override;
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Engrave; }
 
@@ -81,7 +81,9 @@ public:
 class EngraveTrajectory final : public VirtualTrajectory
 {
 public:
-	EngraveTrajectory(EngraveTrajectoryType const* trajType) : VirtualTrajectory(trajType)
+	EngraveTrajectory(noinit_t) { }
+	EngraveTrajectory(EngraveTrajectoryType const* trajType, BulletClass* pBullet)
+		: VirtualTrajectory(trajType, pBullet)
 		, Type { trajType }
 		, SourceCoord { trajType->SourceCoord.Get() }
 		, TargetCoord { trajType->TargetCoord.Get() }

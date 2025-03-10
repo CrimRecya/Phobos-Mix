@@ -40,7 +40,9 @@ public:
 class LiveShellTrajectory : public PhobosTrajectory
 {
 public:
-	LiveShellTrajectory(LiveShellTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+	LiveShellTrajectory() { }
+	LiveShellTrajectory(LiveShellTrajectoryType const* trajType, BulletClass* pBullet)
+		: PhobosTrajectory(trajType, pBullet)
 		, LastTargetCoord {}
 		, WaitOneFrame { 0 }
 	{ }
@@ -93,7 +95,9 @@ public:
 class VirtualTrajectory : public PhobosTrajectory
 {
 public:
-	VirtualTrajectory(VirtualTrajectoryType const* trajType) : PhobosTrajectory(trajType)
+	VirtualTrajectory() { }
+	VirtualTrajectory(VirtualTrajectoryType const* trajType, BulletClass* pBullet)
+		: PhobosTrajectory(trajType, pBullet)
 		, SurfaceFirerID { 0 }
 	{ }
 

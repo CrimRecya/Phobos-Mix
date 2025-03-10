@@ -39,7 +39,7 @@ public:
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
-	virtual std::unique_ptr<PhobosTrajectory> CreateInstance() const override;
+	virtual std::unique_ptr<PhobosTrajectory> CreateInstance(BulletClass* pBullet) const override;
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Parabola; }
 
@@ -71,7 +71,9 @@ public:
 class ParabolaTrajectory final : public LiveShellTrajectory
 {
 public:
-	ParabolaTrajectory(ParabolaTrajectoryType const* trajType) : LiveShellTrajectory(trajType)
+	ParabolaTrajectory(noinit_t) { }
+	ParabolaTrajectory(ParabolaTrajectoryType const* trajType, BulletClass* pBullet)
+		: LiveShellTrajectory(trajType, pBullet)
 		, Type { trajType }
 		, ThrowHeight { trajType->ThrowHeight > 0 ? trajType->ThrowHeight : 600 }
 		, BounceTimes { trajType->BounceTimes }

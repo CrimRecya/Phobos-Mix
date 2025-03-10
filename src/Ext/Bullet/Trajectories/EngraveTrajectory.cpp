@@ -9,9 +9,9 @@
 #include <Ext/BulletType/Body.h>
 #include <Ext/Techno/Body.h>
 
-std::unique_ptr<PhobosTrajectory> EngraveTrajectoryType::CreateInstance() const
+std::unique_ptr<PhobosTrajectory> EngraveTrajectoryType::CreateInstance(BulletClass* pBullet) const
 {
-	return std::make_unique<EngraveTrajectory>(this);
+	return std::make_unique<EngraveTrajectory>(this, pBullet);
 }
 
 template<typename T>

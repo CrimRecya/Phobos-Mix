@@ -248,21 +248,6 @@ void PhobosTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 	}
 }
 
-void PhobosTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition)
-{
-	*pSpeed = this->MovingVelocity; // This is for location calculation, and pBullet->Velocity is for image drawing
-}
-
-TrajectoryCheckReturnType PhobosTrajectory::OnAITargetCoordCheck(BulletClass* pBullet)
-{
-	return TrajectoryCheckReturnType::SkipGameCheck; // Bypass game checks entirely.
-}
-
-TrajectoryCheckReturnType PhobosTrajectory::OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno)
-{
-	return TrajectoryCheckReturnType::SkipGameCheck; // Bypass game checks entirely.
-}
-
 bool PhobosTrajectory::CalculateBulletVelocity(BulletClass* pBullet)
 {
 	const auto velocityLength = pBullet->Velocity.Magnitude();
@@ -273,32 +258,6 @@ bool PhobosTrajectory::CalculateBulletVelocity(BulletClass* pBullet)
 		return true;
 
 	return false;
-}
-
-inline double PhobosTrajectory::Get2DDistance(const CoordStruct& source, const CoordStruct& target)
-{
-	return Point2D { source.X, source.Y }.DistanceFrom(Point2D { target.X, target.Y });
-}
-
-inline double PhobosTrajectory::Get2DVelocity(const BulletVelocity& velocity)
-{
-	return Vector2D<double>{ velocity.X, velocity.Y }.Magnitude();
-}
-
-inline double PhobosTrajectory::Get2DOpRadian(const CoordStruct& source, const CoordStruct& target)
-{
-	return Math::atan2(target.Y - source.Y , target.X - source.X);
-}
-
-inline void PhobosTrajectory::SetNewDamage(int& damage, double ratio)
-{
-	if (damage)
-	{
-		if (const auto newDamage = static_cast<int>(damage * ratio))
-			damage = newDamage;
-		else
-			damage = Math::sgn(damage);
-	}
 }
 
 // ------------------------------------------------------------------------------ //

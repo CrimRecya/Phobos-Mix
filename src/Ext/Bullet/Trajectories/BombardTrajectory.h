@@ -32,7 +32,7 @@ public:
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
-	virtual std::unique_ptr<PhobosTrajectory> CreateInstance() const override;
+	virtual std::unique_ptr<PhobosTrajectory> CreateInstance(BulletClass* pBullet) const override;
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Bombard; }
 
@@ -67,7 +67,9 @@ public:
 class BombardTrajectory final : public LiveShellTrajectory
 {
 public:
-	BombardTrajectory(BombardTrajectoryType const* trajType) : LiveShellTrajectory(trajType)
+	BombardTrajectory(noinit_t) { }
+	BombardTrajectory(BombardTrajectoryType const* trajType, BulletClass* pBullet)
+		: LiveShellTrajectory(trajType, pBullet)
 		, Type { trajType }
 		, Height { trajType->Height }
 		, FallPercent { trajType->FallPercent - trajType->FallPercentShift }

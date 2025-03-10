@@ -13,7 +13,7 @@ public:
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
-	virtual std::unique_ptr<PhobosTrajectory> CreateInstance() const override;
+	virtual std::unique_ptr<PhobosTrajectory> CreateInstance(BulletClass* pBullet) const override;
 	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Straight; }
 
@@ -29,7 +29,9 @@ public:
 class StraightTrajectory final : public LiveShellTrajectory
 {
 public:
-	StraightTrajectory(StraightTrajectoryType const* trajType) : LiveShellTrajectory(trajType)
+	StraightTrajectory(noinit_t) { }
+	StraightTrajectory(StraightTrajectoryType const* trajType, BulletClass* pBullet)
+		: LiveShellTrajectory(trajType, pBullet)
 		, Type { trajType }
 		, DetonationDistance { trajType->DetonationDistance }
 	{ }

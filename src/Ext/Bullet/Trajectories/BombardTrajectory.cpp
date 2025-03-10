@@ -6,9 +6,9 @@
 #include <Ext/Anim/Body.h>
 #include <Ext/Bullet/Body.h>
 
-std::unique_ptr<PhobosTrajectory> BombardTrajectoryType::CreateInstance() const
+std::unique_ptr<PhobosTrajectory> BombardTrajectoryType::CreateInstance(BulletClass* pBullet) const
 {
-	return std::make_unique<BombardTrajectory>(this);
+	return std::make_unique<BombardTrajectory>(this, pBullet);
 }
 
 template<typename T>
