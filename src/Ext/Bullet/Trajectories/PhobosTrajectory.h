@@ -249,6 +249,8 @@ public:
 	static inline bool CheckWeaponValidness(HouseClass* pHouse, TechnoClass* pTechno, CellClass* pCell, AffectedHouse flags);
 	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
 
+	void ChangeBulletFacing();
+	bool CheckTolerantAndSynchronize();
 	std::vector<CellClass*> GetCellsInProximityRadius();
 	bool BulletRetargetTechno();
 	bool CheckThroughAndSubjectInCell(CellClass* pCell, HouseClass* pOwner);

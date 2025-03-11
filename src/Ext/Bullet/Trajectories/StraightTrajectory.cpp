@@ -1,13 +1,7 @@
 #include "StraightTrajectory.h"
 
-#include <OverlayTypeClass.h>
-#include <ScenarioClass.h>
-#include <AircraftTrackerClass.h>
-
 #include <Ext/Bullet/Body.h>
 #include <Ext/WeaponType/Body.h>
-#include <Ext/WarheadType/Body.h>
-#include <Ext/Techno/Body.h>
 
 std::unique_ptr<PhobosTrajectory> StraightTrajectoryType::CreateInstance(BulletClass* pBullet) const
 {

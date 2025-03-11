@@ -1,25 +1,6 @@
 #include "MissileTrajectory.h"
-#include "StraightTrajectory.h"
-#include "BombardTrajectory.h"
-#include "EngraveTrajectory.h"
-#include "ParabolaTrajectory.h"
-#include "TracingTrajectory.h"
-
-#include <AnimClass.h>
-#include <LaserDrawClass.h>
-#include <EBolt.h>
-#include <RadBeam.h>
-#include <ParticleSystemClass.h>
-#include <ScenarioClass.h>
-#include <AircraftTrackerClass.h>
 
 #include <Ext/Bullet/Body.h>
-#include <Ext/BulletType/Body.h>
-#include <Ext/Techno/Body.h>
-#include <Ext/WeaponType/Body.h>
-#include <Ext/Anim/Body.h>
-#include <Utilities/EnumFunctions.h>
-#include <Utilities/Helpers.Alex.h>
 
 std::unique_ptr<PhobosTrajectory> MissileTrajectoryType::CreateInstance(BulletClass* pBullet) const
 {
@@ -492,10 +473,6 @@ bool MissileTrajectory::NotCurveVelocityChange()
 	// Calculate steering
 	if (!pType->LockDirection || !this->InStraight)
 	{
-		// Check if the target needs to be changed
-		if (std::abs(pType->RetargetRadius) > 1e-10 && this->BulletRetargetTechno())
-			return true;
-
 		// Make the turn
 		if (this->PreAimDistance <= 0 && this->StandardVelocityChange())
 			return true;

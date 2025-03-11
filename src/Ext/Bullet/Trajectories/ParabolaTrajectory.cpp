@@ -1,10 +1,8 @@
 #include "ParabolaTrajectory.h"
 
 #include <OverlayTypeClass.h>
-#include <ScenarioClass.h>
 
 #include <Ext/Bullet/Body.h>
-#include <Ext/BulletType/Body.h>
 #include <Ext/WarheadType/Body.h>
 
 namespace detail
@@ -154,10 +152,6 @@ void ParabolaTrajectory::OnUnlimbo()
 bool ParabolaTrajectory::OnAIDetonateCheck()
 {
 	if (this->ShouldDetonate)
-		return true;
-
-	// Check the remaining existence time
-	if (this->DurationTimer.Completed())
 		return true;
 
 	const auto pBullet = this->Bullet;
