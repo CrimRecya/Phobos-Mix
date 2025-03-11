@@ -105,11 +105,11 @@ void StraightTrajectory::OnUnlimbo()
 
 bool StraightTrajectory::OnAIDetonateCheck()
 {
-	const auto pBullet = this->Bullet;
-	const auto pType = this->Type;
-
 	if (this->PhobosTrajectory::OnAIDetonateCheck())
 		return true;
+
+	const auto pBullet = this->Bullet;
+	const auto pType = this->Type;
 
 	// Close enough
 	if (!pType->PassThrough && pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())

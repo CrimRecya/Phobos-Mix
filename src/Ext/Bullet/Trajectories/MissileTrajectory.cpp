@@ -161,6 +161,9 @@ bool MissileTrajectory::OnAI()
 
 bool MissileTrajectory::OnAIDetonateCheck()
 {
+	if (this->PhobosTrajectory::OnAIDetonateCheck())
+		return true;
+
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 
@@ -168,7 +171,10 @@ bool MissileTrajectory::OnAIDetonateCheck()
 	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
 		return true;
 
-	if (this->PhobosTrajectory::OnAIDetonateCheck())
+	// Check the remaining travel distance of the bullet
+	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
+
+	if (this->RemainingDistance < 0)
 		return true;
 
 	// Calculate new speed
@@ -220,6 +226,8 @@ bool MissileTrajectory::OpenFire()
 			this->RemainingDistance = static_cast<int>(this->OriginalDistance * (-pType->SuicideAboveRange));
 		else if (pType->SuicideAboveRange > 0)
 			this->RemainingDistance = static_cast<int>(Unsorted::LeptonsPerCell * pType->SuicideAboveRange);
+		else
+			this->RemainingDistance = INT_MAX;
 
 		// Without setting an initial direction, it will be launched directly towards the target
 		if (pType->OffsetCoord == CoordStruct::Empty)
@@ -286,10 +294,10 @@ void MissileTrajectory::InitializeBulletNotCurve()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
-	double rotateRadian = 0.0;
 	const auto pFirer = pBullet->Owner;
 	const auto theSource = pFirer ? pFirer->GetCoords() : pBullet->SourceCoords;
 
+	double rotateRadian = 0.0;
 	// Calculate the orientation of the coordinate system
 	if ((pType->FacingCoord || (pBullet->TargetCoords.Y == theSource.Y && pBullet->TargetCoords.X == theSource.X)) && pFirer)
 	{
@@ -554,7 +562,9 @@ bool MissileTrajectory::ChangeBulletVelocity(const CoordStruct& targetLocation)
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
-	const auto bulletVelocity = this->MovingVelocity;
+	auto& bulletVelocity = this->MovingVelocity;
+	bulletVelocity.Z -= BulletTypeExt::GetAdjustedGravity(pBullet->Type);
+
 	const BulletVelocity targetVelocity
 	{
 		static_cast<double>(targetLocation.X - pBullet->Location.X),

@@ -46,8 +46,8 @@ public:
 	virtual void OnAIPreDetonate() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual bool OpenFire() override;
-	virtual bool GetCanHitGround() const override { return this->Type->SubjectToGround; }
 	virtual void FireTrajectory() override;
+	virtual bool GetCanHitGround() const override { return this->Type->SubjectToGround; }
 
 private:
 	CoordStruct CalculateBulletLeadTime();

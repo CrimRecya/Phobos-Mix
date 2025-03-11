@@ -17,25 +17,26 @@ class ParabolaTrajectoryType final : public LiveShellTrajectoryType
 {
 public:
 	ParabolaTrajectoryType() : LiveShellTrajectoryType()
-		, DetonationDistance { Leptons(102) }
-		, TargetSnapDistance { Leptons(128) }
 		, OpenFireMode { ParabolaFireMode::Speed }
 		, ThrowHeight { 600 }
 		, LaunchAngle { 30.0 }
-		, LeadTimeCalculate { false }
 		, DetonationAngle { -90.0 }
-		, DetonationHeight { -1 }
 		, BounceTimes { 0 }
 		, BounceOnWater { false }
 		, BounceDetonate { false }
 		, BounceAttenuation { 0.8 }
 		, BounceCoefficient { 0.8 }
-		, OffsetCoord { { 0, 0, 0 } }
-		, RotateCoord { 0 }
-		, MirrorCoord { true }
-		, UseDisperseBurst { false }
-		, AxisOfRotation { { 0, 0, 1 } }
 	{ }
+
+	Valueable<ParabolaFireMode> OpenFireMode;
+	Valueable<int> ThrowHeight;
+	Valueable<double> LaunchAngle;
+	Valueable<double> DetonationAngle;
+	Valueable<int> BounceTimes;
+	Valueable<bool> BounceOnWater;
+	Valueable<bool> BounceDetonate;
+	Valueable<double> BounceAttenuation;
+	Valueable<double> BounceCoefficient;
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
@@ -46,26 +47,6 @@ public:
 private:
 	template <typename T>
 	void Serialize(T& Stm);
-
-public:
-	Valueable<Leptons> DetonationDistance;
-	Valueable<Leptons> TargetSnapDistance;
-	Valueable<ParabolaFireMode> OpenFireMode;
-	Valueable<int> ThrowHeight;
-	Valueable<double> LaunchAngle;
-	Valueable<bool> LeadTimeCalculate;
-	Valueable<double> DetonationAngle;
-	Valueable<int> DetonationHeight;
-	Valueable<int> BounceTimes;
-	Valueable<bool> BounceOnWater;
-	Valueable<bool> BounceDetonate;
-	Valueable<double> BounceAttenuation;
-	Valueable<double> BounceCoefficient;
-	Valueable<CoordStruct> OffsetCoord;
-	Valueable<double> RotateCoord;
-	Valueable<bool> MirrorCoord;
-	Valueable<bool> UseDisperseBurst;
-	Valueable<CoordStruct> AxisOfRotation;
 };
 
 class ParabolaTrajectory final : public LiveShellTrajectory
@@ -77,66 +58,42 @@ public:
 		, Type { trajType }
 		, ThrowHeight { trajType->ThrowHeight > 0 ? trajType->ThrowHeight : 600 }
 		, BounceTimes { trajType->BounceTimes }
-		, OffsetCoord { trajType->OffsetCoord.Get() }
-		, UseDisperseBurst { trajType->UseDisperseBurst }
-		, ShouldDetonate { false }
 		, ShouldBounce { false }
-		, NeedExtraCheck { false }
-		, LastTargetCoord {}
-		, CurrentBurst { 0 }
-		, CountOfBurst { 0 }
-		, WaitOneFrame { 0 }
 		, LastVelocity {}
 	{ }
+
+	const ParabolaTrajectoryType* Type;
+	int ThrowHeight;
+	int BounceTimes;
+	bool ShouldBounce;
+	BulletVelocity LastVelocity;
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Parabola; }
 	virtual void OnUnlimbo() override;
-	virtual bool OnAI() override;
 	virtual bool OnAIDetonateCheck() override;
 	virtual void OnAIVelocityCheck() override;
-	virtual void OnAINextFrameCheck() override;
 	virtual void OnAIPreDetonate() override;
-	virtual void OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual bool OpenFire() override;
-
-	void FireTrajectory();
-	bool BulletPrepareCheck();
-	void CalculateBulletVelocityRightNow(CoordStruct* pSourceCoords, double gravity);
-	void CalculateBulletVelocityLeadTime(CoordStruct* pSourceCoords, double gravity);
-	void CheckIfNeedExtraCheck();
-	double SearchVelocity(double horizontalDistance, int distanceCoordsZ, double radian, double gravity);
-	double CheckVelocityEquation(double horizontalDistance, int distanceCoordsZ, double velocity, double radian, double gravity);
-	double SolveFixedSpeedMeetTime(CoordStruct* pSourceCrd, CoordStruct* pTargetCrd, CoordStruct* pOffsetCrd, double horizontalSpeed);
-	double SearchFixedHeightMeetTime(CoordStruct* pSourceCrd, CoordStruct* pTargetCrd, CoordStruct* pOffsetCrd, double gravity);
-	double CheckFixedHeightEquation(CoordStruct* pSourceCrd, CoordStruct* pTargetCrd, CoordStruct* pOffsetCrd, double meetTime, double gravity);
-	double SearchFixedAngleMeetTime(CoordStruct* pSourceCrd, CoordStruct* pTargetCrd, CoordStruct* pOffsetCrd, double radian, double gravity);
-	double CheckFixedAngleEquation(CoordStruct* pSourceCrd, CoordStruct* pTargetCrd, CoordStruct* pOffsetCrd, double meetTime, double radian, double gravity);
-	bool CalculateBulletVelocityAfterBounce(CellClass* pCell);
-	BulletVelocity GetGroundNormalVector(CellClass* pCell);
-	bool CheckBulletHitCliff(short X, short Y, int bulletHeight, int lastCellHeight);
-	bool BulletDetonatePreCheck();
-	bool BulletDetonateLastCheck(CellClass* pCell, double gravity, bool bounce);
-	void BulletDetonateEffectuate(double velocityMult);
+	virtual void FireTrajectory() override;
+	virtual void MultiplyBulletVelocity(const double ratio, const bool shouldDetonate) override;
 
 private:
+	void CalculateBulletVelocityRightNow(const CoordStruct& pSourceCoords, double gravity);
+	void CalculateBulletVelocityLeadTime(const CoordStruct& pSourceCoords, double gravity);
+	double SearchVelocity(double horizontalDistance, int distanceCoordsZ, double radian, double gravity);
+	double CheckVelocityEquation(double horizontalDistance, int distanceCoordsZ, double velocity, double radian, double gravity);
+	double SolveFixedSpeedMeetTime(const CoordStruct& pSourceCrd, const CoordStruct& pTargetCrd, const CoordStruct& pOffsetCrd, double horizontalSpeed);
+	double SearchFixedHeightMeetTime(const CoordStruct& pSourceCrd, const CoordStruct& pTargetCrd, const CoordStruct& pOffsetCrd, double gravity);
+	double CheckFixedHeightEquation(const CoordStruct& pSourceCrd, const CoordStruct& pTargetCrd, const CoordStruct& pOffsetCrd, double meetTime, double gravity);
+	double SearchFixedAngleMeetTime(const CoordStruct& pSourceCrd, const CoordStruct& pTargetCrd, const CoordStruct& pOffsetCrd, double radian, double gravity);
+	double CheckFixedAngleEquation(const CoordStruct& pSourceCrd, const CoordStruct& pTargetCrd, const CoordStruct& pOffsetCrd, double meetTime, double radian, double gravity);
+	bool CalculateBulletVelocityAfterBounce(CellClass* pCell);
+	BulletVelocity GetGroundNormalVector(CellClass* pCell);
+	static bool CheckBulletHitCliff(short X, short Y, int bulletHeight, int lastCellHeight);
+
 	template <typename T>
 	void Serialize(T& Stm);
-
-public:
-	const ParabolaTrajectoryType* Type;
-	int ThrowHeight;
-	int BounceTimes;
-	CoordStruct OffsetCoord;
-	bool UseDisperseBurst;
-	bool ShouldDetonate;
-	bool ShouldBounce;
-	bool NeedExtraCheck;
-	CoordStruct LastTargetCoord;
-	int CurrentBurst;
-	int CountOfBurst;
-	int WaitOneFrame;
-	BulletVelocity LastVelocity;
 };

@@ -52,6 +52,8 @@ void BombardTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Bombard.OffsetCoord");
 	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.Bombard.AxisOfRotation");
 	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Bombard.LeadTimeCalculate");
+	this->EarlyDetonation.Read(exINI, pSection, "Trajectory.Bombard.EarlyDetonation");
+	this->DetonationHeight.Read(exINI, pSection, "Trajectory.Bombard.DetonationHeight");
 	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Bombard.DetonationDistance");
 	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Bombard.TargetSnapDistance");
 
@@ -114,6 +116,9 @@ void BombardTrajectory::OnUnlimbo()
 
 bool BombardTrajectory::OnAIDetonateCheck()
 {
+	if (this->PhobosTrajectory::OnAIDetonateCheck())
+		return true;
+
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 
@@ -128,9 +133,6 @@ bool BombardTrajectory::OnAIDetonateCheck()
 	{
 		return true;
 	}
-
-	if (this->PhobosTrajectory::OnAIDetonateCheck())
-		return true;
 
 	return this->BulletVelocityChange();
 }

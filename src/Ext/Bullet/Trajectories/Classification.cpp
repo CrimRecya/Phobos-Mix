@@ -115,9 +115,10 @@ void PhobosTrajectory::OnAIVelocityCheck()
 
 	const auto pType = this->GetType();
 	const bool checkThrough = (!pType->ThroughBuilding || !pType->ThroughVehicles);
+	const auto velocity = PhobosTrajectory::Get2DVelocity(this->MovingVelocity);
 
 	// Low speed with checkSubject was already done well
-	if (this->MovingSpeed < 256.0)
+	if (velocity < 256.0)
 	{
 		// Blocked by obstacles?
 		if (checkThrough)
@@ -141,9 +142,9 @@ void PhobosTrajectory::OnAIVelocityCheck()
 			const auto& theSourceCoords = pBullet->Location;
 			const CoordStruct theTargetCoords
 			{
-				pBullet->Location.X + static_cast<int>(this->MovingVelocity.X),
-				pBullet->Location.Y + static_cast<int>(this->MovingVelocity.Y),
-				pBullet->Location.Z + static_cast<int>(this->MovingVelocity.Z)
+				theSourceCoords.X + static_cast<int>(this->MovingVelocity.X),
+				theSourceCoords.Y + static_cast<int>(this->MovingVelocity.Y),
+				theSourceCoords.Z + static_cast<int>(this->MovingVelocity.Z)
 			};
 
 			const auto sourceCell = CellClass::Coord2Cell(theSourceCoords);
@@ -196,7 +197,6 @@ void PhobosTrajectory::OnAIVelocityCheck()
 		// Let the distance slightly exceed
 		locationDistance += 32.0;
 		this->ShouldDetonate = true;
-		const auto velocity = PhobosTrajectory::Get2DVelocity(this->MovingVelocity);
 
 		// It may not be necessary to compare them again, but still do so
 		if (locationDistance < velocity)
@@ -292,7 +292,7 @@ bool PhobosTrajectory::CalculateBulletVelocity(const double speed)
 	return false;
 }
 
-bool PhobosTrajectory::MultiplyBulletVelocity(const double ratio, const bool shouldDetonate)
+void PhobosTrajectory::MultiplyBulletVelocity(const double ratio, const bool shouldDetonate)
 {
 	this->MovingVelocity *= ratio;
 	this->MovingSpeed = this->MovingSpeed * ratio;

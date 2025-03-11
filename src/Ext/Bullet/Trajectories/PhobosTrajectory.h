@@ -238,7 +238,7 @@ public:
 	virtual CoordStruct GetRetargetCenter() const { return this->Bullet->TargetCoords; }
 	virtual void SetBulletNewTarget(AbstractClass* const pTarget);
 	virtual bool CalculateBulletVelocity(const double speed);
-	virtual bool MultiplyBulletVelocity(const double ratio, const bool shouldDetonate);
+	virtual void MultiplyBulletVelocity(const double ratio, const bool shouldDetonate);
 
 	static inline double Get2DDistance(const CoordStruct& source, const CoordStruct& target) { return Point2D { source.X, source.Y }.DistanceFrom(Point2D { target.X, target.Y }); }
 	static inline double Get2DVelocity(const BulletVelocity& velocity) { return Vector2D<double>{ velocity.X, velocity.Y }.Magnitude(); }
