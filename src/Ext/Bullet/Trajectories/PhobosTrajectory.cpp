@@ -325,6 +325,7 @@ void PhobosTrajectory::Serialize(T& Stm)
 		.Process(this->TargetInTheAir)
 		.Process(this->TargetIsTechno)
 		.Process(this->NotMainWeapon)
+		.Process(this->ShouldDetonate)
 		.Process(this->FLHCoord)
 		.Process(this->BuildingCoord)
 

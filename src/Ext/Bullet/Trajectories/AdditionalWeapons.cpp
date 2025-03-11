@@ -240,7 +240,7 @@ bool PhobosTrajectory::CheckFireFacing()
 	const auto& theBullet = pBullet->Location;
 	const auto& theTarget = pBullet->TargetCoords;
 	const auto targetDir = DirStruct { Math::atan2(theTarget.Y - theBullet.Y, theTarget.X - theBullet.X) };
-	const auto bulletDir = DirStruct { Math::atan2(pBullet->Velocity.Y, pBullet->Velocity.X) };
+	const auto bulletDir = DirStruct { Math::atan2(this->MovingVelocity.Y, this->MovingVelocity.X) };
 
 	return std::abs(static_cast<short>(static_cast<short>(targetDir.Raw) - static_cast<short>(bulletDir.Raw))) <= (2048 + (pType->BulletROT << 8));
 }

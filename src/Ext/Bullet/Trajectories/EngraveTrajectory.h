@@ -104,9 +104,9 @@ public:
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Engrave; }
 	virtual void OnUnlimbo(BulletClass* pBullet) override;
 	virtual bool OnAI(BulletClass* pBullet) override;
-	virtual bool OnAIPreCheck(BulletClass* pBullet, HouseClass* pOwner) override;
+	virtual bool OnAIDetonateCheck(BulletClass* pBullet, HouseClass* pOwner) override;
 	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner) override;
-	virtual void OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner) override;
+	virtual void OnAINextFrameCheck(BulletClass* pBullet, HouseClass* pOwner) override;
 	virtual void OnAIPreDetonate(BulletClass* pBullet) override;
 	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }

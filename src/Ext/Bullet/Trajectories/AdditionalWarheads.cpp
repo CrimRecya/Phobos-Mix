@@ -40,11 +40,12 @@ inline bool PhobosTrajectory::CheckWeaponValidness(HouseClass* pHouse, TechnoCla
 }
 
 // A rectangular shape with a custom width from the current frame to the next frame in length.
-std::vector<CellClass*> PhobosTrajectory::GetCellsInProximityRadius(const BulletClass* const pBullet, const Leptons trajectoryProximityRange)
+std::vector<CellClass*> PhobosTrajectory::GetCellsInProximityRadius()
 {
+	const auto pBullet = this->Bullet;
 	// Seems like the y-axis is reversed, but it's okay.
-	const CoordStruct walkCoord { static_cast<int>(pBullet->Velocity.X), static_cast<int>(pBullet->Velocity.Y), 0 };
-	const auto sideMult = trajectoryProximityRange / walkCoord.Magnitude();
+	const CoordStruct walkCoord { static_cast<int>(this->MovingVelocity.X), static_cast<int>(this->MovingVelocity.Y), 0 };
+	const auto sideMult = this->GetType()->ProximityRadius.Get() / walkCoord.Magnitude();
 
 	const CoordStruct cor1Coord { static_cast<int>(walkCoord.Y * sideMult), static_cast<int>((-walkCoord.X) * sideMult), 0 };
 	const CoordStruct cor4Coord { static_cast<int>((-walkCoord.Y) * sideMult), static_cast<int>(walkCoord.X * sideMult), 0 };
@@ -381,7 +382,7 @@ void PhobosTrajectory::CalculateNewDamage()
 	}
 }
 
-void PhobosTrajectory::PassWithDetonateAt(HouseClass* pOwner)
+void PhobosTrajectory::PassWithDetonateAt()
 {
 	if (!this->PassDetonateTimer.Completed())
 		return;
@@ -400,32 +401,37 @@ void PhobosTrajectory::PassWithDetonateAt(HouseClass* pOwner)
 	if (pType->PassDetonateLocal)
 		detonateCoords.Z = MapClass::Instance->GetCellFloorHeight(detonateCoords);
 
+	const auto pFirer = pBullet->Owner;
+	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 	const auto damage = this->GetTheTrueDamage(this->PassDetonateDamage, false);
 	WarheadTypeExt::DetonateAt(pWH, detonateCoords, pBullet->Owner, damage, pOwner);
 	this->CalculateNewDamage();
 }
 
 // Select suitable targets and choose the closer targets then attack each target only once.
-void PhobosTrajectory::PrepareForDetonateAt(HouseClass* pOwner)
+void PhobosTrajectory::PrepareForDetonateAt()
 {
 	const auto pType = this->GetType();
 
 	if (!pType->ProximityWarhead)
 		return;
 
-	// Step 1: Find valid targets on the ground within range.
-	const auto radius = pType->ProximityRadius.Get();
 	const auto pBullet = this->Bullet;
-	std::vector<CellClass*> recCellClass = PhobosTrajectory::GetCellsInProximityRadius(pBullet, radius);
+	const auto pFirer = pBullet->Owner;
+	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
+	const auto radius = pType->ProximityRadius.Get();
+
+	// Step 1: Find valid targets on the ground within range.
+	std::vector<CellClass*> recCellClass = this->GetCellsInProximityRadius();
 	const size_t cellSize = recCellClass.size() * 2;
 	size_t vectSize = cellSize;
 	size_t thisSize = 0;
 
 	const CoordStruct velocityCrd
 	{
-		static_cast<int>(pBullet->Velocity.X),
-		static_cast<int>(pBullet->Velocity.Y),
-		static_cast<int>(pBullet->Velocity.Z)
+		static_cast<int>(this->MovingVelocity.X),
+		static_cast<int>(this->MovingVelocity.Y),
+		static_cast<int>(this->MovingVelocity.Z)
 	};
 	const auto velocitySq = velocityCrd.MagnitudeSquared();
 	const auto pTarget = pBullet->Target;
@@ -529,8 +535,9 @@ void PhobosTrajectory::PrepareForDetonateAt(HouseClass* pOwner)
 	std::vector<int> casualtyChecked;
 	casualtyChecked.reserve(std::max(validTechnos.size(), this->TheCasualty.size()));
 
-	if (const auto pFirer = pBullet->Owner)
-		this->TheCasualty[pFirer->UniqueID] = 20;
+	// No impact on firer
+	if (pFirer)
+		this->TheCasualty[pFirer->UniqueID] = 5;
 
 	// Update Record
 	for (const auto& [ID, remainTime] : this->TheCasualty)
@@ -552,7 +559,8 @@ void PhobosTrajectory::PrepareForDetonateAt(HouseClass* pOwner)
 		if (!this->TheCasualty.contains(pTechno->UniqueID))
 			validTargets.push_back(pTechno);
 
-		this->TheCasualty[pTechno->UniqueID] = 20;
+		// Record 5 frames
+		this->TheCasualty[pTechno->UniqueID] = 5;
 	}
 
 	// Step 4: Detonate warheads in sequence based on distance.

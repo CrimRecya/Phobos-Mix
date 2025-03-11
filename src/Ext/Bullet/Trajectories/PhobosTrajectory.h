@@ -88,18 +88,6 @@ public:
 		, DisperseCoord { { 0, 0, 0 } }
 	{ }
 
-	virtual ~PhobosTrajectoryType() noexcept = default;
-	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
-	virtual bool Save(PhobosStreamWriter& Stm) const;
-	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; }
-	virtual void Read(CCINIClass* const pINI, const char* pSection);
-	[[nodiscard]] virtual std::unique_ptr<PhobosTrajectory> CreateInstance(BulletClass* pBullet) const = 0;
-
-private:
-	template <typename T>
-	void Serialize(T& Stm);
-
-public:
 	Valueable<double> Speed; // The speed that a projectile should reach
 	Valueable<int> Duration; // The existence time of projectile
 	Valueable<int> TolerantTime; // The tolerance time for the projectile to lose its target, after which it will explode
@@ -154,6 +142,17 @@ public:
 	Valueable<bool> DisperseFaceCheck; // Check the orientation before launching the weapon
 	Valueable<bool> DisperseForceFire; // Ignore the no target state before launching the weapon
 	Valueable<PartialVector3D<int>> DisperseCoord; // The firing position when fired from the bullet
+
+	virtual ~PhobosTrajectoryType() noexcept = default;
+	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
+	virtual bool Save(PhobosStreamWriter& Stm) const;
+	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; }
+	virtual void Read(CCINIClass* const pINI, const char* pSection);
+	[[nodiscard]] virtual std::unique_ptr<PhobosTrajectory> CreateInstance(BulletClass* pBullet) const = 0;
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
 };
 
 class PhobosTrajectory
@@ -171,6 +170,7 @@ public:
 		, TargetInTheAir { false }
 		, TargetIsTechno { false }
 		, NotMainWeapon { false }
+		, ShouldDetonate { false }
 		, FLHCoord {}
 		, BuildingCoord {}
 		, CurrentBurst { 0 }
@@ -189,15 +189,44 @@ public:
 		, DisperseTimer {}
 	{ }
 
+	BulletClass* Bullet; // Bullet attached to
+	int MovingSpeed; // The current speed value
+	BulletVelocity MovingVelocity; // The vector used for calculating speed
+	CDTimerClass DurationTimer; // Bullet existence timer
+	CDTimerClass TolerantTimer; // Target tolerance timer
+	double FirepowerMult; // Inherited firepower bonus
+	int AttenuationRange; // Maximum range
+	int RemainingDistance; // Remaining distance from the self explosion location
+	bool TargetInTheAir; // Is the original target the Air Force
+	bool TargetIsTechno; // Is the original target a techno type
+	bool NotMainWeapon; // Does it ignore the launcher
+	bool ShouldDetonate; // Should detonate in next frame
+	CoordStruct FLHCoord; // Launch FLH
+	CoordStruct BuildingCoord; // Offset on the building of launch FLH
+	int CurrentBurst; // Current burst index
+	int CountOfBurst; // Upper limit of burst counts
+
+	int PassDetonateDamage; // Current damage caused by the pass warhead
+	CDTimerClass PassDetonateTimer; // Detonation interval timer
+	int ProximityImpact; // How many times can proximity warhead be triggered
+	int ProximityDamage; // Current damage caused by the proximity warhead
+	TechnoClass* ExtraCheck; // The obstacle, no taken out for use in next frame
+	std::map<int, int> TheCasualty; // <UniqueID, Frames>, only for recording existence to check whether have damaged
+
+	int DisperseIndex; // Launch weapon group Index
+	int DisperseCount; // Launch weapon group remaining times
+	int DisperseCycle; // Launch weapon times remaining rounds
+	CDTimerClass DisperseTimer; // Cooling timer for launching weapons
+
 	virtual ~PhobosTrajectory() noexcept = default;
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
 	virtual bool Save(PhobosStreamWriter& Stm) const;
 	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; }
 	virtual void OnUnlimbo();
 	virtual bool OnAI();
-	virtual bool OnAIPreCheck(HouseClass* pOwner);
-	virtual void OnAIVelocityCheck(HouseClass* pOwner);
-	virtual void OnAILastCheck(HouseClass* pOwner);
+	virtual bool OnAIDetonateCheck();
+	virtual void OnAIVelocityCheck();
+	virtual void OnAINextFrameCheck();
 	virtual void OnAIPreDetonate();
 	virtual void OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition) { *pSpeed = this->MovingVelocity; }
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck() { return TrajectoryCheckReturnType::SkipGameCheck; }
@@ -207,7 +236,7 @@ public:
 	virtual bool GetCanHitGround() const { return true; }
 	virtual CoordStruct GetRetargetCenter() const { return this->Bullet->TargetCoords; }
 	virtual void SetBulletNewTarget(AbstractClass* const pTarget);
-	virtual bool CalculateBulletVelocity();
+	virtual bool CalculateBulletVelocity(const double speed);
 
 	static inline double Get2DDistance(const CoordStruct& source, const CoordStruct& target) { return Point2D { source.X, source.Y }.DistanceFrom(Point2D { target.X, target.Y }); }
 	static inline double Get2DVelocity(const BulletVelocity& velocity) { return Vector2D<double>{ velocity.X, velocity.Y }.Magnitude(); }
@@ -216,14 +245,14 @@ public:
 	static inline bool CheckTechnoIsInvalid(TechnoClass* pTechno);
 	static inline bool CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget);
 	static inline bool CheckWeaponValidness(HouseClass* pHouse, TechnoClass* pTechno, CellClass* pCell, AffectedHouse flags);
-	static std::vector<CellClass*> GetCellsInProximityRadius(const BulletClass* const pBullet, const Leptons trajectoryProximityRange);
 	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
 
+	std::vector<CellClass*> GetCellsInProximityRadius();
 	bool BulletRetargetTechno();
 	bool CheckThroughAndSubjectInCell(CellClass* pCell, HouseClass* pOwner);
 	void CalculateNewDamage();
-	void PassWithDetonateAt(HouseClass* pOwner);
-	void PrepareForDetonateAt(HouseClass* pOwner);
+	void PassWithDetonateAt();
+	void PrepareForDetonateAt();
 	void ProximityDetonateAt(HouseClass* pOwner, TechnoClass* pTarget);
 	int GetTheTrueDamage(int damage, bool self);
 	double GetExtraDamageMultiplier();
@@ -237,34 +266,6 @@ public:
 private:
 	template <typename T>
 	void Serialize(T& Stm);
-
-public:
-	BulletClass* Bullet; // Bullet attached to
-	BulletVelocity MovingVelocity; // The vector used for calculating speed
-	CDTimerClass DurationTimer; // Bullet existence timer
-	CDTimerClass TolerantTimer; // Target tolerance timer
-	double FirepowerMult; // Inherited firepower bonus
-	int AttenuationRange; // Maximum range
-	int RemainingDistance; // Remaining distance from the self explosion location
-	bool TargetInTheAir; // Is the original target the Air Force
-	bool TargetIsTechno; // Is the original target a techno type
-	bool NotMainWeapon; // Does it ignore the launcher
-	CoordStruct FLHCoord; // Launch FLH
-	CoordStruct BuildingCoord; // Offset on the building of launch FLH
-	int CurrentBurst; // Current burst index
-	int CountOfBurst; // Upper limit of burst counts
-
-	int PassDetonateDamage; // Current damage caused by the pass warhead
-	CDTimerClass PassDetonateTimer; // Detonation interval timer
-	int ProximityImpact; // How many times can proximity warhead be triggered
-	int ProximityDamage; // Current damage caused by the proximity warhead
-	TechnoClass* ExtraCheck; // No taken out for use in next frame
-	std::map<int, int> TheCasualty; // Only for recording existence
-
-	int DisperseIndex; // Launch weapon group Index
-	int DisperseCount; // Launch weapon group remaining times
-	int DisperseCycle; // Launch weapon times remaining rounds
-	CDTimerClass DisperseTimer; // Cooling timer for launching weapons
 };
 
 /*

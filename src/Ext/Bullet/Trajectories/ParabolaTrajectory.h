@@ -94,15 +94,15 @@ public:
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Parabola; }
 	virtual void OnUnlimbo(BulletClass* pBullet) override;
 	virtual bool OnAI(BulletClass* pBullet) override;
-	virtual bool OnAIPreCheck(BulletClass* pBullet, HouseClass* pOwner) override;
+	virtual bool OnAIDetonateCheck(BulletClass* pBullet, HouseClass* pOwner) override;
 	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner) override;
-	virtual void OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner) override;
+	virtual void OnAINextFrameCheck(BulletClass* pBullet, HouseClass* pOwner) override;
 	virtual void OnAIPreDetonate(BulletClass* pBullet) override;
 	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual bool OpenFire(BulletClass* pBullet) override;
 
-	void PrepareForOpenFire(BulletClass* pBullet);
+	void FireTrajectory(BulletClass* pBullet);
 	bool BulletPrepareCheck(BulletClass* pBullet);
 	void CalculateBulletVelocityRightNow(BulletClass* pBullet, CoordStruct* pSourceCoords, double gravity);
 	void CalculateBulletVelocityLeadTime(BulletClass* pBullet, CoordStruct* pSourceCoords, double gravity);

@@ -69,7 +69,10 @@ void SampleTrajectory::OnUnlimbo()
 {
 	this->PhobosTrajectory::OnUnlimbo();
 
-	if (!BulletExt::ExtMap.Find(this->Bullet)->DispersedTrajectory)
+	const auto pBullet = this->Bullet;
+	this->RemainingDistance += static_cast<int>(pBullet->SourceCoords.DistanceFrom(pBullet->TargetCoords) + this->Type->Speed);
+
+	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }
 
@@ -77,46 +80,40 @@ void SampleTrajectory::OnUnlimbo()
 // You can change the bullet's true velocity or set its location here. If you modify them here, it will affect the incoming parameters in OnAIVelocity.
 bool SampleTrajectory::OnAI()
 {
-	const auto pBullet = this->Bullet;
-	const auto pFirer = pBullet->Owner;
-	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-
-	if (this->OnAIPreCheck(pOwner))
+	if (this->OnAIDetonateCheck())
 		return true;
 
-	this->OnAIVelocityCheck(pOwner);
+	this->OnAIVelocityCheck();
 
 	if (this->PhobosTrajectory::OnAI())
 		return true;
 
-	this->OnAILastCheck(pOwner);
+	this->OnAINextFrameCheck();
 
 	return false;
 }
 
 // If the projectile needs to update its speed during the journey, then I suggest you complete the update here.
-bool SampleTrajectory::OnAIPreCheck(HouseClass* pOwner)
+bool SampleTrajectory::OnAIDetonateCheck()
 {
-	const auto pBullet = this->Bullet;
-	const auto distance = pBullet->TargetCoords.DistanceFrom(pBullet->Location);
-	const auto velocity = pBullet->Velocity.Magnitude();
+	if (this->PhobosTrajectory::OnAIDetonateCheck())
+		return true;
 
-	if (distance < velocity)
-		pBullet->Velocity *= (distance / velocity);
+	this->RemainingDistance -= this->MovingSpeed;
 
-	return this->PhobosTrajectory::OnAIPreCheck(pOwner);
+	return this->RemainingDistance < 0;
 }
 
 // What needs to be done before launching the weapon after calculating the new speed.
-void SampleTrajectory::OnAIVelocityCheck(HouseClass* pOwner)
+void SampleTrajectory::OnAIVelocityCheck()
 {
-	this->PhobosTrajectory::OnAIVelocityCheck(pOwner);
+	this->PhobosTrajectory::OnAIVelocityCheck();
 }
 
 // What else should be done after the weapon is launched, to prepare for the next frame.
-void SampleTrajectory::OnAILastCheck(HouseClass* pOwner)
+void SampleTrajectory::OnAINextFrameCheck()
 {
-	this->PhobosTrajectory::OnAILastCheck(pOwner);
+	this->PhobosTrajectory::OnAINextFrameCheck();
 }
 
 // At this time, the bullet has hit the target and is ready to detonate.
@@ -167,10 +164,10 @@ TrajectoryCheckReturnType SampleTrajectory::OnAITechnoCheck(TechnoClass* pTechno
 bool SampleTrajectory::OpenFire()
 {
 	const auto pBullet = this->Bullet;
-	pBullet->Velocity.X = static_cast<double>(pBullet->TargetCoords.X - pBullet->SourceCoords.X);
-	pBullet->Velocity.Y = static_cast<double>(pBullet->TargetCoords.Y - pBullet->SourceCoords.Y);
-	pBullet->Velocity.Z = static_cast<double>(pBullet->TargetCoords.Z - pBullet->SourceCoords.Z);
-	pBullet->Velocity *= this->Type->Speed / pBullet->Velocity.Magnitude();
+	this->MovingVelocity.X = static_cast<double>(pBullet->TargetCoords.X - pBullet->SourceCoords.X);
+	this->MovingVelocity.Y = static_cast<double>(pBullet->TargetCoords.Y - pBullet->SourceCoords.Y);
+	this->MovingVelocity.Z = static_cast<double>(pBullet->TargetCoords.Z - pBullet->SourceCoords.Z);
+	this->CalculateBulletVelocity(this->Type->Speed);
 }
 
 // Does the projectile detonate when it lands below the ground
@@ -186,9 +183,9 @@ CoordStruct SampleTrajectory::GetRetargetCenter() const
 }
 
 // How to calculate when inputting velocity values after updating the velocity vector each time
-bool SampleTrajectory::CalculateBulletVelocity()
+bool SampleTrajectory::CalculateBulletVelocity(const double speed)
 {
-	return this->PhobosTrajectory::CalculateBulletVelocity();
+	return this->PhobosTrajectory::CalculateBulletVelocity(speed);
 };
 
 // How to do when should change to a new target

@@ -448,7 +448,7 @@ void EngraveTrajectory::PrepareForDetonateAt(BulletClass* pBullet, HouseClass* p
 
 	// Step 1: Find valid targets on the ground within range.
 	const auto radius = pType->ProximityRadius.Get();
-	std::vector<CellClass*> recCellClass = PhobosTrajectory::GetCellsInProximityRadius(pBullet, radius);
+	std::vector<CellClass*> recCellClass = this->GetCellsInProximityRadius();
 	const size_t cellSize = recCellClass.size() * 2;
 	size_t vectSize = cellSize;
 	size_t thisSize = 0;

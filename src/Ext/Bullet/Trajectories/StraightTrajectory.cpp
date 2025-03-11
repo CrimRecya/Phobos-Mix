@@ -108,25 +108,39 @@ bool StraightTrajectory::OnAI()
 	if (this->WaitOneFrame && this->BulletPrepareCheck())
 		return false;
 
-	const auto pBullet = this->Bullet;
-	const auto pFirer = pBullet->Owner;
-	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-	const auto pType = this->Type;
-
-	if (this->OnAIPreCheck(pOwner))
+	if (this->OnAIDetonateCheck())
 		return true;
 
-	this->OnAIVelocityCheck(pOwner);
+	this->OnAIVelocityCheck();
 
 	if (this->PhobosTrajectory::OnAI())
 		return true;
 
-	if (pType->Speed < 256.0 && pType->ConfineAtHeight > 0 && this->PassAndConfineAtHeight())
-		return true;
-
-	this->OnAILastCheck(pOwner);
+	this->OnAINextFrameCheck();
 
 	return false;
+}
+
+bool StraightTrajectory::OnAIDetonateCheck()
+{
+	const auto pBullet = this->Bullet;
+	const auto pType = this->Type;
+
+	if (this->PhobosTrajectory::OnAIDetonateCheck())
+		return true;
+
+	// Close enough
+	if (!pType->PassThrough && pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
+		return true;
+
+	// Hover
+	if (this->MovingSpeed < 256.0 && pType->ConfineAtHeight > 0 && this->PassAndConfineAtHeight())
+		return true;
+
+	// Check the remaining travel distance of the bullet
+	this->RemainingDistance -= this->MovingSpeed;
+
+	return this->RemainingDistance < 0;
 }
 
 void StraightTrajectory::OnAIPreDetonate()
@@ -148,32 +162,75 @@ bool StraightTrajectory::OpenFire()
 {
 	// Wait, or launch immediately?
 	if (!this->Type->LeadTimeCalculate || !abstract_cast<FootClass*>(this->Bullet->Target))
-		this->PrepareForOpenFire();
+		this->FireTrajectory();
 	else
 		this->WaitOneFrame = 2;
 }
 
-void StraightTrajectory::PrepareForOpenFire()
+void StraightTrajectory::FireTrajectory()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
-	auto theTargetCoords = pBullet->TargetCoords;
-	auto theSourceCoords = pBullet->SourceCoords;
+	auto& target = pBullet->TargetCoords;
+	const auto& source = pBullet->SourceCoords;
 
-	// TODO If I could calculate this before firing, perhaps it can solve the problem of one frame delay and not so correct turret orientation.
+	target += this->CalculateBulletLeadTime();
+
+	// Calculate the orientation of the coordinate system
+	const double rotateRadian = this->Get2DOpRadian(((target == source && pBullet->Owner) ? pBullet->Owner->GetCoords() : source), target);
+
+	// Add the fixed offset value
+	if (pType->OffsetCoord != CoordStruct::Empty)
+		target += this->GetOnlyStableOffsetCoords(rotateRadian);
+
+	// Add random offset value
+	if (pBullet->Type->Inaccurate)
+		target = this->GetInaccurateTargetCoords(target, source.DistanceFrom(target));
+
+	// Determine the distance that the bullet can travel
+	if (!pType->PassThrough)
+		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target) + pType->Speed);
+	else if (this->DetonationDistance > 0)
+		this->RemainingDistance += static_cast<int>(this->DetonationDistance + pType->Speed);
+	else if (this->DetonationDistance < 0)
+		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target) - this->DetonationDistance + pType->Speed);
+	else
+		this->RemainingDistance = INT_MAX;
+
+	// Determine the firing velocity vector of the bullet
+	pBullet->TargetCoords = target;
+	this->MovingVelocity.X = static_cast<double>(target.X - source.X);
+	this->MovingVelocity.Y = static_cast<double>(target.Y - source.Y);
+	this->MovingVelocity.Z = (pType->ConfineAtHeight > 0 && pType->PassDetonateLocal) ? 0 : static_cast<double>(this->GetVelocityZ());
+
+	// Substitute the speed to calculate velocity
+	if (this->CalculateBulletVelocity(pType->Speed))
+		this->RemainingDistance = 0;
+
+	// Rotate the selected angle
+	if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
+		this->DisperseBurstSubstitution(rotateRadian);
+}
+
+CoordStruct StraightTrajectory::CalculateBulletLeadTime()
+{
+	const auto pBullet = this->Bullet;
+	const auto pType = this->Type;
+	auto coords = CoordStruct::Empty;
+
 	if (pType->LeadTimeCalculate)
 	{
 		if (const auto pTarget = pBullet->Target)
 		{
-			theTargetCoords = pTarget->GetCoords();
-			theSourceCoords = pBullet->Location;
+			const auto target = pTarget->GetCoords();
+			const auto source = pBullet->Location;
 
 			// Solving trigonometric functions
-			if (theTargetCoords != this->LastTargetCoord)
+			if (target != this->LastTargetCoord)
 			{
-				const auto extraOffsetCoord = theTargetCoords - this->LastTargetCoord;
-				const auto targetSourceCoord = theSourceCoords - theTargetCoords;
-				const auto lastSourceCoord = theSourceCoords - this->LastTargetCoord;
+				const auto extraOffsetCoord = target - this->LastTargetCoord;
+				const auto targetSourceCoord = source - target;
+				const auto lastSourceCoord = source - this->LastTargetCoord;
 
 				const auto theDistanceSquared = targetSourceCoord.MagnitudeSquared();
 				const auto targetSpeedSquared = extraOffsetCoord.MagnitudeSquared();
@@ -217,45 +274,13 @@ void StraightTrajectory::PrepareForOpenFire()
 							travelTime += 2;
 					}
 
-					theTargetCoords += extraOffsetCoord * travelTime;
+					coords += extraOffsetCoord * travelTime;
 				}
 			}
 		}
 	}
 
-	const double rotateRadian = this->Get2DOpRadian(((theTargetCoords == theSourceCoords && pBullet->Owner) ? pBullet->Owner->GetCoords() : theSourceCoords), theTargetCoords);
-
-	// Add the fixed offset value
-	if (pType->OffsetCoord != CoordStruct::Empty)
-		theTargetCoords += this->GetOnlyStableOffsetCoords(rotateRadian);
-
-	// Add random offset value
-	if (pBullet->Type->Inaccurate)
-		theTargetCoords = this->GetInaccurateTargetCoords(theTargetCoords, theSourceCoords.DistanceFrom(theTargetCoords));
-
-	// Determine the distance that the bullet can travel
-	if (!pType->PassThrough)
-		this->RemainingDistance += static_cast<int>(theSourceCoords.DistanceFrom(theTargetCoords) + pType->Speed);
-	else if (this->DetonationDistance > 0)
-		this->RemainingDistance += static_cast<int>(this->DetonationDistance + pType->Speed);
-	else if (this->DetonationDistance < 0)
-		this->RemainingDistance += static_cast<int>(theSourceCoords.DistanceFrom(theTargetCoords) - this->DetonationDistance + pType->Speed);
-	else
-		this->RemainingDistance = INT_MAX;
-
-	// Determine the firing velocity vector of the bullet
-	pBullet->TargetCoords = theTargetCoords;
-	pBullet->Velocity.X = static_cast<double>(theTargetCoords.X - theSourceCoords.X);
-	pBullet->Velocity.Y = static_cast<double>(theTargetCoords.Y - theSourceCoords.Y);
-	pBullet->Velocity.Z = (pType->ConfineAtHeight > 0 && pType->PassDetonateLocal) ? 0 : static_cast<double>(this->GetVelocityZ());
-
-	// Rotate the selected angle
-	if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
-		this->DisperseBurstSubstitution(rotateRadian);
-
-	// Substitute the speed to calculate velocity
-	if (this->CalculateBulletVelocity())
-		this->RemainingDistance = 0;
+	return coords;
 }
 
 int StraightTrajectory::GetVelocityZ()
@@ -308,36 +333,14 @@ int StraightTrajectory::GetVelocityZ()
 	return bulletVelocityZ;
 }
 
-bool StraightTrajectory::BulletPrepareCheck()
-{
-	// The time between bullets' Unlimbo() and Update() is completely uncertain.
-	// Target will update location after techno firing, which may result in inaccurate
-	// target position recorded by the LastTargetCoord in Unlimbo(). Therefore, it's
-	// necessary to record the position during the first Update(). - CrimRecya
-	if (this->WaitOneFrame == 2)
-	{
-		if (const auto pTarget = this->Bullet->Target)
-		{
-			this->LastTargetCoord = pTarget->GetCoords();
-			this->WaitOneFrame = 1;
-			return true;
-		}
-	}
-
-	this->WaitOneFrame = 0;
-	this->PrepareForOpenFire();
-
-	return false;
-}
-
 bool StraightTrajectory::PassAndConfineAtHeight()
 {
 	const auto pBullet = this->Bullet;
 	const CoordStruct futureCoords
 	{
-		pBullet->Location.X + static_cast<int>(pBullet->Velocity.X),
-		pBullet->Location.Y + static_cast<int>(pBullet->Velocity.Y),
-		pBullet->Location.Z + static_cast<int>(pBullet->Velocity.Z)
+		pBullet->Location.X + static_cast<int>(this->MovingVelocity.X),
+		pBullet->Location.Y + static_cast<int>(this->MovingVelocity.Y),
+		pBullet->Location.Z + static_cast<int>(this->MovingVelocity.Z)
 	};
 
 	auto checkDifference = MapClass::Instance->GetCellFloorHeight(futureCoords) - futureCoords.Z;
@@ -354,9 +357,11 @@ bool StraightTrajectory::PassAndConfineAtHeight()
 	if (std::abs(checkDifference) < 384 || !pBullet->Type->SubjectToCliffs)
 	{
 		const auto pType = this->Type;
-		pBullet->Velocity.Z += static_cast<double>(checkDifference + pType->ConfineAtHeight);
+		this->MovingVelocity.Z += static_cast<double>(checkDifference + pType->ConfineAtHeight);
 
-		if (!pType->PassDetonateLocal && this->CalculateBulletVelocity())
+		if (pType->PassDetonateLocal)
+			this->MovingSpeed = static_cast<int>(this->MovingVelocity.Magnitude());
+		else if (this->CalculateBulletVelocity(pType->Speed))
 			return true;
 	}
 	else

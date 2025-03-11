@@ -11,6 +11,9 @@ public:
 		, ConfineAtHeight { 0 }
 	{ }
 
+	Valueable<bool> PassThrough;
+	Valueable<int> ConfineAtHeight;
+
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual std::unique_ptr<PhobosTrajectory> CreateInstance(BulletClass* pBullet) const override;
@@ -20,10 +23,6 @@ public:
 private:
 	template <typename T>
 	void Serialize(T& Stm);
-
-public:
-	Valueable<bool> PassThrough;
-	Valueable<int> ConfineAtHeight;
 };
 
 class StraightTrajectory final : public LiveShellTrajectory
@@ -36,26 +35,26 @@ public:
 		, DetonationDistance { trajType->DetonationDistance }
 	{ }
 
+	const StraightTrajectoryType* Type;
+	Leptons DetonationDistance;
+
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Straight; }
 	virtual void OnUnlimbo() override;
 	virtual bool OnAI() override;
+	virtual bool OnAIDetonateCheck() override;
 	virtual void OnAIPreDetonate() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual bool OpenFire() override;
 	virtual bool GetCanHitGround() const override { return this->Type->SubjectToGround; }
-
-	void PrepareForOpenFire();
-	int GetVelocityZ();
-	bool BulletPrepareCheck();
-	bool PassAndConfineAtHeight();
+	virtual void FireTrajectory() override;
 
 private:
+	CoordStruct CalculateBulletLeadTime();
+	int GetVelocityZ();
+	bool PassAndConfineAtHeight();
+
 	template <typename T>
 	void Serialize(T& Stm);
-
-public:
-	const StraightTrajectoryType* Type;
-	Leptons DetonationDistance;
 };

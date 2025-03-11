@@ -67,41 +67,37 @@ void PhobosTrajectory::OnUnlimbo()
 
 bool PhobosTrajectory::OnAI()
 {
-	const auto pBullet = this->Bullet;
-	const auto pFirer = pBullet->Owner;
-	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 	const auto pType = this->GetType();
 
 	// Detonate the warhead at the current location
 	if (pType->PassDetonate)
-		this->PassWithDetonateAt(pOwner);
+		this->PassWithDetonateAt();
 
 	// Detonate the warhead on the technos passing through
 	if (this->ProximityImpact != 0 && pType->ProximityRadius.Get() > 0)
-		this->PrepareForDetonateAt(pOwner);
+		this->PrepareForDetonateAt();
 
 	// Launch additional weapons towards the target
-	if (!this->DisperseTimer.Completed() || pType->DisperseEffectiveRange.Get() && pBullet->TargetCoords.DistanceFrom(pBullet->Location) > pType->DisperseEffectiveRange.Get())
+	if (!this->DisperseTimer.Completed())
+		return false;
+
+	const auto pBullet = this->Bullet;
+	const auto range = pType->DisperseEffectiveRange.Get();
+
+	if (range && pBullet->TargetCoords.DistanceFrom(pBullet->Location) > range)
 		return false;
 
 	return this->CheckFireFacing() && this->PrepareDisperseWeapon();
 }
 
 // Check if it should be detonated immediately
-bool PhobosTrajectory::OnAIPreCheck(HouseClass* pOwner)
+bool PhobosTrajectory::OnAIDetonateCheck()
 {
-	// If this value is not empty, it means that the projectile should be directly detonated at this time. This cannot be taken out here for use.
-	if (this->ExtraCheck)
+	if (this->ShouldDetonate)
 		return true;
 
 	// Check the remaining existence time
 	if (this->DurationTimer.Completed())
-		return true;
-
-	// Check the remaining travel distance of the bullet
-	this->RemainingDistance -= static_cast<int>(this->GetType()->Speed);
-
-	if (this->RemainingDistance < 0)
 		return true;
 
 	const auto pBullet = this->Bullet;
@@ -111,7 +107,7 @@ bool PhobosTrajectory::OnAIPreCheck(HouseClass* pOwner)
 }
 
 // If there is an obstacle on the route, the bullet should need to reduce its speed so it will not penetrate the obstacle.
-void PhobosTrajectory::OnAIVelocityCheck(HouseClass* pOwner)
+void PhobosTrajectory::OnAIVelocityCheck()
 {
 	const auto pBullet = this->Bullet;
 	double locationDistance = 0.0;
@@ -121,11 +117,17 @@ void PhobosTrajectory::OnAIVelocityCheck(HouseClass* pOwner)
 	const bool checkThrough = (!pType->ThroughBuilding || !pType->ThroughVehicles);
 
 	// Low speed with checkSubject was already done well
-	if (pType->Speed < 256.0)
+	if (this->MovingSpeed < 256)
 	{
 		// Blocked by obstacles?
-		if (checkThrough && this->CheckThroughAndSubjectInCell(MapClass::Instance->GetCellAt(pBullet->Location), pOwner))
-			velocityCheck = true;
+		if (checkThrough)
+		{
+			const auto pFirer = pBullet->Owner;
+			const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
+
+			if (this->CheckThroughAndSubjectInCell(MapClass::Instance->GetCellAt(pBullet->Location), pOwner))
+				velocityCheck = true;
+		}
 	}
 	else
 	{
@@ -139,9 +141,9 @@ void PhobosTrajectory::OnAIVelocityCheck(HouseClass* pOwner)
 			const auto& theSourceCoords = pBullet->Location;
 			const CoordStruct theTargetCoords
 			{
-				pBullet->Location.X + static_cast<int>(pBullet->Velocity.X),
-				pBullet->Location.Y + static_cast<int>(pBullet->Velocity.Y),
-				pBullet->Location.Z + static_cast<int>(pBullet->Velocity.Z)
+				pBullet->Location.X + static_cast<int>(this->MovingVelocity.X),
+				pBullet->Location.Y + static_cast<int>(this->MovingVelocity.Y),
+				pBullet->Location.Z + static_cast<int>(this->MovingVelocity.Z)
 			};
 
 			const auto sourceCell = CellClass::Coord2Cell(theSourceCoords);
@@ -153,6 +155,9 @@ void PhobosTrajectory::OnAIVelocityCheck(HouseClass* pOwner)
 			const auto stepCoord = !largePace ? CoordStruct::Empty : (theTargetCoords - theSourceCoords) * (1.0 / largePace);
 			auto curCoord = theSourceCoords;
 			auto pCurCell = MapClass::Instance->GetCellAt(sourceCell);
+
+			const auto pFirer = pBullet->Owner;
+			const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 
 			for (size_t i = 0; i < largePace; ++i)
 			{
@@ -189,21 +194,25 @@ void PhobosTrajectory::OnAIVelocityCheck(HouseClass* pOwner)
 		// Let the distance slightly exceed
 		locationDistance += 32.0;
 		this->RemainingDistance = 0;
-		const auto velocity = PhobosTrajectory::Get2DVelocity(pBullet->Velocity);
+		const auto velocity = PhobosTrajectory::Get2DVelocity(this->MovingVelocity);
 
 		// It may not be necessary to compare them again, but still do so
 		if (locationDistance < velocity)
-			pBullet->Velocity *= (locationDistance / velocity);
+		{
+			this->MovingVelocity *= (locationDistance / velocity);
+			this->MovingSpeed = static_cast<int>(this->MovingVelocity.Magnitude());
+		}
 	}
-	else if (this->RemainingDistance < pType->Speed)
+	else if (this->RemainingDistance < this->MovingSpeed)
 	{
 		// Check if the distance to the destination exceeds the speed limit
-		pBullet->Velocity *= this->RemainingDistance / pType->Speed;
+		this->MovingVelocity *= static_cast<double>(this->RemainingDistance) / this->MovingSpeed;
+		this->MovingSpeed = this->RemainingDistance;
 	}
 }
 
 // If the check result here is true, it only needs to be detonated in the next frame, without returning.
-void PhobosTrajectory::OnAILastCheck(HouseClass* pOwner)
+void PhobosTrajectory::OnAINextFrameCheck()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
@@ -216,18 +225,25 @@ void PhobosTrajectory::OnAILastCheck(HouseClass* pOwner)
 
 	// Slow down and reset the target
 	const auto distance = pDetonateAt->GetCoords().DistanceFrom(pBullet->Location);
-	const auto velocity = pBullet->Velocity.Magnitude();
+	const auto speed = this->MovingSpeed;
 
 	// Set the new target so that the snap function can take effect
 	this->SetBulletNewTarget(pDetonateAt);
 
-	if (std::abs(velocity) > 1e-10 && distance < velocity)
-		pBullet->Velocity *= distance / velocity;
+	if (speed && distance < speed)
+	{
+		this->MovingVelocity *= distance / speed;
+		this->MovingSpeed = speed;
+	}
+
+	this->ShouldDetonate = true;
 
 	// Need to cause additional damage?
 	if (!this->ProximityImpact || !pType->ProximityWarhead)
 		return;
 
+	const auto pFirer = pBullet->Owner;
+	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 	this->ProximityDetonateAt(pOwner, pDetonateAt);
 }
 
@@ -263,15 +279,16 @@ void PhobosTrajectory::SetBulletNewTarget(AbstractClass* const pTarget)
 	pBullet->TargetCoords = pTarget->GetCoords();
 }
 
-bool PhobosTrajectory::CalculateBulletVelocity()
+bool PhobosTrajectory::CalculateBulletVelocity(const double speed)
 {
 	const auto pBullet = this->Bullet;
-	const auto velocityLength = pBullet->Velocity.Magnitude();
+	const auto velocityLength = this->MovingVelocity.Magnitude();
 
-	if (velocityLength > 1e-10)
-		pBullet->Velocity *= this->GetType()->Speed / velocityLength;
-	else
+	if (velocityLength < 1e-10)
 		return true;
+
+	this->MovingVelocity *= speed / velocityLength;
+	this->MovingSpeed = static_cast<int>(speed);
 
 	return false;
 }
@@ -391,6 +408,28 @@ BulletVelocity LiveShellTrajectory::RotateAboutTheAxis(const BulletVelocity& the
 	return ((theSpeed * cosRotate) + (theAxis * ((1 - cosRotate) * (theSpeed * theAxis))) + (theAxis.CrossProduct(theSpeed) * Math::sin(theRadian)));
 }
 
+bool LiveShellTrajectory::BulletPrepareCheck()
+{
+	// The time between bullets' Unlimbo() and Update() is completely uncertain.
+	// Target will update location after techno firing, which may result in inaccurate
+	// target position recorded by the LastTargetCoord in Unlimbo(). Therefore, it's
+	// necessary to record the position during the first Update(). - CrimRecya
+	if (this->WaitOneFrame == 2)
+	{
+		if (const auto pTarget = this->Bullet->Target)
+		{
+			this->LastTargetCoord = pTarget->GetCoords();
+			this->WaitOneFrame = 1;
+			return true;
+		}
+	}
+
+	this->WaitOneFrame = 0;
+	this->FireTrajectory();
+
+	return false;
+}
+
 CoordStruct LiveShellTrajectory::GetOnlyStableOffsetCoords(double rotateRadian)
 {
 	const auto pType = static_cast<const LiveShellTrajectoryType*>(this->GetType());
@@ -446,7 +485,7 @@ void LiveShellTrajectory::DisperseBurstSubstitution(double baseRadian)
 
 	// Rotate the selected angle
 	const auto pBullet = this->Bullet;
-	pBullet->Velocity = LiveShellTrajectory::RotateAboutTheAxis(pBullet->Velocity, rotationAxis, extraRotate);
+	this->MovingVelocity = LiveShellTrajectory::RotateAboutTheAxis(this->MovingVelocity, rotationAxis, extraRotate);
 }
 
 template<typename T>

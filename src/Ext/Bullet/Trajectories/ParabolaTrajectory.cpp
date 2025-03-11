@@ -216,12 +216,12 @@ bool ParabolaTrajectory::OpenFire(BulletClass* pBullet)
 {
 	// Wait, or launch immediately?
 	if (!this->Type->LeadTimeCalculate || !abstract_cast<FootClass*>(pBullet->Target))
-		this->PrepareForOpenFire(pBullet);
+		this->FireTrajectory(pBullet);
 	else
 		this->WaitOneFrame = 2;
 }
 
-void ParabolaTrajectory::PrepareForOpenFire(BulletClass* pBullet)
+void ParabolaTrajectory::FireTrajectory(BulletClass* pBullet)
 {
 	const auto pType = this->Type;
 	const auto pTarget = pBullet->Target;
@@ -333,7 +333,7 @@ bool ParabolaTrajectory::BulletPrepareCheck(BulletClass* pBullet)
 	}
 
 	this->WaitOneFrame = 0;
-	this->PrepareForOpenFire(pBullet);
+	this->FireTrajectory(pBullet);
 
 	return false;
 }
