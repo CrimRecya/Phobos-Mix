@@ -101,30 +101,30 @@ public:
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Tracing; }
-	virtual void OnUnlimbo(BulletClass* pBullet) override;
-	virtual bool OnAI(BulletClass* pBullet) override;
-	virtual bool OnAIDetonateCheck(BulletClass* pBullet, HouseClass* pOwner) override;
-	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner) override;
-	virtual void OnAINextFrameCheck(BulletClass* pBullet, HouseClass* pOwner) override;
-	virtual void OnAIPreDetonate(BulletClass* pBullet) override;
-	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
+	virtual void OnUnlimbo() override;
+	virtual bool OnAI() override;
+	virtual bool OnAIDetonateCheck() override;
+	virtual void OnAIVelocityCheck() override;
+	virtual void OnAINextFrameCheck() override;
+	virtual void OnAIPreDetonate() override;
+	virtual void OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
-	virtual bool OpenFire(BulletClass* pBullet) override;
+	virtual bool OpenFire() override;
 	virtual bool GetCanHitGround() const override { return false; }
 	virtual CoordStruct GetRetargetCenter() const override { return this->Bullet->Location; }
 
-	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
-	void SetSourceLocation(BulletClass* pBullet);
-	void InitializeDuration(BulletClass* pBullet, int duration);
-	bool InvalidFireCondition(BulletClass* pBullet, TechnoClass* pTechno);
-	bool BulletDetonatePreCheck(BulletClass* pBullet);
-	void ChangeFacing(BulletClass* pBullet);
-	bool CheckFireFacing(BulletClass* pBullet);
-	BulletVelocity ChangeVelocity(BulletClass* pBullet);
-	AbstractClass* GetBulletTarget(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner, WeaponTypeClass* pWeapon);
-	CoordStruct GetWeaponFireCoord(BulletClass* pBullet, TechnoClass* pTechno);
-	bool PrepareTracingWeapon(BulletClass* pBullet);
-	void CreateTracingBullets(BulletClass* pBullet, WeaponTypeClass* pWeapon);
+	void GetTechnoFLHCoord(TechnoClass* pTechno);
+	void SetSourceLocation();
+	void InitializeDuration(int duration);
+	bool InvalidFireCondition(TechnoClass* pTechno);
+	bool BulletDetonatePreCheck();
+	void ChangeFacing();
+	bool CheckFireFacing();
+	BulletVelocity ChangeVelocity();
+	AbstractClass* GetBulletTarget(TechnoClass* pTechno, HouseClass* pOwner, WeaponTypeClass* pWeapon);
+	CoordStruct GetWeaponFireCoord(TechnoClass* pTechno);
+	bool PrepareTracingWeapon();
+	void CreateTracingBullets(WeaponTypeClass* pWeapon);
 
 private:
 	template <typename T>

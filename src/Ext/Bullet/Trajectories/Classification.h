@@ -42,7 +42,7 @@ public:
 	LiveShellTrajectory() { }
 	LiveShellTrajectory(LiveShellTrajectoryType const* trajType, BulletClass* pBullet)
 		: PhobosTrajectory(trajType, pBullet)
-		, LastTargetCoord {}
+		, LastTargetCoord { CoordStruct::Empty }
 		, WaitOneFrame { 0 }
 	{ }
 
@@ -52,6 +52,7 @@ public:
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual void OnUnlimbo() override;
+	virtual bool OnAI() override;
 	virtual void OnAIPreDetonate() override;
 	virtual void FireTrajectory() { this->OpenFire(); } // New
 

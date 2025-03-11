@@ -53,7 +53,7 @@ public:
 		, IsFalling { false }
 		, ToFalling { false }
 		, InitialTargetCoord {}
-		, RotateAngle { 0 }
+		, RotateRadian { 0 }
 	{}
 
 	const BombardTrajectoryType* Type;
@@ -62,13 +62,12 @@ public:
 	bool IsFalling;
 	bool ToFalling;
 	CoordStruct InitialTargetCoord;
-	double RotateAngle;
+	double RotateRadian;
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Bombard; }
 	virtual void OnUnlimbo() override;
-	virtual bool OnAI() override;
 	virtual bool OnAIDetonateCheck() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual bool OpenFire() override;

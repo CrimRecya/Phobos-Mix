@@ -137,7 +137,7 @@ bool EngraveTrajectory::Save(PhobosStreamWriter& Stm) const
 	return true;
 }
 
-void EngraveTrajectory::OnUnlimbo(BulletClass* pBullet)
+void EngraveTrajectory::OnUnlimbo()
 {
 	const auto pType = this->Type;
 	this->LaserTimer.Start(0);
@@ -182,7 +182,7 @@ void EngraveTrajectory::OnUnlimbo(BulletClass* pBullet)
 		this->Duration = static_cast<int>(coordDistance / pType->Speed) + 1;
 }
 
-bool EngraveTrajectory::OnAI(BulletClass* pBullet)
+bool EngraveTrajectory::OnAI()
 {
 	const auto pTechno = pBullet->Owner;
 
@@ -206,7 +206,7 @@ bool EngraveTrajectory::OnAI(BulletClass* pBullet)
 	return false;
 }
 
-void EngraveTrajectory::OnAIPreDetonate(BulletClass* pBullet)
+void EngraveTrajectory::OnAIPreDetonate()
 {
 	//Prevent damage again.
 	pBullet->Health = 0;
@@ -214,17 +214,17 @@ void EngraveTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 	pBullet->UnInit();
 }
 
-void EngraveTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition)
+void EngraveTrajectory::OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition)
 {
 	pSpeed->Z += BulletTypeExt::GetAdjustedGravity(pBullet->Type);
 }
 
-bool EngraveTrajectory::OpenFire(BulletClass* pBullet)
+bool EngraveTrajectory::OpenFire()
 {
 
 }
 
-void EngraveTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno)
+void EngraveTrajectory::GetTechnoFLHCoord(TechnoClass* pTechno)
 {
 	const auto pExt = TechnoExt::ExtMap.Find(pTechno);
 
@@ -267,7 +267,7 @@ inline void EngraveTrajectory::CheckMirrorCoord(TechnoClass* pTechno)
 	}
 }
 
-void EngraveTrajectory::SetEngraveDirection(BulletClass* pBullet, double rotateAngle)
+void EngraveTrajectory::SetEngraveDirection(double rotateAngle)
 {
 	auto theSource = pBullet->SourceCoords;
 	auto theTarget = pBullet->TargetCoords;
@@ -294,7 +294,7 @@ void EngraveTrajectory::SetEngraveDirection(BulletClass* pBullet, double rotateA
 	pBullet->Velocity.Z = 0;
 }
 
-bool EngraveTrajectory::InvalidFireCondition(BulletClass* pBullet, TechnoClass* pTechno)
+bool EngraveTrajectory::InvalidFireCondition(TechnoClass* pTechno)
 {
 	if (!pTechno)
 		return true;
@@ -321,7 +321,7 @@ bool EngraveTrajectory::InvalidFireCondition(BulletClass* pBullet, TechnoClass* 
 	return (std::abs(static_cast<short>(static_cast<short>(tgtDir.Raw) - static_cast<short>(curDir.Raw))) >= 4096);
 }
 
-int EngraveTrajectory::GetFloorCoordHeight(BulletClass* pBullet, const CoordStruct& coord)
+int EngraveTrajectory::GetFloorCoordHeight(const CoordStruct& coord)
 {
 	const auto pCell = MapClass::Instance->GetCellAt(coord);
 	const auto onFloor = MapClass::Instance->GetCellFloorHeight(coord);
@@ -331,7 +331,7 @@ int EngraveTrajectory::GetFloorCoordHeight(BulletClass* pBullet, const CoordStru
 	return (pBullet->SourceCoords.Z >= onBridge || pBullet->TargetCoords.Z >= onBridge) ? onBridge : onFloor;
 }
 
-bool EngraveTrajectory::PlaceOnCorrectHeight(BulletClass* pBullet)
+bool EngraveTrajectory::PlaceOnCorrectHeight()
 {
 	if (!this->Type->ConfineOnGround)
 		return false;
@@ -379,7 +379,7 @@ bool EngraveTrajectory::PlaceOnCorrectHeight(BulletClass* pBullet)
 	return false;
 }
 
-void EngraveTrajectory::DrawEngraveLaser(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner)
+void EngraveTrajectory::DrawEngraveLaser(TechnoClass* pTechno, HouseClass* pOwner)
 {
 	const auto pType = this->Type;
 	this->LaserTimer.Start(pType->LaserDelay);
@@ -431,14 +431,14 @@ void EngraveTrajectory::DrawEngraveLaser(BulletClass* pBullet, TechnoClass* pTec
 	}
 }
 
-inline void EngraveTrajectory::DetonateLaserWarhead(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner)
+inline void EngraveTrajectory::DetonateLaserWarhead(TechnoClass* pTechno, HouseClass* pOwner)
 {
 	this->DamageTimer.Start(this->Type->DamageDelay);
 	WarheadTypeExt::DetonateAt(pBullet->WH, pBullet->Location, pTechno, pBullet->Health, pOwner);
 }
 
 // Select suitable targets and choose the closer targets then attack each target only once.
-void EngraveTrajectory::PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pOwner)
+void EngraveTrajectory::PrepareForDetonateAt(HouseClass* pOwner)
 {
 	const auto pType = this->Type;
 	const auto pWH = pType->ProximityWarhead;

@@ -117,7 +117,7 @@ void PhobosTrajectory::OnAIVelocityCheck()
 	const bool checkThrough = (!pType->ThroughBuilding || !pType->ThroughVehicles);
 
 	// Low speed with checkSubject was already done well
-	if (this->MovingSpeed < 256)
+	if (this->MovingSpeed < 256.0)
 	{
 		// Blocked by obstacles?
 		if (checkThrough)
@@ -188,35 +188,37 @@ void PhobosTrajectory::OnAIVelocityCheck()
 		}
 	}
 
+	double ratio = 1.0;
+
 	// Check if the bullet needs to slow down the speed
 	if (velocityCheck)
 	{
 		// Let the distance slightly exceed
 		locationDistance += 32.0;
-		this->RemainingDistance = 0;
+		this->ShouldDetonate = true;
 		const auto velocity = PhobosTrajectory::Get2DVelocity(this->MovingVelocity);
 
 		// It may not be necessary to compare them again, but still do so
 		if (locationDistance < velocity)
-		{
-			this->MovingVelocity *= (locationDistance / velocity);
-			this->MovingSpeed = static_cast<int>(this->MovingVelocity.Magnitude());
-		}
+			ratio = (locationDistance / velocity);
 	}
-	else if (this->RemainingDistance < this->MovingSpeed)
+
+	// Check if the distance to the destination exceeds the speed limit
+	if (this->RemainingDistance < this->MovingSpeed)
 	{
-		// Check if the distance to the destination exceeds the speed limit
-		this->MovingVelocity *= static_cast<double>(this->RemainingDistance) / this->MovingSpeed;
-		this->MovingSpeed = this->RemainingDistance;
+		const auto newRatio = this->RemainingDistance / this->MovingSpeed;
+
+		if (ratio > newRatio)
+			ratio = newRatio;
 	}
+
+	if (ratio < 1.0)
+		this->MultiplyBulletVelocity(ratio, true);
 }
 
 // If the check result here is true, it only needs to be detonated in the next frame, without returning.
 void PhobosTrajectory::OnAINextFrameCheck()
 {
-	const auto pBullet = this->Bullet;
-	const auto pType = this->GetType();
-
 	// Obstacles were detected in the current frame here
 	const auto pDetonateAt = this->ExtraCheck;
 
@@ -224,22 +226,20 @@ void PhobosTrajectory::OnAINextFrameCheck()
 		return;
 
 	// Slow down and reset the target
+	const auto pBullet = this->Bullet;
 	const auto distance = pDetonateAt->GetCoords().DistanceFrom(pBullet->Location);
-	const auto speed = this->MovingSpeed;
 
 	// Set the new target so that the snap function can take effect
 	this->SetBulletNewTarget(pDetonateAt);
+	const auto speed = this->MovingSpeed;
 
 	if (speed && distance < speed)
-	{
-		this->MovingVelocity *= distance / speed;
-		this->MovingSpeed = speed;
-	}
-
-	this->ShouldDetonate = true;
+		this->MultiplyBulletVelocity(distance / speed, true);
+	else
+		this->ShouldDetonate = true;
 
 	// Need to cause additional damage?
-	if (!this->ProximityImpact || !pType->ProximityWarhead)
+	if (!this->ProximityImpact || !this->GetType()->ProximityWarhead)
 		return;
 
 	const auto pFirer = pBullet->Owner;
@@ -281,16 +281,24 @@ void PhobosTrajectory::SetBulletNewTarget(AbstractClass* const pTarget)
 
 bool PhobosTrajectory::CalculateBulletVelocity(const double speed)
 {
-	const auto pBullet = this->Bullet;
 	const auto velocityLength = this->MovingVelocity.Magnitude();
 
 	if (velocityLength < 1e-10)
 		return true;
 
 	this->MovingVelocity *= speed / velocityLength;
-	this->MovingSpeed = static_cast<int>(speed);
+	this->MovingSpeed = speed;
 
 	return false;
+}
+
+bool PhobosTrajectory::MultiplyBulletVelocity(const double ratio, const bool shouldDetonate)
+{
+	this->MovingVelocity *= ratio;
+	this->MovingSpeed = this->MovingSpeed * ratio;
+
+	if (shouldDetonate)
+		this->ShouldDetonate = true;
 }
 
 // ------------------------------------------------------------------------------ //
@@ -368,6 +376,24 @@ void LiveShellTrajectory::OnUnlimbo()
 	this->PhobosTrajectory::OnUnlimbo();
 
 	this->LastTargetCoord = this->Bullet->TargetCoords;
+}
+
+bool LiveShellTrajectory::OnAI()
+{
+	if (this->WaitOneFrame && this->BulletPrepareCheck())
+		return false;
+
+	if (this->OnAIDetonateCheck())
+		return true;
+
+	this->OnAIVelocityCheck();
+
+	if (this->PhobosTrajectory::OnAI())
+		return true;
+
+	this->OnAINextFrameCheck();
+
+	return false;
 }
 
 void LiveShellTrajectory::OnAIPreDetonate()

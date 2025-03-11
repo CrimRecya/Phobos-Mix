@@ -258,6 +258,7 @@ void PhobosTrajectoryType::Serialize(T& Stm)
 		.Process(this->ApplyRangeModifiers)
 		.Process(this->UseDisperseCoord)
 		.Process(this->RecordSourceCoord)
+		.Process(this->UseDisperseBurst)
 
 		.Process(this->PassDetonate)
 		.Process(this->PassDetonateWarhead)
@@ -316,7 +317,9 @@ template<typename T>
 void PhobosTrajectory::Serialize(T& Stm)
 {
 	Stm
+		.Process(this->Bullet)
 		.Process(this->MovingVelocity)
+		.Process(this->MovingSpeed)
 		.Process(this->DurationTimer)
 		.Process(this->TolerantTimer)
 		.Process(this->FirepowerMult)
@@ -328,6 +331,8 @@ void PhobosTrajectory::Serialize(T& Stm)
 		.Process(this->ShouldDetonate)
 		.Process(this->FLHCoord)
 		.Process(this->BuildingCoord)
+		.Process(this->CurrentBurst)
+		.Process(this->CountOfBurst)
 
 		.Process(this->PassDetonateDamage)
 		.Process(this->PassDetonateTimer)

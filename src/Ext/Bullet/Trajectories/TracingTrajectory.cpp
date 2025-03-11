@@ -161,7 +161,7 @@ bool TracingTrajectory::Save(PhobosStreamWriter& Stm) const
 	return true;
 }
 
-void TracingTrajectory::OnUnlimbo(BulletClass* pBullet)
+void TracingTrajectory::OnUnlimbo()
 {
 	const auto pType = this->Type;
 
@@ -194,7 +194,7 @@ void TracingTrajectory::OnUnlimbo(BulletClass* pBullet)
 	this->InitializeDuration(pBullet, pType->TheDuration);
 }
 
-bool TracingTrajectory::OnAI(BulletClass* pBullet)
+bool TracingTrajectory::OnAI()
 {
 	const auto pTechno = pBullet->Owner;
 
@@ -215,7 +215,7 @@ bool TracingTrajectory::OnAI(BulletClass* pBullet)
 	return false;
 }
 
-void TracingTrajectory::OnAIPreDetonate(BulletClass* pBullet)
+void TracingTrajectory::OnAIPreDetonate()
 {
 	if (this->Type->PeacefulVanish)
 	{
@@ -225,7 +225,7 @@ void TracingTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 	}
 }
 
-void TracingTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition)
+void TracingTrajectory::OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition)
 {
 	*pSpeed = this->ChangeVelocity(pBullet); // This is for location calculation
 	const auto pType = this->Type;
@@ -234,12 +234,12 @@ void TracingTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpee
 		pBullet->Velocity = *pSpeed;
 }
 
-bool TracingTrajectory::OpenFire(BulletClass* pBullet)
+bool TracingTrajectory::OpenFire()
 {
 
 }
 
-void TracingTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno)
+void TracingTrajectory::GetTechnoFLHCoord(TechnoClass* pTechno)
 {
 	const auto pExt = TechnoExt::ExtMap.Find(pTechno);
 
@@ -268,7 +268,7 @@ void TracingTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTe
 	this->FLHCoord = pExt->LastWeaponFLH;
 }
 
-void TracingTrajectory::SetSourceLocation(BulletClass* pBullet)
+void TracingTrajectory::SetSourceLocation()
 {
 	const auto pType = this->Type;
 	const auto theCoords = pType->CreateCoord.Get();
@@ -306,7 +306,7 @@ void TracingTrajectory::SetSourceLocation(BulletClass* pBullet)
 	pBullet->Velocity = facing * (1 / facing.Magnitude());
 }
 
-void TracingTrajectory::InitializeDuration(BulletClass* pBullet, int duration)
+void TracingTrajectory::InitializeDuration(int duration)
 {
 	if (duration <= 0)
 	{
@@ -319,7 +319,7 @@ void TracingTrajectory::InitializeDuration(BulletClass* pBullet, int duration)
 	this->ExistTimer.Start(duration);
 }
 
-bool TracingTrajectory::InvalidFireCondition(BulletClass* pBullet, TechnoClass* pTechno)
+bool TracingTrajectory::InvalidFireCondition(TechnoClass* pTechno)
 {
 	if (!pTechno)
 		return true;
@@ -347,7 +347,7 @@ bool TracingTrajectory::InvalidFireCondition(BulletClass* pBullet, TechnoClass* 
 	return (std::abs(static_cast<short>(static_cast<short>(tgtDir.Raw) - static_cast<short>(curDir.Raw))) >= 4096);
 }
 
-bool TracingTrajectory::BulletDetonatePreCheck(BulletClass* pBullet)
+bool TracingTrajectory::BulletDetonatePreCheck()
 {
 	const auto pType = this->Type;
 
@@ -412,7 +412,7 @@ bool TracingTrajectory::BulletDetonatePreCheck(BulletClass* pBullet)
 	return false;
 }
 
-void TracingTrajectory::ChangeFacing(BulletClass* pBullet)
+void TracingTrajectory::ChangeFacing()
 {
 	const auto pType = this->Type;
 	constexpr double ratio = Math::TwoPi / 256;
@@ -467,7 +467,7 @@ void TracingTrajectory::ChangeFacing(BulletClass* pBullet)
 	}
 }
 
-bool TracingTrajectory::CheckFireFacing(BulletClass* pBullet)
+bool TracingTrajectory::CheckFireFacing()
 {
 	const auto pType = this->Type;
 
@@ -482,7 +482,7 @@ bool TracingTrajectory::CheckFireFacing(BulletClass* pBullet)
 	return std::abs(static_cast<short>(static_cast<short>(targetDir.Raw) - static_cast<short>(bulletDir.Raw))) <= (2048 + (pType->ROT << 8));
 }
 
-BulletVelocity TracingTrajectory::ChangeVelocity(BulletClass* pBullet)
+BulletVelocity TracingTrajectory::ChangeVelocity()
 {
 	const auto pType = this->Type;
 	auto pFirer = pBullet->Owner;
@@ -615,7 +615,7 @@ BulletVelocity TracingTrajectory::ChangeVelocity(BulletClass* pBullet)
 	return velocity;
 }
 
-AbstractClass* TracingTrajectory::GetBulletTarget(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner, WeaponTypeClass* pWeapon)
+AbstractClass* TracingTrajectory::GetBulletTarget(TechnoClass* pTechno, HouseClass* pOwner, WeaponTypeClass* pWeapon)
 {
 	const auto pType = this->Type;
 
@@ -659,7 +659,7 @@ AbstractClass* TracingTrajectory::GetBulletTarget(BulletClass* pBullet, TechnoCl
 	return pBullet->Target;
 }
 
-CoordStruct TracingTrajectory::GetWeaponFireCoord(BulletClass* pBullet, TechnoClass* pTechno)
+CoordStruct TracingTrajectory::GetWeaponFireCoord(TechnoClass* pTechno)
 {
 	const auto pType = this->Type;
 
@@ -708,7 +708,7 @@ CoordStruct TracingTrajectory::GetWeaponFireCoord(BulletClass* pBullet, TechnoCl
 	return pBullet->Location + fireOffsetCoord;
 }
 
-bool TracingTrajectory::PrepareTracingWeapon(BulletClass* pBullet)
+bool TracingTrajectory::PrepareTracingWeapon()
 {
 	const auto pType = this->Type;
 
@@ -737,7 +737,7 @@ bool TracingTrajectory::PrepareTracingWeapon(BulletClass* pBullet)
 	return pType->SuicideIfNoWeapon;
 }
 
-void TracingTrajectory::CreateTracingBullets(BulletClass* pBullet, WeaponTypeClass* pWeapon)
+void TracingTrajectory::CreateTracingBullets(WeaponTypeClass* pWeapon)
 {
 	const auto pType = this->Type;
 	const auto pTechno = pBullet->Owner;

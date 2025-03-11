@@ -103,24 +103,6 @@ void StraightTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool StraightTrajectory::OnAI()
-{
-	if (this->WaitOneFrame && this->BulletPrepareCheck())
-		return false;
-
-	if (this->OnAIDetonateCheck())
-		return true;
-
-	this->OnAIVelocityCheck();
-
-	if (this->PhobosTrajectory::OnAI())
-		return true;
-
-	this->OnAINextFrameCheck();
-
-	return false;
-}
-
 bool StraightTrajectory::OnAIDetonateCheck()
 {
 	const auto pBullet = this->Bullet;
@@ -138,7 +120,7 @@ bool StraightTrajectory::OnAIDetonateCheck()
 		return true;
 
 	// Check the remaining travel distance of the bullet
-	this->RemainingDistance -= this->MovingSpeed;
+	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
 
 	return this->RemainingDistance < 0;
 }
@@ -175,7 +157,6 @@ void StraightTrajectory::FireTrajectory()
 	const auto& source = pBullet->SourceCoords;
 
 	target += this->CalculateBulletLeadTime();
-
 	// Calculate the orientation of the coordinate system
 	const double rotateRadian = this->Get2DOpRadian(((target == source && pBullet->Owner) ? pBullet->Owner->GetCoords() : source), target);
 
@@ -205,7 +186,7 @@ void StraightTrajectory::FireTrajectory()
 
 	// Substitute the speed to calculate velocity
 	if (this->CalculateBulletVelocity(pType->Speed))
-		this->RemainingDistance = 0;
+		this->ShouldDetonate = true;
 
 	// Rotate the selected angle
 	if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
@@ -360,7 +341,7 @@ bool StraightTrajectory::PassAndConfineAtHeight()
 		this->MovingVelocity.Z += static_cast<double>(checkDifference + pType->ConfineAtHeight);
 
 		if (pType->PassDetonateLocal)
-			this->MovingSpeed = static_cast<int>(this->MovingVelocity.Magnitude());
+			this->MovingSpeed = this->MovingVelocity.Magnitude();
 		else if (this->CalculateBulletVelocity(pType->Speed))
 			return true;
 	}

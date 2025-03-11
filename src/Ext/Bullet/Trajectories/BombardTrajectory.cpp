@@ -79,7 +79,7 @@ void BombardTrajectory::Serialize(T& Stm)
 		.Process(this->IsFalling)
 		.Process(this->ToFalling)
 		.Process(this->InitialTargetCoord)
-		.Process(this->RotateAngle)
+		.Process(this->RotateRadian)
 		;
 }
 
@@ -105,30 +105,11 @@ void BombardTrajectory::OnUnlimbo()
 	this->Height += pBullet->TargetCoords.Z;
 	// use scaling since RandomRanged only support int
 	this->FallPercent += ScenarioClass::Instance->Random.RandomRanged(0, static_cast<int>(200 * this->Type->FallPercentShift)) / 100.0;
-
 	// Record the initial target coordinates without offset
 	this->InitialTargetCoord = pBullet->TargetCoords;
 
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
-}
-
-bool BombardTrajectory::OnAI()
-{
-	if (this->WaitOneFrame && this->BulletPrepareCheck())
-		return false;
-
-	if (this->OnAIDetonateCheck())
-		return true;
-
-	this->OnAIVelocityCheck();
-
-	if (this->PhobosTrajectory::OnAI())
-		return true;
-
-	this->OnAINextFrameCheck();
-
-	return false;
 }
 
 bool BombardTrajectory::OnAIDetonateCheck()
@@ -157,7 +138,6 @@ bool BombardTrajectory::OnAIDetonateCheck()
 bool BombardTrajectory::OpenFire()
 {
 	const auto pType = this->Type;
-
 	// Wait, or launch immediately?
 	if (!pType->NoLaunch || !pType->LeadTimeCalculate || !abstract_cast<FootClass*>(this->Bullet->Target))
 		this->FireTrajectory();
@@ -181,11 +161,11 @@ void BombardTrajectory::FireTrajectory()
 		this->MovingVelocity.Z = static_cast<double>(middleLocation.Z - pBullet->SourceCoords.Z);
 
 		if (this->CalculateBulletVelocity(pType->Speed))
-			this->RemainingDistance = 0;
+			this->ShouldDetonate = true;
 
 		// Rotate the selected angle
 		if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
-			this->DisperseBurstSubstitution(this->RotateAngle);
+			this->DisperseBurstSubstitution(this->RotateRadian);
 	}
 	else
 	{
@@ -204,11 +184,11 @@ void BombardTrajectory::FireTrajectory()
 			this->MovingVelocity.Z = static_cast<double>(pBullet->TargetCoords.Z - middleLocation.Z);
 
 			if (this->CalculateBulletVelocity(fallSpeed))
-				this->RemainingDistance = 0;
+				this->ShouldDetonate = true;
 
 			// Rotate the selected angle
 			if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
-				this->DisperseBurstSubstitution(this->RotateAngle);
+				this->DisperseBurstSubstitution(this->RotateRadian);
 		}
 		else
 		{
@@ -245,7 +225,7 @@ bool BombardTrajectory::CalculateBulletVelocity(const double speed)
 {
 	if (this->IsFalling && this->Type->FreeFallOnTarget)
 	{
-		this->MovingSpeed = static_cast<int>(speed);
+		this->MovingSpeed = speed;
 		this->MovingVelocity.X = 0;
 		this->MovingVelocity.Y = 0;
 		this->MovingVelocity.Z = -speed;
@@ -304,11 +284,11 @@ void BombardTrajectory::CalculateTargetCoords()
 		target += this->CalculateBulletLeadTime();
 
 	// Calculate the orientation of the coordinate system
-	this->RotateAngle = this->Get2DOpRadian(((target == source && pBullet->Owner) ? pBullet->Owner->GetCoords() : source), target);
+	this->RotateRadian = this->Get2DOpRadian(((target == source && pBullet->Owner) ? pBullet->Owner->GetCoords() : source), target);
 
 	// Add the fixed offset value
 	if (pType->OffsetCoord != CoordStruct::Empty)
-		target += this->GetOnlyStableOffsetCoords(this->RotateAngle);
+		target += this->GetOnlyStableOffsetCoords(this->RotateRadian);
 
 	// Add random offset value
 	if (pBullet->Type->Inaccurate)
@@ -407,7 +387,7 @@ bool BombardTrajectory::BulletVelocityChange()
 
 	if (!this->IsFalling)
 	{
-		this->RemainingDistance -= this->MovingSpeed;
+		this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
 
 		if (this->RemainingDistance < this->MovingSpeed)
 		{
@@ -436,7 +416,7 @@ bool BombardTrajectory::BulletVelocityChange()
 
 					// Rotate the selected angle
 					if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
-						this->DisperseBurstSubstitution(this->RotateAngle);
+						this->DisperseBurstSubstitution(this->RotateRadian);
 
 					this->RemainingDistance += static_cast<int>(pBullet->TargetCoords.DistanceFrom(middleLocation) + fallSpeed);
 				}
@@ -482,8 +462,7 @@ bool BombardTrajectory::BulletVelocityChange()
 		if (pType->FreeFallOnTarget)
 			this->CalculateBulletVelocity(-this->MovingVelocity.Z + BulletTypeExt::GetAdjustedGravity(this->Bullet->Type));
 
-		this->RemainingDistance -= this->MovingSpeed;
-
+		this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
 		// Check the remaining travel distance of the bullet
 		if (this->RemainingDistance < 0)
 			return true;

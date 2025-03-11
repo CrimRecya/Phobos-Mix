@@ -102,26 +102,26 @@ public:
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Engrave; }
-	virtual void OnUnlimbo(BulletClass* pBullet) override;
-	virtual bool OnAI(BulletClass* pBullet) override;
-	virtual bool OnAIDetonateCheck(BulletClass* pBullet, HouseClass* pOwner) override;
-	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner) override;
-	virtual void OnAINextFrameCheck(BulletClass* pBullet, HouseClass* pOwner) override;
-	virtual void OnAIPreDetonate(BulletClass* pBullet) override;
-	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
+	virtual void OnUnlimbo() override;
+	virtual bool OnAI() override;
+	virtual bool OnAIDetonateCheck() override;
+	virtual void OnAIVelocityCheck() override;
+	virtual void OnAINextFrameCheck() override;
+	virtual void OnAIPreDetonate() override;
+	virtual void OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
-	virtual bool OpenFire(BulletClass* pBullet) override;
+	virtual bool OpenFire() override;
 	virtual bool GetCanHitGround() const override { return false; }
 
-	void SetEngraveDirection(BulletClass* pBullet, double rotateAngle);
-	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
+	void SetEngraveDirection(double rotateAngle);
+	void GetTechnoFLHCoord(TechnoClass* pTechno);
 	inline void CheckMirrorCoord(TechnoClass* pTechno);
-	bool InvalidFireCondition(BulletClass* pBullet, TechnoClass* pTechno);
-	int GetFloorCoordHeight(BulletClass* pBullet, const CoordStruct& coord);
-	bool PlaceOnCorrectHeight(BulletClass* pBullet);
-	void DrawEngraveLaser(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner);
-	inline void DetonateLaserWarhead(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner);
-	void PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
+	bool InvalidFireCondition(TechnoClass* pTechno);
+	int GetFloorCoordHeight(const CoordStruct& coord);
+	bool PlaceOnCorrectHeight();
+	void DrawEngraveLaser(TechnoClass* pTechno, HouseClass* pOwner);
+	inline void DetonateLaserWarhead(TechnoClass* pTechno, HouseClass* pOwner);
+	void PrepareForDetonateAt(HouseClass* pOwner);
 
 private:
 	template <typename T>

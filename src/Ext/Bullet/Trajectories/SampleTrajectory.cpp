@@ -99,7 +99,7 @@ bool SampleTrajectory::OnAIDetonateCheck()
 	if (this->PhobosTrajectory::OnAIDetonateCheck())
 		return true;
 
-	this->RemainingDistance -= this->MovingSpeed;
+	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
 
 	return this->RemainingDistance < 0;
 }

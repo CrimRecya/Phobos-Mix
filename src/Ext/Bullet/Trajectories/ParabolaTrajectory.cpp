@@ -141,7 +141,7 @@ bool ParabolaTrajectory::Save(PhobosStreamWriter& Stm) const
 	return true;
 }
 
-void ParabolaTrajectory::OnUnlimbo(BulletClass* pBullet)
+void ParabolaTrajectory::OnUnlimbo()
 {
 	this->LiveShellTrajectory::OnUnlimbo(pBullet);
 
@@ -164,7 +164,7 @@ void ParabolaTrajectory::OnUnlimbo(BulletClass* pBullet)
 		this->OpenFire(pBullet);
 }
 
-bool ParabolaTrajectory::OnAI(BulletClass* pBullet)
+bool ParabolaTrajectory::OnAI()
 {
 	if (this->WaitOneFrame && this->BulletPrepareCheck(pBullet))
 		return false;
@@ -181,7 +181,7 @@ bool ParabolaTrajectory::OnAI(BulletClass* pBullet)
 	return this->BulletDetonateLastCheck(pBullet, pCell, BulletTypeExt::GetAdjustedGravity(pBullet->Type), bounce);
 }
 
-void ParabolaTrajectory::OnAIPreDetonate(BulletClass* pBullet)
+void ParabolaTrajectory::OnAIPreDetonate()
 {
 	const auto targetSnapDistance = this->Type->TargetSnapDistance.Get();
 
@@ -207,12 +207,12 @@ void ParabolaTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 		pBullet->SetLocation(CoordStruct{ pBullet->Location.X, pBullet->Location.Y, cellHeight });
 }
 
-void ParabolaTrajectory::OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition)
+void ParabolaTrajectory::OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition)
 {
 	pSpeed->Z += BulletTypeExt::GetAdjustedGravity(pBullet->Type); // Seems like this is useless
 }
 
-bool ParabolaTrajectory::OpenFire(BulletClass* pBullet)
+bool ParabolaTrajectory::OpenFire()
 {
 	// Wait, or launch immediately?
 	if (!this->Type->LeadTimeCalculate || !abstract_cast<FootClass*>(pBullet->Target))
@@ -221,7 +221,7 @@ bool ParabolaTrajectory::OpenFire(BulletClass* pBullet)
 		this->WaitOneFrame = 2;
 }
 
-void ParabolaTrajectory::FireTrajectory(BulletClass* pBullet)
+void ParabolaTrajectory::FireTrajectory()
 {
 	const auto pType = this->Type;
 	const auto pTarget = pBullet->Target;
@@ -316,7 +316,7 @@ void ParabolaTrajectory::FireTrajectory(BulletClass* pBullet)
 	}
 }
 
-bool ParabolaTrajectory::BulletPrepareCheck(BulletClass* pBullet)
+bool ParabolaTrajectory::BulletPrepareCheck()
 {
 	// The time between bullets' Unlimbo() and Update() is completely uncertain.
 	// Technos will update its location after firing, which may result in inaccurate
@@ -338,7 +338,7 @@ bool ParabolaTrajectory::BulletPrepareCheck(BulletClass* pBullet)
 	return false;
 }
 
-void ParabolaTrajectory::CalculateBulletVelocityLeadTime(BulletClass* pBullet, CoordStruct* pSourceCoords, double gravity)
+void ParabolaTrajectory::CalculateBulletVelocityLeadTime(CoordStruct* pSourceCoords, double gravity)
 {
 	const auto pType = this->Type;
 	auto targetCoords = pBullet->Target->GetCoords();
@@ -547,7 +547,7 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(BulletClass* pBullet, C
 	this->CalculateBulletVelocityRightNow(pBullet, pSourceCoords, gravity);
 }
 
-void ParabolaTrajectory::CalculateBulletVelocityRightNow(BulletClass* pBullet, CoordStruct* pSourceCoords, double gravity)
+void ParabolaTrajectory::CalculateBulletVelocityRightNow(CoordStruct* pSourceCoords, double gravity)
 {
 	const auto pType = this->Type;
 	// Calculate horizontal distance
@@ -678,7 +678,7 @@ void ParabolaTrajectory::CalculateBulletVelocityRightNow(BulletClass* pBullet, C
 	pBullet->Velocity.Z += gravity / 2;
 }
 
-void ParabolaTrajectory::CheckIfNeedExtraCheck(BulletClass* pBullet)
+void ParabolaTrajectory::CheckIfNeedExtraCheck()
 {
 	const auto pType = this->Type;
 
@@ -881,7 +881,7 @@ double ParabolaTrajectory::CheckFixedAngleEquation(CoordStruct* pSourceCrd, Coor
 	return upTime + downTime - meetTime;
 }
 
-bool ParabolaTrajectory::CalculateBulletVelocityAfterBounce(BulletClass* pBullet, CellClass* pCell)
+bool ParabolaTrajectory::CalculateBulletVelocityAfterBounce(CellClass* pCell)
 {
 	const auto pType = this->Type;
 
@@ -916,7 +916,7 @@ bool ParabolaTrajectory::CalculateBulletVelocityAfterBounce(BulletClass* pBullet
 	return false;
 }
 
-BulletVelocity ParabolaTrajectory::GetGroundNormalVector(BulletClass* pBullet, CellClass* pCell)
+BulletVelocity ParabolaTrajectory::GetGroundNormalVector(CellClass* pCell)
 {
 	if (const auto index = pCell->SlopeIndex)
 	{
@@ -1040,7 +1040,7 @@ bool ParabolaTrajectory::CheckBulletHitCliff(short X, short Y, int bulletHeight,
 	return false;
 }
 
-bool ParabolaTrajectory::BulletDetonatePreCheck(BulletClass* pBullet)
+bool ParabolaTrajectory::BulletDetonatePreCheck()
 {
 	if (this->ShouldDetonate)
 		return true;
@@ -1074,7 +1074,7 @@ bool ParabolaTrajectory::BulletDetonatePreCheck(BulletClass* pBullet)
 	return (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get());
 }
 
-bool ParabolaTrajectory::BulletDetonateLastCheck(BulletClass* pBullet, CellClass* pCell, double gravity, bool bounce)
+bool ParabolaTrajectory::BulletDetonateLastCheck(CellClass* pCell, double gravity, bool bounce)
 {
 	pBullet->Velocity.Z -= gravity;
 
@@ -1134,7 +1134,7 @@ bool ParabolaTrajectory::BulletDetonateLastCheck(BulletClass* pBullet, CellClass
 	return false;
 }
 
-void ParabolaTrajectory::BulletDetonateEffectuate(BulletClass* pBullet, double velocityMult)
+void ParabolaTrajectory::BulletDetonateEffectuate(double velocityMult)
 {
 	if (velocityMult < 1.0)
 		pBullet->Velocity *= velocityMult;

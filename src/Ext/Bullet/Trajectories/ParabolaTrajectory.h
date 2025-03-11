@@ -92,21 +92,21 @@ public:
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Parabola; }
-	virtual void OnUnlimbo(BulletClass* pBullet) override;
-	virtual bool OnAI(BulletClass* pBullet) override;
-	virtual bool OnAIDetonateCheck(BulletClass* pBullet, HouseClass* pOwner) override;
-	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner) override;
-	virtual void OnAINextFrameCheck(BulletClass* pBullet, HouseClass* pOwner) override;
-	virtual void OnAIPreDetonate(BulletClass* pBullet) override;
-	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
+	virtual void OnUnlimbo() override;
+	virtual bool OnAI() override;
+	virtual bool OnAIDetonateCheck() override;
+	virtual void OnAIVelocityCheck() override;
+	virtual void OnAINextFrameCheck() override;
+	virtual void OnAIPreDetonate() override;
+	virtual void OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
-	virtual bool OpenFire(BulletClass* pBullet) override;
+	virtual bool OpenFire() override;
 
-	void FireTrajectory(BulletClass* pBullet);
-	bool BulletPrepareCheck(BulletClass* pBullet);
-	void CalculateBulletVelocityRightNow(BulletClass* pBullet, CoordStruct* pSourceCoords, double gravity);
-	void CalculateBulletVelocityLeadTime(BulletClass* pBullet, CoordStruct* pSourceCoords, double gravity);
-	void CheckIfNeedExtraCheck(BulletClass* pBullet);
+	void FireTrajectory();
+	bool BulletPrepareCheck();
+	void CalculateBulletVelocityRightNow(CoordStruct* pSourceCoords, double gravity);
+	void CalculateBulletVelocityLeadTime(CoordStruct* pSourceCoords, double gravity);
+	void CheckIfNeedExtraCheck();
 	double SearchVelocity(double horizontalDistance, int distanceCoordsZ, double radian, double gravity);
 	double CheckVelocityEquation(double horizontalDistance, int distanceCoordsZ, double velocity, double radian, double gravity);
 	double SolveFixedSpeedMeetTime(CoordStruct* pSourceCrd, CoordStruct* pTargetCrd, CoordStruct* pOffsetCrd, double horizontalSpeed);
@@ -114,12 +114,12 @@ public:
 	double CheckFixedHeightEquation(CoordStruct* pSourceCrd, CoordStruct* pTargetCrd, CoordStruct* pOffsetCrd, double meetTime, double gravity);
 	double SearchFixedAngleMeetTime(CoordStruct* pSourceCrd, CoordStruct* pTargetCrd, CoordStruct* pOffsetCrd, double radian, double gravity);
 	double CheckFixedAngleEquation(CoordStruct* pSourceCrd, CoordStruct* pTargetCrd, CoordStruct* pOffsetCrd, double meetTime, double radian, double gravity);
-	bool CalculateBulletVelocityAfterBounce(BulletClass* pBullet, CellClass* pCell);
-	BulletVelocity GetGroundNormalVector(BulletClass* pBullet, CellClass* pCell);
+	bool CalculateBulletVelocityAfterBounce(CellClass* pCell);
+	BulletVelocity GetGroundNormalVector(CellClass* pCell);
 	bool CheckBulletHitCliff(short X, short Y, int bulletHeight, int lastCellHeight);
-	bool BulletDetonatePreCheck(BulletClass* pBullet);
-	bool BulletDetonateLastCheck(BulletClass* pBullet, CellClass* pCell, double gravity, bool bounce);
-	void BulletDetonateEffectuate(BulletClass* pBullet, double velocityMult);
+	bool BulletDetonatePreCheck();
+	bool BulletDetonateLastCheck(CellClass* pCell, double gravity, bool bounce);
+	void BulletDetonateEffectuate(double velocityMult);
 
 private:
 	template <typename T>
