@@ -129,6 +129,7 @@ This page lists all the individual contributions to the project by their author.
   - Kill Object Automatically logic prototype
   - Customizable resource storage
   - Override uncloaked underwater attack behavior
+  - Override target under EMP attack behavior
   - AI Aircraft docks fix
   - Shared ammo logic
   - Customizable FLH when infantry is prone or deployed
@@ -391,6 +392,7 @@ This page lists all the individual contributions to the project by their author.
   - Re-enable the Veinhole Monster and Weeds from TS
   - Recreate the weed-charging of SWs like the TS Chemical Missile
   - Allow to change the speed of gas particles
+  - Fix a jumpjet crash related to voxel shadow drawing
 - **CrimRecya**:
   - Fix `LimboKill` not working reliably
   - Allow using waypoints, area guard and attack move with aircraft
@@ -468,6 +470,7 @@ This page lists all the individual contributions to the project by their author.
   - Units are now unable to kick out from a factory that is in construction process
   - No turret unit turn to the target
   - Units are now unable to kick out from a factory that is in construction process
+  - Fix issues caused by incorrect reference removal (f.ex. If the unit cloaks/enters transport, it cannot gain experience from previously launched spawners/C4/projectiles)
 - **Aephiex**:
   - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
   - Aggressive stance toggle command (auto target unarmed enemy buildings)
