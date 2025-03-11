@@ -101,8 +101,6 @@ public:
 	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual bool OpenFire(BulletClass* pBullet) override;
-	virtual CoordStruct GetRetargetCenter(const BulletClass* const pBullet) const override { return pBullet->TargetCoords; }
-	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) override;
 
 	void PrepareForOpenFire(BulletClass* pBullet);
 	bool BulletPrepareCheck(BulletClass* pBullet);

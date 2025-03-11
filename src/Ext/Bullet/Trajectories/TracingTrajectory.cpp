@@ -239,12 +239,6 @@ bool TracingTrajectory::OpenFire(BulletClass* pBullet)
 
 }
 
-void TracingTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)
-{
-	pBullet->SetTarget(pTarget);
-	pBullet->TargetCoords = pTarget->GetCoords();
-}
-
 void TracingTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno)
 {
 	const auto pExt = TechnoExt::ExtMap.Find(pTechno);

@@ -7,8 +7,9 @@
 #include <Ext/Techno/Body.h>
 #include <Utilities/EnumFunctions.h>
 
-bool PhobosTrajectory::BulletRetargetTechno(BulletClass* pBullet)
+bool PhobosTrajectory::BulletRetargetTechno()
 {
+	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
 	bool check = false;
 
@@ -41,7 +42,7 @@ bool PhobosTrajectory::BulletRetargetTechno(BulletClass* pBullet)
 			return false;
 	}
 
-	const auto retargetCoords = this->GetRetargetCenter(pBullet);
+	const auto retargetCoords = this->GetRetargetCenter();
 	const auto retargetRange = pType->RetargetRadius * Unsorted::LeptonsPerCell;
 	TechnoClass* pNewTechno = nullptr;
 
@@ -133,14 +134,16 @@ bool PhobosTrajectory::BulletRetargetTechno(BulletClass* pBullet)
 
 	// Replace if there is a new target
 	if (pNewTechno)
-		this->SetBulletNewTarget(pBullet, pNewTechno);
+		this->SetBulletNewTarget(pNewTechno);
 
 	// If not found, in order to minimize the response time, it will continue to check in the next frame, so the performance will be reduced a bit
 	return false;
 }
 
-void PhobosTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno)
+void PhobosTrajectory::GetTechnoFLHCoord()
 {
+	const auto pBullet = this->Bullet;
+	const auto pTechno = pBullet->Owner;
 	const auto pExt = TechnoExt::ExtMap.Find(pTechno);
 
 	// Record the launch location, the building has an additional offset
@@ -170,8 +173,9 @@ void PhobosTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTec
 	this->FLHCoord = pExt->LastWeaponFLH;
 }
 
-CoordStruct PhobosTrajectory::GetWeaponFireCoord(BulletClass* pBullet, TechnoClass* pTechno)
+CoordStruct PhobosTrajectory::GetWeaponFireCoord(TechnoClass* pTechno)
 {
+	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
 	const auto flag = this->Flag();
 
@@ -220,8 +224,9 @@ CoordStruct PhobosTrajectory::GetWeaponFireCoord(BulletClass* pBullet, TechnoCla
 	return pBullet->Location + fireOffsetCoord;
 }
 
-bool PhobosTrajectory::CheckFireFacing(BulletClass* pBullet)
+bool PhobosTrajectory::CheckFireFacing()
 {
+	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
 
 	if (!pType->DisperseFaceCheck || pType->BulletROT < 0 || pType->BulletSpin)
@@ -240,8 +245,9 @@ bool PhobosTrajectory::CheckFireFacing(BulletClass* pBullet)
 	return std::abs(static_cast<short>(static_cast<short>(targetDir.Raw) - static_cast<short>(bulletDir.Raw))) <= (2048 + (pType->BulletROT << 8));
 }
 
-bool PhobosTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
+bool PhobosTrajectory::PrepareDisperseWeapon()
 {
+	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
 
 	if (!this->DisperseCycle)
@@ -261,9 +267,9 @@ bool PhobosTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 				return true;
 		}
 
-		const auto fireCoord = this->GetWeaponFireCoord(pBullet, pFirer);
+		const auto fireCoord = this->GetWeaponFireCoord(pFirer);
 
-		if (!this->FireDisperseWeapon(pBullet, pFirer, fireCoord, pOwner))
+		if (!this->FireDisperseWeapon(pFirer, fireCoord, pOwner))
 			return false;
 	}
 
@@ -302,8 +308,9 @@ bool PhobosTrajectory::PrepareDisperseWeapon(BulletClass* pBullet)
 	return pType->DisperseSuicide;
 }
 
-bool PhobosTrajectory::FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner)
+bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner)
 {
+	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
 
 	// Launch quantity check
@@ -646,7 +653,7 @@ void PhobosTrajectory::CreateDisperseBullets(TechnoClass* pTechno, const CoordSt
 			}
 
 			pExt->DispersedTrajectory = false;
-			pTraj->OpenFire(pBullet); // Calculate TargetCoords before drawing laser, ebolt, etc
+			pTraj->OpenFire(); // Calculate TargetCoords before drawing laser, ebolt, etc
 		}
 
 		// Simulate the actual weapon launch effect

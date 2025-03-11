@@ -39,19 +39,17 @@ public:
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Straight; }
-	virtual void OnUnlimbo(BulletClass* pBullet) override;
-	virtual bool OnAI(BulletClass* pBullet) override;
-	virtual void OnAIPreDetonate(BulletClass* pBullet) override;
+	virtual void OnUnlimbo() override;
+	virtual bool OnAI() override;
+	virtual void OnAIPreDetonate() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
-	virtual bool OpenFire(BulletClass* pBullet) override;
+	virtual bool OpenFire() override;
 	virtual bool GetCanHitGround() const override { return this->Type->SubjectToGround; }
-	virtual CoordStruct GetRetargetCenter(const BulletClass* const pBullet) const override { return pBullet->TargetCoords; }
-	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) override;
 
-	void PrepareForOpenFire(BulletClass* pBullet);
-	int GetVelocityZ(BulletClass* pBullet);
-	bool BulletPrepareCheck(BulletClass* pBullet);
-	bool PassAndConfineAtHeight(BulletClass* pBullet);
+	void PrepareForOpenFire();
+	int GetVelocityZ();
+	bool BulletPrepareCheck();
+	bool PassAndConfineAtHeight();
 
 private:
 	template <typename T>

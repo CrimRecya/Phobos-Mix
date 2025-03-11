@@ -224,12 +224,6 @@ bool EngraveTrajectory::OpenFire(BulletClass* pBullet)
 
 }
 
-void EngraveTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)
-{
-	pBullet->SetTarget(pTarget);
-	pBullet->TargetCoords = pTarget->GetCoords();
-}
-
 void EngraveTrajectory::GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno)
 {
 	const auto pExt = TechnoExt::ExtMap.Find(pTechno);

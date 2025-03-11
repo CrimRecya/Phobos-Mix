@@ -221,12 +221,6 @@ bool ParabolaTrajectory::OpenFire(BulletClass* pBullet)
 		this->WaitOneFrame = 2;
 }
 
-void ParabolaTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)
-{
-	pBullet->SetTarget(pTarget);
-	pBullet->TargetCoords = pTarget->GetCoords();
-}
-
 void ParabolaTrajectory::PrepareForOpenFire(BulletClass* pBullet)
 {
 	const auto pType = this->Type;

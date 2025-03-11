@@ -193,21 +193,21 @@ public:
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
 	virtual bool Save(PhobosStreamWriter& Stm) const;
 	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; }
-	virtual void OnUnlimbo(BulletClass* pBullet);
-	virtual bool OnAI(BulletClass* pBullet);
-	virtual bool OnAIPreCheck(BulletClass* pBullet, HouseClass* pOwner);
-	virtual void OnAIVelocityCheck(BulletClass* pBullet, HouseClass* pOwner);
-	virtual void OnAILastCheck(BulletClass* pBullet, HouseClass* pOwner);
-	virtual void OnAIPreDetonate(BulletClass* pBullet);
-	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) { *pSpeed = this->MovingVelocity; }
-	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) { return TrajectoryCheckReturnType::SkipGameCheck; }
-	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) { return TrajectoryCheckReturnType::SkipGameCheck; }
+	virtual void OnUnlimbo();
+	virtual bool OnAI();
+	virtual bool OnAIPreCheck(HouseClass* pOwner);
+	virtual void OnAIVelocityCheck(HouseClass* pOwner);
+	virtual void OnAILastCheck(HouseClass* pOwner);
+	virtual void OnAIPreDetonate();
+	virtual void OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition) { *pSpeed = this->MovingVelocity; }
+	virtual TrajectoryCheckReturnType OnAITargetCoordCheck() { return TrajectoryCheckReturnType::SkipGameCheck; }
+	virtual TrajectoryCheckReturnType OnAITechnoCheck(TechnoClass* pTechno) { return TrajectoryCheckReturnType::SkipGameCheck; }
 	virtual const PhobosTrajectoryType* GetType() const = 0;
-	virtual bool OpenFire(BulletClass* pBullet) = 0;
+	virtual bool OpenFire() = 0;
 	virtual bool GetCanHitGround() const { return true; }
-	virtual CoordStruct GetRetargetCenter(const BulletClass* const pBullet) const { return pBullet->Location; }
-	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) = 0;
-	virtual bool CalculateBulletVelocity(BulletClass* pBullet);
+	virtual CoordStruct GetRetargetCenter() const { return this->Bullet->TargetCoords; }
+	virtual void SetBulletNewTarget(AbstractClass* const pTarget);
+	virtual bool CalculateBulletVelocity();
 
 	static inline double Get2DDistance(const CoordStruct& source, const CoordStruct& target) { return Point2D { source.X, source.Y }.DistanceFrom(Point2D { target.X, target.Y }); }
 	static inline double Get2DVelocity(const BulletVelocity& velocity) { return Vector2D<double>{ velocity.X, velocity.Y }.Magnitude(); }
@@ -219,19 +219,19 @@ public:
 	static std::vector<CellClass*> GetCellsInProximityRadius(const BulletClass* const pBullet, const Leptons trajectoryProximityRange);
 	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
 
-	bool BulletRetargetTechno(BulletClass* pBullet);
-	bool CheckThroughAndSubjectInCell(BulletClass* pBullet, CellClass* pCell, HouseClass* pOwner);
-	void CalculateNewDamage(BulletClass* pBullet);
-	void PassWithDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
-	void PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
-	void ProximityDetonateAt(BulletClass* pBullet, HouseClass* pOwner, TechnoClass* pTarget);
-	int GetTheTrueDamage(int damage, BulletClass* pBullet, bool self);
-	double GetExtraDamageMultiplier(BulletClass* pBullet);
-	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
-	CoordStruct GetWeaponFireCoord(BulletClass* pBullet, TechnoClass* pTechno);
-	bool CheckFireFacing(BulletClass* pBullet);
-	bool PrepareDisperseWeapon(BulletClass* pBullet);
-	bool FireDisperseWeapon(BulletClass* pBullet, TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner);
+	bool BulletRetargetTechno();
+	bool CheckThroughAndSubjectInCell(CellClass* pCell, HouseClass* pOwner);
+	void CalculateNewDamage();
+	void PassWithDetonateAt(HouseClass* pOwner);
+	void PrepareForDetonateAt(HouseClass* pOwner);
+	void ProximityDetonateAt(HouseClass* pOwner, TechnoClass* pTarget);
+	int GetTheTrueDamage(int damage, bool self);
+	double GetExtraDamageMultiplier();
+	void GetTechnoFLHCoord();
+	CoordStruct GetWeaponFireCoord(TechnoClass* pTechno);
+	bool CheckFireFacing();
+	bool PrepareDisperseWeapon();
+	bool FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner);
 	void CreateDisperseBullets(TechnoClass* pTechno, const CoordStruct& sourceCoord, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst);
 
 private:
@@ -239,7 +239,7 @@ private:
 	void Serialize(T& Stm);
 
 public:
-	BulletClass* Bullet;
+	BulletClass* Bullet; // Bullet attached to
 	BulletVelocity MovingVelocity; // The vector used for calculating speed
 	CDTimerClass DurationTimer; // Bullet existence timer
 	CDTimerClass TolerantTimer; // Target tolerance timer

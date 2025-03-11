@@ -199,7 +199,7 @@ bool MissileTrajectory::OnAI(BulletClass* pBullet)
 	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < (pType->UniqueCurve ? 154 : pType->TargetSnapDistance.Get()))
 		return true;
 
-	// TODO
+	// TODO Weapon
 
 	// Calculate new speed
 	return (pType->UniqueCurve ? this->CurveVelocityChange(pBullet) : this->NotCurveVelocityChange(pBullet));

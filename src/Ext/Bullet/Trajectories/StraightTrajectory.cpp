@@ -78,9 +78,11 @@ bool StraightTrajectory::Save(PhobosStreamWriter& Stm) const
 	return true;
 }
 
-void StraightTrajectory::OnUnlimbo(BulletClass* pBullet)
+void StraightTrajectory::OnUnlimbo()
 {
-	this->LiveShellTrajectory::OnUnlimbo(pBullet);
+	this->LiveShellTrajectory::OnUnlimbo();
+
+	const auto pBullet = this->Bullet;
 
 	if (this->Type->ApplyRangeModifiers)
 	{
@@ -98,34 +100,38 @@ void StraightTrajectory::OnUnlimbo(BulletClass* pBullet)
 	}
 
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
-		this->OpenFire(pBullet);
+		this->OpenFire();
 }
 
-bool StraightTrajectory::OnAI(BulletClass* pBullet)
+bool StraightTrajectory::OnAI()
 {
-	if (this->WaitOneFrame && this->BulletPrepareCheck(pBullet))
+	if (this->WaitOneFrame && this->BulletPrepareCheck())
 		return false;
 
+	const auto pBullet = this->Bullet;
 	const auto pFirer = pBullet->Owner;
 	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 	const auto pType = this->Type;
 
-	if (this->OnAIPreCheck(pBullet, pOwner))
+	if (this->OnAIPreCheck(pOwner))
 		return true;
 
-	this->OnAIVelocityCheck(pBullet, pOwner);
-	this->PhobosTrajectory::OnAI(pBullet);
+	this->OnAIVelocityCheck(pOwner);
 
-	if (pType->Speed < 256.0 && pType->ConfineAtHeight > 0 && this->PassAndConfineAtHeight(pBullet))
+	if (this->PhobosTrajectory::OnAI())
 		return true;
 
-	this->OnAILastCheck(pBullet, pOwner);
+	if (pType->Speed < 256.0 && pType->ConfineAtHeight > 0 && this->PassAndConfineAtHeight())
+		return true;
+
+	this->OnAILastCheck(pOwner);
 
 	return false;
 }
 
-void StraightTrajectory::OnAIPreDetonate(BulletClass* pBullet)
+void StraightTrajectory::OnAIPreDetonate()
 {
+	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 
 	// Whether to detonate at ground level?
@@ -133,28 +139,23 @@ void StraightTrajectory::OnAIPreDetonate(BulletClass* pBullet)
 		pBullet->SetLocation(CoordStruct { pBullet->Location.X, pBullet->Location.Y, MapClass::Instance->GetCellFloorHeight(pBullet->Location) });
 
 	if (!pType->PassThrough)
-		this->LiveShellTrajectory::OnAIPreDetonate(pBullet);
+		this->LiveShellTrajectory::OnAIPreDetonate();
 	else
-		this->PhobosTrajectory::OnAIPreDetonate(pBullet);
+		this->PhobosTrajectory::OnAIPreDetonate();
 }
 
-bool StraightTrajectory::OpenFire(BulletClass* pBullet)
+bool StraightTrajectory::OpenFire()
 {
 	// Wait, or launch immediately?
-	if (!this->Type->LeadTimeCalculate || !abstract_cast<FootClass*>(pBullet->Target))
-		this->PrepareForOpenFire(pBullet);
+	if (!this->Type->LeadTimeCalculate || !abstract_cast<FootClass*>(this->Bullet->Target))
+		this->PrepareForOpenFire();
 	else
 		this->WaitOneFrame = 2;
 }
 
-void StraightTrajectory::SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget)
+void StraightTrajectory::PrepareForOpenFire()
 {
-	pBullet->SetTarget(pTarget);
-	pBullet->TargetCoords = pTarget->GetCoords();
-}
-
-void StraightTrajectory::PrepareForOpenFire(BulletClass* pBullet)
-{
+	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	auto theTargetCoords = pBullet->TargetCoords;
 	auto theSourceCoords = pBullet->SourceCoords;
@@ -230,7 +231,7 @@ void StraightTrajectory::PrepareForOpenFire(BulletClass* pBullet)
 
 	// Add random offset value
 	if (pBullet->Type->Inaccurate)
-		theTargetCoords = this->GetInaccurateTargetCoords(pBullet, theTargetCoords, theSourceCoords.DistanceFrom(theTargetCoords));
+		theTargetCoords = this->GetInaccurateTargetCoords(theTargetCoords, theSourceCoords.DistanceFrom(theTargetCoords));
 
 	// Determine the distance that the bullet can travel
 	if (!pType->PassThrough)
@@ -246,19 +247,20 @@ void StraightTrajectory::PrepareForOpenFire(BulletClass* pBullet)
 	pBullet->TargetCoords = theTargetCoords;
 	pBullet->Velocity.X = static_cast<double>(theTargetCoords.X - theSourceCoords.X);
 	pBullet->Velocity.Y = static_cast<double>(theTargetCoords.Y - theSourceCoords.Y);
-	pBullet->Velocity.Z = (pType->ConfineAtHeight > 0 && pType->PassDetonateLocal) ? 0 : static_cast<double>(this->GetVelocityZ(pBullet));
+	pBullet->Velocity.Z = (pType->ConfineAtHeight > 0 && pType->PassDetonateLocal) ? 0 : static_cast<double>(this->GetVelocityZ());
 
 	// Rotate the selected angle
 	if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
-		this->DisperseBurstSubstitution(pBullet, rotateRadian);
+		this->DisperseBurstSubstitution(rotateRadian);
 
 	// Substitute the speed to calculate velocity
-	if (this->CalculateBulletVelocity(pBullet))
+	if (this->CalculateBulletVelocity())
 		this->RemainingDistance = 0;
 }
 
-int StraightTrajectory::GetVelocityZ(BulletClass* pBullet)
+int StraightTrajectory::GetVelocityZ()
 {
+	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	auto sourceCellZ = pBullet->SourceCoords.Z;
 	auto targetCellZ = pBullet->TargetCoords.Z;
@@ -306,7 +308,7 @@ int StraightTrajectory::GetVelocityZ(BulletClass* pBullet)
 	return bulletVelocityZ;
 }
 
-bool StraightTrajectory::BulletPrepareCheck(BulletClass* pBullet)
+bool StraightTrajectory::BulletPrepareCheck()
 {
 	// The time between bullets' Unlimbo() and Update() is completely uncertain.
 	// Target will update location after techno firing, which may result in inaccurate
@@ -314,7 +316,7 @@ bool StraightTrajectory::BulletPrepareCheck(BulletClass* pBullet)
 	// necessary to record the position during the first Update(). - CrimRecya
 	if (this->WaitOneFrame == 2)
 	{
-		if (const auto pTarget = pBullet->Target)
+		if (const auto pTarget = this->Bullet->Target)
 		{
 			this->LastTargetCoord = pTarget->GetCoords();
 			this->WaitOneFrame = 1;
@@ -323,13 +325,14 @@ bool StraightTrajectory::BulletPrepareCheck(BulletClass* pBullet)
 	}
 
 	this->WaitOneFrame = 0;
-	this->PrepareForOpenFire(pBullet);
+	this->PrepareForOpenFire();
 
 	return false;
 }
 
-bool StraightTrajectory::PassAndConfineAtHeight(BulletClass* pBullet)
+bool StraightTrajectory::PassAndConfineAtHeight()
 {
+	const auto pBullet = this->Bullet;
 	const CoordStruct futureCoords
 	{
 		pBullet->Location.X + static_cast<int>(pBullet->Velocity.X),
@@ -353,7 +356,7 @@ bool StraightTrajectory::PassAndConfineAtHeight(BulletClass* pBullet)
 		const auto pType = this->Type;
 		pBullet->Velocity.Z += static_cast<double>(checkDifference + pType->ConfineAtHeight);
 
-		if (!pType->PassDetonateLocal && this->CalculateBulletVelocity(pBullet))
+		if (!pType->PassDetonateLocal && this->CalculateBulletVelocity())
 			return true;
 	}
 	else

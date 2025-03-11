@@ -99,7 +99,6 @@ public:
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual bool OpenFire(BulletClass* pBullet) override;
 	virtual bool GetCanHitGround() const override { return this->Type->SubjectToGround || this->IsFalling; }
-	virtual CoordStruct GetRetargetCenter(const BulletClass* const pBullet) const override { return pBullet->TargetCoords; }
 	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) override;
 
 	void PrepareForOpenFire(BulletClass* pBullet);

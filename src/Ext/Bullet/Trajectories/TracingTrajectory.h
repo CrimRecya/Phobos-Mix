@@ -111,7 +111,7 @@ public:
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual bool OpenFire(BulletClass* pBullet) override;
 	virtual bool GetCanHitGround() const override { return false; }
-	virtual void SetBulletNewTarget(BulletClass* const pBullet, AbstractClass* const pTarget) override;
+	virtual CoordStruct GetRetargetCenter() const override { return this->Bullet->Location; }
 
 	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
 	void SetSourceLocation(BulletClass* pBullet);

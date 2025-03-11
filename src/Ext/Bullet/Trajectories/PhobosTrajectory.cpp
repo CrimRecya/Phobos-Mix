@@ -355,7 +355,7 @@ DEFINE_HOOK(0x4666F7, BulletClass_AI_Trajectories, 0x6)
 	bool detonate = false;
 
 	if (auto pTraj = pExt->Trajectory.get())
-		detonate = pTraj->OnAI(pThis);
+		detonate = pTraj->OnAI();
 
 	if (detonate && !pThis->SpawnNextAnim)
 		return Detonate;
@@ -370,7 +370,7 @@ DEFINE_HOOK(0x467E53, BulletClass_AI_PreDetonation_Trajectories, 0x6)
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
 
 	if (auto pTraj = pExt->Trajectory.get())
-		pTraj->OnAIPreDetonate(pThis);
+		pTraj->OnAIPreDetonate();
 
 	return 0;
 }
@@ -384,7 +384,7 @@ DEFINE_HOOK(0x46745C, BulletClass_AI_Position_Trajectories, 0x7)
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
 
 	if (auto pTraj = pExt->Trajectory.get())
-		pTraj->OnAIVelocity(pThis, pSpeed, pPosition);
+		pTraj->OnAIVelocity(pSpeed, pPosition);
 
 	// Trajectory can use Velocity only for turning Image's direction
 	// The true position in the next frame will be calculate after here
@@ -419,7 +419,7 @@ DEFINE_HOOK(0x4677D3, BulletClass_AI_TargetCoordCheck_Trajectories, 0x5)
 
 	if (auto pTraj = pExt->Trajectory.get())
 	{
-		switch (pTraj->OnAITargetCoordCheck(pThis))
+		switch (pTraj->OnAITargetCoordCheck())
 		{
 		case TrajectoryCheckReturnType::SkipGameCheck:
 			return SkipCheck;
@@ -449,7 +449,7 @@ DEFINE_HOOK(0x467927, BulletClass_AI_TechnoCheck_Trajectories, 0x5)
 
 	if (auto pTraj = pExt->Trajectory.get())
 	{
-		switch (pTraj->OnAITechnoCheck(pThis, pTechno))
+		switch (pTraj->OnAITechnoCheck(pTechno))
 		{
 		case TrajectoryCheckReturnType::SkipGameCheck:
 			return SkipCheck;
@@ -475,7 +475,7 @@ DEFINE_HOOK(0x468B72, BulletClass_Unlimbo_Trajectories, 0x5)
 	if (pTypeExt && pTypeExt->TrajectoryType)
 	{
 		pExt->Trajectory = pTypeExt->TrajectoryType->CreateInstance(pThis);
-		pExt->Trajectory->OnUnlimbo(pThis);
+		pExt->Trajectory->OnUnlimbo();
 	}
 
 	return 0;
