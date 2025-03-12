@@ -249,24 +249,24 @@ public:
 	{
 		return Math::atan2(target.Y - source.Y , target.X - source.X);
 	}
-	static inline void SetNewDamage(int& damage, const double ratio)
+	static inline BulletVelocity Coord2Vector(const CoordStruct& coords)
 	{
-		if (damage)
-		{
-			if (const auto newDamage = static_cast<int>(damage * ratio))
-				damage = newDamage;
-			else
-				damage = Math::sgn(damage);
-		}
+		return BulletVelocity { static_cast<double>(coords.X), static_cast<double>(coords.Y), static_cast<double>(coords.Z) };
+	}
+	static inline CoordStruct Vector2Coord(const BulletVelocity& velocity)
+	{
+		return CoordStruct { static_cast<int>(velocity.X), static_cast<int>(velocity.Y), static_cast<int>(velocity.Z) };
+	}
+	static inline BulletVelocity HorizontalRotate(const CoordStruct& coords, const double radian)
+	{
+		return BulletVelocity { coords.X * Math::cos(radian) + coords.Y * Math::sin(radian), coords.X * Math::sin(radian) - coords.Y * Math::cos(radian), static_cast<double>(coords.Z) };
 	}
 	static inline bool CheckTechnoIsInvalid(const TechnoClass* const pTechno)
 	{
-		// The target is alive
 		return (!pTechno->IsAlive || !pTechno->IsOnMap || pTechno->InLimbo || pTechno->IsSinking || pTechno->Health <= 0);
 	}
 	static inline bool CheckWeaponCanTarget(const WeaponTypeExt::ExtData* const pWeaponExt, TechnoClass* const pFirer, TechnoClass* const pTarget)
 	{
-		// No check for CanTargetHouses
 		return !pWeaponExt || (EnumFunctions::IsTechnoEligible(pTarget, pWeaponExt->CanTarget) && pWeaponExt->HasRequiredAttachedEffects(pTarget, pFirer));
 	}
 	static inline bool CheckWeaponValidness(HouseClass* const pHouse, const TechnoClass* const pTechno, const CellClass* const pCell, const AffectedHouse flags)
@@ -280,7 +280,19 @@ public:
 
 		return pTechno->CloakState != CloakState::Cloaked || pCell->Sensors_InclHouse(pHouse->ArrayIndex);
 	}
+	static inline void SetNewDamage(int& damage, const double ratio)
+	{
+		if (damage)
+		{
+			if (const auto newDamage = static_cast<int>(damage * ratio))
+				damage = newDamage;
+			else
+				damage = Math::sgn(damage);
+		}
+	}
 	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
+	static BulletVelocity RotateVector(const BulletVelocity& from, const BulletVelocity& to, double turningRadian);
+	static BulletVelocity RotateAboutTheAxis(const BulletVelocity& vector, BulletVelocity& axis, double radian);
 
 	void ChangeBulletFacing();
 	bool CheckTolerantAndSynchronize();
@@ -359,8 +371,6 @@ public:
 	virtual bool OnAI() override;
 	virtual void OnAIPreDetonate() override;
 	virtual void FireTrajectory() { this->OpenFire(); } // New
-
-	static BulletVelocity RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian);
 
 	bool BulletPrepareCheck();
 	CoordStruct GetOnlyStableOffsetCoords(double rotateRadian);

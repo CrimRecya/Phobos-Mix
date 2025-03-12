@@ -121,11 +121,9 @@ bool BombardTrajectory::OnAIDetonateCheck()
 
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
-
 	// Close enough
 	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
 		return true;
-
 	// Height
 	if (pType->DetonationHeight >= 0 && (pType->EarlyDetonation
 		? ((pBullet->Location.Z - pBullet->SourceCoords.Z) > pType->DetonationHeight)
@@ -159,14 +157,10 @@ void BombardTrajectory::FireTrajectory()
 	{
 		const auto middleLocation = this->CalculateMiddleCoords();
 		this->RemainingDistance += static_cast<int>(middleLocation.DistanceFrom(pBullet->SourceCoords) + pType->Speed);
-
-		this->MovingVelocity.X = static_cast<double>(middleLocation.X - pBullet->SourceCoords.X);
-		this->MovingVelocity.Y = static_cast<double>(middleLocation.Y - pBullet->SourceCoords.Y);
-		this->MovingVelocity.Z = static_cast<double>(middleLocation.Z - pBullet->SourceCoords.Z);
+		this->MovingVelocity = PhobosTrajectory::Coord2Vector(middleLocation - pBullet->SourceCoords);
 
 		if (this->CalculateBulletVelocity(pType->Speed))
 			this->ShouldDetonate = true;
-
 		// Rotate the selected angle
 		if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
 			this->DisperseBurstSubstitution(this->RotateRadian);
@@ -182,14 +176,10 @@ void BombardTrajectory::FireTrajectory()
 			middleLocation = this->CalculateMiddleCoords();
 			const auto fallSpeed = pType->FallSpeed.Get(pType->Speed);
 			this->RemainingDistance += static_cast<int>(pBullet->TargetCoords.DistanceFrom(middleLocation) + fallSpeed);
-
-			this->MovingVelocity.X = static_cast<double>(pBullet->TargetCoords.X - middleLocation.X);
-			this->MovingVelocity.Y = static_cast<double>(pBullet->TargetCoords.Y - middleLocation.Y);
-			this->MovingVelocity.Z = static_cast<double>(pBullet->TargetCoords.Z - middleLocation.Z);
+			this->MovingVelocity = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - middleLocation);
 
 			if (this->CalculateBulletVelocity(fallSpeed))
 				this->ShouldDetonate = true;
-
 			// Rotate the selected angle
 			if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
 				this->DisperseBurstSubstitution(this->RotateRadian);
@@ -286,14 +276,11 @@ void BombardTrajectory::CalculateTargetCoords()
 
 	if (pType->NoLaunch)
 		target += this->CalculateBulletLeadTime();
-
 	// Calculate the orientation of the coordinate system
 	this->RotateRadian = this->Get2DOpRadian(((target == source && pBullet->Owner) ? pBullet->Owner->GetCoords() : source), target);
-
 	// Add the fixed offset value
 	if (pType->OffsetCoord != CoordStruct::Empty)
 		target += this->GetOnlyStableOffsetCoords(this->RotateRadian);
-
 	// Add random offset value
 	if (pBullet->Type->Inaccurate)
 		target = this->GetInaccurateTargetCoords(target, source.DistanceFrom(target));
@@ -311,7 +298,6 @@ CoordStruct BombardTrajectory::CalculateBulletLeadTime()
 		{
 			const auto target = pTarget->GetCoords();
 			const auto& source = pBullet->Location;
-
 			// Solving trigonometric functions
 			if (target != this->LastTargetCoord)
 			{
@@ -347,7 +333,6 @@ CoordStruct BombardTrajectory::CalculateBulletLeadTime()
 					const auto straightSpeedSquared = fallSpeed * fallSpeed;
 					const auto baseFactor = straightSpeedSquared - targetSpeedSquared;
 					const auto squareFactor = baseFactor * verticalDistanceSquared + straightSpeedSquared * horizonDistanceSquared;
-
 					// Is there a solution?
 					if (squareFactor > 1e-10)
 					{
@@ -411,9 +396,7 @@ bool BombardTrajectory::BulletVelocityChange()
 
 					middleLocation = pBullet->Location;
 					const auto fallSpeed = pType->FallSpeed.Get(pType->Speed);
-					this->MovingVelocity.X = static_cast<double>(pBullet->TargetCoords.X - middleLocation.X);
-					this->MovingVelocity.Y = static_cast<double>(pBullet->TargetCoords.Y - middleLocation.Y);
-					this->MovingVelocity.Z = static_cast<double>(pBullet->TargetCoords.Z - middleLocation.Z);
+					this->MovingVelocity = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - middleLocation);
 
 					if (this->CalculateBulletVelocity(fallSpeed))
 						return true;

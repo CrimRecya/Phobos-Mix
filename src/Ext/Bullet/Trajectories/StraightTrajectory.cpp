@@ -104,18 +104,14 @@ bool StraightTrajectory::OnAIDetonateCheck()
 
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
-
 	// Close enough
 	if (!pType->PassThrough && pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
 		return true;
-
 	// Hover
 	if (this->MovingSpeed < 256.0 && pType->ConfineAtHeight > 0 && this->PassAndConfineAtHeight())
 		return true;
-
 	// Check the remaining travel distance of the bullet
 	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
-
 	return this->RemainingDistance < 0;
 }
 
@@ -123,7 +119,6 @@ void StraightTrajectory::OnAIPreDetonate()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
-
 	// Whether to detonate at ground level?
 	if (pType->PassDetonateLocal)
 		pBullet->SetLocation(CoordStruct { pBullet->Location.X, pBullet->Location.Y, MapClass::Instance->GetCellFloorHeight(pBullet->Location) });
@@ -149,21 +144,17 @@ void StraightTrajectory::FireTrajectory()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
-	auto& target = pBullet->TargetCoords;
 	const auto& source = pBullet->SourceCoords;
-
+	auto& target = pBullet->TargetCoords;
 	target += this->CalculateBulletLeadTime();
 	// Calculate the orientation of the coordinate system
 	const double rotateRadian = this->Get2DOpRadian(((target == source && pBullet->Owner) ? pBullet->Owner->GetCoords() : source), target);
-
 	// Add the fixed offset value
 	if (pType->OffsetCoord != CoordStruct::Empty)
 		target += this->GetOnlyStableOffsetCoords(rotateRadian);
-
 	// Add random offset value
 	if (pBullet->Type->Inaccurate)
 		target = this->GetInaccurateTargetCoords(target, source.DistanceFrom(target));
-
 	// Determine the distance that the bullet can travel
 	if (!pType->PassThrough)
 		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target) + pType->Speed);
@@ -173,17 +164,14 @@ void StraightTrajectory::FireTrajectory()
 		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target) - this->DetonationDistance + pType->Speed);
 	else
 		this->RemainingDistance = INT_MAX;
-
 	// Determine the firing velocity vector of the bullet
 	pBullet->TargetCoords = target;
 	this->MovingVelocity.X = static_cast<double>(target.X - source.X);
 	this->MovingVelocity.Y = static_cast<double>(target.Y - source.Y);
 	this->MovingVelocity.Z = (pType->ConfineAtHeight > 0 && pType->PassDetonateLocal) ? 0 : static_cast<double>(this->GetVelocityZ());
-
 	// Substitute the speed to calculate velocity
 	if (this->CalculateBulletVelocity(pType->Speed))
 		this->ShouldDetonate = true;
-
 	// Rotate the selected angle
 	if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
 		this->DisperseBurstSubstitution(rotateRadian);
@@ -200,7 +188,6 @@ CoordStruct StraightTrajectory::CalculateBulletLeadTime()
 		{
 			const auto target = pTarget->GetCoords();
 			const auto source = pBullet->Location;
-
 			// Solving trigonometric functions
 			if (target != this->LastTargetCoord)
 			{
@@ -221,7 +208,6 @@ CoordStruct StraightTrajectory::CalculateBulletLeadTime()
 				const auto straightSpeedSquared = pType->Speed * pType->Speed;
 				const auto baseFactor = straightSpeedSquared - targetSpeedSquared;
 				const auto squareFactor = baseFactor * verticalDistanceSquared + straightSpeedSquared * horizonDistanceSquared;
-
 				// Is there a solution?
 				if (squareFactor > 1e-10)
 				{
@@ -266,7 +252,6 @@ int StraightTrajectory::GetVelocityZ()
 	auto sourceCellZ = pBullet->SourceCoords.Z;
 	auto targetCellZ = pBullet->TargetCoords.Z;
 	auto bulletVelocityZ = static_cast<int>(targetCellZ - sourceCellZ);
-
 	// Subtract directly if no need to pass through the target
 	if (!pType->PassThrough)
 		return bulletVelocityZ;
@@ -288,7 +273,6 @@ int StraightTrajectory::GetVelocityZ()
 		if (pCell->ContainsBridge() && pTarget->OnBridge)
 			targetCellZ += CellClass::BridgeHeight;
 	}
-
 	// If both are at the same height, use the DetonationDistance to calculate which position behind the target needs to be aimed (32 -> error range)
 	if (sourceCellZ == targetCellZ || std::abs(bulletVelocityZ) <= 32)
 	{
@@ -298,7 +282,6 @@ int StraightTrajectory::GetVelocityZ()
 
 		const auto distanceOfTwo = PhobosTrajectory::Get2DDistance(pBullet->SourceCoords, pBullet->TargetCoords);
 		const auto theDistance = (this->DetonationDistance < 0) ? (distanceOfTwo - this->DetonationDistance) : this->DetonationDistance;
-
 		// Calculate the ratio for subsequent speed calculation
 		if (std::abs(theDistance) < 1e-10)
 			return 0;
@@ -312,13 +295,7 @@ int StraightTrajectory::GetVelocityZ()
 bool StraightTrajectory::PassAndConfineAtHeight()
 {
 	const auto pBullet = this->Bullet;
-	const CoordStruct futureCoords
-	{
-		pBullet->Location.X + static_cast<int>(this->MovingVelocity.X),
-		pBullet->Location.Y + static_cast<int>(this->MovingVelocity.Y),
-		pBullet->Location.Z + static_cast<int>(this->MovingVelocity.Z)
-	};
-
+	const auto futureCoords = pBullet->Location + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
 	auto checkDifference = MapClass::Instance->GetCellFloorHeight(futureCoords) - futureCoords.Z;
 
 	if (MapClass::Instance->GetCellAt(futureCoords)->ContainsBridge())
@@ -328,22 +305,17 @@ bool StraightTrajectory::PassAndConfineAtHeight()
 		if (std::abs(differenceOnBridge) < std::abs(checkDifference))
 			checkDifference = differenceOnBridge;
 	}
-
 	// The height does not exceed the cliff, or the cliff can be ignored? (384 -> (4 * Unsorted::LevelHeight - 32(error range)))
-	if (std::abs(checkDifference) < 384 || !pBullet->Type->SubjectToCliffs)
-	{
-		const auto pType = this->Type;
-		this->MovingVelocity.Z += static_cast<double>(checkDifference + pType->ConfineAtHeight);
-
-		if (pType->PassDetonateLocal)
-			this->MovingSpeed = this->MovingVelocity.Magnitude();
-		else if (this->CalculateBulletVelocity(pType->Speed))
-			return true;
-	}
-	else
-	{
+	if (std::abs(checkDifference) >= 384 && pBullet->Type->SubjectToCliffs)
 		return true;
-	}
+
+	const auto pType = this->Type;
+	this->MovingVelocity.Z += static_cast<double>(checkDifference + pType->ConfineAtHeight);
+
+	if (pType->PassDetonateLocal)
+		this->MovingSpeed = this->MovingVelocity.Magnitude();
+	else if (this->CalculateBulletVelocity(pType->Speed))
+		return true;
 
 	return false;
 }

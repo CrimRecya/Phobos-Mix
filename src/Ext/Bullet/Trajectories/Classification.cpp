@@ -10,18 +10,14 @@ void PhobosTrajectory::OnUnlimbo()
 	const auto pBullet = this->Bullet;
 	// Without a target, the game will inevitably crash before, so no need to check here
 	const auto pTarget = pBullet->Target;
-
 	// Due to various ways of firing weapons, the true firer may have already died
 	const auto pFirer = pBullet->Owner;
-
 	// Just like GetTechnoType()
 	const auto pType = this->GetType();
-
 	// Record the status of the target
 	this->TargetIsTechno = (pTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None;
 	this->TargetInTheAir = (pTarget->AbstractFlags & AbstractFlags::Object) ? (static_cast<ObjectClass*>(pTarget)->GetHeight() > Unsorted::CellHeight) : false;
 	int damage = pBullet->Health;
-
 	// Record some information of weapon
 	if (const auto pWeapon = pBullet->WeaponType)
 	{
@@ -36,7 +32,6 @@ void PhobosTrajectory::OnUnlimbo()
 
 	this->ProximityDamage = pType->ProximityDamage.Get(damage);
 	this->PassDetonateDamage = pType->PassDetonateDamage.Get(damage);
-
 	// Record some information of firer
 	if (pFirer)
 	{
@@ -55,11 +50,9 @@ void PhobosTrajectory::OnUnlimbo()
 	{
 		this->NotMainWeapon = true;
 	}
-
 	// Initialize additional warheads
 	if (pType->PassDetonate)
 		this->PassDetonateTimer.Start(pType->PassDetonateInitialDelay);
-
 	// Initialize additional weapons
 	if (!pType->DisperseWeapons.empty() && !pType->DisperseCounts.empty() && this->DisperseCycle)
 	{
@@ -72,15 +65,12 @@ bool PhobosTrajectory::OnAI()
 {
 	this->ChangeBulletFacing();
 	const auto pType = this->GetType();
-
 	// Detonate the warhead at the current location
 	if (pType->PassDetonate)
 		this->PassWithDetonateAt();
-
 	// Detonate the warhead on the technos passing through
 	if (this->ProximityImpact != 0 && pType->ProximityRadius.Get() > 0)
 		this->PrepareForDetonateAt();
-
 	// Launch additional weapons towards the target
 	if (!this->DisperseTimer.Completed())
 		return false;
@@ -100,21 +90,17 @@ bool PhobosTrajectory::OnAIDetonateCheck()
 	// The previous frame requires detonation at this time
 	if (this->ShouldDetonate)
 		return true;
-
 	// Check the remaining existence time
 	if (this->DurationTimer.Completed())
 		return true;
 
 	const auto pBullet = this->Bullet;
-
 	// Below ground level? (16 ->error range)
 	if (this->GetCanHitGround() && MapClass::Instance->GetCellFloorHeight(pBullet->Location) >= (pBullet->Location.Z + 16))
 		return true;
-
 	// Check if the tolerance time has ended or if the firer's target can be synchronized
 	if (this->CheckTolerantAndSynchronize())
 		return true;
-
 	// Check if the target needs to be changed
 	return (std::abs(this->GetType()->RetargetRadius) > 1e-10 && this->BulletRetargetTechno());
 }
@@ -129,7 +115,6 @@ void PhobosTrajectory::OnAIVelocityCheck()
 	const auto pType = this->GetType();
 	const bool checkThrough = (!pType->ThroughBuilding || !pType->ThroughVehicles);
 	const auto velocity = PhobosTrajectory::Get2DVelocity(this->MovingVelocity);
-
 	// Low speed with checkSubject was already done well
 	if (velocity < 256.0)
 	{
@@ -153,12 +138,7 @@ void PhobosTrajectory::OnAIVelocityCheck()
 		if (checkThrough || checkSubject)
 		{
 			const auto& theSourceCoords = pBullet->Location;
-			const CoordStruct theTargetCoords
-			{
-				theSourceCoords.X + static_cast<int>(this->MovingVelocity.X),
-				theSourceCoords.Y + static_cast<int>(this->MovingVelocity.Y),
-				theSourceCoords.Z + static_cast<int>(this->MovingVelocity.Z)
-			};
+			const auto theTargetCoords = theSourceCoords + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
 
 			const auto sourceCell = CellClass::Coord2Cell(theSourceCoords);
 			const auto targetCell = CellClass::Coord2Cell(theTargetCoords);
@@ -203,19 +183,16 @@ void PhobosTrajectory::OnAIVelocityCheck()
 	}
 
 	double ratio = 1.0;
-
 	// Check if the bullet needs to slow down the speed
 	if (velocityCheck)
 	{
 		// Let the distance slightly exceed
 		locationDistance += 32.0;
 		this->ShouldDetonate = true;
-
 		// It may not be necessary to compare them again, but still do so
 		if (locationDistance < velocity)
 			ratio = (locationDistance / velocity);
 	}
-
 	// Check if the distance to the destination exceeds the speed limit
 	if (this->RemainingDistance < this->MovingSpeed)
 	{
@@ -237,11 +214,9 @@ void PhobosTrajectory::OnAINextFrameCheck()
 
 	if (!pDetonateAt)
 		return;
-
 	// Slow down and reset the target
 	const auto pBullet = this->Bullet;
 	const auto distance = pDetonateAt->GetCoords().DistanceFrom(pBullet->Location);
-
 	// Set the new target so that the snap function can take effect
 	this->SetBulletNewTarget(pDetonateAt);
 	const auto speed = this->MovingSpeed;
@@ -250,7 +225,6 @@ void PhobosTrajectory::OnAINextFrameCheck()
 		this->MultiplyBulletVelocity(distance / speed, true);
 	else
 		this->ShouldDetonate = true;
-
 	// Need to cause additional damage?
 	if (!this->ProximityImpact || !this->GetType()->ProximityWarhead)
 		return;
@@ -263,13 +237,11 @@ void PhobosTrajectory::OnAINextFrameCheck()
 void PhobosTrajectory::OnAIPreDetonate()
 {
 	const auto pType = this->GetType();
-
 	// Special circumstances, similar to airburst behavior
 	if (pType->DisperseEffectiveRange.Get() < 0)
 		this->PrepareDisperseWeapon();
 
 	const auto pBullet = this->Bullet;
-
 	// No damage, no anims...
 	if (pType->PeacefulVanish.Get(this->Flag() == TrajectoryFlag::Engrave || pType->ProximityImpact || pType->DisperseCycle))
 	{
@@ -304,12 +276,17 @@ void PhobosTrajectory::OpenFire()
 		// Reset data
 		pBullet->Data.Location = target;
 	}
-
 	// There may be a frame that hasn't started updating yet but will be drawn on the screen
 	if (this->MovingVelocity != BulletVelocity::Empty)
 		pBullet->Velocity = this->MovingVelocity;
 	else // Lead time bug
 		pBullet->Velocity = BulletVelocity { static_cast<double>(target.X - source.X), static_cast<double>(target.Y - source.Y), 0 };
+
+	const auto pType = this->GetType();
+
+	if (pType->BulletSpin || pType->BulletOnPlane)
+		pBullet->Velocity.Z = 0;
+	// this->ChangeBulletFacing();
 }
 
 void PhobosTrajectory::SetBulletNewTarget(AbstractClass* const pTarget)
@@ -328,7 +305,6 @@ bool PhobosTrajectory::CalculateBulletVelocity(const double speed)
 
 	this->MovingVelocity *= speed / velocityLength;
 	this->MovingSpeed = speed;
-
 	return false;
 }
 
@@ -341,6 +317,64 @@ void PhobosTrajectory::MultiplyBulletVelocity(const double ratio, const bool sho
 		this->ShouldDetonate = true;
 }
 
+/*!
+	Rotate one vector by a certain angle towards the direction of another vector.
+
+	\param from Vector that needs to be rotated. It doesn't need to be a standardized vector.
+	\param to The final direction vector that needs to be oriented. It doesn't need to be a standardized vector.
+	\param turningRadian The maximum radius that can rotate. Note that it must be a positive number.
+
+	\returns The calculation result of the new vector.
+
+	\author CrimRecya
+*/
+BulletVelocity PhobosTrajectory::RotateVector(const BulletVelocity& from, const BulletVelocity& to, double turningRadian)
+{
+	// Try using the vector to calculate the included angle
+	const auto dotProduct = (to * from);
+	const auto baseFactor = sqrt(to.MagnitudeSquared() * from.MagnitudeSquared());
+	// Not valid vector
+	if (baseFactor <= 1e-10)
+		return to;
+	// Calculate the cosine of the angle when the conditions are suitable
+	const auto cosTheta = dotProduct / baseFactor;
+	// Ensure that the result range of cos is correct
+	const auto radian = Math::acos(Math::clamp(cosTheta, -1.0, 1.0));
+	// When the angle is small, aim directly at the target
+	if (std::abs(radian) <= turningRadian)
+		return to;
+	// Calculate the rotation axis
+	auto rotationAxis = to.CrossProduct(from);
+	// The radian can rotate, input the correct direction
+	const auto rotateRadian = (radian < 0 ? turningRadian : -turningRadian);
+	// Substitute to calculate new velocity
+	return PhobosTrajectory::RotateAboutTheAxis(from, rotationAxis, rotateRadian);
+}
+
+/*!
+	Rotate the vector around the axis of rotation by a fixed angle.
+
+	\param vector Vector that needs to be rotated. It doesn't need to be a standardized vector.
+	\param axis The vector of rotation axis. This operation will standardize it.
+	\param radian The angle of rotation, positive or negative determines its direction of rotation.
+
+	\returns The calculation result of the new vector.
+
+	\author CrimRecya
+*/
+BulletVelocity PhobosTrajectory::RotateAboutTheAxis(const BulletVelocity& vector, BulletVelocity& axis, double radian)
+{
+	const auto axisLengthSquared = axis.MagnitudeSquared();
+	// Zero axis vector is not acceptable
+	if (axisLengthSquared < 1e-10)
+		return vector;
+	// Rotate around the axis of rotation
+	axis *= 1 / sqrt(axisLengthSquared);
+	const auto cosRotate = Math::cos(radian);
+	// Substitute the formula to calculate the new vector
+	return ((vector * cosRotate) + (axis * ((1 - cosRotate) * (vector * axis))) + (axis.CrossProduct(vector) * Math::sin(radian)));
+}
+
 void PhobosTrajectory::ChangeBulletFacing()
 {
 	const auto pType = this->GetType();
@@ -349,10 +383,10 @@ void PhobosTrajectory::ChangeBulletFacing()
 		return;
 
 	const auto pBullet = this->Bullet;
+	constexpr double ratio = Math::TwoPi / 256;
 
 	if (pType->BulletSpin)
 	{
-		constexpr double ratio = Math::TwoPi / 256;
 		const auto radian = Math::atan2(pBullet->Velocity.Y, pBullet->Velocity.X) + (pType->BulletROT * ratio);
 		pBullet->Velocity.X = Math::cos(radian);
 		pBullet->Velocity.Y = Math::sin(radian);
@@ -361,49 +395,24 @@ void PhobosTrajectory::ChangeBulletFacing()
 	else if (pType->BulletROT < 0)
 	{
 		pBullet->Velocity = this->MovingVelocity;
-	}
-	else if (pType->BulletOnPlane)
-	{
-		BulletVelocity desiredFacing
-		{
-			static_cast<double>(pBullet->TargetCoords.X - pBullet->Location.X),
-			static_cast<double>(pBullet->TargetCoords.Y - pBullet->Location.Y),
-			0
-		};
-
-		if (!pType->BulletROT)
-		{
-			pBullet->Velocity = desiredFacing * (1 / desiredFacing.Magnitude());
-			return;
-		}
-
-		constexpr double ratio = Math::TwoPi / 256;
-		const auto current = Math::atan2(pBullet->Velocity.Y, pBullet->Velocity.X);
-		const auto desired = Math::atan2(desiredFacing.Y, desiredFacing.X);
-		const auto rotate = pType->BulletROT * ratio;
-
-		const auto differenceP = desired - current;
-		const bool dir1 = differenceP > 0;
-		const auto delta = dir1 ? differenceP : -differenceP;
-
-		const bool dir2 = delta > Math::Pi;
-		const auto differenceR = dir2 ? (Math::TwoPi - delta) : delta;
-		const bool dirR = dir1 ^ dir2;
-
-		if (differenceR <= rotate)
-		{
-			pBullet->Velocity = desiredFacing * (1 / desiredFacing.Magnitude());
-			return;
-		}
-
-		const auto facing = current + (dirR ? rotate : -rotate);
-		pBullet->Velocity.X = Math::cos(facing);
-		pBullet->Velocity.Y = Math::sin(facing);
-		pBullet->Velocity.Z = 0;
+		pBullet->Velocity *= (1 / pBullet->Velocity.Magnitude());
 	}
 	else
 	{
+		auto desiredFacing = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - pBullet->Location);
 
+		if (pType->BulletOnPlane)
+		{
+			pBullet->Velocity.Z = 0;
+			desiredFacing.Z = 0;
+		}
+
+		if (pType->BulletROT)
+			pBullet->Velocity = PhobosTrajectory::RotateVector(pBullet->Velocity, desiredFacing, (pType->BulletROT * ratio));
+		else
+			pBullet->Velocity = desiredFacing;
+
+		pBullet->Velocity *= (1 / pBullet->Velocity.Magnitude());
 	}
 }
 
@@ -546,7 +555,6 @@ bool LiveShellTrajectory::OnAI()
 		return true;
 
 	this->OnAINextFrameCheck();
-
 	return false;
 }
 
@@ -561,7 +569,6 @@ void LiveShellTrajectory::OnAIPreDetonate()
 	const auto pBullet = this->Bullet;
 	const auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
 	const auto coords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
-
 	// Whether to snap to target?
 	if (coords.DistanceFrom(pBullet->Location) <= targetSnapDistance)
 	{
@@ -571,21 +578,6 @@ void LiveShellTrajectory::OnAIPreDetonate()
 	}
 
 	this->PhobosTrajectory::OnAIPreDetonate();
-}
-
-BulletVelocity LiveShellTrajectory::RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian)
-{
-	const auto theAxisLengthSquared = theAxis.MagnitudeSquared();
-
-	// Zero vector is not acceptable
-	if (std::abs(theAxisLengthSquared) < 1e-10)
-		return theSpeed;
-
-	// Rotate around the axis of rotation
-	theAxis *= 1 / sqrt(theAxisLengthSquared);
-	const auto cosRotate = Math::cos(theRadian);
-
-	return ((theSpeed * cosRotate) + (theAxis * ((1 - cosRotate) * (theSpeed * theAxis))) + (theAxis.CrossProduct(theSpeed) * Math::sin(theRadian)));
 }
 
 bool LiveShellTrajectory::BulletPrepareCheck()
@@ -606,7 +598,6 @@ bool LiveShellTrajectory::BulletPrepareCheck()
 
 	this->WaitOneFrame = 0;
 	this->FireTrajectory();
-
 	return false;
 }
 
@@ -618,12 +609,7 @@ CoordStruct LiveShellTrajectory::GetOnlyStableOffsetCoords(double rotateRadian)
 	if (pType->MirrorCoord && this->CurrentBurst < 0)
 		offsetCoord.Y = -offsetCoord.Y;
 
-	return CoordStruct
-		{
-			static_cast<int>(offsetCoord.X * Math::cos(rotateRadian) + offsetCoord.Y * Math::sin(rotateRadian)),
-			static_cast<int>(offsetCoord.X * Math::sin(rotateRadian) - offsetCoord.Y * Math::cos(rotateRadian)),
-			offsetCoord.Z
-		};
+	return PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(offsetCoord, rotateRadian));
 }
 
 CoordStruct LiveShellTrajectory::GetInaccurateTargetCoords(const CoordStruct& baseCoord, double distance)
@@ -640,15 +626,8 @@ void LiveShellTrajectory::DisperseBurstSubstitution(double baseRadian)
 {
 	const auto pType = static_cast<const LiveShellTrajectoryType*>(this->GetType());
 	const auto axis = pType->AxisOfRotation.Get();
-
 	// Calculate the actual rotation axis
-	BulletVelocity rotationAxis
-	{
-		axis.X * Math::cos(baseRadian) + axis.Y * Math::sin(baseRadian),
-		axis.X * Math::sin(baseRadian) - axis.Y * Math::cos(baseRadian),
-		static_cast<double>(axis.Z)
-	};
-
+	auto rotationAxis = PhobosTrajectory::HorizontalRotate(axis, baseRadian);
 	double extraRotate = 0.0;
 	const auto burst = (this->CurrentBurst < 0) ? (-this->CurrentBurst - 1) : this->CurrentBurst;
 
@@ -656,7 +635,6 @@ void LiveShellTrajectory::DisperseBurstSubstitution(double baseRadian)
 	{
 		if (this->CurrentBurst < 0)
 			rotationAxis *= -1;
-
 		// Rotate half the angle in the opposite direction
 		extraRotate = Math::Pi * (pType->RotateCoord * ((burst / 2) / (this->CountOfBurst - 1.0) - 0.5)) / 180;
 	}
@@ -664,9 +642,8 @@ void LiveShellTrajectory::DisperseBurstSubstitution(double baseRadian)
 	{
 		extraRotate = Math::Pi * (pType->RotateCoord * (burst / (this->CountOfBurst - 1.0) - 0.5)) / 180;
 	}
-
 	// Rotate the selected angle
-	this->MovingVelocity = LiveShellTrajectory::RotateAboutTheAxis(this->MovingVelocity, rotationAxis, extraRotate);
+	this->MovingVelocity = PhobosTrajectory::RotateAboutTheAxis(this->MovingVelocity, rotationAxis, extraRotate);
 }
 
 template<typename T>
@@ -747,7 +724,6 @@ bool VirtualTrajectory::OnAI()
 		return true;
 
 	this->OnAINextFrameCheck();
-
 	return false;
 }
 
@@ -773,15 +749,9 @@ bool VirtualTrajectory::InvalidFireCondition(TechnoClass* pTechno)
 	if (static_cast<const VirtualTrajectoryType*>(this->GetType())->AllowFirerTurning)
 		return false;
 
-	const auto SourceCrd = pTechno->GetCoords();
-	const auto TargetCrd = this->Bullet->TargetCoords;
-
-	const auto rotateRadian = Math::atan2(TargetCrd.Y - SourceCrd.Y , TargetCrd.X - SourceCrd.X);
-	const auto tgtDir = DirStruct(-rotateRadian);
-
+	const auto tgtDir = DirStruct(-PhobosTrajectory::Get2DOpRadian(pTechno->GetCoords(), this->Bullet->TargetCoords));
 	const auto& face = pTechno->HasTurret() && pTechno->WhatAmI() == AbstractType::Unit ? pTechno->SecondaryFacing : pTechno->PrimaryFacing;
 	const auto curDir = face.Current();
-
 	// Similar to the vanilla 45 degree turret facing check design
 	return (std::abs(static_cast<short>(static_cast<short>(tgtDir.Raw) - static_cast<short>(curDir.Raw))) >= 4096);
 }

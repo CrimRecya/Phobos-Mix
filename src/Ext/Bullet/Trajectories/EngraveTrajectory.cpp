@@ -47,13 +47,14 @@ void EngraveTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 
+	this->Speed = Math::min(128.0, this->Speed);
+
 	// Virtual
 	this->VirtualSourceCoord.Read(exINI, pSection, "Trajectory.Engrave.SourceCoord");
 	this->VirtualTargetCoord.Read(exINI, pSection, "Trajectory.Engrave.TargetCoord");
 	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.Engrave.AllowFirerTurning");
 
 	// Engrave
-	this->Speed = Math::min(128.0, this->Speed);
 	this->IsLaser.Read(exINI, pSection, "Trajectory.Engrave.IsLaser");
 	this->IsIntense.Read(exINI, pSection, "Trajectory.Engrave.IsIntense");
 	this->IsHouseColor.Read(exINI, pSection, "Trajectory.Engrave.IsHouseColor");
@@ -132,8 +133,10 @@ void EngraveTrajectory::OpenFire()
 	// To be used later, no reference
 	auto source = pBullet->SourceCoords;
 	auto target = pBullet->TargetCoords;
-	auto virtualSource = pType->VirtualSourceCoord.Get();
-	auto virtualTarget = pType->VirtualTargetCoord.Get();
+	CoordStruct virtualSource = pType->VirtualSourceCoord.Get();
+	CoordStruct virtualTarget = pType->VirtualTargetCoord.Get();
+	virtualSource.Z = 0;
+	virtualTarget.Z = 0;
 	const double rotateRadian = this->Get2DOpRadian((pFirer ? pFirer->GetCoords() : source), target);
 
 	if (!this->NotMainWeapon && pType->MirrorCoord && this->CurrentBurst < 0)
@@ -141,22 +144,15 @@ void EngraveTrajectory::OpenFire()
 		virtualSource.Y = -virtualSource.Y;
 		virtualTarget.Y = -virtualTarget.Y;
 	}
-
 	// Special case: Starting from the launch position
 	if (virtualSource.X != 0 || virtualSource.Y != 0)
-	{
-		source = target;
-		source.X += static_cast<int>(virtualSource.X * Math::cos(rotateRadian) + virtualSource.Y * Math::sin(rotateRadian));
-		source.Y += static_cast<int>(virtualSource.X * Math::sin(rotateRadian) - virtualSource.Y * Math::cos(rotateRadian));
-	}
+		source = target + PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(virtualSource, rotateRadian));
 
 	if (!this->TargetInTheAir)
 		source.Z = this->GetFloorCoordHeight(source);
 
 	pBullet->SetLocation(source);
-
-	target.X += static_cast<int>(virtualTarget.X * Math::cos(rotateRadian) + virtualTarget.Y * Math::sin(rotateRadian));
-	target.Y += static_cast<int>(virtualTarget.X * Math::sin(rotateRadian) - virtualTarget.Y * Math::cos(rotateRadian));
+	target += PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(virtualTarget, rotateRadian));
 
 	this->MovingVelocity.X = target.X - source.X;
 	this->MovingVelocity.Y = target.Y - source.Y;
@@ -180,14 +176,12 @@ bool EngraveTrajectory::CalculateBulletVelocity(const double speed)
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	const auto pFirer = pBullet->Owner;
-
 	// Calculate additional range
 	if (pType->ApplyRangeModifiers && pFirer)
 	{
 		if (const auto pWeapon = pBullet->WeaponType)
 			velocityLength = static_cast<double>(WeaponTypeExt::GetRangeWithModifiers(pWeapon, pFirer, static_cast<int>(velocityLength)));
 	}
-
 	// Automatically calculate duration
 	if (pType->Duration <= 0)
 		this->DurationTimer.Start(static_cast<int>(velocityLength / pType->Speed) + 1);
@@ -214,22 +208,14 @@ bool EngraveTrajectory::PlaceOnCorrectHeight()
 
 	const auto pBullet = this->Bullet;
 	auto bulletCoords = pBullet->Location;
-	CoordStruct futureCoords
-	{
-		bulletCoords.X + static_cast<int>(this->MovingVelocity.X),
-		bulletCoords.Y + static_cast<int>(this->MovingVelocity.Y),
-		bulletCoords.Z + static_cast<int>(this->MovingVelocity.Z)
-	};
-
+	const auto futureCoords = bulletCoords + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
 	// Calculate where will be located in the next frame
 	const auto checkDifference = this->GetFloorCoordHeight(futureCoords) - futureCoords.Z;
-
 	// When crossing the cliff, directly move the position of the bullet, otherwise change the vertical velocity (384 -> (4 * Unsorted::LevelHeight - 32(error range)))
 	if (std::abs(checkDifference) >= 384)
 	{
 		if (pBullet->Type->SubjectToCliffs)
 			return true;
-
 		// Move from low altitude to high altitude
 		if (checkDifference > 0)
 		{
@@ -239,7 +225,6 @@ bool EngraveTrajectory::PlaceOnCorrectHeight()
 		else
 		{
 			const auto nowDifference = bulletCoords.Z - this->GetFloorCoordHeight(bulletCoords);
-
 			// Less than 384 and greater than the maximum difference that can be achieved between two non cliffs
 			if (nowDifference >= 256)
 			{
@@ -266,7 +251,6 @@ void EngraveTrajectory::DrawEngraveLaser(TechnoClass* pTechno, HouseClass* pOwne
 
 	for (auto pTrans = pTechno->Transporter; pTrans; pTrans = pTrans->Transporter)
 		pTechno = pTrans;
-
 	// Considering that the CurrentBurstIndex may be different, it is not possible to call existing functions
 	if (!this->NotMainWeapon && pTechno && !pTechno->InLimbo)
 	{
@@ -293,17 +277,26 @@ void EngraveTrajectory::DrawEngraveLaser(TechnoClass* pTechno, HouseClass* pOwne
 		}
 	}
 
+	auto targetCoord = pBullet->Location;
+	const auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(fireCoord, targetCoord, pOwner);
+
+	if (fireStormCoords != CoordStruct::Empty)
+	{
+		targetCoord = fireStormCoords;
+		targetCoord.Z = MapClass::Instance->GetCellFloorHeight(fireStormCoords); // TODO accurate
+	}
+
 	// Draw laser from head to tail
 	if (pType->IsHouseColor || pType->IsSingleColor)
 	{
-		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, pBullet->Location, ((pType->IsHouseColor && pOwner) ? pOwner->LaserColor : pType->LaserInnerColor), ColorStruct { 0, 0, 0 }, ColorStruct { 0, 0, 0 }, pType->LaserDuration);
+		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, targetCoord, ((pType->IsHouseColor && pOwner) ? pOwner->LaserColor : pType->LaserInnerColor), ColorStruct { 0, 0, 0 }, ColorStruct { 0, 0, 0 }, pType->LaserDuration);
 		pLaser->IsHouseColor = true;
 		pLaser->Thickness = pType->LaserThickness;
 		pLaser->IsSupported = pType->IsIntense;
 	}
 	else
 	{
-		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, pBullet->Location, pType->LaserInnerColor, pType->LaserOuterColor, pType->LaserOuterSpread, pType->LaserDuration);
+		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, targetCoord, pType->LaserInnerColor, pType->LaserOuterColor, pType->LaserOuterSpread, pType->LaserDuration);
 		pLaser->IsHouseColor = false;
 		pLaser->Thickness = 3;
 		pLaser->IsSupported = false;

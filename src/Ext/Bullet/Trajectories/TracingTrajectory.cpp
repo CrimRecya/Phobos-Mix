@@ -130,13 +130,12 @@ void TracingTrajectory::OpenFire()
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	const auto& coords = pType->VirtualSourceCoord.Get();
-	auto offset = coords;
+	CoordStruct offset = coords;
 
 	if (coords.X != 0 || coords.Y != 0)
 	{
-		const double rotateRadian = this->Get2DOpRadian(pBullet->SourceCoords, pBullet->TargetCoords);
-		offset.X = static_cast<int>(coords.X * Math::cos(rotateRadian) + coords.Y * Math::sin(rotateRadian));
-		offset.Y = static_cast<int>(coords.X * Math::sin(rotateRadian) - coords.Y * Math::cos(rotateRadian));
+		const auto rotateRadian = this->Get2DOpRadian(pBullet->SourceCoords, pBullet->TargetCoords);
+		offset = PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(coords, rotateRadian));
 	}
 
 	if (pType->CreateAtTarget)
@@ -179,7 +178,7 @@ bool TracingTrajectory::ChangeVelocity()
 
 	auto destination = (pType->TraceTheTarget || !pFirer) ? pBullet->TargetCoords : pFirer->GetCoords();
 	const auto coords = pType->VirtualTargetCoord.Get();
-	auto offset = coords;
+	CoordStruct offset = coords;
 
 	if (const auto pWeapon = pBullet->WeaponType)
 	{
@@ -214,9 +213,7 @@ bool TracingTrajectory::ChangeVelocity()
 			if (const auto pTechno = abstract_cast<TechnoClass*>(pType->TraceTheTarget ? pBullet->Target : pBullet->Owner))
 			{
 				const auto rotateRadian = -(pTechno->PrimaryFacing.Current().GetRadian<32>());
-
-				offset.X = static_cast<int>(coords.X * Math::cos(rotateRadian) + coords.Y * Math::sin(rotateRadian));
-				offset.Y = static_cast<int>(coords.X * Math::sin(rotateRadian) - coords.Y * Math::cos(rotateRadian));
+				offset = PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(coords, rotateRadian));
 			}
 			else
 			{
@@ -231,9 +228,7 @@ bool TracingTrajectory::ChangeVelocity()
 			if (const auto pTechno = abstract_cast<TechnoClass*>(pType->TraceTheTarget ? pBullet->Target : pBullet->Owner))
 			{
 				const auto rotateRadian = (pTechno->HasTurret() ? -(pTechno->TurretFacing().GetRadian<32>()) : -(pTechno->PrimaryFacing.Current().GetRadian<32>()));
-
-				offset.X = static_cast<int>(coords.X * Math::cos(rotateRadian) + coords.Y * Math::sin(rotateRadian));
-				offset.Y = static_cast<int>(coords.X * Math::sin(rotateRadian) - coords.Y * Math::cos(rotateRadian));
+				offset = PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(coords, rotateRadian));
 			}
 			else
 			{
@@ -291,13 +286,8 @@ bool TracingTrajectory::ChangeVelocity()
 		}
 		default:
 		{
-			const auto& source = pBullet->SourceCoords;
-			const auto& target = pBullet->TargetCoords;
-
-			const auto rotateRadian = Math::atan2(target.Y - source.Y , target.X - source.X);
-
-			offset.X = static_cast<int>(coords.X * Math::cos(rotateRadian) + coords.Y * Math::sin(rotateRadian));
-			offset.Y = static_cast<int>(coords.X * Math::sin(rotateRadian) - coords.Y * Math::cos(rotateRadian));
+			const auto rotateRadian = this->Get2DOpRadian(pBullet->SourceCoords, pBullet->TargetCoords);
+			offset = PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(coords, rotateRadian));
 			break;
 		}
 		}

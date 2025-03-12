@@ -164,9 +164,7 @@ TrajectoryCheckReturnType SampleTrajectory::OnAITechnoCheck(TechnoClass* pTechno
 void SampleTrajectory::OpenFire()
 {
 	const auto pBullet = this->Bullet;
-	this->MovingVelocity.X = static_cast<double>(pBullet->TargetCoords.X - pBullet->SourceCoords.X);
-	this->MovingVelocity.Y = static_cast<double>(pBullet->TargetCoords.Y - pBullet->SourceCoords.Y);
-	this->MovingVelocity.Z = static_cast<double>(pBullet->TargetCoords.Z - pBullet->SourceCoords.Z);
+	this->MovingVelocity = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - pBullet->SourceCoords);
 	this->CalculateBulletVelocity(this->Type->Speed);
 	this->PhobosTrajectory::OpenFire();
 }
