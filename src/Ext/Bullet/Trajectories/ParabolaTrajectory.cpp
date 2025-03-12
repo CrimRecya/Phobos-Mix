@@ -334,7 +334,7 @@ void ParabolaTrajectory::OnAIPreDetonate()
 	if (pBullet->Location.Z < cellHeight)
 		pBullet->SetLocation(CoordStruct{ pBullet->Location.X, pBullet->Location.Y, cellHeight });
 
-	this->PhobosTrajectory::OnAIPreDetonate();
+	this->LiveShellTrajectory::OnAIPreDetonate();
 }
 
 void ParabolaTrajectory::OpenFire()
@@ -344,6 +344,8 @@ void ParabolaTrajectory::OpenFire()
 		this->FireTrajectory();
 	else
 		this->WaitOneFrame = 2;
+
+	this->PhobosTrajectory::OpenFire();
 }
 
 void ParabolaTrajectory::FireTrajectory()

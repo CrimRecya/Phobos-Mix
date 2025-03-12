@@ -352,13 +352,9 @@ void PhobosTrajectory::PassWithDetonateAt()
 	if (!this->PassDetonateTimer.Completed())
 		return;
 
-	const auto pType = this->GetType();
-	const auto pWH = pType->PassDetonateWarhead;
-
-	if (!pWH)
-		return;
-
 	const auto pBullet = this->Bullet;
+	const auto pType = this->GetType();
+	const auto pWH = pType->PassDetonateWarhead.Get(pBullet->WH);
 	this->PassDetonateTimer.Start(pType->PassDetonateDelay > 0 ? pType->PassDetonateDelay : 1);
 	auto detonateCoords = pBullet->Location;
 
@@ -377,10 +373,6 @@ void PhobosTrajectory::PassWithDetonateAt()
 void PhobosTrajectory::PrepareForDetonateAt()
 {
 	const auto pType = this->GetType();
-
-	if (!pType->ProximityWarhead)
-		return;
-
 	const auto pBullet = this->Bullet;
 	const auto pFirer = pBullet->Owner;
 	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
@@ -587,11 +579,11 @@ void PhobosTrajectory::ProximityDetonateAt(HouseClass* pOwner, TechnoClass* pTar
 
 	// Choose the method of causing damage
 	if (pType->ProximityDirect)
-		pTarget->ReceiveDamage(&damage, 0, pType->ProximityWarhead, pBullet->Owner, false, false, pOwner);
+		pTarget->ReceiveDamage(&damage, 0, pType->ProximityWarhead.Get(pBullet->WH), pBullet->Owner, false, false, pOwner);
 	else if (pType->ProximityMedial)
-		WarheadTypeExt::DetonateAt(pType->ProximityWarhead, pBullet->Location, pBullet->Owner, damage, pOwner);
+		WarheadTypeExt::DetonateAt(pType->ProximityWarhead.Get(pBullet->WH), pBullet->Location, pBullet->Owner, damage, pOwner);
 	else
-		WarheadTypeExt::DetonateAt(pType->ProximityWarhead, pTarget, pBullet->Owner, damage, pOwner);
+		WarheadTypeExt::DetonateAt(pType->ProximityWarhead.Get(pBullet->WH), pTarget, pBullet->Owner, damage, pOwner);
 
 	this->CalculateNewDamage();
 }

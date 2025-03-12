@@ -104,14 +104,14 @@ public:
 	Valueable<bool> UseDisperseBurst; // Use disperse weapon burst count
 
 	Valueable<bool> PassDetonate; // Detonate the warhead while moving
-	Valueable<WarheadTypeClass*> PassDetonateWarhead; // The pass warhead used
-	Valueable<int> PassDetonateDamage; // The damage caused by the pass warhead
+	Nullable<WarheadTypeClass*> PassDetonateWarhead; // The pass warhead used
+	Nullable<int> PassDetonateDamage; // The damage caused by the pass warhead
 	Valueable<int> PassDetonateDelay; // Detonation interval
 	Valueable<int> PassDetonateInitialDelay; // Detonation initial delay
 	Valueable<bool> PassDetonateLocal; // Detonate at ground level
 	Valueable<int> ProximityImpact; // How many times can proximity warhead be triggered
-	Valueable<WarheadTypeClass*> ProximityWarhead; // The proximity warhead used
-	Valueable<int> ProximityDamage; // The damage caused by the proximity warhead
+	Nullable<WarheadTypeClass*> ProximityWarhead; // The proximity warhead used
+	Nullable<int> ProximityDamage; // The damage caused by the proximity warhead
 	Valueable<Leptons> ProximityRadius; // How large is the scope of impact
 	Valueable<bool> ProximityDirect; // Not detonating the warhead, but directly causing it to receive the damage
 	Valueable<bool> ProximityMedial; // When judged as passing through, detonate at bullet position
@@ -176,10 +176,10 @@ public:
 		, CurrentBurst { 0 }
 		, CountOfBurst { 0 }
 
-		, PassDetonateDamage { trajType->PassDetonateDamage }
+		, PassDetonateDamage { 0 }
 		, PassDetonateTimer {}
 		, ProximityImpact { trajType->ProximityImpact }
-		, ProximityDamage { trajType->ProximityDamage }
+		, ProximityDamage { 0 }
 		, ExtraCheck { nullptr }
 		, TheCasualty {}
 
@@ -232,7 +232,7 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck() { return TrajectoryCheckReturnType::SkipGameCheck; }
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(TechnoClass* pTechno) { return TrajectoryCheckReturnType::SkipGameCheck; }
 	virtual const PhobosTrajectoryType* GetType() const = 0;
-	virtual void OpenFire() = 0;
+	virtual void OpenFire();
 	virtual bool GetCanHitGround() const { return true; }
 	virtual CoordStruct GetRetargetCenter() const { return this->Bullet->TargetCoords; }
 	virtual void SetBulletNewTarget(AbstractClass* const pTarget);
@@ -351,6 +351,7 @@ public:
 		, WaitOneFrame { 0 }
 	{ }
 
+	// TODO If we could calculate this before firing, perhaps it can solve the problem of one frame delay and not so correct turret orientation.
 	CoordStruct LastTargetCoord; // The target is located in the previous frame, used to calculate the lead time
 	int WaitOneFrame; // Attempts to launch when update
 

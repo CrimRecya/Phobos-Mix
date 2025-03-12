@@ -118,6 +118,12 @@ void BulletTypeExt::ExtData::TrajectoryValidation() const
 			pThis->ROT = 0;
 		}
 
+		if (pThis->Arm)
+			pThis->Arm = 0;
+
+		if (pThis->Ranged)
+			pThis->Ranged = false;
+
 		if (pThis->Vertical)
 		{
 			Debug::Log("[Developer warning] [%s] has Trajectory set together with Vertical. Vertical has been set to false.\n", pSection);

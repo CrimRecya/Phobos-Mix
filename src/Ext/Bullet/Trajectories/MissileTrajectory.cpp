@@ -235,6 +235,8 @@ void MissileTrajectory::OpenFire()
 		if (this->CalculateBulletVelocity(pType->LaunchSpeed))
 			this->ShouldDetonate = true;
 	}
+
+	this->PhobosTrajectory::OpenFire();
 }
 
 CoordStruct MissileTrajectory::GetRetargetCenter() const

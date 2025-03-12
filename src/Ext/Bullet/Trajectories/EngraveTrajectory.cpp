@@ -48,9 +48,9 @@ void EngraveTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	INI_EX exINI(pINI);
 
 	// Virtual
-	this->VirtualSourceCoord.Read(exINI, pSection, "Trajectory.Tracing.SourceCoord");
-	this->VirtualTargetCoord.Read(exINI, pSection, "Trajectory.Tracing.TargetCoord");
-	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.Tracing.AllowFirerTurning");
+	this->VirtualSourceCoord.Read(exINI, pSection, "Trajectory.Engrave.SourceCoord");
+	this->VirtualTargetCoord.Read(exINI, pSection, "Trajectory.Engrave.TargetCoord");
+	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.Engrave.AllowFirerTurning");
 
 	// Engrave
 	this->Speed = Math::min(128.0, this->Speed);
@@ -164,6 +164,8 @@ void EngraveTrajectory::OpenFire()
 
 	if (this->CalculateBulletVelocity(pType->Speed))
 		this->ShouldDetonate = true;
+
+	this->PhobosTrajectory::OpenFire();
 }
 
 bool EngraveTrajectory::CalculateBulletVelocity(const double speed)

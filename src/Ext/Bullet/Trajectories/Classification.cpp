@@ -24,6 +24,7 @@ void PhobosTrajectory::OnUnlimbo()
 	// Record the status of the target
 	this->TargetIsTechno = (pTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None;
 	this->TargetInTheAir = (pTarget->AbstractFlags & AbstractFlags::Object) ? (static_cast<ObjectClass*>(pTarget)->GetHeight() > Unsorted::CellHeight) : false;
+	int damage = pBullet->Health;
 
 	// Record some information of weapon
 	if (const auto pWeapon = pBullet->WeaponType)
@@ -33,7 +34,12 @@ void PhobosTrajectory::OnUnlimbo()
 
 		if (pType->ApplyRangeModifiers && pFirer)
 			this->AttenuationRange = WeaponTypeExt::GetRangeWithModifiers(pWeapon, pFirer);
+
+		damage = pWeapon->Damage;
 	}
+
+	this->ProximityDamage = pType->ProximityDamage.Get(damage);
+	this->PassDetonateDamage = pType->PassDetonateDamage.Get(damage);
 
 	// Record some information of firer
 	if (pFirer)
@@ -278,6 +284,20 @@ void PhobosTrajectory::OnAIPreDetonate()
 	{
 		// Calculate the current damage
 		pBullet->Health = this->GetTheTrueDamage(pBullet->Health, true);
+	}
+}
+
+void PhobosTrajectory::OpenFire()
+{
+	const auto pBullet = this->Bullet;
+	const auto pFirer = pBullet->Owner;
+	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
+	auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(pBullet->SourceCoords, pBullet->TargetCoords, pOwner);
+
+	if (fireStormCoords != CoordStruct::Empty)
+	{
+		fireStormCoords.Z = MapClass::Instance->GetCellFloorHeight(fireStormCoords);
+		pBullet->Data.Location = fireStormCoords;
 	}
 }
 

@@ -184,6 +184,7 @@ void TracingTrajectory::OpenFire()
 	}
 
 	this->DurationTimer.Start(duration);
+	this->PhobosTrajectory::OpenFire();
 }
 
 void TracingTrajectory::ChangeVelocity()

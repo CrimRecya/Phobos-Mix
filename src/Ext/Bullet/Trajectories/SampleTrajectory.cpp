@@ -168,6 +168,7 @@ void SampleTrajectory::OpenFire()
 	this->MovingVelocity.Y = static_cast<double>(pBullet->TargetCoords.Y - pBullet->SourceCoords.Y);
 	this->MovingVelocity.Z = static_cast<double>(pBullet->TargetCoords.Z - pBullet->SourceCoords.Z);
 	this->CalculateBulletVelocity(this->Type->Speed);
+	this->PhobosTrajectory::OpenFire();
 }
 
 // Does the projectile detonate when it lands below the ground

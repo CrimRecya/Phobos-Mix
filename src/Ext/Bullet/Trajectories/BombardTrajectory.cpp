@@ -145,6 +145,8 @@ void BombardTrajectory::OpenFire()
 		this->FireTrajectory();
 	else
 		this->WaitOneFrame = 2;
+
+	this->PhobosTrajectory::OpenFire();
 }
 
 void BombardTrajectory::FireTrajectory()

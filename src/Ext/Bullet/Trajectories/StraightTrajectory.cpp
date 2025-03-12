@@ -141,6 +141,8 @@ void StraightTrajectory::OpenFire()
 		this->FireTrajectory();
 	else
 		this->WaitOneFrame = 2;
+
+	this->PhobosTrajectory::OpenFire();
 }
 
 void StraightTrajectory::FireTrajectory()
