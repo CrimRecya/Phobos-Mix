@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PhobosTrajectory.h"
-#include "Classification.h"
 
 class SampleTrajectoryType final : public PhobosTrajectoryType
 {
@@ -49,7 +48,7 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck() override;
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(TechnoClass* pTechno) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
-	virtual bool OpenFire() override;
+	virtual void OpenFire() override;
 	virtual bool GetCanHitGround() const override;
 	virtual CoordStruct GetRetargetCenter() const override;
 	virtual void SetBulletNewTarget(AbstractClass* const pTarget) override;

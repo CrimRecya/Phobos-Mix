@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Classification.h"
-
 #include <BulletClass.h>
 
 #include <Ext/WeaponType/Body.h>
+#include <Utilities/EnumFunctions.h>
 #include <Utilities/TemplateDef.h>
 #include <Utilities/Savegame.h>
 
@@ -233,20 +232,56 @@ public:
 	virtual TrajectoryCheckReturnType OnAITargetCoordCheck() { return TrajectoryCheckReturnType::SkipGameCheck; }
 	virtual TrajectoryCheckReturnType OnAITechnoCheck(TechnoClass* pTechno) { return TrajectoryCheckReturnType::SkipGameCheck; }
 	virtual const PhobosTrajectoryType* GetType() const = 0;
-	virtual bool OpenFire() = 0;
+	virtual void OpenFire() = 0;
 	virtual bool GetCanHitGround() const { return true; }
 	virtual CoordStruct GetRetargetCenter() const { return this->Bullet->TargetCoords; }
 	virtual void SetBulletNewTarget(AbstractClass* const pTarget);
 	virtual bool CalculateBulletVelocity(const double speed);
 	virtual void MultiplyBulletVelocity(const double ratio, const bool shouldDetonate);
 
-	static inline double Get2DDistance(const CoordStruct& source, const CoordStruct& target) { return Point2D { source.X, source.Y }.DistanceFrom(Point2D { target.X, target.Y }); }
-	static inline double Get2DVelocity(const BulletVelocity& velocity) { return Vector2D<double>{ velocity.X, velocity.Y }.Magnitude(); }
-	static inline double Get2DOpRadian(const CoordStruct& source, const CoordStruct& target) { return Math::atan2(target.Y - source.Y , target.X - source.X); }
-	static inline void SetNewDamage(int& damage, double ratio);
-	static inline bool CheckTechnoIsInvalid(TechnoClass* pTechno);
-	static inline bool CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget);
-	static inline bool CheckWeaponValidness(HouseClass* pHouse, TechnoClass* pTechno, CellClass* pCell, AffectedHouse flags);
+	static inline double Get2DDistance(const CoordStruct& source, const CoordStruct& target)
+	{
+		return Point2D { source.X, source.Y }.DistanceFrom(Point2D { target.X, target.Y });
+	}
+	static inline double Get2DVelocity(const BulletVelocity& velocity)
+	{
+		return Vector2D<double>{ velocity.X, velocity.Y }.Magnitude();
+	}
+	static inline double Get2DOpRadian(const CoordStruct& source, const CoordStruct& target)
+	{
+		return Math::atan2(target.Y - source.Y , target.X - source.X);
+	}
+	static inline void SetNewDamage(int& damage, const double ratio)
+	{
+		if (damage)
+		{
+			if (const auto newDamage = static_cast<int>(damage * ratio))
+				damage = newDamage;
+			else
+				damage = Math::sgn(damage);
+		}
+	}
+	static inline bool CheckTechnoIsInvalid(const TechnoClass* const pTechno)
+	{
+		// The target is alive
+		return (!pTechno->IsAlive || !pTechno->IsOnMap || pTechno->InLimbo || pTechno->IsSinking || pTechno->Health <= 0);
+	}
+	static inline bool CheckWeaponCanTarget(const WeaponTypeExt::ExtData* const pWeaponExt, TechnoClass* const pFirer, TechnoClass* const pTarget)
+	{
+		// No check for CanTargetHouses
+		return !pWeaponExt || (EnumFunctions::IsTechnoEligible(pTarget, pWeaponExt->CanTarget) && pWeaponExt->HasRequiredAttachedEffects(pTarget, pFirer));
+	}
+	static inline bool CheckWeaponValidness(HouseClass* const pHouse, const TechnoClass* const pTechno, const CellClass* const pCell, const AffectedHouse flags)
+	{
+		if (pHouse == pTechno->Owner)
+			return (flags & AffectedHouse::Owner) != AffectedHouse::None;
+		else if (pHouse->IsAlliedWith(pTechno->Owner) || pTechno->IsDisguisedAs(pHouse))
+			return (flags & AffectedHouse::Allies) != AffectedHouse::None;
+		else if ((flags & AffectedHouse::Enemies) == AffectedHouse::None)
+			return false;
+
+		return pTechno->CloakState != CloakState::Cloaked || pCell->Sensors_InclHouse(pHouse->ArrayIndex);
+	}
 	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
 
 	void ChangeBulletFacing();
@@ -266,6 +301,120 @@ public:
 	bool PrepareDisperseWeapon();
 	bool FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner);
 	void CreateDisperseBullets(TechnoClass* pTechno, const CoordStruct& sourceCoord, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst);
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+};
+
+class LiveShellTrajectoryType : public PhobosTrajectoryType
+{
+public:
+	LiveShellTrajectoryType() : PhobosTrajectoryType()
+		, RotateCoord { 0 }
+		, OffsetCoord { { 0, 0, 0 } }
+		, AxisOfRotation { { 0, 0, 1 } }
+		, LeadTimeCalculate { false }
+		, SubjectToGround { false }
+		, EarlyDetonation { false }
+		, DetonationHeight { -1 }
+		, DetonationDistance { Leptons(102) }
+		, TargetSnapDistance { Leptons(128) }
+	{ }
+
+	Valueable<double> RotateCoord; // The maximum rotation angle of the initial velocity vector on the axis of rotation
+	Valueable<PartialVector3D<int>> OffsetCoord; // Offset of target position, refers to the initial target position on Missile
+	Valueable<PartialVector3D<int>> AxisOfRotation; // RotateCoord's rotation axis
+	Valueable<bool> LeadTimeCalculate; // Predict the moving direction of the target
+	bool SubjectToGround; // Auto set
+	Valueable<bool> EarlyDetonation; // Calculating DetonationHeight in the rising phase rather than the falling phase
+	Valueable<int> DetonationHeight; // At what height did it detonate in advance
+	Valueable<Leptons> DetonationDistance; // Explode at a distance from the target, different on AAA and BBB
+	Valueable<Leptons> TargetSnapDistance; // Snap to target when detonating with a distance less than this
+
+	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
+	virtual bool Save(PhobosStreamWriter& Stm) const override;
+//	virtual void Read(CCINIClass* const pINI, const char* pSection) override; // Read separately
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+};
+
+class LiveShellTrajectory : public PhobosTrajectory
+{
+public:
+	LiveShellTrajectory() { }
+	LiveShellTrajectory(LiveShellTrajectoryType const* trajType, BulletClass* pBullet)
+		: PhobosTrajectory(trajType, pBullet)
+		, LastTargetCoord { CoordStruct::Empty }
+		, WaitOneFrame { 0 }
+	{ }
+
+	CoordStruct LastTargetCoord; // The target is located in the previous frame, used to calculate the lead time
+	int WaitOneFrame; // Attempts to launch when update
+
+	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
+	virtual bool Save(PhobosStreamWriter& Stm) const override;
+	virtual void OnUnlimbo() override;
+	virtual bool OnAI() override;
+	virtual void OnAIPreDetonate() override;
+	virtual void FireTrajectory() { this->OpenFire(); } // New
+
+	static BulletVelocity RotateAboutTheAxis(const BulletVelocity& theSpeed, BulletVelocity& theAxis, double theRadian);
+
+	bool BulletPrepareCheck();
+	CoordStruct GetOnlyStableOffsetCoords(double rotateRadian);
+	CoordStruct GetInaccurateTargetCoords(const CoordStruct& baseCoord, double distance);
+	void DisperseBurstSubstitution(double baseRadian);
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+};
+
+class VirtualTrajectoryType : public PhobosTrajectoryType
+{
+public:
+	VirtualTrajectoryType() : PhobosTrajectoryType()
+		, VirtualSourceCoord { { 0, 0, 0 } }
+		, VirtualTargetCoord { { 0, 0, 0 } }
+		, AllowFirerTurning { true }
+		, IgnoresFirestorm { true }
+	{ }
+
+	Valueable<PartialVector3D<int>> VirtualSourceCoord; // Initial location of the projectile
+	Valueable<PartialVector3D<int>> VirtualTargetCoord; // move to location of the projectile
+	Valueable<bool> AllowFirerTurning; // Allow firer not facing projectiles
+	bool IgnoresFirestorm; // Auto set
+
+	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
+	virtual bool Save(PhobosStreamWriter& Stm) const override;
+//	virtual void Read(CCINIClass* const pINI, const char* pSection) override; // Read separately
+
+private:
+	template <typename T>
+	void Serialize(T& Stm);
+};
+
+class VirtualTrajectory : public PhobosTrajectory
+{
+public:
+	VirtualTrajectory() { }
+	VirtualTrajectory(VirtualTrajectoryType const* trajType, BulletClass* pBullet)
+		: PhobosTrajectory(trajType, pBullet)
+		, SurfaceFirerID { 0 }
+	{ }
+
+	DWORD SurfaceFirerID; // UniqueID of the "launcher"
+
+	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
+	virtual bool Save(PhobosStreamWriter& Stm) const override;
+	virtual void OnUnlimbo() override;
+	virtual bool OnAI() override;
+	virtual bool OnAIDetonateCheck() override;
+
+	bool InvalidFireCondition(TechnoClass* pTechno);
 
 private:
 	template <typename T>

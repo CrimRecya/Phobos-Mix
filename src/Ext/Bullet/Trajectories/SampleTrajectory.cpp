@@ -161,7 +161,7 @@ TrajectoryCheckReturnType SampleTrajectory::OnAITechnoCheck(TechnoClass* pTechno
 
 // Do some math here to set the initial speed or location of your bullet.
 // Be careful not to let the bullet speed too fast without other processing.
-bool SampleTrajectory::OpenFire()
+void SampleTrajectory::OpenFire()
 {
 	const auto pBullet = this->Bullet;
 	this->MovingVelocity.X = static_cast<double>(pBullet->TargetCoords.X - pBullet->SourceCoords.X);

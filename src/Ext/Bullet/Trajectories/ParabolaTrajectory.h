@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PhobosTrajectory.h"
-#include "Classification.h"
 
 enum class ParabolaFireMode : int
 {
@@ -76,7 +75,7 @@ public:
 	virtual void OnAIVelocityCheck() override;
 	virtual void OnAIPreDetonate() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
-	virtual bool OpenFire() override;
+	virtual void OpenFire() override;
 	virtual void FireTrajectory() override;
 	virtual void MultiplyBulletVelocity(const double ratio, const bool shouldDetonate) override;
 

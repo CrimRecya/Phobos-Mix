@@ -337,7 +337,7 @@ void ParabolaTrajectory::OnAIPreDetonate()
 	this->PhobosTrajectory::OnAIPreDetonate();
 }
 
-bool ParabolaTrajectory::OpenFire()
+void ParabolaTrajectory::OpenFire()
 {
 	// Wait, or launch immediately?
 	if (!this->Type->LeadTimeCalculate || !abstract_cast<FootClass*>(this->Bullet->Target))

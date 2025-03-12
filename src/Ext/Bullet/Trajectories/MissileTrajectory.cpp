@@ -177,7 +177,7 @@ void MissileTrajectory::OnAIVelocityCheck()
 	this->PhobosTrajectory::OnAIVelocityCheck();
 }
 
-bool MissileTrajectory::OpenFire()
+void MissileTrajectory::OpenFire()
 {
 	const auto pType = this->Type;
 

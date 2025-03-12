@@ -124,7 +124,7 @@ void EngraveTrajectory::OnAINextFrameCheck()
 	this->DrawEngraveLaser(pFirer, pOwner);
 }
 
-bool EngraveTrajectory::OpenFire()
+void EngraveTrajectory::OpenFire()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;

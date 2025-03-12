@@ -1,4 +1,4 @@
-#include "Classification.h"
+#include "PhobosTrajectory.h"
 
 #include <OverlayTypeClass.h>
 
@@ -623,7 +623,6 @@ void LiveShellTrajectory::DisperseBurstSubstitution(double baseRadian)
 	}
 
 	// Rotate the selected angle
-	const auto pBullet = this->Bullet;
 	this->MovingVelocity = LiveShellTrajectory::RotateAboutTheAxis(this->MovingVelocity, rotationAxis, extraRotate);
 }
 

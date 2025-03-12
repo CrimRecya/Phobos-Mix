@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PhobosTrajectory.h"
-#include "Classification.h"
 
 enum class TraceTargetMode : int
 {
@@ -56,7 +55,7 @@ public:
 	virtual void OnUnlimbo() override;
 	virtual bool OnAIDetonateCheck() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
-	virtual bool OpenFire() override;
+	virtual void OpenFire() override;
 	virtual bool GetCanHitGround() const override { return false; }
 	virtual CoordStruct GetRetargetCenter() const override { return this->Bullet->Location; }
 

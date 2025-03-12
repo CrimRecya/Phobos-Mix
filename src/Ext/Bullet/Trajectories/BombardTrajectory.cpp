@@ -137,7 +137,7 @@ bool BombardTrajectory::OnAIDetonateCheck()
 	return this->BulletVelocityChange();
 }
 
-bool BombardTrajectory::OpenFire()
+void BombardTrajectory::OpenFire()
 {
 	const auto pType = this->Type;
 	// Wait, or launch immediately?

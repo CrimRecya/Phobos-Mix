@@ -4,41 +4,6 @@
 
 #include <Ext/WarheadType/Body.h>
 
-inline void PhobosTrajectory::SetNewDamage(int& damage, double ratio)
-{
-	if (damage)
-	{
-		if (const auto newDamage = static_cast<int>(damage * ratio))
-			damage = newDamage;
-		else
-			damage = Math::sgn(damage);
-	}
-}
-
-inline bool PhobosTrajectory::CheckTechnoIsInvalid(TechnoClass* pTechno)
-{
-	// The target is alive
-	return (!pTechno->IsAlive || !pTechno->IsOnMap || pTechno->InLimbo || pTechno->IsSinking || pTechno->Health <= 0);
-}
-
-inline bool PhobosTrajectory::CheckWeaponCanTarget(WeaponTypeExt::ExtData* pWeaponExt, TechnoClass* pFirer, TechnoClass* pTarget)
-{
-	// No check for CanTargetHouses
-	return !pWeaponExt || (EnumFunctions::IsTechnoEligible(pTarget, pWeaponExt->CanTarget) && pWeaponExt->HasRequiredAttachedEffects(pTarget, pFirer));
-}
-
-inline bool PhobosTrajectory::CheckWeaponValidness(HouseClass* pHouse, TechnoClass* pTechno, CellClass* pCell, AffectedHouse flags)
-{
-	if (pHouse == pTechno->Owner)
-		return (flags & AffectedHouse::Owner) != AffectedHouse::None;
-	else if (pHouse->IsAlliedWith(pTechno->Owner) || pTechno->IsDisguisedAs(pHouse))
-		return (flags & AffectedHouse::Allies) != AffectedHouse::None;
-	else if ((flags & AffectedHouse::Enemies) == AffectedHouse::None)
-		return false;
-
-	return pTechno->CloakState != CloakState::Cloaked || pCell->Sensors_InclHouse(pHouse->ArrayIndex);
-}
-
 // A rectangular shape with a custom width from the current frame to the next frame in length.
 std::vector<CellClass*> PhobosTrajectory::GetCellsInProximityRadius()
 {

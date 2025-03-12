@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PhobosTrajectory.h"
-#include "Classification.h"
 
 #include <Ext/WeaponType/Body.h>
 
@@ -80,7 +79,7 @@ public:
 	virtual bool OnAIDetonateCheck() override;
 	virtual void OnAIVelocityCheck() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
-	virtual bool OpenFire() override;
+	virtual void OpenFire() override;
 	virtual CoordStruct GetRetargetCenter() const override;
 	virtual void SetBulletNewTarget(AbstractClass* const pTarget) override;
 	virtual bool CalculateBulletVelocity(const double speed) override;

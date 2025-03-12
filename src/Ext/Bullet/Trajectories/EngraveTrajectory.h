@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PhobosTrajectory.h"
-#include "Classification.h"
 
 class EngraveTrajectoryType final : public VirtualTrajectoryType
 {
@@ -61,7 +60,7 @@ public:
 	virtual bool OnAIDetonateCheck() override;
 	virtual void OnAINextFrameCheck() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
-	virtual bool OpenFire() override;
+	virtual void OpenFire() override;
 	virtual bool GetCanHitGround() const override { return false; }
 	virtual bool CalculateBulletVelocity(const double speed) override;
 

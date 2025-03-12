@@ -145,7 +145,7 @@ bool TracingTrajectory::OnAIDetonateCheck()
 	return false;
 }
 
-bool TracingTrajectory::OpenFire()
+void TracingTrajectory::OpenFire()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;

@@ -134,7 +134,7 @@ void StraightTrajectory::OnAIPreDetonate()
 		this->PhobosTrajectory::OnAIPreDetonate();
 }
 
-bool StraightTrajectory::OpenFire()
+void StraightTrajectory::OpenFire()
 {
 	// Wait, or launch immediately?
 	if (!this->Type->LeadTimeCalculate || !abstract_cast<FootClass*>(this->Bullet->Target))
