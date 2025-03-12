@@ -257,7 +257,6 @@ bool PhobosTrajectory::PrepareDisperseWeapon()
 	{
 		const auto pFirer = pBullet->Owner;
 		auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-
 		// Replace with neutral house when the firer house does not exist
 		if (!pOwner || pOwner->Defeated)
 		{
@@ -284,7 +283,6 @@ bool PhobosTrajectory::PrepareDisperseWeapon()
 		return false;
 
 	const int groupSize = pType->DisperseSeparate ? pType->DisperseWeapons.size() : pType->DisperseCounts.size();
-
 	// Next group
 	if (++this->DisperseIndex < groupSize)
 	{
@@ -303,7 +301,6 @@ bool PhobosTrajectory::PrepareDisperseWeapon()
 
 	// Stop
 	this->DisperseTimer.Stop();
-
 	// Detonate if the number of attempts is exhausted at the end of the attack
 	return pType->DisperseSuicide;
 }
@@ -312,7 +309,6 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
-
 	// Launch quantity check
 	const int validWeapons = pType->DisperseWeapons.size();
 	const int validBursts = pType->DisperseBursts.size();
@@ -324,20 +320,16 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 		return false;
 
 	// Set basic target
-	const auto pTarget = pBullet->Target ? pBullet->Target
-		: (this->TargetInTheAir ? nullptr : MapClass::Instance->TryGetCellAt(pBullet->TargetCoords));
-
+	const auto pTarget = pBullet->Target ? pBullet->Target : (this->TargetInTheAir ? nullptr : MapClass::Instance->TryGetCellAt(pBullet->TargetCoords));
 	// Launch weapons in sequence
 	for (int weaponNum = 0; weaponNum < validWeapons; ++weaponNum)
 	{
 		int curIndex = weaponNum;
-
 		// Only launch one group
 		if (pType->DisperseSeparate)
 		{
 			// Set the current weapon number
-			curIndex = Math::min(validWeapons - 1, this->DisperseIndex);
-
+			curIndex = this->DisperseIndex;
 			// End directly after firing this weapon
 			weaponNum = validWeapons;
 		}
@@ -378,7 +370,6 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 		}
 
 		int burstNow = 0;
-
 		// Prioritize attacking the original target once
 		if (pType->DisperseTendency && pTarget)
 		{
@@ -604,7 +595,7 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 		}
 
 		// When WeaponTendency=false, if no suitable target can be found, attempt to attack the original target once
-		if (validTargets.empty() && pTarget && burstNow != 1)
+		if (validTargets.empty() && pTarget && !burstNow)
 			validTargets.push_back(pTarget);
 
 		for (const auto& pNewTarget : validTargets)
@@ -634,22 +625,15 @@ void PhobosTrajectory::CreateDisperseBullets(TechnoClass* pTechno, const CoordSt
 		// Record additional content for trajectory
 		if (const auto pTraj = pExt->Trajectory.get())
 		{
-			const auto flag = pTraj->Flag();
-			const auto pTrajType = pTraj->GetType();
-
+			pTraj->CurrentBurst = (this->CurrentBurst < 0) ? (-curBurst - 1) : curBurst;
+			pTraj->CountOfBurst = maxBurst;
 			pTraj->FirepowerMult = this->FirepowerMult;
-			pTraj->NotMainWeapon = !pTrajType->UseDisperseCoord || !pTechno || this->NotMainWeapon;
+			pTraj->NotMainWeapon = !pTraj->GetType()->UseDisperseCoord || !pTechno || this->NotMainWeapon;
 
 			if (!pTraj->NotMainWeapon)
 			{
 				pTraj->FLHCoord = this->FLHCoord;
 				pTraj->BuildingCoord = this->BuildingCoord;
-			}
-
-			if (pTrajType->UseDisperseBurst)
-			{
-				pTraj->CurrentBurst = curBurst;
-				pTraj->CountOfBurst = maxBurst;
 			}
 
 			pExt->DispersedTrajectory = false;

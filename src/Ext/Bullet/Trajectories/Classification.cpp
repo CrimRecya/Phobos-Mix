@@ -44,7 +44,8 @@ void PhobosTrajectory::OnUnlimbo()
 	// Record some information of firer
 	if (pFirer)
 	{
-		this->CurrentBurst = pFirer->CurrentBurstIndex;
+		const auto burst = pFirer->CurrentBurstIndex;
+		this->CurrentBurst = (burst & 1) ? (-burst - 1) : burst;
 		this->FirepowerMult = pFirer->FirepowerMultiplier * TechnoExt::ExtMap.Find(pFirer)->AE.FirepowerMultiplier;
 
 		const auto flag = this->Flag();
@@ -61,7 +62,7 @@ void PhobosTrajectory::OnUnlimbo()
 
 	// Initialize additional warheads
 	if (pType->PassDetonate)
-		this->PassDetonateTimer.Start(pType->PassDetonateInitialDelay > 0 ? pType->PassDetonateInitialDelay : 0);
+		this->PassDetonateTimer.Start(pType->PassDetonateInitialDelay);
 
 	// Initialize additional weapons
 	if (!pType->DisperseWeapons.empty() && !pType->DisperseCounts.empty() && this->DisperseCycle)
@@ -73,6 +74,7 @@ void PhobosTrajectory::OnUnlimbo()
 
 bool PhobosTrajectory::OnAI()
 {
+	this->ChangeBulletFacing();
 	const auto pType = this->GetType();
 
 	// Detonate the warhead at the current location
@@ -336,11 +338,25 @@ void PhobosTrajectory::ChangeBulletFacing()
 	const auto pType = this->GetType();
 	constexpr double ratio = Math::TwoPi / 256;
 
-	if (!pType->BulletSpin)
+	if (pType->BulletStable)
 	{
-		if (pType->BulletROT < 0)
-			return;
-
+		const auto deltaCoord = pBullet->Data.Location - pBullet->SourceCoords;
+		const BulletVelocity stableFacing { static_cast<double>(deltaCoord.X), static_cast<double>(deltaCoord.Y), static_cast<double>(deltaCoord.Z) };
+		this->MovingVelocity = stableFacing * (1 / deltaCoord.Magnitude());
+	}
+	else if (pType->BulletSpin)
+	{
+		const auto radian = Math::atan2(this->MovingVelocity.Y, this->MovingVelocity.X) + (pType->BulletROT * ratio);
+		this->MovingVelocity.X = Math::cos(radian);
+		this->MovingVelocity.Y = Math::sin(radian);
+		this->MovingVelocity.Z = 0;
+	}
+	else if (pType->BulletROT < 0)
+	{
+		return;
+	}
+	else if (pType->BulletOnPlane)
+	{
 		BulletVelocity desiredFacing
 		{
 			static_cast<double>(pBullet->TargetCoords.X - pBullet->Location.X),
@@ -379,10 +395,7 @@ void PhobosTrajectory::ChangeBulletFacing()
 	}
 	else
 	{
-		const auto radian = Math::atan2(this->MovingVelocity.Y, this->MovingVelocity.X) + (pType->BulletROT * ratio);
-		this->MovingVelocity.X = Math::cos(radian);
-		this->MovingVelocity.Y = Math::sin(radian);
-		this->MovingVelocity.Z = 0;
+
 	}
 }
 
@@ -594,8 +607,8 @@ CoordStruct LiveShellTrajectory::GetOnlyStableOffsetCoords(double rotateRadian)
 	const auto pType = static_cast<const LiveShellTrajectoryType*>(this->GetType());
 	auto offsetCoord = pType->OffsetCoord.Get();
 
-	if (pType->MirrorCoord && this->CurrentBurst & 1)
-		offsetCoord.Y = -(offsetCoord.Y);
+	if (pType->MirrorCoord && this->CurrentBurst < 0)
+		offsetCoord.Y = -offsetCoord.Y;
 
 	return CoordStruct
 		{
@@ -629,17 +642,19 @@ void LiveShellTrajectory::DisperseBurstSubstitution(double baseRadian)
 	};
 
 	double extraRotate = 0.0;
+	const auto burst = (this->CurrentBurst < 0) ? (-this->CurrentBurst - 1) : this->CurrentBurst;
 
 	if (pType->MirrorCoord)
 	{
-		if (this->CurrentBurst & 1)
+		if (this->CurrentBurst < 0)
 			rotationAxis *= -1;
 
-		extraRotate = Math::Pi * (pType->RotateCoord * ((this->CurrentBurst / 2) / (this->CountOfBurst - 1.0) - 0.5)) / 180;
+		// Rotate half the angle in the opposite direction
+		extraRotate = Math::Pi * (pType->RotateCoord * ((burst / 2) / (this->CountOfBurst - 1.0) - 0.5)) / 180;
 	}
 	else
 	{
-		extraRotate = Math::Pi * (pType->RotateCoord * (this->CurrentBurst / (this->CountOfBurst - 1.0) - 0.5)) / 180;
+		extraRotate = Math::Pi * (pType->RotateCoord * (burst / (this->CountOfBurst - 1.0) - 0.5)) / 180;
 	}
 
 	// Rotate the selected angle

@@ -299,8 +299,8 @@ void MissileTrajectory::InitializeBulletNotCurve()
 	{
 		auto offsetCoord = pType->OffsetCoord.Get();
 
-		if (pType->MirrorCoord && this->CurrentBurst & 1)
-			offsetCoord.Y = -(offsetCoord.Y);
+		if (pType->MirrorCoord && this->CurrentBurst < 0)
+			offsetCoord.Y = -offsetCoord.Y;
 
 		this->MovingVelocity.X = offsetCoord.X * Math::cos(rotateRadian) + offsetCoord.Y * Math::sin(rotateRadian);
 		this->MovingVelocity.Y = offsetCoord.X * Math::sin(rotateRadian) - offsetCoord.Y * Math::cos(rotateRadian);
@@ -327,8 +327,8 @@ inline bool MissileTrajectory::CalculateReducedVelocity(double rotateRadian)
 
 	auto offsetCoord = pType->OffsetCoord.Get();
 
-	if (pType->MirrorCoord && this->CurrentBurst & 1)
-		offsetCoord.Y = -(offsetCoord.Y);
+	if (pType->MirrorCoord && this->CurrentBurst < 0)
+		offsetCoord.Y = -offsetCoord.Y;
 
 	const BulletVelocity theAimCoord
 	{

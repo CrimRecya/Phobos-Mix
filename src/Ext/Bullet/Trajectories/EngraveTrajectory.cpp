@@ -136,10 +136,10 @@ void EngraveTrajectory::OpenFire()
 	auto virtualTarget = pType->VirtualTargetCoord.Get();
 	const double rotateRadian = this->Get2DOpRadian((pFirer ? pFirer->GetCoords() : source), target);
 
-	if (!this->NotMainWeapon && pType->MirrorCoord && (pFirer->CurrentBurstIndex & 1))
+	if (!this->NotMainWeapon && pType->MirrorCoord && this->CurrentBurst < 0)
 	{
-		virtualSource.Y = -(virtualSource.Y);
-		virtualTarget.Y = -(virtualTarget.Y);
+		virtualSource.Y = -virtualSource.Y;
+		virtualTarget.Y = -virtualTarget.Y;
 	}
 
 	// Special case: Starting from the launch position

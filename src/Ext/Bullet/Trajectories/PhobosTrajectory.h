@@ -45,17 +45,16 @@ public:
 		, ApplyRangeModifiers { false }
 		, UseDisperseCoord { false }
 		, RecordSourceCoord { false }
-		, UseDisperseBurst { false }
 
 		, PassDetonate { false }
 		, PassDetonateWarhead {}
-		, PassDetonateDamage { 0 }
+		, PassDetonateDamage {}
 		, PassDetonateDelay { 1 }
 		, PassDetonateInitialDelay { 0 }
 		, PassDetonateLocal { false }
 		, ProximityImpact { 0 }
 		, ProximityWarhead {}
-		, ProximityDamage { 0 }
+		, ProximityDamage {}
 		, ProximityRadius { Leptons(179) }
 		, ProximityDirect { false }
 		, ProximityMedial { false }
@@ -101,16 +100,15 @@ public:
 	Valueable<bool> ApplyRangeModifiers; // Apply range bonus
 	Valueable<bool> UseDisperseCoord; // Use the recorded launch location
 	Valueable<bool> RecordSourceCoord; // Record the launch location
-	Valueable<bool> UseDisperseBurst; // Use disperse weapon burst count
 
 	Valueable<bool> PassDetonate; // Detonate the warhead while moving
-	Nullable<WarheadTypeClass*> PassDetonateWarhead; // The pass warhead used
+	Valueable<WarheadTypeClass*> PassDetonateWarhead; // The pass warhead used
 	Nullable<int> PassDetonateDamage; // The damage caused by the pass warhead
 	Valueable<int> PassDetonateDelay; // Detonation interval
 	Valueable<int> PassDetonateInitialDelay; // Detonation initial delay
 	Valueable<bool> PassDetonateLocal; // Detonate at ground level
 	Valueable<int> ProximityImpact; // How many times can proximity warhead be triggered
-	Nullable<WarheadTypeClass*> ProximityWarhead; // The proximity warhead used
+	Valueable<WarheadTypeClass*> ProximityWarhead; // The proximity warhead used
 	Nullable<int> ProximityDamage; // The damage caused by the proximity warhead
 	Valueable<Leptons> ProximityRadius; // How large is the scope of impact
 	Valueable<bool> ProximityDirect; // Not detonating the warhead, but directly causing it to receive the damage
@@ -140,7 +138,7 @@ public:
 	Nullable<bool> DisperseFromFirer; // Fire from the firer's position
 	Valueable<bool> DisperseFaceCheck; // Check the orientation before launching the weapon
 	Valueable<bool> DisperseForceFire; // Ignore the no target state before launching the weapon
-	Valueable<PartialVector3D<int>> DisperseCoord; // The firing position when fired from the bullet
+	Valueable<CoordStruct> DisperseCoord; // The firing position when fired from the bullet
 
 	virtual ~PhobosTrajectoryType() noexcept = default;
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
@@ -203,7 +201,7 @@ public:
 	bool ShouldDetonate; // Should detonate in next frame
 	CoordStruct FLHCoord; // Launch FLH
 	CoordStruct BuildingCoord; // Offset on the building of launch FLH
-	int CurrentBurst; // Current burst index
+	int CurrentBurst; // Current burst index, mirror is required for negative numbers
 	int CountOfBurst; // Upper limit of burst counts
 
 	int PassDetonateDamage; // Current damage caused by the pass warhead
@@ -323,8 +321,8 @@ public:
 	{ }
 
 	Valueable<double> RotateCoord; // The maximum rotation angle of the initial velocity vector on the axis of rotation
-	Valueable<PartialVector3D<int>> OffsetCoord; // Offset of target position, refers to the initial target position on Missile
-	Valueable<PartialVector3D<int>> AxisOfRotation; // RotateCoord's rotation axis
+	Valueable<CoordStruct> OffsetCoord; // Offset of target position, refers to the initial target position on Missile
+	Valueable<CoordStruct> AxisOfRotation; // RotateCoord's rotation axis
 	Valueable<bool> LeadTimeCalculate; // Predict the moving direction of the target
 	bool SubjectToGround; // Auto set
 	Valueable<bool> EarlyDetonation; // Calculating DetonationHeight in the rising phase rather than the falling phase
