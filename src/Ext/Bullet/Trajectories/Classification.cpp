@@ -425,8 +425,11 @@ bool PhobosTrajectory::CheckTolerantAndSynchronize()
 	if (!pBullet->Target && !pType->TolerantTime)
 		return true;
 
-	for (auto pTrans = pFirer->Transporter; pTrans; pTrans = pTrans->Transporter)
-		pFirer = pTrans;
+	if (pFirer)
+	{
+		for (auto pTrans = pFirer->Transporter; pTrans; pTrans = pTrans->Transporter)
+			pFirer = pTrans;
+	}
 
 	if (pType->Synchronize)
 	{

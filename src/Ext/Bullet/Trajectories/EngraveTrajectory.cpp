@@ -203,7 +203,7 @@ int EngraveTrajectory::GetFloorCoordHeight(const CoordStruct& coord)
 
 bool EngraveTrajectory::PlaceOnCorrectHeight()
 {
-	if (!this->TargetInTheAir)
+	if (this->TargetInTheAir)
 		return false;
 
 	const auto pBullet = this->Bullet;

@@ -184,12 +184,8 @@ bool TracingTrajectory::ChangeVelocity()
 	{
 		const int range = pType->ApplyRangeModifiers && pBullet->Owner ? WeaponTypeExt::GetRangeWithModifiers(pWeapon, pBullet->Owner, pWeapon->Range) : pWeapon->Range;
 		const auto source = (pFirer && !this->NotMainWeapon) ? pFirer->GetCoords() : pBullet->SourceCoords;
-		auto delta = destination - source;
-
-		if (this->NotMainWeapon || this->TargetInTheAir || (pFirer && pFirer->IsInAir()))
-			delta.Z = 0;
-
-		const auto distance = delta.Magnitude();
+		const auto delta = destination - source;
+		const auto distance = (this->NotMainWeapon || this->TargetInTheAir || (pFirer && pFirer->IsInAir())) ? Point2D{ delta.X, delta.Y }.Magnitude() : delta.Magnitude();
 
 		if (static_cast<int>(distance) >= range)
 		{
