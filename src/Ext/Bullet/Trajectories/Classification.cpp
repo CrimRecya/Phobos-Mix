@@ -8,10 +8,6 @@
 void PhobosTrajectory::OnUnlimbo()
 {
 	const auto pBullet = this->Bullet;
-
-	// Anyway, first reset the useless velocity
-	pBullet->Velocity = BulletVelocity::Empty;
-
 	// Without a target, the game will inevitably crash before, so no need to check here
 	const auto pTarget = pBullet->Target;
 
@@ -273,10 +269,9 @@ void PhobosTrajectory::OnAIPreDetonate()
 		this->PrepareDisperseWeapon();
 
 	const auto pBullet = this->Bullet;
-	const auto flag = this->Flag();
 
 	// No damage, no anims...
-	if (pType->PeacefulVanish.Get(flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
+	if (pType->PeacefulVanish.Get(this->Flag() == TrajectoryFlag::Engrave || pType->ProximityImpact || pType->DisperseCycle))
 	{
 		pBullet->Health = 0;
 		pBullet->Limbo();
@@ -292,15 +287,29 @@ void PhobosTrajectory::OnAIPreDetonate()
 void PhobosTrajectory::OpenFire()
 {
 	const auto pBullet = this->Bullet;
+	const auto& source = pBullet->SourceCoords;
+	const auto& target = pBullet->TargetCoords;
+
 	const auto pFirer = pBullet->Owner;
 	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-	auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(pBullet->SourceCoords, pBullet->TargetCoords, pOwner);
+	auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(source, target, pOwner);
 
 	if (fireStormCoords != CoordStruct::Empty)
 	{
 		fireStormCoords.Z = MapClass::Instance->GetCellFloorHeight(fireStormCoords);
 		pBullet->Data.Location = fireStormCoords;
 	}
+	else
+	{
+		// Reset data
+		pBullet->Data.Location = target;
+	}
+
+	// There may be a frame that hasn't started updating yet but will be drawn on the screen
+	if (this->MovingVelocity != BulletVelocity::Empty)
+		pBullet->Velocity = this->MovingVelocity;
+	else // Lead time bug
+		pBullet->Velocity = BulletVelocity { static_cast<double>(target.X - source.X), static_cast<double>(target.Y - source.Y), 0 };
 }
 
 void PhobosTrajectory::SetBulletNewTarget(AbstractClass* const pTarget)
@@ -334,26 +343,24 @@ void PhobosTrajectory::MultiplyBulletVelocity(const double ratio, const bool sho
 
 void PhobosTrajectory::ChangeBulletFacing()
 {
-	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
-	constexpr double ratio = Math::TwoPi / 256;
 
 	if (pType->BulletStable)
+		return;
+
+	const auto pBullet = this->Bullet;
+
+	if (pType->BulletSpin)
 	{
-		const auto deltaCoord = pBullet->Data.Location - pBullet->SourceCoords;
-		const BulletVelocity stableFacing { static_cast<double>(deltaCoord.X), static_cast<double>(deltaCoord.Y), static_cast<double>(deltaCoord.Z) };
-		this->MovingVelocity = stableFacing * (1 / deltaCoord.Magnitude());
-	}
-	else if (pType->BulletSpin)
-	{
-		const auto radian = Math::atan2(this->MovingVelocity.Y, this->MovingVelocity.X) + (pType->BulletROT * ratio);
-		this->MovingVelocity.X = Math::cos(radian);
-		this->MovingVelocity.Y = Math::sin(radian);
-		this->MovingVelocity.Z = 0;
+		constexpr double ratio = Math::TwoPi / 256;
+		const auto radian = Math::atan2(pBullet->Velocity.Y, pBullet->Velocity.X) + (pType->BulletROT * ratio);
+		pBullet->Velocity.X = Math::cos(radian);
+		pBullet->Velocity.Y = Math::sin(radian);
+		pBullet->Velocity.Z = 0;
 	}
 	else if (pType->BulletROT < 0)
 	{
-		return;
+		pBullet->Velocity = this->MovingVelocity;
 	}
 	else if (pType->BulletOnPlane)
 	{
@@ -366,11 +373,12 @@ void PhobosTrajectory::ChangeBulletFacing()
 
 		if (!pType->BulletROT)
 		{
-			this->MovingVelocity = desiredFacing * (1 / desiredFacing.Magnitude());
+			pBullet->Velocity = desiredFacing * (1 / desiredFacing.Magnitude());
 			return;
 		}
 
-		const auto current = Math::atan2(this->MovingVelocity.Y, this->MovingVelocity.X);
+		constexpr double ratio = Math::TwoPi / 256;
+		const auto current = Math::atan2(pBullet->Velocity.Y, pBullet->Velocity.X);
 		const auto desired = Math::atan2(desiredFacing.Y, desiredFacing.X);
 		const auto rotate = pType->BulletROT * ratio;
 
@@ -384,14 +392,14 @@ void PhobosTrajectory::ChangeBulletFacing()
 
 		if (differenceR <= rotate)
 		{
-			this->MovingVelocity = desiredFacing * (1 / desiredFacing.Magnitude());
+			pBullet->Velocity = desiredFacing * (1 / desiredFacing.Magnitude());
 			return;
 		}
 
 		const auto facing = current + (dirR ? rotate : -rotate);
-		this->MovingVelocity.X = Math::cos(facing);
-		this->MovingVelocity.Y = Math::sin(facing);
-		this->MovingVelocity.Z = 0;
+		pBullet->Velocity.X = Math::cos(facing);
+		pBullet->Velocity.Y = Math::sin(facing);
+		pBullet->Velocity.Z = 0;
 	}
 	else
 	{
@@ -768,8 +776,8 @@ bool VirtualTrajectory::InvalidFireCondition(TechnoClass* pTechno)
 	const auto SourceCrd = pTechno->GetCoords();
 	const auto TargetCrd = this->Bullet->TargetCoords;
 
-	const auto rotateAngle = Math::atan2(TargetCrd.Y - SourceCrd.Y , TargetCrd.X - SourceCrd.X);
-	const auto tgtDir = DirStruct(-rotateAngle);
+	const auto rotateRadian = Math::atan2(TargetCrd.Y - SourceCrd.Y , TargetCrd.X - SourceCrd.X);
+	const auto tgtDir = DirStruct(-rotateRadian);
 
 	const auto& face = pTechno->HasTurret() && pTechno->WhatAmI() == AbstractType::Unit ? pTechno->SecondaryFacing : pTechno->PrimaryFacing;
 	const auto curDir = face.Current();

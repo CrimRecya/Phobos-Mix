@@ -122,55 +122,33 @@ bool TracingTrajectory::OnAIDetonateCheck()
 	if (!pType->TraceTheTarget && !pFirer)
 		return true;
 
-	if (pType->SuicideAboveRange)
-	{
-		if (const auto pWeapon = pBullet->WeaponType)
-		{
-			auto source = (pFirer && !this->NotMainWeapon) ? pFirer->GetCoords() : pBullet->SourceCoords;
-			auto target = pBullet->TargetCoords;
-
-			if (this->NotMainWeapon || this->TargetInTheAir || (pFirer && pFirer->IsInAir()))
-			{
-				source.Z = 0;
-				target.Z = 0;
-			}
-
-			if (static_cast<int>(source.DistanceFrom(target)) >= (pWeapon->Range + Unsorted::LeptonsPerCell))
-				return true;
-		}
-	}
-
-	this->ChangeVelocity();
-
-	return false;
+	return this->ChangeVelocity();
 }
 
 void TracingTrajectory::OpenFire()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
-	const auto& theCoords = pType->VirtualSourceCoord.Get();
-	auto theOffset = theCoords;
+	const auto& coords = pType->VirtualSourceCoord.Get();
+	auto offset = coords;
 
-	if (theCoords.X != 0 || theCoords.Y != 0)
+	if (coords.X != 0 || coords.Y != 0)
 	{
-		const auto& theSource = pBullet->SourceCoords;
-		const auto& theTarget = pBullet->TargetCoords;
-		const double rotateRadian = this->Get2DOpRadian(theSource, theTarget);
-		theOffset.X = static_cast<int>(theCoords.X * Math::cos(rotateRadian) + theCoords.Y * Math::sin(rotateRadian));
-		theOffset.Y = static_cast<int>(theCoords.X * Math::sin(rotateRadian) - theCoords.Y * Math::cos(rotateRadian));
+		const double rotateRadian = this->Get2DOpRadian(pBullet->SourceCoords, pBullet->TargetCoords);
+		offset.X = static_cast<int>(coords.X * Math::cos(rotateRadian) + coords.Y * Math::sin(rotateRadian));
+		offset.Y = static_cast<int>(coords.X * Math::sin(rotateRadian) - coords.Y * Math::cos(rotateRadian));
 	}
 
 	if (pType->CreateAtTarget)
 	{
 		if (const auto pTarget = pBullet->Target)
-			pBullet->SetLocation(pTarget->GetCoords() + theOffset);
+			pBullet->SetLocation(pTarget->GetCoords() + offset);
 		else
-			pBullet->SetLocation(pBullet->TargetCoords + theOffset);
+			pBullet->SetLocation(pBullet->TargetCoords + offset);
 	}
 	else
 	{
-		pBullet->SetLocation(pBullet->SourceCoords + theOffset);
+		pBullet->SetLocation(pBullet->SourceCoords + offset);
 	}
 
 	auto duration = pType->Duration.Get();
@@ -187,7 +165,7 @@ void TracingTrajectory::OpenFire()
 	this->PhobosTrajectory::OpenFire();
 }
 
-void TracingTrajectory::ChangeVelocity()
+bool TracingTrajectory::ChangeVelocity()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
@@ -199,11 +177,31 @@ void TracingTrajectory::ChangeVelocity()
 			pFirer = pTrans;
 	}
 
-	const auto destination = (pType->TraceTheTarget || !pFirer) ? pBullet->TargetCoords : pFirer->GetCoords();
-	const auto theCoords = pType->VirtualTargetCoord.Get();
-	auto theOffset = theCoords;
+	auto destination = (pType->TraceTheTarget || !pFirer) ? pBullet->TargetCoords : pFirer->GetCoords();
+	const auto coords = pType->VirtualTargetCoord.Get();
+	auto offset = coords;
 
-	if (theCoords.X != 0 || theCoords.Y != 0)
+	if (const auto pWeapon = pBullet->WeaponType)
+	{
+		const int range = pType->ApplyRangeModifiers && pBullet->Owner ? WeaponTypeExt::GetRangeWithModifiers(pWeapon, pBullet->Owner, pWeapon->Range) : pWeapon->Range;
+		const auto source = (pFirer && !this->NotMainWeapon) ? pFirer->GetCoords() : pBullet->SourceCoords;
+		auto delta = destination - source;
+
+		if (this->NotMainWeapon || this->TargetInTheAir || (pFirer && pFirer->IsInAir()))
+			delta.Z = 0;
+
+		const auto distance = delta.Magnitude();
+
+		if (static_cast<int>(distance) >= range)
+		{
+			if (pType->SuicideAboveRange)
+				return true;
+			else
+				destination = source + delta * (range / distance);
+		}
+	}
+
+	if (coords.X != 0 || coords.Y != 0)
 	{
 		switch (pType->TraceMode)
 		{
@@ -215,15 +213,15 @@ void TracingTrajectory::ChangeVelocity()
 		{
 			if (const auto pTechno = abstract_cast<TechnoClass*>(pType->TraceTheTarget ? pBullet->Target : pBullet->Owner))
 			{
-				const auto rotateAngle = -(pTechno->PrimaryFacing.Current().GetRadian<32>());
+				const auto rotateRadian = -(pTechno->PrimaryFacing.Current().GetRadian<32>());
 
-				theOffset.X = static_cast<int>(theCoords.X * Math::cos(rotateAngle) + theCoords.Y * Math::sin(rotateAngle));
-				theOffset.Y = static_cast<int>(theCoords.X * Math::sin(rotateAngle) - theCoords.Y * Math::cos(rotateAngle));
+				offset.X = static_cast<int>(coords.X * Math::cos(rotateRadian) + coords.Y * Math::sin(rotateRadian));
+				offset.Y = static_cast<int>(coords.X * Math::sin(rotateRadian) - coords.Y * Math::cos(rotateRadian));
 			}
 			else
 			{
-				theOffset.X = 0;
-				theOffset.Y = 0;
+				offset.X = 0;
+				offset.Y = 0;
 			}
 
 			break;
@@ -232,15 +230,15 @@ void TracingTrajectory::ChangeVelocity()
 		{
 			if (const auto pTechno = abstract_cast<TechnoClass*>(pType->TraceTheTarget ? pBullet->Target : pBullet->Owner))
 			{
-				const auto rotateAngle = (pTechno->HasTurret() ? -(pTechno->TurretFacing().GetRadian<32>()) : -(pTechno->PrimaryFacing.Current().GetRadian<32>()));
+				const auto rotateRadian = (pTechno->HasTurret() ? -(pTechno->TurretFacing().GetRadian<32>()) : -(pTechno->PrimaryFacing.Current().GetRadian<32>()));
 
-				theOffset.X = static_cast<int>(theCoords.X * Math::cos(rotateAngle) + theCoords.Y * Math::sin(rotateAngle));
-				theOffset.Y = static_cast<int>(theCoords.X * Math::sin(rotateAngle) - theCoords.Y * Math::cos(rotateAngle));
+				offset.X = static_cast<int>(coords.X * Math::cos(rotateRadian) + coords.Y * Math::sin(rotateRadian));
+				offset.Y = static_cast<int>(coords.X * Math::sin(rotateRadian) - coords.Y * Math::cos(rotateRadian));
 			}
 			else
 			{
-				theOffset.X = 0;
-				theOffset.Y = 0;
+				offset.X = 0;
+				offset.Y = 0;
 			}
 
 			break;
@@ -248,22 +246,22 @@ void TracingTrajectory::ChangeVelocity()
 		case TraceTargetMode::RotateCW:
 		{
 			const auto distanceCoords = pBullet->Location - destination;
-			const auto radius = Point2D{theCoords.X,theCoords.Y}.Magnitude();
+			const auto radius = Point2D{coords.X,coords.Y}.Magnitude();
 
 			if ((radius * 1.2) > Point2D{distanceCoords.X,distanceCoords.Y}.Magnitude())
 			{
-				auto rotateAngle = Math::atan2(distanceCoords.Y, distanceCoords.X);
+				auto rotateRadian = Math::atan2(distanceCoords.Y, distanceCoords.X);
 
 				if (std::abs(radius) > 1e-10)
-					rotateAngle += (pType->Speed / radius);
+					rotateRadian += (pType->Speed / radius);
 
-				theOffset.X = static_cast<int>(radius * Math::cos(rotateAngle));
-				theOffset.Y = static_cast<int>(radius * Math::sin(rotateAngle));
+				offset.X = static_cast<int>(radius * Math::cos(rotateRadian));
+				offset.Y = static_cast<int>(radius * Math::sin(rotateRadian));
 			}
 			else
 			{
-				theOffset.X = 0;
-				theOffset.Y = 0;
+				offset.X = 0;
+				offset.Y = 0;
 			}
 
 			break;
@@ -271,45 +269,47 @@ void TracingTrajectory::ChangeVelocity()
 		case TraceTargetMode::RotateCCW:
 		{
 			const auto distanceCoords = pBullet->Location - destination;
-			const auto radius = Point2D{theCoords.X,theCoords.Y}.Magnitude();
+			const auto radius = Point2D{coords.X,coords.Y}.Magnitude();
 
 			if ((radius * 1.2) > Point2D{distanceCoords.X,distanceCoords.Y}.Magnitude())
 			{
-				auto rotateAngle = Math::atan2(distanceCoords.Y, distanceCoords.X);
+				auto rotateRadian = Math::atan2(distanceCoords.Y, distanceCoords.X);
 
 				if (std::abs(radius) > 1e-10)
-					rotateAngle -= (pType->Speed / radius);
+					rotateRadian -= (pType->Speed / radius);
 
-				theOffset.X = static_cast<int>(radius * Math::cos(rotateAngle));
-				theOffset.Y = static_cast<int>(radius * Math::sin(rotateAngle));
+				offset.X = static_cast<int>(radius * Math::cos(rotateRadian));
+				offset.Y = static_cast<int>(radius * Math::sin(rotateRadian));
 			}
 			else
 			{
-				theOffset.X = 0;
-				theOffset.Y = 0;
+				offset.X = 0;
+				offset.Y = 0;
 			}
 
 			break;
 		}
 		default:
 		{
-			const auto& theSource = pBullet->SourceCoords;
-			const auto& theTarget = pBullet->TargetCoords;
+			const auto& source = pBullet->SourceCoords;
+			const auto& target = pBullet->TargetCoords;
 
-			const auto rotateAngle = Math::atan2(theTarget.Y - theSource.Y , theTarget.X - theSource.X);
+			const auto rotateRadian = Math::atan2(target.Y - source.Y , target.X - source.X);
 
-			theOffset.X = static_cast<int>(theCoords.X * Math::cos(rotateAngle) + theCoords.Y * Math::sin(rotateAngle));
-			theOffset.Y = static_cast<int>(theCoords.X * Math::sin(rotateAngle) - theCoords.Y * Math::cos(rotateAngle));
+			offset.X = static_cast<int>(coords.X * Math::cos(rotateRadian) + coords.Y * Math::sin(rotateRadian));
+			offset.Y = static_cast<int>(coords.X * Math::sin(rotateRadian) - coords.Y * Math::cos(rotateRadian));
 			break;
 		}
 		}
 	}
 
-	const auto distanceCoords = ((destination + theOffset) - pBullet->Location);
+	const auto distanceCoords = ((destination + offset) - pBullet->Location);
 	const auto distance = distanceCoords.Magnitude();
 	this->MovingVelocity = BulletVelocity { static_cast<double>(distanceCoords.X), static_cast<double>(distanceCoords.Y), static_cast<double>(distanceCoords.Z) };
 	this->MovingSpeed = distance;
 
-	if (distance <= pType->Speed)
+	if (pType->Speed <= distance)
 		this->MultiplyBulletVelocity(pType->Speed / distance, false);
+
+	return false;
 }

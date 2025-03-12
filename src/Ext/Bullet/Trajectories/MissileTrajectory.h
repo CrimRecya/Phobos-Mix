@@ -86,7 +86,7 @@ public:
 
 private:
 	void InitializeBulletNotCurve();
-	inline bool CalculateReducedVelocity(double rotateAngle);
+	inline bool CalculateReducedVelocity(double rotateRadian);
 	bool CurveVelocityChange();
 	bool NotCurveVelocityChange();
 	bool StandardVelocityChange();

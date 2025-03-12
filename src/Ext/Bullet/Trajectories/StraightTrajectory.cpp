@@ -193,7 +193,6 @@ CoordStruct StraightTrajectory::CalculateBulletLeadTime()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
-	auto coords = CoordStruct::Empty;
 
 	if (pType->LeadTimeCalculate)
 	{
@@ -251,13 +250,13 @@ CoordStruct StraightTrajectory::CalculateBulletLeadTime()
 							travelTime += 2;
 					}
 
-					coords += extraOffsetCoord * travelTime;
+					return extraOffsetCoord * travelTime;
 				}
 			}
 		}
 	}
 
-	return coords;
+	return CoordStruct::Empty;
 }
 
 int StraightTrajectory::GetVelocityZ()

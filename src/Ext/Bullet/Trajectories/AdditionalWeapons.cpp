@@ -240,7 +240,7 @@ bool PhobosTrajectory::CheckFireFacing()
 	const auto& theBullet = pBullet->Location;
 	const auto& theTarget = pBullet->TargetCoords;
 	const auto targetDir = DirStruct { Math::atan2(theTarget.Y - theBullet.Y, theTarget.X - theBullet.X) };
-	const auto bulletDir = DirStruct { Math::atan2(this->MovingVelocity.Y, this->MovingVelocity.X) };
+	const auto bulletDir = DirStruct { Math::atan2(pBullet->Velocity.Y, pBullet->Velocity.X) };
 
 	return std::abs(static_cast<short>(static_cast<short>(targetDir.Raw) - static_cast<short>(bulletDir.Raw))) <= (2048 + (pType->BulletROT << 8));
 }
@@ -349,7 +349,7 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 			// Launch only when the firer exist
 			if (pFirer)
 			{
-				for (int burstNum = 0; burstNum < burstCount; burstNum++)
+				for (int burstNum = 0; burstNum < burstCount; ++burstNum)
 					this->CreateDisperseBullets(pFirer, sourceCoord, pWeapon, pBullet, pOwner, burstNum, burstCount);
 			}
 
@@ -362,7 +362,7 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 			// Launch only when the target exist
 			if (pTarget)
 			{
-				for (int burstNum = 0; burstNum < burstCount; burstNum++)
+				for (int burstNum = 0; burstNum < burstCount; ++burstNum)
 					this->CreateDisperseBullets(pFirer, sourceCoord, pWeapon, pTarget, pOwner, burstNum, burstCount);
 			}
 

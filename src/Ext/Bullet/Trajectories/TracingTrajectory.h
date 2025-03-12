@@ -60,7 +60,7 @@ public:
 	virtual CoordStruct GetRetargetCenter() const override { return this->Bullet->Location; }
 
 private:
-	void ChangeVelocity();
+	bool ChangeVelocity();
 
 	template <typename T>
 	void Serialize(T& Stm);
