@@ -1354,6 +1354,7 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	}
 
 	this->Refinery_UseStorage.Read(exINI, pSection, "Refinery.UseStorage");
+	this->CloningFacility.Read(exINI, pSection, "CloningFacility");
 
 	// PlacementPreview
 	{
@@ -1449,6 +1450,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->BarracksExitCell)
 		.Process(this->HasSecondaryRallyPoint)
 		.Process(this->Refinery_UseNormalActiveAnim)
+		.Process(this->CloningFacility)
 		;
 }
 

@@ -376,6 +376,9 @@ public:
 		Nullable<int> InitialSpawnsNumber;
 		ValueableVector<AircraftTypeClass*> Spawns_Queue;
 
+		Valueable<bool> Cloneable;
+		ValueableVector<BuildingTypeClass*> ClonedAt;
+
 		struct LaserTrailDataEntry
 		{
 			ValueableIdx<LaserTrailTypeClass> idxType;
@@ -745,6 +748,9 @@ public:
 
 			, InitialSpawnsNumber { }
 			, Spawns_Queue { }
+
+			, Cloneable { true }
+			, ClonedAt { }
 		{ }
 
 		virtual ~ExtData() = default;
