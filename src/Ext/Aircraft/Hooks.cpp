@@ -1,10 +1,10 @@
 #include <AircraftClass.h>
+#include <EventClass.h>
 #include <FlyLocomotionClass.h>
 
 #include <Ext/Aircraft/Body.h>
 #include <Ext/Techno/Body.h>
 #include <Ext/Anim/Body.h>
-#include <Ext/Techno/Body.h>
 #include <Ext/WeaponType/Body.h>
 #include <Utilities/Macro.h>
 
@@ -328,8 +328,39 @@ bool __fastcall AircraftTypeClass_CanUseWaypoint(AircraftTypeClass* pThis)
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7E2908, AircraftTypeClass_CanUseWaypoint)
 
-// KickOut: skip useless tether
-DEFINE_JUMP(LJMP, 0x444021, 0x44402E)
+DEFINE_HOOK(0x6F4B67, TechnoClass_ReceiveCommand_RequestTether, 0x6)
+{
+	GET(TechnoClass* const, pThis, ESI);
+	GET_STACK(TechnoClass*, pSender, STACK_OFFSET(0x18, 0x4));
+
+	if (pSender && pThis->FindLinkIndex(pSender) == -1)
+	{
+		const auto thisCell = pThis->GetMapCoords();
+		const auto sendCell = pSender->GetMapCoords();
+		Debug::LogAndMessage("%s at (%d,%d) is trying to tether with %s at (%d,%d) without link!\n", pThis->get_ID(), thisCell.X, thisCell.Y, pSender->get_ID(), sendCell.X, sendCell.Y);
+	}
+
+	return 0;
+}
+
+// Radio: do not untether techno who have other tether
+DEFINE_HOOK(0x6F4BB3, TechnoClass_ReceiveCommand_NotifyUnlink, 0x7)
+{
+	GET(TechnoClass* const, pThis, ESI);
+
+	// The radio link capacity of some technos can be greater than 1 (like airport)
+	// Untether without check may result in `AirportBound=no` aircraft being unable to release from `IsTether` status
+	for (int i = 0; i < pThis->RadioLinks.Capacity; ++i)
+	{
+		if (const auto pLink = pThis->RadioLinks.Items[i])
+		{
+			if (pLink->IsTether) // If there's another tether link, reset flag to true
+				pThis->IsTether = true;
+		}
+	}
+
+	return 0;
+}
 
 // Move: smooth the planning paths and returning route
 DEFINE_HOOK_AGAIN(0x4168C7, AircraftClass_Mission_Move_SmoothMoving, 0x5)
@@ -390,10 +421,9 @@ DEFINE_HOOK(0x41A96C, AircraftClass_Mission_AreaGuard, 0x6)
 		auto coords = pThis->GetCoords();
 
 		if (pThis->TargetAndEstimateDamage(coords, ThreatType::Area))
-		{
 			pThis->QueueMission(Mission::Attack, false);
-			return SkipGameCode;
-		}
+
+		return SkipGameCode;
 	}
 
 	return 0;
@@ -511,6 +541,43 @@ AbstractClass* __fastcall AircraftClass_GreatestThreat(AircraftClass* pThis, voi
 	return pThis->FootClass::GreatestThreat(threatType, pSelectCoords, onlyTargetHouseEnemy);
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7E2668, AircraftClass_GreatestThreat)
+
+// Handle assigning area guard mission to aircraft.
+DEFINE_HOOK(0x4C7403, EventClass_Execute_AircraftAreaGuard, 0x6)
+{
+	enum { SkipGameCode = 0x4C7435 };
+
+	GET(TechnoClass* const, pTechno, EDI);
+
+	if (RulesExt::Global()->ExtendedAircraftMissions && pTechno->WhatAmI() == AbstractType::Aircraft)
+	{
+		// If we're on dock reloading but have ammo, untether from dock and try to scan for targets.
+		if (pTechno->CurrentMission == Mission::Sleep && pTechno->Ammo)
+			pTechno->SendToEachLink(RadioCommand::NotifyUnlink);
+
+		// Skip assigning destination / target here.
+		return SkipGameCode;
+	}
+
+	return 0;
+}
+
+// Do not untether aircraft when assigning area guard mission by default.
+DEFINE_HOOK(0x4C72F2, EventClass_Execute_AircraftAreaGuard_Untether, 0x6)
+{
+	enum { SkipGameCode = 0x4C7349 };
+
+	GET(EventClass* const, pThis, ESI);
+	GET(TechnoClass* const, pTechno, EDI);
+
+	if (RulesExt::Global()->ExtendedAircraftMissions && pTechno->WhatAmI() == AbstractType::Aircraft
+		&& pThis->MegaMission.Mission == static_cast<char>(Mission::Area_Guard))
+	{
+		return SkipGameCode;
+	}
+
+	return 0;
+}
 
 #pragma endregion
 

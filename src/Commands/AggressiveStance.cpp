@@ -34,6 +34,28 @@ void AggressiveStanceClass::Execute(WWKey eInput) const
 	bool isAnySelectedUnitTogglable = false;
 	bool isAllSelectedUnitAggressiveStance = true;
 
+	auto processATechno = [&](TechnoClass* pTechno)
+		{
+			const auto pTechnoExt = TechnoExt::ExtMap.Find(pTechno);
+
+			// If not togglable then exclude it from the iteration.
+			if (!pTechnoExt->CanToggleAggressiveStance())
+				return;
+
+			isAnySelectedUnitTogglable = true;
+
+			if (pTechnoExt->GetAggressiveStance())
+			{
+				TechnoVectorAggressive.push_back(pTechno);
+			}
+			else
+			{
+				isAllSelectedUnitAggressiveStance = false;
+				TechnoVectorNonAggressive.push_back(pTechno);
+			}
+			return;
+		};
+
 	for (const auto& pUnit : ObjectClass::CurrentObjects())
 	{
 		// try to cast to TechnoClass
@@ -43,22 +65,18 @@ void AggressiveStanceClass::Execute(WWKey eInput) const
 		if (!pTechno || pTechno->Berzerk || !pTechno->Owner->IsControlledByCurrentPlayer())
 			continue;
 
-		const auto pTechnoExt = TechnoExt::ExtMap.Find(pTechno);
+		processATechno(pTechno);
 
-		// If not togglable then exclude it from the iteration.
-		if (!pTechnoExt->CanToggleAggressiveStance())
-			continue;
-
-		isAnySelectedUnitTogglable = true;
-
-		if (pTechnoExt->GetAggressiveStance())
+		if (auto pPassenger = pTechno->Passengers.GetFirstPassenger())
 		{
-			TechnoVectorAggressive.push_back(pTechno);
+			for (; pPassenger; pPassenger = abstract_cast<FootClass*>(pPassenger->NextObject))
+				processATechno(pPassenger);
 		}
-		else
+
+		if (auto pBuilding = abstract_cast<BuildingClass*>(pTechno))
 		{
-			isAllSelectedUnitAggressiveStance = false;
-			TechnoVectorNonAggressive.push_back(pTechno);
+			for (auto pOccupier : pBuilding->Occupants)
+				processATechno(pOccupier);
 		}
 	}
 

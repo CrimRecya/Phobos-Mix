@@ -415,6 +415,19 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawInfo("Target", pTechno, pTechno->Target);
 		drawInfo("Last Target", pTechno, pTechno->LastTarget);
 		drawInfo("Nth Link", pTechno, pTechno->GetNthLink());
+
+		{
+			int linkCount = 0;
+
+			for (int i = 0; i < pTechno->RadioLinks.Capacity; ++i)
+			{
+				if (pTechno->RadioLinks.Items[i])
+					++linkCount;
+			}
+
+			drawText("Links = %d , Valid = %d", pTechno->RadioLinks.Capacity, linkCount);
+		}
+
 		drawInfo("Archive Target", pTechno, pTechno->ArchiveTarget);
 		drawInfo("Transporter", pTechno, pTechno->Transporter);
 		drawInfo("Enter Target", pTechno, pTechno->QueueUpToEnter);
@@ -690,14 +703,14 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawText("Location = [ %d , %d , %d ]( %d , %d , %d )", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pCell->GetLevel());
 
 		drawText("CellFlags:");
-		drawText("  CenterRevealed --------- %s", (pCell->Flags & CellFlags::CenterRevealed ? "Yes" : "No"));
-		drawText("  EdgeRevealed ----------- %s", (pCell->Flags & CellFlags::EdgeRevealed ? "Yes" : "No"));
-		drawText("  IsWaypoint ------------- %s", (pCell->Flags & CellFlags::IsWaypoint ? "Yes" : "No"));
-		drawText("  BridgeOwner ------------ %s", (pCell->Flags & CellFlags::BridgeOwner ? "Yes" : "No"));
-		drawText("  BridgeHead ------------- %s", (pCell->Flags & CellFlags::BridgeHead ? "Yes" : "No"));
-		drawText("  Unknown_200 ------------ %s", (pCell->Flags & CellFlags::Unknown_200 ? "Yes" : "No"));
-		drawText("  BridgeBody ------------- %s", (pCell->Flags & CellFlags::BridgeBody ? "Yes" : "No"));
-		drawText("  BridgeDir -------------- %s", (pCell->Flags & CellFlags::BridgeDir ? "Yes" : "No"));
+		drawText("  CenterRevealed - %s", (pCell->Flags & CellFlags::CenterRevealed ? "Yes" : "No"));
+		drawText("  EdgeRevealed - %s", (pCell->Flags & CellFlags::EdgeRevealed ? "Yes" : "No"));
+		drawText("  IsWaypoint - %s", (pCell->Flags & CellFlags::IsWaypoint ? "Yes" : "No"));
+		drawText("  BridgeOwner - %s", (pCell->Flags & CellFlags::BridgeOwner ? "Yes" : "No"));
+		drawText("  BridgeHead - %s", (pCell->Flags & CellFlags::BridgeHead ? "Yes" : "No"));
+		drawText("  Unknown_200 - %s", (pCell->Flags & CellFlags::Unknown_200 ? "Yes" : "No"));
+		drawText("  BridgeBody - %s", (pCell->Flags & CellFlags::BridgeBody ? "Yes" : "No"));
+		drawText("  BridgeDir - %s", (pCell->Flags & CellFlags::BridgeDir ? "Yes" : "No"));
 
 		const auto nOF = pCell->OccupationFlags;
 		const auto nAF = pCell->AltOccupationFlags;
