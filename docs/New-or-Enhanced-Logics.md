@@ -1273,6 +1273,18 @@ OpenTopped.AllowFiringIfDeactivated=true  ; boolean
 OpenTopped.ShareTransportTarget=true      ; boolean
 ```
 
+### Customizable spawns queue
+- It is now possible to spawn multiple types of spawnees from a spawner with `Spawns.Queue`. The order of spawnees in this queue is the order of their respawn.
+  - `Spawns` still needs to be set to enable the spawner logic and act as a default spawnee.
+  - `SpawnsNumber` still needs to be set to determine the amount of spawnee slots.
+  - If the length of the queue is longer than the spawner's `SpawnsNumber`, spawnee after this length will be omitted. If the length is shorter however, the rest of the positions will be filled by the spawnee defined by `Spawns`. Hence, it's recommended to make them the same.
+
+In `rulesmd.ini`:
+```ini
+[SOMETECHNO]        ; TechnoType
+Spawns.Queue=       ; list of aircrafts in order
+```
+
 ### Disabling fallback to (Elite)Secondary weapon
 
 - It is now possible to disable the fallback to `(Elite)Secondary` weapon from `(Elite)Primary` weapon if it cannot fire at the chosen target by setting `NoSecondaryWeaponFallback` to true (defaults to false). `NoSecondaryWeaponFallback.AllowAA` controls whether or not fallback because of projectile `AA` setting and target being in air is still allowed. This does not apply to special cases where `(Elite)Secondary` weapon is always chosen, including but not necessarily limited to the following:
@@ -1334,6 +1346,15 @@ In `rulesmd.ini`:
 ForceWeapon.Naval.Decloaked=-1  ; integer. 0 for primary weapon, 1 for secondary weapon, -1 to disable
 ForceWeapon.Cloaked=-1          ; integer. 0 for primary weapon, 1 for secondary weapon, -1 to disable
 ForceWeapon.Disguised=-1        ; integer. 0 for primary weapon, 1 for secondary weapon, -1 to disable
+```
+
+### Initial spawns number
+- It is now possible to set the initial amount of spawnees for a spawner, instead of always being filled. Won't work if it's larger than `SpawnsNumber`.
+
+In `rulesmd.ini`:
+```ini
+[SOMETECHNO]              ; TechnoType
+InitialSpawnsNumber=      ; integer
 ```
 
 ### Initial strength for TechnoTypes and cloned infantry
@@ -1641,6 +1662,27 @@ In `rulesmd.ini`:
 [SOMETERRAINTYPE]  ; TerrainType
 DestroyAnim=       ; AnimationType
 DestroySound=      ; Sound entry
+```
+
+## Vehicles
+
+### Damaged unit image changes
+
+- When a unit is damaged (health points percentage is lower than `[AudioVisual] -> ConditionYellow` percentage), it now may use different image set by `Image.ConditionYellow` VehicleType.
+- Similar, `Image.ConditionRed` is used as image if unit health points percentage is lower than `[AudioVisual] -> ConditionRed` percentage.
+- It is also works on water by setting `WaterImage.ConditionYellow` and `WaterImage.ConditionRed` VehicleType, similar to Ares' `WaterImage`.
+
+In `rulesmd.ini`:
+```ini
+[SOMEVEHICLE]                         ; VehicleType
+Image.ConditionYellow=                ; VehicleType entry
+Image.ConditionRed=                   ; VehicleType entry
+WaterImage.ConditionYellow=           ; VehicleType entry
+WaterImage.ConditionRed=              ; VehicleType entry
+```
+
+```{warning}
+Note that the VehicleTypes had to be defined under [VehicleTypes] and use same image type (SHP/VXL) for vanilla/damaged states.
 ```
 
 ## Warheads
