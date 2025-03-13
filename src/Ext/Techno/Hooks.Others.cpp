@@ -1486,6 +1486,89 @@ DEFINE_HOOK(0x4438C9, BuildingClass_SetRallyPoint_PathFinding, 0x6)
 	return 0;
 }
 
+void KickOutClones(BuildingExt::ExtData* pThis, TechnoClass* const Production)
+{
+	auto const Factory = pThis->OwnerObject();
+	auto const FactoryType = Factory->Type;
+
+	if (FactoryType->Cloning || (FactoryType->Factory != InfantryTypeClass::AbsID && FactoryType->Factory != UnitTypeClass::AbsID))
+	{
+		return;
+	}
+
+	auto const ProductionType = Production->GetTechnoType();
+	auto const ProductionTypeData = TechnoTypeExt::ExtMap.Find(ProductionType);
+	if (!ProductionTypeData->Cloneable)
+	{
+		return;
+	}
+
+	auto const FactoryOwner = Factory->Owner;
+
+	auto const& CloningSources = ProductionTypeData->ClonedAt;
+
+	auto KickOutClone = [ProductionType, FactoryOwner](BuildingClass* B) -> void
+		{
+			auto Clone = static_cast<TechnoClass*>(ProductionType->CreateObject(FactoryOwner));
+			if (B->KickOutUnit(Clone, CellStruct::Empty) != KickOutResult::Succeeded)
+			{
+				Clone->UnInit();
+			}
+		};
+
+	auto const IsUnit = (FactoryType->Factory != InfantryTypeClass::AbsID);
+
+	// keep cloning vats for backward compat, unless explicit sources are defined
+	if (!IsUnit && CloningSources.empty())
+	{
+		for (auto const CloningVat : FactoryOwner->CloningVats)
+		{
+			KickOutClone(CloningVat);
+		}
+	}
+
+	// and clone from new sources
+	if (!CloningSources.empty() || IsUnit)
+	{
+		for (auto const B : FactoryOwner->Buildings)
+		{
+			if (B->InLimbo)
+			{
+				continue;
+			}
+			auto const BType = B->Type;
+
+			auto ShouldClone = false;
+			if (!CloningSources.empty())
+			{
+				ShouldClone = CloningSources.Contains(BType);
+			}
+			else if (IsUnit)
+			{
+				auto const BData = BuildingTypeExt::ExtMap.Find(BType);
+				ShouldClone = BData->CloningFacility && (BType->Naval == FactoryType->Naval);
+			}
+
+			if (ShouldClone)
+			{
+				KickOutClone(B);
+			}
+		}
+	}
+}
+
+DEFINE_HOOK(0x4448F8, BuildingClass_KickOutUnit_CloningFacilityFix, 0x6)
+{
+	GET(BuildingClass*, pThis, ESI);
+	GET(UnitClass*, pUnit, EDI);
+
+	--Unsorted::IKnowWhatImDoing;
+	KickOutClones(BuildingExt::ExtMap.Find(pThis), pUnit);
+	++Unsorted::IKnowWhatImDoing;
+
+	return 0;
+}
+
 #pragma endregion
 
 #pragma region CrushBuildingOnAnyCell
