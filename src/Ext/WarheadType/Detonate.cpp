@@ -161,7 +161,7 @@ void WarheadTypeExt::ExtData::DetonateOnOneUnit(HouseClass* pHouse, TechnoClass*
 		this->ApplyRemoveDisguise(pHouse, pTarget);
 
 	if (this->RemoveMindControl)
-		this->ApplyRemoveMindControl(pTarget, this->RemoveMindControl_OnVictim, this->RemoveMindControl_OnController);
+		this->ApplyRemoveMindControl(pTarget);
 
 	if (this->Crit_CurrentChance > 0.0 && (!this->Crit_SuppressWhenIntercepted || !bulletWasIntercepted))
 		this->ApplyCrit(pHouse, pTarget, pOwner, pTargetExt);
@@ -385,19 +385,10 @@ void WarheadTypeExt::ExtData::ApplyRemoveDisguise(HouseClass* pHouse, TechnoClas
 	}
 }
 
-void WarheadTypeExt::ExtData::ApplyRemoveMindControl(TechnoClass* pTarget, bool OnVictim, bool OnController)
+void WarheadTypeExt::ExtData::ApplyRemoveMindControl(TechnoClass* pTarget)
 {
-	if (OnVictim)
-	{
-		if (auto pController = pTarget->MindControlledBy)
-			pTarget->MindControlledBy->CaptureManager->FreeUnit(pTarget);
-	}
-
-	if (OnController)
-	{
-		if (auto pManager = pTarget->CaptureManager)
-			pManager->FreeAll();
-	}
+	if (auto pController = pTarget->MindControlledBy)
+		pTarget->MindControlledBy->CaptureManager->FreeUnit(pTarget);
 }
 
 void WarheadTypeExt::ExtData::ApplyCrit(HouseClass* pHouse, TechnoClass* pTarget, TechnoClass* pOwner, TechnoExt::ExtData* pTargetExt = nullptr)

@@ -43,8 +43,6 @@ public:
 		Valueable<bool> Conventional_IgnoreUnits;
 		Valueable<bool> RemoveDisguise;
 		Valueable<bool> RemoveMindControl;
-		Valueable<bool> RemoveMindControl_OnVictim;
-		Valueable<bool> RemoveMindControl_OnController;
 		Nullable<bool> RemoveParasite;
 		Valueable<bool> DecloakDamagedTargets;
 		Valueable<bool> ShakeIsLocal;
@@ -210,8 +208,6 @@ public:
 			, Conventional_IgnoreUnits { false }
 			, RemoveDisguise { false }
 			, RemoveMindControl { false }
-			, RemoveMindControl_OnVictim { true }
-			, RemoveMindControl_OnController { false }
 			, RemoveParasite {}
 			, DecloakDamagedTargets { true }
 			, ShakeIsLocal { false }
@@ -375,7 +371,7 @@ public:
 	private:
 		void DetonateOnOneUnit(HouseClass* pHouse, TechnoClass* pTarget, TechnoClass* pOwner = nullptr, bool bulletWasIntercepted = false);
 		void ApplyRemoveDisguise(HouseClass* pHouse, TechnoClass* pTarget);
-		void ApplyRemoveMindControl(TechnoClass* pTarget, bool OnVictim, bool OnController);
+		void ApplyRemoveMindControl(TechnoClass* pTarget);
 		void ApplyCrit(HouseClass* pHouse, TechnoClass* pTarget, TechnoClass* Owner, TechnoExt::ExtData* pTargetExt);
 		void ApplyShieldModifiers(TechnoClass* pTarget, TechnoExt::ExtData* pTargetExt);
 		void ApplyAttachEffects(TechnoClass* pTarget, HouseClass* pInvokerHouse, TechnoClass* pInvoker);

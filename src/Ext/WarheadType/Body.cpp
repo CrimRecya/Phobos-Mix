@@ -167,8 +167,6 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Conventional_IgnoreUnits.Read(exINI, pSection, "Conventional.IgnoreUnits");
 	this->RemoveDisguise.Read(exINI, pSection, "RemoveDisguise");
 	this->RemoveMindControl.Read(exINI, pSection, "RemoveMindControl");
-	this->RemoveMindControl_OnVictim.Read(exINI, pSection, "RemoveMindControl.OnVictim");
-	this->RemoveMindControl_OnController.Read(exINI, pSection, "RemoveMindControl.OnController");
 	this->RemoveParasite.Read(exINI, pSection, "RemoveParasite");
 	this->DecloakDamagedTargets.Read(exINI, pSection, "DecloakDamagedTargets");
 	this->ShakeIsLocal.Read(exINI, pSection, "ShakeIsLocal");
@@ -402,8 +400,6 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Conventional_IgnoreUnits)
 		.Process(this->RemoveDisguise)
 		.Process(this->RemoveMindControl)
-		.Process(this->RemoveMindControl_OnVictim)
-		.Process(this->RemoveMindControl_OnController)
 		.Process(this->RemoveParasite)
 		.Process(this->DecloakDamagedTargets)
 		.Process(this->ShakeIsLocal)

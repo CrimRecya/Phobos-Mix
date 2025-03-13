@@ -256,14 +256,6 @@ public:
 
 		Valueable<int> Power;
 
-    	Nullable<UnitTypeClass*> Image_ConditionYellow;
-		Nullable<UnitTypeClass*> Image_ConditionRed;
-		Nullable<UnitTypeClass*> WaterImage_ConditionYellow;
-		Nullable<UnitTypeClass*> WaterImage_ConditionRed;
-
-		Nullable<int> InitialSpawnsNumber;
-		ValueableVector<AircraftTypeClass*> Spawns_Queue;
-
 		struct LaserTrailDataEntry
 		{
 			ValueableIdx<LaserTrailTypeClass> idxType;
@@ -512,14 +504,6 @@ public:
 			, KeepTargetOnMove_ExtraDistance { Leptons(0) }
 
 			, Power { }
-
-      		, Image_ConditionYellow { }
-			, Image_ConditionRed { }
-			, WaterImage_ConditionYellow { }
-			, WaterImage_ConditionRed { }
-
-			, InitialSpawnsNumber { }
-			, Spawns_Queue { }
 		{ }
 
 		virtual ~ExtData() = default;
