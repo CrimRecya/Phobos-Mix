@@ -37,7 +37,7 @@ public:
 		, BulletROT { -1 }
 		, BulletSpin { false }
 		, BulletStable { false }
-		, BulletOnPlane { true }
+		, BulletOnPlane { false }
 		, MirrorCoord { true }
 		, RetargetRadius { 0 }
 		, Synchronize { false }
