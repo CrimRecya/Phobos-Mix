@@ -103,18 +103,18 @@ void ActualTrajectory::OnAIPreDetonate()
 	// Can snap to target?
 	const auto targetSnapDistance = static_cast<const ActualTrajectoryType*>(this->GetType())->TargetSnapDistance.Get();
 
-	if (targetSnapDistance <= 0)
-		return;
-
-	const auto pBullet = this->Bullet;
-	const auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
-	const auto coords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
-	// Whether to snap to target?
-	if (coords.DistanceFrom(pBullet->Location) <= targetSnapDistance)
+	if (targetSnapDistance > 0)
 	{
-		const auto pExt = BulletExt::ExtMap.Find(pBullet);
-		pExt->SnappedToTarget = true;
-		pBullet->SetLocation(coords);
+		const auto pBullet = this->Bullet;
+		const auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
+		const auto coords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
+		// Whether to snap to target?
+		if (coords.DistanceFrom(pBullet->Location) <= targetSnapDistance)
+		{
+			const auto pExt = BulletExt::ExtMap.Find(pBullet);
+			pExt->SnappedToTarget = true;
+			pBullet->SetLocation(coords);
+		}
 	}
 
 	this->PhobosTrajectory::OnAIPreDetonate();
