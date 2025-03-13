@@ -70,17 +70,13 @@ void AggressiveStanceClass::Execute(WWKey eInput) const
 		if (auto pPassenger = pTechno->Passengers.GetFirstPassenger())
 		{
 			for (; pPassenger; pPassenger = abstract_cast<FootClass*>(pPassenger->NextObject))
-			{
 				processATechno(pPassenger);
-			}
 		}
 
 		if (auto pBuilding = abstract_cast<BuildingClass*>(pTechno))
 		{
 			for (auto pOccupier : pBuilding->Occupants)
-			{
 				processATechno(pOccupier);
-			}
 		}
 	}
 

@@ -1486,81 +1486,64 @@ DEFINE_HOOK(0x4438C9, BuildingClass_SetRallyPoint_PathFinding, 0x6)
 	return 0;
 }
 
-void KickOutClones(BuildingExt::ExtData* pThis, TechnoClass* const Production)
+void __fastcall KickOutClones(const BuildingExt::ExtData* const pThis, const TechnoClass* const pProduction)
 {
-	auto const Factory = pThis->OwnerObject();
-	auto const FactoryType = Factory->Type;
+	auto const pFactory = pThis->OwnerObject();
+	auto const pFactoryType = pFactory->Type;
 
-	if (FactoryType->Cloning || (FactoryType->Factory != InfantryTypeClass::AbsID && FactoryType->Factory != UnitTypeClass::AbsID))
-	{
+	if (pFactoryType->Cloning || (pFactoryType->Factory != InfantryTypeClass::AbsID && pFactoryType->Factory != UnitTypeClass::AbsID))
 		return;
-	}
 
-	auto const ProductionType = Production->GetTechnoType();
-	auto const ProductionTypeData = TechnoTypeExt::ExtMap.Find(ProductionType);
-	if (!ProductionTypeData->Cloneable)
-	{
+	auto const pProductionType = pProduction->GetTechnoType();
+	auto const pProductionTypeExt = TechnoTypeExt::ExtMap.Find(pProductionType);
+
+	if (!pProductionTypeExt->Cloneable)
 		return;
-	}
 
-	auto const FactoryOwner = Factory->Owner;
-
-	auto const& CloningSources = ProductionTypeData->ClonedAt;
-
-	auto KickOutClone = [ProductionType, FactoryOwner](BuildingClass* B) -> void
+	auto const pFactoryOwner = pFactory->Owner;
+	auto const& pCloningSources = pProductionTypeExt->ClonedAt;
+	auto kickOutClone = [pProductionType, pFactoryOwner](BuildingClass* pBuilding) -> void
 		{
-			auto Clone = static_cast<TechnoClass*>(ProductionType->CreateObject(FactoryOwner));
-			if (B->KickOutUnit(Clone, CellStruct::Empty) != KickOutResult::Succeeded)
-			{
-				Clone->UnInit();
-			}
+			auto pClone = static_cast<TechnoClass*>(pProductionType->CreateObject(pFactoryOwner));
+
+			if (pBuilding->KickOutUnit(pClone, CellStruct::Empty) != KickOutResult::Succeeded)
+				pClone->UnInit();
 		};
 
-	auto const IsUnit = (FactoryType->Factory != InfantryTypeClass::AbsID);
-
+	auto const isUnit = (pFactoryType->Factory != InfantryTypeClass::AbsID);
 	// keep cloning vats for backward compat, unless explicit sources are defined
-	if (!IsUnit && CloningSources.empty())
+	if (!isUnit && pCloningSources.empty())
 	{
-		for (auto const CloningVat : FactoryOwner->CloningVats)
-		{
-			KickOutClone(CloningVat);
-		}
+		for (auto const pCloningVat : pFactoryOwner->CloningVats)
+			kickOutClone(pCloningVat);
 	}
 
 	// and clone from new sources
-	if (!CloningSources.empty() || IsUnit)
+	if (!pCloningSources.empty() || isUnit)
 	{
-		for (auto const B : FactoryOwner->Buildings)
+		for (auto const pBuilding : pFactoryOwner->Buildings)
 		{
-			if (B->InLimbo)
-			{
+			if (pBuilding->InLimbo)
 				continue;
-			}
-			auto const BType = B->Type;
 
-			auto ShouldClone = false;
-			if (!CloningSources.empty())
-			{
-				ShouldClone = CloningSources.Contains(BType);
-			}
-			else if (IsUnit)
-			{
-				auto const BData = BuildingTypeExt::ExtMap.Find(BType);
-				ShouldClone = BData->CloningFacility && (BType->Naval == FactoryType->Naval);
-			}
+			auto const pBuildingType = pBuilding->Type;
+			auto shouldClone = false;
 
-			if (ShouldClone)
-			{
-				KickOutClone(B);
-			}
+			if (!pCloningSources.empty())
+				shouldClone = pCloningSources.Contains(pBuildingType);
+			else if (isUnit)
+				shouldClone = BuildingTypeExt::ExtMap.Find(pBuildingType)->CloningFacility && (pBuildingType->Naval == pFactoryType->Naval);
+
+			if (shouldClone)
+				kickOutClone(pBuilding);
 		}
 	}
 }
 
 DEFINE_HOOK(0x4448F8, BuildingClass_KickOutUnit_CloningFacilityFix, 0x6)
 {
-	GET(BuildingClass*, pThis, ESI);
-	GET(UnitClass*, pUnit, EDI);
+	GET(const BuildingClass* const, pThis, ESI);
+	GET(const UnitClass* const, pUnit, EDI);
 
 	--Unsorted::IKnowWhatImDoing;
 	KickOutClones(BuildingExt::ExtMap.Find(pThis), pUnit);
