@@ -1,5 +1,8 @@
 #include "Body.h"
 
+#include <Ext/Bullet/Trajectories/PhobosActualTrajectory.h>
+#include <Ext/Bullet/Trajectories/PhobosVirtualTrajectory.h>
+
 BulletTypeExt::ExtContainer BulletTypeExt::ExtMap;
 
 double BulletTypeExt::GetAdjustedGravity(BulletTypeClass* pType)
@@ -143,7 +146,7 @@ void BulletTypeExt::ExtData::TrajectoryValidation() const
 		else if (flag == TrajectoryFlag::Straight || flag == TrajectoryFlag::Bombard)
 		{
 			if (this->SubjectToGround)
-				static_cast<LiveShellTrajectoryType*>(pTrajType)->SubjectToGround = true;
+				static_cast<ActualTrajectoryType*>(pTrajType)->SubjectToGround = true;
 		}
 	}
 }

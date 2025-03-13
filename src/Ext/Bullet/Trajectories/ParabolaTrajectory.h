@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhobosTrajectory.h"
+#include "PhobosActualTrajectory.h"
 
 enum class ParabolaFireMode : int
 {
@@ -12,10 +12,10 @@ enum class ParabolaFireMode : int
 	SpeedAndAngle = 5,
 };
 
-class ParabolaTrajectoryType final : public LiveShellTrajectoryType
+class ParabolaTrajectoryType final : public ActualTrajectoryType
 {
 public:
-	ParabolaTrajectoryType() : LiveShellTrajectoryType()
+	ParabolaTrajectoryType() : ActualTrajectoryType()
 		, OpenFireMode { ParabolaFireMode::Speed }
 		, ThrowHeight { 600 }
 		, LaunchAngle { 30.0 }
@@ -48,12 +48,12 @@ private:
 	void Serialize(T& Stm);
 };
 
-class ParabolaTrajectory final : public LiveShellTrajectory
+class ParabolaTrajectory final : public ActualTrajectory
 {
 public:
 	ParabolaTrajectory(noinit_t) { }
 	ParabolaTrajectory(ParabolaTrajectoryType const* trajType, BulletClass* pBullet)
-		: LiveShellTrajectory(trajType, pBullet)
+		: ActualTrajectory(trajType, pBullet)
 		, Type { trajType }
 		, ThrowHeight { trajType->ThrowHeight > 0 ? trajType->ThrowHeight : 600 }
 		, BounceTimes { trajType->BounceTimes }

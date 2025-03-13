@@ -1,13 +1,13 @@
 #pragma once
 
-#include "PhobosTrajectory.h"
+#include "PhobosActualTrajectory.h"
 
 #include <Ext/WeaponType/Body.h>
 
-class MissileTrajectoryType final : public LiveShellTrajectoryType
+class MissileTrajectoryType final : public ActualTrajectoryType
 {
 public:
-	MissileTrajectoryType() : LiveShellTrajectoryType()
+	MissileTrajectoryType() : ActualTrajectoryType()
 		, UniqueCurve { false }
 		, FacingCoord { false }
 		, ReduceCoord { true }
@@ -48,12 +48,12 @@ private:
 	void Serialize(T& Stm);
 };
 
-class MissileTrajectory final : public LiveShellTrajectory
+class MissileTrajectory final : public ActualTrajectory
 {
 public:
 	MissileTrajectory(noinit_t) { }
 	MissileTrajectory(MissileTrajectoryType const* trajType, BulletClass* pBullet)
-		: LiveShellTrajectory(trajType, pBullet)
+		: ActualTrajectory(trajType, pBullet)
 		, Type { trajType }
 		, CruiseEnable { trajType->CruiseEnable }
 		, InStraight { false }

@@ -278,14 +278,21 @@ void EngraveTrajectory::DrawEngraveLaser(TechnoClass* pTechno, HouseClass* pOwne
 	}
 
 	auto targetCoord = pBullet->Location;
-	const auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(fireCoord, targetCoord, pOwner);
 
-	if (fireStormCoords != CoordStruct::Empty)
+	if (!pType->IgnoresFirestorm)
 	{
-		targetCoord = fireStormCoords;
-		targetCoord.Z = MapClass::Instance->GetCellFloorHeight(fireStormCoords); // TODO accurate
-	}
+		const auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(fireCoord, targetCoord, pOwner);
 
+		if (fireStormCoords != CoordStruct::Empty)
+		{
+			const auto ratio = PhobosTrajectory::Get2DDistance(fireCoord, fireStormCoords) / PhobosTrajectory::Get2DDistance(fireCoord, targetCoord);
+			const auto height = MapClass::Instance->GetCellFloorHeight(fireStormCoords);
+			targetCoord = fireCoord + (targetCoord - fireCoord) * ratio;
+
+			if (targetCoord.Z < height)
+				targetCoord.Z = height;
+		}
+	}
 	// Draw laser from head to tail
 	if (pType->IsHouseColor || pType->IsSingleColor)
 	{

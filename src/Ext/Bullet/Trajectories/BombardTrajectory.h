@@ -1,11 +1,11 @@
 #pragma once
 
-#include "PhobosTrajectory.h"
+#include "PhobosActualTrajectory.h"
 
-class BombardTrajectoryType final : public LiveShellTrajectoryType
+class BombardTrajectoryType final : public ActualTrajectoryType
 {
 public:
-	BombardTrajectoryType() : LiveShellTrajectoryType()
+	BombardTrajectoryType() : ActualTrajectoryType()
 		, Height { 0.0 }
 		, FallPercent { 1.0 }
 		, FallPercentShift { 0.0 }
@@ -40,12 +40,12 @@ private:
 	void Serialize(T& Stm);
 };
 
-class BombardTrajectory final : public LiveShellTrajectory
+class BombardTrajectory final : public ActualTrajectory
 {
 public:
 	BombardTrajectory(noinit_t) { }
 	BombardTrajectory(BombardTrajectoryType const* trajType, BulletClass* pBullet)
-		: LiveShellTrajectory(trajType, pBullet)
+		: ActualTrajectory(trajType, pBullet)
 		, Type { trajType }
 		, Height { trajType->Height }
 		, FallPercent { trajType->FallPercent - trajType->FallPercentShift }

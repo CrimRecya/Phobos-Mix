@@ -19,14 +19,14 @@ void StraightTrajectoryType::Serialize(T& Stm)
 
 bool StraightTrajectoryType::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->LiveShellTrajectoryType::Load(Stm, false);
+	this->ActualTrajectoryType::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool StraightTrajectoryType::Save(PhobosStreamWriter& Stm) const
 {
-	this->LiveShellTrajectoryType::Save(Stm);
+	this->ActualTrajectoryType::Save(Stm);
 	const_cast<StraightTrajectoryType*>(this)->Serialize(Stm);
 	return true;
 }
@@ -60,21 +60,21 @@ void StraightTrajectory::Serialize(T& Stm)
 
 bool StraightTrajectory::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	this->LiveShellTrajectory::Load(Stm, false);
+	this->ActualTrajectory::Load(Stm, false);
 	this->Serialize(Stm);
 	return true;
 }
 
 bool StraightTrajectory::Save(PhobosStreamWriter& Stm) const
 {
-	this->LiveShellTrajectory::Save(Stm);
+	this->ActualTrajectory::Save(Stm);
 	const_cast<StraightTrajectory*>(this)->Serialize(Stm);
 	return true;
 }
 
 void StraightTrajectory::OnUnlimbo()
 {
-	this->LiveShellTrajectory::OnUnlimbo();
+	this->ActualTrajectory::OnUnlimbo();
 
 	const auto pBullet = this->Bullet;
 
@@ -124,7 +124,7 @@ void StraightTrajectory::OnAIPreDetonate()
 		pBullet->SetLocation(CoordStruct { pBullet->Location.X, pBullet->Location.Y, MapClass::Instance->GetCellFloorHeight(pBullet->Location) });
 
 	if (!pType->PassThrough)
-		this->LiveShellTrajectory::OnAIPreDetonate();
+		this->ActualTrajectory::OnAIPreDetonate();
 	else
 		this->PhobosTrajectory::OnAIPreDetonate();
 }

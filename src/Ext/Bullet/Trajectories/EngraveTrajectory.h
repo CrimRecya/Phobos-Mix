@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhobosTrajectory.h"
+#include "PhobosVirtualTrajectory.h"
 
 class EngraveTrajectoryType final : public VirtualTrajectoryType
 {
