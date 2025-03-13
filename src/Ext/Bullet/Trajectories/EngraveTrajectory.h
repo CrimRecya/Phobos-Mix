@@ -1,18 +1,11 @@
 #pragma once
 
-#include "PhobosTrajectory.h"
+#include "PhobosVirtualTrajectory.h"
 
-class EngraveTrajectoryType final : public PhobosTrajectoryType
+class EngraveTrajectoryType final : public VirtualTrajectoryType
 {
 public:
-	EngraveTrajectoryType() : PhobosTrajectoryType()
-		, SourceCoord { { 0, 0 } }
-		, TargetCoord { { 0, 0 } }
-		, MirrorCoord { true }
-		, UseDisperseCoord { false }
-		, ApplyRangeModifiers { false }
-		, AllowFirerTurning { true }
-		, Duration { 0 }
+	EngraveTrajectoryType() : VirtualTrajectoryType()
 		, IsLaser { true }
 		, IsIntense { false }
 		, IsHouseColor { false }
@@ -23,32 +16,8 @@ public:
 		, LaserThickness { 3 }
 		, LaserDuration { 1 }
 		, LaserDelay { 1 }
-		, DamageDelay { 2 }
-		, ProximityImpact { 0 }
-		, ProximityWarhead {}
-		, ProximityDamage { 0 }
-		, ProximityRadius { Leptons(179) }
-		, ProximityDirect { false }
-		, ProximityMedial { false }
-		, ProximityAllies { false }
-		, ProximityFlight { false }
-		, ProximitySuicide { false }
-		, ConfineOnGround { true }
 	{ }
 
-	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
-	virtual bool Save(PhobosStreamWriter& Stm) const override;
-	virtual std::unique_ptr<PhobosTrajectory> CreateInstance() const override;
-	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
-	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Engrave; }
-
-	Valueable<Point2D> SourceCoord;
-	Valueable<Point2D> TargetCoord;
-	Valueable<bool> MirrorCoord;
-	Valueable<bool> UseDisperseCoord;
-	Valueable<bool> ApplyRangeModifiers;
-	Valueable<bool> AllowFirerTurning;
-	Valueable<int> Duration;
 	Valueable<bool> IsLaser;
 	Valueable<bool> IsIntense;
 	Valueable<bool> IsHouseColor;
@@ -59,78 +28,47 @@ public:
 	Valueable<int> LaserThickness;
 	Valueable<int> LaserDuration;
 	Valueable<int> LaserDelay;
-	Valueable<int> DamageDelay;
-	Valueable<int> ProximityImpact;
-	Valueable<WarheadTypeClass*> ProximityWarhead;
-	Valueable<int> ProximityDamage;
-	Valueable<Leptons> ProximityRadius;
-	Valueable<bool> ProximityDirect;
-	Valueable<bool> ProximityMedial;
-	Valueable<bool> ProximityAllies;
-	Valueable<bool> ProximityFlight;
-	Valueable<bool> ProximitySuicide;
-	Valueable<bool> ConfineOnGround;
+
+	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
+	virtual bool Save(PhobosStreamWriter& Stm) const override;
+	virtual std::unique_ptr<PhobosTrajectory> CreateInstance(BulletClass* pBullet) const override;
+	virtual void Read(CCINIClass* const pINI, const char* pSection) override;
+	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Engrave; }
 
 private:
 	template <typename T>
 	void Serialize(T& Stm);
 };
 
-class EngraveTrajectory final : public PhobosTrajectory
+class EngraveTrajectory final : public VirtualTrajectory
 {
 public:
 	EngraveTrajectory(noinit_t) { }
-
-	EngraveTrajectory(EngraveTrajectoryType const* trajType) : Type { trajType }
-		, SourceCoord { trajType->SourceCoord.Get() }
-		, TargetCoord { trajType->TargetCoord.Get() }
-		, Duration { trajType->Duration }
+	EngraveTrajectory(EngraveTrajectoryType const* trajType, BulletClass* pBullet)
+		: VirtualTrajectory(trajType, pBullet)
+		, Type { trajType }
 		, LaserTimer {}
-		, DamageTimer {}
-		, TechnoInTransport { 0 }
-		, NotMainWeapon { false }
-		, FLHCoord {}
-		, BuildingCoord {}
-		, StartCoord {}
-		, ProximityImpact { trajType->ProximityImpact }
-		, TheCasualty {}
 	{ }
+
+	const EngraveTrajectoryType* Type;
+	CDTimerClass LaserTimer;
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Engrave; }
-	virtual void OnUnlimbo(BulletClass* pBullet, CoordStruct* pCoord, BulletVelocity* pVelocity) override;
-	virtual bool OnAI(BulletClass* pBullet) override;
-	virtual void OnAIPreDetonate(BulletClass* pBullet) override;
-	virtual void OnAIVelocity(BulletClass* pBullet, BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
-	virtual TrajectoryCheckReturnType OnAITargetCoordCheck(BulletClass* pBullet) override;
-	virtual TrajectoryCheckReturnType OnAITechnoCheck(BulletClass* pBullet, TechnoClass* pTechno) override;
+	virtual void OnUnlimbo() override;
+	virtual bool OnAIDetonateCheck() override;
+	virtual void OnAINextFrameCheck() override;
+	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
+	virtual void OpenFire() override;
+	virtual bool GetCanHitGround() const override { return false; }
+	virtual bool CalculateBulletVelocity(const double speed) override;
 
-	const EngraveTrajectoryType* Type;
-	Point2D SourceCoord;
-	Point2D TargetCoord;
-	int Duration;
-	CDTimerClass LaserTimer;
-	CDTimerClass DamageTimer;
-	DWORD TechnoInTransport;
-	bool NotMainWeapon;
-	CoordStruct FLHCoord;
-	CoordStruct BuildingCoord;
-	CoordStruct StartCoord;
-	int ProximityImpact;
-	std::map<int, int> TheCasualty; // Only for recording existence
-
-	void SetEngraveDirection(BulletClass* pBullet, double rotateAngle);
 private:
+	int GetFloorCoordHeight(const CoordStruct& coord);
+	bool PlaceOnCorrectHeight();
+	void DrawEngraveLaser(TechnoClass* pTechno, HouseClass* pOwner);
+
 	template <typename T>
 	void Serialize(T& Stm);
-
-	void GetTechnoFLHCoord(BulletClass* pBullet, TechnoClass* pTechno);
-	inline void CheckMirrorCoord(TechnoClass* pTechno);
-	bool InvalidFireCondition(BulletClass* pBullet, TechnoClass* pTechno);
-	int GetFloorCoordHeight(BulletClass* pBullet, const CoordStruct& coord);
-	bool PlaceOnCorrectHeight(BulletClass* pBullet);
-	void DrawEngraveLaser(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner);
-	inline void DetonateLaserWarhead(BulletClass* pBullet, TechnoClass* pTechno, HouseClass* pOwner);
-	void PrepareForDetonateAt(BulletClass* pBullet, HouseClass* pOwner);
 };
