@@ -174,8 +174,11 @@ CoordStruct PhobosTrajectory::GetWeaponFireCoord(TechnoClass* pTechno)
 
 	if (pType->DisperseFromFirer.Get(flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
 	{
-		for (auto pTrans = pTechno->Transporter; pTrans; pTrans = pTrans->Transporter)
-			pTechno = pTrans;
+		if (pTechno)
+		{
+			for (auto pTrans = pTechno->Transporter; pTrans; pTrans = pTrans->Transporter)
+				pTechno = pTrans;
+		}
 
 		if (!this->NotMainWeapon && pTechno && !pTechno->InLimbo)
 		{
@@ -298,11 +301,30 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 	if (!validWeapons || !validBursts)
 		return true;
 
-	if (!pBullet->Target && !pType->DisperseForceFire)
-		return false;
+	auto pTarget = pBullet->Target;
+
+	if (!pType->DisperseForceFire)
+	{
+		if (!pTarget)
+			return false;
+
+		if (pType->Synchronize)
+		{
+			if (const auto pWeapon = pBullet->WeaponType)
+			{
+				const auto range = (pType->ApplyRangeModifiers && pFirer ? WeaponTypeExt::GetRangeWithModifiers(pWeapon, pFirer, pWeapon->Range) : pWeapon->Range) + 32;
+				const auto pSource = (pFirer && !this->NotMainWeapon) ? static_cast<ObjectClass*>(pFirer) : pBullet;
+				const auto distance = (this->NotMainWeapon || this->TargetInTheAir || (pFirer && pFirer->IsInAir())) ? pSource->DistanceFrom(pTarget) : pSource->DistanceFrom3D(pTarget);
+
+				if (distance >= range)
+					return false;
+			}
+		}
+	}
 
 	// Set basic target
-	const auto pTarget = pBullet->Target ? pBullet->Target : (this->TargetInTheAir ? nullptr : MapClass::Instance->TryGetCellAt(pBullet->TargetCoords));
+	if (!pTarget && !this->TargetInTheAir)
+		pTarget = MapClass::Instance->TryGetCellAt(pBullet->TargetCoords);
 	// Launch weapons in sequence
 	for (int weaponNum = 0; weaponNum < validWeapons; ++weaponNum)
 	{

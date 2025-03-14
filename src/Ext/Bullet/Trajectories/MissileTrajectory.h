@@ -19,7 +19,7 @@ public:
 		, CruiseUnableRange { Leptons(1280) }
 		, CruiseAltitude { 800 }
 		, CruiseAlongLevel { false }
-		, SuicideAboveRange { -3 }
+		, SuicideAboveRange { -3.0 }
 		, SuicideShortOfROT { false }
 	{ }
 
