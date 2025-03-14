@@ -1,6 +1,7 @@
 #include "TracingTrajectory.h"
 
 #include <Ext/Bullet/Body.h>
+#include <Ext/Techno/Body.h>
 
 namespace detail
 {
@@ -117,7 +118,7 @@ bool TracingTrajectory::OnAIDetonateCheck()
 
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
-	auto pFirer = pBullet->Owner;
+	const auto pFirer = pBullet->Owner;
 
 	if (!pType->TraceTheTarget && !pFirer)
 		return true;
@@ -150,17 +151,20 @@ void TracingTrajectory::OpenFire()
 		pBullet->SetLocation(pBullet->SourceCoords + offset);
 	}
 
-	auto duration = pType->Duration.Get();
+	const auto duration = pType->Duration.Get();
 
-	if (duration <= 0)
+	if (duration > 0)
+	{
+		this->DurationTimer.Start(duration);
+	}
+	else if (!duration)
 	{
 		if (const auto pWeapon = pBullet->WeaponType)
-			duration = (pWeapon->ROF > 10) ? pWeapon->ROF - 10 : 1;
+			this->DurationTimer.Start((pWeapon->ROF > 10) ? pWeapon->ROF - 10 : 1);
 		else
-			duration = 120;
+			this->DurationTimer.Start(120);
 	}
 
-	this->DurationTimer.Start(duration);
 	this->PhobosTrajectory::OpenFire();
 }
 

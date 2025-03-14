@@ -34,6 +34,7 @@ public:
 		Speed { 100.0 }
 		, Duration { 0 }
 		, TolerantTime { -1 }
+		, CreateCapacity { -1 }
 		, BulletROT { -1 }
 		, BulletSpin { false }
 		, BulletStable { false }
@@ -89,6 +90,7 @@ public:
 	Valueable<double> Speed; // The speed that a projectile should reach
 	Valueable<int> Duration; // The existence time of projectile
 	Valueable<int> TolerantTime; // The tolerance time for the projectile to lose its target, after which it will explode
+	Valueable<int> CreateCapacity; // Only take effect when the number of trajectory fired by its firer on the map is less than this value
 	Valueable<int> BulletROT; // The rotational speed of the projectile image that does not affect the direction of movement
 	Valueable<bool> BulletSpin; // Image continue to rotate
 	Valueable<bool> BulletStable; // Image no longer rotate after launch

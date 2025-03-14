@@ -270,7 +270,7 @@ DEFINE_HOOK(0x5218F3, InfantryClass_WhatWeaponShouldIUse_DeployFireWeapon, 0x6)
 #pragma region TechnoClass_GetFireError
 DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 {
-	enum { CannotFire = 0x6FCB7E };
+	enum { CannotFire = 0x6FCB7E, TemporarilyCannotFire = 0x6FC0DF };
 
 	GET(TechnoClass*, pThis, ESI);
 	GET(WeaponTypeClass*, pWeapon, EDI);
@@ -290,16 +290,17 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 	if (const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon))
 	{
 		const auto pTechno = abstract_cast<TechnoClass*>(pTarget);
-		CellClass* pTargetCell = nullptr;
+		const auto pBulletType = pWeapon->Projectile;
+		const auto pBulletTypeExt = BulletTypeExt::ExtMap.Find(pBulletType);
 
 		// AAOnly doesn't need to be checked if LandTargeting=1.
-		if (pThis->GetTechnoType()->LandTargeting != LandTargetingType::Land_Not_OK && pWeapon->Projectile->AA && pTarget && !pTarget->IsInAir())
+		if (pThis->GetTechnoType()->LandTargeting != LandTargetingType::Land_Not_OK && pBulletType->AA
+			&& pTarget && !pTarget->IsInAir() && pBulletTypeExt->AAOnly)
 		{
-			auto const pBulletTypeExt = BulletTypeExt::ExtMap.Find(pWeapon->Projectile);
-
-			if (pBulletTypeExt->AAOnly)
-				return CannotFire;
+			return CannotFire;
 		}
+
+		CellClass* pTargetCell = nullptr;
 
 		if (pTarget)
 		{
@@ -331,6 +332,14 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 
 			if (!pWeaponExt->HasRequiredAttachedEffects(pTechno, pThis))
 				return CannotFire;
+		}
+
+		const auto pTrajType = pBulletTypeExt->TrajectoryType.get();
+
+		if (pTrajType && pTrajType->CreateCapacity >= 0
+			&& pTrajType->CreateCapacity <= TechnoExt::ExtMap.Find(pThis)->CurrentTracingCount)
+		{
+			return TemporarilyCannotFire;
 		}
 	}
 

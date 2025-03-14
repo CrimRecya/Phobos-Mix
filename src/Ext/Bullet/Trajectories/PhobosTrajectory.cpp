@@ -206,6 +206,16 @@ void PhobosTrajectory::OnUnlimbo()
 			this->GetTechnoFLHCoord();
 		else
 			this->NotMainWeapon = true;
+
+		const auto pFirerExt = TechnoExt::ExtMap.Find(pFirer);
+		// Check trajectory capacity
+		if (pType->CreateCapacity >= 0 && pFirerExt->CurrentTracingCount >= pType->CreateCapacity)
+		{
+			pBullet->Health = 0;
+			this->ShouldDetonate = true;
+		}
+		// Increase trajectory count
+		++pFirerExt->CurrentTracingCount;
 	}
 	else
 	{
@@ -238,10 +248,10 @@ bool PhobosTrajectory::OnAI()
 
 	const auto pBullet = this->Bullet;
 	const auto range = pType->DisperseEffectiveRange.Get();
-
+	// Weapons can only be fired when the distance is close enough
 	if (range && pBullet->TargetCoords.DistanceFrom(pBullet->Location) > range)
 		return false;
-
+	// Fire after checking the orientation
 	return this->CheckFireFacing() && this->PrepareDisperseWeapon();
 }
 
@@ -419,6 +429,9 @@ void PhobosTrajectory::OnAIPreDetonate()
 		this->PrepareDisperseWeapon();
 
 	const auto pBullet = this->Bullet;
+	// Decrease trajectory count, considering that there is no function to transfer the firer, only simple processing will be carried out
+	if (const auto pFirerExt = TechnoExt::ExtMap.Find(pBullet->Owner))
+		--pFirerExt->CurrentTracingCount;
 	// No damage, no anims...
 	if (pType->PeacefulVanish.Get(this->Flag() == TrajectoryFlag::Engrave || pType->ProximityImpact || pType->DisperseCycle))
 	{
@@ -637,6 +650,7 @@ void PhobosTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->Speed = Math::max(0.001, this->Speed);
 	this->Duration.Read(exINI, pSection, "Trajectory.Duration");
 	this->TolerantTime.Read(exINI, pSection, "Trajectory.TolerantTime");
+	this->CreateCapacity.Read(exINI, pSection, "Trajectory.CreateCapacity");
 	this->BulletROT.Read(exINI, pSection, "Trajectory.BulletROT");
 	this->BulletSpin.Read(exINI, pSection, "Trajectory.BulletSpin");
 	this->BulletStable.Read(exINI, pSection, "Trajectory.BulletStable");
@@ -712,6 +726,7 @@ void PhobosTrajectoryType::Serialize(T& Stm)
 		.Process(this->Speed)
 		.Process(this->Duration)
 		.Process(this->TolerantTime)
+		.Process(this->CreateCapacity)
 		.Process(this->BulletROT)
 		.Process(this->BulletSpin)
 		.Process(this->BulletStable)
