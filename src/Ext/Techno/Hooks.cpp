@@ -4,6 +4,8 @@
 #include <EventClass.h>
 #include <ScenarioClass.h>
 #include <TunnelLocomotionClass.h>
+#include <OverlayClass.h>
+#include <TerrainClass.h>
 
 #include <Ext/Anim/Body.h>
 #include <Ext/BuildingType/Body.h>
@@ -13,6 +15,8 @@
 #include <Ext/TechnoType/Body.h>
 #include <Utilities/EnumFunctions.h>
 #include <Utilities/AresHelper.h>
+#include <Ext/OverlayType/Body.h>
+#include <Ext/TerrainType/Body.h>
 
 #pragma region Update
 
@@ -700,3 +704,79 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 }
 
 #pragma endregion
+
+bool ShouldIgnoreByMouse(ObjectClass* pObject)
+{
+	auto pType = pObject->GetType();
+
+	if (!pType)
+		return true;
+
+	if (auto pOverlay = abstract_cast<OverlayClass*>(pObject))
+	{
+		auto pTypeExt = OverlayTypeExt::ExtMap.Find(pOverlay->Type);
+		return pTypeExt->IgnoredByMouse ? true : false;
+	}
+	else if (auto pTerrain = abstract_cast<TerrainClass*>(pObject))
+	{
+		auto pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
+		return pTypeExt->IgnoredByMouse ? true : false;
+	}
+	else if (auto pTechno = abstract_cast<TechnoClass*>(pObject))
+	{
+		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
+		auto pOwner = pTechno->Owner;
+		bool shouldIgnore = false;
+
+		if (pOwner == HouseClass::CurrentPlayer)
+		{
+			shouldIgnore = pTypeExt->IgnoredByMouse.Get().X;
+		}
+		else if (pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
+		{
+			shouldIgnore = pTypeExt->IgnoredByMouse.Get().Y;
+		}
+		else
+		{
+			shouldIgnore = pTypeExt->IgnoredByMouse.Get().Z;
+		}
+
+		return shouldIgnore ? true : false;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+DEFINE_HOOK(0x6DA3D2, TacticalClass_GetObjectOnCrd_IgnoredByMouse1, 0x8)
+{
+	enum { ignore = 0x6DA491, dontIgnore = 0x6DA3DA };
+
+	GET(ObjectClass*, pObject, ESI);
+
+	if (!pObject)
+		return ignore;
+
+	return ShouldIgnoreByMouse(pObject) ? ignore : dontIgnore;
+}
+
+DEFINE_HOOK(0x6DA4FB, TacticalClass_GetObjectOnCrd_IgnoredByMouse2, 0x6)
+{
+	enum { ret = 0x6DA501 };
+
+	GET(CellClass*, pCell, EAX);
+
+	auto pObject = pCell->FirstObject;
+
+	for (; pObject; pObject = pObject->NextObject)
+	{
+		if (!ShouldIgnoreByMouse(pObject))
+		{
+			break;
+		}
+	}
+
+	R->EAX(pObject);
+	return ret;
+}

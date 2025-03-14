@@ -284,6 +284,8 @@ public:
 		std::vector<std::vector<CoordStruct>> DeployedWeaponBurstFLHs;
 		std::vector<std::vector<CoordStruct>> EliteDeployedWeaponBurstFLHs;
 
+		Valueable<Vector3D<int>> IgnoredByMouse;
+
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
 			, UIDescription {}
@@ -522,6 +524,8 @@ public:
 
 			, InitialSpawnsNumber { }
 			, Spawns_Queue { }
+
+			, IgnoredByMouse { }
 		{ }
 
 		virtual ~ExtData() = default;
