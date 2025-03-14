@@ -265,6 +265,10 @@ public:
 		Nullable<int> InitialSpawnsNumber;
 		ValueableVector<AircraftTypeClass*> Spawns_Queue;
 
+		Valueable<int> DefaultVisualCharacterToSelf;
+		Valueable<int> DefaultVisualCharacterToAlly;
+		Valueable<int> DefaultVisualCharacterToEnemy;
+
 		struct LaserTrailDataEntry
 		{
 			ValueableIdx<LaserTrailTypeClass> idxType;
@@ -522,6 +526,10 @@ public:
 
 			, InitialSpawnsNumber { }
 			, Spawns_Queue { }
+
+			, DefaultVisualCharacterToSelf { 0 }
+			, DefaultVisualCharacterToAlly { 0 }
+			, DefaultVisualCharacterToEnemy { 0 }
 		{ }
 
 		virtual ~ExtData() = default;
