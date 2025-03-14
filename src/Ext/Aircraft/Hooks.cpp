@@ -346,6 +346,7 @@ DEFINE_HOOK(0x6F4B67, TechnoClass_ReceiveCommand_RequestTether, 0x6)
 // Radio: do not untether techno who have other tether link
 DEFINE_HOOK(0x6F4BB3, TechnoClass_ReceiveCommand_NotifyUnlink, 0x7)
 {
+	// Place the hook after processing to prevent functions from calling each other and getting stuck in a dead loop.
 	GET(TechnoClass* const, pThis, ESI);
 	// The radio link capacity of some technos can be greater than 1 (like airport)
 	// Here is a specific example, there may be other situations as well:
