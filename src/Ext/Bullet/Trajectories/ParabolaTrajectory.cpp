@@ -135,7 +135,7 @@ void ParabolaTrajectory::OnUnlimbo()
 
 		if (pTarget->AbstractFlags & AbstractFlags::Foot)
 		{
-			if (const auto pCell = MapClass::Instance->TryGetCellAt(pTarget->GetCoords()))
+			if (const auto pCell = MapClass::Instance.TryGetCellAt(pTarget->GetCoords()))
 			{
 				pBullet->Target = pCell;
 				pBullet->TargetCoords = pCell->GetCoords();
@@ -185,7 +185,7 @@ bool ParabolaTrajectory::OnAIDetonateCheck()
 		}
 	}
 
-	const auto pCell = MapClass::Instance->TryGetCellAt(pBullet->Location);
+	const auto pCell = MapClass::Instance.TryGetCellAt(pBullet->Location);
 	// Bounce
 	if (!pCell || (this->ShouldBounce && this->CalculateBulletVelocityAfterBounce(pCell)))
 		return true;
@@ -213,7 +213,7 @@ void ParabolaTrajectory::OnAIVelocityCheck()
 			const auto pFirer = pBullet->Owner;
 			const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 			// Check for additional obstacles on the ground
-			if (this->CheckThroughAndSubjectInCell(MapClass::Instance->GetCellAt(pBullet->Location), pOwner))
+			if (this->CheckThroughAndSubjectInCell(MapClass::Instance.GetCellAt(pBullet->Location), pOwner))
 			{
 				if (32.0 < velocity)
 					ratio = (32.0 / velocity);
@@ -225,7 +225,7 @@ void ParabolaTrajectory::OnAIVelocityCheck()
 		if (std::abs(this->MovingVelocity.Z) > Unsorted::CellHeight)
 		{
 			const auto theTargetCoords = pBullet->Location + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
-			const auto cellHeight = MapClass::Instance->GetCellFloorHeight(theTargetCoords);
+			const auto cellHeight = MapClass::Instance.GetCellFloorHeight(theTargetCoords);
 			// Check whether the height of the ground is about to exceed the height of the projectile
 			if (cellHeight < theTargetCoords.Z)
 				return;
@@ -259,17 +259,17 @@ void ParabolaTrajectory::OnAIVelocityCheck()
 			auto largePace = static_cast<size_t>(std::max(cellPace.X, cellPace.Y));
 			const auto stepCoord = !largePace ? CoordStruct::Empty : (theTargetCoords - theSourceCoords) * (1.0 / largePace);
 			auto curCoord = theSourceCoords;
-			auto pCurCell = MapClass::Instance->GetCellAt(sourceCell);
+			auto pCurCell = MapClass::Instance.GetCellAt(sourceCell);
 			// Check one by one towards the direction of the next frame's position
 			for (size_t i = 0; i < largePace; ++i)
 			{
-				if (curCoord.Z < MapClass::Instance->GetCellFloorHeight(curCoord)) // Below ground level?
+				if (curCoord.Z < MapClass::Instance.GetCellFloorHeight(curCoord)) // Below ground level?
 				{
 					locationDistance = PhobosTrajectory::Get2DDistance(curCoord, theSourceCoords);
 					velocityCheck = 1;
 					break;
 				}
-				else if ((subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array->GetItem(pCurCell->OverlayTypeIndex)->Wall) // Impact on the wall?
+				else if ((subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array.GetItem(pCurCell->OverlayTypeIndex)->Wall) // Impact on the wall?
 					|| (checkThrough && this->CheckThroughAndSubjectInCell(pCurCell, pOwner))) // Blocked by obstacles?
 				{
 					locationDistance = PhobosTrajectory::Get2DDistance(curCoord, theSourceCoords);
@@ -278,13 +278,13 @@ void ParabolaTrajectory::OnAIVelocityCheck()
 				}
 				// There are no obstacles, continue to check the next cell
 				curCoord += stepCoord;
-				pCurCell = MapClass::Instance->GetCellAt(curCoord);
+				pCurCell = MapClass::Instance.GetCellAt(curCoord);
 			}
 		}
 		// Check whether ignore firestorm wall before searching
 		if (!pBullet->Type->IgnoresFirestorm)
 		{
-			const auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(theSourceCoords, theTargetCoords, pOwner);
+			const auto fireStormCoords = MapClass::Instance.FindFirstFirestorm(theSourceCoords, theTargetCoords, pOwner);
 			// Not empty when firestorm wall exists
 			if (fireStormCoords != CoordStruct::Empty)
 			{

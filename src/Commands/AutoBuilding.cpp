@@ -27,12 +27,12 @@ const wchar_t* AutoBuildingCommandClass::GetUIDescription() const
 void AutoBuildingCommandClass::Execute(WWKey eInput) const
 {
 	Phobos::Config::AutomaticPlacingBuilding = !Phobos::Config::AutomaticPlacingBuilding;
-	const int tabIndex = SidebarClass::Instance->ActiveTabIndex;
+	const int tabIndex = SidebarClass::Instance.ActiveTabIndex;
 
 	if (!tabIndex || tabIndex == 1)
 	{
-		SidebarClass::Instance->SidebarBackgroundNeedsRedraw = true;
-		SidebarClass::Instance->RepaintSidebar(tabIndex);
+		SidebarClass::Instance.SidebarBackgroundNeedsRedraw = true;
+		SidebarClass::Instance.RepaintSidebar(tabIndex);
 	}
 }
 
@@ -59,11 +59,11 @@ const wchar_t* AutoBuildingCombatCommandClass::GetUIDescription() const
 void AutoBuildingCombatCommandClass::Execute(WWKey eInput) const
 {
 	Phobos::Config::AutomaticPlacingCombatBuilding = !Phobos::Config::AutomaticPlacingCombatBuilding;
-	const int tabIndex = SidebarClass::Instance->ActiveTabIndex;
+	const int tabIndex = SidebarClass::Instance.ActiveTabIndex;
 
 	if (!tabIndex || tabIndex == 1)
 	{
-		SidebarClass::Instance->SidebarBackgroundNeedsRedraw = true;
-		SidebarClass::Instance->RepaintSidebar(tabIndex);
+		SidebarClass::Instance.SidebarBackgroundNeedsRedraw = true;
+		SidebarClass::Instance.RepaintSidebar(tabIndex);
 	}
 }

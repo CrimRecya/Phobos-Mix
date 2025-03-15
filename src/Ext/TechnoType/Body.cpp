@@ -374,7 +374,7 @@ int __fastcall TechnoTypeExt::RequirementsMetExtraCheck(void* pAresHouseExt, voi
 	// Only with Ares will call this function, so skip sanity check.
 	const auto result = AresFunctions::RequirementsMet(pAresHouseExt, pType);
 
-	if (*reinterpret_cast<HouseClass**>(pAresHouseExt) == HouseClass::CurrentPlayer())
+	if (*reinterpret_cast<HouseClass**>(pAresHouseExt) == HouseClass::CurrentPlayer)
 	{
 		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 
@@ -391,20 +391,20 @@ CanBuildResult TechnoTypeExt::CheckAlwaysExistCameo(TechnoTypeClass* pType, CanB
 	auto ForceRedrawSidebar = [pType]()
 	{
 		const auto tabIndex = SidebarClass::GetObjectTabIdx(pType->WhatAmI(), pType->GetArrayIndex(), 0);
-		const auto pSidebar = SidebarClass::Instance();
+		auto& sidebar = SidebarClass::Instance;
 
-		if (tabIndex != pSidebar->ActiveTabIndex)
+		if (tabIndex != sidebar.ActiveTabIndex)
 			return;
 
-		pSidebar->SidebarNeedsRedraw = true;
-		pSidebar->SidebarBackgroundNeedsRedraw = true; // Necessary
-		pSidebar->Tabs[tabIndex].NeedsRedraw = true;
-		pSidebar->RedrawSidebar(0);
+		sidebar.SidebarNeedsRedraw = true;
+		sidebar.SidebarBackgroundNeedsRedraw = true; // Necessary
+		sidebar.Tabs[tabIndex].NeedsRedraw = true;
+		sidebar.RedrawSidebar(0);
 	};
 
 	if (canBuild == CanBuildResult::Unbuildable)
 	{
-		const auto pCurrent = HouseClass::CurrentPlayer();
+		const auto pCurrent = HouseClass::CurrentPlayer;
 		auto CheckOverrideTechnos = [pCurrent, pTypeExt]()
 		{
 			const auto& pAuxTypes = pTypeExt->Cameo_OverrideTechnos;
@@ -432,15 +432,15 @@ CanBuildResult TechnoTypeExt::CheckAlwaysExistCameo(TechnoTypeClass* pType, CanB
 				if (const auto pBldType = abstract_cast<BuildingTypeClass*>(pType))
 				{
 					buildCat = pBldType->BuildCat;
-					const auto pDisplay = DisplayClass::Instance();
-					const auto pCurType = abstract_cast<BuildingTypeClass*>(pDisplay->CurrentBuildingType);
+					auto& display = DisplayClass::Instance;
+					const auto pCurType = abstract_cast<BuildingTypeClass*>(display.CurrentBuildingType);
 
 					if (!RulesExt::Global()->ExtendedBuildingPlacing || !pCurType || BuildingTypeExt::IsSameBuildingType(pBldType, pCurType))
 					{
-						pDisplay->SetActiveFoundation(nullptr);
-						pDisplay->CurrentBuilding = nullptr;
-						pDisplay->CurrentBuildingType = nullptr;
-						pDisplay->CurrentBuildingOwnerArrayIndex = -1;
+						display.SetActiveFoundation(nullptr);
+						display.CurrentBuilding = nullptr;
+						display.CurrentBuildingType = nullptr;
+						display.CurrentBuildingOwnerArrayIndex = -1;
 					}
 				}
 

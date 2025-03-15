@@ -572,7 +572,7 @@ void TechnoExt::ExtData::ToggleAggressiveStance()
 			const auto& voiceList = pTechnoType->VoiceAttack.Count ? pTechnoType->VoiceAttack : pTechnoType->VoiceMove;
 
 			if (const auto count = voiceList.Count)
-				voiceIndex = voiceList.GetItem(Randomizer::Global().Random() % count);
+				voiceIndex = voiceList.GetItem(Randomizer::Global.Random() % count);
 		}
 
 		pThis->QueueVoice(voiceIndex);

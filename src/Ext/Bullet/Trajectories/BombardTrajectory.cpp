@@ -415,7 +415,7 @@ bool BombardTrajectory::BulletVelocityChange()
 
 					this->MovingSpeed = 0;
 					this->CalculateBulletVelocity(0);
-					this->RemainingDistance += pBullet->Location.Z - MapClass::Instance->GetCellFloorHeight(middleLocation);
+					this->RemainingDistance += pBullet->Location.Z - MapClass::Instance.GetCellFloorHeight(middleLocation);
 				}
 
 				const auto pExt = BulletExt::ExtMap.Find(pBullet);

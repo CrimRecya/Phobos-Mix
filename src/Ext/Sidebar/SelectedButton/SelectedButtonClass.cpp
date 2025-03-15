@@ -19,14 +19,14 @@ void SelectedButtonClass::OnMouseEnter()
 {
 	this->Hovering = true;
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedButtonClass::OnMouseLeave()
 {
 	this->Hovering = false;
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
@@ -84,7 +84,7 @@ void SelectedButtonClass::DrawInfo() const
 	const auto pExt = SelectedInfoClass::Instance.CurrentSelectTechno[0];
 	const auto pTechno = pExt->OwnerObject();
 	const auto pTypeExt = pExt->TypeExtData;
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	const auto pSHP = pTypeExt->SelectedInfo_Button.Get(pSideExt->SelectedInfo_Button.Get());
 
 	if (!pSHP || pSHP->Frames < 7)
@@ -161,19 +161,19 @@ void SelectedNotButtonClass::OnMouseEnter()
 {
 	this->Hovering = true;
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedNotButtonClass::OnMouseLeave()
 {
 	this->Hovering = false;
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedNotButtonClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	const auto pSHP = pSideExt->SelectedInfo_Buff.Get();
 
 	if (!pSHP || pSHP->Frames < 15)
@@ -290,14 +290,14 @@ void SelectedToggleClass::OnMouseEnter()
 {
 	this->Hovering = true;
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedToggleClass::OnMouseLeave()
 {
 	this->Hovering = false;
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 bool SelectedToggleClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
@@ -316,7 +316,7 @@ bool SelectedToggleClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 
 void SelectedToggleClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
 	const auto pSHP = pSideExt->SelectedInfo_Toggle.Get();
 
@@ -346,14 +346,14 @@ void SelectedScrollClass::OnMouseEnter()
 {
 	this->Hovering = true;
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedScrollClass::OnMouseLeave()
 {
 	this->Hovering = false;
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 bool SelectedScrollClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
@@ -378,7 +378,7 @@ bool SelectedScrollClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 
 void SelectedScrollClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
 	const auto pSHP = pSideExt->SelectedInfo_Toggle.Get();
 

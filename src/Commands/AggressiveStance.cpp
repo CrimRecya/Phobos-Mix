@@ -56,7 +56,7 @@ void AggressiveStanceClass::Execute(WWKey eInput) const
 			return;
 		};
 
-	for (const auto& pUnit : ObjectClass::CurrentObjects())
+	for (const auto& pUnit : ObjectClass::CurrentObjects)
 	{
 		// try to cast to TechnoClass
 		TechnoClass* pTechno = abstract_cast<TechnoClass*>(pUnit);
@@ -92,7 +92,7 @@ void AggressiveStanceClass::Execute(WWKey eInput) const
 
 			wchar_t buffer[0x100];
 			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:AGGRESSIVE_STANCE_OFF", L"%i unit(s) ceased Aggressive Stance."), TechnoVectorAggressive.size());
-			MessageListClass::Instance->PrintMessage(buffer);
+			MessageListClass::Instance.PrintMessage(buffer);
 		}
 		else
 		{
@@ -101,7 +101,7 @@ void AggressiveStanceClass::Execute(WWKey eInput) const
 
 			wchar_t buffer[0x100];
 			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:AGGRESSIVE_STANCE_ON", L"%i unit(s) entered Aggressive Stance."), TechnoVectorNonAggressive.size());
-			MessageListClass::Instance->PrintMessage(buffer);
+			MessageListClass::Instance.PrintMessage(buffer);
 		}
 	}
 }

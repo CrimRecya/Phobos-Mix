@@ -486,7 +486,7 @@ bool MissileTrajectory::StandardVelocityChange()
 			const auto ratio = this->MovingSpeed / horizontalDistance;
 			targetLocation.X = pBullet->Location.X + static_cast<int>(horizontal.X * ratio);
 			targetLocation.Y = pBullet->Location.Y + static_cast<int>(horizontal.Y * ratio);
-			const auto altitude = pType->CruiseAltitude + (pType->CruiseAlongLevel ? MapClass::Instance->GetCellFloorHeight(pBullet->Location) : pBullet->SourceCoords.Z);
+			const auto altitude = pType->CruiseAltitude + (pType->CruiseAlongLevel ? MapClass::Instance.GetCellFloorHeight(pBullet->Location) : pBullet->SourceCoords.Z);
 			// Smooth curve for low turning speed projectile
 			targetLocation.Z = (altitude + pBullet->Location.Z) / 2;
 		}

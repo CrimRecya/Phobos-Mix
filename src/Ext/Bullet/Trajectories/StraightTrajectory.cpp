@@ -119,7 +119,7 @@ void StraightTrajectory::OnAIPreDetonate()
 	const auto pType = this->Type;
 	// Whether to detonate at ground level?
 	if (pType->PassDetonateLocal)
-		pBullet->SetLocation(CoordStruct { pBullet->Location.X, pBullet->Location.Y, MapClass::Instance->GetCellFloorHeight(pBullet->Location) });
+		pBullet->SetLocation(CoordStruct { pBullet->Location.X, pBullet->Location.Y, MapClass::Instance.GetCellFloorHeight(pBullet->Location) });
 
 	if (!pType->PassThrough)
 		this->ActualTrajectory::OnAIPreDetonate();
@@ -294,7 +294,7 @@ bool StraightTrajectory::PassAndConfineAtHeight()
 {
 	const auto pBullet = this->Bullet;
 	const auto futureCoords = pBullet->Location + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
-	auto checkDifference = MapClass::Instance->GetCellFloorHeight(futureCoords) - futureCoords.Z;
+	auto checkDifference = MapClass::Instance.GetCellFloorHeight(futureCoords) - futureCoords.Z;
 
 	if (MapClass::Instance.GetCellAt(futureCoords)->ContainsBridge())
 	{

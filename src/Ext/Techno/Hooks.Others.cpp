@@ -310,10 +310,10 @@ DEFINE_HOOK(0x55B4E1, LogicClass_Update_UnmarkCellOccupationFlags, 0x5)
 
 	if (delay > 0 && !(Unsorted::CurrentFrame % delay))
 	{
-		const auto pMap = MapClass::Instance();
-		pMap->CellIteratorReset();
+		auto& pMap = MapClass::Instance;
+		pMap.CellIteratorReset();
 
-		for (auto pCell = pMap->CellIteratorNext(); pCell; pCell = pMap->CellIteratorNext())
+		for (auto pCell = pMap.CellIteratorNext(); pCell; pCell = pMap.CellIteratorNext())
 		{
 			if ((0xFF & pCell->OccupationFlags) && !pCell->FirstObject)
 			{
@@ -590,7 +590,7 @@ static inline bool CanBuildingUnloadOccupants(BuildingClass* pThis)
 
 	for (auto pFoundation = pThis->Type->FoundationOutside; *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
 	{
-		if (const auto pSearchCell = MapClass::Instance->TryGetCellAt(topLeftCell + *pFoundation))
+		if (const auto pSearchCell = MapClass::Instance.TryGetCellAt(topLeftCell + *pFoundation))
 		{
 			if (pOccupant->IsCellOccupied(pSearchCell, FacingType::None, -1, nullptr, true) == Move::OK)
 				return true;
@@ -631,7 +631,7 @@ DEFINE_HOOK(0x4D621D, FootClass_ApproachTarget_InRangeSourceCoordsFix, 0x6)
 	}
 	else if (pWeapon && pWeapon->CellRangefinding)
 	{
-		const auto pCell = MapClass::Instance->GetCellAt(sourceCoords);
+		const auto pCell = MapClass::Instance.GetCellAt(sourceCoords);
 		sourceCoords = pCell->GetCoords();
 
 		if (pCell->ContainsBridge())
@@ -639,7 +639,7 @@ DEFINE_HOOK(0x4D621D, FootClass_ApproachTarget_InRangeSourceCoordsFix, 0x6)
 	}
 	else if (R->Origin() == 0x4D6541)
 	{
-		const auto pCell = MapClass::Instance->GetCellAt(sourceCoords);
+		const auto pCell = MapClass::Instance.GetCellAt(sourceCoords);
 		sourceCoords.Z = pCell->GetFloorHeight(Point2D { sourceCoords.X, sourceCoords.Y });
 
 		if (pCell->ContainsBridge())
@@ -661,7 +661,7 @@ DEFINE_HOOK(0x5865E2, MapClass_IsLocationFogged_Check, 0x5)
 	const int extra = (level & 1) ? ((level >> 1) + 1) : (level >> 1);
 	const CellStruct cell { static_cast<short>((pCoords->X >> 8) - extra), static_cast<short>((pCoords->Y >> 8) - extra) };
 
-	R->EAX(!(MapClass::Instance->GetCellAt(cell)->AltFlags & AltCellFlags::NoFog));
+	R->EAX(!(MapClass::Instance.GetCellAt(cell)->AltFlags & AltCellFlags::NoFog));
 	return 0;
 }
 */
@@ -783,7 +783,7 @@ DEFINE_HOOK(0x6F8D32, TechnoClass_ScanToAttackWall_DestroyOwnerlessWalls, 0x9)
 	GET(int, OwnerIdx, EAX);
 	GET(TechnoClass*, pThis, ESI);
 
-	if (auto const pOwner = (OwnerIdx != -1) ? HouseClass::Array->Items[OwnerIdx] : nullptr)
+	if (auto const pOwner = (OwnerIdx != -1) ? HouseClass::Array.Items[OwnerIdx] : nullptr)
 	{
 		if (pOwner->IsAlliedWith(pThis->Owner)
 			&& (!RulesExt::Global()->DestroyOwnerlessWalls
@@ -840,7 +840,7 @@ DEFINE_HOOK(0x481778, CellClass_ScatterContent_Fix, 0x6)
 	GET(TechnoClass* const, pTechno, ESI);
 	GET_STACK(bool, force, STACK_OFFSET(0x2C, 0xC));
 
-	return ((pTechno && pTechno->Owner->IsControlledByHuman() && RulesClass::Instance()->PlayerScatter) || force) ? Scatter : Continue;
+	return ((pTechno && pTechno->Owner->IsControlledByHuman() && RulesClass::Instance->PlayerScatter) || force) ? Scatter : Continue;
 }
 
 #pragma endregion
@@ -996,7 +996,7 @@ DEFINE_HOOK(0x4D6E83, FootClass_MissionAreaGuard_FollowStray, 0x6)
 
 	GET(FootClass* const, pThis, ESI);
 
-	int range = RulesClass::Instance()->GuardModeStray;
+	int range = RulesClass::Instance->GuardModeStray;
 
 	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType()))
 		range = pThis->Owner->IsControlledByHuman() ? pTypeExt->PlayerGuardModeStray.Get(Leptons(range)) : pTypeExt->AIGuardModeStray.Get(Leptons(range));
@@ -1288,9 +1288,9 @@ DEFINE_HOOK(0x4448B0, BuildingClass_KickOutUnit_ExitCoords, 0x6)
 	if (!isJJ)
 	{
 		auto nCell = CellClass::Coord2Cell(*pCrd);
-		auto const pCell = MapClass::Instance->GetCellAt(nCell);
+		auto const pCell = MapClass::Instance.GetCellAt(nCell);
 		bool isBridge = pCell->ContainsBridge();
-		nCell = MapClass::Instance->NearByLocation(CellClass::Coord2Cell(*pCrd),
+		nCell = MapClass::Instance.NearByLocation(CellClass::Coord2Cell(*pCrd),
 			pProductType->SpeedType, -1, pProductType->MovementZone, isBridge, 1, 1, false,
 			false, false, isBridge, nCell, false, false);
 		*pCrd = CellClass::Cell2Coord(nCell, pCrd->Z);
@@ -1475,9 +1475,9 @@ DEFINE_HOOK(0x4448F8, BuildingClass_KickOutUnit_CloningFacilityFix, 0x6)
 	GET(const BuildingClass* const, pThis, ESI);
 	GET(const UnitClass* const, pUnit, EDI);
 
-	--Unsorted::IKnowWhatImDoing;
+	--Unsorted::ScenarioInit;
 	KickOutClones(BuildingExt::ExtMap.Find(pThis), pUnit);
-	++Unsorted::IKnowWhatImDoing;
+	++Unsorted::ScenarioInit;
 
 	return 0;
 }
@@ -1723,7 +1723,7 @@ DEFINE_HOOK(0x6FFE00, TechnoClass_ClickedEvent_CacheClickedEvent, 0x5)
 	GET(TechnoClass*, pThis, ECX);
 	GET_STACK(EventType, event, 0x4);
 
-	if (EventClass::OutList->Count >= 128)
+	if (EventClass::OutList.Count >= 128)
 	{
 		auto const pExt = TechnoExt::ExtMap.Find(pThis);
 		pExt->HasCachedClickEvent = true;
@@ -1745,7 +1745,7 @@ DEFINE_HOOK(0x6FFDA5, TechnoClass_ClickedMission_CacheClickedMission, 0x7)
 	GET(AbstractClass* const, pTarget, EBP);
 	GET(Mission const, mission, EDI);
 
-	if (EventClass::OutList->Count >= 128)
+	if (EventClass::OutList.Count >= 128)
 	{
 		auto const pExt = TechnoExt::ExtMap.Find(pThis);
 		pExt->HasCachedClickMission = true;
@@ -1787,7 +1787,7 @@ DEFINE_HOOK(0x522937, InfantryClass_EnterOccupyBuilding_KeepUpdate, 0xA)
 	GET(InfantryClass*, pThis, ESI);
 
 	if (RulesExt::Global()->UpdateInLimbo_Occupier)
-		LogicClass::Instance->AddObject(pThis, false);
+		LogicClass::Instance.AddObject(pThis, false);
 
 	return 0;
 }
@@ -1797,7 +1797,7 @@ DEFINE_HOOK(0x4733B6, PassengerClass_AddPassenger_KeepUpdate, 0x5)
 	GET(InfantryClass*, pThis, ESI);
 
 	if (RulesExt::Global()->UpdateInLimbo_NormalPassenger)
-		LogicClass::Instance->AddObject(pThis, false);
+		LogicClass::Instance.AddObject(pThis, false);
 
 	return 0;
 }
@@ -1822,7 +1822,7 @@ DEFINE_HOOK(0x6FF7F9, SITechnoClass_Fire_LimboLaunch, 0x6)
 	GET(TechnoClass*, pThis, ESI);
 
 	if (RulesExt::Global()->UpdateInLimbo_LimboLaunch)
-		LogicClass::Instance->AddObject(pThis, false);
+		LogicClass::Instance.AddObject(pThis, false);
 
 	return 0;
 }

@@ -23,18 +23,18 @@ bool SelectedColumnClass::Draw(bool forced)
 void SelectedColumnClass::OnMouseEnter()
 {
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedColumnClass::OnMouseLeave()
 {
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedColumnClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	auto position = Point2D { this->X, this->Y };
 	auto surfaceRect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
 
@@ -52,9 +52,9 @@ void SelectedColumnClass::DrawInfo() const
 	{
 		const auto pOwner = pThis->Owner;
 
-		if ((!pOwner || !pOwner->IsAlliedWith(HouseClass::CurrentPlayer())) && !HouseClass::IsCurrentPlayerObserver())
+		if ((!pOwner || !pOwner->IsAlliedWith(HouseClass::CurrentPlayer)) && !HouseClass::IsCurrentPlayerObserver())
 		{
-			if (pThis->IsDisguisedAs(HouseClass::CurrentPlayer()))
+			if (pThis->IsDisguisedAs(HouseClass::CurrentPlayer))
 			{
 				if (const auto pDisguiseTypeExt = TechnoTypeExt::ExtMap.Find(TechnoTypeExt::GetTechnoType(pThis->Disguise)))
 				{
@@ -229,20 +229,20 @@ void SelectedColumnClass::DrawInfo() const
 	if (const auto pCameoPCX = pDisplayTypeExt ? pDisplayTypeExt->CameoPCX.GetSurface() : nullptr)
 	{
 		auto drawRect = RectangleStruct { pMainCameo->X, pMainCameo->Y, pMainCameo->Width, pMainCameo->Height};
-		PCX::Instance->BlitToSurface(&drawRect, DSurface::Composite, pCameoPCX);
+		PCX::Instance.BlitToSurface(&drawRect, DSurface::Composite, pCameoPCX);
 	}
 	else if (const auto pSHP = pDisplayType->GetCameo())
 	{
 		if (const auto MissingCameoPCX = SelectedInfoClass::SearchMissingCameo(pDisplayType->WhatAmI(), pSHP))
 		{
 			auto drawRect = RectangleStruct { pMainCameo->X, pMainCameo->Y, pMainCameo->Width, pMainCameo->Height};
-			PCX::Instance->BlitToSurface(&drawRect, DSurface::Composite, MissingCameoPCX);
+			PCX::Instance.BlitToSurface(&drawRect, DSurface::Composite, MissingCameoPCX);
 		}
 		else
 		{
 			position = Point2D { pMainCameo->X, pMainCameo->Y };
 			const auto cameoRect = RectangleStruct { 0, 0, pMainCameo->X + pMainCameo->Width, pMainCameo->Y + pMainCameo->Height};
-			const auto pPal = pDisplayTypeExt ? pDisplayTypeExt->CameoPal.GetOrDefaultConvert(FileSystem::CAMEO_PAL) : FileSystem::CAMEO_PAL();
+			const auto pPal = pDisplayTypeExt ? pDisplayTypeExt->CameoPal.GetOrDefaultConvert(FileSystem::CAMEO_PAL) : FileSystem::CAMEO_PAL;
 			DSurface::Composite->DrawSHP(pPal, pSHP, 0, &position, &cameoRect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 		}
 	}
@@ -282,18 +282,18 @@ bool SelectedBottomClass::Draw(bool forced)
 void SelectedBottomClass::OnMouseEnter()
 {
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedBottomClass::OnMouseLeave()
 {
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedBottomClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
 	const auto pSHP = pSideExt->SelectedInfo_Bottom.Get();
 
@@ -308,8 +308,8 @@ void SelectedBottomClass::DrawInfo() const
 	if (!Phobos::Config::SelectedDisplay_Enable)
 		return;
 
-	const auto fps = FPSCounter::CurrentFrameRate();
-	const auto gameSpeed = GameOptionsClass::Instance->GameSpeed;
+	const auto fps = FPSCounter::CurrentFrameRate;
+	const auto gameSpeed = GameOptionsClass::Instance.GameSpeed;
 	COLORREF color = 0x67EC;
 
 	if (!gameSpeed || fps < static_cast<unsigned int>(60 / gameSpeed))

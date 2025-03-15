@@ -96,7 +96,7 @@ bool CaptureManagerExt::CaptureUnit(CaptureManagerClass* pManager, TechnoClass* 
 			if (threatDelay > 0)
 			{
 				if (const auto pExt = TechnoExt::ExtMap.Find(pTarget))
-					pExt->BeControlledThreatFrame = Unsorted::CurrentFrame() + threatDelay;
+					pExt->BeControlledThreatFrame = Unsorted::CurrentFrame + threatDelay;
 			}
 
 			if (pTarget->SetOwningHouse(pManager->Owner->Owner, !silent))

@@ -8,7 +8,7 @@ void UniqueTechnoColumnClass::InitClear()
 	{
 		if (auto& pButton = this->Buttons[i])
 		{
-			GScreenClass::Instance->RemoveButton(pButton);
+			GScreenClass::Instance.RemoveButton(pButton);
 			pButton = nullptr;
 		}
 	}
@@ -29,7 +29,7 @@ void UniqueTechnoColumnClass::InitIO()
 		position.Y += 50;
 
 		pButton->Zap();
-		GScreenClass::Instance->AddButton(pButton);
+		GScreenClass::Instance.AddButton(pButton);
 		this->Buttons[i] = pButton;
 	}
 }

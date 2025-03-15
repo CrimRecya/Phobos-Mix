@@ -49,7 +49,7 @@ bool PhobosTrajectory::BulletRetargetTechno()
 
 		for (CellSpreadEnumerator thisCell(static_cast<size_t>(pType->RetargetRadius + 0.99)); thisCell; ++thisCell)
 		{
-			if (const auto pCell = MapClass::Instance->TryGetCellAt(*thisCell + retargetCell))
+			if (const auto pCell = MapClass::Instance.TryGetCellAt(*thisCell + retargetCell))
 			{
 				for (auto pObject = pCell->GetContent(); pObject; pObject = pObject->NextObject)
 				{
@@ -94,7 +94,7 @@ bool PhobosTrajectory::BulletRetargetTechno()
 	else
 	{
 		const auto airTracker = &AircraftTrackerClass::Instance;
-		airTracker->FillCurrentVector(MapClass::Instance->GetCellAt(retargetCoords), Game::F2I(pType->RetargetRadius));
+		airTracker->FillCurrentVector(MapClass::Instance.GetCellAt(retargetCoords), Game::F2I(pType->RetargetRadius));
 
 		for (auto pTechno = airTracker->Get(); pTechno; pTechno = airTracker->Get())
 		{
@@ -324,7 +324,7 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 
 	// Set basic target
 	if (!pTarget && !this->TargetInTheAir)
-		pTarget = MapClass::Instance->TryGetCellAt(pBullet->TargetCoords);
+		pTarget = MapClass::Instance.TryGetCellAt(pBullet->TargetCoords);
 	// Launch weapons in sequence
 	for (int weaponNum = 0; weaponNum < validWeapons; ++weaponNum)
 	{
@@ -412,7 +412,7 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 
 			for (CellSpreadEnumerator thisCell(static_cast<size_t>((static_cast<double>(pWeapon->Range) / Unsorted::LeptonsPerCell) + 0.99)); thisCell; ++thisCell)
 			{
-				if (const auto pCell = MapClass::Instance->TryGetCellAt(*thisCell + centerCell))
+				if (const auto pCell = MapClass::Instance.TryGetCellAt(*thisCell + centerCell))
 				{
 					if (checkCells && EnumFunctions::IsCellEligible(pCell, pWeaponExt->CanTarget, true, true))
 						validCells.push_back(pCell);
@@ -474,7 +474,7 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 			if (checkTechnos)
 			{
 				const auto airTracker = &AircraftTrackerClass::Instance;
-				airTracker->FillCurrentVector(MapClass::Instance->GetCellAt(centerCoords), Game::F2I(static_cast<double>(pWeapon->Range) / Unsorted::LeptonsPerCell));
+				airTracker->FillCurrentVector(MapClass::Instance.GetCellAt(centerCoords), Game::F2I(static_cast<double>(pWeapon->Range) / Unsorted::LeptonsPerCell));
 
 				for (auto pTechno = airTracker->Get(); pTechno; pTechno = airTracker->Get())
 				{
@@ -502,7 +502,7 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 
 			if (checkObjects)
 			{
-				for (auto const& pObject : *BulletClass::Array())
+				for (auto const& pObject : BulletClass::Array)
 				{
 					auto const pBulletExt = BulletExt::ExtMap.Find(pObject);
 					auto const pBulletTypeExt = pBulletExt->TypeExtData;

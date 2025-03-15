@@ -266,7 +266,7 @@ bool PhobosTrajectory::OnAIDetonateCheck()
 
 	const auto pBullet = this->Bullet;
 	// Below ground level? (16 ->error range)
-	if (this->GetCanHitGround() && MapClass::Instance->GetCellFloorHeight(pBullet->Location) >= (pBullet->Location.Z + 16))
+	if (this->GetCanHitGround() && MapClass::Instance.GetCellFloorHeight(pBullet->Location) >= (pBullet->Location.Z + 16))
 		return true;
 	// Check if the tolerance time has ended or if the firer's target can be synchronized
 	if (this->CheckTolerantAndSynchronize())
@@ -293,7 +293,7 @@ void PhobosTrajectory::OnAIVelocityCheck()
 			const auto pFirer = pBullet->Owner;
 			const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 			// Check for additional obstacles on the ground
-			if (this->CheckThroughAndSubjectInCell(MapClass::Instance->GetCellAt(pBullet->Location), pOwner))
+			if (this->CheckThroughAndSubjectInCell(MapClass::Instance.GetCellAt(pBullet->Location), pOwner))
 			{
 				if (32.0 < velocity)
 					ratio = (32.0 / velocity);
@@ -303,7 +303,7 @@ void PhobosTrajectory::OnAIVelocityCheck()
 		if (std::abs(this->MovingVelocity.Z) > Unsorted::CellHeight)
 		{
 			const auto theTargetCoords = pBullet->Location + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
-			const auto cellHeight = MapClass::Instance->GetCellFloorHeight(theTargetCoords);
+			const auto cellHeight = MapClass::Instance.GetCellFloorHeight(theTargetCoords);
 			// Check whether the height of the ground is about to exceed the height of the projectile
 			if (cellHeight < theTargetCoords.Z)
 				return;
@@ -341,12 +341,12 @@ void PhobosTrajectory::OnAIVelocityCheck()
 				const auto largePace = static_cast<size_t>(std::max(cellPace.X, cellPace.Y));
 				const auto stepCoord = !largePace ? CoordStruct::Empty : (theTargetCoords - theSourceCoords) * (1.0 / largePace);
 				auto curCoord = theSourceCoords;
-				auto pCurCell = MapClass::Instance->GetCellAt(sourceCell);
+				auto pCurCell = MapClass::Instance.GetCellAt(sourceCell);
 				// Check one by one towards the direction of the next frame's position
 				for (size_t i = 0; i < largePace; ++i)
 				{
-					if ((subjectToGround && (curCoord.Z + 16) < MapClass::Instance->GetCellFloorHeight(curCoord)) // Below ground level? (16 ->error range)
-						|| (subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array->GetItem(pCurCell->OverlayTypeIndex)->Wall) // Impact on the wall?
+					if ((subjectToGround && (curCoord.Z + 16) < MapClass::Instance.GetCellFloorHeight(curCoord)) // Below ground level? (16 ->error range)
+						|| (subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array.GetItem(pCurCell->OverlayTypeIndex)->Wall) // Impact on the wall?
 						|| (checkThrough && this->CheckThroughAndSubjectInCell(pCurCell, pOwner))) // Blocked by obstacles?
 					{
 						locationDistance = PhobosTrajectory::Get2DDistance(curCoord, theSourceCoords);
@@ -355,13 +355,13 @@ void PhobosTrajectory::OnAIVelocityCheck()
 					}
 					// There are no obstacles, continue to check the next cell
 					curCoord += stepCoord;
-					pCurCell = MapClass::Instance->GetCellAt(curCoord);
+					pCurCell = MapClass::Instance.GetCellAt(curCoord);
 				}
 			}
 			// Check whether ignore firestorm wall before searching
 			if (subjectToFirestorm)
 			{
-				const auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(theSourceCoords, theTargetCoords, pOwner);
+				const auto fireStormCoords = MapClass::Instance.FindFirstFirestorm(theSourceCoords, theTargetCoords, pOwner);
 				// Not empty when firestorm wall exists
 				if (fireStormCoords != CoordStruct::Empty)
 				{

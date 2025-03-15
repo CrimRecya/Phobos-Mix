@@ -27,7 +27,7 @@ int TacticalButtonsClass::CheckMouseOverButtons(const Point2D* pMousePosition)
 		{
 			if (!Make_Global<int>(0xABCD40)) // Frame index in this second
 			{
-				for (auto pText = MessageListClass::Instance->MessageList; pText; pText = static_cast<TextLabelClass*>(pText->GetNext()))
+				for (auto pText = MessageListClass::Instance.MessageList; pText; pText = static_cast<TextLabelClass*>(pText->GetNext()))
 					pText->UserData1 = reinterpret_cast<void*>(reinterpret_cast<int>(pText->UserData1) + 60);
 			}
 
@@ -102,7 +102,7 @@ void TacticalButtonsClass::PressDesignatedButton(int triggerIndex)
 
 bool TacticalButtonsClass::MouseIsOverMessageLists(const Point2D* pMousePosition)
 {
-	const auto pMessages = &MessageListClass::Instance();
+	const auto pMessages = &MessageListClass::Instance;
 
 	if (TextLabelClass* pText = pMessages->MessageList)
 	{
@@ -131,9 +131,9 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 	if (!Phobos::ShowCurrentInfo)
 		return;
 
-	if (ObjectClass::CurrentObjects->Count > 0)
+	if (ObjectClass::CurrentObjects.Count > 0)
 	{
-		for (const auto& pCurrent : ObjectClass::CurrentObjects())
+		for (const auto& pCurrent : ObjectClass::CurrentObjects)
 		{
 			if (const auto pTechno = abstract_cast<TechnoClass*>(pCurrent))
 			{
@@ -148,7 +148,7 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 						|| (pFlyLoco = locomotion_cast<FlyLocomotionClass*>(pFoot->Locomotor), (pFlyLoco && pFlyLoco->CurrentSpeed > 0.0)))
 					{
 						auto curCoord = Point2D { pFoot->Location.X, pFoot->Location.Y };
-						auto pCurCell = MapClass::Instance->GetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
+						auto pCurCell = MapClass::Instance.GetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
 						const auto face = pJjLoco ? &pJjLoco->LocomotionFacing : &pFoot->PrimaryFacing;
 						const auto checkLength = (face->IsRotating() || !pFoot->Destination) ? Unsorted::LeptonsPerCell
 							: Math::min((Unsorted::LeptonsPerCell * 12), pFoot->DistanceFrom(pFoot->Destination));
@@ -162,7 +162,7 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 						{
 							const auto lastCoord = curCoord;
 							curCoord += stepCoord;
-							pCurCell = MapClass::Instance->TryGetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
+							pCurCell = MapClass::Instance.TryGetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
 
 							if (!pCurCell)
 								break;
@@ -182,7 +182,7 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 										: ((curCoord.Y & 0XFF) - Unsorted::LeptonsPerCell))
 									* checkCoord.X / checkCoord.Y) >> 8) != (curCoord.X >> 8));
 
-								if (const auto pCheckCell = MapClass::Instance->TryGetCellAt(lastX
+								if (const auto pCheckCell = MapClass::Instance.TryGetCellAt(lastX
 									? CellStruct { static_cast<short>(lastCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) }
 									: CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(lastCoord.Y >> 8) }))
 								{
@@ -194,7 +194,7 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 					}
 					else if (pFoot->CurrentMapCoords != CellStruct::Empty)
 					{
-						auto pCell = MapClass::Instance->GetCellAt(pFoot->CurrentMapCoords);
+						auto pCell = MapClass::Instance.GetCellAt(pFoot->CurrentMapCoords);
 
 						const auto& pD = pFoot->PathDirections;
 
@@ -217,14 +217,14 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 						const auto pBase = &pBuilding->Owner->Base;
 
 						for (const auto& baseCell : pBase->Cells_24)
-							pathCells.push_back(MapClass::Instance->GetCellAt(baseCell));
+							pathCells.push_back(MapClass::Instance.GetCellAt(baseCell));
 					}
 					else
 					{
 						const auto baseCell = pBuilding->GetMapCoords();
 
 						for (auto pFoundation = pBuilding->Type->FoundationOutside; *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
-							pathCells.push_back(MapClass::Instance->GetCellAt(baseCell + *pFoundation));
+							pathCells.push_back(MapClass::Instance.GetCellAt(baseCell + *pFoundation));
 					}
 				}
 
@@ -258,7 +258,7 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 		}
 	}
 
-	const auto pCell = MapClass::Instance->GetCellAt(DisplayClass::Instance->CurrentFoundation_CenterCell);
+	const auto pCell = MapClass::Instance.GetCellAt(DisplayClass::Instance.CurrentFoundation_CenterCell);
 	const auto location = CoordStruct { (pCell->MapCoords.X << 8), (pCell->MapCoords.Y << 8), 0 };
 	const auto height = pCell->GetLevel() * 15;
 	const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
@@ -278,9 +278,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 	TechnoClass* pTechno = nullptr;
 
-	if (ObjectClass::CurrentObjects->Count > 0)
+	if (ObjectClass::CurrentObjects.Count > 0)
 	{
-		for (const auto& pCurrent : ObjectClass::CurrentObjects())
+		for (const auto& pCurrent : ObjectClass::CurrentObjects)
 		{
 			if (const auto pCurrentTechno = abstract_cast<TechnoClass*>(pCurrent))
 			{
@@ -350,7 +350,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawText("%s = %d / %d ( %d )", pInfoName, timeCurrent, timeCeiling, timePercentage);
 	};
 
-	drawText("Current Frame: %d", Unsorted::CurrentFrame());
+	drawText("Current Frame: %d", Unsorted::CurrentFrame);
 
 	if (pTechno)
 	{
@@ -470,7 +470,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 			constexpr const char* moveTypes[8] = { "Clear", "Cloak", "Move", "Gate", "A-Block", "E-Block", "Temp", "Unable" };
 			const auto facingType = static_cast<FacingType>(primaryFacing);
-			const auto moveType = static_cast<int>(pFoot->IsCellOccupied(MapClass::Instance->GetCellAt(pFoot->CurrentMapCoords)->GetNeighbourCell(facingType), facingType, pFoot->GetCellLevel(), nullptr, true));
+			const auto moveType = static_cast<int>(pFoot->IsCellOccupied(MapClass::Instance.GetCellAt(pFoot->CurrentMapCoords)->GetNeighbourCell(facingType), facingType, pFoot->GetCellLevel(), nullptr, true));
 
 			drawText("FaceMoveType = ( %s )", (moveType >= 0 && moveType < 8) ? moveTypes[moveType] : "N/A");
 
@@ -516,7 +516,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			else
 				drawInfo("First Nav-Queue", pFoot, nullptr);
 
-			drawText("Scattering = %s , Aggressive = %s", (pExt->ScatteringStopFrame >= Unsorted::CurrentFrame() ? "Yes" : "No"), (pExt->AggressiveStance ? "Yes" : "No"));
+			drawText("Scattering = %s , Aggressive = %s", (pExt->ScatteringStopFrame >= Unsorted::CurrentFrame ? "Yes" : "No"), (pExt->AggressiveStance ? "Yes" : "No"));
 
 			if (pFoot->BelongsToATeam())
 			{
@@ -524,9 +524,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const auto pTeamType = pTeam->Type;
 				bool found = false;
 
-				for (int i = 0; i < AITriggerTypeClass::Array->Count; i++)
+				for (int i = 0; i < AITriggerTypeClass::Array.Count; i++)
 				{
-					const auto pTriggerType = AITriggerTypeClass::Array->GetItem(i);
+					const auto pTriggerType = AITriggerTypeClass::Array.GetItem(i);
 
 					if (pTeamType && (pTriggerType->Team1 == pTeamType || pTriggerType->Team2 == pTeamType))
 					{
@@ -683,15 +683,15 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 	else
 	{
 		const auto mouseXY1 = WWMouseClass::Instance->XY1;
-		auto point = mouseXY1 - Point2D { DSurface::ViewBounds->X, DSurface::ViewBounds->Y };
+		auto point = mouseXY1 - Point2D { DSurface::ViewBounds.X, DSurface::ViewBounds.Y };
 		auto cell = CellStruct::Empty;
 		auto coords = CoordStruct::Empty;
 		ObjectClass* pObj = nullptr;
 		BYTE fogged = 0;
 		BYTE shrouded = 0;
 
-		DisplayClass::Instance->ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
-		const auto pCell = MapClass::Instance->GetCellAt(cell);
+		DisplayClass::Instance.ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
+		const auto pCell = MapClass::Instance.GetCellAt(cell);
 
 		drawText("Cell: slope %d , UniqueID: %d", pCell->SlopeIndex, pCell->UniqueID);
 
@@ -729,7 +729,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 		drawText("Mouse: ( %d , %d )", mouseXY1.X, mouseXY1.Y);
 
-		const auto& pMouse = MouseClass::Instance();
+		const auto pMouse = &MouseClass::Instance;
 
 		drawText("Display: LeftDrag ( %s ) , LeftDown ( %s )", pMouse->DraggingRectangle ? "Yes" : "No", pMouse->unknown_bool_11D0 ? "Yes" : "No");
 		drawText("Display: LeftDownLocation ( %d , %d )", pMouse->unknown_11D4.X, pMouse->unknown_11D4.Y);

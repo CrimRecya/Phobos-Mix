@@ -258,8 +258,8 @@ void SWTypeExt::ExtData::GrantOneTimeFromList(SuperClass* pSW)
 
 				if (notObserver && pHouse->IsCurrentPlayer())
 				{
-					if (MouseClass::Instance->AddCameo(AbstractType::Special, swIdxToAdd))
-						MouseClass::Instance->RepaintSidebar(1);
+					if (MouseClass::Instance.AddCameo(AbstractType::Special, swIdxToAdd))
+						MouseClass::Instance.RepaintSidebar(1);
 				}
 			}
 
@@ -296,7 +296,7 @@ void SWTypeExt::ExtData::GrantOneTimeFromList(SuperClass* pSW)
 		if (this->EVA_GrantOneTimeLaunched.isset())
 			VoxClass::PlayIndex(this->EVA_GrantOneTimeLaunched.Get(), -1, -1);
 
-		MessageListClass::Instance->PrintMessage(this->Message_GrantOneTimeLaunched.Get(), RulesClass::Instance->MessageDelay, HouseClass::CurrentPlayer->ColorSchemeIndex, true);
+		MessageListClass::Instance.PrintMessage(this->Message_GrantOneTimeLaunched.Get(), RulesClass::Instance->MessageDelay, HouseClass::CurrentPlayer->ColorSchemeIndex, true);
 	}
 }
 

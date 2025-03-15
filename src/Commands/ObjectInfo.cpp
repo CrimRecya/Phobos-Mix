@@ -91,7 +91,7 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 	auto printFoots = [&append, &display, &count, &getTargetInfo](FootClass* pFoot)
 	{
 		// Basic Status
-		append("Dump ObjectInfo runs. Current Frame: %d\n", Unsorted::CurrentFrame());
+		append("Dump ObjectInfo runs. Current Frame: %d\n", Unsorted::CurrentFrame);
 		auto pType = pFoot->GetTechnoType();
 		append("ID = %s, UniqueID = %d, ", pType->ID, pFoot->UniqueID);
 		append("Owner = %s (%s), ", pFoot->Owner->get_ID(), pFoot->Owner->PlainName);
@@ -135,7 +135,7 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 			auto pTeamType = pTeam->Type;
 			bool found = false;
 
-			for (int i = 0; i < AITriggerTypeClass::Array->Count && !found; i++)
+			for (int i = 0; i < AITriggerTypeClass::Array.Count && !found; i++)
 			{
 				auto pTriggerType = AITriggerTypeClass::Array.GetItem(i);
 				auto pTriggerTeam1Type = pTriggerType->Team1;
@@ -201,7 +201,7 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 			append("\n");
 
 		// Cell Status
-		if (const auto pCell = MapClass::Instance->TryGetCellAt(cell))
+		if (const auto pCell = MapClass::Instance.TryGetCellAt(cell))
 		{
 			bool onBridge = pCell->ContainsBridge();
 
@@ -260,7 +260,7 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 	auto printBuilding = [&append, &display, &count, &getTargetInfo](BuildingClass* pBuilding)
 	{
 		// Basic Status
-		append("Dump ObjectInfo runs. Current Frame: %d\n", Unsorted::CurrentFrame());
+		append("Dump ObjectInfo runs. Current Frame: %d\n", Unsorted::CurrentFrame);
 		auto pType = pBuilding->Type;
 		append("ID = %s, UniqueID = %d, ", pType->ID, pBuilding->UniqueID);
 		append("Owner = %s (%s), ", pBuilding->Owner->get_ID(), pBuilding->Owner->PlainName);
@@ -360,7 +360,7 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 			append("\n");
 
 		// Cell Status
-		if (const auto pCell = MapClass::Instance->TryGetCellAt(cell))
+		if (const auto pCell = MapClass::Instance.TryGetCellAt(cell))
 		{
 			bool onBridge = pCell->ContainsBridge();
 

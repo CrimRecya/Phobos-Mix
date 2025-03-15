@@ -20,7 +20,7 @@ void SelectedCameoClass::OnMouseEnter()
 	this->Height += 10;
 	this->Hovering = true;
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedCameoClass::OnMouseLeave()
@@ -29,7 +29,7 @@ void SelectedCameoClass::OnMouseLeave()
 	this->Height -= 10;
 	this->Hovering = false;
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
@@ -146,14 +146,14 @@ void SelectedCameoClass::DrawInfo() const
 		if (const auto CameoPCX = pTypeExt->CameoPCX.GetSurface())
 		{
 			RectangleStruct drawRect { this->X, this->Y, 60, 48 };
-			PCX::Instance->BlitToSurface(&drawRect, DSurface::Composite, CameoPCX);
+			PCX::Instance.BlitToSurface(&drawRect, DSurface::Composite, CameoPCX);
 		}
 		else if (const auto pSHP = pTypeExt->OwnerObject()->GetCameo())
 		{
 			if (const auto MissingCameoPCX = SelectedInfoClass::SearchMissingCameo(pTypeExt->OwnerObject()->WhatAmI(), pSHP))
 			{
 				RectangleStruct drawRect { this->X, this->Y, 60, 48 };
-				PCX::Instance->BlitToSurface(&drawRect, DSurface::Composite, MissingCameoPCX);
+				PCX::Instance.BlitToSurface(&drawRect, DSurface::Composite, MissingCameoPCX);
 			}
 			else
 			{
@@ -184,7 +184,7 @@ void SelectedCameoClass::DrawInfo() const
 
 		drawCameo(pTypeExt);
 
-		const auto pRules = RulesClass::Instance();
+		const auto pRules = RulesClass::Instance;
 		const auto ratio = static_cast<double>(pTechno->Health) / pType->Strength;
 		auto rect = RectangleStruct { this->X + 4, this->Y + 2, 52, 8 };
 		DSurface::Composite->FillRect(&rect, COLOR_BLACK);
@@ -253,12 +253,12 @@ void SelectedMainCameoClass::OnMouseEnter()
 {
 	this->Hovering = true;
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedMainCameoClass::OnMouseLeave()
 {
 	this->Hovering = false;
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }

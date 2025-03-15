@@ -47,7 +47,7 @@ public:
 				if (auto const pCell = GetObstacle(pSourceCell, pTargetCell, pCellCur, crdCur, pSource, pTarget, pOwner, pBulletType, pBulletTypeExt, isTargetingCheck))
 					return pCell;
 
-				if (subjectToGround && crdCur.Z < MapClass::Instance->GetCellFloorHeight(crdCur))
+				if (subjectToGround && crdCur.Z < MapClass::Instance.GetCellFloorHeight(crdCur))
 					return pCellCur;
 
 				crdCur += step;
@@ -99,10 +99,10 @@ public:
 		}
 
 		auto coords = sourceCoords;
-		coords.Z = MapClass::Instance->GetCellFloorHeight(sourceCoords);
+		coords.Z = MapClass::Instance.GetCellFloorHeight(sourceCoords);
 		auto point = Point2D { sourceCoords.X, sourceCoords.Y };
 
-		if (MapClass::Instance->GetTargetCell(point)->ContainsBridge())
+		if (MapClass::Instance.GetTargetCell(point)->ContainsBridge())
 			coords.Z += CellClass::BridgeHeight;
 
 		return coords + pTechno->GetFLH(pTechno->SelectWeapon(pTarget), CoordStruct::Empty) - pTechno->GetRenderCoords();

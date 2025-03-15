@@ -89,10 +89,10 @@ DEFINE_HOOK(0x6D4CE6, PrintTimerOnTactical_RectTrans, 0x6)
 	LEA_STACK(const wchar_t* const, pTimeText, STACK_OFFSET(0x644, -0x600));
 
 	int width = 0;
-	pBitInst->GetTextDimension(pText, &width, nullptr, DSurface::ViewBounds->Width);
+	pBitInst->GetTextDimension(pText, &width, nullptr, DSurface::ViewBounds.Width);
 	width += 6;
 	const int lineSpace = pBitInst->field_1C + 2;
-	Point2D location { DSurface::ViewBounds->Width, (DSurface::ViewBounds->Height - ((index + 1) * lineSpace)) };
+	Point2D location { DSurface::ViewBounds.Width, (DSurface::ViewBounds.Height - ((index + 1) * lineSpace)) };
 	RectangleStruct rect { (location.X - width), location.Y, width, lineSpace };
 
 	ColorStruct fillColor { 0, 0, 0 };

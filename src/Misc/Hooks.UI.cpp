@@ -256,8 +256,8 @@ DEFINE_HOOK(0x4A8B9B, DisplayClass_Set_View_Dimensions, 0x6)
 	const auto posX = pRect->X + sideWidth;
 	const auto posY = pRect->Height - pRect->Height / 8 - 120;
 
-	MessageListClass::Instance->Init(posX, posY, 6, 98, 18, -1, -1, 0, 20, 98, width);
-	MessageListClass::Instance->SetWidth(width);
+	MessageListClass::Instance.Init(posX, posY, 6, 98, 18, -1, -1, 0, 20, 98, width);
+	MessageListClass::Instance.SetWidth(width);
 
 	return SkipGameCode;
 }
@@ -275,7 +275,7 @@ DEFINE_HOOK(0x684A9A, UnknownClass_sub_684620_InitMessageList, 0x6)
 	const auto posX = pRect->X + sideWidth;
 	const auto posY = pRect->Height - pRect->Height / 8 - 120;
 
-	MessageListClass::Instance->Init(posX, posY, 6, 98, 18, -1, -1, 0, 20, 98, width);
+	MessageListClass::Instance.Init(posX, posY, 6, 98, 18, -1, -1, 0, 20, 98, width);
 
 	return SkipGameCode;
 }

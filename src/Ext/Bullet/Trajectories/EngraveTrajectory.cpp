@@ -192,8 +192,8 @@ bool EngraveTrajectory::CalculateBulletVelocity(const double speed)
 
 int EngraveTrajectory::GetFloorCoordHeight(const CoordStruct& coord)
 {
-	const auto onFloor = MapClass::Instance->GetCellFloorHeight(coord);
-	const auto onBridge = MapClass::Instance->GetCellAt(coord)->ContainsBridge() ? onFloor + CellClass::BridgeHeight : onFloor;
+	const auto onFloor = MapClass::Instance.GetCellFloorHeight(coord);
+	const auto onBridge = MapClass::Instance.GetCellAt(coord)->ContainsBridge() ? onFloor + CellClass::BridgeHeight : onFloor;
 	const auto pBullet = this->Bullet;
 	// Take the higher position
 	return (pBullet->SourceCoords.Z >= onBridge || pBullet->TargetCoords.Z >= onBridge) ? onBridge : onFloor;
@@ -279,12 +279,12 @@ void EngraveTrajectory::DrawEngraveLaser(TechnoClass* pTechno, HouseClass* pOwne
 
 	if (!pType->IgnoresFirestorm)
 	{
-		const auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(fireCoord, targetCoord, pOwner);
+		const auto fireStormCoords = MapClass::Instance.FindFirstFirestorm(fireCoord, targetCoord, pOwner);
 
 		if (fireStormCoords != CoordStruct::Empty)
 		{
 			const auto ratio = PhobosTrajectory::Get2DDistance(fireCoord, fireStormCoords) / PhobosTrajectory::Get2DDistance(fireCoord, targetCoord);
-			const auto height = MapClass::Instance->GetCellFloorHeight(fireStormCoords);
+			const auto height = MapClass::Instance.GetCellFloorHeight(fireStormCoords);
 			targetCoord = fireCoord + (targetCoord - fireCoord) * ratio;
 
 			if (targetCoord.Z < height)

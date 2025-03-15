@@ -772,7 +772,7 @@ DEFINE_HOOK(0x70D703, TechnoClass_FireDeathWeapon_UseGlobalDeathWeaponDamage, 0x
 
 	if (RulesExt::Global()->UseGlobalDeathWeaponDamage)
 	{
-		auto const pDeathWeapon = RulesClass::Instance()->DeathWeapon;
+		auto const pDeathWeapon = RulesClass::Instance->DeathWeapon;
 		R->EDI(pDeathWeapon);
 		R->EAX(pDeathWeapon ? pDeathWeapon->Damage : 0);
 		return ReplaceDamage;
