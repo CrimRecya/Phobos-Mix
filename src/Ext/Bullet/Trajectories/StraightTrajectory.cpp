@@ -296,7 +296,7 @@ bool StraightTrajectory::PassAndConfineAtHeight()
 	const auto futureCoords = pBullet->Location + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
 	auto checkDifference = MapClass::Instance->GetCellFloorHeight(futureCoords) - futureCoords.Z;
 
-	if (MapClass::Instance->GetCellAt(futureCoords)->ContainsBridge())
+	if (MapClass::Instance.GetCellAt(futureCoords)->ContainsBridge())
 	{
 		const auto differenceOnBridge = checkDifference + CellClass::BridgeHeight;
 

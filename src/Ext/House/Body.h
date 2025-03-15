@@ -110,7 +110,7 @@ public:
 			, NumShipyards_NonMFB { 0 }
 			, AIFireSaleDelayTimer {}
 			, SuspendedEMPulseSWs {}
-			, SuperExts(SuperWeaponTypeClass::Array->Count)
+			, SuperExts(SuperWeaponTypeClass::Array.Count)
 			, SpyEffect_RadarJamTimer {}
 		{ }
 

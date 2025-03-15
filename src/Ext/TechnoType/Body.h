@@ -298,10 +298,6 @@ public:
 		Nullable<bool> NoReload_Temporal;
 		Nullable<bool> NoTurret_TrackTarget;
 
-		Valueable<int> Spawner_RecycleRange;
-		Valueable<AnimTypeClass*> Spawner_RecycleAnim;
-		Valueable<CoordStruct> Spawner_RecycleFLH;
-		Valueable<bool> Spawner_RecycleOnTurret;
 		Nullable<int> AINormalTargetingDelay;
 		Nullable<int> PlayerNormalTargetingDelay;
 		Nullable<int> AIGuardAreaTargetingDelay;
@@ -378,6 +374,11 @@ public:
 
 		Valueable<bool> Cloneable;
 		ValueableVector<BuildingTypeClass*> ClonedAt;
+
+		Valueable<Leptons> Spawner_RecycleRange;
+		Valueable<AnimTypeClass*> Spawner_RecycleAnim;
+		Valueable<CoordStruct> Spawner_RecycleCoord;
+		Valueable<bool> Spawner_RecycleOnTurret;
 
 		struct LaserTrailDataEntry
 		{
@@ -671,10 +672,6 @@ public:
 			, NoReload_Temporal {}
 			, NoTurret_TrackTarget {}
 
-			, Spawner_RecycleRange { -1 }
-			, Spawner_RecycleAnim { nullptr }
-			, Spawner_RecycleFLH { {0,0,0} }
-			, Spawner_RecycleOnTurret { false }
 			, AINormalTargetingDelay {}
 			, PlayerNormalTargetingDelay {}
 			, AIGuardAreaTargetingDelay {}
@@ -751,6 +748,11 @@ public:
 
 			, Cloneable { true }
 			, ClonedAt { }
+
+			, Spawner_RecycleRange { Leptons(-1) }
+			, Spawner_RecycleAnim { }
+			, Spawner_RecycleCoord { {0,0,0} }
+			, Spawner_RecycleOnTurret { false }
 		{ }
 
 		virtual ~ExtData() = default;
