@@ -134,7 +134,7 @@ bool ActualTrajectory::BulletPrepareCheck()
 			return true;
 		}
 	}
-
+	// Confirm the launch of the trajectory
 	this->WaitOneFrame = 0;
 	this->FireTrajectory();
 	return false;
@@ -153,12 +153,15 @@ CoordStruct ActualTrajectory::GetOnlyStableOffsetCoords(double rotateRadian)
 
 CoordStruct ActualTrajectory::GetInaccurateTargetCoords(const CoordStruct& baseCoord, double distance)
 {
-	// TODO reverse vanilla style
-	const auto pTypeExt = BulletTypeExt::ExtMap.Find(this->Bullet->Type);
-	const auto offsetMult = 0.0004 * distance;
+	const auto pBullet = this->Bullet;
+	const auto pWeapon = pBullet->WeaponType;
+	const auto pTypeExt = BulletTypeExt::ExtMap.Find(pBullet->Type);
+	// Don't know whether the weapon is correctly set, if not, a fixed value of 10 will be used
+	const auto offsetMult = distance / (pWeapon ? pWeapon->Range : 10.0);
 	const auto offsetMin = static_cast<int>(offsetMult * pTypeExt->BallisticScatter_Min.Get(Leptons(0)));
 	const auto offsetMax = static_cast<int>(offsetMult * pTypeExt->BallisticScatter_Max.Get(Leptons(RulesClass::Instance->BallisticScatter)));
 	const auto offsetDistance = ScenarioClass::Instance->Random.RandomRanged(offsetMin, offsetMax);
+	// Substitute to calculate random coordinates
 	return MapClass::GetRandomCoordsNear(baseCoord, offsetDistance, false);
 }
 
@@ -170,7 +173,7 @@ void ActualTrajectory::DisperseBurstSubstitution(double baseRadian)
 	auto rotationAxis = PhobosTrajectory::HorizontalRotate(axis, baseRadian);
 	double extraRotate = 0.0;
 	const auto burst = (this->CurrentBurst < 0) ? (-this->CurrentBurst - 1) : this->CurrentBurst;
-
+	// Symmetry and initial direction can be calculated separately
 	if (pType->MirrorCoord)
 	{
 		if (this->CurrentBurst < 0)
