@@ -14,6 +14,7 @@ void MissileTrajectoryType::Serialize(T& Stm)
 		.Process(this->UniqueCurve)
 		.Process(this->FacingCoord)
 		.Process(this->ReduceCoord)
+		.Process(this->PreAimCoord)
 		.Process(this->LaunchSpeed)
 		.Process(this->Acceleration)
 		.Process(this->TurningSpeed)
@@ -47,7 +48,7 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	INI_EX exINI(pINI);
 	// LiveShell
 	this->RotateCoord.Read(exINI, pSection, "Trajectory.Missile.RotateCoord");
-	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Missile.PreAimCoord");
+	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Missile.OffsetCoord");
 	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.Missile.AxisOfRotation");
 	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Missile.LeadTimeCalculate");
 	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Missile.DetonationDistance");
@@ -68,6 +69,7 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	// Otherwise, read all
 	this->FacingCoord.Read(exINI, pSection, "Trajectory.Missile.FacingCoord");
 	this->ReduceCoord.Read(exINI, pSection, "Trajectory.Missile.ReduceCoord");
+	this->PreAimCoord.Read(exINI, pSection, "Trajectory.Missile.PreAimCoord");
 	this->LaunchSpeed.Read(exINI, pSection, "Trajectory.Missile.LaunchSpeed");
 	this->LaunchSpeed = Math::max(0.001, this->LaunchSpeed);
 	this->Acceleration.Read(exINI, pSection, "Trajectory.Missile.Acceleration");
@@ -92,6 +94,7 @@ void MissileTrajectory::Serialize(T& Stm)
 		.Process(this->InStraight)
 		.Process(this->Accelerate)
 		.Process(this->OriginalDistance)
+		.Process(this->OffsetCoord)
 		.Process(this->PreAimDistance)
 		.Process(this->LastDotProduct)
 		;
@@ -202,7 +205,7 @@ void MissileTrajectory::OpenFire()
 		else
 			this->RemainingDistance = INT_MAX;
 		// Without setting an initial direction, it will be launched directly towards the target
-		if (pType->OffsetCoord == CoordStruct::Empty)
+		if (pType->PreAimCoord == CoordStruct::Empty)
 		{
 			const auto pBullet = this->Bullet;
 			this->InStraight = true;
@@ -210,7 +213,7 @@ void MissileTrajectory::OpenFire()
 		}
 		else
 		{
-			this->PreAimDistance = (pType->OffsetCoord.Get()).Magnitude();
+			this->PreAimDistance = (pType->PreAimCoord.Get()).Magnitude();
 			// When the distance is short, the initial moving distance will be reduced
 			if (pType->ReduceCoord && this->OriginalDistance < (Unsorted::LeptonsPerCell * 10))
 				this->PreAimDistance *= this->OriginalDistance / (Unsorted::LeptonsPerCell * 10);
@@ -232,7 +235,7 @@ CoordStruct MissileTrajectory::GetRetargetCenter() const
 	// When in the tracking phase, it only retarget within the range in front of it
 	if (!this->InStraight)
 		return pBullet->TargetCoords;
-
+	// Calculate the coordinates of the radius distance ahead
 	const auto futureVelocity = this->MovingVelocity * ((this->Type->RetargetRadius * Unsorted::LeptonsPerCell) / this->MovingSpeed);
 	return CoordStruct { pBullet->Location.X + static_cast<int>(futureVelocity.X), pBullet->Location.Y + static_cast<int>(futureVelocity.Y), pBullet->Location.Z };
 }
@@ -243,7 +246,7 @@ void MissileTrajectory::SetBulletNewTarget(AbstractClass* const pTarget)
 	pBullet->SetTarget(pTarget);
 	pBullet->TargetCoords = pTarget->GetCoords();
 	this->LastTargetCoord = pBullet->TargetCoords;
-
+	// Reset cruise flag
 	if (this->Type->CruiseEnable)
 		this->CruiseEnable = true;
 }
@@ -264,10 +267,11 @@ void MissileTrajectory::InitializeBulletNotCurve()
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	const auto pFirer = pBullet->Owner;
-	const auto theSource = pFirer ? pFirer->GetCoords() : pBullet->SourceCoords;
+	const auto& source = pFirer ? pFirer->GetCoords() : pBullet->SourceCoords;
+	const auto& target = pBullet->TargetCoords;
 	double rotateRadian = 0.0;
 	// Calculate the orientation of the coordinate system
-	if ((pType->FacingCoord || (pBullet->TargetCoords.Y == theSource.Y && pBullet->TargetCoords.X == theSource.X)) && pFirer)
+	if ((pType->FacingCoord || (target.Y == source.Y && target.X == source.X)) && pFirer)
 	{
 		if (pFirer->HasTurret())
 			rotateRadian = -(pFirer->TurretFacing().GetRadian<32>());
@@ -276,41 +280,46 @@ void MissileTrajectory::InitializeBulletNotCurve()
 	}
 	else
 	{
-		rotateRadian = PhobosTrajectory::Get2DOpRadian(theSource, pBullet->TargetCoords);
+		rotateRadian = PhobosTrajectory::Get2DOpRadian(source, target);
 	}
+	// Add the fixed offset value
+	if (pType->OffsetCoord != CoordStruct::Empty)
+		this->OffsetCoord = this->GetOnlyStableOffsetCoords(rotateRadian);
+	// Add random offset value
+	if (pBullet->Type->Inaccurate)
+		this->OffsetCoord = this->GetInaccurateTargetCoords(this->OffsetCoord, source.DistanceFrom(target));
 	// Determine the firing velocity vector of the bullet
 	if (!this->CalculateReducedVelocity(rotateRadian))
-	{
-		auto offsetCoord = pType->OffsetCoord.Get();
-
-		if (pType->MirrorCoord && this->CurrentBurst < 0)
-			offsetCoord.Y = -offsetCoord.Y;
-
-		this->MovingVelocity = PhobosTrajectory::HorizontalRotate(offsetCoord, rotateRadian);
-	}
+		this->MovingVelocity = PhobosTrajectory::HorizontalRotate(this->GetPreAimCoordsWithBurst(), rotateRadian);
 	// Rotate the selected angle
 	if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
 		this->DisperseBurstSubstitution(rotateRadian);
 }
 
-inline bool MissileTrajectory::CalculateReducedVelocity(double rotateRadian)
+CoordStruct MissileTrajectory::GetPreAimCoordsWithBurst()
 {
 	const auto pType = this->Type;
+	auto preAimCoord = pType->PreAimCoord.Get();
+	// Check if mirroring is required
+	if (pType->MirrorCoord && this->CurrentBurst < 0)
+		preAimCoord.Y = -preAimCoord.Y;
+	// No rotate now, return original value
+	return preAimCoord;
+}
 
+bool MissileTrajectory::CalculateReducedVelocity(double rotateRadian)
+{
+	const auto pType = this->Type;
+	// Check if it can reduce
 	if (!pType->ReduceCoord || pType->TurningSpeed <= 1e-10)
 		return false;
 	// Check if its steering ability is sufficient
 	const auto coordMult = (this->OriginalDistance * pType->TurningSpeed / (Unsorted::LeptonsPerCell * 90 / 2));
-
+	// Cancel when the coordinate correction is greater than the original coordinate
 	if (coordMult >= 1.0)
 		return false;
-
-	auto offsetCoord = pType->OffsetCoord.Get();
-
-	if (pType->MirrorCoord && this->CurrentBurst < 0)
-		offsetCoord.Y = -offsetCoord.Y;
-
-	const auto theAimCoord = PhobosTrajectory::HorizontalRotate(offsetCoord, rotateRadian);
+	// Calculate the rotated coordinates
+	const auto theAimCoord = PhobosTrajectory::HorizontalRotate(this->GetPreAimCoordsWithBurst(), rotateRadian);
 	const auto pBullet = this->Bullet;
 	const auto theDistance = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - pBullet->SourceCoords);
 	// Reduce the initial rotation angle
@@ -328,7 +337,8 @@ bool MissileTrajectory::CurveVelocityChange()
 	// Follow and track the target like a missile
 	if (checkValid)
 		targetLocation = pTarget->GetCoords();
-
+	// Add calculated fixed offset
+	targetLocation += this->OffsetCoord;
 	pBullet->TargetCoords = targetLocation;
 	// Update projectile velocity based on stage
 	if (!this->InStraight) // In the launch phase

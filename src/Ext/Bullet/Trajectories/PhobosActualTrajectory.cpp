@@ -144,10 +144,10 @@ CoordStruct ActualTrajectory::GetOnlyStableOffsetCoords(double rotateRadian)
 {
 	const auto pType = static_cast<const ActualTrajectoryType*>(this->GetType());
 	auto offsetCoord = pType->OffsetCoord.Get();
-
+	// Check if mirroring is required
 	if (pType->MirrorCoord && this->CurrentBurst < 0)
 		offsetCoord.Y = -offsetCoord.Y;
-
+	// Rotate the angle and return
 	return PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(offsetCoord, rotateRadian));
 }
 
