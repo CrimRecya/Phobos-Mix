@@ -605,6 +605,7 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 	return true;
 }
 
+// Simulate the launch of weapons with burst.
 void PhobosTrajectory::CreateDisperseBullets(TechnoClass* pTechno, const CoordStruct& sourceCoord, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst)
 {
 	const auto finalDamage = static_cast<int>(pWeapon->Damage * this->FirepowerMult);

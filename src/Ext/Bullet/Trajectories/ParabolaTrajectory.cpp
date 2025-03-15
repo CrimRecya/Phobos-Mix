@@ -75,7 +75,6 @@ void ParabolaTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
-
 	// LiveShell
 	this->RotateCoord.Read(exINI, pSection, "Trajectory.Parabola.RotateCoord");
 	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Parabola.OffsetCoord");
@@ -85,7 +84,6 @@ void ParabolaTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->DetonationHeight.Read(exINI, pSection, "Trajectory.Parabola.DetonationHeight");
 	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Parabola.DetonationDistance");
 	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Parabola.TargetSnapDistance");
-
 	// Parabola
 	this->OpenFireMode.Read(exINI, pSection, "Trajectory.Parabola.OpenFireMode");
 	this->ThrowHeight.Read(exINI, pSection, "Trajectory.Parabola.ThrowHeight");
@@ -127,7 +125,7 @@ bool ParabolaTrajectory::Save(PhobosStreamWriter& Stm) const
 void ParabolaTrajectory::OnUnlimbo()
 {
 	this->ActualTrajectory::OnUnlimbo();
-
+	// Parabola
 	this->RemainingDistance = INT_MAX;
 	const auto pBullet = this->Bullet;
 	// Special case: Set the target to the ground
@@ -144,7 +142,7 @@ void ParabolaTrajectory::OnUnlimbo()
 			}
 		}
 	}
-
+	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }
@@ -166,7 +164,7 @@ bool ParabolaTrajectory::OnAIDetonateCheck()
 	{
 		return true;
 	}
-
+	// Angle
 	if (std::abs(pType->DetonationAngle) < 1e-10)
 	{
 		if (this->MovingVelocity.Z < 1e-10)
@@ -191,10 +189,9 @@ bool ParabolaTrajectory::OnAIDetonateCheck()
 	// Bounce
 	if (!pCell || (this->ShouldBounce && this->CalculateBulletVelocityAfterBounce(pCell)))
 		return true;
-
+	// Affected by gravity
 	this->MovingVelocity.Z -= BulletTypeExt::GetAdjustedGravity(pBullet->Type);
 	this->MovingSpeed = this->MovingVelocity.Magnitude();
-
 	return false;
 }
 
@@ -215,7 +212,7 @@ void ParabolaTrajectory::OnAIVelocityCheck()
 		{
 			const auto pFirer = pBullet->Owner;
 			const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-
+			// Check for additional obstacles on the ground
 			if (this->CheckThroughAndSubjectInCell(MapClass::Instance->GetCellAt(pBullet->Location), pOwner))
 			{
 				if (32.0 < velocity)
@@ -229,12 +226,12 @@ void ParabolaTrajectory::OnAIVelocityCheck()
 		{
 			const auto theTargetCoords = pBullet->Location + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
 			const auto cellHeight = MapClass::Instance->GetCellFloorHeight(theTargetCoords);
-
+			// Check whether the height of the ground is about to exceed the height of the projectile
 			if (cellHeight < theTargetCoords.Z)
 				return;
-
+			// How much reduction is needed to calculate the velocity vector
 			const auto newRatio = std::abs((pBullet->Location.Z - cellHeight) / this->MovingVelocity.Z);
-
+			// Only when the proportion is smaller, it needs to be recorded
 			if (ratio > newRatio)
 			{
 				ratio = newRatio;
@@ -247,23 +244,23 @@ void ParabolaTrajectory::OnAIVelocityCheck()
 		// When in high speed, it's necessary to check each cell on the path that the next frame will pass through
 		double locationDistance = 0.0;
 		const bool subjectToWalls = pBullet->Type->SubjectToWalls;
-
+		// Anyway, at least check the ground
 		const auto& theSourceCoords = pBullet->Location;
 		const auto theTargetCoords = theSourceCoords + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
 		const auto pFirer = pBullet->Owner;
 		const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-
+		// No need to use these variables anymore
 		{
 			const auto sourceCell = CellClass::Coord2Cell(theSourceCoords);
 			const auto targetCell = CellClass::Coord2Cell(theTargetCoords);
 			const auto cellDist = sourceCell - targetCell;
 			const auto cellPace = CellStruct { static_cast<short>(std::abs(cellDist.X)), static_cast<short>(std::abs(cellDist.Y)) };
-
+			// Take big steps as much as possible to reduce check times, just ensure that each cell is inspected
 			auto largePace = static_cast<size_t>(std::max(cellPace.X, cellPace.Y));
 			const auto stepCoord = !largePace ? CoordStruct::Empty : (theTargetCoords - theSourceCoords) * (1.0 / largePace);
 			auto curCoord = theSourceCoords;
 			auto pCurCell = MapClass::Instance->GetCellAt(sourceCell);
-
+			// Check one by one towards the direction of the next frame's position
 			for (size_t i = 0; i < largePace; ++i)
 			{
 				if (curCoord.Z < MapClass::Instance->GetCellFloorHeight(curCoord)) // Below ground level?
@@ -279,20 +276,20 @@ void ParabolaTrajectory::OnAIVelocityCheck()
 					velocityCheck = 2;
 					break;
 				}
-
+				// There are no obstacles, continue to check the next cell
 				curCoord += stepCoord;
 				pCurCell = MapClass::Instance->GetCellAt(curCoord);
 			}
 		}
-
+		// Check whether ignore firestorm wall before searching
 		if (!pBullet->Type->IgnoresFirestorm)
 		{
 			const auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(theSourceCoords, theTargetCoords, pOwner);
-
+			// Not empty when firestorm wall exists
 			if (fireStormCoords != CoordStruct::Empty)
 			{
 				const auto distance = PhobosTrajectory::Get2DDistance(fireStormCoords, theSourceCoords);
-
+				// Only record when the ratio is smaller
 				if (!velocityCheck || distance < locationDistance)
 				{
 					locationDistance = distance;
@@ -303,19 +300,18 @@ void ParabolaTrajectory::OnAIVelocityCheck()
 		// Let the distance slightly exceed
 		ratio = (locationDistance + 32.0) / velocity;
 	}
-
+	// No need for change
 	if (!velocityCheck)
 		return;
-
+	// Detonates itself in the next frame
 	if (velocityCheck == 2)
 	{
 		this->MultiplyBulletVelocity(ratio, true);
 		return;
 	}
-
+	// Bounce in the next frame
 	this->LastVelocity = this->MovingVelocity;
 	this->MultiplyBulletVelocity(ratio, false);
-
 	return;
 }
 

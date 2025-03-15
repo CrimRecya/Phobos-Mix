@@ -35,7 +35,6 @@ void StraightTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
-
 	// LiveShell
 	this->RotateCoord.Read(exINI, pSection, "Trajectory.Straight.RotateCoord");
 	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Straight.OffsetCoord");
@@ -43,7 +42,6 @@ void StraightTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Straight.LeadTimeCalculate");
 	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Straight.DetonationDistance");
 	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Straight.TargetSnapDistance");
-
 	// Straight
 	this->PassThrough.Read(exINI, pSection, "Trajectory.Straight.PassThrough");
 	this->ConfineAtHeight.Read(exINI, pSection, "Trajectory.Straight.ConfineAtHeight");
@@ -75,9 +73,9 @@ bool StraightTrajectory::Save(PhobosStreamWriter& Stm) const
 void StraightTrajectory::OnUnlimbo()
 {
 	this->ActualTrajectory::OnUnlimbo();
-
+	// Straight
 	const auto pBullet = this->Bullet;
-
+	// Calculate range bonus
 	if (this->Type->ApplyRangeModifiers)
 	{
 		if (const auto pFirer = pBullet->Owner)
@@ -92,7 +90,7 @@ void StraightTrajectory::OnUnlimbo()
 			}
 		}
 	}
-
+	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }

@@ -73,10 +73,10 @@ bool ActualTrajectory::Save(PhobosStreamWriter& Stm) const
 void ActualTrajectory::OnUnlimbo()
 {
 	this->PhobosTrajectory::OnUnlimbo();
-
+	// Actual
 	const auto pType = this->GetType();
 	this->LastTargetCoord = this->Bullet->TargetCoords;
-
+	// Survival time
 	if (pType->Duration > 0)
 		this->DurationTimer.Start(pType->Duration);
 }
@@ -100,9 +100,8 @@ bool ActualTrajectory::OnAI()
 
 void ActualTrajectory::OnAIPreDetonate()
 {
-	// Can snap to target?
 	const auto targetSnapDistance = static_cast<const ActualTrajectoryType*>(this->GetType())->TargetSnapDistance.Get();
-
+	// Can snap to target?
 	if (targetSnapDistance > 0)
 	{
 		const auto pBullet = this->Bullet;

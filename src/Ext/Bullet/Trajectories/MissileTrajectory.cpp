@@ -45,7 +45,6 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
-
 	// LiveShell
 	this->RotateCoord.Read(exINI, pSection, "Trajectory.Missile.RotateCoord");
 	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Missile.PreAimCoord");
@@ -53,10 +52,9 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Missile.LeadTimeCalculate");
 	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Missile.DetonationDistance");
 	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Missile.TargetSnapDistance");
-
 	// Missile
 	this->UniqueCurve.Read(exINI, pSection, "Trajectory.Missile.UniqueCurve");
-
+	// Independent reading section
 	if (this->UniqueCurve)
 	{
 		// 154 -> 0.6 * Unsorted::LeptonsPerCell (Used to ensure correct hit at the fixed speed)
@@ -67,7 +65,7 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 		this->TurningSpeed = 10.0;
 		return;
 	}
-
+	// Otherwise, read all
 	this->FacingCoord.Read(exINI, pSection, "Trajectory.Missile.FacingCoord");
 	this->ReduceCoord.Read(exINI, pSection, "Trajectory.Missile.ReduceCoord");
 	this->LaunchSpeed.Read(exINI, pSection, "Trajectory.Missile.LaunchSpeed");
@@ -116,11 +114,11 @@ bool MissileTrajectory::Save(PhobosStreamWriter& Stm) const
 void MissileTrajectory::OnUnlimbo()
 {
 	this->ActualTrajectory::OnUnlimbo();
-
+	// Missile
 	const auto pBullet = this->Bullet;
 	// Record the initial distance
 	this->OriginalDistance = static_cast<int>(pBullet->TargetCoords.DistanceFrom(pBullet->SourceCoords));
-
+	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }

@@ -68,12 +68,10 @@ void TracingTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
-
 	// Virtual
 	this->VirtualSourceCoord.Read(exINI, pSection, "Trajectory.Tracing.CreateCoord");
 	this->VirtualTargetCoord.Read(exINI, pSection, "Trajectory.Tracing.AttachCoord");
 	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.Tracing.AllowFirerTurning");
-
 	// Tracing
 	this->TraceMode.Read(exINI, pSection, "Trajectory.Tracing.TraceMode");
 	this->TraceTheTarget.Read(exINI, pSection, "Trajectory.Tracing.TraceTheTarget");
@@ -106,7 +104,7 @@ bool TracingTrajectory::Save(PhobosStreamWriter& Stm) const
 void TracingTrajectory::OnUnlimbo()
 {
 	this->VirtualTrajectory::OnUnlimbo();
-
+	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(this->Bullet)->DispersedTrajectory)
 		this->OpenFire();
 }

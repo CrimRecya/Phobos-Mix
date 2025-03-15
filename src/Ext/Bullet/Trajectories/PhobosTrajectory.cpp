@@ -190,7 +190,7 @@ void PhobosTrajectory::OnUnlimbo()
 
 		damage = pWeapon->Damage;
 	}
-
+	// Set basic damage
 	this->ProximityDamage = pType->ProximityDamage.Get(damage);
 	this->PassDetonateDamage = pType->PassDetonateDamage.Get(damage);
 	// Record some information of firer
@@ -199,9 +199,8 @@ void PhobosTrajectory::OnUnlimbo()
 		const auto burst = pFirer->CurrentBurstIndex;
 		this->CurrentBurst = (burst & 1) ? (-burst - 1) : burst;
 		this->FirepowerMult = pFirer->FirepowerMultiplier * TechnoExt::ExtMap.Find(pFirer)->AE.FirepowerMultiplier;
-
 		const auto flag = this->Flag();
-
+		// Obtain the launch location
 		if (pType->DisperseWeapons.size() && pType->RecordSourceCoord || flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing)
 			this->GetTechnoFLHCoord();
 		else
@@ -293,7 +292,7 @@ void PhobosTrajectory::OnAIVelocityCheck()
 		{
 			const auto pFirer = pBullet->Owner;
 			const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-
+			// Check for additional obstacles on the ground
 			if (this->CheckThroughAndSubjectInCell(MapClass::Instance->GetCellAt(pBullet->Location), pOwner))
 			{
 				if (32.0 < velocity)
@@ -305,12 +304,12 @@ void PhobosTrajectory::OnAIVelocityCheck()
 		{
 			const auto theTargetCoords = pBullet->Location + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
 			const auto cellHeight = MapClass::Instance->GetCellFloorHeight(theTargetCoords);
-
+			// Check whether the height of the ground is about to exceed the height of the projectile
 			if (cellHeight < theTargetCoords.Z)
 				return;
-
+			// How much reduction is needed to calculate the velocity vector
 			const auto newRatio = std::abs((pBullet->Location.Z - cellHeight) / this->MovingVelocity.Z);
-
+			// Only when the proportion is smaller, it needs to be recorded
 			if (ratio > newRatio)
 				ratio = newRatio;
 		}
@@ -318,77 +317,82 @@ void PhobosTrajectory::OnAIVelocityCheck()
 	else
 	{
 		// When in high speed, it's necessary to check each cell on the path that the next frame will pass through
-		double locationDistance = 0.0;
-		bool velocityCheck = false;
 		const bool subjectToGround = this->GetCanHitGround();
 		const bool subjectToWalls = pBullet->Type->SubjectToWalls;
-
-		const auto& theSourceCoords = pBullet->Location;
-		const auto theTargetCoords = theSourceCoords + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
-		const auto pFirer = pBullet->Owner;
-		const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-
-		if (checkThrough || subjectToGround || subjectToWalls)
+		const bool subjectToFirestorm = !pBullet->Type->IgnoresFirestorm;
+		const bool checkCoords = checkThrough || subjectToGround || subjectToWalls;
+		// If no inspection is needed, just skip it
+		if (checkCoords || subjectToFirestorm)
 		{
-			const auto sourceCell = CellClass::Coord2Cell(theSourceCoords);
-			const auto targetCell = CellClass::Coord2Cell(theTargetCoords);
-			const auto cellDist = sourceCell - targetCell;
-			const auto cellPace = CellStruct { static_cast<short>(std::abs(cellDist.X)), static_cast<short>(std::abs(cellDist.Y)) };
-
-			auto largePace = static_cast<size_t>(std::max(cellPace.X, cellPace.Y));
-			const auto stepCoord = !largePace ? CoordStruct::Empty : (theTargetCoords - theSourceCoords) * (1.0 / largePace);
-			auto curCoord = theSourceCoords;
-			auto pCurCell = MapClass::Instance->GetCellAt(sourceCell);
-
-			for (size_t i = 0; i < largePace; ++i)
+			double locationDistance = 0.0;
+			bool velocityCheck = false;
+			const auto& theSourceCoords = pBullet->Location;
+			const auto theTargetCoords = theSourceCoords + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
+			const auto pFirer = pBullet->Owner;
+			const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
+			// Skip when no inspection is needed
+			if (checkCoords)
 			{
-				if ((subjectToGround && (curCoord.Z + 16) < MapClass::Instance->GetCellFloorHeight(curCoord)) // Below ground level? (16 ->error range)
-					|| (subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array->GetItem(pCurCell->OverlayTypeIndex)->Wall) // Impact on the wall?
-					|| (checkThrough && this->CheckThroughAndSubjectInCell(pCurCell, pOwner))) // Blocked by obstacles?
+				const auto sourceCell = CellClass::Coord2Cell(theSourceCoords);
+				const auto targetCell = CellClass::Coord2Cell(theTargetCoords);
+				const auto cellDist = sourceCell - targetCell;
+				const auto cellPace = CellStruct { static_cast<short>(std::abs(cellDist.X)), static_cast<short>(std::abs(cellDist.Y)) };
+				// Take big steps as much as possible to reduce check times, just ensure that each cell is inspected
+				const auto largePace = static_cast<size_t>(std::max(cellPace.X, cellPace.Y));
+				const auto stepCoord = !largePace ? CoordStruct::Empty : (theTargetCoords - theSourceCoords) * (1.0 / largePace);
+				auto curCoord = theSourceCoords;
+				auto pCurCell = MapClass::Instance->GetCellAt(sourceCell);
+				// Check one by one towards the direction of the next frame's position
+				for (size_t i = 0; i < largePace; ++i)
 				{
-					locationDistance = PhobosTrajectory::Get2DDistance(curCoord, theSourceCoords);
-					velocityCheck = true;
-					break;
+					if ((subjectToGround && (curCoord.Z + 16) < MapClass::Instance->GetCellFloorHeight(curCoord)) // Below ground level? (16 ->error range)
+						|| (subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array->GetItem(pCurCell->OverlayTypeIndex)->Wall) // Impact on the wall?
+						|| (checkThrough && this->CheckThroughAndSubjectInCell(pCurCell, pOwner))) // Blocked by obstacles?
+					{
+						locationDistance = PhobosTrajectory::Get2DDistance(curCoord, theSourceCoords);
+						velocityCheck = true;
+						break;
+					}
+					// There are no obstacles, continue to check the next cell
+					curCoord += stepCoord;
+					pCurCell = MapClass::Instance->GetCellAt(curCoord);
 				}
-
-				curCoord += stepCoord;
-				pCurCell = MapClass::Instance->GetCellAt(curCoord);
 			}
-		}
-
-		if (!pBullet->Type->IgnoresFirestorm)
-		{
-			const auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(theSourceCoords, theTargetCoords, pOwner);
-
-			if (fireStormCoords != CoordStruct::Empty)
+			// Check whether ignore firestorm wall before searching
+			if (subjectToFirestorm)
 			{
-				const auto distance = PhobosTrajectory::Get2DDistance(fireStormCoords, theSourceCoords);
+				const auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(theSourceCoords, theTargetCoords, pOwner);
+				// Not empty when firestorm wall exists
+				if (fireStormCoords != CoordStruct::Empty)
+				{
+					const auto distance = PhobosTrajectory::Get2DDistance(fireStormCoords, theSourceCoords);
+					// Only record when the ratio is smaller
+					if (!velocityCheck || distance < locationDistance)
+						locationDistance = distance;
 
-				if (!velocityCheck || distance < locationDistance)
-					locationDistance = distance;
-
-				velocityCheck = true;
+					velocityCheck = true;
+				}
 			}
-		}
-		// Check if the bullet needs to slow down the speed
-		if (velocityCheck)
-		{
-			// Let the distance slightly exceed
-			locationDistance += 32.0;
-			// It may not be necessary to compare them again, but still do so
-			if (locationDistance < velocity)
-				ratio = (locationDistance / velocity);
+			// Check if the bullet needs to slow down the speed
+			if (velocityCheck)
+			{
+				// Let the distance slightly exceed
+				locationDistance += 32.0;
+				// It may not be necessary to compare them again, but still do so
+				if (locationDistance < velocity)
+					ratio = (locationDistance / velocity);
+			}
 		}
 	}
 	// Check if the distance to the destination exceeds the speed limit
 	if (this->RemainingDistance < this->MovingSpeed)
 	{
 		const auto newRatio = this->RemainingDistance / this->MovingSpeed;
-
+		// Only record when the ratio is smaller
 		if (ratio > newRatio)
 			ratio = newRatio;
 	}
-
+	// Only when the speed is very low will there be situations where the conditions are not met
 	if (ratio < 1.0)
 		this->MultiplyBulletVelocity(ratio, true);
 }
@@ -451,7 +455,6 @@ void PhobosTrajectory::OpenFire()
 	const auto pBullet = this->Bullet;
 	const auto& source = pBullet->SourceCoords;
 	const auto& target = pBullet->TargetCoords;
-
 	// There may be a frame that hasn't started updating yet but will be drawn on the screen
 	if (this->MovingVelocity != BulletVelocity::Empty)
 		pBullet->Velocity = this->MovingVelocity;
@@ -459,10 +462,9 @@ void PhobosTrajectory::OpenFire()
 		pBullet->Velocity = BulletVelocity { static_cast<double>(target.X - source.X), static_cast<double>(target.Y - source.Y), 0 };
 
 	const auto pType = this->GetType();
-
+	// Restricted to rotation only on a horizontal plane
 	if (pType->BulletSpin || pType->BulletOnPlane)
 		pBullet->Velocity.Z = 0;
-	// this->ChangeBulletFacing();
 }
 
 void PhobosTrajectory::SetBulletNewTarget(AbstractClass* const pTarget)
@@ -475,10 +477,10 @@ void PhobosTrajectory::SetBulletNewTarget(AbstractClass* const pTarget)
 bool PhobosTrajectory::CalculateBulletVelocity(const double speed)
 {
 	const auto velocityLength = this->MovingVelocity.Magnitude();
-
+	// Check if it is a zero vector
 	if (velocityLength < 1e-10)
 		return true;
-
+	// Reset speed vector
 	this->MovingVelocity *= speed / velocityLength;
 	this->MovingSpeed = speed;
 	return false;
@@ -486,9 +488,10 @@ bool PhobosTrajectory::CalculateBulletVelocity(const double speed)
 
 void PhobosTrajectory::MultiplyBulletVelocity(const double ratio, const bool shouldDetonate)
 {
+	// Reset speed vector
 	this->MovingVelocity *= ratio;
 	this->MovingSpeed = this->MovingSpeed * ratio;
-
+	// The next frame needs to detonate itself
 	if (shouldDetonate)
 		this->ShouldDetonate = true;
 }
@@ -554,7 +557,7 @@ BulletVelocity PhobosTrajectory::RotateAboutTheAxis(const BulletVelocity& vector
 void PhobosTrajectory::ChangeBulletFacing()
 {
 	const auto pType = this->GetType();
-
+	// Cannot rotate
 	if (pType->BulletStable)
 		return;
 
@@ -576,18 +579,18 @@ void PhobosTrajectory::ChangeBulletFacing()
 	else
 	{
 		auto desiredFacing = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - pBullet->Location);
-
+		// Restricted to rotation only on a horizontal plane
 		if (pType->BulletOnPlane)
 		{
 			pBullet->Velocity.Z = 0;
 			desiredFacing.Z = 0;
 		}
-
+		// Calculate specifically only when the ROT is reasonable
 		if (pType->BulletROT)
 			pBullet->Velocity = PhobosTrajectory::RotateVector(pBullet->Velocity, desiredFacing, (pType->BulletROT * ratio));
 		else
 			pBullet->Velocity = desiredFacing;
-
+		// Standardizing
 		pBullet->Velocity *= (1 / pBullet->Velocity.Magnitude());
 	}
 }

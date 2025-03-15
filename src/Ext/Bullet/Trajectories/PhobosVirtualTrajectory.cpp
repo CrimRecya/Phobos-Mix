@@ -62,9 +62,9 @@ bool VirtualTrajectory::Save(PhobosStreamWriter& Stm) const
 void VirtualTrajectory::OnUnlimbo()
 {
 	this->PhobosTrajectory::OnUnlimbo();
-
+	// Virtual
 	this->RemainingDistance = INT_MAX;
-
+	// The outermost transporter
 	for (auto pTrans = this->Bullet->Owner; pTrans; pTrans = pTrans->Transporter)
 		this->SurfaceFirerID = pTrans->UniqueID;
 }

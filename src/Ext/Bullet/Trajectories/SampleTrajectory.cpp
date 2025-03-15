@@ -36,7 +36,7 @@ void SampleTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
-
+	// Sample
 	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Sample.TargetSnapDistance");
 }
 
@@ -68,15 +68,15 @@ bool SampleTrajectory::Save(PhobosStreamWriter& Stm) const
 void SampleTrajectory::OnUnlimbo()
 {
 	this->PhobosTrajectory::OnUnlimbo();
-
+	// Sample
 	const auto pBullet = this->Bullet;
 	this->RemainingDistance += static_cast<int>(pBullet->SourceCoords.DistanceFrom(pBullet->TargetCoords) + this->Type->Speed);
-
+	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }
 
-// Some early checks here, returns whether or not to detonate the bullet.
+// Some checks here, returns whether or not to detonate the bullet.
 // You can change the bullet's true velocity or set its location here. If you modify them here, it will affect the incoming parameters in OnAIVelocity.
 bool SampleTrajectory::OnAI()
 {
@@ -123,7 +123,7 @@ void SampleTrajectory::OnAIPreDetonate()
 	const auto pBullet = this->Bullet;
 	auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
 	auto pCoords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
-
+	// Can snap to target?
 	if (pCoords.DistanceFrom(pBullet->Location) <= this->TargetSnapDistance)
 	{
 		BulletExt::ExtMap.Find(pBullet)->SnappedToTarget = true;

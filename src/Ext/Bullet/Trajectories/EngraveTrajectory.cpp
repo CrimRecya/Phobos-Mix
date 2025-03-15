@@ -46,14 +46,12 @@ void EngraveTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
-
+	// Limitation
 	this->Speed = Math::min(128.0, this->Speed);
-
 	// Virtual
 	this->VirtualSourceCoord.Read(exINI, pSection, "Trajectory.Engrave.SourceCoord");
 	this->VirtualTargetCoord.Read(exINI, pSection, "Trajectory.Engrave.TargetCoord");
 	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.Engrave.AllowFirerTurning");
-
 	// Engrave
 	this->IsLaser.Read(exINI, pSection, "Trajectory.Engrave.IsLaser");
 	this->IsIntense.Read(exINI, pSection, "Trajectory.Engrave.IsIntense");
@@ -96,10 +94,10 @@ bool EngraveTrajectory::Save(PhobosStreamWriter& Stm) const
 void EngraveTrajectory::OnUnlimbo()
 {
 	this->VirtualTrajectory::OnUnlimbo();
-
+	// Engrave
 	this->LaserTimer.Start(0);
 	const auto pBullet = this->Bullet;
-
+	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }

@@ -46,7 +46,6 @@ void BombardTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
-
 	// LiveShell
 	this->RotateCoord.Read(exINI, pSection, "Trajectory.Bombard.RotateCoord");
 	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Bombard.OffsetCoord");
@@ -56,7 +55,6 @@ void BombardTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->DetonationHeight.Read(exINI, pSection, "Trajectory.Bombard.DetonationHeight");
 	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Bombard.DetonationDistance");
 	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Bombard.TargetSnapDistance");
-
 	// Bombard
 	this->Height.Read(exINI, pSection, "Trajectory.Bombard.Height");
 	this->Height = Math::max(0.0, this->Height);
@@ -102,14 +100,14 @@ bool BombardTrajectory::Save(PhobosStreamWriter& Stm) const
 void BombardTrajectory::OnUnlimbo()
 {
 	this->ActualTrajectory::OnUnlimbo();
-
+	// Bombard
 	const auto pBullet = this->Bullet;
 	this->Height += pBullet->TargetCoords.Z;
 	// use scaling since RandomRanged only support int
 	this->FallPercent += ScenarioClass::Instance->Random.RandomRanged(0, static_cast<int>(200 * this->Type->FallPercentShift)) / 100.0;
 	// Record the initial target coordinates without offset
 	this->InitialTargetCoord = pBullet->TargetCoords;
-
+	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }
