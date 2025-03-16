@@ -47,14 +47,14 @@ void BombardTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 	// LiveShell
-	this->RotateCoord.Read(exINI, pSection, "Trajectory.Bombard.RotateCoord");
-	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Bombard.OffsetCoord");
-	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.Bombard.AxisOfRotation");
-	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Bombard.LeadTimeCalculate");
-	this->EarlyDetonation.Read(exINI, pSection, "Trajectory.Bombard.EarlyDetonation");
-	this->DetonationHeight.Read(exINI, pSection, "Trajectory.Bombard.DetonationHeight");
-	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Bombard.DetonationDistance");
-	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Bombard.TargetSnapDistance");
+	this->RotateCoord.Read(exINI, pSection, "Trajectory.RotateCoord");
+	this->OffsetCoord.Read(exINI, pSection, "Trajectory.OffsetCoord");
+	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.AxisOfRotation");
+	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.LeadTimeCalculate");
+	this->EarlyDetonation.Read(exINI, pSection, "Trajectory.EarlyDetonation");
+	this->DetonationHeight.Read(exINI, pSection, "Trajectory.DetonationHeight");
+	this->DetonationDistance.Read(exINI, pSection, "Trajectory.DetonationDistance");
+	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
 	// Bombard
 	this->Height.Read(exINI, pSection, "Trajectory.Bombard.Height");
 	this->Height = Math::max(0.0, this->Height);

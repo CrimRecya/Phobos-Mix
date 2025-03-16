@@ -47,12 +47,12 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 	// LiveShell
-	this->RotateCoord.Read(exINI, pSection, "Trajectory.Missile.RotateCoord");
-	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Missile.OffsetCoord");
-	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.Missile.AxisOfRotation");
-	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Missile.LeadTimeCalculate");
-	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Missile.DetonationDistance");
-	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Missile.TargetSnapDistance");
+	this->RotateCoord.Read(exINI, pSection, "Trajectory.RotateCoord");
+	this->OffsetCoord.Read(exINI, pSection, "Trajectory.OffsetCoord");
+	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.AxisOfRotation");
+	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.LeadTimeCalculate");
+	this->DetonationDistance.Read(exINI, pSection, "Trajectory.DetonationDistance");
+	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
 	// Missile
 	this->UniqueCurve.Read(exINI, pSection, "Trajectory.Missile.UniqueCurve");
 	// Independent reading section

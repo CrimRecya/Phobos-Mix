@@ -51,7 +51,7 @@ void EngraveTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	// Virtual
 	this->VirtualSourceCoord.Read(exINI, pSection, "Trajectory.Engrave.SourceCoord");
 	this->VirtualTargetCoord.Read(exINI, pSection, "Trajectory.Engrave.TargetCoord");
-	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.Engrave.AllowFirerTurning");
+	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.AllowFirerTurning");
 	// Engrave
 	this->IsLaser.Read(exINI, pSection, "Trajectory.Engrave.IsLaser");
 	this->IsIntense.Read(exINI, pSection, "Trajectory.Engrave.IsIntense");

@@ -37,7 +37,7 @@ void SampleTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 	// Sample
-	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Sample.TargetSnapDistance");
+	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
 }
 
 // Save and Load for entity

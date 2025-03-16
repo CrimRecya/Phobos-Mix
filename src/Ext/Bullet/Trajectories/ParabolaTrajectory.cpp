@@ -76,14 +76,14 @@ void ParabolaTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 	// LiveShell
-	this->RotateCoord.Read(exINI, pSection, "Trajectory.Parabola.RotateCoord");
-	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Parabola.OffsetCoord");
-	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.Parabola.AxisOfRotation");
-	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Parabola.LeadTimeCalculate");
-	this->EarlyDetonation.Read(exINI, pSection, "Trajectory.Parabola.EarlyDetonation");
-	this->DetonationHeight.Read(exINI, pSection, "Trajectory.Parabola.DetonationHeight");
-	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Parabola.DetonationDistance");
-	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Parabola.TargetSnapDistance");
+	this->RotateCoord.Read(exINI, pSection, "Trajectory.RotateCoord");
+	this->OffsetCoord.Read(exINI, pSection, "Trajectory.OffsetCoord");
+	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.AxisOfRotation");
+	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.LeadTimeCalculate");
+	this->EarlyDetonation.Read(exINI, pSection, "Trajectory.EarlyDetonation");
+	this->DetonationHeight.Read(exINI, pSection, "Trajectory.DetonationHeight");
+	this->DetonationDistance.Read(exINI, pSection, "Trajectory.DetonationDistance");
+	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
 	// Parabola
 	this->OpenFireMode.Read(exINI, pSection, "Trajectory.Parabola.OpenFireMode");
 	this->ThrowHeight.Read(exINI, pSection, "Trajectory.Parabola.ThrowHeight");

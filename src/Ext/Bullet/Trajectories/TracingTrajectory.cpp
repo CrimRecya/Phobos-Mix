@@ -71,7 +71,7 @@ void TracingTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	// Virtual
 	this->VirtualSourceCoord.Read(exINI, pSection, "Trajectory.Tracing.CreateCoord");
 	this->VirtualTargetCoord.Read(exINI, pSection, "Trajectory.Tracing.AttachCoord");
-	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.Tracing.AllowFirerTurning");
+	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.AllowFirerTurning");
 	// Tracing
 	this->TraceMode.Read(exINI, pSection, "Trajectory.Tracing.TraceMode");
 	this->TraceTheTarget.Read(exINI, pSection, "Trajectory.Tracing.TraceTheTarget");

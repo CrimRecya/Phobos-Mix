@@ -36,12 +36,12 @@ void StraightTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
 	// LiveShell
-	this->RotateCoord.Read(exINI, pSection, "Trajectory.Straight.RotateCoord");
-	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Straight.OffsetCoord");
-	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.Straight.AxisOfRotation");
-	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Straight.LeadTimeCalculate");
-	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Straight.DetonationDistance");
-	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Straight.TargetSnapDistance");
+	this->RotateCoord.Read(exINI, pSection, "Trajectory.RotateCoord");
+	this->OffsetCoord.Read(exINI, pSection, "Trajectory.OffsetCoord");
+	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.AxisOfRotation");
+	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.LeadTimeCalculate");
+	this->DetonationDistance.Read(exINI, pSection, "Trajectory.DetonationDistance");
+	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
 	// Straight
 	this->PassThrough.Read(exINI, pSection, "Trajectory.Straight.PassThrough");
 	this->ConfineAtHeight.Read(exINI, pSection, "Trajectory.Straight.ConfineAtHeight");
