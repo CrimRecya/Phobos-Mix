@@ -19,13 +19,13 @@ public:
 		, TraceMode { TraceTargetMode::Connection }
 		, TraceTheTarget { true }
 		, CreateAtTarget { false }
-		, SuicideAboveRange { false }
+		, ChasableDistance { Leptons(0) }
 	{ }
 
 	Valueable<TraceTargetMode> TraceMode;
 	Valueable<bool> TraceTheTarget;
 	Valueable<bool> CreateAtTarget;
-	Valueable<bool> SuicideAboveRange;
+	Valueable<Leptons> ChasableDistance;
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;

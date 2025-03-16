@@ -157,7 +157,7 @@ CoordStruct ActualTrajectory::GetInaccurateTargetCoords(const CoordStruct& baseC
 	const auto pWeapon = pBullet->WeaponType;
 	const auto pTypeExt = BulletTypeExt::ExtMap.Find(pBullet->Type);
 	// Don't know whether the weapon is correctly set, if not, a fixed value of 10 will be used
-	const auto offsetMult = distance / (pWeapon ? pWeapon->Range : 10.0);
+	const auto offsetMult = distance / (pWeapon ? pWeapon->Range : (10.0 * Unsorted::LeptonsPerCell));
 	const auto offsetMin = static_cast<int>(offsetMult * pTypeExt->BallisticScatter_Min.Get(Leptons(0)));
 	const auto offsetMax = static_cast<int>(offsetMult * pTypeExt->BallisticScatter_Max.Get(Leptons(RulesClass::Instance->BallisticScatter)));
 	const auto offsetDistance = ScenarioClass::Instance->Random.RandomRanged(offsetMin, offsetMax);
