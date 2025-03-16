@@ -730,15 +730,15 @@ bool ShouldIgnoreByMouse(ObjectClass* pObject)
 
 		if (pOwner == HouseClass::CurrentPlayer)
 		{
-			shouldIgnore = pTypeExt->IgnoredByMouse.Get().X;
+			shouldIgnore = pTypeExt->IgnoredByMouse_ToSelf;
 		}
 		else if (pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
 		{
-			shouldIgnore = pTypeExt->IgnoredByMouse.Get().Y;
+			shouldIgnore = pTypeExt->IgnoredByMouse_ToAlly;
 		}
 		else
 		{
-			shouldIgnore = pTypeExt->IgnoredByMouse.Get().Z;
+			shouldIgnore = pTypeExt->IgnoredByMouse_ToEnemy;
 		}
 
 		return shouldIgnore ? true : false;
