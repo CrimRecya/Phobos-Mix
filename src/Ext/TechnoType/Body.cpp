@@ -492,6 +492,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->InitialSpawnsNumber.Read(exINI, pSection, "InitialSpawnsNumber");
 	this->Spawns_Queue.Read(exINI, pSection, "Spawns.Queue");
 
+	// self, ally, enemy
 	this->IgnoredByMouse.Read(exINI, pSection, "IgnoredByMouse");
 
 	// Ares 0.2
