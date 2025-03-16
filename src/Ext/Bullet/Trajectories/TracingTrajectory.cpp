@@ -183,7 +183,7 @@ bool TracingTrajectory::ChangeVelocity()
 	// Calculate the distance between the projectile and the firer
 	const auto source = (pFirer && !this->NotMainWeapon) ? pFirer->GetCoords() : pBullet->SourceCoords;
 	const auto delta = destination - source;
-	const auto distance = (this->NotMainWeapon || this->TargetInTheAir || (pFirer && pFirer->IsInAir())) ? Point2D{ delta.X, delta.Y }.Magnitude() : delta.Magnitude();
+	const auto distance = (this->NotMainWeapon || this->TargetInTheAir || (pFirer && pFirer->IsInAir())) ? Point2D{delta.X,delta.Y}.Magnitude() : delta.Magnitude();
 	// Check if the limit has been exceeded
 	if (static_cast<int>(distance) >= aRange)
 	{
@@ -296,14 +296,14 @@ bool TracingTrajectory::ChangeVelocity()
 		}
 	}
 	// Calculate distance
-	const auto distanceCoords = ((destination + offset) - pBullet->Location);
-	const auto distance = distanceCoords.Magnitude();
+	const auto difference = ((destination + offset) - pBullet->Location);
+	const auto differenceDistance = difference.Magnitude();
 	// Set as speed
-	this->MovingVelocity = BulletVelocity { static_cast<double>(distanceCoords.X), static_cast<double>(distanceCoords.Y), static_cast<double>(distanceCoords.Z) };
-	this->MovingSpeed = distance;
+	this->MovingVelocity = BulletVelocity { static_cast<double>(difference.X), static_cast<double>(difference.Y), static_cast<double>(difference.Z) };
+	this->MovingSpeed = differenceDistance;
 	// Prevent exceeding the actual speed
-	if (pType->Speed <= distance)
-		this->MultiplyBulletVelocity(pType->Speed / distance, false);
+	if (pType->Speed <= differenceDistance)
+		this->MultiplyBulletVelocity(pType->Speed / differenceDistance, false);
 
 	return false;
 }
