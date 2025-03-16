@@ -124,5 +124,6 @@ public:
 
 	bool ShouldUpdate { false };
 	bool SingleSelect { true };
+	bool ObtainSelect { false };
 	bool IsHovering { false };
 };

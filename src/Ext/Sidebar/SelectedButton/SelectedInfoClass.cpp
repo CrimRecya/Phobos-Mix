@@ -98,6 +98,7 @@ void SelectedInfoClass::InitClear()
 	this->Current = 0;
 	this->ShouldUpdate = false;
 	this->SingleSelect = true;
+	this->ObtainSelect = false;
 	this->IsHovering = false;
 }
 
@@ -259,7 +260,7 @@ void SelectedInfoClass::SwitchVisible()
 void SelectedInfoClass::UpdateVisible()
 {
 	const bool enable = Phobos::Config::SelectedDisplay_Enable;
-	auto disabled = !enable || !this->SingleSelect;
+	auto disabled = !enable || !this->SingleSelect || !this->ObtainSelect;
 
 	if (const auto& pButton = this->MainColumn)
 		pButton->Disabled = disabled;
@@ -366,7 +367,9 @@ void SelectedInfoClass::UpdateSelected()
 			return pSelectA->OwnerObject()->UniqueID < pSelectB->OwnerObject()->UniqueID;
 		});
 
-	this->SingleSelect = CurrentSelectTechno.size() <= 1;
+	const auto size = this->CurrentSelectTechno.size();
+	this->SingleSelect = size <= 1;
+	this->ObtainSelect = size > 0;
 	this->UpdateVisible();
 }
 
@@ -396,7 +399,7 @@ void SelectedInfoClass::DrawInfo()
 		if (this->ShouldUpdate)
 			this->UpdateSelected();
 
-		if (!CurrentSelectTechno.empty())
+		if (this->ObtainSelect)
 		{
 			if (this->SingleSelect)
 			{

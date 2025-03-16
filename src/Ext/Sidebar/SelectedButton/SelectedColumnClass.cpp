@@ -9,7 +9,7 @@
 SelectedColumnClass::SelectedColumnClass(unsigned int id, int x, int y, int width, int height)
 	: ControlClass(id, x, y, width, height, static_cast<GadgetFlag>(0), false)
 {
-	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect;
+	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
 
 bool SelectedColumnClass::Draw(bool forced)
@@ -271,7 +271,7 @@ void SelectedColumnClass::DrawInfo() const
 SelectedBottomClass::SelectedBottomClass(unsigned int id, int x, int y, int width, int height)
 	: ControlClass(id, x, y, width, height, static_cast<GadgetFlag>(0), false)
 {
-	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect;
+	this->Disabled = !Phobos::Config::SelectedDisplay_Enable;
 }
 
 bool SelectedBottomClass::Draw(bool forced)

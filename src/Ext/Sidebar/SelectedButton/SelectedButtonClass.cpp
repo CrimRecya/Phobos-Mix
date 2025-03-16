@@ -7,7 +7,7 @@
 SelectedButtonClass::SelectedButtonClass(unsigned int id, int x, int y)
 	: ControlClass(id, x, y, 30, 30, GadgetFlag::LeftPress, false)
 {
-	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect;
+	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
 
 bool SelectedButtonClass::Draw(bool forced)
@@ -149,7 +149,7 @@ void SelectedButtonClass::DrawInfo() const
 SelectedNotButtonClass::SelectedNotButtonClass(unsigned int id, int x, int y)
 	: ControlClass(id, x, y, 14, 14, static_cast<GadgetFlag>(0), false)
 {
-	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect;
+	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
 
 bool SelectedNotButtonClass::Draw(bool forced)
@@ -278,7 +278,7 @@ void SelectedNotButtonClass::DrawInfo() const
 SelectedToggleClass::SelectedToggleClass(unsigned int id, int x, int y)
 	: ControlClass(id, x, y, 10, 14, GadgetFlag::LeftPress, false)
 {
-	this->Disabled = (id == (SelectedInfoClass::StartID + 9)) && (!Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect);
+	this->Disabled = (id == (SelectedInfoClass::StartID + 9)) && (!Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect);
 }
 
 bool SelectedToggleClass::Draw(bool forced)
@@ -334,7 +334,7 @@ void SelectedToggleClass::DrawInfo() const
 SelectedScrollClass::SelectedScrollClass(unsigned int id, int x, int y)
 	: ControlClass(id, x, y, 10, 14, GadgetFlag::LeftPress, false)
 {
-	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect;
+	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
 
 bool SelectedScrollClass::Draw(bool forced)

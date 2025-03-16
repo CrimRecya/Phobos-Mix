@@ -241,7 +241,7 @@ void SelectedCameoClass::DrawInfo() const
 SelectedMainCameoClass::SelectedMainCameoClass(unsigned int id, int x, int y)
 	: ControlClass(id, x, y, 60, 48, static_cast<GadgetFlag>(0), false)
 {
-	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect;
+	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
 
 bool SelectedMainCameoClass::Draw(bool forced)
