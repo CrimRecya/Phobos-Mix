@@ -121,27 +121,24 @@ void BulletTypeExt::ExtData::TrajectoryValidation() const
 			pThis->ROT = 0;
 		}
 
-		if (pThis->Arm)
-			pThis->Arm = 0;
-
-		if (pThis->Ranged)
-			pThis->Ranged = false;
-
 		if (pThis->Vertical)
 		{
 			Debug::Log("[Developer warning] [%s] has Trajectory set together with Vertical. Vertical has been set to false.\n", pSection);
 			pThis->Vertical = false;
 		}
 
+		if (pThis->Arm) // 0x4E11F0
+			pThis->Arm = 0;
+
+		if (pThis->Ranged) // 0x467C1C
+			pThis->Ranged = false;
+
 		const auto flag = pTrajType->Flag();
 
 		if (flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing)
 		{
 			if (!pThis->IgnoresFirestorm)
-			{
-				static_cast<VirtualTrajectoryType*>(pTrajType)->IgnoresFirestorm = false;
-				pThis->IgnoresFirestorm = true; // The entity ignores this setting
-			}
+				pThis->IgnoresFirestorm = true; // Ignore this setting
 		}
 		else if (flag == TrajectoryFlag::Straight || flag == TrajectoryFlag::Bombard)
 		{

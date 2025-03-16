@@ -9,13 +9,11 @@ public:
 		, VirtualSourceCoord { { 0, 0, 0 } }
 		, VirtualTargetCoord { { 0, 0, 0 } }
 		, AllowFirerTurning { true }
-		, IgnoresFirestorm { true }
 	{ }
 
 	Valueable<PartialVector3D<int>> VirtualSourceCoord; // Initial location of the projectile
 	Valueable<PartialVector3D<int>> VirtualTargetCoord; // move to location of the projectile
 	Valueable<bool> AllowFirerTurning; // Allow firer not facing projectiles
-	bool IgnoresFirestorm; // Auto set
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;

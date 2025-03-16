@@ -273,34 +273,17 @@ void EngraveTrajectory::DrawEngraveLaser()
 			fireCoord = pBuilding->GetCoords() + this->BuildingCoord + CoordStruct { static_cast<int>(result.X), -static_cast<int>(result.Y), static_cast<int>(result.Z) };
 		}
 	}
-
-	auto targetCoord = pBullet->Location;
-
-	if (!pType->IgnoresFirestorm)
-	{
-		const auto fireStormCoords = MapClass::Instance.FindFirstFirestorm(fireCoord, targetCoord, pOwner);
-
-		if (fireStormCoords != CoordStruct::Empty)
-		{
-			const auto ratio = PhobosTrajectory::Get2DDistance(fireCoord, fireStormCoords) / PhobosTrajectory::Get2DDistance(fireCoord, targetCoord);
-			const auto height = MapClass::Instance.GetCellFloorHeight(fireStormCoords);
-			targetCoord = fireCoord + (targetCoord - fireCoord) * ratio;
-
-			if (targetCoord.Z < height)
-				targetCoord.Z = height;
-		}
-	}
 	// Draw laser from head to tail
 	if (pType->IsHouseColor || pType->IsSingleColor)
 	{
-		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, targetCoord, ((pType->IsHouseColor && pOwner) ? pOwner->LaserColor : pType->LaserInnerColor), ColorStruct { 0, 0, 0 }, ColorStruct { 0, 0, 0 }, pType->LaserDuration);
+		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, pBullet->Location, ((pType->IsHouseColor && pOwner) ? pOwner->LaserColor : pType->LaserInnerColor), ColorStruct { 0, 0, 0 }, ColorStruct { 0, 0, 0 }, pType->LaserDuration);
 		pLaser->IsHouseColor = true;
 		pLaser->Thickness = pType->LaserThickness;
 		pLaser->IsSupported = pType->IsIntense;
 	}
 	else
 	{
-		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, targetCoord, pType->LaserInnerColor, pType->LaserOuterColor, pType->LaserOuterSpread, pType->LaserDuration);
+		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, pBullet->Location, pType->LaserInnerColor, pType->LaserOuterColor, pType->LaserOuterSpread, pType->LaserDuration);
 		pLaser->IsHouseColor = false;
 		pLaser->Thickness = 3;
 		pLaser->IsSupported = false;

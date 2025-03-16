@@ -9,7 +9,6 @@ void VirtualTrajectoryType::Serialize(T& Stm)
 		.Process(this->VirtualSourceCoord)
 		.Process(this->VirtualTargetCoord)
 		.Process(this->AllowFirerTurning)
-		.Process(this->IgnoresFirestorm)
 		;
 }
 
