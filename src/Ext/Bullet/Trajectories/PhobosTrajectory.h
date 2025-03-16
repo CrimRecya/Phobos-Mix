@@ -225,7 +225,7 @@ public:
 	virtual void OnUnlimbo();
 	virtual bool OnEarlyUpdate();
 	virtual bool OnVelocityCheck();
-	virtual void OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* pPosition) { *pSpeed = this->MovingVelocity; }
+	virtual void OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* pPosition);
 	virtual TrajectoryCheckReturnType OnDetonateUpdate();
 	virtual void OnPreDetonate();
 	virtual const PhobosTrajectoryType* GetType() const = 0;

@@ -900,7 +900,6 @@ DEFINE_HOOK(0x468B72, BulletClass_Unlimbo_Trajectories, 0x5)
 	if (pTypeExt && pTypeExt->TrajectoryType)
 	{
 		pExt->Trajectory = pTypeExt->TrajectoryType->CreateInstance(pThis);
-//		Debug::LogAndMessage("OnUnlimbo\n");
 		pExt->Trajectory->OnUnlimbo();
 	}
 
@@ -917,10 +916,7 @@ DEFINE_HOOK(0x4666F7, BulletClass_Update_TrajectoriesEarlyUpdate, 0x6)
 	bool detonate = false;
 
 	if (auto pTraj = pExt->Trajectory.get())
-	{
-//		Debug::LogAndMessage("OnEarlyUpdate\n");
 		detonate = pTraj->OnEarlyUpdate();
-	}
 
 	if (detonate && !pThis->SpawnNextAnim)
 		return Detonate;
@@ -937,10 +933,7 @@ DEFINE_HOOK(0x46745C, BulletClass_Update_TrajectoriesVelocityUpdate, 0x7)
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
 
 	if (auto pTraj = pExt->Trajectory.get())
-	{
-//		Debug::LogAndMessage("OnVelocityUpdate\n");
 		pTraj->OnVelocityUpdate(pSpeed, pPosition);
-	}
 
 	// Trajectory can use Velocity only for turning Image's direction
 	// The true position in the next frame will be calculate after here
@@ -975,7 +968,6 @@ DEFINE_HOOK(0x4677D3, BulletClass_Update_TrajectoriesDetonateUpdate, 0x5)
 
 	if (auto pTraj = pExt->Trajectory.get())
 	{
-//		Debug::LogAndMessage("OnDetonateUpdate\n");
 		switch (pTraj->OnDetonateUpdate())
 		{
 		case TrajectoryCheckReturnType::SkipGameCheck:
@@ -1002,10 +994,7 @@ DEFINE_HOOK(0x467E53, BulletClass_Update_PreDetonation_Trajectories, 0x6)
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
 
 	if (auto pTraj = pExt->Trajectory.get())
-	{
-//		Debug::LogAndMessage("OnPreDetonate\n");
 		pTraj->OnPreDetonate();
-	}
 
 	return 0;
 }

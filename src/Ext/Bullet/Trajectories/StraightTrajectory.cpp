@@ -167,11 +167,11 @@ void StraightTrajectory::FireTrajectory()
 		target = this->GetInaccurateTargetCoords(target, source.DistanceFrom(target));
 	// Determine the distance that the bullet can travel
 	if (!pType->PassThrough)
-		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target) + pType->Speed);
+		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target));
 	else if (this->DetonationDistance > 0)
-		this->RemainingDistance += static_cast<int>(this->DetonationDistance + pType->Speed);
+		this->RemainingDistance += static_cast<int>(this->DetonationDistance);
 	else if (this->DetonationDistance < 0)
-		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target) - this->DetonationDistance + pType->Speed);
+		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target) - this->DetonationDistance);
 	else
 		this->RemainingDistance = INT_MAX;
 	// Determine the firing velocity vector of the bullet

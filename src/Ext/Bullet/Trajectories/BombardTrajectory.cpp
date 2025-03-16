@@ -161,7 +161,7 @@ void BombardTrajectory::FireTrajectory()
 	if (!pType->NoLaunch)
 	{
 		const auto middleLocation = this->CalculateMiddleCoords();
-		this->RemainingDistance += static_cast<int>(middleLocation.DistanceFrom(pBullet->SourceCoords) + pType->Speed);
+		this->RemainingDistance += static_cast<int>(middleLocation.DistanceFrom(pBullet->SourceCoords));
 		this->MovingVelocity = PhobosTrajectory::Coord2Vector(middleLocation - pBullet->SourceCoords);
 
 		if (this->CalculateBulletVelocity(pType->Speed))
@@ -180,7 +180,7 @@ void BombardTrajectory::FireTrajectory()
 		{
 			middleLocation = this->CalculateMiddleCoords();
 			const auto fallSpeed = pType->FallSpeed.Get(pType->Speed);
-			this->RemainingDistance += static_cast<int>(pBullet->TargetCoords.DistanceFrom(middleLocation) + fallSpeed);
+			this->RemainingDistance += static_cast<int>(pBullet->TargetCoords.DistanceFrom(middleLocation));
 			this->MovingVelocity = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - middleLocation);
 
 			if (this->CalculateBulletVelocity(fallSpeed))
@@ -410,7 +410,7 @@ bool BombardTrajectory::BulletVelocityChange()
 					if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
 						this->DisperseBurstSubstitution(this->RotateRadian);
 
-					this->RemainingDistance += static_cast<int>(pBullet->TargetCoords.DistanceFrom(middleLocation) + fallSpeed);
+					this->RemainingDistance += static_cast<int>(pBullet->TargetCoords.DistanceFrom(middleLocation));
 				}
 				else
 				{

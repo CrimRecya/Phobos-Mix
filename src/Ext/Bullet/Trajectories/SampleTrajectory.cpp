@@ -69,7 +69,7 @@ void SampleTrajectory::OnUnlimbo()
 	this->PhobosTrajectory::OnUnlimbo();
 	// Sample
 	const auto pBullet = this->Bullet;
-	this->RemainingDistance += static_cast<int>(pBullet->SourceCoords.DistanceFrom(pBullet->TargetCoords) + this->Type->Speed);
+	this->RemainingDistance += static_cast<int>(pBullet->SourceCoords.DistanceFrom(pBullet->TargetCoords));
 	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
