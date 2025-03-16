@@ -335,7 +335,7 @@ void ParabolaTrajectory::OnPreDetonate()
 void ParabolaTrajectory::OpenFire()
 {
 	// Wait, or launch immediately?
-	if (!this->Type->LeadTimeCalculate || !abstract_cast<FootClass*>(this->Bullet->Target))
+	if (!this->Type->LeadTimeCalculate.Get(false) || !abstract_cast<FootClass*>(this->Bullet->Target))
 		this->FireTrajectory();
 	else
 		this->WaitOneFrame = 2;
@@ -370,7 +370,7 @@ void ParabolaTrajectory::FireTrajectory()
 		return;
 	}
 	// Calculate the firing velocity vector of the bullet
-	if (pType->LeadTimeCalculate && pTarget && pTarget->GetCoords() != this->LastTargetCoord)
+	if (pType->LeadTimeCalculate.Get(false) && pTarget && pTarget->GetCoords() != this->LastTargetCoord)
 		this->CalculateBulletVelocityLeadTime(source, gravity);
 	else
 		this->CalculateBulletVelocityRightNow(source, gravity);

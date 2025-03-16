@@ -142,7 +142,7 @@ void StraightTrajectory::OnPreDetonate()
 void StraightTrajectory::OpenFire()
 {
 	// Wait, or launch immediately?
-	if (!this->Type->LeadTimeCalculate || !abstract_cast<FootClass*>(this->Bullet->Target))
+	if (!this->Type->LeadTimeCalculate.Get(false) || !abstract_cast<FootClass*>(this->Bullet->Target))
 		this->FireTrajectory();
 	else
 		this->WaitOneFrame = 2;
@@ -192,7 +192,7 @@ CoordStruct StraightTrajectory::CalculateBulletLeadTime()
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 
-	if (pType->LeadTimeCalculate)
+	if (pType->LeadTimeCalculate.Get(false))
 	{
 		if (const auto pTarget = pBullet->Target)
 		{

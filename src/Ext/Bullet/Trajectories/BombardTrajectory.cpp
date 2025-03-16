@@ -144,7 +144,7 @@ void BombardTrajectory::OpenFire()
 {
 	const auto pType = this->Type;
 	// Wait, or launch immediately?
-	if (!pType->NoLaunch || !pType->LeadTimeCalculate || !abstract_cast<FootClass*>(this->Bullet->Target))
+	if (!pType->NoLaunch || !pType->LeadTimeCalculate.Get(false) || !abstract_cast<FootClass*>(this->Bullet->Target))
 		this->FireTrajectory();
 	else
 		this->WaitOneFrame = 2;
@@ -216,7 +216,7 @@ void BombardTrajectory::SetBulletNewTarget(AbstractClass* const pTarget)
 	pBullet->SetTarget(pTarget);
 	pBullet->TargetCoords = pTarget->GetCoords();
 
-	if (this->Type->LeadTimeCalculate && !this->IsFalling)
+	if (this->Type->LeadTimeCalculate.Get(false) && !this->IsFalling)
 		this->LastTargetCoord = pBullet->TargetCoords;
 }
 
@@ -297,7 +297,7 @@ CoordStruct BombardTrajectory::CalculateBulletLeadTime()
 	const auto pType = this->Type;
 	auto coords = CoordStruct::Empty;
 
-	if (pType->LeadTimeCalculate)
+	if (pType->LeadTimeCalculate.Get(false))
 	{
 		if (const auto pTarget = pBullet->Target)
 		{
@@ -396,7 +396,7 @@ bool BombardTrajectory::BulletVelocityChange()
 
 				if (!pType->FreeFallOnTarget)
 				{
-					if (pType->LeadTimeCalculate && pTarget)
+					if (pType->LeadTimeCalculate.Get(false) && pTarget)
 						pBullet->TargetCoords += pTarget->GetCoords() - this->InitialTargetCoord + this->CalculateBulletLeadTime();
 
 					middleLocation = pBullet->Location;
@@ -414,7 +414,7 @@ bool BombardTrajectory::BulletVelocityChange()
 				}
 				else
 				{
-					if (pType->LeadTimeCalculate && pTarget)
+					if (pType->LeadTimeCalculate.Get(false) && pTarget)
 						pBullet->TargetCoords += pTarget->GetCoords() - this->InitialTargetCoord + this->CalculateBulletLeadTime();
 
 					middleLocation = pBullet->TargetCoords;
@@ -444,7 +444,7 @@ bool BombardTrajectory::BulletVelocityChange()
 				this->ToFalling = true;
 				const auto pTarget = pBullet->Target;
 
-				if (pType->LeadTimeCalculate && pTarget)
+				if (pType->LeadTimeCalculate.Get(false) && pTarget)
 					this->LastTargetCoord = pTarget->GetCoords();
 			}
 		}

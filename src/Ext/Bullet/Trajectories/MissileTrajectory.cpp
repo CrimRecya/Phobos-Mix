@@ -329,9 +329,10 @@ bool MissileTrajectory::CurveVelocityChange()
 	// Follow and track the target like a missile
 	if (checkValid)
 		targetLocation = pTarget->GetCoords();
+
+	pBullet->TargetCoords = targetLocation;
 	// Add calculated fixed offset
 	targetLocation += this->OffsetCoord;
-	pBullet->TargetCoords = targetLocation;
 	// Update projectile velocity based on stage
 	if (!this->InStraight) // In the launch phase
 	{
@@ -460,12 +461,14 @@ bool MissileTrajectory::StandardVelocityChange()
 		targetLocation = pTarget->GetCoords();
 
 	pBullet->TargetCoords = targetLocation;
+	// Add calculated fixed offset
+	targetLocation += this->OffsetCoord;
 	// If the speed is too low, it will cause the lead time calculation results to be too far away and unable to be used
-	if (pType->LeadTimeCalculate && checkValid && (pType->UniqueCurve || pType->Speed > 64.0))
+	if (pType->LeadTimeCalculate.Get(true) && checkValid && (pType->UniqueCurve || pType->Speed > 64.0))
 	{
 		const auto leadSpeed = (pType->Speed + this->MovingSpeed) / 2;
 		const auto timeMult = targetLocation.DistanceFrom(pBullet->Location) / leadSpeed;
-		targetLocation += (targetLocation - this->LastTargetCoord) * timeMult;
+		targetLocation += (pBullet->TargetCoords - this->LastTargetCoord) * timeMult;
 	}
 	// If in the cruise phase, the steering target will be set at the fixed height
 	if (this->CruiseEnable)
