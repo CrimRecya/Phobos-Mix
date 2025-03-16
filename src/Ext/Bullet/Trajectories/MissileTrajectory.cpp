@@ -151,20 +151,17 @@ bool MissileTrajectory::OnVelocityCheck()
 	return this->PhobosTrajectory::OnVelocityCheck();
 }
 
-TrajectoryCheckReturnType MissileTrajectory::OnDetonateUpdate()
+TrajectoryCheckReturnType MissileTrajectory::OnDetonateUpdate(const CoordStruct& position)
 {
-	if (this->PhobosTrajectory::OnDetonateUpdate() == TrajectoryCheckReturnType::Detonate)
+	if (this->PhobosTrajectory::OnDetonateUpdate(position) == TrajectoryCheckReturnType::Detonate)
 		return TrajectoryCheckReturnType::Detonate;
 
 	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
 	// Check the remaining travel distance of the bullet
 	if (this->RemainingDistance < 0)
 		return TrajectoryCheckReturnType::Detonate;
-
-	const auto pBullet = this->Bullet;
-	const auto pType = this->Type;
 	// Close enough
-	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
+	if (this->Bullet->TargetCoords.DistanceFrom(position) < this->Type->DetonationDistance.Get())
 		return TrajectoryCheckReturnType::Detonate;
 
 	return TrajectoryCheckReturnType::SkipGameCheck;

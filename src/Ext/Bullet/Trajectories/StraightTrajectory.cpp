@@ -104,11 +104,11 @@ bool StraightTrajectory::OnVelocityCheck()
 	return this->PhobosTrajectory::OnVelocityCheck();
 }
 
-TrajectoryCheckReturnType StraightTrajectory::OnDetonateUpdate()
+TrajectoryCheckReturnType StraightTrajectory::OnDetonateUpdate(const CoordStruct& position)
 {
 	if (this->WaitOneFrame)
 		return TrajectoryCheckReturnType::SkipGameCheck;
-	else if (this->PhobosTrajectory::OnDetonateUpdate() == TrajectoryCheckReturnType::Detonate)
+	else if (this->PhobosTrajectory::OnDetonateUpdate(position) == TrajectoryCheckReturnType::Detonate)
 		return TrajectoryCheckReturnType::Detonate;
 
 	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
@@ -119,7 +119,7 @@ TrajectoryCheckReturnType StraightTrajectory::OnDetonateUpdate()
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	// Close enough
-	if (!pType->PassThrough && pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
+	if (!pType->PassThrough && pBullet->TargetCoords.DistanceFrom(position) < pType->DetonationDistance.Get())
 		return TrajectoryCheckReturnType::Detonate;
 
 	return TrajectoryCheckReturnType::SkipGameCheck;

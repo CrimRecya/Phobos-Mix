@@ -272,22 +272,22 @@ bool ParabolaTrajectory::OnVelocityCheck()
 	return false;
 }
 
-TrajectoryCheckReturnType ParabolaTrajectory::OnDetonateUpdate()
+TrajectoryCheckReturnType ParabolaTrajectory::OnDetonateUpdate(const CoordStruct& position)
 {
 	if (this->WaitOneFrame)
 		return TrajectoryCheckReturnType::SkipGameCheck;
-	else if (this->PhobosTrajectory::OnDetonateUpdate() == TrajectoryCheckReturnType::Detonate)
+	else if (this->PhobosTrajectory::OnDetonateUpdate(position) == TrajectoryCheckReturnType::Detonate)
 		return TrajectoryCheckReturnType::Detonate;
 
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	// Close enough
-	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
+	if (pBullet->TargetCoords.DistanceFrom(position) < pType->DetonationDistance.Get())
 		return TrajectoryCheckReturnType::Detonate;
 	// Height
 	if (pType->DetonationHeight >= 0 && (pType->EarlyDetonation
-		? ((pBullet->Location.Z - pBullet->SourceCoords.Z) > pType->DetonationHeight)
-		: (this->MovingVelocity.Z < 1e-10 && (pBullet->Location.Z - pBullet->SourceCoords.Z) < pType->DetonationHeight)))
+		? ((position.Z - pBullet->SourceCoords.Z) > pType->DetonationHeight)
+		: (this->MovingVelocity.Z < 1e-10 && (position.Z - pBullet->SourceCoords.Z) < pType->DetonationHeight)))
 	{
 		return TrajectoryCheckReturnType::Detonate;
 	}
@@ -312,9 +312,9 @@ TrajectoryCheckReturnType ParabolaTrajectory::OnDetonateUpdate()
 		}
 	}
 
-	const auto pCell = MapClass::Instance.TryGetCellAt(pBullet->Location);
+	const auto pCell = MapClass::Instance.TryGetCellAt(position);
 	// Bounce
-	if (!pCell || (this->ShouldBounce && this->CalculateBulletVelocityAfterBounce(pCell)))
+	if (!pCell || (this->ShouldBounce && this->CalculateBulletVelocityAfterBounce(pCell, position)))
 		return TrajectoryCheckReturnType::Detonate;
 
 	return TrajectoryCheckReturnType::SkipGameCheck;
@@ -818,7 +818,7 @@ double ParabolaTrajectory::CheckFixedAngleEquation(const CoordStruct& source, co
 	return upTime + downTime - meetTime;
 }
 
-bool ParabolaTrajectory::CalculateBulletVelocityAfterBounce(const CellClass* const pCell)
+bool ParabolaTrajectory::CalculateBulletVelocityAfterBounce(const CellClass* const pCell, const CoordStruct& position)
 {
 	const auto pType = this->Type;
 	// Can bounce on water surface?
@@ -828,7 +828,7 @@ bool ParabolaTrajectory::CalculateBulletVelocityAfterBounce(const CellClass* con
 	--this->BounceTimes;
 	this->ShouldBounce = false;
 	// Calculate the velocity vector after bouncing
-	const auto groundNormalVector = this->GetGroundNormalVector(pCell);
+	const auto groundNormalVector = this->GetGroundNormalVector(pCell, position);
 	this->MovingVelocity = (this->LastVelocity - groundNormalVector * (this->LastVelocity * groundNormalVector) * 2) * pType->BounceCoefficient;
 	this->MovingSpeed = this->MovingVelocity.Magnitude();
 
@@ -838,14 +838,14 @@ bool ParabolaTrajectory::CalculateBulletVelocityAfterBounce(const CellClass* con
 	{
 		const auto pFirer = pBullet->Owner;
 		const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-		WarheadTypeExt::DetonateAt(pBullet->WH, pBullet->Location, pFirer, pBullet->Health, pOwner);
+		WarheadTypeExt::DetonateAt(pBullet->WH, position, pFirer, pBullet->Health, pOwner);
 	}
 	// Calculate the attenuation damage after bouncing
 	PhobosTrajectory::SetNewDamage(pBullet->Health, pType->BounceAttenuation);
 	return false;
 }
 
-BulletVelocity ParabolaTrajectory::GetGroundNormalVector(const CellClass* const pCell)
+BulletVelocity ParabolaTrajectory::GetGroundNormalVector(const CellClass* const pCell, const CoordStruct& position)
 {
 	if (const auto index = pCell->SlopeIndex)
 	{
@@ -899,9 +899,8 @@ BulletVelocity ParabolaTrajectory::GetGroundNormalVector(const CellClass* const 
 	const CoordStruct velocityCoords { static_cast<int>(velocity.X), static_cast<int>(velocity.Y), static_cast<int>(velocity.Z) };
 
 	const auto cellHeight = pCell->Level * Unsorted::LevelHeight;
-	const auto pBullet = this->Bullet;
-	const auto bulletHeight = pBullet->Location.Z;
-	const auto lastCellHeight = MapClass::Instance.GetCellFloorHeight(pBullet->Location - velocityCoords);
+	const auto bulletHeight = position.Z;
+	const auto lastCellHeight = MapClass::Instance.GetCellFloorHeight(position - velocityCoords);
 
 	// Check if it has hit a cliff (384 -> (4 * Unsorted::LevelHeight - 32(error range)))
 	if (bulletHeight < cellHeight && (cellHeight - lastCellHeight) > 384)

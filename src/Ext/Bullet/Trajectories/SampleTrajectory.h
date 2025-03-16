@@ -40,7 +40,7 @@ public:
 	virtual bool OnEarlyUpdate() override;
 	virtual bool OnVelocityCheck() override;
 	virtual void OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
-	virtual TrajectoryCheckReturnType OnDetonateUpdate() override;
+	virtual TrajectoryCheckReturnType OnDetonateUpdate(const CoordStruct& position) override;
 	virtual void OnPreDetonate() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual void OpenFire() override;

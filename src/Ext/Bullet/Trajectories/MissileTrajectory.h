@@ -81,7 +81,7 @@ public:
 	virtual void OnUnlimbo() override;
 	virtual bool OnEarlyUpdate() override;
 	virtual bool OnVelocityCheck() override;
-	virtual TrajectoryCheckReturnType OnDetonateUpdate() override;
+	virtual TrajectoryCheckReturnType OnDetonateUpdate(const CoordStruct& position) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual void OpenFire() override;
 	virtual CoordStruct GetRetargetCenter() const override;

@@ -390,7 +390,7 @@ void PhobosTrajectory::OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* 
 }
 
 // Something that needs to be done after updating the velocity of the projectile
-TrajectoryCheckReturnType PhobosTrajectory::OnDetonateUpdate()
+TrajectoryCheckReturnType PhobosTrajectory::OnDetonateUpdate(const CoordStruct& position)
 {
 	// The previous frame requires detonation at this time
 	if (this->ShouldDetonate)
@@ -398,7 +398,7 @@ TrajectoryCheckReturnType PhobosTrajectory::OnDetonateUpdate()
 
 	const auto pBullet = this->Bullet;
 	// Below ground level? (16 ->error range)
-	if (this->GetCanHitGround() && MapClass::Instance.GetCellFloorHeight(pBullet->Location) >= (pBullet->Location.Z + 16))
+	if (this->GetCanHitGround() && MapClass::Instance.GetCellFloorHeight(position) >= (position.Z + 16))
 		return TrajectoryCheckReturnType::Detonate;
 
 	return TrajectoryCheckReturnType::SkipGameCheck;
@@ -939,12 +939,7 @@ DEFINE_HOOK(0x46745C, BulletClass_Update_TrajectoriesVelocityUpdate, 0x7)
 	// The true position in the next frame will be calculate after here
 	if (pExt->Trajectory && pExt->LaserTrails.size())
 	{
-		CoordStruct futureCoords
-		{
-			static_cast<int>(pSpeed->X + pPosition->X),
-			static_cast<int>(pSpeed->Y + pPosition->Y),
-			static_cast<int>(pSpeed->Z + pPosition->Z)
-		};
+		const auto futureCoords = PhobosTrajectory::Vector2Coord(*pSpeed + *pPosition);
 
 		for (auto& trail : pExt->LaserTrails)
 		{
@@ -963,24 +958,23 @@ DEFINE_HOOK(0x4677D3, BulletClass_Update_TrajectoriesDetonateUpdate, 0x5)
 	enum { SkipCheck = 0x467B7A, ContinueAfterCheck = 0x467879, Detonate = 0x467E53 };
 
 	GET(BulletClass*, pThis, EBP);
+	REF_STACK(const CoordStruct, position, STACK_OFFSET(0x1AC, -0x188));
 
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
 
 	if (auto pTraj = pExt->Trajectory.get())
 	{
-		switch (pTraj->OnDetonateUpdate())
+		switch (pTraj->OnDetonateUpdate(position))
 		{
 		case TrajectoryCheckReturnType::SkipGameCheck:
 			return SkipCheck; // Skip all vanilla check
-			break;
 		case TrajectoryCheckReturnType::SatisfyGameCheck:
 			return ContinueAfterCheck; // Continue next vanilla check
-			break;
 		case TrajectoryCheckReturnType::Detonate:
+			pThis->SetLocation(position);
 			return Detonate; // Directly detonate
-			break;
-		default: // Do vanilla check
-			break;
+		default: // TrajectoryCheckReturnType::ExecuteGameCheck
+			break; // Do vanilla check
 		}
 	}
 

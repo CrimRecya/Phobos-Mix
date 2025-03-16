@@ -117,22 +117,22 @@ bool BombardTrajectory::OnVelocityCheck()
 	return this->BulletVelocityChange() || this->PhobosTrajectory::OnVelocityCheck();
 }
 
-TrajectoryCheckReturnType BombardTrajectory::OnDetonateUpdate()
+TrajectoryCheckReturnType BombardTrajectory::OnDetonateUpdate(const CoordStruct& position)
 {
 	if (this->WaitOneFrame)
 		return TrajectoryCheckReturnType::SkipGameCheck;
-	else if (this->PhobosTrajectory::OnDetonateUpdate() == TrajectoryCheckReturnType::Detonate)
+	else if (this->PhobosTrajectory::OnDetonateUpdate(position) == TrajectoryCheckReturnType::Detonate)
 		return TrajectoryCheckReturnType::Detonate;
 
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	// Close enough
-	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
+	if (pBullet->TargetCoords.DistanceFrom(position) < pType->DetonationDistance.Get())
 		return TrajectoryCheckReturnType::Detonate;
 	// Height
 	if (pType->DetonationHeight >= 0 && (pType->EarlyDetonation
-		? ((pBullet->Location.Z - pBullet->SourceCoords.Z) > pType->DetonationHeight)
-		: (this->IsFalling && (pBullet->Location.Z - pBullet->SourceCoords.Z) < pType->DetonationHeight)))
+		? ((position.Z - pBullet->SourceCoords.Z) > pType->DetonationHeight)
+		: (this->IsFalling && (position.Z - pBullet->SourceCoords.Z) < pType->DetonationHeight)))
 	{
 		return TrajectoryCheckReturnType::Detonate;
 	}
