@@ -78,25 +78,25 @@ void SampleTrajectory::OnUnlimbo()
 
 // Some checks here, returns whether or not to detonate the bullet.
 // You can change the bullet's true velocity or set its location here. If you modify them here, it will affect the incoming parameters in OnAIVelocity.
-bool SampleTrajectory::OnAI()
+bool SampleTrajectory::OnEarlyUpdate()
 {
-	if (this->OnAIDetonateCheck())
+	if (this->OnDetonateCheck())
 		return true;
 
-	this->OnAIVelocityCheck();
+	this->OnVelocityCheck();
 
-	if (this->PhobosTrajectory::OnAI())
+	if (this->PhobosTrajectory::OnEarlyUpdate())
 		return true;
 
-	this->OnAINextFrameCheck();
+	this->OnEarlyCheck();
 
 	return false;
 }
 
 // If the projectile needs to update its speed during the journey, then I suggest you complete the update here.
-bool SampleTrajectory::OnAIDetonateCheck()
+bool SampleTrajectory::OnDetonateCheck()
 {
-	if (this->PhobosTrajectory::OnAIDetonateCheck())
+	if (this->PhobosTrajectory::OnDetonateCheck())
 		return true;
 
 	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
@@ -105,20 +105,20 @@ bool SampleTrajectory::OnAIDetonateCheck()
 }
 
 // What needs to be done before launching the weapon after calculating the new speed.
-void SampleTrajectory::OnAIVelocityCheck()
+void SampleTrajectory::OnVelocityCheck()
 {
-	this->PhobosTrajectory::OnAIVelocityCheck();
+	this->PhobosTrajectory::OnVelocityCheck();
 }
 
 // What else should be done after the weapon is launched, to prepare for the next frame.
-void SampleTrajectory::OnAINextFrameCheck()
+void SampleTrajectory::OnEarlyCheck()
 {
-	this->PhobosTrajectory::OnAINextFrameCheck();
+	this->PhobosTrajectory::OnEarlyCheck();
 }
 
 // At this time, the bullet has hit the target and is ready to detonate.
 // You can make it change before detonating.
-void SampleTrajectory::OnAIPreDetonate()
+void SampleTrajectory::OnPreDetonate()
 {
 	const auto pBullet = this->Bullet;
 	auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
@@ -130,31 +130,22 @@ void SampleTrajectory::OnAIPreDetonate()
 		pBullet->SetLocation(pCoords);
 	}
 
-	this->PhobosTrajectory::OnAIPreDetonate();
+	this->PhobosTrajectory::OnPreDetonate();
 }
 
-// Where you can update the bullet's speed and position. But I would recommend that you complete the calculation at OnAI().
+// Where you can update the bullet's speed and position. But I would recommend that you complete the calculation at OnEarlyUpdate().
 // pSpeed: From the basic `Velocity` of the bullet plus gravity. It is only used in the calculation of this frame and will not be retained to the next frame.
 // pPosition: From the current `Location` of the bullet, then the bullet will be set location to (*pSpeed + *pPosition). So don't use SetLocation here.
 // You can also do additional processing here so that the position of the bullet will not change with its true velocity.
-void SampleTrajectory::OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition)
+void SampleTrajectory::OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* pPosition)
 {
-	this->PhobosTrajectory::OnAIVelocity(pSpeed, pPosition);
+	this->PhobosTrajectory::OnVelocityUpdate(pSpeed, pPosition);
 }
 
 // Where additional checks based on bullet reaching its target coordinate can be done.
 // Vanilla code will do additional checks regarding buildings on target coordinate and Vertical projectiles and will detonate the projectile if they pass.
 // Return value determines what is done regards to the game checks: they can be skipped, executed as normal or treated as if the condition is already satisfied.
-TrajectoryCheckReturnType SampleTrajectory::OnAITargetCoordCheck()
-{
-	return TrajectoryCheckReturnType::ExecuteGameCheck; // Execute game checks.
-}
-
-// Where additional checks based on a TechnoClass instance in same cell as the bullet can be done.
-// Vanilla code will do additional trajectory alterations here if there is an enemy techno in the cell.
-// Return value determines what is done regards to the game checks: they can be skipped, executed as normal or treated as if the condition is already satisfied.
-// pTechno: TechnoClass instance in same cell as the bullet. Note that you should first check whether it is a nullptr.
-TrajectoryCheckReturnType SampleTrajectory::OnAITechnoCheck(TechnoClass* pTechno)
+TrajectoryCheckReturnType SampleTrajectory::OnDetonateUpdate()
 {
 	return TrajectoryCheckReturnType::ExecuteGameCheck; // Execute game checks.
 }

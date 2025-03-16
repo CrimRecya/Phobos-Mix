@@ -147,7 +147,7 @@ void ParabolaTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool ParabolaTrajectory::OnAIDetonateCheck()
+bool ParabolaTrajectory::OnDetonateCheck()
 {
 	if (this->ShouldDetonate)
 		return true;
@@ -195,7 +195,7 @@ bool ParabolaTrajectory::OnAIDetonateCheck()
 	return false;
 }
 
-void ParabolaTrajectory::OnAIVelocityCheck()
+void ParabolaTrajectory::OnVelocityCheck()
 {
 	const auto pBullet = this->Bullet;
 	double ratio = 1.0;
@@ -315,7 +315,7 @@ void ParabolaTrajectory::OnAIVelocityCheck()
 	return;
 }
 
-void ParabolaTrajectory::OnAIPreDetonate()
+void ParabolaTrajectory::OnPreDetonate()
 {
 	const auto pBullet = this->Bullet;
 	// If the speed is too fast, it may smash through the floor
@@ -324,7 +324,7 @@ void ParabolaTrajectory::OnAIPreDetonate()
 	if (pBullet->Location.Z < cellHeight)
 		pBullet->SetLocation(CoordStruct{ pBullet->Location.X, pBullet->Location.Y, cellHeight });
 
-	this->ActualTrajectory::OnAIPreDetonate();
+	this->ActualTrajectory::OnPreDetonate();
 }
 
 void ParabolaTrajectory::OpenFire()

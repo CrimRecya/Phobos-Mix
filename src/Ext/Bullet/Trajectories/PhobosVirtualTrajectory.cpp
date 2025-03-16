@@ -69,26 +69,26 @@ void VirtualTrajectory::OnUnlimbo()
 		this->SurfaceFirerID = pTrans->UniqueID;
 }
 
-bool VirtualTrajectory::OnAI()
+bool VirtualTrajectory::OnEarlyUpdate()
 {
-	if (this->OnAIDetonateCheck())
+	if (this->OnDetonateCheck())
 		return true;
 
-	this->OnAIVelocityCheck();
+	this->OnVelocityCheck();
 
-	if (this->PhobosTrajectory::OnAI())
+	if (this->PhobosTrajectory::OnEarlyUpdate())
 		return true;
 
-	this->OnAINextFrameCheck();
+	this->OnEarlyCheck();
 	return false;
 }
 
-bool VirtualTrajectory::OnAIDetonateCheck()
+bool VirtualTrajectory::OnDetonateCheck()
 {
 	if (!this->NotMainWeapon && this->InvalidFireCondition(this->Bullet->Owner))
 		return true;
 
-	return this->PhobosTrajectory::OnAIDetonateCheck();
+	return this->PhobosTrajectory::OnDetonateCheck();
 }
 
 bool VirtualTrajectory::InvalidFireCondition(TechnoClass* pTechno)

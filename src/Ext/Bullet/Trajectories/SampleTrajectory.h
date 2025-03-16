@@ -39,14 +39,13 @@ public:
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Invalid; } // TrajectoryFlag
 	virtual void OnUnlimbo() override;
-	virtual bool OnAI() override;
-	virtual bool OnAIDetonateCheck() override;
-	virtual void OnAIVelocityCheck() override;
-	virtual void OnAINextFrameCheck() override;
-	virtual void OnAIPreDetonate() override;
-	virtual void OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
-	virtual TrajectoryCheckReturnType OnAITargetCoordCheck() override;
-	virtual TrajectoryCheckReturnType OnAITechnoCheck(TechnoClass* pTechno) override;
+	virtual bool OnEarlyUpdate() override;
+	virtual bool OnDetonateCheck() override;
+	virtual void OnVelocityCheck() override;
+	virtual void OnEarlyCheck() override;
+	virtual void OnPreDetonate() override;
+	virtual void OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
+	virtual TrajectoryCheckReturnType OnDetonateUpdate() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual void OpenFire() override;
 	virtual bool GetCanHitGround() const override;

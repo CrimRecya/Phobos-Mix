@@ -231,7 +231,7 @@ void PhobosTrajectory::OnUnlimbo()
 	}
 }
 
-bool PhobosTrajectory::OnAI()
+bool PhobosTrajectory::OnEarlyUpdate()
 {
 	this->ChangeBulletFacing();
 	const auto pType = this->GetType();
@@ -255,7 +255,7 @@ bool PhobosTrajectory::OnAI()
 }
 
 // Check if it should be detonated immediately
-bool PhobosTrajectory::OnAIDetonateCheck()
+bool PhobosTrajectory::OnDetonateCheck()
 {
 	// The previous frame requires detonation at this time
 	if (this->ShouldDetonate)
@@ -276,7 +276,7 @@ bool PhobosTrajectory::OnAIDetonateCheck()
 }
 
 // If there is an obstacle on the route, the bullet should need to reduce its speed so it will not penetrate the obstacle.
-void PhobosTrajectory::OnAIVelocityCheck()
+void PhobosTrajectory::OnVelocityCheck()
 {
 	const auto pBullet = this->Bullet;
 	double ratio = 1.0;
@@ -398,7 +398,7 @@ void PhobosTrajectory::OnAIVelocityCheck()
 }
 
 // If the check result here is true, it only needs to be detonated in the next frame, without returning.
-void PhobosTrajectory::OnAINextFrameCheck()
+void PhobosTrajectory::OnEarlyCheck()
 {
 	// Obstacles were detected in the current frame here
 	const auto pDetonateAt = this->ExtraCheck;
@@ -425,7 +425,7 @@ void PhobosTrajectory::OnAINextFrameCheck()
 	this->ProximityDetonateAt(pOwner, pDetonateAt);
 }
 
-void PhobosTrajectory::OnAIPreDetonate()
+void PhobosTrajectory::OnPreDetonate()
 {
 	const auto pType = this->GetType();
 	// Special circumstances, similar to airburst behavior
@@ -843,7 +843,10 @@ DEFINE_HOOK(0x4666F7, BulletClass_AI_Trajectories, 0x6)
 	bool detonate = false;
 
 	if (auto pTraj = pExt->Trajectory.get())
-		detonate = pTraj->OnAI();
+	{
+		detonate = pTraj->OnEarlyUpdate();
+//		Debug::LogAndMessage("OnAI\n");
+	}
 
 	if (detonate && !pThis->SpawnNextAnim)
 		return Detonate;
@@ -858,7 +861,10 @@ DEFINE_HOOK(0x467E53, BulletClass_AI_PreDetonation_Trajectories, 0x6)
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
 
 	if (auto pTraj = pExt->Trajectory.get())
-		pTraj->OnAIPreDetonate();
+	{
+		pTraj->OnPreDetonate();
+//		Debug::LogAndMessage("OnAIPreDetonate\n");
+	}
 
 	return 0;
 }
@@ -872,7 +878,10 @@ DEFINE_HOOK(0x46745C, BulletClass_AI_Position_Trajectories, 0x7)
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
 
 	if (auto pTraj = pExt->Trajectory.get())
-		pTraj->OnAIVelocity(pSpeed, pPosition);
+	{
+		pTraj->OnVelocityUpdate(pSpeed, pPosition);
+//		Debug::LogAndMessage("OnAIVelocity\n");
+	}
 
 	// Trajectory can use Velocity only for turning Image's direction
 	// The true position in the next frame will be calculate after here
@@ -899,7 +908,7 @@ DEFINE_HOOK(0x46745C, BulletClass_AI_Position_Trajectories, 0x7)
 
 DEFINE_HOOK(0x4677D3, BulletClass_AI_TargetCoordCheck_Trajectories, 0x5)
 {
-	enum { SkipCheck = 0x4678F8, ContinueAfterCheck = 0x467879, Detonate = 0x467E53 };
+	enum { SkipCheck = 0x467B7A, ContinueAfterCheck = 0x467879, Detonate = 0x467E53 };
 
 	GET(BulletClass*, pThis, EBP);
 
@@ -907,7 +916,8 @@ DEFINE_HOOK(0x4677D3, BulletClass_AI_TargetCoordCheck_Trajectories, 0x5)
 
 	if (auto pTraj = pExt->Trajectory.get())
 	{
-		switch (pTraj->OnAITargetCoordCheck())
+//		Debug::LogAndMessage("OnAITargetCoordCheck\n");
+		switch (pTraj->OnDetonateUpdate())
 		{
 		case TrajectoryCheckReturnType::SkipGameCheck:
 			return SkipCheck;
@@ -917,33 +927,6 @@ DEFINE_HOOK(0x4677D3, BulletClass_AI_TargetCoordCheck_Trajectories, 0x5)
 			break;
 		case TrajectoryCheckReturnType::Detonate:
 			return Detonate;
-			break;
-		default:
-			break;
-		}
-	}
-
-	return 0;
-}
-
-DEFINE_HOOK(0x467927, BulletClass_AI_TechnoCheck_Trajectories, 0x5)
-{
-	enum { SkipCheck = 0x467A26, ContinueAfterCheck = 0x467514 };
-
-	GET(BulletClass*, pThis, EBP);
-	GET(TechnoClass*, pTechno, ESI);
-
-	auto const pExt = BulletExt::ExtMap.Find(pThis);
-
-	if (auto pTraj = pExt->Trajectory.get())
-	{
-		switch (pTraj->OnAITechnoCheck(pTechno))
-		{
-		case TrajectoryCheckReturnType::SkipGameCheck:
-			return SkipCheck;
-			break;
-		case TrajectoryCheckReturnType::SatisfyGameCheck:
-			return ContinueAfterCheck;
 			break;
 		default:
 			break;
@@ -964,6 +947,7 @@ DEFINE_HOOK(0x468B72, BulletClass_Unlimbo_Trajectories, 0x5)
 	{
 		pExt->Trajectory = pTypeExt->TrajectoryType->CreateInstance(pThis);
 		pExt->Trajectory->OnUnlimbo();
+//		Debug::LogAndMessage("Unlimbo\n");
 	}
 
 	return 0;

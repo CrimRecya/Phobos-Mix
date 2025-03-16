@@ -109,9 +109,9 @@ void TracingTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool TracingTrajectory::OnAIDetonateCheck()
+bool TracingTrajectory::OnDetonateCheck()
 {
-	if (this->VirtualTrajectory::OnAIDetonateCheck())
+	if (this->VirtualTrajectory::OnDetonateCheck())
 		return true;
 
 	const auto pBullet = this->Bullet;

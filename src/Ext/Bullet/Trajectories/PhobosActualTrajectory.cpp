@@ -81,24 +81,24 @@ void ActualTrajectory::OnUnlimbo()
 		this->DurationTimer.Start(pType->Duration);
 }
 
-bool ActualTrajectory::OnAI()
+bool ActualTrajectory::OnEarlyUpdate()
 {
 	if (this->WaitOneFrame && this->BulletPrepareCheck())
 		return false;
 
-	if (this->OnAIDetonateCheck())
+	if (this->OnDetonateCheck())
 		return true;
 
-	this->OnAIVelocityCheck();
+	this->OnVelocityCheck();
 
-	if (this->PhobosTrajectory::OnAI())
+	if (this->PhobosTrajectory::OnEarlyUpdate())
 		return true;
 
-	this->OnAINextFrameCheck();
+	this->OnEarlyCheck();
 	return false;
 }
 
-void ActualTrajectory::OnAIPreDetonate()
+void ActualTrajectory::OnPreDetonate()
 {
 	const auto targetSnapDistance = static_cast<const ActualTrajectoryType*>(this->GetType())->TargetSnapDistance.Get();
 	// Can snap to target?
@@ -116,7 +116,7 @@ void ActualTrajectory::OnAIPreDetonate()
 		}
 	}
 
-	this->PhobosTrajectory::OnAIPreDetonate();
+	this->PhobosTrajectory::OnPreDetonate();
 }
 
 bool ActualTrajectory::BulletPrepareCheck()

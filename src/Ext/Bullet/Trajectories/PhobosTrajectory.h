@@ -223,14 +223,13 @@ public:
 	virtual bool Save(PhobosStreamWriter& Stm) const;
 	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; }
 	virtual void OnUnlimbo();
-	virtual bool OnAI();
-	virtual bool OnAIDetonateCheck();
-	virtual void OnAIVelocityCheck();
-	virtual void OnAINextFrameCheck();
-	virtual void OnAIPreDetonate();
-	virtual void OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition) { *pSpeed = this->MovingVelocity; }
-	virtual TrajectoryCheckReturnType OnAITargetCoordCheck() { return TrajectoryCheckReturnType::SkipGameCheck; }
-	virtual TrajectoryCheckReturnType OnAITechnoCheck(TechnoClass* pTechno) { return TrajectoryCheckReturnType::SkipGameCheck; }
+	virtual void OnEarlyCheck();
+	virtual bool OnEarlyUpdate();
+	virtual void OnVelocityCheck();
+	virtual void OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* pPosition) { *pSpeed = this->MovingVelocity; }
+	virtual bool OnDetonateCheck();
+	virtual TrajectoryCheckReturnType OnDetonateUpdate() { return TrajectoryCheckReturnType::SkipGameCheck; }
+	virtual void OnPreDetonate();
 	virtual const PhobosTrajectoryType* GetType() const = 0;
 	virtual void OpenFire();
 	virtual bool GetCanHitGround() const { return true; }

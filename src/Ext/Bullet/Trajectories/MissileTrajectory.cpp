@@ -126,24 +126,24 @@ void MissileTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool MissileTrajectory::OnAI()
+bool MissileTrajectory::OnEarlyUpdate()
 {
-	if (this->OnAIDetonateCheck())
+	if (this->OnDetonateCheck())
 		return true;
 
-	this->OnAIVelocityCheck();
+	this->OnVelocityCheck();
 
-	if (this->PhobosTrajectory::OnAI())
+	if (this->PhobosTrajectory::OnEarlyUpdate())
 		return true;
 
-	this->OnAINextFrameCheck();
+	this->OnEarlyCheck();
 
 	return false;
 }
 
-bool MissileTrajectory::OnAIDetonateCheck()
+bool MissileTrajectory::OnDetonateCheck()
 {
-	if (this->PhobosTrajectory::OnAIDetonateCheck())
+	if (this->PhobosTrajectory::OnDetonateCheck())
 		return true;
 
 	const auto pBullet = this->Bullet;
@@ -160,7 +160,7 @@ bool MissileTrajectory::OnAIDetonateCheck()
 	return pType->UniqueCurve ? this->CurveVelocityChange() : this->NotCurveVelocityChange();
 }
 
-void MissileTrajectory::OnAIVelocityCheck()
+void MissileTrajectory::OnVelocityCheck()
 {
 	// Check if the bullet needs to slow down the speed since it will pass through the target
 	if (this->LastDotProduct > 0)
@@ -172,7 +172,7 @@ void MissileTrajectory::OnAIVelocityCheck()
 			this->MultiplyBulletVelocity(distance / this->MovingSpeed, true);
 	}
 
-	this->PhobosTrajectory::OnAIVelocityCheck();
+	this->PhobosTrajectory::OnVelocityCheck();
 }
 
 void MissileTrajectory::OpenFire()

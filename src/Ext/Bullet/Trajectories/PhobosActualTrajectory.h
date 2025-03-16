@@ -53,8 +53,8 @@ public:
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual void OnUnlimbo() override;
-	virtual bool OnAI() override;
-	virtual void OnAIPreDetonate() override;
+	virtual bool OnEarlyUpdate() override;
+	virtual void OnPreDetonate() override;
 	virtual void FireTrajectory() { this->OpenFire(); } // New
 
 	bool BulletPrepareCheck();

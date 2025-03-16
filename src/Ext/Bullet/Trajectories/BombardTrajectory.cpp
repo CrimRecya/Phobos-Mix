@@ -112,9 +112,9 @@ void BombardTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool BombardTrajectory::OnAIDetonateCheck()
+bool BombardTrajectory::OnDetonateCheck()
 {
-	if (this->PhobosTrajectory::OnAIDetonateCheck())
+	if (this->PhobosTrajectory::OnDetonateCheck())
 		return true;
 
 	const auto pBullet = this->Bullet;

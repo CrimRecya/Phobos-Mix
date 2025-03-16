@@ -95,9 +95,9 @@ void StraightTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool StraightTrajectory::OnAIDetonateCheck()
+bool StraightTrajectory::OnDetonateCheck()
 {
-	if (this->PhobosTrajectory::OnAIDetonateCheck())
+	if (this->PhobosTrajectory::OnDetonateCheck())
 		return true;
 
 	const auto pBullet = this->Bullet;
@@ -113,7 +113,7 @@ bool StraightTrajectory::OnAIDetonateCheck()
 	return this->RemainingDistance < 0;
 }
 
-void StraightTrajectory::OnAIPreDetonate()
+void StraightTrajectory::OnPreDetonate()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
@@ -122,9 +122,9 @@ void StraightTrajectory::OnAIPreDetonate()
 		pBullet->SetLocation(CoordStruct { pBullet->Location.X, pBullet->Location.Y, MapClass::Instance.GetCellFloorHeight(pBullet->Location) });
 
 	if (!pType->PassThrough)
-		this->ActualTrajectory::OnAIPreDetonate();
+		this->ActualTrajectory::OnPreDetonate();
 	else
-		this->PhobosTrajectory::OnAIPreDetonate();
+		this->PhobosTrajectory::OnPreDetonate();
 }
 
 void StraightTrajectory::OpenFire()

@@ -102,17 +102,17 @@ void EngraveTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool EngraveTrajectory::OnAIDetonateCheck()
+bool EngraveTrajectory::OnDetonateCheck()
 {
-	if (this->VirtualTrajectory::OnAIDetonateCheck())
+	if (this->VirtualTrajectory::OnDetonateCheck())
 		return true;
 
 	return this->PlaceOnCorrectHeight();
 }
 
-void EngraveTrajectory::OnAINextFrameCheck()
+void EngraveTrajectory::OnEarlyCheck()
 {
-	this->PhobosTrajectory::OnAINextFrameCheck();
+	this->PhobosTrajectory::OnEarlyCheck();
 
 	if (!this->Type->IsLaser || !this->LaserTimer.Completed())
 		return;
