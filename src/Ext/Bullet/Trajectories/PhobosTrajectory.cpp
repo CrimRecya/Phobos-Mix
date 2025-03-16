@@ -395,8 +395,6 @@ TrajectoryCheckReturnType PhobosTrajectory::OnDetonateUpdate(const CoordStruct& 
 	// The previous frame requires detonation at this time
 	if (this->ShouldDetonate)
 		return TrajectoryCheckReturnType::Detonate;
-
-	const auto pBullet = this->Bullet;
 	// Below ground level? (16 ->error range)
 	if (this->GetCanHitGround() && MapClass::Instance.GetCellFloorHeight(position) >= (position.Z + 16))
 		return TrajectoryCheckReturnType::Detonate;
