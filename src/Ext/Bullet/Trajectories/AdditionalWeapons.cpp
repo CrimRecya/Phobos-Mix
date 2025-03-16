@@ -214,25 +214,6 @@ CoordStruct PhobosTrajectory::GetWeaponFireCoord(TechnoClass* pTechno)
 	return pBullet->Location + fireOffsetCoord;
 }
 
-bool PhobosTrajectory::CheckFireFacing()
-{
-	const auto pBullet = this->Bullet;
-	const auto pType = this->GetType();
-
-	if (!pType->DisperseFaceCheck || pType->BulletROT < 0 || pType->BulletSpin)
-		return true;
-
-	const auto flag = this->Flag();
-
-	if (pType->DisperseFromFirer.Get(flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
-		return true;
-
-	const auto targetDir = DirStruct { PhobosTrajectory::Get2DOpRadian(pBullet->Location, pBullet->TargetCoords) };
-	const auto bulletDir = DirStruct { Math::atan2(pBullet->Velocity.Y, pBullet->Velocity.X) };
-	// Their directions Y are all opposite, so they can still be used
-	return std::abs(static_cast<short>(static_cast<short>(targetDir.Raw) - static_cast<short>(bulletDir.Raw))) <= (2048 + (pType->BulletROT << 8));
-}
-
 bool PhobosTrajectory::PrepareDisperseWeapon()
 {
 	const auto pBullet = this->Bullet;

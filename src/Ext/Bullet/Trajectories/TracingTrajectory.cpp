@@ -109,19 +109,25 @@ void TracingTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool TracingTrajectory::OnDetonateCheck()
+bool TracingTrajectory::OnEarlyUpdate()
 {
-	if (this->VirtualTrajectory::OnDetonateCheck())
+	if (this->VirtualTrajectory::OnEarlyUpdate())
 		return true;
 
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	const auto pFirer = pBullet->Owner;
 	// Followed the launcher, but the launcher was destroyed
-	if (!pType->TraceTheTarget && !pFirer)
-		return true;
+	return !pType->TraceTheTarget && !pFirer;
+}
+
+bool TracingTrajectory::OnVelocityCheck()
+{
 	// Calculate speed changes
-	return this->ChangeVelocity();
+	if (this->ChangeVelocity())
+		return true;
+
+	return this->PhobosTrajectory::OnVelocityCheck();
 }
 
 void TracingTrajectory::OpenFire()

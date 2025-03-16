@@ -80,8 +80,8 @@ public:
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Missile; }
 	virtual void OnUnlimbo() override;
 	virtual bool OnEarlyUpdate() override;
-	virtual bool OnDetonateCheck() override;
-	virtual void OnVelocityCheck() override;
+	virtual bool OnVelocityCheck() override;
+	virtual TrajectoryCheckReturnType OnDetonateUpdate() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual void OpenFire() override;
 	virtual CoordStruct GetRetargetCenter() const override;

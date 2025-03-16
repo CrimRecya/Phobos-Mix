@@ -128,40 +128,16 @@ void MissileTrajectory::OnUnlimbo()
 
 bool MissileTrajectory::OnEarlyUpdate()
 {
-	if (this->OnDetonateCheck())
-		return true;
-
-	this->OnVelocityCheck();
-
-	if (this->PhobosTrajectory::OnEarlyUpdate())
-		return true;
-
-	this->OnEarlyCheck();
-
-	return false;
+	// No need to wait for the calculation of lead time
+	return this->PhobosTrajectory::OnEarlyUpdate();
 }
 
-bool MissileTrajectory::OnDetonateCheck()
+bool MissileTrajectory::OnVelocityCheck()
 {
-	if (this->PhobosTrajectory::OnDetonateCheck())
-		return true;
-
-	const auto pBullet = this->Bullet;
-	const auto pType = this->Type;
-	// Close enough
-	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
-		return true;
-	// Check the remaining travel distance of the bullet
-	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
-
-	if (this->RemainingDistance < 0)
-		return true;
 	// Calculate new speed
-	return pType->UniqueCurve ? this->CurveVelocityChange() : this->NotCurveVelocityChange();
-}
+	if (this->Type->UniqueCurve ? this->CurveVelocityChange() : this->NotCurveVelocityChange())
+		return true;
 
-void MissileTrajectory::OnVelocityCheck()
-{
 	// Check if the bullet needs to slow down the speed since it will pass through the target
 	if (this->LastDotProduct > 0)
 	{
@@ -172,7 +148,26 @@ void MissileTrajectory::OnVelocityCheck()
 			this->MultiplyBulletVelocity(distance / this->MovingSpeed, true);
 	}
 
-	this->PhobosTrajectory::OnVelocityCheck();
+	return this->PhobosTrajectory::OnVelocityCheck();
+}
+
+TrajectoryCheckReturnType MissileTrajectory::OnDetonateUpdate()
+{
+	if (this->PhobosTrajectory::OnDetonateUpdate() == TrajectoryCheckReturnType::Detonate)
+		return TrajectoryCheckReturnType::Detonate;
+
+	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
+	// Check the remaining travel distance of the bullet
+	if (this->RemainingDistance < 0)
+		return TrajectoryCheckReturnType::Detonate;
+
+	const auto pBullet = this->Bullet;
+	const auto pType = this->Type;
+	// Close enough
+	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
+		return TrajectoryCheckReturnType::Detonate;
+
+	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
 void MissileTrajectory::OpenFire()

@@ -29,23 +29,19 @@ public:
 	SampleTrajectory(SampleTrajectoryType const* trajType, BulletClass* pBullet)
 		: PhobosTrajectory(trajType, pBullet)
 		, Type { trajType }
-		, TargetSnapDistance { trajType->TargetSnapDistance }
 	{ }
 
 	SampleTrajectoryType const* Type;
-	Leptons TargetSnapDistance;
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Invalid; } // TrajectoryFlag
 	virtual void OnUnlimbo() override;
 	virtual bool OnEarlyUpdate() override;
-	virtual bool OnDetonateCheck() override;
-	virtual void OnVelocityCheck() override;
-	virtual void OnEarlyCheck() override;
-	virtual void OnPreDetonate() override;
+	virtual bool OnVelocityCheck() override;
 	virtual void OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* pPosition) override;
 	virtual TrajectoryCheckReturnType OnDetonateUpdate() override;
+	virtual void OnPreDetonate() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual void OpenFire() override;
 	virtual bool GetCanHitGround() const override;

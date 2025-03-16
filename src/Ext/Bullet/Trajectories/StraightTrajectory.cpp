@@ -95,22 +95,34 @@ void StraightTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool StraightTrajectory::OnDetonateCheck()
+bool StraightTrajectory::OnVelocityCheck()
 {
-	if (this->PhobosTrajectory::OnDetonateCheck())
+	// Hover
+	if (this->MovingSpeed < 256.0 && this->Type->ConfineAtHeight > 0 && this->PassAndConfineAtHeight())
 		return true;
+
+	return this->PhobosTrajectory::OnVelocityCheck();
+}
+
+TrajectoryCheckReturnType StraightTrajectory::OnDetonateUpdate()
+{
+	if (this->WaitOneFrame)
+		return TrajectoryCheckReturnType::SkipGameCheck;
+	else if (this->PhobosTrajectory::OnDetonateUpdate() == TrajectoryCheckReturnType::Detonate)
+		return TrajectoryCheckReturnType::Detonate;
+
+	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
+	// Check the remaining travel distance of the bullet
+	if (this->RemainingDistance < 0)
+		return TrajectoryCheckReturnType::Detonate;
 
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	// Close enough
 	if (!pType->PassThrough && pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
-		return true;
-	// Hover
-	if (this->MovingSpeed < 256.0 && pType->ConfineAtHeight > 0 && this->PassAndConfineAtHeight())
-		return true;
-	// Check the remaining travel distance of the bullet
-	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
-	return this->RemainingDistance < 0;
+		return TrajectoryCheckReturnType::Detonate;
+
+	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
 void StraightTrajectory::OnPreDetonate()

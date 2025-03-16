@@ -223,12 +223,10 @@ public:
 	virtual bool Save(PhobosStreamWriter& Stm) const;
 	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; }
 	virtual void OnUnlimbo();
-	virtual void OnEarlyCheck();
 	virtual bool OnEarlyUpdate();
-	virtual void OnVelocityCheck();
+	virtual bool OnVelocityCheck();
 	virtual void OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* pPosition) { *pSpeed = this->MovingVelocity; }
-	virtual bool OnDetonateCheck();
-	virtual TrajectoryCheckReturnType OnDetonateUpdate() { return TrajectoryCheckReturnType::SkipGameCheck; }
+	virtual TrajectoryCheckReturnType OnDetonateUpdate();
 	virtual void OnPreDetonate();
 	virtual const PhobosTrajectoryType* GetType() const = 0;
 	virtual void OpenFire();
@@ -295,7 +293,10 @@ public:
 	static BulletVelocity RotateVector(const BulletVelocity& from, const BulletVelocity& to, double turningRadian);
 	static BulletVelocity RotateAboutTheAxis(const BulletVelocity& vector, BulletVelocity& axis, double radian);
 
-	void ChangeBulletFacing();
+	bool OnFacingCheck();
+	void OnFacingUpdate();
+	bool FireAdditionals();
+	void DetonateOnObstacle();
 	bool CheckTolerantAndSynchronize();
 	std::vector<CellClass*> GetCellsInProximityRadius();
 	bool BulletRetargetTechno();
@@ -308,7 +309,6 @@ public:
 	double GetExtraDamageMultiplier();
 	void GetTechnoFLHCoord();
 	CoordStruct GetWeaponFireCoord(TechnoClass* pTechno);
-	bool CheckFireFacing();
 	bool PrepareDisperseWeapon();
 	bool FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner);
 	void CreateDisperseBullets(TechnoClass* pTechno, const CoordStruct& sourceCoord, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst);

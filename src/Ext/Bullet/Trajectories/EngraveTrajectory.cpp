@@ -102,25 +102,23 @@ void EngraveTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool EngraveTrajectory::OnDetonateCheck()
+bool EngraveTrajectory::OnEarlyUpdate()
 {
-	if (this->VirtualTrajectory::OnDetonateCheck())
+	if (this->VirtualTrajectory::OnEarlyUpdate())
 		return true;
+	// Draw laser
+	if (this->Type->IsLaser && this->LaserTimer.Completed())
+		this->DrawEngraveLaser();
 
-	return this->PlaceOnCorrectHeight();
+	return false;
 }
 
-void EngraveTrajectory::OnEarlyCheck()
+bool EngraveTrajectory::OnVelocityCheck()
 {
-	this->PhobosTrajectory::OnEarlyCheck();
+	if (this->TargetInTheAir && this->PlaceOnCorrectHeight())
+		return true;
 
-	if (!this->Type->IsLaser || !this->LaserTimer.Completed())
-		return;
-
-	const auto pBullet = this->Bullet;
-	const auto pFirer = pBullet->Owner;
-	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-	this->DrawEngraveLaser(pFirer, pOwner);
+	return this->PhobosTrajectory::OnVelocityCheck();
 }
 
 void EngraveTrajectory::OpenFire()
@@ -136,7 +134,7 @@ void EngraveTrajectory::OpenFire()
 	virtualSource.Z = 0;
 	virtualTarget.Z = 0;
 	const double rotateRadian = this->Get2DOpRadian((pFirer ? pFirer->GetCoords() : source), target);
-
+	// Mirror trajectory
 	if (!this->NotMainWeapon && pType->MirrorCoord && this->CurrentBurst < 0)
 	{
 		virtualSource.Y = -virtualSource.Y;
@@ -145,13 +143,12 @@ void EngraveTrajectory::OpenFire()
 	// Special case: Starting from the launch position
 	if (virtualSource.X != 0 || virtualSource.Y != 0)
 		source = target + PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(virtualSource, rotateRadian));
-
+	// If the target is in the air, there is no need to attach it to the ground
 	if (!this->TargetInTheAir)
 		source.Z = this->GetFloorCoordHeight(source);
-
+	// set initial status
 	pBullet->SetLocation(source);
 	target += PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(virtualTarget, rotateRadian));
-
 	this->MovingVelocity.X = target.X - source.X;
 	this->MovingVelocity.Y = target.Y - source.Y;
 	this->MovingVelocity.Z = 0;
@@ -201,9 +198,6 @@ int EngraveTrajectory::GetFloorCoordHeight(const CoordStruct& coord)
 
 bool EngraveTrajectory::PlaceOnCorrectHeight()
 {
-	if (this->TargetInTheAir)
-		return false;
-
 	const auto pBullet = this->Bullet;
 	auto bulletCoords = pBullet->Location;
 	const auto futureCoords = bulletCoords + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
@@ -240,33 +234,38 @@ bool EngraveTrajectory::PlaceOnCorrectHeight()
 	return false;
 }
 
-void EngraveTrajectory::DrawEngraveLaser(TechnoClass* pTechno, HouseClass* pOwner)
+void EngraveTrajectory::DrawEngraveLaser()
 {
 	const auto pBullet = this->Bullet;
+	auto pFirer = pBullet->Owner;
+	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 	const auto pType = this->Type;
 	this->LaserTimer.Start(pType->LaserDelay);
 	auto fireCoord = pBullet->SourceCoords;
-
-	for (auto pTrans = pTechno->Transporter; pTrans; pTrans = pTrans->Transporter)
-		pTechno = pTrans;
-	// Considering that the CurrentBurstIndex may be different, it is not possible to call existing functions
-	if (!this->NotMainWeapon && pTechno && !pTechno->InLimbo)
+	// Find the outermost transporter
+	if (pFirer)
 	{
-		if (pTechno->WhatAmI() != AbstractType::Building)
+		for (auto pTrans = pFirer->Transporter; pTrans; pTrans = pTrans->Transporter)
+			pFirer = pTrans;
+	}
+	// Considering that the CurrentBurstIndex may be different, it is not possible to call existing functions
+	if (!this->NotMainWeapon && pFirer && !pFirer->InLimbo)
+	{
+		if (pFirer->WhatAmI() != AbstractType::Building)
 		{
 			// The building turret uses PrimaryFacing and GetRenderCoords() to calculate the actual position, so this function is not available
-			fireCoord = TechnoExt::GetFLHAbsoluteCoords(pTechno, this->FLHCoord, pTechno->HasTurret());
+			fireCoord = TechnoExt::GetFLHAbsoluteCoords(pFirer, this->FLHCoord, pFirer->HasTurret());
 		}
 		else
 		{
-			const auto pBuilding = static_cast<BuildingClass*>(pTechno);
+			const auto pBuilding = static_cast<BuildingClass*>(pFirer);
 			Matrix3D mtx;
 			mtx.MakeIdentity();
 
-			if (pTechno->HasTurret())
+			if (pFirer->HasTurret())
 			{
 				TechnoTypeExt::ApplyTurretOffset(pBuilding->Type, &mtx);
-				mtx.RotateZ(static_cast<float>(pTechno->TurretFacing().GetRadian<32>()));
+				mtx.RotateZ(static_cast<float>(pFirer->TurretFacing().GetRadian<32>()));
 			}
 
 			mtx.Translate(static_cast<float>(this->FLHCoord.X), static_cast<float>(this->FLHCoord.Y), static_cast<float>(this->FLHCoord.Z));

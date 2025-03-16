@@ -86,16 +86,7 @@ bool ActualTrajectory::OnEarlyUpdate()
 	if (this->WaitOneFrame && this->BulletPrepareCheck())
 		return false;
 
-	if (this->OnDetonateCheck())
-		return true;
-
-	this->OnVelocityCheck();
-
-	if (this->PhobosTrajectory::OnEarlyUpdate())
-		return true;
-
-	this->OnEarlyCheck();
-	return false;
+	return this->PhobosTrajectory::OnEarlyUpdate();
 }
 
 void ActualTrajectory::OnPreDetonate()

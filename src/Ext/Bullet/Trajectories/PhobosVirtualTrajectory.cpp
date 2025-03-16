@@ -71,24 +71,10 @@ void VirtualTrajectory::OnUnlimbo()
 
 bool VirtualTrajectory::OnEarlyUpdate()
 {
-	if (this->OnDetonateCheck())
-		return true;
-
-	this->OnVelocityCheck();
-
-	if (this->PhobosTrajectory::OnEarlyUpdate())
-		return true;
-
-	this->OnEarlyCheck();
-	return false;
-}
-
-bool VirtualTrajectory::OnDetonateCheck()
-{
 	if (!this->NotMainWeapon && this->InvalidFireCondition(this->Bullet->Owner))
 		return true;
 
-	return this->PhobosTrajectory::OnDetonateCheck();
+	return this->PhobosTrajectory::OnEarlyUpdate();
 }
 
 bool VirtualTrajectory::InvalidFireCondition(TechnoClass* pTechno)

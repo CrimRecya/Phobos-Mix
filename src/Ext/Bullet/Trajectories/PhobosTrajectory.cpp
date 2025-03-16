@@ -166,6 +166,7 @@ bool TrajectoryPointer::Save(PhobosStreamWriter& Stm) const
 
 // ------------------------------------------------------------------------------ //
 
+// Have generated projectile on the map and prepare for launch
 void PhobosTrajectory::OnUnlimbo()
 {
 	const auto pBullet = this->Bullet;
@@ -231,56 +232,37 @@ void PhobosTrajectory::OnUnlimbo()
 	}
 }
 
+// Something that needs to be done before updating the velocity of the projectile
 bool PhobosTrajectory::OnEarlyUpdate()
 {
-	this->ChangeBulletFacing();
-	const auto pType = this->GetType();
-	// Detonate the warhead at the current location
-	if (pType->PassDetonate)
-		this->PassWithDetonateAt();
-	// Detonate the warhead on the technos passing through
-	if (this->ProximityImpact != 0 && pType->ProximityRadius.Get() > 0)
-		this->PrepareForDetonateAt();
-	// Launch additional weapons towards the target
-	if (!this->DisperseTimer.Completed())
-		return false;
-
-	const auto pBullet = this->Bullet;
-	const auto range = pType->DisperseEffectiveRange.Get();
-	// Weapons can only be fired when the distance is close enough
-	if (range && pBullet->TargetCoords.DistanceFrom(pBullet->Location) > range)
-		return false;
-	// Fire after checking the orientation
-	return this->CheckFireFacing() && this->PrepareDisperseWeapon();
-}
-
-// Check if it should be detonated immediately
-bool PhobosTrajectory::OnDetonateCheck()
-{
-	// The previous frame requires detonation at this time
-	if (this->ShouldDetonate)
-		return true;
 	// Check the remaining existence time
 	if (this->DurationTimer.Completed())
-		return true;
-
-	const auto pBullet = this->Bullet;
-	// Below ground level? (16 ->error range)
-	if (this->GetCanHitGround() && MapClass::Instance.GetCellFloorHeight(pBullet->Location) >= (pBullet->Location.Z + 16))
 		return true;
 	// Check if the tolerance time has ended or if the firer's target can be synchronized
 	if (this->CheckTolerantAndSynchronize())
 		return true;
 	// Check if the target needs to be changed
-	return (std::abs(this->GetType()->RetargetRadius) > 1e-10 && this->BulletRetargetTechno());
+	if (std::abs(this->GetType()->RetargetRadius) > 1e-10 && this->BulletRetargetTechno())
+		return true;
+	// Check whether need to slow down then detonate
+	if (this->OnVelocityCheck())
+		return true;
+	// Rotate bullet
+	this->OnFacingUpdate();
+	// Fire weapons or warheads
+	if (this->FireAdditionals())
+		return true;
+	// Detonate extra warhead on the obstacle
+	this->DetonateOnObstacle();
+	return false;
 }
 
-// If there is an obstacle on the route, the bullet should need to reduce its speed so it will not penetrate the obstacle.
-void PhobosTrajectory::OnVelocityCheck()
+// It is possible to detonate here in advance or decide how to change the speed
+bool PhobosTrajectory::OnVelocityCheck()
 {
 	const auto pBullet = this->Bullet;
 	double ratio = 1.0;
-
+	// If there is an obstacle on the route, the bullet should need to reduce its speed so it will not penetrate the obstacle.
 	const auto pType = this->GetType();
 	const bool checkThrough = (!pType->ThroughBuilding || !pType->ThroughVehicles);
 	const auto velocity = PhobosTrajectory::Get2DVelocity(this->MovingVelocity);
@@ -305,13 +287,14 @@ void PhobosTrajectory::OnVelocityCheck()
 			const auto theTargetCoords = pBullet->Location + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
 			const auto cellHeight = MapClass::Instance.GetCellFloorHeight(theTargetCoords);
 			// Check whether the height of the ground is about to exceed the height of the projectile
-			if (cellHeight < theTargetCoords.Z)
-				return;
-			// How much reduction is needed to calculate the velocity vector
-			const auto newRatio = std::abs((pBullet->Location.Z - cellHeight) / this->MovingVelocity.Z);
-			// Only when the proportion is smaller, it needs to be recorded
-			if (ratio > newRatio)
-				ratio = newRatio;
+			if (cellHeight >= theTargetCoords.Z)
+			{
+				// How much reduction is needed to calculate the velocity vector
+				const auto newRatio = std::abs((pBullet->Location.Z - cellHeight) / this->MovingVelocity.Z);
+				// Only when the proportion is smaller, it needs to be recorded
+				if (ratio > newRatio)
+					ratio = newRatio;
+			}
 		}
 	}
 	else
@@ -395,36 +378,33 @@ void PhobosTrajectory::OnVelocityCheck()
 	// Only when the speed is very low will there be situations where the conditions are not met
 	if (ratio < 1.0)
 		this->MultiplyBulletVelocity(ratio, true);
+	// Anyway, wait until later before detonating
+	return false;
 }
 
-// If the check result here is true, it only needs to be detonated in the next frame, without returning.
-void PhobosTrajectory::OnEarlyCheck()
+// How does the velocity of the projectile change
+void PhobosTrajectory::OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* pPosition)
 {
-	// Obstacles were detected in the current frame here
-	const auto pDetonateAt = this->ExtraCheck;
-
-	if (!pDetonateAt)
-		return;
-	// Slow down and reset the target
-	const auto pBullet = this->Bullet;
-	const auto distance = pDetonateAt->GetCoords().DistanceFrom(pBullet->Location);
-	// Set the new target so that the snap function can take effect
-	this->SetBulletNewTarget(pDetonateAt);
-	const auto speed = this->MovingSpeed;
-
-	if (speed && distance < speed)
-		this->MultiplyBulletVelocity(distance / speed, true);
-	else
-		this->ShouldDetonate = true;
-	// Need to cause additional damage?
-	if (!this->ProximityImpact || !this->GetType()->ProximityWarhead)
-		return;
-
-	const auto pFirer = pBullet->Owner;
-	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-	this->ProximityDetonateAt(pOwner, pDetonateAt);
+	// Set true moving velocity
+	*pSpeed = this->MovingVelocity;
 }
 
+// Something that needs to be done after updating the velocity of the projectile
+TrajectoryCheckReturnType PhobosTrajectory::OnDetonateUpdate()
+{
+	// The previous frame requires detonation at this time
+	if (this->ShouldDetonate)
+		return TrajectoryCheckReturnType::Detonate;
+
+	const auto pBullet = this->Bullet;
+	// Below ground level? (16 ->error range)
+	if (this->GetCanHitGround() && MapClass::Instance.GetCellFloorHeight(pBullet->Location) >= (pBullet->Location.Z + 16))
+		return TrajectoryCheckReturnType::Detonate;
+
+	return TrajectoryCheckReturnType::SkipGameCheck;
+}
+
+// Something that needs to be done before detonation
 void PhobosTrajectory::OnPreDetonate()
 {
 	const auto pType = this->GetType();
@@ -450,6 +430,7 @@ void PhobosTrajectory::OnPreDetonate()
 	}
 }
 
+// Something that needs to be done when the projectile is actually launched
 void PhobosTrajectory::OpenFire()
 {
 	const auto pBullet = this->Bullet;
@@ -467,6 +448,7 @@ void PhobosTrajectory::OpenFire()
 		pBullet->Velocity.Z = 0;
 }
 
+// Something that needs to be done when changing the target of the projectile
 void PhobosTrajectory::SetBulletNewTarget(AbstractClass* const pTarget)
 {
 	const auto pBullet = this->Bullet;
@@ -474,6 +456,7 @@ void PhobosTrajectory::SetBulletNewTarget(AbstractClass* const pTarget)
 	pBullet->TargetCoords = pTarget->GetCoords();
 }
 
+// Something that needs to be done when setting the new speed of the projectile
 bool PhobosTrajectory::CalculateBulletVelocity(const double speed)
 {
 	const auto velocityLength = this->MovingVelocity.Magnitude();
@@ -486,6 +469,7 @@ bool PhobosTrajectory::CalculateBulletVelocity(const double speed)
 	return false;
 }
 
+// Something that needs to be done when Multipling the speed of the projectile
 void PhobosTrajectory::MultiplyBulletVelocity(const double ratio, const bool shouldDetonate)
 {
 	// Reset speed vector
@@ -554,7 +538,28 @@ BulletVelocity PhobosTrajectory::RotateAboutTheAxis(const BulletVelocity& vector
 	return ((vector * cosRotate) + (axis * ((1 - cosRotate) * (vector * axis))) + (axis.CrossProduct(vector) * Math::sin(radian)));
 }
 
-void PhobosTrajectory::ChangeBulletFacing()
+// Inspection of projectile orientation
+bool PhobosTrajectory::OnFacingCheck()
+{
+	const auto pBullet = this->Bullet;
+	const auto pType = this->GetType();
+
+	if (!pType->DisperseFaceCheck || pType->BulletROT < 0 || pType->BulletSpin)
+		return true;
+
+	const auto flag = this->Flag();
+
+	if (pType->DisperseFromFirer.Get(flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
+		return true;
+
+	const auto targetDir = DirStruct { PhobosTrajectory::Get2DOpRadian(pBullet->Location, pBullet->TargetCoords) };
+	const auto bulletDir = DirStruct { Math::atan2(pBullet->Velocity.Y, pBullet->Velocity.X) };
+	// Their directions Y are all opposite, so they can still be used
+	return std::abs(static_cast<short>(static_cast<short>(targetDir.Raw) - static_cast<short>(bulletDir.Raw))) <= (2048 + (pType->BulletROT << 8));
+}
+
+// Update of projectile facing direction
+void PhobosTrajectory::OnFacingUpdate()
 {
 	const auto pType = this->GetType();
 	// Cannot rotate
@@ -595,6 +600,58 @@ void PhobosTrajectory::ChangeBulletFacing()
 	}
 }
 
+// Launch additional weapons and warheads
+bool PhobosTrajectory::FireAdditionals()
+{
+	const auto pType = this->GetType();
+	// Detonate the warhead at the current location
+	if (pType->PassDetonate)
+		this->PassWithDetonateAt();
+	// Detonate the warhead on the technos passing through
+	if (this->ProximityImpact != 0 && pType->ProximityRadius.Get() > 0)
+		this->PrepareForDetonateAt();
+	// Launch additional weapons towards the target
+	if (!this->DisperseTimer.Completed())
+		return false;
+
+	const auto pBullet = this->Bullet;
+	const auto range = pType->DisperseEffectiveRange.Get();
+	// Weapons can only be fired when the distance is close enough
+	if (range && pBullet->TargetCoords.DistanceFrom(pBullet->Location) > range)
+		return false;
+	// Fire after checking the orientation
+	return this->OnFacingCheck() && this->PrepareDisperseWeapon();
+}
+
+// Detonate a extra warhead on the obstacle then detonate bullet itself
+void PhobosTrajectory::DetonateOnObstacle()
+{
+	const auto pDetonateAt = this->ExtraCheck;
+	// Obstacles were detected in the current frame here
+	if (!pDetonateAt)
+		return;
+	// Slow down and reset the target
+	this->ExtraCheck = nullptr;
+	const auto pBullet = this->Bullet;
+	const auto distance = pDetonateAt->GetCoords().DistanceFrom(pBullet->Location);
+	// Set the new target so that the snap function can take effect
+	this->SetBulletNewTarget(pDetonateAt);
+	const auto speed = this->MovingSpeed;
+	// Check whether need to slow down
+	if (speed && distance < speed)
+		this->MultiplyBulletVelocity(distance / speed, true);
+	else
+		this->ShouldDetonate = true;
+	// Need to cause additional damage?
+	if (!this->ProximityImpact || !this->GetType()->ProximityWarhead)
+		return;
+	// Detonate extra warhead
+	const auto pFirer = pBullet->Owner;
+	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
+	this->ProximityDetonateAt(pOwner, pDetonateAt);
+}
+
+// Synchronization target inspection and tolerance time inspection
 bool PhobosTrajectory::CheckTolerantAndSynchronize()
 {
 	const auto pBullet = this->Bullet;
@@ -603,7 +660,7 @@ bool PhobosTrajectory::CheckTolerantAndSynchronize()
 
 	if (!pBullet->Target && !pType->TolerantTime)
 		return true;
-
+	// Find the outermost transporter
 	if (pFirer)
 	{
 		for (auto pTrans = pFirer->Transporter; pTrans; pTrans = pTrans->Transporter)
@@ -833,7 +890,24 @@ void PhobosTrajectory::Serialize(T& Stm)
 // =============================
 // hooks
 
-DEFINE_HOOK(0x4666F7, BulletClass_AI_Trajectories, 0x6)
+DEFINE_HOOK(0x468B72, BulletClass_Unlimbo_Trajectories, 0x5)
+{
+	GET(BulletClass*, pThis, EBX);
+
+	auto const pExt = BulletExt::ExtMap.Find(pThis);
+	auto const pTypeExt = pExt->TypeExtData;
+
+	if (pTypeExt && pTypeExt->TrajectoryType)
+	{
+		pExt->Trajectory = pTypeExt->TrajectoryType->CreateInstance(pThis);
+//		Debug::LogAndMessage("OnUnlimbo\n");
+		pExt->Trajectory->OnUnlimbo();
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x4666F7, BulletClass_Update_TrajectoriesEarlyUpdate, 0x6)
 {
 	enum { Detonate = 0x467E53 };
 
@@ -844,8 +918,8 @@ DEFINE_HOOK(0x4666F7, BulletClass_AI_Trajectories, 0x6)
 
 	if (auto pTraj = pExt->Trajectory.get())
 	{
+//		Debug::LogAndMessage("OnEarlyUpdate\n");
 		detonate = pTraj->OnEarlyUpdate();
-//		Debug::LogAndMessage("OnAI\n");
 	}
 
 	if (detonate && !pThis->SpawnNextAnim)
@@ -854,22 +928,7 @@ DEFINE_HOOK(0x4666F7, BulletClass_AI_Trajectories, 0x6)
 	return 0;
 }
 
-DEFINE_HOOK(0x467E53, BulletClass_AI_PreDetonation_Trajectories, 0x6)
-{
-	GET(BulletClass*, pThis, EBP);
-
-	auto const pExt = BulletExt::ExtMap.Find(pThis);
-
-	if (auto pTraj = pExt->Trajectory.get())
-	{
-		pTraj->OnPreDetonate();
-//		Debug::LogAndMessage("OnAIPreDetonate\n");
-	}
-
-	return 0;
-}
-
-DEFINE_HOOK(0x46745C, BulletClass_AI_Position_Trajectories, 0x7)
+DEFINE_HOOK(0x46745C, BulletClass_Update_TrajectoriesVelocityUpdate, 0x7)
 {
 	GET(BulletClass*, pThis, EBP);
 	LEA_STACK(BulletVelocity*, pSpeed, STACK_OFFSET(0x1AC, -0x11C));
@@ -879,8 +938,8 @@ DEFINE_HOOK(0x46745C, BulletClass_AI_Position_Trajectories, 0x7)
 
 	if (auto pTraj = pExt->Trajectory.get())
 	{
+//		Debug::LogAndMessage("OnVelocityUpdate\n");
 		pTraj->OnVelocityUpdate(pSpeed, pPosition);
-//		Debug::LogAndMessage("OnAIVelocity\n");
 	}
 
 	// Trajectory can use Velocity only for turning Image's direction
@@ -906,7 +965,7 @@ DEFINE_HOOK(0x46745C, BulletClass_AI_Position_Trajectories, 0x7)
 	return 0;
 }
 
-DEFINE_HOOK(0x4677D3, BulletClass_AI_TargetCoordCheck_Trajectories, 0x5)
+DEFINE_HOOK(0x4677D3, BulletClass_Update_TrajectoriesDetonateUpdate, 0x5)
 {
 	enum { SkipCheck = 0x467B7A, ContinueAfterCheck = 0x467879, Detonate = 0x467E53 };
 
@@ -916,19 +975,19 @@ DEFINE_HOOK(0x4677D3, BulletClass_AI_TargetCoordCheck_Trajectories, 0x5)
 
 	if (auto pTraj = pExt->Trajectory.get())
 	{
-//		Debug::LogAndMessage("OnAITargetCoordCheck\n");
+//		Debug::LogAndMessage("OnDetonateUpdate\n");
 		switch (pTraj->OnDetonateUpdate())
 		{
 		case TrajectoryCheckReturnType::SkipGameCheck:
-			return SkipCheck;
+			return SkipCheck; // Skip all vanilla check
 			break;
 		case TrajectoryCheckReturnType::SatisfyGameCheck:
-			return ContinueAfterCheck;
+			return ContinueAfterCheck; // Continue next vanilla check
 			break;
 		case TrajectoryCheckReturnType::Detonate:
-			return Detonate;
+			return Detonate; // Directly detonate
 			break;
-		default:
+		default: // Do vanilla check
 			break;
 		}
 	}
@@ -936,18 +995,16 @@ DEFINE_HOOK(0x4677D3, BulletClass_AI_TargetCoordCheck_Trajectories, 0x5)
 	return 0;
 }
 
-DEFINE_HOOK(0x468B72, BulletClass_Unlimbo_Trajectories, 0x5)
+DEFINE_HOOK(0x467E53, BulletClass_Update_PreDetonation_Trajectories, 0x6)
 {
-	GET(BulletClass*, pThis, EBX);
+	GET(BulletClass*, pThis, EBP);
 
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
-	auto const pTypeExt = pExt->TypeExtData;
 
-	if (pTypeExt && pTypeExt->TrajectoryType)
+	if (auto pTraj = pExt->Trajectory.get())
 	{
-		pExt->Trajectory = pTypeExt->TrajectoryType->CreateInstance(pThis);
-		pExt->Trajectory->OnUnlimbo();
-//		Debug::LogAndMessage("Unlimbo\n");
+//		Debug::LogAndMessage("OnPreDetonate\n");
+		pTraj->OnPreDetonate();
 	}
 
 	return 0;

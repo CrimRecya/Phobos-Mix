@@ -41,7 +41,6 @@ public:
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual void OnUnlimbo() override;
 	virtual bool OnEarlyUpdate() override;
-	virtual bool OnDetonateCheck() override;
 
 	bool InvalidFireCondition(TechnoClass* pTechno);
 

@@ -147,57 +147,13 @@ void ParabolaTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool ParabolaTrajectory::OnDetonateCheck()
+bool ParabolaTrajectory::OnVelocityCheck()
 {
-	if (this->ShouldDetonate)
-		return true;
-
 	const auto pBullet = this->Bullet;
-	const auto pType = this->Type;
-	// Close enough
-	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
-		return true;
-	// Height
-	if (pType->DetonationHeight >= 0 && (pType->EarlyDetonation
-		? ((pBullet->Location.Z - pBullet->SourceCoords.Z) > pType->DetonationHeight)
-		: (this->MovingVelocity.Z < 1e-10 && (pBullet->Location.Z - pBullet->SourceCoords.Z) < pType->DetonationHeight)))
-	{
-		return true;
-	}
-	// Angle
-	if (std::abs(pType->DetonationAngle) < 1e-10)
-	{
-		if (this->MovingVelocity.Z < 1e-10)
-			return true;
-	}
-	else if (std::abs(pType->DetonationAngle) < 90.0)
-	{
-		const auto velocity = PhobosTrajectory::Get2DVelocity(this->MovingVelocity);
-
-		if (velocity > 1e-10)
-		{
-			if ((this->MovingVelocity.Z / velocity) < Math::tan(pType->DetonationAngle * Math::Pi / 180.0))
-				return true;
-		}
-		else if (pType->DetonationAngle > 1e-10 || this->MovingVelocity.Z < 1e-10)
-		{
-			return true;
-		}
-	}
-
-	const auto pCell = MapClass::Instance.TryGetCellAt(pBullet->Location);
-	// Bounce
-	if (!pCell || (this->ShouldBounce && this->CalculateBulletVelocityAfterBounce(pCell)))
-		return true;
 	// Affected by gravity
 	this->MovingVelocity.Z -= BulletTypeExt::GetAdjustedGravity(pBullet->Type);
 	this->MovingSpeed = this->MovingVelocity.Magnitude();
-	return false;
-}
-
-void ParabolaTrajectory::OnVelocityCheck()
-{
-	const auto pBullet = this->Bullet;
+	// Adopting independent logic
 	double ratio = 1.0;
 	int velocityCheck = 0;
 
@@ -227,15 +183,16 @@ void ParabolaTrajectory::OnVelocityCheck()
 			const auto theTargetCoords = pBullet->Location + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
 			const auto cellHeight = MapClass::Instance.GetCellFloorHeight(theTargetCoords);
 			// Check whether the height of the ground is about to exceed the height of the projectile
-			if (cellHeight < theTargetCoords.Z)
-				return;
-			// How much reduction is needed to calculate the velocity vector
-			const auto newRatio = std::abs((pBullet->Location.Z - cellHeight) / this->MovingVelocity.Z);
-			// Only when the proportion is smaller, it needs to be recorded
-			if (ratio > newRatio)
+			if (cellHeight >= theTargetCoords.Z)
 			{
-				ratio = newRatio;
-				velocityCheck = 1;
+				// How much reduction is needed to calculate the velocity vector
+				const auto newRatio = std::abs((pBullet->Location.Z - cellHeight) / this->MovingVelocity.Z);
+				// Only when the proportion is smaller, it needs to be recorded
+				if (ratio > newRatio)
+				{
+					ratio = newRatio;
+					velocityCheck = 1;
+				}
 			}
 		}
 	}
@@ -302,17 +259,65 @@ void ParabolaTrajectory::OnVelocityCheck()
 	}
 	// No need for change
 	if (!velocityCheck)
-		return;
+		return false;
 	// Detonates itself in the next frame
 	if (velocityCheck == 2)
 	{
 		this->MultiplyBulletVelocity(ratio, true);
-		return;
+		return false;
 	}
 	// Bounce in the next frame
 	this->LastVelocity = this->MovingVelocity;
 	this->MultiplyBulletVelocity(ratio, false);
-	return;
+	return false;
+}
+
+TrajectoryCheckReturnType ParabolaTrajectory::OnDetonateUpdate()
+{
+	if (this->WaitOneFrame)
+		return TrajectoryCheckReturnType::SkipGameCheck;
+	else if (this->PhobosTrajectory::OnDetonateUpdate() == TrajectoryCheckReturnType::Detonate)
+		return TrajectoryCheckReturnType::Detonate;
+
+	const auto pBullet = this->Bullet;
+	const auto pType = this->Type;
+	// Close enough
+	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
+		return TrajectoryCheckReturnType::Detonate;
+	// Height
+	if (pType->DetonationHeight >= 0 && (pType->EarlyDetonation
+		? ((pBullet->Location.Z - pBullet->SourceCoords.Z) > pType->DetonationHeight)
+		: (this->MovingVelocity.Z < 1e-10 && (pBullet->Location.Z - pBullet->SourceCoords.Z) < pType->DetonationHeight)))
+	{
+		return TrajectoryCheckReturnType::Detonate;
+	}
+	// Angle
+	if (std::abs(pType->DetonationAngle) < 1e-10)
+	{
+		if (this->MovingVelocity.Z < 1e-10)
+			return TrajectoryCheckReturnType::Detonate;
+	}
+	else if (std::abs(pType->DetonationAngle) < 90.0)
+	{
+		const auto velocity = PhobosTrajectory::Get2DVelocity(this->MovingVelocity);
+
+		if (velocity > 1e-10)
+		{
+			if ((this->MovingVelocity.Z / velocity) < Math::tan(pType->DetonationAngle * Math::Pi / 180.0))
+				return TrajectoryCheckReturnType::Detonate;
+		}
+		else if (pType->DetonationAngle > 1e-10 || this->MovingVelocity.Z < 1e-10)
+		{
+			return TrajectoryCheckReturnType::Detonate;
+		}
+	}
+
+	const auto pCell = MapClass::Instance.TryGetCellAt(pBullet->Location);
+	// Bounce
+	if (!pCell || (this->ShouldBounce && this->CalculateBulletVelocityAfterBounce(pCell)))
+		return TrajectoryCheckReturnType::Detonate;
+
+	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
 void ParabolaTrajectory::OnPreDetonate()
@@ -813,7 +818,7 @@ double ParabolaTrajectory::CheckFixedAngleEquation(const CoordStruct& source, co
 	return upTime + downTime - meetTime;
 }
 
-bool ParabolaTrajectory::CalculateBulletVelocityAfterBounce(CellClass* pCell)
+bool ParabolaTrajectory::CalculateBulletVelocityAfterBounce(const CellClass* const pCell)
 {
 	const auto pType = this->Type;
 	// Can bounce on water surface?
@@ -840,7 +845,7 @@ bool ParabolaTrajectory::CalculateBulletVelocityAfterBounce(CellClass* pCell)
 	return false;
 }
 
-BulletVelocity ParabolaTrajectory::GetGroundNormalVector(CellClass* pCell)
+BulletVelocity ParabolaTrajectory::GetGroundNormalVector(const CellClass* const pCell)
 {
 	if (const auto index = pCell->SlopeIndex)
 	{

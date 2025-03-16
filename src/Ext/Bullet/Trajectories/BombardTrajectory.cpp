@@ -112,25 +112,32 @@ void BombardTrajectory::OnUnlimbo()
 		this->OpenFire();
 }
 
-bool BombardTrajectory::OnDetonateCheck()
+bool BombardTrajectory::OnVelocityCheck()
 {
-	if (this->PhobosTrajectory::OnDetonateCheck())
-		return true;
+	return this->BulletVelocityChange() || this->PhobosTrajectory::OnVelocityCheck();
+}
+
+TrajectoryCheckReturnType BombardTrajectory::OnDetonateUpdate()
+{
+	if (this->WaitOneFrame)
+		return TrajectoryCheckReturnType::SkipGameCheck;
+	else if (this->PhobosTrajectory::OnDetonateUpdate() == TrajectoryCheckReturnType::Detonate)
+		return TrajectoryCheckReturnType::Detonate;
 
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	// Close enough
 	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
-		return true;
+		return TrajectoryCheckReturnType::Detonate;
 	// Height
 	if (pType->DetonationHeight >= 0 && (pType->EarlyDetonation
 		? ((pBullet->Location.Z - pBullet->SourceCoords.Z) > pType->DetonationHeight)
 		: (this->IsFalling && (pBullet->Location.Z - pBullet->SourceCoords.Z) < pType->DetonationHeight)))
 	{
-		return true;
+		return TrajectoryCheckReturnType::Detonate;
 	}
 
-	return this->BulletVelocityChange();
+	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
 void BombardTrajectory::OpenFire()

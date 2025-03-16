@@ -57,8 +57,8 @@ public:
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Engrave; }
 	virtual void OnUnlimbo() override;
-	virtual bool OnDetonateCheck() override;
-	virtual void OnEarlyCheck() override;
+	virtual bool OnEarlyUpdate() override;
+	virtual bool OnVelocityCheck() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual void OpenFire() override;
 	virtual bool GetCanHitGround() const override { return false; }
@@ -67,7 +67,7 @@ public:
 private:
 	int GetFloorCoordHeight(const CoordStruct& coord);
 	bool PlaceOnCorrectHeight();
-	void DrawEngraveLaser(TechnoClass* pTechno, HouseClass* pOwner);
+	void DrawEngraveLaser();
 
 	template <typename T>
 	void Serialize(T& Stm);

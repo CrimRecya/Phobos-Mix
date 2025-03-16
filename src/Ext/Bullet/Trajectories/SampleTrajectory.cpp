@@ -46,7 +46,6 @@ void SampleTrajectory::Serialize(T& Stm)
 {
 	Stm
 		.Process(this->Type)
-		.Process(this->TargetSnapDistance)
 		;
 }
 
@@ -77,60 +76,16 @@ void SampleTrajectory::OnUnlimbo()
 }
 
 // Some checks here, returns whether or not to detonate the bullet.
-// You can change the bullet's true velocity or set its location here. If you modify them here, it will affect the incoming parameters in OnAIVelocity.
+// You can change the bullet's true velocity or set its location here. If you modify them here, it will affect the incoming parameters in OnVelocityUpdate().
 bool SampleTrajectory::OnEarlyUpdate()
 {
-	if (this->OnDetonateCheck())
-		return true;
-
-	this->OnVelocityCheck();
-
-	if (this->PhobosTrajectory::OnEarlyUpdate())
-		return true;
-
-	this->OnEarlyCheck();
-
-	return false;
-}
-
-// If the projectile needs to update its speed during the journey, then I suggest you complete the update here.
-bool SampleTrajectory::OnDetonateCheck()
-{
-	if (this->PhobosTrajectory::OnDetonateCheck())
-		return true;
-
-	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
-
-	return this->RemainingDistance < 0;
+	return this->PhobosTrajectory::OnEarlyUpdate();
 }
 
 // What needs to be done before launching the weapon after calculating the new speed.
-void SampleTrajectory::OnVelocityCheck()
+bool SampleTrajectory::OnVelocityCheck()
 {
-	this->PhobosTrajectory::OnVelocityCheck();
-}
-
-// What else should be done after the weapon is launched, to prepare for the next frame.
-void SampleTrajectory::OnEarlyCheck()
-{
-	this->PhobosTrajectory::OnEarlyCheck();
-}
-
-// At this time, the bullet has hit the target and is ready to detonate.
-// You can make it change before detonating.
-void SampleTrajectory::OnPreDetonate()
-{
-	const auto pBullet = this->Bullet;
-	auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
-	auto pCoords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
-	// Can snap to target?
-	if (pCoords.DistanceFrom(pBullet->Location) <= this->TargetSnapDistance)
-	{
-		BulletExt::ExtMap.Find(pBullet)->SnappedToTarget = true;
-		pBullet->SetLocation(pCoords);
-	}
-
-	this->PhobosTrajectory::OnPreDetonate();
+	return this->PhobosTrajectory::OnVelocityCheck();
 }
 
 // Where you can update the bullet's speed and position. But I would recommend that you complete the calculation at OnEarlyUpdate().
@@ -147,7 +102,32 @@ void SampleTrajectory::OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* 
 // Return value determines what is done regards to the game checks: they can be skipped, executed as normal or treated as if the condition is already satisfied.
 TrajectoryCheckReturnType SampleTrajectory::OnDetonateUpdate()
 {
-	return TrajectoryCheckReturnType::ExecuteGameCheck; // Execute game checks.
+	if (this->PhobosTrajectory::OnDetonateUpdate() == TrajectoryCheckReturnType::Detonate)
+		return TrajectoryCheckReturnType::Detonate;
+
+	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
+
+	if (this->RemainingDistance < 0)
+		return TrajectoryCheckReturnType::Detonate;
+
+	return TrajectoryCheckReturnType::SkipGameCheck;
+}
+
+// At this time, the bullet has hit the target and is ready to detonate.
+// You can make it change before detonating.
+void SampleTrajectory::OnPreDetonate()
+{
+	const auto pBullet = this->Bullet;
+	auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
+	auto pCoords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
+	// Can snap to target?
+	if (pCoords.DistanceFrom(pBullet->Location) <= this->Type->TargetSnapDistance.Get())
+	{
+		BulletExt::ExtMap.Find(pBullet)->SnappedToTarget = true;
+		pBullet->SetLocation(pCoords);
+	}
+
+	this->PhobosTrajectory::OnPreDetonate();
 }
 
 // Do some math here to set the initial speed or location of your bullet.
