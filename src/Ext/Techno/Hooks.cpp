@@ -710,6 +710,7 @@ namespace VisualCharacterContext
 	HouseClass* pWatcher;
 }
 
+// Set context
 DEFINE_HOOK(0x703860, TechnoClass_VisualCharacter_Start, 0x6)
 {
 	GET(TechnoClass*, pThis, ECX);
