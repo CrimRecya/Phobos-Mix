@@ -26,6 +26,17 @@ enum class TrajectoryCheckReturnType : int
 	Detonate = 3
 };
 
+enum class TrajectoryFacing : int
+{
+	Velocity = 0,
+	Spin = 1,
+	Stable = 2,
+	Target = 3,
+	Destination = 4,
+	FirerBody = 5,
+	FirerTurret = 6
+};
+
 class PhobosTrajectory;
 class PhobosTrajectoryType
 {
@@ -35,13 +46,11 @@ public:
 		, Duration { 0 }
 		, TolerantTime { -1 }
 		, CreateCapacity { -1 }
-		, BulletROT { -1 }
-		, BulletSpin { false }
-		, BulletStable { false }
-		, BulletOnPlane { false }
-		, MirrorCoord { true }
+		, BulletROT { 0 }
+		, BulletFacing { TrajectoryFacing::Velocity }
 		, RetargetRadius { 0 }
 		, Synchronize { false }
+		, MirrorCoord { true }
 		, PeacefulVanish {}
 		, ApplyRangeModifiers { false }
 		, UseDisperseCoord { false }
@@ -92,12 +101,10 @@ public:
 	Valueable<int> TolerantTime; // The tolerance time for the projectile to lose its target, after which it will explode
 	Valueable<int> CreateCapacity; // Only take effect when the number of trajectory fired by its firer on the map is less than this value
 	Valueable<int> BulletROT; // The rotational speed of the projectile image that does not affect the direction of movement
-	Valueable<bool> BulletSpin; // Image continue to rotate
-	Valueable<bool> BulletStable; // Image no longer rotate after launch
-	Valueable<bool> BulletOnPlane; // Image only rotates on the horizontal plane
-	Valueable<bool> MirrorCoord; // Should mirror offset
+	Valueable<TrajectoryFacing> BulletFacing; // Image facing
 	Valueable<double> RetargetRadius; // Searching for a new target after losing it
 	Valueable<bool> Synchronize; // Synchronize the target of its launcher
+	Valueable<bool> MirrorCoord; // Should mirror offset
 	Nullable<bool> PeacefulVanish; // Disappear directly when about to detonate
 	Valueable<bool> ApplyRangeModifiers; // Apply range bonus
 	Valueable<bool> UseDisperseCoord; // Use the recorded launch location

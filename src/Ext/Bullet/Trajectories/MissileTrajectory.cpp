@@ -210,9 +210,10 @@ void MissileTrajectory::OpenFire()
 			if (pType->ReduceCoord && this->OriginalDistance < (Unsorted::LeptonsPerCell * 10))
 				this->PreAimDistance *= this->OriginalDistance / (Unsorted::LeptonsPerCell * 10);
 
-			this->PreAimDistance += pType->LaunchSpeed;
 			this->InitializeBulletNotCurve();
 		}
+
+		this->MovingSpeed = pType->LaunchSpeed;
 		// Calculate speed
 		if (this->CalculateBulletVelocity(pType->LaunchSpeed))
 			this->ShouldDetonate = true;
@@ -263,17 +264,12 @@ void MissileTrajectory::InitializeBulletNotCurve()
 	const auto& target = pBullet->TargetCoords;
 	double rotateRadian = 0.0;
 	// Calculate the orientation of the coordinate system
-	if ((pType->FacingCoord || (target.Y == source.Y && target.X == source.X)) && pFirer)
-	{
-		if (pFirer->HasTurret())
-			rotateRadian = -(pFirer->TurretFacing().GetRadian<32>());
-		else
-			rotateRadian = -(pFirer->PrimaryFacing.Current().GetRadian<32>());
-	}
-	else
-	{
+	if (!pType->FacingCoord && (target.Y != source.Y || target.X != source.X) || !pFirer)
 		rotateRadian = PhobosTrajectory::Get2DOpRadian(source, target);
-	}
+	else if (pFirer->HasTurret())
+		rotateRadian = -(pFirer->TurretFacing().GetRadian<32>());
+	else
+		rotateRadian = -(pFirer->PrimaryFacing.Current().GetRadian<32>());
 	// Add the fixed offset value
 	if (pType->OffsetCoord != CoordStruct::Empty)
 		this->OffsetCoord = this->GetOnlyStableOffsetCoords(rotateRadian);
@@ -313,9 +309,9 @@ bool MissileTrajectory::CalculateReducedVelocity(double rotateRadian)
 	// Calculate the rotated coordinates
 	const auto theAimCoord = PhobosTrajectory::HorizontalRotate(this->GetPreAimCoordsWithBurst(), rotateRadian);
 	const auto pBullet = this->Bullet;
-	const auto theDistance = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - pBullet->SourceCoords);
+	const auto distance = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - pBullet->SourceCoords);
 	// Reduce the initial rotation angle
-	this->MovingVelocity = (theDistance - theAimCoord) * (1 - coordMult) + theAimCoord;
+	this->MovingVelocity = (distance - theAimCoord) * (1 - coordMult) + theAimCoord;
 	return true;
 }
 

@@ -66,6 +66,35 @@ namespace detail
 
 		return false;
 	}
+
+	template <>
+	inline bool read<TrajectoryFacing>(TrajectoryFacing& value, INI_EX& parser, const char* pSection, const char* pKey)
+	{
+		if (parser.ReadString(pSection, pKey))
+		{
+			static std::pair<const char*, TrajectoryFacing> FlagNames[] =
+			{
+				{"Velocity", TrajectoryFacing::Velocity},
+				{"Spin" ,TrajectoryFacing::Spin},
+				{"Stable", TrajectoryFacing::Stable},
+				{"Target" ,TrajectoryFacing::Target},
+				{"Destination", TrajectoryFacing::Destination},
+				{"FirerBody" ,TrajectoryFacing::FirerBody},
+				{"FirerTurret", TrajectoryFacing::FirerTurret},
+			};
+			for (auto [name, flag] : FlagNames)
+			{
+				if (_strcmpi(parser.value(), name) == 0)
+				{
+					value = flag;
+					return true;
+				}
+			}
+			Debug::INIParseFailed(pSection, pKey, parser.value(), "Expected a new trajectory facing type");
+		}
+
+		return false;
+	}
 }
 
 void TrajectoryTypePointer::LoadFromINI(CCINIClass* pINI, const char* pSection)
@@ -442,7 +471,7 @@ void PhobosTrajectory::OpenFire()
 
 	const auto pType = this->GetType();
 	// Restricted to rotation only on a horizontal plane
-	if (pType->BulletSpin || pType->BulletOnPlane)
+	if (pType->BulletFacing == TrajectoryFacing::Spin || pType->BulletROT < 0)
 		pBullet->Velocity.Z = 0;
 }
 
@@ -542,7 +571,7 @@ bool PhobosTrajectory::OnFacingCheck()
 	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
 
-	if (!pType->DisperseFaceCheck || pType->BulletROT < 0 || pType->BulletSpin)
+	if (!pType->DisperseFaceCheck || pType->BulletROT < 0 || pType->BulletFacing == TrajectoryFacing::Spin)
 		return true;
 
 	const auto flag = this->Flag();
@@ -560,39 +589,67 @@ bool PhobosTrajectory::OnFacingCheck()
 void PhobosTrajectory::OnFacingUpdate()
 {
 	const auto pType = this->GetType();
+	const auto facing = pType->BulletFacing;
 	// Cannot rotate
-	if (pType->BulletStable)
+	if (facing == TrajectoryFacing::Stable)
 		return;
 
 	const auto pBullet = this->Bullet;
 	constexpr double ratio = Math::TwoPi / 256;
 
-	if (pType->BulletSpin)
+	if (facing == TrajectoryFacing::Spin)
 	{
 		const auto radian = Math::atan2(pBullet->Velocity.Y, pBullet->Velocity.X) + (pType->BulletROT * ratio);
 		pBullet->Velocity.X = Math::cos(radian);
 		pBullet->Velocity.Y = Math::sin(radian);
 		pBullet->Velocity.Z = 0;
+		return;
 	}
-	else if (pType->BulletROT < 0)
+
+	auto desiredFacing = BulletVelocity::Empty;
+
+	if (facing == TrajectoryFacing::Velocity)
 	{
-		pBullet->Velocity = this->MovingVelocity;
+		desiredFacing = this->MovingVelocity;
+	}
+	else if (facing == TrajectoryFacing::Target)
+	{
+		if (const auto pTarget = pBullet->Target)
+			desiredFacing = PhobosTrajectory::Coord2Vector(pTarget->GetCoords() - pBullet->Location);
+		else
+			desiredFacing = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - pBullet->Location);
+	}
+	else if (facing == TrajectoryFacing::Destination)
+	{
+		desiredFacing = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - pBullet->Location);
+	}
+	else if (const auto pFirer = pBullet->Owner)
+	{
+		const auto radian = -(facing == TrajectoryFacing::FirerTurret ? pFirer->TurretFacing() : pFirer->PrimaryFacing.Current()).GetRadian<65536>();
+		desiredFacing.X = Math::cos(radian);
+		desiredFacing.Y = Math::sin(radian);
+		desiredFacing.Z = 0;
+	}
+	else
+	{
+		return;
+	}
+
+	if (!pType->BulletROT)
+	{
+		pBullet->Velocity = desiredFacing;
 		pBullet->Velocity *= (1 / pBullet->Velocity.Magnitude());
 	}
 	else
 	{
-		auto desiredFacing = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - pBullet->Location);
 		// Restricted to rotation only on a horizontal plane
-		if (pType->BulletOnPlane)
+		if (pType->BulletROT < 0)
 		{
 			pBullet->Velocity.Z = 0;
 			desiredFacing.Z = 0;
 		}
 		// Calculate specifically only when the ROT is reasonable
-		if (pType->BulletROT)
-			pBullet->Velocity = PhobosTrajectory::RotateVector(pBullet->Velocity, desiredFacing, (pType->BulletROT * ratio));
-		else
-			pBullet->Velocity = desiredFacing;
+		pBullet->Velocity = PhobosTrajectory::RotateVector(pBullet->Velocity, desiredFacing, (pType->BulletROT * ratio));
 		// Standardizing
 		pBullet->Velocity *= (1 / pBullet->Velocity.Magnitude());
 	}
@@ -710,12 +767,10 @@ void PhobosTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->TolerantTime.Read(exINI, pSection, "Trajectory.TolerantTime");
 	this->CreateCapacity.Read(exINI, pSection, "Trajectory.CreateCapacity");
 	this->BulletROT.Read(exINI, pSection, "Trajectory.BulletROT");
-	this->BulletSpin.Read(exINI, pSection, "Trajectory.BulletSpin");
-	this->BulletStable.Read(exINI, pSection, "Trajectory.BulletStable");
-	this->BulletOnPlane.Read(exINI, pSection, "Trajectory.BulletOnPlane");
-	this->MirrorCoord.Read(exINI, pSection, "Trajectory.MirrorCoord");
+	this->BulletFacing.Read(exINI, pSection, "Trajectory.BulletFacing");
 	this->RetargetRadius.Read(exINI, pSection, "Trajectory.RetargetRadius");
 	this->Synchronize.Read(exINI, pSection, "Trajectory.Synchronize");
+	this->MirrorCoord.Read(exINI, pSection, "Trajectory.MirrorCoord");
 	this->PeacefulVanish.Read(exINI, pSection, "Trajectory.PeacefulVanish");
 	this->ApplyRangeModifiers.Read(exINI, pSection, "Trajectory.ApplyRangeModifiers");
 	this->UseDisperseCoord.Read(exINI, pSection, "Trajectory.UseDisperseCoord");
@@ -786,12 +841,10 @@ void PhobosTrajectoryType::Serialize(T& Stm)
 		.Process(this->TolerantTime)
 		.Process(this->CreateCapacity)
 		.Process(this->BulletROT)
-		.Process(this->BulletSpin)
-		.Process(this->BulletStable)
-		.Process(this->BulletOnPlane)
-		.Process(this->MirrorCoord)
+		.Process(this->BulletFacing)
 		.Process(this->RetargetRadius)
 		.Process(this->Synchronize)
+		.Process(this->MirrorCoord)
 		.Process(this->PeacefulVanish)
 		.Process(this->ApplyRangeModifiers)
 		.Process(this->UseDisperseCoord)
