@@ -372,6 +372,12 @@ public:
 		Nullable<int> InitialSpawnsNumber;
 		ValueableVector<AircraftTypeClass*> Spawns_Queue;
 
+		Valueable<bool> RadarInvisible_ToSelf;
+		Valueable<bool> RadarInvisible_ToAlly;
+		Valueable<int> DefaultVisualCharacterToSelf;
+		Valueable<int> DefaultVisualCharacterToAlly;
+		Valueable<int> DefaultVisualCharacterToEnemy;
+    
 		Valueable<bool> Cloneable;
 		ValueableVector<BuildingTypeClass*> ClonedAt;
 
@@ -398,6 +404,10 @@ public:
 		std::vector<std::vector<CoordStruct>> EliteCrouchedWeaponBurstFLHs;
 		std::vector<std::vector<CoordStruct>> DeployedWeaponBurstFLHs;
 		std::vector<std::vector<CoordStruct>> EliteDeployedWeaponBurstFLHs;
+
+		Valueable<bool> IgnoredByMouse_ToSelf;
+		Valueable<bool> IgnoredByMouse_ToAlly;
+		Valueable<bool> IgnoredByMouse_ToEnemy;
 
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
@@ -746,6 +756,17 @@ public:
 			, InitialSpawnsNumber { }
 			, Spawns_Queue { }
 
+			, RadarInvisible_ToSelf { false }
+			, RadarInvisible_ToAlly { false }
+    
+			, DefaultVisualCharacterToSelf { 0 }
+			, DefaultVisualCharacterToAlly { 0 }
+			, DefaultVisualCharacterToEnemy { 0 }
+    
+			, IgnoredByMouse_ToSelf { false }
+			, IgnoredByMouse_ToAlly { false }
+			, IgnoredByMouse_ToEnemy { false }
+    
 			, Cloneable { true }
 			, ClonedAt { }
 

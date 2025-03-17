@@ -192,7 +192,51 @@ DEFINE_HOOK(0x6B7282, SpawnManagerClass_AI_PromoteSpawns, 0x5)
 	return 0;
 }
 
-DEFINE_HOOK(0x6B79BF, SpawnManagerClass_AI_CheckRepairDone, 0x5)
+DEFINE_HOOK(0x6B7702, SpawnManagerClass_AI_CheckRepairDone1, 0x5)
+{
+	enum { KeepTarget = 0x6B770D, ResetTarget = 0x6B7663 };
+	GET(SpawnManagerClass*, pThis, ESI);
+	GET(TechnoClass*, pSpawned, EDI);
+
+	R->EAX(pThis->Target);
+
+	if (!pThis->Target)
+		return ResetTarget;
+
+	if (TechnoTypeExt::ExtMap.Find(pThis->Owner->GetTechnoType())->Spawner_ReturnOnRepairDone)
+	{
+		auto pTarget = abstract_cast<TechnoClass*>(pThis->Target);
+
+		if (pTarget && pTarget->GetHealthPercentage() >= RulesClass::Instance->unknown_double_16F8)
+			return ResetTarget;
+	}
+
+	return KeepTarget;
+}
+
+DEFINE_HOOK(0x6B7752, SpawnManagerClass_AI_CheckRepairDone2, 0x5)
+{
+	enum { KeepTarget = 0x6B7759, ResetTarget = 0x6B7793 };
+	GET(SpawnManagerClass*, pThis, ESI);
+	GET(TechnoClass*, pSpawned, EDI);
+
+	R->EAX(pThis->Target);
+
+	if (!pThis->Target)
+		return ResetTarget;
+
+	if (TechnoTypeExt::ExtMap.Find(pThis->Owner->GetTechnoType())->Spawner_ReturnOnRepairDone)
+	{
+		auto pTarget = abstract_cast<TechnoClass*>(pThis->Target);
+
+		if (pTarget && pTarget->GetHealthPercentage() >= RulesClass::Instance->unknown_double_16F8)
+			return ResetTarget;
+	}
+
+	return KeepTarget;
+}
+
+DEFINE_HOOK(0x6B79BF, SpawnManagerClass_AI_CheckRepairDone3, 0x5)
 {
 	enum { ResetTarget = 0x6B79C4, KeepTarget = 0x6B79D3 };
 	GET(SpawnManagerClass*, pThis, ESI);

@@ -806,6 +806,13 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Spawner_RecycleCoord.Read(exINI, pSection, "Spawner.RecycleCoord");
 	this->Spawner_RecycleOnTurret.Read(exINI, pSection, "Spawner.RecycleOnTurret");
 
+	this->RadarInvisible_ToSelf.Read(exINI, pSection, "RadarInvisible.ToSelf");
+	this->RadarInvisible_ToAlly.Read(exINI, pSection, "RadarInvisible.ToAlly");
+
+	this->IgnoredByMouse_ToSelf.Read(exINI, pSection, "IgnoredByMouse.ToSelf");
+	this->IgnoredByMouse_ToAlly.Read(exINI, pSection, "IgnoredByMouse.ToAlly");
+	this->IgnoredByMouse_ToEnemy.Read(exINI, pSection, "IgnoredByMouse.ToEnemy");
+
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
 	this->Cloneable.Read(exINI, pSection, "Cloneable");
@@ -928,6 +935,10 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		else
 			this->AlternateFLHs.push_back(alternateFLH);
 	}
+
+	this->DefaultVisualCharacterToSelf.Read(exArtINI, pArtSection, "DefaultVisualCharacterToSelf");
+	this->DefaultVisualCharacterToAlly.Read(exArtINI, pArtSection, "DefaultVisualCharacterToAlly");
+	this->DefaultVisualCharacterToEnemy.Read(exArtINI, pArtSection, "DefaultVisualCharacterToEnemy");
 
 	// Extra turret offsets
 	this->ExtraTurretCount.Read(exArtINI, pArtSection, "ExtraTurretCount");
@@ -1342,6 +1353,17 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->InitialSpawnsNumber)
 		.Process(this->Spawns_Queue)
+
+		.Process(this->RadarInvisible_ToSelf)
+		.Process(this->RadarInvisible_ToAlly)
+
+		.Process(this->DefaultVisualCharacterToSelf)
+		.Process(this->DefaultVisualCharacterToAlly)
+		.Process(this->DefaultVisualCharacterToEnemy)
+
+		.Process(this->IgnoredByMouse_ToSelf)
+		.Process(this->IgnoredByMouse_ToAlly)
+		.Process(this->IgnoredByMouse_ToEnemy)
 
 		.Process(this->Cloneable)
 		.Process(this->ClonedAt)
