@@ -55,6 +55,7 @@ void BulletTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->AAOnly.Read(exINI, pSection, "AAOnly");
 	this->Arcing_AllowElevationInaccuracy.Read(exINI, pSection, "Arcing.AllowElevationInaccuracy");
 	this->ReturnWeapon.Read<true>(exINI, pSection, "ReturnWeapon");
+	this->SubjectToGround.Read(exINI, pSection, "SubjectToGround");
 
 	this->SubjectToGround.Read(exINI, pSection, "SubjectToGround");
 
