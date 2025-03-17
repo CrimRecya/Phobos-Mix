@@ -588,17 +588,33 @@ bool TechnoExt::ExtData::CanToggleAggressiveStance()
 
 	if (!pTypeExt->AggressiveStance_Togglable.isset())
 	{
+		const auto pType = pTypeExt->OwnerObject();
+
 		// Only techno that are armed and open-topped can be aggressive stance.
-		if (!this->OwnerObject()->IsArmed() && !pTypeExt->OwnerObject()->OpenTopped)
+		if (!this->OwnerObject()->IsArmed() && !pType->OpenTopped)
 		{
 			pTypeExt->AggressiveStance_Togglable = false;
 			return false;
 		}
 
+		const auto absType = pType->WhatAmI();
+
 		// Engineers and Agents are default to not allow aggressive stance.
-		if (auto pInfantryTypeClass = abstract_cast<InfantryTypeClass*>(pTypeExt->OwnerObject()))
+		if (absType == AbstractType::InfantryType)
 		{
-			if (pInfantryTypeClass->Engineer || pInfantryTypeClass->Agent)
+			const auto pInfantryType = static_cast<InfantryTypeClass*>(pType);
+
+			if (pInfantryType->Engineer || pInfantryType->Agent)
+			{
+				pTypeExt->AggressiveStance_Togglable = false;
+				return false;
+			}
+		}
+		else if (absType == AbstractType::BuildingType)
+		{
+			const auto pBuildingType = static_cast<BuildingTypeClass*>(pType);
+
+			if (pBuildingType->EMPulseCannon)
 			{
 				pTypeExt->AggressiveStance_Togglable = false;
 				return false;
