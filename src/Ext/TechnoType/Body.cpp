@@ -805,6 +805,10 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->InitialSpawnsNumber.Read(exINI, pSection, "InitialSpawnsNumber");
 	this->Spawns_Queue.Read(exINI, pSection, "Spawns.Queue");
 
+	this->IgnoredByMouse_ToSelf.Read(exINI, pSection, "IgnoredByMouse.ToSelf");
+	this->IgnoredByMouse_ToAlly.Read(exINI, pSection, "IgnoredByMouse.ToAlly");
+	this->IgnoredByMouse_ToEnemy.Read(exINI, pSection, "IgnoredByMouse.ToEnemy");
+
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
 	this->Cloneable.Read(exINI, pSection, "Cloneable");
@@ -1346,8 +1350,13 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->InitialSpawnsNumber)
 		.Process(this->Spawns_Queue)
 
+		.Process(this->IgnoredByMouse_ToSelf)
+		.Process(this->IgnoredByMouse_ToAlly)
+		.Process(this->IgnoredByMouse_ToEnemy)
+    
 		.Process(this->Cloneable)
 		.Process(this->ClonedAt)
+    
 		;
 }
 void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)

@@ -398,6 +398,10 @@ public:
 		std::vector<std::vector<CoordStruct>> DeployedWeaponBurstFLHs;
 		std::vector<std::vector<CoordStruct>> EliteDeployedWeaponBurstFLHs;
 
+		Valueable<bool> IgnoredByMouse_ToSelf;
+		Valueable<bool> IgnoredByMouse_ToAlly;
+		Valueable<bool> IgnoredByMouse_ToEnemy;
+
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
 			, UIDescription {}
@@ -749,6 +753,10 @@ public:
 			, InitialSpawnsNumber { }
 			, Spawns_Queue { }
 
+			, IgnoredByMouse_ToSelf { false }
+			, IgnoredByMouse_ToAlly { false }
+			, IgnoredByMouse_ToEnemy { false }
+    
 			, Cloneable { true }
 			, ClonedAt { }
 		{ }
