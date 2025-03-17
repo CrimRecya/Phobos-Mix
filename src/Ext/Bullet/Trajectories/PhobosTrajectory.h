@@ -294,6 +294,13 @@ public:
 				damage = Math::sgn(damage);
 		}
 	}
+	static inline TechnoClass* GetSurfaceFirer(TechnoClass* pFirer)
+	{
+		for (auto pTrans = pFirer; pTrans; pTrans = pTrans->Transporter)
+			pFirer = pTrans;
+
+		return pFirer;
+	}
 	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
 	static BulletVelocity RotateVector(const BulletVelocity& from, const BulletVelocity& to, double turningRadian);
 	static BulletVelocity RotateAboutTheAxis(const BulletVelocity& vector, BulletVelocity& axis, double radian);

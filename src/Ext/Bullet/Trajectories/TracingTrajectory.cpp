@@ -172,13 +172,8 @@ bool TracingTrajectory::ChangeVelocity()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
-	auto pFirer = pBullet->Owner;
 	// Find the outermost transporter
-	if (pFirer)
-	{
-		for (auto pTrans = pFirer->Transporter; pTrans; pTrans = pTrans->Transporter)
-			pFirer = pTrans;
-	}
+	const auto pFirer = GetSurfaceFirer(pBullet->Owner);
 	// Confirm the center position of the tracing target
 	auto destination = (pType->TraceTheTarget || !pFirer) ? pBullet->TargetCoords : pFirer->GetCoords();
 	// Calculate the maximum separation distance

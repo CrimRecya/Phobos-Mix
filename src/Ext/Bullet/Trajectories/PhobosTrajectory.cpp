@@ -711,16 +711,12 @@ bool PhobosTrajectory::CheckTolerantAndSynchronize()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
-	auto pFirer = pBullet->Owner;
 
 	if (!pBullet->Target && !pType->TolerantTime)
 		return true;
+
 	// Find the outermost transporter
-	if (pFirer)
-	{
-		for (auto pTrans = pFirer->Transporter; pTrans; pTrans = pTrans->Transporter)
-			pFirer = pTrans;
-	}
+	const auto pFirer = GetSurfaceFirer(pBullet->Owner);
 
 	if (pType->Synchronize)
 	{

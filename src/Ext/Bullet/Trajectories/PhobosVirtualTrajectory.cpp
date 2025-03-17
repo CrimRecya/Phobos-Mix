@@ -63,9 +63,9 @@ void VirtualTrajectory::OnUnlimbo()
 	this->PhobosTrajectory::OnUnlimbo();
 	// Virtual
 	this->RemainingDistance = INT_MAX;
-	// The outermost transporter
-	for (auto pTrans = this->Bullet->Owner; pTrans; pTrans = pTrans->Transporter)
-		this->SurfaceFirerID = pTrans->UniqueID;
+	// Find the outermost transporter
+	if (const auto pFirer = GetSurfaceFirer(this->Bullet->Owner))
+		this->SurfaceFirerID = pFirer->UniqueID;
 }
 
 bool VirtualTrajectory::OnEarlyUpdate()
@@ -81,8 +81,8 @@ bool VirtualTrajectory::InvalidFireCondition(TechnoClass* pTechno)
 	if (!pTechno)
 		return true;
 
-	for (auto pTrans = pTechno->Transporter; pTrans; pTrans = pTrans->Transporter)
-		pTechno = pTrans;
+	// Find the outermost transporter
+	pTechno = GetSurfaceFirer(pTechno);
 
 	if (!TechnoExt::IsActive(pTechno) || this->SurfaceFirerID != pTechno->UniqueID)
 		return true;

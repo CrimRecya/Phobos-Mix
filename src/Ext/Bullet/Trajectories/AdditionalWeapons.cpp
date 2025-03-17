@@ -154,11 +154,8 @@ CoordStruct PhobosTrajectory::GetWeaponFireCoord(TechnoClass* pTechno)
 
 	if (pType->DisperseFromFirer.Get(flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
 	{
-		if (pTechno)
-		{
-			for (auto pTrans = pTechno->Transporter; pTrans; pTrans = pTrans->Transporter)
-				pTechno = pTrans;
-		}
+		// Find the outermost transporter
+		pTechno = GetSurfaceFirer(pTechno);
 
 		if (!this->NotMainWeapon && pTechno && !pTechno->InLimbo)
 			return TechnoExt::GetFLHAbsoluteCoords(pTechno, this->FLHCoord, pTechno->HasTurret());
