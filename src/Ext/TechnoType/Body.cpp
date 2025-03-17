@@ -932,6 +932,10 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 			this->AlternateFLHs.push_back(alternateFLH);
 	}
 
+	this->DefaultVisualCharacterToSelf.Read(exArtINI, pArtSection, "DefaultVisualCharacterToSelf");
+	this->DefaultVisualCharacterToAlly.Read(exArtINI, pArtSection, "DefaultVisualCharacterToAlly");
+	this->DefaultVisualCharacterToEnemy.Read(exArtINI, pArtSection, "DefaultVisualCharacterToEnemy");
+  
 	// Extra turret offsets
 	this->ExtraTurretCount.Read(exArtINI, pArtSection, "ExtraTurretCount");
 
@@ -1350,13 +1354,16 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->InitialSpawnsNumber)
 		.Process(this->Spawns_Queue)
 
+		.Process(this->DefaultVisualCharacterToSelf)
+		.Process(this->DefaultVisualCharacterToAlly)
+		.Process(this->DefaultVisualCharacterToEnemy)
+    
 		.Process(this->IgnoredByMouse_ToSelf)
 		.Process(this->IgnoredByMouse_ToAlly)
 		.Process(this->IgnoredByMouse_ToEnemy)
     
 		.Process(this->Cloneable)
 		.Process(this->ClonedAt)
-    
 		;
 }
 void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)

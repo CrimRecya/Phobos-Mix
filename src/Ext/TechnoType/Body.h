@@ -376,6 +376,10 @@ public:
 		Nullable<int> InitialSpawnsNumber;
 		ValueableVector<AircraftTypeClass*> Spawns_Queue;
 
+		Valueable<int> DefaultVisualCharacterToSelf;
+		Valueable<int> DefaultVisualCharacterToAlly;
+		Valueable<int> DefaultVisualCharacterToEnemy;
+    
 		Valueable<bool> Cloneable;
 		ValueableVector<BuildingTypeClass*> ClonedAt;
 
@@ -753,6 +757,10 @@ public:
 			, InitialSpawnsNumber { }
 			, Spawns_Queue { }
 
+			, DefaultVisualCharacterToSelf { 0 }
+			, DefaultVisualCharacterToAlly { 0 }
+			, DefaultVisualCharacterToEnemy { 0 }
+    
 			, IgnoredByMouse_ToSelf { false }
 			, IgnoredByMouse_ToAlly { false }
 			, IgnoredByMouse_ToEnemy { false }

@@ -826,6 +826,60 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 
 #pragma endregion
 
+#pragma region VisualCharacter
+
+namespace VisualCharacterContext
+{
+	TechnoClass* pThis;
+	bool specificOwner;
+	HouseClass* pWatcher;
+}
+
+// Set context
+DEFINE_HOOK(0x703860, TechnoClass_VisualCharacter_Start, 0x6)
+{
+	GET(TechnoClass*, pThis, ECX);
+	GET_STACK(bool, specificOwner, STACK_OFFSET(0, 0x4));
+	GET_STACK(HouseClass*, pWatcher, STACK_OFFSET(0, 0x8));
+
+	VisualCharacterContext::pThis = pThis;
+	VisualCharacterContext::specificOwner = specificOwner;
+	VisualCharacterContext::pWatcher = pWatcher;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x703B0B, TechnoClass_VisualCharacter_Normal, 0x5)
+{
+	VisualType visual = VisualType::Normal;
+	HouseClass* pWatcher = VisualCharacterContext::specificOwner ? VisualCharacterContext::pWatcher : HouseClass::CurrentPlayer;
+
+	if (pWatcher)
+	{
+		auto pThis = VisualCharacterContext::pThis;
+		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+		auto pOwner = pThis->Owner;
+
+		if (pOwner == pWatcher)
+		{
+			visual = (VisualType)(pTypeExt->DefaultVisualCharacterToSelf.Get());
+		}
+		else if (pOwner->IsAlliedWith(pWatcher))
+		{
+			visual = (VisualType)(pTypeExt->DefaultVisualCharacterToAlly.Get());
+		}
+		else
+		{
+			visual = (VisualType)(pTypeExt->DefaultVisualCharacterToEnemy.Get());
+		}
+	}
+
+	R->EAX(visual);
+	return 0;
+}
+
+#pragma endregion
+
 bool ShouldIgnoreByMouse(ObjectClass* pObject)
 {
 	auto pType = pObject->GetType();
@@ -901,3 +955,4 @@ DEFINE_HOOK(0x6DA4FB, TacticalClass_GetObjectOnCrd_IgnoredByMouse2, 0x6)
 	R->EAX(pObject);
 	return ret;
 }
+
