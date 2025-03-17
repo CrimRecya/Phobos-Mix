@@ -57,8 +57,6 @@ void BulletTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->ReturnWeapon.Read<true>(exINI, pSection, "ReturnWeapon");
 	this->SubjectToGround.Read(exINI, pSection, "SubjectToGround");
 
-	this->SubjectToGround.Read(exINI, pSection, "SubjectToGround");
-
 	this->AU.Read(exINI, pSection, "AU");
 	this->BallisticScatter_IncreaseByRange.Read(exINI, pSection, "BallisticScatter.IncreaseByRange");
 	this->BallisticScatter_MinRange.Read(exINI, pSection, "BallisticScatter.MinRange");
