@@ -18,31 +18,32 @@ void AnimTypeExt::ProcessDestroyAnims(UnitClass* pThis, TechnoClass* pKiller)
 		return;
 
 	HouseClass* pInvoker = pKiller ? pKiller->Owner : nullptr;
+	auto const pType = pThis->GetTechnoType(); // Redirect I/A/BClass::Explode(TechnoClass::Explode) to UnitClass::Explode
 
-	if (pThis->Type->DestroyAnim.Count > 0)
+	if (pType->DestroyAnim.Count > 0)
 	{
 		auto const facing = pThis->PrimaryFacing.Current().GetDir();
 		AnimTypeClass* pAnimType = nullptr;
-		auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type);
+		auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 
 		if (!pTypeExt->DestroyAnim_Random.Get())
 		{
 			int idxAnim = 0;
 
-			if (pThis->Type->DestroyAnim.Count >= 8)
+			if (pType->DestroyAnim.Count >= 8)
 			{
-				idxAnim = pThis->Type->DestroyAnim.Count;
-				if (pThis->Type->DestroyAnim.Count % 2 == 0)
+				idxAnim = pType->DestroyAnim.Count;
+				if (pType->DestroyAnim.Count % 2 == 0)
 					idxAnim *= static_cast<int>(static_cast<unsigned char>(facing) / 256.0);
 			}
 
-			pAnimType = pThis->Type->DestroyAnim[idxAnim];
+			pAnimType = pType->DestroyAnim[idxAnim];
 		}
 		else
 		{
-			int const nIDx_Rand = pThis->Type->DestroyAnim.Count == 1 ?
-				0 : ScenarioClass::Instance->Random.RandomRanged(0, (pThis->Type->DestroyAnim.Count - 1));
-			pAnimType = pThis->Type->DestroyAnim[nIDx_Rand];
+			int const nIDx_Rand = pType->DestroyAnim.Count == 1 ?
+				0 : ScenarioClass::Instance->Random.RandomRanged(0, (pType->DestroyAnim.Count - 1));
+			pAnimType = pType->DestroyAnim[nIDx_Rand];
 
 		}
 

@@ -4,15 +4,20 @@
 #include <EventClass.h>
 #include <ScenarioClass.h>
 #include <TunnelLocomotionClass.h>
+#include <OverlayClass.h>
+#include <TerrainClass.h>
 
 #include <Ext/Anim/Body.h>
 #include <Ext/BuildingType/Body.h>
 #include <Ext/House/Body.h>
+#include <Ext/Scenario/Body.h>
 #include <Ext/WarheadType/Body.h>
 #include <Ext/WeaponType/Body.h>
 #include <Ext/TechnoType/Body.h>
 #include <Utilities/EnumFunctions.h>
 #include <Utilities/AresHelper.h>
+#include <Ext/OverlayType/Body.h>
+#include <Ext/TerrainType/Body.h>
 
 #pragma region Update
 
@@ -146,6 +151,14 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	pExt->CurrentShieldType = pExt->TypeExtData->ShieldType;
 	pExt->InitializeLaserTrails();
 	pExt->InitializeAttachEffects();
+	pExt->InitializeDisplayInfo();
+	pExt->InitAggressiveStance();
+
+	if (RulesExt::Global()->CheckExtraBaseNormal && pExt->TypeExtData->ExtraBaseNormal)
+		ScenarioExt::Global()->BaseNormalTechnos.push_back(pExt);
+
+	if (pExt->TypeExtData->UniqueTechno && pThis->Owner->IsControlledByCurrentPlayer())
+		ScenarioExt::Global()->OwnedUniqueTechnos.push_back(pExt);
 
 	if (pExt->TypeExtData->Harvester_Counted)
 		HouseExt::ExtMap.Find(pThis->Owner)->OwnedCountedHarvesters.push_back(pThis);
@@ -557,6 +570,79 @@ DEFINE_HOOK(0x70EFE0, TechnoClass_GetMaxSpeed, 0x6)
 	return SkipGameCode;
 }
 
+#pragma region DestroyAnimGeneralize
+
+namespace PlayDestroyAnimGeneralize
+{
+	TechnoTypeClass* pType;
+}
+
+DEFINE_HOOK(0x738687, UnitClass_PlayDestroyAnim_SetContext, 0x6)
+{
+	enum { SkipGameCode = 0x73868D };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	PlayDestroyAnimGeneralize::pType = pThis->GetTechnoType();
+	R->EAX(PlayDestroyAnimGeneralize::pType);
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK_AGAIN(0x738822, UnitClass_PlayDestroyAnim_Generalize1, 0x6);
+DEFINE_HOOK_AGAIN(0x7387C4, UnitClass_PlayDestroyAnim_Generalize1, 0x6);
+DEFINE_HOOK(0x7386AC, UnitClass_PlayDestroyAnim_Generalize1, 0x6)
+{
+	R->ECX(PlayDestroyAnimGeneralize::pType);
+	return R->Origin() + 6;
+}
+
+DEFINE_HOOK_AGAIN(0x738801, UnitClass_PlayDestroyAnim_Generalize2, 0x6);
+DEFINE_HOOK(0x7386DA, UnitClass_PlayDestroyAnim_Generalize2, 0x6)
+{
+	R->EAX(PlayDestroyAnimGeneralize::pType);
+	return R->Origin() + 6;
+}
+
+DEFINE_HOOK(0x746D61, UnitClass_Destroy_ToggleAnim, 0x7)
+{
+	enum { SkipGameCode = 0x746D68 };
+
+	GET(TechnoClass*, pThis, ECX);
+
+	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+
+	if (pTypeExt->ExplodeOnDestroy.Get(pThis->WhatAmI() == AbstractType::Unit || RulesExt::Global()->NonVehExplodeOnDestroy))
+		static_cast<UnitClass*>(pThis)->Explode();
+
+	R->ESI(pThis);
+	return SkipGameCode;
+}
+
+DEFINE_JUMP(VTABLE, 0x7EB1C8, 0x746D60); // Redirect InfantryClass::Explode(TechnoClass::Explode) to UnitClass::Explode
+DEFINE_JUMP(VTABLE, 0x7E402C, 0x746D60); // Redirect BuildingClass::Explode(TechnoClass::Explode) to UnitClass::Explode
+DEFINE_JUMP(VTABLE, 0x7E2414, 0x746D60); // Redirect AircraftClass::Explode(TechnoClass::Explode) to UnitClass::Explode
+
+DEFINE_HOOK(0x7418D4, UnitClass_CrushCell_FireDeathWeapon, 0x6)
+{
+	GET(ObjectClass*, pThis, ESI);
+
+	if ((pThis->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
+	{
+		auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+
+		if (pTypeExt && pTypeExt->FireDeathWeaponOnCrushed.Get(RulesExt::Global()->FireDeathWeaponOnCrushed))
+		{
+			auto const pTechno = static_cast<TechnoClass*>(pThis);
+			pTechno->FireDeathWeapon(0);
+		}
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
 DEFINE_HOOK(0x73B4DA, UnitClass_DrawVXL_WaterType_Extra, 0x6)
 {
 	enum { Continue = 0x73B4E0 };
@@ -638,27 +724,66 @@ DEFINE_HOOK(0x736480, UnitClass_AI_KeepTargetOnMove, 0x6)
 
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 
-	if (pExt->KeepTargetOnMove && pExt->TypeExtData->KeepTargetOnMove && pThis->Target && pThis->CurrentMission == Mission::Move)
+	if (!pExt->KeepTargetOnMove)
+		return 0;
+
+	if (!pThis->Target)
 	{
-		int weaponIndex = pThis->SelectWeapon(pThis->Target);
+		pExt->KeepTargetOnMove = false;
+		return 0;
+	}
+
+	if (!pExt->TypeExtData->KeepTargetOnMove)
+	{
+		pThis->SetTarget(nullptr);
+		pExt->KeepTargetOnMove = false;
+		return 0;
+	}
+
+	if (pThis->CurrentMission == Mission::Move)
+	{
+		const int weaponIndex = pThis->SelectWeapon(pThis->Target);
 
 		if (auto const pWeapon = pThis->GetWeapon(weaponIndex)->WeaponType)
 		{
-			int extraDistance = static_cast<int>(pExt->TypeExtData->KeepTargetOnMove_ExtraDistance.Get());
-			int range = pWeapon->Range;
+			const int extraDistance = static_cast<int>(pExt->TypeExtData->KeepTargetOnMove_ExtraDistance.Get());
+			const int range = pWeapon->Range;
 			pWeapon->Range += extraDistance; // Temporarily adjust weapon range based on the extra distance.
 
 			if (!pThis->IsCloseEnough(pThis->Target, weaponIndex))
+			{
 				pThis->SetTarget(nullptr);
+				pExt->KeepTargetOnMove = false;
+			}
 
 			pWeapon->Range = range;
 		}
+	}
+	else if (pThis->CurrentMission == Mission::Guard)
+	{
+		pThis->QueueMission(Mission::Attack, false);
+		pExt->KeepTargetOnMove = false;
 	}
 
 	return 0;
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x70D703, TechnoClass_FireDeathWeapon_UseGlobalDeathWeaponDamage, 0xA)
+{
+	enum { ReplaceDamage = 0x70D724 };
+
+	if (RulesExt::Global()->UseGlobalDeathWeaponDamage)
+	{
+		auto const pDeathWeapon = RulesClass::Instance()->DeathWeapon;
+		R->EDI(pDeathWeapon);
+		R->EAX(pDeathWeapon ? pDeathWeapon->Damage : 0);
+		return ReplaceDamage;
+	}
+
+	return 0;
+}
 
 #pragma region BuildingTypeSelectable
 
@@ -739,3 +864,134 @@ DEFINE_HOOK(0x655DDD, RadarClass_ProcessPoint_RadarInvisible, 0x6)
 }
 
 #pragma endregion
+
+#pragma region VisualCharacter
+
+namespace VisualCharacterContext
+{
+	TechnoClass* pThis;
+	bool specificOwner;
+	HouseClass* pWatcher;
+}
+
+// Set context
+DEFINE_HOOK(0x703860, TechnoClass_VisualCharacter_Start, 0x6)
+{
+	GET(TechnoClass*, pThis, ECX);
+	GET_STACK(bool, specificOwner, STACK_OFFSET(0, 0x4));
+	GET_STACK(HouseClass*, pWatcher, STACK_OFFSET(0, 0x8));
+
+	VisualCharacterContext::pThis = pThis;
+	VisualCharacterContext::specificOwner = specificOwner;
+	VisualCharacterContext::pWatcher = pWatcher;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x703B0B, TechnoClass_VisualCharacter_Normal, 0x5)
+{
+	VisualType visual = VisualType::Normal;
+	HouseClass* pWatcher = VisualCharacterContext::specificOwner ? VisualCharacterContext::pWatcher : HouseClass::CurrentPlayer;
+
+	if (pWatcher)
+	{
+		auto pThis = VisualCharacterContext::pThis;
+		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+		auto pOwner = pThis->Owner;
+
+		if (pOwner == pWatcher)
+		{
+			visual = (VisualType)(pTypeExt->DefaultVisualCharacterToSelf.Get());
+		}
+		else if (pOwner->IsAlliedWith(pWatcher))
+		{
+			visual = (VisualType)(pTypeExt->DefaultVisualCharacterToAlly.Get());
+		}
+		else
+		{
+			visual = (VisualType)(pTypeExt->DefaultVisualCharacterToEnemy.Get());
+		}
+	}
+
+	R->EAX(visual);
+	return 0;
+}
+
+#pragma endregion
+
+bool ShouldIgnoreByMouse(ObjectClass* pObject)
+{
+	auto pType = pObject->GetType();
+
+	if (!pType)
+		return true;
+
+	if (auto pOverlay = abstract_cast<OverlayClass*>(pObject))
+	{
+		auto pTypeExt = OverlayTypeExt::ExtMap.Find(pOverlay->Type);
+		return pTypeExt->IgnoredByMouse ? true : false;
+	}
+	else if (auto pTerrain = abstract_cast<TerrainClass*>(pObject))
+	{
+		auto pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
+		return pTypeExt->IgnoredByMouse ? true : false;
+	}
+	else if (auto pTechno = abstract_cast<TechnoClass*>(pObject))
+	{
+		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
+		auto pOwner = pTechno->Owner;
+		bool shouldIgnore = false;
+
+		if (pOwner == HouseClass::CurrentPlayer)
+		{
+			shouldIgnore = pTypeExt->IgnoredByMouse_ToSelf;
+		}
+		else if (pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
+		{
+			shouldIgnore = pTypeExt->IgnoredByMouse_ToAlly;
+		}
+		else
+		{
+			shouldIgnore = pTypeExt->IgnoredByMouse_ToEnemy;
+		}
+
+		return shouldIgnore ? true : false;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+DEFINE_HOOK(0x6DA3D2, TacticalClass_GetObjectOnCrd_IgnoredByMouse1, 0x8)
+{
+	enum { ignore = 0x6DA491, dontIgnore = 0x6DA3DA };
+
+	GET(ObjectClass*, pObject, ESI);
+
+	if (!pObject)
+		return ignore;
+
+	return ShouldIgnoreByMouse(pObject) ? ignore : dontIgnore;
+}
+
+DEFINE_HOOK(0x6DA4FB, TacticalClass_GetObjectOnCrd_IgnoredByMouse2, 0x6)
+{
+	enum { ret = 0x6DA501 };
+
+	GET(CellClass*, pCell, EAX);
+
+	auto pObject = pCell->FirstObject;
+
+	for (; pObject; pObject = pObject->NextObject)
+	{
+		if (!ShouldIgnoreByMouse(pObject))
+		{
+			break;
+		}
+	}
+
+	R->EAX(pObject);
+	return ret;
+}
+
