@@ -417,7 +417,7 @@ This page lists all the individual contributions to the project by their author.
   - New Missile trajectory
   - New Engrave trajectory
   - New Tracing trajectory
-  - Technos will maintain a suitable distance after firing
+  - Technos can maintain a suitable distance after firing
   - Jumpjet Climbing Logic Enhancement
   - Several new Infotypes, no display in specific status and a new single frame display method
   - Display factories, superweapons, iron curtain and temporal progress on specific technos
