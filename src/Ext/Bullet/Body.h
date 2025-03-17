@@ -28,8 +28,11 @@ public:
 		std::vector<LaserTrailClass> LaserTrails;
 		bool SnappedToTarget; // Used for custom trajectory projectile target snap checks
 		int DamageNumberOffset;
+		TechnoClass* LimboedLauncher;
+		DirType LimboedDir;
 
 		TrajectoryPointer Trajectory;
+		bool DispersedTrajectory;
 
 		ExtData(BulletClass* OwnerObject) : Extension<BulletClass>(OwnerObject)
 			, TypeExtData { nullptr }
@@ -39,9 +42,12 @@ public:
 			, InterceptedStatus { InterceptedStatus::None }
 			, DetonateOnInterception { true }
 			, LaserTrails {}
-			, Trajectory { nullptr }
 			, SnappedToTarget { false }
 			, DamageNumberOffset { INT32_MIN }
+			, LimboedLauncher { nullptr }
+			, LimboedDir { 0 }
+			, Trajectory { nullptr }
+			, DispersedTrajectory { false }
 		{ }
 
 		virtual ~ExtData() = default;

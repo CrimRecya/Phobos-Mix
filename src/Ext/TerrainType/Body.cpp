@@ -60,6 +60,7 @@ void TerrainTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->CrumblingSound)
 		.Process(this->AnimationLength)
 		.Process(this->PaletteFile)
+		.Process(this->IgnoredByMouse)
 		;
 }
 
@@ -92,6 +93,8 @@ void TerrainTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	//Strength is already part of ObjecTypeClass::ReadIni Duh!
 	//this->TerrainStrength.Read(exINI, pSection, "Strength");
+
+	this->IgnoredByMouse.Read(exINI, pSection, "IgnoredByMouse");
 
 	auto const pArtINI = &CCINIClass::INI_Art();
 	auto pArtSection = pThis->ImageFile;
