@@ -24,10 +24,10 @@ void OverlayTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	auto pThis = this->OwnerObject();
 
 	const char* pSection = pThis->ID;
-	
+
 	if (!pINI->GetSection(pSection))
 		return;
-	
+
 	INI_EX exINI(pINI);
 
 	this->IgnoredByMouse.Read(exINI, pSection, "IgnoredByMouse");

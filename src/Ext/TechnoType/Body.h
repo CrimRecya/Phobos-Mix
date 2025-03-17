@@ -258,9 +258,11 @@ public:
 		Valueable<bool> Turret_BodyOrientation;
 		Valueable<double> Turret_BodyOrientationAngle;
 		Valueable<bool> Turret_BodyOrientationSymmetric;
+
 		Valueable<bool> CanBeBuiltOn;
 		Valueable<bool> ExtraBaseNormal;
 		Valueable<bool> ExtraBaseForAllyBuilding;
+
 		Nullable<bool> Cameo_AlwaysExist;
 		ValueableVector<TechnoTypeClass*> Cameo_OverrideTechnos;
 		DWORD Cameo_RequiredHouses;
@@ -268,8 +270,10 @@ public:
 		bool IsGreyCameoForCurrentPlayer; // Not read from ini
 		bool IsGreyCameoAbandonedProduct; // Not read from ini
 		Valueable<CSFText> UIDescription_Unbuildable;
+
 		PhobosPCXFile CameoPCX;
 		PhobosPCXFile GreyCameoPCX;
+
 		Valueable<DisplayInfoType> SelectedInfo_UpperType;
 		Valueable<ColorStruct> SelectedInfo_UpperColor;
 		Valueable<int> SelectedInfo_UpperDivisor;
@@ -278,15 +282,20 @@ public:
 		Valueable<int> SelectedInfo_BelowDivisor;
 		Valueable<DisplayInfoType> SelectedInfo_CameoType;
 		Nullable<SHPStruct*> SelectedInfo_Button;
+
 		Valueable<TechnoTypeClass*> FakeOf;
 		CustomPalette CameoPal;
+
 		Valueable<int> RateDown_Delay;
 		Valueable<bool> RateDown_Reset;
 		Valueable<int> RateDown_Cover_Value;
 		Valueable<int> RateDown_Cover_AmmoBelow;
+
 		Valueable<bool> UniqueTechno;
+
 		Nullable<bool> NoQueueUpToEnter;
 		Nullable<bool> NoQueueUpToUnload;
+
 		Valueable<bool> CanManualReload;
 		Valueable<bool> CanManualReload_ResetROF;
 		Valueable<WarheadTypeClass*> CanManualReload_DetonateWarhead;
@@ -302,10 +311,14 @@ public:
 		Nullable<int> PlayerNormalTargetingDelay;
 		Nullable<int> AIGuardAreaTargetingDelay;
 		Nullable<int> PlayerGuardAreaTargetingDelay;
+
 		Valueable<bool> KeepWarping;
 		Nullable<int> KeepWarping_Distance;
+
 		Valueable<bool> FiringByPassMovingCheck;
+
 		Valueable<bool> SkipCrushSlowdown;
+
 		Nullable<bool> PlayerGuardModePursuit;
 		Nullable<Leptons> PlayerGuardModeStray;
 		Nullable<double> PlayerGuardModeGuardRangeMultiplier;
@@ -316,30 +329,43 @@ public:
 		Nullable<double> AIGuardModeGuardRangeMultiplier;
 		Nullable<Leptons> AIGuardModeGuardRangeAddend;
 		Nullable<Leptons> AIGuardStationaryStray;
+
 		Valueable<bool> Engineer_CanAutoFire;
 		Valueable<bool> Harvester_CanGuardArea;
+
 		Valueable<int> DigStartROT;
 		Valueable<int> DigInSpeed;
 		Valueable<int> DigOutSpeed;
 		Valueable<int> DigEndROT;
+
 		Valueable<int> FlightClimb;
 		Valueable<int> FlightCrash;
+
 		Nullable<bool> ExplodeOnDestroy;
 		Nullable<bool> FireDeathWeaponOnCrushed;
+
 		Nullable<CoordStruct> ExitCoord;
+
 		Valueable<bool> MissileSpawnUseOtherFLHs;
+
 		Valueable<bool> HarvesterQuickUnloader;
 		Nullable<bool> HarvesterScanAfterUnload;
+
 		Nullable<bool> DistributeTargetingFrame;
+
 		Valueable<bool> AttackMove_Follow;
 		Valueable<bool> AttackMove_Follow_IncludeAir;
 		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 		Valueable<bool> AttackMove_PursuitTarget;
+
 		Valueable<TechnoTypeClass*> ThisIsAJumpjet;
 		Valueable<bool> ImAJumpjetFromAirport;
+
 		Valueable<bool> IgnoreRallyPoint;
+
 		Nullable<bool> Sinkable;
 		Valueable<int> SinkSpeed;
+
 		Valueable<int> JumpjetSpeedType;
 
 		Nullable<bool> KeepAlive;
@@ -374,10 +400,11 @@ public:
 
 		Valueable<bool> RadarInvisible_ToSelf;
 		Valueable<bool> RadarInvisible_ToAlly;
+
 		Valueable<int> DefaultVisualCharacterToSelf;
 		Valueable<int> DefaultVisualCharacterToAlly;
 		Valueable<int> DefaultVisualCharacterToEnemy;
-    
+
 		Valueable<bool> Cloneable;
 		ValueableVector<BuildingTypeClass*> ClonedAt;
 
@@ -642,9 +669,11 @@ public:
 			, Turret_BodyOrientation { false }
 			, Turret_BodyOrientationAngle { 0.0 }
 			, Turret_BodyOrientationSymmetric { true }
+
 			, CanBeBuiltOn { false }
 			, ExtraBaseNormal { false }
 			, ExtraBaseForAllyBuilding { false }
+
 			, Cameo_AlwaysExist {}
 			, Cameo_OverrideTechnos {}
 			, Cameo_RequiredHouses { 0xFFFFFFFF }
@@ -652,8 +681,10 @@ public:
 			, IsGreyCameoForCurrentPlayer { false }
 			, IsGreyCameoAbandonedProduct { true }
 			, UIDescription_Unbuildable {}
+
 			, CameoPCX {}
 			, GreyCameoPCX {}
+
 			, SelectedInfo_UpperType { DisplayInfoType::Shield }
 			, SelectedInfo_UpperColor { { 153, 153, 255 } }
 			, SelectedInfo_UpperDivisor {}
@@ -662,15 +693,20 @@ public:
 			, SelectedInfo_BelowDivisor {}
 			, SelectedInfo_CameoType { DisplayInfoType::Ammo }
 			, SelectedInfo_Button {}
+
 			, FakeOf {}
 			, CameoPal {}
+
 			, RateDown_Delay { 0 }
 			, RateDown_Reset { false }
 			, RateDown_Cover_Value { 0 }
 			, RateDown_Cover_AmmoBelow { -2 }
+
 			, UniqueTechno { false }
+
 			, NoQueueUpToEnter {}
 			, NoQueueUpToUnload {}
+
 			, CanManualReload { false }
 			, CanManualReload_ResetROF { true }
 			, CanManualReload_DetonateWarhead {}
@@ -686,10 +722,14 @@ public:
 			, PlayerNormalTargetingDelay {}
 			, AIGuardAreaTargetingDelay {}
 			, PlayerGuardAreaTargetingDelay {}
+
 			, KeepWarping { false }
 			, KeepWarping_Distance {}
+
 			, FiringByPassMovingCheck { false }
+
 			, SkipCrushSlowdown { false }
+
 			, PlayerGuardModePursuit {}
 			, PlayerGuardModeStray {}
 			, PlayerGuardModeGuardRangeMultiplier {}
@@ -700,30 +740,43 @@ public:
 			, AIGuardModeGuardRangeMultiplier {}
 			, AIGuardModeGuardRangeAddend {}
 			, AIGuardStationaryStray {}
+
 			, Engineer_CanAutoFire { false }
 			, Harvester_CanGuardArea { false }
+
 			, DigStartROT { -1 }
 			, DigInSpeed { -1 }
 			, DigOutSpeed { -1 }
 			, DigEndROT { -1 }
+
 			, FlightClimb { -1 }
 			, FlightCrash { -1 }
+
 			, ExplodeOnDestroy {}
 			, FireDeathWeaponOnCrushed {}
+
 			, ExitCoord {}
+
 			, MissileSpawnUseOtherFLHs { false }
+
 			, HarvesterQuickUnloader { false }
 			, HarvesterScanAfterUnload {}
+
 			, DistributeTargetingFrame {}
+
 			, AttackMove_Follow { false }
 			, AttackMove_Follow_IncludeAir { false }
 			, AttackMove_StopWhenTargetAcquired {}
 			, AttackMove_PursuitTarget { false }
+
 			, ThisIsAJumpjet { nullptr }
 			, ImAJumpjetFromAirport { false }
+
 			, IgnoreRallyPoint { false }
+
 			, Sinkable { }
 			, SinkSpeed { 5 }
+
 			, JumpjetSpeedType { 3 }
 
 			, KeepAlive {}
@@ -758,15 +811,15 @@ public:
 
 			, RadarInvisible_ToSelf { false }
 			, RadarInvisible_ToAlly { false }
-    
+
 			, DefaultVisualCharacterToSelf { 0 }
 			, DefaultVisualCharacterToAlly { 0 }
 			, DefaultVisualCharacterToEnemy { 0 }
-    
+
 			, IgnoredByMouse_ToSelf { false }
 			, IgnoredByMouse_ToAlly { false }
 			, IgnoredByMouse_ToEnemy { false }
-    
+
 			, Cloneable { true }
 			, ClonedAt { }
 

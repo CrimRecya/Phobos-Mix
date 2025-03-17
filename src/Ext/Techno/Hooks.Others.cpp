@@ -2,13 +2,17 @@
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
+#include <OverlayClass.h>
+#include <TerrainClass.h>
 #include <JumpjetLocomotionClass.h>
 #include <HoverLocomotionClass.h>
 
 #include <Ext/Building/Body.h>
-#include <Ext/WeaponType/Body.h>
 #include "Ext/BulletType/Body.h"
+#include <Ext/WeaponType/Body.h>
 #include "Ext/WarheadType/Body.h"
+#include <Ext/OverlayType/Body.h>
+#include <Ext/TerrainType/Body.h>
 #include <Utilities/AresHelper.h>
 #include <Utilities/Helpers.Alex.h>
 #include <Helpers/Macro.h>
@@ -1825,6 +1829,156 @@ DEFINE_HOOK(0x6FF7F9, SITechnoClass_Fire_LimboLaunch, 0x6)
 		LogicClass::Instance.AddObject(pThis, false);
 
 	return 0;
+}
+
+#pragma endregion
+
+#pragma region RadarDrawing
+
+DEFINE_HOOK(0x655DDD, RadarClass_ProcessPoint_RadarInvisible, 0x6)
+{
+	enum { Invisible = 0x655E66, GoOtherChecks = 0x655E19 };
+
+	GET_STACK(const bool, isInShrouded, STACK_OFFSET(0x40, 0x4));
+	GET(TechnoClass* const, pThis, EBP);
+
+	const auto pTechno = abstract_cast<TechnoClass*>(pThis);
+
+	if (!pTechno)
+		return 0;
+
+	const auto pTechnoOwner = pTechno->Owner;
+	const auto pType = pTechno->GetTechnoType();
+
+	if (HouseClass::CurrentPlayer == pTechnoOwner)
+	{
+		if (TechnoTypeExt::ExtMap.Find(pType)->RadarInvisible_ToSelf)
+			return Invisible;
+	}
+	else if (pTechnoOwner->IsAlliedWith(HouseClass::CurrentPlayer)) // TODO: check asymmetric alliance
+	{
+		if (TechnoTypeExt::ExtMap.Find(pType)->RadarInvisible_ToAlly)
+			return Invisible;
+	}
+	else if (pType->RadarInvisible)
+	{
+		return Invisible;
+	}
+
+	return isInShrouded && !pTechnoOwner->IsControlledByCurrentPlayer() ? Invisible : GoOtherChecks;
+}
+
+#pragma endregion
+
+#pragma region VisualCharacter
+
+namespace VisualCharacterContext
+{
+	TechnoClass* pThis = nullptr;
+	bool specificOwner = false;
+	HouseClass* pWatcher = nullptr;
+}
+
+// Set context
+DEFINE_HOOK(0x703860, TechnoClass_VisualCharacter_Start, 0x6)
+{
+	GET(TechnoClass* const, pThis, ECX);
+	GET_STACK(const bool, specificOwner, STACK_OFFSET(0, 0x4));
+	GET_STACK(HouseClass* const, pWatcher, STACK_OFFSET(0, 0x8));
+
+	VisualCharacterContext::pThis = pThis;
+	VisualCharacterContext::specificOwner = specificOwner;
+	VisualCharacterContext::pWatcher = pWatcher;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x703B0B, TechnoClass_VisualCharacter_Normal, 0x5)
+{
+	if (const HouseClass* const pWatcher = VisualCharacterContext::specificOwner ? VisualCharacterContext::pWatcher : HouseClass::CurrentPlayer)
+	{
+		const auto pThis = VisualCharacterContext::pThis;
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+		const auto pOwner = pThis->Owner;
+
+		if (pOwner == pWatcher)
+			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToSelf.Get()));
+		else if (pOwner->IsAlliedWith(pWatcher))
+			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToAlly.Get()));
+		else
+			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToEnemy.Get()));
+	}
+	else
+	{
+		R->EAX(VisualType::Normal);
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
+#pragma region IgnoreByMouse
+
+static inline bool ShouldIgnoreByMouse(ObjectClass* pObject)
+{
+	const auto pType = pObject->GetType();
+
+	if (!pType)
+		return true;
+
+	if (pObject->AbstractFlags & AbstractFlags::Techno)
+	{
+		const auto pTechno = static_cast<TechnoClass*>(pObject);
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
+		const auto pOwner = pTechno->Owner;
+
+		if (pOwner == HouseClass::CurrentPlayer)
+			return pTypeExt->IgnoredByMouse_ToSelf.Get();
+		else if (pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
+			return pTypeExt->IgnoredByMouse_ToAlly.Get();
+
+		return pTypeExt->IgnoredByMouse_ToEnemy.Get();
+	}
+
+	const auto absType = pObject->WhatAmI();
+
+	if (absType == OverlayClass::AbsID)
+	{
+		const auto pOverlay = static_cast<OverlayClass*>(pObject);
+		const auto pTypeExt = OverlayTypeExt::ExtMap.Find(pOverlay->Type);
+		return pTypeExt->IgnoredByMouse.Get();
+	}
+	else if (absType == TerrainClass::AbsID)
+	{
+		const auto pTerrain = static_cast<TerrainClass*>(pObject);
+		const auto pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
+		return pTypeExt->IgnoredByMouse.Get();
+	}
+
+	return false;
+}
+
+DEFINE_HOOK(0x6DA3D2, TacticalClass_GetObjectOnCrd_IgnoredByMouse1, 0x8)
+{
+	enum { Ignore = 0x6DA491, DontIgnore = 0x6DA3DA };
+	GET(ObjectClass* const, pObject, ESI);
+	return !pObject || ShouldIgnoreByMouse(pObject) ? Ignore : DontIgnore;
+}
+
+DEFINE_HOOK(0x6DA4FB, TacticalClass_GetObjectOnCrd_IgnoredByMouse2, 0x6)
+{
+	enum { SkipGameCode = 0x6DA501 };
+
+	GET(CellClass* const, pCell, EAX);
+
+	auto pObject = pCell->FirstObject;
+
+	for (; pObject && ShouldIgnoreByMouse(pObject); pObject = pObject->NextObject);
+
+	R->EAX(pObject);
+
+	return SkipGameCode;
 }
 
 #pragma endregion

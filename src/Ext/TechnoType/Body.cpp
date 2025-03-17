@@ -699,13 +699,16 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Turret_BodyOrientation.Read(exINI, pSection, "Turret.BodyOrientation");
 	this->Turret_BodyOrientationAngle.Read(exINI, pSection, "Turret.BodyOrientationAngle");
 	this->Turret_BodyOrientationSymmetric.Read(exINI, pSection, "Turret.BodyOrientationSymmetric");
+
 	this->CanBeBuiltOn.Read(exINI, pSection, "CanBeBuiltOn");
 	this->ExtraBaseNormal.Read(exINI, pSection, "ExtraBaseNormal");
 	this->ExtraBaseForAllyBuilding.Read(exINI, pSection, "ExtraBaseForAllyBuilding");
+
 	this->Cameo_AlwaysExist.Read(exINI, pSection, "Cameo.AlwaysExist");
 	this->Cameo_OverrideTechnos.Read(exINI, pSection, "Cameo.OverrideTechnos");
 	this->Cameo_RequiredHouses = pINI->ReadHouseTypesList(pSection, "Cameo.RequiredHouses", this->Cameo_RequiredHouses);
 	this->UIDescription_Unbuildable.Read(exINI, pSection, "UIDescription.Unbuildable");
+
 	this->SelectedInfo_UpperType.Read(exINI, pSection, "SelectedInfo.UpperType");
 	this->SelectedInfo_UpperColor.Read(exINI, pSection, "SelectedInfo.UpperColor");
 	this->SelectedInfo_UpperDivisor.Read(exINI, pSection, "SelectedInfo.UpperDivisor");
@@ -714,14 +717,19 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->SelectedInfo_BelowDivisor.Read(exINI, pSection, "SelectedInfo.BelowDivisor");
 	this->SelectedInfo_CameoType.Read(exINI, pSection, "SelectedInfo.CameoType");
 	this->SelectedInfo_Button.Read(exINI, pSection, "SelectedInfo.Button");
+
 	this->FakeOf.Read(exINI, pSection, "FakeOf");
+
 	this->RateDown_Delay.Read(exINI, pSection, "RateDown.Delay");
 	this->RateDown_Reset.Read(exINI, pSection, "RateDown.Reset");
 	this->RateDown_Cover_Value.Read(exINI, pSection, "RateDown.Cover.Value");
 	this->RateDown_Cover_AmmoBelow.Read(exINI, pSection, "RateDown.Cover.AmmoBelow");
+
 	this->UniqueTechno.Read(exINI, pSection, "UniqueTechno");
+
 	this->NoQueueUpToEnter.Read(exINI, pSection, "NoQueueUpToEnter");
 	this->NoQueueUpToUnload.Read(exINI, pSection, "NoQueueUpToUnload");
+
 	this->CanManualReload.Read(exINI, pSection, "CanManualReload");
 	this->CanManualReload_ResetROF.Read(exINI, pSection, "CanManualReload.ResetROF");
 	this->CanManualReload_DetonateWarhead.Read(exINI, pSection, "CanManualReload.DetonateWarhead");
@@ -737,10 +745,14 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->PlayerNormalTargetingDelay.Read(exINI, pSection, "PlayerNormalTargetingDelay");
 	this->AIGuardAreaTargetingDelay.Read(exINI, pSection, "AIGuardAreaTargetingDelay");
 	this->PlayerGuardAreaTargetingDelay.Read(exINI, pSection, "PlayerGuardAreaTargetingDelay");
+
 	this->KeepWarping.Read(exINI, pSection, "KeepWarping");
 	this->KeepWarping_Distance.Read(exINI, pSection, "KeepWarping.Distance");
+
 	this->FiringByPassMovingCheck.Read(exINI, pSection, "FiringByPassMovingCheck");
+
 	this->SkipCrushSlowdown.Read(exINI, pSection, "SkipCrushSlowdown");
+
 	this->PlayerGuardModePursuit.Read(exINI, pSection, "PlayerGuardModePursuit");
 	this->PlayerGuardModeStray.Read(exINI, pSection, "PlayerGuardModeStray");
 	this->PlayerGuardModeGuardRangeMultiplier.Read(exINI, pSection, "PlayerGuardModeGuardRangeMultiplier");
@@ -751,30 +763,43 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->AIGuardModeGuardRangeMultiplier.Read(exINI, pSection, "AIGuardModeGuardRangeMultiplier");
 	this->AIGuardModeGuardRangeAddend.Read(exINI, pSection, "AIGuardModeGuardRangeAddend");
 	this->AIGuardStationaryStray.Read(exINI, pSection, "AIGuardStationaryStray");
+
 	this->Engineer_CanAutoFire.Read(exINI, pSection, "Engineer.CanAutoFire");
 	this->Harvester_CanGuardArea.Read(exINI, pSection, "Harvester.CanGuardArea");
+
 	this->DigStartROT.Read(exINI, pSection, "DigStartROT");
 	this->DigInSpeed.Read(exINI, pSection, "DigInSpeed");
 	this->DigOutSpeed.Read(exINI, pSection, "DigOutSpeed");
 	this->DigEndROT.Read(exINI, pSection, "DigEndROT");
+
 	this->FlightClimb.Read(exINI, pSection, "FlightClimb");
 	this->FlightCrash.Read(exINI, pSection, "FlightCrash");
+
 	this->ExplodeOnDestroy.Read(exINI, pSection, "ExplodeOnDestroy");
 	this->FireDeathWeaponOnCrushed.Read(exINI, pSection, "FireDeathWeaponOnCrushed");
+
 	this->ExitCoord.Read(exINI, pSection, "ExitCoord");
+
 	this->MissileSpawnUseOtherFLHs.Read(exINI, pSection, "MissileSpawnUseOtherFLHs");
+
 	this->HarvesterQuickUnloader.Read(exINI, pSection, "HarvesterQuickUnloader");
 	this->HarvesterScanAfterUnload.Read(exINI, pSection, "HarvesterScanAfterUnload");
+
 	this->DistributeTargetingFrame.Read(exINI, pSection, "DistributeTargetingFrame");
+
 	this->AttackMove_Follow.Read(exINI, pSection, "AttackMove.Follow");
 	this->AttackMove_Follow_IncludeAir.Read(exINI, pSection, "AttackMove.Follow.IncludeAir");
 	this->AttackMove_StopWhenTargetAcquired.Read(exINI, pSection, "AttackMove.StopWhenTargetAcquired");
 	this->AttackMove_PursuitTarget.Read(exINI, pSection, "AttackMove.PursuitTarget");
+
 	this->ThisIsAJumpjet.Read(exINI, pSection, "ThisIsAJumpjet");
 	this->ImAJumpjetFromAirport.Read(exINI, pSection, "ImAJumpjetFromAirport");
+
 	this->IgnoreRallyPoint.Read(exINI, pSection, "IgnoreRallyPoint");
+
 	this->Sinkable.Read(exINI, pSection, "Sinkable");
 	this->SinkSpeed.Read(exINI, pSection, "SinkSpeed");
+
 	this->JumpjetSpeedType.Read(exINI, pSection, "JumpjetSpeedType");
 
 	this->FallingDownDamage.Read(exINI, pSection, "FallingDownDamage");
@@ -1240,9 +1265,11 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Turret_BodyOrientation)
 		.Process(this->Turret_BodyOrientationAngle)
 		.Process(this->Turret_BodyOrientationSymmetric)
+
 		.Process(this->CanBeBuiltOn)
 		.Process(this->ExtraBaseNormal)
 		.Process(this->ExtraBaseForAllyBuilding)
+
 		.Process(this->Cameo_AlwaysExist)
 		.Process(this->Cameo_OverrideTechnos)
 		.Process(this->Cameo_RequiredHouses)
@@ -1250,8 +1277,10 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->IsGreyCameoForCurrentPlayer)
 		.Process(this->IsGreyCameoAbandonedProduct)
 		.Process(this->UIDescription_Unbuildable)
+
 		.Process(this->CameoPCX)
 		.Process(this->GreyCameoPCX)
+
 		.Process(this->SelectedInfo_UpperType)
 		.Process(this->SelectedInfo_UpperColor)
 		.Process(this->SelectedInfo_UpperDivisor)
@@ -1260,15 +1289,20 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->SelectedInfo_BelowDivisor)
 		.Process(this->SelectedInfo_CameoType)
 		.Process(this->SelectedInfo_Button)
+
 		.Process(this->FakeOf)
 		.Process(this->CameoPal)
+
 		.Process(this->RateDown_Delay)
 		.Process(this->RateDown_Reset)
 		.Process(this->RateDown_Cover_Value)
 		.Process(this->RateDown_Cover_AmmoBelow)
+
 		.Process(this->UniqueTechno)
+
 		.Process(this->NoQueueUpToEnter)
 		.Process(this->NoQueueUpToUnload)
+
 		.Process(this->CanManualReload)
 		.Process(this->CanManualReload_ResetROF)
 		.Process(this->CanManualReload_DetonateWarhead)
@@ -1284,10 +1318,14 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->PlayerNormalTargetingDelay)
 		.Process(this->AIGuardAreaTargetingDelay)
 		.Process(this->PlayerGuardAreaTargetingDelay)
+
 		.Process(this->KeepWarping)
 		.Process(this->KeepWarping_Distance)
+
 		.Process(this->FiringByPassMovingCheck)
+
 		.Process(this->SkipCrushSlowdown)
+
 		.Process(this->PlayerGuardModePursuit)
 		.Process(this->PlayerGuardModeStray)
 		.Process(this->PlayerGuardModeGuardRangeMultiplier)
@@ -1298,30 +1336,43 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AIGuardModeGuardRangeMultiplier)
 		.Process(this->AIGuardModeGuardRangeAddend)
 		.Process(this->AIGuardStationaryStray)
+
 		.Process(this->Engineer_CanAutoFire)
 		.Process(this->Harvester_CanGuardArea)
+
 		.Process(this->DigStartROT)
 		.Process(this->DigInSpeed)
 		.Process(this->DigOutSpeed)
 		.Process(this->DigEndROT)
+
 		.Process(this->FlightClimb)
 		.Process(this->FlightCrash)
+
 		.Process(this->ExplodeOnDestroy)
 		.Process(this->FireDeathWeaponOnCrushed)
+
 		.Process(this->ExitCoord)
+
 		.Process(this->MissileSpawnUseOtherFLHs)
+
 		.Process(this->HarvesterQuickUnloader)
 		.Process(this->HarvesterScanAfterUnload)
+
 		.Process(this->DistributeTargetingFrame)
+
 		.Process(this->AttackMove_Follow)
 		.Process(this->AttackMove_Follow_IncludeAir)
 		.Process(this->AttackMove_StopWhenTargetAcquired)
 		.Process(this->AttackMove_PursuitTarget)
+
 		.Process(this->ThisIsAJumpjet)
 		.Process(this->ImAJumpjetFromAirport)
+
 		.Process(this->IgnoreRallyPoint)
+
 		.Process(this->Sinkable)
 		.Process(this->SinkSpeed)
+
 		.Process(this->JumpjetSpeedType)
 
 		.Process(this->KeepAlive)
