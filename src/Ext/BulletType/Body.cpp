@@ -1,5 +1,8 @@
 #include "Body.h"
 
+#include <Ext/Bullet/Trajectories/PhobosActualTrajectory.h>
+#include <Ext/Bullet/Trajectories/PhobosVirtualTrajectory.h>
+
 BulletTypeExt::ExtContainer BulletTypeExt::ExtMap;
 
 double BulletTypeExt::GetAdjustedGravity(BulletTypeClass* pType)
@@ -53,6 +56,18 @@ void BulletTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Arcing_AllowElevationInaccuracy.Read(exINI, pSection, "Arcing.AllowElevationInaccuracy");
 	this->ReturnWeapon.Read<true>(exINI, pSection, "ReturnWeapon");
 
+	this->SubjectToGround.Read(exINI, pSection, "SubjectToGround");
+
+	this->AU.Read(exINI, pSection, "AU");
+	this->BallisticScatter_IncreaseByRange.Read(exINI, pSection, "BallisticScatter.IncreaseByRange");
+	this->BallisticScatter_MinRange.Read(exINI, pSection, "BallisticScatter.MinRange");
+	this->BallisticScatter_MaxRange.Read(exINI, pSection, "BallisticScatter.MaxRange");
+	this->BallisticScatter_Min_InMinRange.Read(exINI, pSection, "BallisticScatter.Min.InMinRange");
+	this->BallisticScatter_Min_InMaxRange.Read(exINI, pSection, "BallisticScatter.Min.InMaxRange");
+	this->BallisticScatter_Max_InMinRange.Read(exINI, pSection, "BallisticScatter.Max.InMinRange");
+	this->BallisticScatter_Max_InMaxRange.Read(exINI, pSection, "BallisticScatter.Max.InMaxRange");
+	this->BallisticScatter_Chance.Read(exINI, pSection, "BallisticScatter.Chance");
+
 	this->Splits.Read(exINI, pSection, "Splits");
 	this->AirburstSpread.Read(exINI, pSection, "AirburstSpread");
 	this->RetargetAccuracy.Read(exINI, pSection, "RetargetAccuracy");
@@ -86,7 +101,7 @@ void BulletTypeExt::ExtData::TrajectoryValidation() const
 	const char* pSection = pThis->ID;
 
 	// Trajectory validation combined with other projectile behaviour.
-	if (this->TrajectoryType)
+	if (const auto pTrajType = this->TrajectoryType.get())
 	{
 		if (pThis->Arcing)
 		{
@@ -106,10 +121,32 @@ void BulletTypeExt::ExtData::TrajectoryValidation() const
 			pThis->ROT = 0;
 		}
 
+		if (pThis->Arm)
+			pThis->Arm = 0;
+
+		if (pThis->Ranged)
+			pThis->Ranged = false;
+
 		if (pThis->Vertical)
 		{
 			Debug::Log("[Developer warning] [%s] has Trajectory set together with Vertical. Vertical has been set to false.\n", pSection);
 			pThis->Vertical = false;
+		}
+
+		const auto flag = pTrajType->Flag();
+
+		if (flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing)
+		{
+			if (!pThis->IgnoresFirestorm)
+			{
+				static_cast<VirtualTrajectoryType*>(pTrajType)->IgnoresFirestorm = false;
+				pThis->IgnoresFirestorm = true; // The entity ignores this setting
+			}
+		}
+		else if (flag == TrajectoryFlag::Straight || flag == TrajectoryFlag::Bombard)
+		{
+			if (this->SubjectToGround)
+				static_cast<ActualTrajectoryType*>(pTrajType)->SubjectToGround = true;
 		}
 	}
 }
@@ -138,6 +175,16 @@ void BulletTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AAOnly)
 		.Process(this->Arcing_AllowElevationInaccuracy)
 		.Process(this->ReturnWeapon)
+		.Process(this->SubjectToGround)
+		.Process(this->AU)
+		.Process(this->BallisticScatter_IncreaseByRange)
+		.Process(this->BallisticScatter_MinRange)
+		.Process(this->BallisticScatter_MaxRange)
+		.Process(this->BallisticScatter_Min_InMinRange)
+		.Process(this->BallisticScatter_Min_InMaxRange)
+		.Process(this->BallisticScatter_Max_InMinRange)
+		.Process(this->BallisticScatter_Max_InMaxRange)
+		.Process(this->BallisticScatter_Chance)
 		.Process(this->Splits)
 		.Process(this->AirburstSpread)
 		.Process(this->RetargetAccuracy)
@@ -150,7 +197,6 @@ void BulletTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Splits_TargetCellRange)
 		.Process(this->Splits_UseWeaponTargeting)
 		.Process(this->AirburstWeapon_ApplyFirepowerMult)
-
 
 		.Process(this->TrajectoryType) // just keep this shit at last
 		;
