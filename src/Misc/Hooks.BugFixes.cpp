@@ -1258,6 +1258,21 @@ DEFINE_HOOK(0x4C75DA, EventClass_RespondToEvent_Stop, 0x6)
 
 #pragma region UntetherFix
 
+DEFINE_HOOK(0x6F4B67, TechnoClass_ReceiveCommand_RequestTether, 0x6)
+{
+	GET(TechnoClass* const, pThis, ESI);
+	GET_STACK(TechnoClass*, pSender, STACK_OFFSET(0x18, 0x4));
+
+	if (pThis->FindLinkIndex(pSender) == -1)
+	{
+		const auto thisCell = pThis->GetMapCoords();
+		const auto sendCell = pSender->GetMapCoords();
+		Debug::LogAndMessage("%s at (%d,%d) is trying to tether with %s at (%d,%d) without link!\n", pThis->get_ID(), thisCell.X, thisCell.Y, pSender->get_ID(), sendCell.X, sendCell.Y);
+	}
+
+	return 0;
+}
+
 // Radio: do not untether techno who have other tether link
 DEFINE_HOOK(0x6F4BB3, TechnoClass_ReceiveCommand_NotifyUnlink, 0x7)
 {
