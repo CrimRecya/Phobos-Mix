@@ -111,7 +111,7 @@ void SelectedButtonClass::DrawInfo() const
 			auto location = Point2D { this->X + this->Width + 10, this->Y + 4 };
 			const auto text = GeneralUtils::LoadStringUnlessMissing("TIP:AggressiveStance", L"AggressiveStance");
 			RectangleStruct drawRect = Drawing::GetTextDimensions(text, location, 0, 3, 2);
-			location += Point2D { 5, 1 };
+			location += Point2D { 4, 1 };
 			drawRect.Width += 8;
 			ColorStruct color { 0, 0, 0 };
 			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
@@ -134,7 +134,7 @@ void SelectedButtonClass::DrawInfo() const
 			auto location = Point2D { this->X + this->Width + 10, this->Y + 4 };
 			const auto text = GeneralUtils::LoadStringUnlessMissing("TIP:ManualReloadAmmo", L"ManualReloadAmmo");
 			RectangleStruct drawRect = Drawing::GetTextDimensions(text, location, 0, 3, 2);
-			location += Point2D { 5, 1 };
+			location += Point2D { 4, 1 };
 			drawRect.Width += 8;
 			ColorStruct color { 0, 0, 0 };
 			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
@@ -203,7 +203,7 @@ void SelectedNotButtonClass::DrawInfo() const
 			wchar_t buffer[0x20];
 			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("TIP:PowerMult", L"PowerMult:%5.2f"), mult);
 			RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
-			location += Point2D { 5, 1 };
+			location += Point2D { 4, 1 };
 			drawRect.Width += 8;
 			ColorStruct color { 0, 0, 0 };
 			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
@@ -231,7 +231,7 @@ void SelectedNotButtonClass::DrawInfo() const
 			wchar_t buffer[0x20];
 			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("TIP:ArmorMult", L"ArmorMult:%5.2f"), mult);
 			RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
-			location += Point2D { 5, 1 };
+			location += Point2D { 4, 1 };
 			drawRect.Width += 8;
 			ColorStruct color { 0, 0, 0 };
 			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
@@ -263,7 +263,7 @@ void SelectedNotButtonClass::DrawInfo() const
 			wchar_t buffer[0x20];
 			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("TIP:SpeedMult", L"SpeedMult:%5.2f"), mult);
 			RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
-			location += Point2D { 5, 1 };
+			location += Point2D { 4, 1 };
 			drawRect.Width += 8;
 			ColorStruct color { 0, 0, 0 };
 			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);

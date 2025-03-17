@@ -47,12 +47,11 @@ void SelectedColumnClass::DrawInfo() const
 	const auto pExt = SelectedInfoClass::Instance.CurrentSelectTechno[0];
 	const auto pTypeExt = pExt->TypeExtData;
 	const auto pThis = pExt->OwnerObject();
+	const auto pOwner = pThis->Owner;
 
 	auto getDisplayType = [&]() -> ObjectTypeClass*
 	{
-		const auto pOwner = pThis->Owner;
-
-		if ((!pOwner || !pOwner->IsAlliedWith(HouseClass::CurrentPlayer)) && !HouseClass::IsCurrentPlayerObserver())
+		if (!pOwner->IsAlliedWith(HouseClass::CurrentPlayer) && !HouseClass::IsCurrentPlayerObserver())
 		{
 			if (pThis->IsDisguisedAs(HouseClass::CurrentPlayer))
 			{
@@ -79,7 +78,8 @@ void SelectedColumnClass::DrawInfo() const
 	COLORREF color = Drawing::RGB_To_Int(Drawing::TooltipColor);
 	position += Point2D { 126, 5 };
 
-	if (const auto name = (pDisplayTypeExt && !pDisplayTypeExt->EnemyUIName.Get().empty()) ? pDisplayTypeExt->EnemyUIName.Get().Text : pDisplayType->UIName)
+	if (const auto name = (pDisplayTypeExt && !pDisplayTypeExt->EnemyUIName.Get().empty() && !pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
+		? pDisplayTypeExt->EnemyUIName.Get().Text : pDisplayType->UIName)
 	{
 		size_t length = Math::min(wcslen(name), static_cast<size_t>(31));
 
@@ -249,19 +249,68 @@ void SelectedColumnClass::DrawInfo() const
 
 	if (pMainCameo->Hovering && pDisplayTypeExt && Phobos::Config::ToolTipDescriptions)
 	{
-		if (!pDisplayTypeExt->UIDescription.Get().empty())
+		const auto csf = pDisplayTypeExt->UIDescription.Get();
+
+		if (!csf.empty())
 		{
-			const auto description = pDisplayTypeExt->UIDescription.Get().Text;
-			auto location = Point2D { pMainCameo->X, pMainCameo->Y };
-			RectangleStruct textRect = Drawing::GetTextDimensions(description, location, 0, 3, 2);
-			location.X += 5;
-			location.Y -= textRect.Height + 5;
-			textRect.Y -= textRect.Height + 5;
-			textRect.Width += 8;
-			ColorStruct textColor { 0, 0, 0 };
-			DSurface::Composite->FillRectTrans(&textRect, &textColor, 40);
-			DSurface::Composite->DrawRect(&textRect, COLOR_WHITE);
-			DSurface::Composite->DrawText(description, &location, COLOR_WHITE);
+			const auto description = csf.Text;
+			const auto originalLocation = Point2D { pMainCameo->X, pMainCameo->Y };
+			std::vector<std::wstring> lines;
+			std::wstring descStr(description);
+			size_t pos = 0;
+
+			while (pos < descStr.size())
+			{
+				size_t next = descStr.find(L'\n', pos);
+				std::wstring line;
+
+				if (next == std::wstring::npos)
+				{
+					line = descStr.substr(pos);
+					pos = descStr.size();
+				}
+				else
+				{
+					line = descStr.substr(pos, next - pos);
+					pos = next + 1;
+				}
+
+				if (!line.empty())
+					lines.push_back(line);
+			}
+
+			if (!lines.empty())
+			{
+				int maxWidth = 0;
+				int lineHeight = 0;
+
+				for (const auto& line : lines)
+				{
+					RectangleStruct rect = Drawing::GetTextDimensions(line.c_str(), originalLocation, 0, 3, 2);
+
+					if (rect.Width > maxWidth)
+						maxWidth = rect.Width;
+
+					if (!lineHeight)
+						lineHeight = rect.Height + 1;
+				}
+
+				const int totalHeight = lineHeight * lines.size();
+				auto textLocation = originalLocation + Point2D { 4, -(totalHeight + 5) };
+				textLocation.Y = Math::max(textLocation.Y, 2);
+
+				RectangleStruct textRect { originalLocation.X, (textLocation.Y - 2), (maxWidth + 8), totalHeight };
+				ColorStruct bgColor { 0, 0, 0 };
+				DSurface::Composite->FillRectTrans(&textRect, &bgColor, 40);
+				DSurface::Composite->DrawRect(&textRect, COLOR_WHITE);
+
+				for (size_t i = 0; i < lines.size(); ++i)
+				{
+					Point2D linePos = textLocation;
+					linePos.Y += i * lineHeight;
+					DSurface::Composite->DrawText(lines[i].c_str(), &linePos, COLOR_WHITE);
+				}
+			}
 		}
 	}
 }
