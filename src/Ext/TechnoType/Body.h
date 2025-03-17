@@ -376,6 +376,8 @@ public:
 		Nullable<int> InitialSpawnsNumber;
 		ValueableVector<AircraftTypeClass*> Spawns_Queue;
 
+		Valueable<bool> RadarInvisible_ToSelf;
+		Valueable<bool> RadarInvisible_ToAlly;
 		Valueable<int> DefaultVisualCharacterToSelf;
 		Valueable<int> DefaultVisualCharacterToAlly;
 		Valueable<int> DefaultVisualCharacterToEnemy;
@@ -757,6 +759,9 @@ public:
 			, InitialSpawnsNumber { }
 			, Spawns_Queue { }
 
+			, RadarInvisible_ToSelf { false }
+			, RadarInvisible_ToAlly { false }
+    
 			, DefaultVisualCharacterToSelf { 0 }
 			, DefaultVisualCharacterToAlly { 0 }
 			, DefaultVisualCharacterToEnemy { 0 }

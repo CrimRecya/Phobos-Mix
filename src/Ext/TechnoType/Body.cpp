@@ -805,6 +805,9 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->InitialSpawnsNumber.Read(exINI, pSection, "InitialSpawnsNumber");
 	this->Spawns_Queue.Read(exINI, pSection, "Spawns.Queue");
 
+	this->RadarInvisible_ToSelf.Read(exINI, pSection, "RadarInvisible.ToSelf");
+	this->RadarInvisible_ToAlly.Read(exINI, pSection, "RadarInvisible.ToAlly");
+  
 	this->IgnoredByMouse_ToSelf.Read(exINI, pSection, "IgnoredByMouse.ToSelf");
 	this->IgnoredByMouse_ToAlly.Read(exINI, pSection, "IgnoredByMouse.ToAlly");
 	this->IgnoredByMouse_ToEnemy.Read(exINI, pSection, "IgnoredByMouse.ToEnemy");
@@ -1354,6 +1357,9 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->InitialSpawnsNumber)
 		.Process(this->Spawns_Queue)
 
+		.Process(this->RadarInvisible_ToSelf)
+		.Process(this->RadarInvisible_ToAlly)
+    
 		.Process(this->DefaultVisualCharacterToSelf)
 		.Process(this->DefaultVisualCharacterToAlly)
 		.Process(this->DefaultVisualCharacterToEnemy)
