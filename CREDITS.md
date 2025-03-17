@@ -413,11 +413,11 @@ This page lists all the individual contributions to the project by their author.
   - Draw visual effects for airburst weapons
   - Technos recount current burst index when change the firing weapon
   - Units will not always stuck in the factory
+  - Technos can maintain a suitable distance after firing
   - Projectile subject to ground check before firing
   - New Missile trajectory
   - New Engrave trajectory
   - New Tracing trajectory
-  - Technos can maintain a suitable distance after firing
   - Jumpjet Climbing Logic Enhancement
   - Several new Infotypes, no display in specific status and a new single frame display method
   - Display factories, superweapons, iron curtain and temporal progress on specific technos
