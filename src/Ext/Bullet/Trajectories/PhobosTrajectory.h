@@ -179,7 +179,6 @@ public:
 		, NotMainWeapon { false }
 		, ShouldDetonate { false }
 		, FLHCoord { CoordStruct::Empty }
-		, BuildingCoord { CoordStruct::Empty }
 		, CurrentBurst { 0 }
 		, CountOfBurst { 0 }
 
@@ -209,7 +208,6 @@ public:
 	bool NotMainWeapon; // Does it ignore the launcher
 	bool ShouldDetonate; // Should detonate in next frame
 	CoordStruct FLHCoord; // Launch FLH
-	CoordStruct BuildingCoord; // Offset on the building of launch FLH
 	int CurrentBurst; // Current burst index, mirror is required for negative numbers
 	int CountOfBurst; // Upper limit of burst counts
 

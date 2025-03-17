@@ -250,29 +250,7 @@ void EngraveTrajectory::DrawEngraveLaser()
 	}
 	// Considering that the CurrentBurstIndex may be different, it is not possible to call existing functions
 	if (!this->NotMainWeapon && pFirer && !pFirer->InLimbo)
-	{
-		if (pFirer->WhatAmI() != AbstractType::Building)
-		{
-			// The building turret uses PrimaryFacing and GetRenderCoords() to calculate the actual position, so this function is not available
-			fireCoord = TechnoExt::GetFLHAbsoluteCoords(pFirer, this->FLHCoord, pFirer->HasTurret());
-		}
-		else
-		{
-			const auto pBuilding = static_cast<BuildingClass*>(pFirer);
-			Matrix3D mtx;
-			mtx.MakeIdentity();
-
-			if (pFirer->HasTurret())
-			{
-				TechnoTypeExt::ApplyTurretOffset(pBuilding->Type, &mtx);
-				mtx.RotateZ(static_cast<float>(pFirer->TurretFacing().GetRadian<32>()));
-			}
-
-			mtx.Translate(static_cast<float>(this->FLHCoord.X), static_cast<float>(this->FLHCoord.Y), static_cast<float>(this->FLHCoord.Z));
-			const auto result = mtx.GetTranslation();
-			fireCoord = pBuilding->GetCoords() + this->BuildingCoord + CoordStruct { static_cast<int>(result.X), -static_cast<int>(result.Y), static_cast<int>(result.Z) };
-		}
-	}
+		fireCoord = TechnoExt::GetFLHAbsoluteCoords(pFirer, this->FLHCoord, pFirer->HasTurret());
 	// Draw laser from head to tail
 	if (pType->IsHouseColor || pType->IsSingleColor)
 	{

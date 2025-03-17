@@ -141,29 +141,9 @@ void PhobosTrajectory::GetTechnoFLHCoord()
 	const auto pExt = TechnoExt::ExtMap.Find(pTechno);
 	// Record the launch location, the building has an additional offset
 	if (!pExt || !pExt->LastWeaponType || pExt->LastWeaponType->Projectile != pBullet->Type)
-	{
 		this->NotMainWeapon = true;
-		return;
-	}
-	else if (pTechno->WhatAmI() == AbstractType::Building)
-	{
-		// The difference between the building and other units here comes from the difference between its GetCoords() and GetRenderCoords()
-		const auto pBuilding = static_cast<BuildingClass*>(pTechno);
-		Matrix3D mtx;
-		mtx.MakeIdentity();
-
-		if (pTechno->HasTurret())
-		{
-			TechnoTypeExt::ApplyTurretOffset(pBuilding->Type, &mtx);
-			mtx.RotateZ(static_cast<float>(pTechno->TurretFacing().GetRadian<32>()));
-		}
-
-		mtx.Translate(static_cast<float>(pExt->LastWeaponFLH.X), static_cast<float>(pExt->LastWeaponFLH.Y), static_cast<float>(pExt->LastWeaponFLH.Z));
-		const auto result = mtx.GetTranslation();
-		this->BuildingCoord = pBullet->SourceCoords - pBuilding->GetRenderCoords() - CoordStruct { static_cast<int>(result.X), -static_cast<int>(result.Y), static_cast<int>(result.Z) };
-	}
-
-	this->FLHCoord = pExt->LastWeaponFLH;
+	else
+		this->FLHCoord = pExt->LastWeaponFLH;
 }
 
 CoordStruct PhobosTrajectory::GetWeaponFireCoord(TechnoClass* pTechno)
@@ -181,25 +161,7 @@ CoordStruct PhobosTrajectory::GetWeaponFireCoord(TechnoClass* pTechno)
 		}
 
 		if (!this->NotMainWeapon && pTechno && !pTechno->InLimbo)
-		{
-			if (pTechno->WhatAmI() != AbstractType::Building)
-				return TechnoExt::GetFLHAbsoluteCoords(pTechno, this->FLHCoord, pTechno->HasTurret());
-
-			const auto pBuilding = static_cast<BuildingClass*>(pTechno);
-			Matrix3D mtx;
-			mtx.MakeIdentity();
-
-			if (pTechno->HasTurret())
-			{
-				TechnoTypeExt::ApplyTurretOffset(pBuilding->Type, &mtx);
-				mtx.RotateZ(static_cast<float>(pTechno->TurretFacing().GetRadian<32>()));
-			}
-
-			mtx.Translate(static_cast<float>(this->FLHCoord.X), static_cast<float>(this->FLHCoord.Y), static_cast<float>(this->FLHCoord.Z));
-			const auto result = mtx.GetTranslation();
-
-			return (pBuilding->GetRenderCoords() + this->BuildingCoord + CoordStruct { static_cast<int>(result.X), -static_cast<int>(result.Y), static_cast<int>(result.Z) });
-		}
+			return TechnoExt::GetFLHAbsoluteCoords(pTechno, this->FLHCoord, pTechno->HasTurret());
 
 		return pBullet->SourceCoords;
 	}
@@ -608,10 +570,7 @@ void PhobosTrajectory::CreateDisperseBullets(TechnoClass* pTechno, const CoordSt
 			pTraj->NotMainWeapon = !pTraj->GetType()->UseDisperseCoord || !pTechno || this->NotMainWeapon;
 
 			if (!pTraj->NotMainWeapon)
-			{
 				pTraj->FLHCoord = this->FLHCoord;
-				pTraj->BuildingCoord = this->BuildingCoord;
-			}
 
 			pExt->DispersedTrajectory = false;
 			// Calculate TargetCoords before drawing laser, ebolt, etc

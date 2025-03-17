@@ -920,7 +920,6 @@ void PhobosTrajectory::Serialize(T& Stm)
 		.Process(this->NotMainWeapon)
 		.Process(this->ShouldDetonate)
 		.Process(this->FLHCoord)
-		.Process(this->BuildingCoord)
 		.Process(this->CurrentBurst)
 		.Process(this->CountOfBurst)
 
