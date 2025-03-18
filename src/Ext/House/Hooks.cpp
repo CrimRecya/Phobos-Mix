@@ -456,3 +456,12 @@ DEFINE_HOOK(0x4FD8F7, HouseClass_UpdateAI_OnLastLegs, 0x10)
 
 	return ret;
 }
+
+DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
+{
+	GET(HouseClass*, pThis, ECX);
+	R->EAX(RulesExt::Global()->AllyShareControl ?
+		pThis->IsAlliedWith(HouseClass::CurrentPlayer) :
+		pThis == HouseClass::CurrentPlayer);
+	return 0x50B723;
+}
