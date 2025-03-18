@@ -226,7 +226,9 @@ bool ParabolaTrajectory::OnVelocityCheck()
 					velocityCheck = 1;
 					break;
 				}
-				else if ((subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array.GetItem(pCurCell->OverlayTypeIndex)->Wall) // Impact on the wall?
+				else if ((subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array.GetItem(pCurCell->OverlayTypeIndex)->Wall
+					&& (!RulesClass::Instance->AlliedWallTransparency || !pOwner->IsAlliedWith(HouseClass::Array.Items[pCurCell->WallOwnerIndex]))
+					&& (pCurCell->Level * Unsorted::LevelHeight + Unsorted::CellHeight > curCoord.Z)) // Impact on the wall?
 					|| (checkThrough && this->CheckThroughAndSubjectInCell(pCurCell, pOwner))) // Blocked by obstacles?
 				{
 					locationDistance = PhobosTrajectory::Get2DDistance(curCoord, theSourceCoords);

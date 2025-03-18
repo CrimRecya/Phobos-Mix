@@ -358,7 +358,9 @@ bool PhobosTrajectory::OnVelocityCheck()
 				for (size_t i = 0; i < largePace; ++i)
 				{
 					if ((subjectToGround && (curCoord.Z + 16) < MapClass::Instance.GetCellFloorHeight(curCoord)) // Below ground level? (16 ->error range)
-						|| (subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array.GetItem(pCurCell->OverlayTypeIndex)->Wall) // Impact on the wall?
+						|| (subjectToWalls && pCurCell->OverlayTypeIndex != -1 && OverlayTypeClass::Array.GetItem(pCurCell->OverlayTypeIndex)->Wall
+						&& (!RulesClass::Instance->AlliedWallTransparency || !pOwner->IsAlliedWith(HouseClass::Array.Items[pCurCell->WallOwnerIndex]))
+						&& (pCurCell->Level * Unsorted::LevelHeight + Unsorted::CellHeight > curCoord.Z)) // Impact on the wall?
 						|| (checkThrough && this->CheckThroughAndSubjectInCell(pCurCell, pOwner))) // Blocked by obstacles?
 					{
 						locationDistance = PhobosTrajectory::Get2DDistance(curCoord, theSourceCoords);
@@ -943,10 +945,10 @@ void PhobosTrajectory::Serialize(T& Stm)
 
 DEFINE_HOOK(0x468B72, BulletClass_Unlimbo_Trajectories, 0x5)
 {
-	GET(BulletClass*, pThis, EBX);
+	GET(BulletClass* const, pThis, EBX);
 
-	auto const pExt = BulletExt::ExtMap.Find(pThis);
-	auto const pTypeExt = pExt->TypeExtData;
+	const auto pExt = BulletExt::ExtMap.Find(pThis);
+	const auto pTypeExt = pExt->TypeExtData;
 
 	if (pTypeExt && pTypeExt->TrajectoryType)
 	{
@@ -961,12 +963,12 @@ DEFINE_HOOK(0x4666F7, BulletClass_Update_TrajectoriesEarlyUpdate, 0x6)
 {
 	enum { Detonate = 0x467E53 };
 
-	GET(BulletClass*, pThis, EBP);
+	GET(BulletClass* const, pThis, EBP);
 
-	auto const pExt = BulletExt::ExtMap.Find(pThis);
+	const auto pExt = BulletExt::ExtMap.Find(pThis);
 	bool detonate = false;
 
-	if (auto pTraj = pExt->Trajectory.get())
+	if (const auto pTraj = pExt->Trajectory.get())
 		detonate = pTraj->OnEarlyUpdate();
 
 	if (detonate && !pThis->SpawnNextAnim)
@@ -977,13 +979,13 @@ DEFINE_HOOK(0x4666F7, BulletClass_Update_TrajectoriesEarlyUpdate, 0x6)
 
 DEFINE_HOOK(0x46745C, BulletClass_Update_TrajectoriesVelocityUpdate, 0x7)
 {
-	GET(BulletClass*, pThis, EBP);
+	GET(BulletClass* const, pThis, EBP);
 	LEA_STACK(BulletVelocity*, pSpeed, STACK_OFFSET(0x1AC, -0x11C));
 	LEA_STACK(BulletVelocity*, pPosition, STACK_OFFSET(0x1AC, -0x144));
 
-	auto const pExt = BulletExt::ExtMap.Find(pThis);
+	const auto pExt = BulletExt::ExtMap.Find(pThis);
 
-	if (auto pTraj = pExt->Trajectory.get())
+	if (const auto pTraj = pExt->Trajectory.get())
 		pTraj->OnVelocityUpdate(pSpeed, pPosition);
 
 	// Trajectory can use Velocity only for turning Image's direction
@@ -1008,12 +1010,12 @@ DEFINE_HOOK(0x4677D3, BulletClass_Update_TrajectoriesDetonateUpdate, 0x5)
 {
 	enum { SkipCheck = 0x467B7A, ContinueAfterCheck = 0x467879, Detonate = 0x467E53 };
 
-	GET(BulletClass*, pThis, EBP);
+	GET(BulletClass* const, pThis, EBP);
 	REF_STACK(const CoordStruct, position, STACK_OFFSET(0x1AC, -0x188));
 
-	auto const pExt = BulletExt::ExtMap.Find(pThis);
+	const auto pExt = BulletExt::ExtMap.Find(pThis);
 
-	if (auto pTraj = pExt->Trajectory.get())
+	if (const auto pTraj = pExt->Trajectory.get())
 	{
 		switch (pTraj->OnDetonateUpdate(position))
 		{
@@ -1032,13 +1034,31 @@ DEFINE_HOOK(0x4677D3, BulletClass_Update_TrajectoriesDetonateUpdate, 0x5)
 	return 0;
 }
 
+DEFINE_HOOK(0x467BAC, BulletClass_Update_CheckObstacle_Trajectories, 0x6)
+{
+	enum { SkipVanillaCheck = 0x467C0C };
+
+	GET(BulletClass* const, pThis, EBP);
+
+	const auto pExt = BulletExt::ExtMap.Find(pThis);
+
+	if (const auto pTraj = pExt->Trajectory.get())
+	{
+		// Already checked when the speed is high
+		if (PhobosTrajectory::Get2DVelocity(pTraj->MovingVelocity) >= Unsorted::LeptonsPerCell)
+			return SkipVanillaCheck;
+	}
+
+	return 0;
+}
+
 DEFINE_HOOK(0x467E53, BulletClass_Update_PreDetonation_Trajectories, 0x6)
 {
-	GET(BulletClass*, pThis, EBP);
+	GET(BulletClass* const, pThis, EBP);
 
-	auto const pExt = BulletExt::ExtMap.Find(pThis);
+	const auto pExt = BulletExt::ExtMap.Find(pThis);
 
-	if (auto pTraj = pExt->Trajectory.get())
+	if (const auto pTraj = pExt->Trajectory.get())
 		pTraj->OnPreDetonate();
 
 	return 0;
