@@ -97,8 +97,9 @@ void StraightTrajectory::OnUnlimbo()
 
 bool StraightTrajectory::OnVelocityCheck()
 {
+	const auto pType = this->Type;
 	// Hover
-	if (this->MovingSpeed < 256.0 && this->Type->ConfineAtHeight > 0 && this->PassAndConfineAtHeight())
+	if (pType->Speed < 256.0 && pType->ConfineAtHeight > 0 && this->PassAndConfineAtHeight())
 		return true;
 
 	return this->PhobosTrajectory::OnVelocityCheck();
@@ -111,13 +112,14 @@ TrajectoryCheckReturnType StraightTrajectory::OnDetonateUpdate(const CoordStruct
 	else if (this->PhobosTrajectory::OnDetonateUpdate(position) == TrajectoryCheckReturnType::Detonate)
 		return TrajectoryCheckReturnType::Detonate;
 
-	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
+	const auto pType = this->Type;
+	const auto distance = pType->Speed < 256.0 && pType->ConfineAtHeight > 0 ? PhobosTrajectory::Get2DVelocity(this->MovingVelocity) : this->MovingSpeed;
+	this->RemainingDistance -= static_cast<int>(distance);
 	// Check the remaining travel distance of the bullet
 	if (this->RemainingDistance < 0)
 		return TrajectoryCheckReturnType::Detonate;
 
 	const auto pBullet = this->Bullet;
-	const auto pType = this->Type;
 	// Close enough
 	if (!pType->PassThrough && pBullet->TargetCoords.DistanceFrom(position) < pType->DetonationDistance.Get())
 		return TrajectoryCheckReturnType::Detonate;
@@ -178,7 +180,7 @@ void StraightTrajectory::FireTrajectory()
 	pBullet->TargetCoords = target;
 	this->MovingVelocity.X = static_cast<double>(target.X - source.X);
 	this->MovingVelocity.Y = static_cast<double>(target.Y - source.Y);
-	this->MovingVelocity.Z = (pType->ConfineAtHeight > 0 && pType->PassDetonateLocal) ? 0 : static_cast<double>(this->GetVelocityZ());
+	this->MovingVelocity.Z = (pType->Speed < 256.0 && pType->ConfineAtHeight > 0 && pType->PassDetonateLocal) ? 0 : static_cast<double>(this->GetVelocityZ());
 	// Substitute the speed to calculate velocity
 	if (this->CalculateBulletVelocity(pType->Speed))
 		this->ShouldDetonate = true;
