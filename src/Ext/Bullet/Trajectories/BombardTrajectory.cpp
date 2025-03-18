@@ -107,6 +107,20 @@ void BombardTrajectory::OnUnlimbo()
 	this->FallPercent += ScenarioClass::Instance->Random.RandomRanged(0, static_cast<int>(200 * this->Type->FallPercentShift)) / 100.0;
 	// Record the initial target coordinates without offset
 	this->InitialTargetCoord = pBullet->TargetCoords;
+	// Special case: Set the target to the ground
+	if (this->Type->DetonationDistance.Get() <= -1e-10)
+	{
+		const auto pTarget = pBullet->Target;
+
+		if (pTarget->AbstractFlags & AbstractFlags::Foot)
+		{
+			if (const auto pCell = MapClass::Instance.TryGetCellAt(pTarget->GetCoords()))
+			{
+				pBullet->Target = pCell;
+				pBullet->TargetCoords = pCell->GetCoords();
+			}
+		}
+	}
 	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
