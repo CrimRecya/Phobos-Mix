@@ -571,7 +571,12 @@ bool PhobosTrajectory::OnFacingCheck()
 	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
 
-	if (!pType->DisperseFaceCheck || pType->BulletROT < 0 || pType->BulletFacing == TrajectoryFacing::Spin)
+	if (!pType->DisperseFaceCheck)
+		return true;
+
+	const auto facing = pType->BulletFacing;
+
+	if (facing == TrajectoryFacing::Velocity || facing == TrajectoryFacing::Spin)
 		return true;
 
 	const auto flag = this->Flag();
