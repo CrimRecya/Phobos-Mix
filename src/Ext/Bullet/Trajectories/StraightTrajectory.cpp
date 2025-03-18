@@ -307,9 +307,16 @@ int StraightTrajectory::GetVelocityZ()
 bool StraightTrajectory::PassAndConfineAtHeight()
 {
 	const auto pBullet = this->Bullet;
-	const auto futureCoords = pBullet->Location + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
+	const auto pType = this->Type;
+	// To prevent twitching and floating up and down, it is necessary to maintain a fixed distance when predicting the position
+	const auto horizontalVelocity = PhobosTrajectory::Get2DVelocity(this->MovingVelocity);
+	const auto ratio = pType->Speed / horizontalVelocity;
+	auto velocityCoords = PhobosTrajectory::Vector2Coord(this->MovingVelocity);
+	velocityCoords.X = static_cast<int>(velocityCoords.X * ratio);
+	velocityCoords.Y = static_cast<int>(velocityCoords.Y * ratio);
+	const auto futureCoords = pBullet->Location + velocityCoords;
 	auto checkDifference = MapClass::Instance.GetCellFloorHeight(futureCoords) - futureCoords.Z;
-
+	// Bridges require special treatment
 	if (MapClass::Instance.GetCellAt(futureCoords)->ContainsBridge())
 	{
 		const auto differenceOnBridge = checkDifference + CellClass::BridgeHeight;
@@ -321,13 +328,22 @@ bool StraightTrajectory::PassAndConfineAtHeight()
 	if (std::abs(checkDifference) >= 384 && pBullet->Type->SubjectToCliffs)
 		return true;
 
-	const auto pType = this->Type;
 	this->MovingVelocity.Z += static_cast<double>(checkDifference + pType->ConfineAtHeight);
 
 	if (pType->PassDetonateLocal)
+	{
+		// In this case, the vertical speed will not be limited, and the horizontal speed will not be affected
 		this->MovingSpeed = this->MovingVelocity.Magnitude();
-	else if (this->CalculateBulletVelocity(pType->Speed))
-		return true;
+	}
+	else
+	{
+		// The maximum climbing ratio is limited to 8:1
+		const auto maxZ = horizontalVelocity * 8;
+		this->MovingVelocity.Z = Math::clamp(this->MovingVelocity.Z, -maxZ, maxZ);
+
+		if (this->CalculateBulletVelocity(pType->Speed))
+			return true;
+	}
 
 	return false;
 }
