@@ -115,7 +115,7 @@ bool EngraveTrajectory::OnEarlyUpdate()
 
 bool EngraveTrajectory::OnVelocityCheck()
 {
-	if (this->TargetInTheAir && this->PlaceOnCorrectHeight())
+	if (!this->TargetInTheAir && this->PlaceOnCorrectHeight())
 		return true;
 
 	return this->PhobosTrajectory::OnVelocityCheck();
