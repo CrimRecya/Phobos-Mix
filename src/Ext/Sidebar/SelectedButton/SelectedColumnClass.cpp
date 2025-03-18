@@ -249,7 +249,7 @@ void SelectedColumnClass::DrawInfo() const
 
 	if (pMainCameo->Hovering && pDisplayTypeExt && Phobos::Config::ToolTipDescriptions)
 	{
-		const auto csf = pDisplayTypeExt->UIDescription.Get();
+		const auto csf = pDisplayTypeExt->UIDescription_HoveredInfo.Get((pDisplayTypeExt->UIDescription.Get()));
 
 		if (!csf.empty())
 		{

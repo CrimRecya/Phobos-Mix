@@ -282,6 +282,7 @@ public:
 		Valueable<int> SelectedInfo_BelowDivisor;
 		Valueable<DisplayInfoType> SelectedInfo_CameoType;
 		Nullable<SHPStruct*> SelectedInfo_Button;
+		Nullable<CSFText> UIDescription_HoveredInfo;
 
 		Valueable<TechnoTypeClass*> FakeOf;
 		CustomPalette CameoPal;
@@ -693,6 +694,7 @@ public:
 			, SelectedInfo_BelowDivisor {}
 			, SelectedInfo_CameoType { DisplayInfoType::Ammo }
 			, SelectedInfo_Button {}
+			, UIDescription_HoveredInfo {}
 
 			, FakeOf {}
 			, CameoPal {}

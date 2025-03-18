@@ -717,6 +717,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->SelectedInfo_BelowDivisor.Read(exINI, pSection, "SelectedInfo.BelowDivisor");
 	this->SelectedInfo_CameoType.Read(exINI, pSection, "SelectedInfo.CameoType");
 	this->SelectedInfo_Button.Read(exINI, pSection, "SelectedInfo.Button");
+	this->UIDescription_HoveredInfo.Read(exINI, pSection, "UIDescription.HoveredInfo");
 
 	this->FakeOf.Read(exINI, pSection, "FakeOf");
 
@@ -1289,6 +1290,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->SelectedInfo_BelowDivisor)
 		.Process(this->SelectedInfo_CameoType)
 		.Process(this->SelectedInfo_Button)
+		.Process(this->UIDescription_HoveredInfo)
 
 		.Process(this->FakeOf)
 		.Process(this->CameoPal)
