@@ -1494,11 +1494,17 @@ void __fastcall KickOutClones(const BuildingExt::ExtData* const pThis, const Tec
 	if (pFactoryType->Cloning || (pFactoryType->Factory != InfantryTypeClass::AbsID && pFactoryType->Factory != UnitTypeClass::AbsID))
 		return;
 
-	auto const pProductionType = pProduction->GetTechnoType();
-	auto const pProductionTypeExt = TechnoTypeExt::ExtMap.Find(pProductionType);
+	auto pProductionType = pProduction->GetTechnoType();
+	auto pProductionTypeExt = TechnoTypeExt::ExtMap.Find(pProductionType);
 
 	if (!pProductionTypeExt->Cloneable)
 		return;
+
+	if (auto clonedAs = pProductionTypeExt->ClonedAs)
+	{
+		pProductionType = clonedAs;
+		pProductionTypeExt = TechnoTypeExt::ExtMap.Find(pProductionType);
+	}
 
 	auto const pFactoryOwner = pFactory->Owner;
 	auto const& pCloningSources = pProductionTypeExt->ClonedAt;

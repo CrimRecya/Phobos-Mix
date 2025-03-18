@@ -379,6 +379,8 @@ public:
 		Valueable<bool> Cloneable;
 		ValueableVector<BuildingTypeClass*> ClonedAt;
 
+		Valueable<TechnoTypeClass*> ClonedAs;
+
 		struct LaserTrailDataEntry
 		{
 			ValueableIdx<LaserTrailTypeClass> idxType;
@@ -751,6 +753,8 @@ public:
 
 			, Cloneable { true }
 			, ClonedAt { }
+
+			, ClonedAs { }
 		{ }
 
 		virtual ~ExtData() = default;
