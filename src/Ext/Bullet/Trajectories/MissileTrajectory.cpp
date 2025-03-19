@@ -332,7 +332,7 @@ bool MissileTrajectory::CurveVelocityChange()
 	// Update projectile velocity based on stage
 	if (!this->InStraight) // In the launch phase
 	{
-		const Point2D horizonVelocity { targetLocation.X - pBullet->Location.X, targetLocation.Y - pBullet->Location.Y };
+		const auto horizonVelocity = PhobosTrajectory::Coord2Point(targetLocation - pBullet->Location);
 		const auto horizonDistance = horizonVelocity.Magnitude();
 
 		if (horizonDistance > 0)
@@ -469,7 +469,7 @@ bool MissileTrajectory::StandardVelocityChange()
 	// If in the cruise phase, the steering target will be set at the fixed height
 	if (this->CruiseEnable)
 	{
-		const Point2D horizontal { targetLocation.X - pBullet->Location.X, targetLocation.Y - pBullet->Location.Y };
+		const auto horizontal = PhobosTrajectory::Coord2Point(targetLocation - pBullet->Location);
 		const auto horizontalDistance = horizontal.Magnitude();
 		// The distance is still long, continue cruising
 		if (horizontalDistance > pType->CruiseUnableRange.Get())

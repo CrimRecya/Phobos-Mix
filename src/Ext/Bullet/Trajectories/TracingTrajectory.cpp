@@ -184,7 +184,7 @@ bool TracingTrajectory::ChangeVelocity()
 	// Calculate the distance between the projectile and the firer
 	const auto source = (pFirer && !this->NotMainWeapon) ? pFirer->GetCoords() : pBullet->SourceCoords;
 	const auto delta = destination - source;
-	const auto distance = (this->NotMainWeapon || this->TargetInTheAir || (pFirer && pFirer->IsInAir())) ? Point2D{delta.X,delta.Y}.Magnitude() : delta.Magnitude();
+	const auto distance = (this->NotMainWeapon || this->TargetInTheAir || (pFirer && pFirer->IsInAir())) ? PhobosTrajectory::Get2DDistance(delta) : delta.Magnitude();
 	// Check if the limit has been exceeded
 	if (static_cast<int>(distance) >= aRange)
 	{
@@ -239,9 +239,9 @@ bool TracingTrajectory::ChangeVelocity()
 		case TraceTargetMode::RotateCW:
 		{
 			const auto distanceCoords = pBullet->Location - destination;
-			const auto radius = Point2D{offset.X,offset.Y}.Magnitude();
+			const auto radius = PhobosTrajectory::Get2DDistance(offset);
 			// Rotate around the center only when the distance is less than 1.2 times the radius
-			if ((radius * 1.2) > Point2D{distanceCoords.X,distanceCoords.Y}.Magnitude())
+			if ((radius * 1.2) > PhobosTrajectory::Get2DDistance(distanceCoords))
 			{
 				auto rotateRadian = Math::atan2(distanceCoords.Y, distanceCoords.X);
 				// The arc of rotation per frame can be determined by the radius and speed
@@ -263,9 +263,9 @@ bool TracingTrajectory::ChangeVelocity()
 		case TraceTargetMode::RotateCCW:
 		{
 			const auto distanceCoords = pBullet->Location - destination;
-			const auto radius = Point2D{offset.X,offset.Y}.Magnitude();
+			const auto radius = PhobosTrajectory::Get2DDistance(offset);
 			// Rotate around the center only when the distance is less than 1.2 times the radius
-			if ((radius * 1.2) > Point2D{distanceCoords.X,distanceCoords.Y}.Magnitude())
+			if ((radius * 1.2) > PhobosTrajectory::Get2DDistance(distanceCoords))
 			{
 				auto rotateRadian = Math::atan2(distanceCoords.Y, distanceCoords.X);
 				// The arc of rotation per frame can be determined by the radius and speed

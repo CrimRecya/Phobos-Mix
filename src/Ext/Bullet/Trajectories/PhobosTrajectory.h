@@ -241,6 +241,10 @@ public:
 	virtual bool CalculateBulletVelocity(const double speed);
 	virtual void MultiplyBulletVelocity(const double ratio, const bool shouldDetonate);
 
+	static inline double Get2DDistance(const CoordStruct& coords)
+	{
+		return Point2D { coords.X, coords.Y }.Magnitude();
+	}
 	static inline double Get2DDistance(const CoordStruct& source, const CoordStruct& target)
 	{
 		return Point2D { source.X, source.Y }.DistanceFrom(Point2D { target.X, target.Y });

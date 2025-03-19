@@ -444,7 +444,7 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(const CoordStruct& sour
 		this->MovingVelocity.X = destinationCoords.X / meetTime;
 		this->MovingVelocity.Y = destinationCoords.Y / meetTime;
 		// Step 6: Calculate whole horizontal component of the projectile velocity
-		const auto horizontalDistance = Point2D { destinationCoords.X, destinationCoords.Y }.Magnitude();
+		const auto horizontalDistance = PhobosTrajectory::Get2DDistance(destinationCoords);
 		const auto horizontalVelocity = horizontalDistance / meetTime;
 		// Step 7: Calculate the vertical component of the projectile velocity
 		this->MovingVelocity.Z = horizontalVelocity * Math::tan(radian) + gravity / 2;
@@ -461,7 +461,7 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(const CoordStruct& sour
 		if (meetTime <= 1e-10 || destinationCoords.Magnitude() <= 1e-10)
 			break;
 		// Step 4: Calculate the ratio of horizontal velocity to horizontal distance
-		const auto horizontalDistance = Point2D { destinationCoords.X, destinationCoords.Y }.Magnitude();
+		const auto horizontalDistance = PhobosTrajectory::Get2DDistance(destinationCoords);
 		const auto mult = horizontalDistance > 1e-10 ? pType->Speed / horizontalDistance : 1.0;
 		// Step 5: Calculate the horizontal component of the projectile velocity
 		this->MovingVelocity.X = destinationCoords.X * mult;
@@ -494,7 +494,7 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(const CoordStruct& sour
 		auto radian = pType->LaunchAngle * Math::Pi / 180.0;
 		radian = (radian >= Math::HalfPi || radian <= 1e-10) ? (Math::HalfPi / 3) : radian;
 		// Step 7: Calculate the ratio of horizontal velocity to horizontal distance
-		const auto horizontalDistance = Point2D { destinationCoords.X, destinationCoords.Y }.Magnitude();
+		const auto horizontalDistance = PhobosTrajectory::Get2DDistance(destinationCoords);
 		const auto mult = (this->MovingVelocity.Z / Math::tan(radian)) / horizontalDistance;
 		// Step 8: Calculate the horizontal component of the projectile velocity
 		this->MovingVelocity.X = destinationCoords.X * mult;
@@ -512,7 +512,7 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(const CoordStruct& sour
 		if (meetTime <= 1e-10 || destinationCoords.Magnitude() <= 1e-10)
 			break;
 		// Step 4: Calculate the ratio of horizontal velocity to horizontal distance
-		const auto horizontalDistance = Point2D { destinationCoords.X, destinationCoords.Y }.Magnitude();
+		const auto horizontalDistance = PhobosTrajectory::Get2DDistance(destinationCoords);
 		const auto mult = horizontalDistance > 1e-10 ? pType->Speed / horizontalDistance : 1.0;
 		// Step 5: Calculate each horizontal component of the projectile velocity
 		this->MovingVelocity.X = destinationCoords.X * mult;
@@ -537,7 +537,7 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(const CoordStruct& sour
 		if (meetTime <= 1e-10 || destinationCoords.Magnitude() <= 1e-10)
 			break;
 		// Step 4: Calculate the ratio of horizontal velocity to horizontal distance
-		const auto horizontalDistance = Point2D { destinationCoords.X, destinationCoords.Y }.Magnitude();
+		const auto horizontalDistance = PhobosTrajectory::Get2DDistance(destinationCoords);
 		const auto mult = horizontalDistance > 1e-10 ? pType->Speed / horizontalDistance : 1.0;
 		// Step 5: Calculate the projectile velocity
 		this->MovingVelocity.X = destinationCoords.X * mult;
@@ -559,7 +559,7 @@ void ParabolaTrajectory::CalculateBulletVelocityRightNow(const CoordStruct& sour
 	// Calculate horizontal distance
 	const auto distanceCoords = pBullet->TargetCoords - source;
 	const auto distance = distanceCoords.Magnitude();
-	const auto horizontalDistance = Point2D { distanceCoords.X, distanceCoords.Y }.Magnitude();
+	const auto horizontalDistance = PhobosTrajectory::Get2DDistance(distanceCoords);
 
 	if (distance <= 1e-10)
 	{
@@ -805,7 +805,7 @@ double ParabolaTrajectory::CheckFixedAngleEquation(const CoordStruct& source, co
 	// Using the estimated time to obtain the predicted location of the target
 	const auto distanceCoords = (target - this->LastTargetCoord) * meetTime + target + offset - source;
 	// Calculate the horizontal distance between the target and the calculation
-	const auto horizontalDistance = Point2D{ distanceCoords.X, distanceCoords.Y }.Magnitude();
+	const auto horizontalDistance = PhobosTrajectory::Get2DDistance(distanceCoords);
 	// Calculate the horizontal velocity
 	const auto horizontalVelocity = horizontalDistance / meetTime;
 	// Calculate the vertical velocity
