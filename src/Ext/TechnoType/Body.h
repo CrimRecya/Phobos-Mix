@@ -407,7 +407,8 @@ public:
 
 		Valueable<bool> Cloneable;
 		ValueableVector<BuildingTypeClass*> ClonedAt;
-
+		Valueable<TechnoTypeClass*> ClonedAs;
+    
 		Valueable<Leptons> Spawner_RecycleRange;
 		Valueable<AnimTypeClass*> Spawner_RecycleAnim;
 		Valueable<CoordStruct> Spawner_RecycleCoord;
@@ -822,7 +823,8 @@ public:
 
 			, Cloneable { true }
 			, ClonedAt { }
-
+			, ClonedAs { }
+    
 			, Spawner_RecycleRange { Leptons(-1) }
 			, Spawner_RecycleAnim { }
 			, Spawner_RecycleCoord { {0,0,0} }

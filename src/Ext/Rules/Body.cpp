@@ -343,6 +343,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->BuildingTypeSelectable.Read(exINI, GameStrings::General, "BuildingTypeSelectable");
 
+	this->AllyShareControl.Read(exINI, GameStrings::General, "AllyShareControl");
 	this->InTransportInfantryAmmoFix.Read(exINI, GameStrings::General, "InTransportInfantryAmmoFix");
 	this->UpdateInLimbo_Occupier.Read(exINI, GameStrings::General, "UpdateInLimbo.Occupier");
 	this->UpdateInLimbo_NormalPassenger.Read(exINI, GameStrings::General, "UpdateInLimbo.NormalPassenger");
@@ -654,6 +655,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->CombatLightDetailLevel)
 		.Process(this->LightFlashAlphaImageDetailLevel)
 		.Process(this->BuildingTypeSelectable)
+		.Process(this->AllyShareControl)
 		.Process(this->InTransportInfantryAmmoFix)
 		.Process(this->UpdateInLimbo_Occupier)
 		.Process(this->UpdateInLimbo_NormalPassenger)
