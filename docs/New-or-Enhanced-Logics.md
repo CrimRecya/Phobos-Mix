@@ -2030,26 +2030,6 @@ RateDown.Cover.Value=0        ; integer
 RateDown.Cover.AmmoBelow=-2   ; integer
 ```
 
-### Jumpjet Tilts While Moving
-
-- Now you can make jumpjets tilt forward when moving forward and sideways when turning by setting `JumpjetTilt` to true.
-- The maximum tilt angle will not exceed 45 degrees.
-  - The magnitude of the forward tilt is related to the current speed and acceleration. They are additive and have two coefficients that can be adjusted for details.
-  - The magnitude of the sideways tilt is related to the current speed and rotation angle. They are multiplied and also have two coefficients that can be adjusted for details.
-
-In `rulesmd.ini`:
-```ini
-[AudioVisual]
-JumpjetTilt=false                       ; boolean
-
-[SOMEUNIT]                              ; UnitType, with Locomotor=Jumpjet
-JumpjetTilt=                            ; boolean, defaults to [AudioVisual]->JumpjetTilt
-JumpjetTilt.ForwardAccelFactor=1.0      ; floating point value
-JumpjetTilt.ForwardSpeedFactor=1.0      ; floating point value
-JumpjetTilt.SidewaysRotationFactor=1.0  ; floating point value
-JumpjetTilt.SidewaysSpeedFactor=1.0     ; floating point value
-```
-
 ### No rearm and reload in EMP or temporal
 
 - Now you can make technos unable to rearm and reload when they are in EMP or locked by a temporal weapon. Defaults to values in `[General]`. This will not affect the reloading of the airport aircraft.
@@ -2080,6 +2060,23 @@ RecountBurst=false  ; boolean
 
 [SOMETECHNO]        ; TechnoType
 RecountBurst=       ; boolean
+```
+
+### Jumpjet Tilts While Moving
+
+- Now you can make jumpjets tilt forward when moving forward and sideways when turning by setting `JumpjetTilt` to true.
+- The maximum tilt angle will not exceed 45 degrees.
+  - The magnitude of the forward tilt is related to the current speed and acceleration. They are additive and have two coefficients that can be adjusted for details.
+  - The magnitude of the sideways tilt is related to the current speed and rotation angle. They are multiplied and also have two coefficients that can be adjusted for details.
+
+In `rulesmd.ini`:
+```ini
+[SOMEUNIT]                              ; UnitType, with Locomotor=Jumpjet
+JumpjetTilt=false                       ; boolean
+JumpjetTilt.ForwardAccelFactor=1.0      ; floating point value
+JumpjetTilt.ForwardSpeedFactor=1.0      ; floating point value
+JumpjetTilt.SidewaysRotationFactor=1.0  ; floating point value
+JumpjetTilt.SidewaysSpeedFactor=1.0     ; floating point value
 ```
 
 ## Terrain

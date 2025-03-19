@@ -192,7 +192,7 @@ public:
 		std::vector<Promotable<int>> InsigniaFrame_Weapon;
 		std::vector<Valueable<Vector3D<int>>> InsigniaFrames_Weapon;
 
-		Nullable<bool> JumpjetTilt;
+		Valueable<bool> JumpjetTilt;
 		Valueable<double> JumpjetTilt_ForwardAccelFactor;
 		Valueable<double> JumpjetTilt_ForwardSpeedFactor;
 		Valueable<double> JumpjetTilt_SidewaysRotationFactor;
@@ -602,7 +602,7 @@ public:
 			, InsigniaFrame_Weapon {}
 			, InsigniaFrames_Weapon {}
 
-			, JumpjetTilt {}
+			, JumpjetTilt { false }
 			, JumpjetTilt_ForwardAccelFactor { 1.0 }
 			, JumpjetTilt_ForwardSpeedFactor { 1.0 }
 			, JumpjetTilt_SidewaysRotationFactor { 1.0 }
