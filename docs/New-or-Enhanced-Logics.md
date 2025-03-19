@@ -832,37 +832,37 @@ Currently interceptor weapons with projectiles that do not have `Inviso=true` wi
 
 In `rulesmd.ini`:
 ```ini
-[SOMEPROJECTILE]                   ; Projectile
-Trajectory=                        ; Trajectory type enumeration (Straight|Bombard|Missile|Engrave|Parabola|Tracing)
-Trajectory.Speed=100.0             ; floating point value
-Trajectory.Duration=0              ; integer
-Trajectory.TolerantTime=-1         ; integer
-Trajectory.CreateCapacity=-1       ; integer
-Trajectory.BulletROT=0             ; integer
-Trajectory.BulletFacing=           ; Bullet facing enumeration (Velocity|Spin|Stable|Target|Destination|FirerBody|FirerTurret)
-Trajectory.RetargetRadius=0        ; floating point value
-Trajectory.Synchronize=no          ; boolean
-Trajectory.PeacefulVanish=         ; boolean
-Trajectory.ApplyRangeModifiers=no  ; boolean
-Trajectory.UseDisperseCoord=no     ; boolean
-Trajectory.RecordSourceCoord=no    ; boolean
-Trajectory.OffsetCoord=0,0,0       ; integer - Forward,Lateral,Height
-Trajectory.RotateCoord=0           ; floating point value
-Trajectory.MirrorCoord=yes         ; boolean
-Trajectory.AxisOfRotation=0,0,1    ; integer - Forward,Lateral,Height
-Trajectory.LeadTimeCalculate=no    ; boolean
-Trajectory.DetonationDistance=0.4  ; floating point value
-Trajectory.TargetSnapDistance=0.5  ; floating point value
-Trajectory.EarlyDetonation=no      ; boolean
-Trajectory.DetonationHeight=-1     ; integer
-Trajectory.AllowFirerTurning=yes   ; boolean
+[SOMEPROJECTILE]                      ; Projectile
+Trajectory=                           ; Trajectory type enumeration (Straight|Bombard|Missile|Engrave|Parabola|Tracing)
+Trajectory.Speed=100.0                ; floating point value
+Trajectory.Duration=0                 ; integer
+Trajectory.TolerantTime=-1            ; integer
+Trajectory.CreateCapacity=-1          ; integer
+Trajectory.BulletROT=0                ; integer
+Trajectory.BulletFacing=              ; Bullet facing enumeration (Velocity|Spin|Stable|Target|Destination|FirerBody|FirerTurret)
+Trajectory.RetargetRadius=0           ; floating point value
+Trajectory.Synchronize=false          ; boolean
+Trajectory.PeacefulVanish=            ; boolean
+Trajectory.ApplyRangeModifiers=false  ; boolean
+Trajectory.UseDisperseCoord=false     ; boolean
+Trajectory.RecordSourceCoord=false    ; boolean
+Trajectory.OffsetCoord=0,0,0          ; integer - Forward,Lateral,Height
+Trajectory.RotateCoord=0              ; floating point value
+Trajectory.MirrorCoord=true           ; boolean
+Trajectory.AxisOfRotation=0,0,1       ; integer - Forward,Lateral,Height
+Trajectory.LeadTimeCalculate=false    ; boolean
+Trajectory.DetonationDistance=0.4     ; floating point value
+Trajectory.TargetSnapDistance=0.5     ; floating point value
+Trajectory.EarlyDetonation=false      ; boolean
+Trajectory.DetonationHeight=-1        ; integer
+Trajectory.AllowFirerTurning=true     ; boolean
 ```
 
 ```{note}
 - Make sure you set a low `Trajectory.RetargetRadius` value unless necessary.
 ```
 
-- The following table will briefly display the support of various types for various general functions.
+- The following table will briefly display the support of various types for various general functions. (⚪ - effective / · - invalid)
 
 | Key | `Straight` | `Bombard` | `Missile` | `Engrave` | `Parabola` | `Tracing` |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -920,22 +920,22 @@ Trajectory.AllowFirerTurning=yes   ; boolean
 In `rulesmd.ini`:
 ```ini
 [SOMEPROJECTILE]                       ; Projectile
-Trajectory.PassDetonate=no             ; boolean
+Trajectory.PassDetonate=false          ; boolean
 Trajectory.PassDetonateWarhead=        ; WarheadType
 Trajectory.PassDetonateDamage=         ; integer
 Trajectory.PassDetonateDelay=1         ; integer
 Trajectory.PassDetonateInitialDelay=0  ; integer
-Trajectory.PassDetonateLocal=no        ; boolean
+Trajectory.PassDetonateLocal=false     ; boolean
 Trajectory.ProximityImpact=0           ; integer
 Trajectory.ProximityWarhead=           ; WarheadType
 Trajectory.ProximityDamage=            ; integer
 Trajectory.ProximityRadius=0.7         ; floating point value
-Trajectory.ProximityDirect=no          ; boolean
-Trajectory.ProximityMedial=no          ; boolean
-Trajectory.ProximityAllies=no          ; boolean
-Trajectory.ProximityFlight=no          ; boolean
-Trajectory.ThroughVehicles=yes         ; boolean
-Trajectory.ThroughBuilding=yes         ; boolean
+Trajectory.ProximityDirect=false       ; boolean
+Trajectory.ProximityMedial=false       ; boolean
+Trajectory.ProximityAllies=false       ; boolean
+Trajectory.ProximityFlight=false       ; boolean
+Trajectory.ThroughVehicles=true        ; boolean
+Trajectory.ThroughBuilding=true        ; boolean
 Trajectory.DamageEdgeAttenuation=1.0   ; floating point value
 Trajectory.DamageCountAttenuation=1.0  ; floating point value
 ```
@@ -976,17 +976,17 @@ Trajectory.DisperseDelays=           ; list of integers
 Trajectory.DisperseCycle=0           ; integer
 Trajectory.DisperseInitialDelay=0    ; integer
 Trajectory.DisperseEffectiveRange=0  ; floating point value
-Trajectory.DisperseSeparate=no       ; boolean
-Trajectory.DisperseRetarget=no       ; boolean
-Trajectory.DisperseLocation=no       ; boolean
-Trajectory.DisperseTendency=no       ; boolean
-Trajectory.DisperseHolistic=no       ; boolean
-Trajectory.DisperseMarginal=no       ; boolean
-Trajectory.DisperseDoRepeat=no       ; boolean
-Trajectory.DisperseSuicide=yes       ; boolean
+Trajectory.DisperseSeparate=false    ; boolean
+Trajectory.DisperseRetarget=false    ; boolean
+Trajectory.DisperseLocation=false    ; boolean
+Trajectory.DisperseTendency=false    ; boolean
+Trajectory.DisperseHolistic=false    ; boolean
+Trajectory.DisperseMarginal=false    ; boolean
+Trajectory.DisperseDoRepeat=false    ; boolean
+Trajectory.DisperseSuicide=true      ; boolean
 Trajectory.DisperseFromFirer=        ; boolean
-Trajectory.DisperseFaceCheck=no      ; boolean
-Trajectory.DisperseForceFire=yes     ; boolean
+Trajectory.DisperseFaceCheck=false   ; boolean
+Trajectory.DisperseForceFire=true    ; boolean
 Trajectory.DisperseCoord=0,0,0       ; integer - Forward,Lateral,Height
 ```
 
@@ -994,7 +994,7 @@ Trajectory.DisperseCoord=0,0,0       ; integer - Forward,Lateral,Height
 - The listed Weapons in `Trajectory.DisperseWeapons` must be listed in `[WeaponTypes]` for them to work.
 - If you set `Trajectory.DisperseRetarget=true`, also make sure you set `Trajectory.DisperseWeapons` a low `Range` value unless necessary.
 - `Trajectory.DisperseWeapons` now not support `Arcing=true` projectiles and customized `Bolt.ColorN`.
-- Although `Trajectory.DisperseDoRepeat=no` will disable duplicate target selection, if the weapon is able to attack the ground, it may still attack duplicate targets by locking onto the cell where the target is located.
+- Although `Trajectory.DisperseDoRepeat=false` will disable duplicate target selection, if the weapon is able to attack the ground, it may still attack duplicate targets by locking onto the cell where the target is located.
 ```
 
 #### Straight trajectory
@@ -1009,7 +1009,7 @@ Trajectory.DisperseCoord=0,0,0       ; integer - Forward,Lateral,Height
 In `rulesmd.ini`:
 ```ini
 [SOMEPROJECTILE]                       ; Projectile
-Trajectory.Straight.PassThrough=no     ; boolean
+Trajectory.Straight.PassThrough=false  ; boolean
 Trajectory.Straight.ConfineAtHeight=0  ; integer
 ```
 
@@ -1027,17 +1027,17 @@ Trajectory.Straight.ConfineAtHeight=0  ; integer
 
 In `rulesmd.ini`:
 ```ini
-[SOMEPROJECTILE]                          ; Projectile
-Trajectory.Bombard.Height=0.0             ; floating point value
-Trajectory.Bombard.FallPercent=1.0        ; floating point value
-Trajectory.Bombard.FallPercentShift=0.0   ; floating point value
-Trajectory.Bombard.FallScatter.Max=0.0    ; floating point value
-Trajectory.Bombard.FallScatter.Min=0.0    ; floating point value
-Trajectory.Bombard.FallScatter.Linear=no  ; boolean
-Trajectory.Bombard.FreeFallOnTarget=yes   ; boolean
-Trajectory.Bombard.NoLaunch=no            ; boolean
-Trajectory.Bombard.FallSpeed=0.0          ; floating point value
-Trajectory.Bombard.TurningPointAnims=     ; List of AnimationTypes
+[SOMEPROJECTILE]                             ; Projectile
+Trajectory.Bombard.Height=0.0                ; floating point value
+Trajectory.Bombard.FallPercent=1.0           ; floating point value
+Trajectory.Bombard.FallPercentShift=0.0      ; floating point value
+Trajectory.Bombard.FallScatter.Max=0.0       ; floating point value
+Trajectory.Bombard.FallScatter.Min=0.0       ; floating point value
+Trajectory.Bombard.FallScatter.Linear=false  ; boolean
+Trajectory.Bombard.FreeFallOnTarget=true     ; boolean
+Trajectory.Bombard.NoLaunch=false            ; boolean
+Trajectory.Bombard.FallSpeed=0.0             ; floating point value
+Trajectory.Bombard.TurningPointAnims=        ; List of AnimationTypes
 ```
 
 #### Missile trajectory
@@ -1060,20 +1060,20 @@ Trajectory.Bombard.TurningPointAnims=     ; List of AnimationTypes
 
 In `rulesmd.ini`:
 ```ini
-Trajectory.Missile.UniqueCurve=no          ; boolean
-Trajectory.Missile.PreAimCoord=0,0,0       ; integer - Forward,Lateral,Height
-Trajectory.Missile.FacingCoord=no          ; boolean
-Trajectory.Missile.ReduceCoord=yes         ; boolean
-Trajectory.Missile.LaunchSpeed=0           ; floating point value
-Trajectory.Missile.Acceleration=10.0       ; floating point value
-Trajectory.Missile.TurningSpeed=10.0       ; floating point value
-Trajectory.Missile.LockDirection=no        ; boolean
-Trajectory.Missile.CruiseEnable=no         ; boolean
-Trajectory.Missile.CruiseUnableRange=5.0   ; floating point value
-Trajectory.Missile.CruiseAltitude=800      ; integer
-Trajectory.Missile.CruiseAlongLevel=no     ; boolean
-Trajectory.Missile.SuicideAboveRange=-3.0  ; floating point value
-Trajectory.Missile.SuicideShortOfROT=no    ; boolean
+Trajectory.Missile.UniqueCurve=false        ; boolean
+Trajectory.Missile.PreAimCoord=0,0,0        ; integer - Forward,Lateral,Height
+Trajectory.Missile.FacingCoord=false        ; boolean
+Trajectory.Missile.ReduceCoord=true         ; boolean
+Trajectory.Missile.LaunchSpeed=0            ; floating point value
+Trajectory.Missile.Acceleration=10.0        ; floating point value
+Trajectory.Missile.TurningSpeed=10.0        ; floating point value
+Trajectory.Missile.LockDirection=false      ; boolean
+Trajectory.Missile.CruiseEnable=false       ; boolean
+Trajectory.Missile.CruiseUnableRange=5.0    ; floating point value
+Trajectory.Missile.CruiseAltitude=800       ; integer
+Trajectory.Missile.CruiseAlongLevel=false   ; boolean
+Trajectory.Missile.SuicideAboveRange=-3.0   ; floating point value
+Trajectory.Missile.SuicideShortOfROT=false  ; boolean
 ```
 
 #### Engrave trajectory
@@ -1098,18 +1098,18 @@ In `rulesmd.ini`:
 ```ini
 Trajectory.Engrave.SourceCoord=0,0         ; integer - Forward,Lateral
 Trajectory.Engrave.TargetCoord=0,0         ; integer - Forward,Lateral
-Trajectory.Engrave.IsLaser=yes             ; boolean
-Trajectory.Engrave.IsIntense=no            ; boolean
-Trajectory.Engrave.IsHouseColor=no         ; boolean
-Trajectory.Engrave.IsSingleColor=no        ; boolean
+Trajectory.Engrave.IsLaser=true            ; boolean
+Trajectory.Engrave.IsIntense=false         ; boolean
+Trajectory.Engrave.IsHouseColor=false      ; boolean
+Trajectory.Engrave.IsSingleColor=false     ; boolean
 Trajectory.Engrave.LaserInnerColor=0,0,0   ; integer - Red,Green,Blue
 Trajectory.Engrave.LaserOuterColor=0,0,0   ; integer - Red,Green,Blue
 Trajectory.Engrave.LaserOuterSpread=0,0,0  ; integer - Red,Green,Blue
 Trajectory.Engrave.LaserThickness=3        ; integer
 Trajectory.Engrave.LaserDuration=1         ; integer
 Trajectory.Engrave.LaserDelay=1            ; integer
-Trajectory.Engrave.AttachToTarget=no       ; boolean
-Trajectory.Engrave.UpdateDirection=no      ; boolean
+Trajectory.Engrave.AttachToTarget=false    ; boolean
+Trajectory.Engrave.UpdateDirection=false   ; boolean
 ```
 
 ```{note}
@@ -1143,8 +1143,8 @@ Trajectory.Parabola.ThrowHeight=600        ; integer
 Trajectory.Parabola.LaunchAngle=30         ; floating point value
 Trajectory.Parabola.DetonationAngle=-90.0  ; floating point value
 Trajectory.Parabola.BounceTimes=0          ; integer
-Trajectory.Parabola.BounceOnWater=no       ; boolean
-Trajectory.Parabola.BounceDetonate=no      ; boolean
+Trajectory.Parabola.BounceOnWater=false    ; boolean
+Trajectory.Parabola.BounceDetonate=false   ; boolean
 Trajectory.Parabola.BounceAttenuation=0.8  ; floating point value
 Trajectory.Parabola.BounceCoefficient=0.8  ; floating point value
 ```
@@ -1174,8 +1174,8 @@ Trajectory.Parabola.BounceCoefficient=0.8  ; floating point value
 In `rulesmd.ini`:
 ```ini
 Trajectory.Tracing.TraceMode=Connection  ; TraceMode value enumeration (Connection|Global|Body|Turret|RotateCW|RotateCCW)
-Trajectory.Tracing.TraceTheTarget=yes    ; boolean
-Trajectory.Tracing.CreateAtTarget=no     ; boolean
+Trajectory.Tracing.TraceTheTarget=true   ; boolean
+Trajectory.Tracing.CreateAtTarget=false  ; boolean
 Trajectory.Tracing.CreateCoord=0,0,0     ; integer - Forward,Lateral,Height
 Trajectory.Tracing.AttachCoord=0,0,0     ; integer - Forward,Lateral,Height
 Trajectory.Tracing.ChasableDistance=0    ; floating point value
