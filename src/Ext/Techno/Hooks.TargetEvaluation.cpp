@@ -1,5 +1,7 @@
 #include "Body.h"
 
+#include <Ext/BuildingType/Body.h>
+
 // Cursor & target acquisition stuff not directly tied to other features can go here.
 
 #pragma region TargetAcquisition
@@ -181,7 +183,7 @@ DEFINE_HOOK(0x4DF3A0, FootClass_UpdateAttackMove_SelectNewTarget, 0x6)
 
 	const auto pExt = TechnoExt::ExtMap.Find(pThis);
 
-	if (pExt->TypeExtData->AttackMove_UpdateTarget.Get(RulesExt::Global()->AttackMove_Aggressive) && CheckAttackMoveCanResetTarget(pThis))
+	if (pExt->TypeExtData->AttackMove_UpdateTarget.Get(RulesExt::Global()->AttackMove_UpdateTarget) && CheckAttackMoveCanResetTarget(pThis))
 	{
 		pThis->Target = nullptr;
 		pThis->HaveAttackMoveTarget = false;
@@ -199,30 +201,22 @@ DEFINE_HOOK(0x6F85AB, TechnoClass_CanAutoTargetObject_AggressiveAttackMove, 0x6)
 	if (!pThis->Owner->IsControlledByHuman())
 		return CanTarget;
 
-	if (pThis->MegaMissionIsAttackMove())
-	{
-		const auto pExt = TechnoExt::ExtMap.Find(pThis);
-
-		if (pExt->TypeExtData->AttackMove_Aggressive.Get(RulesExt::Global()->AttackMove_Aggressive))
-			return CanTarget;
-	}
-
 	GET(TechnoClass*, pTarget, ESI);
 
 	if (pTarget->WhatAmI() == AbstractType::Building)
 	{
 		// Fallback to unmodded behavior if the building is an exempt of aggressive stance.
-		if (auto pTargetTypeExt = TechnoTypeExt::ExtMap.Find(pTarget->GetTechnoType()))
-		{
-			if (pTargetTypeExt->AggressiveStance_Exempt)
-				return ContinueCheck;
-		}
+		if (BuildingTypeExt::ExtMap.Find(static_cast<BuildingClass*>(pTarget)->Type)->AggressiveStance_Exempt)
+			return ContinueCheck;
 
-		if (auto pTechnoExt = TechnoExt::ExtMap.Find(pThis))
-		{
-			if (pTechnoExt->GetAggressiveStance())
-				return CanTarget;
-		}
+		if (TechnoExt::ExtMap.Find(pThis)->GetAggressiveStance())
+			return CanTarget;
+	}
+
+	if (pThis->MegaMissionIsAttackMove())
+	{
+		if (TechnoExt::ExtMap.Find(pThis)->TypeExtData->AttackMove_Aggressive.Get(RulesExt::Global()->AttackMove_Aggressive))
+			return CanTarget;
 	}
 
 	return ContinueCheck;

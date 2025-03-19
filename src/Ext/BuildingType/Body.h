@@ -82,6 +82,8 @@ public:
 
 		Valueable<bool> IsAnimDelayedBurst;
 
+		Valueable<bool> AggressiveStance_Exempt;
+
 		std::vector<std::optional<DirType>> AircraftDockingDirs;
 
 		ValueableVector<TechnoTypeClass*> FactoryPlant_AllowTypes;
@@ -102,7 +104,7 @@ public:
 
 		Valueable<bool> HasSecondaryRallyPoint;
 		Valueable<bool> Refinery_UseNormalActiveAnim;
-	
+
 		Valueable<bool> CloningFacility;
 
 		ExtData(BuildingTypeClass* OwnerObject) : Extension<BuildingTypeClass>(OwnerObject)
@@ -159,6 +161,7 @@ public:
 			, FactoryPlant_AllowTypes {}
 			, FactoryPlant_DisallowTypes {}
 			, IsAnimDelayedBurst { true }
+			, AggressiveStance_Exempt { false }
 			, IsDestroyableObstacle { false }
 			, Units_RepairRate {}
 			, Units_RepairStep {}

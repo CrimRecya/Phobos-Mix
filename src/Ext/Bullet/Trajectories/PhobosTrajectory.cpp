@@ -721,7 +721,6 @@ bool PhobosTrajectory::CheckTolerantAndSynchronize()
 
 	if (!pBullet->Target && !pType->TolerantTime)
 		return true;
-
 	// Find the outermost transporter
 	const auto pFirer = GetSurfaceFirer(pBullet->Owner);
 

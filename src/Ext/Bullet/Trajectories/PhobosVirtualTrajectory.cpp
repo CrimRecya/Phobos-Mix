@@ -80,7 +80,6 @@ bool VirtualTrajectory::InvalidFireCondition(TechnoClass* pTechno)
 {
 	if (!pTechno)
 		return true;
-
 	// Find the outermost transporter
 	pTechno = GetSurfaceFirer(pTechno);
 

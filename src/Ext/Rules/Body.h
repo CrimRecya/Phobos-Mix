@@ -144,6 +144,7 @@ public:
 		Valueable<bool> NoQueueUpToEnter;
 		Valueable<bool> NoQueueUpToUnload;
 		Valueable<bool> AttackMove_Aggressive;
+		Valueable<bool> AttackMove_UpdateTarget;
 		Valueable<bool> ExtendedScatterAction;
 		Valueable<bool> MergeBuildingDamage;
 
@@ -418,6 +419,7 @@ public:
 			, NoQueueUpToEnter { false }
 			, NoQueueUpToUnload { false }
 			, AttackMove_Aggressive { false }
+			, AttackMove_UpdateTarget { false }
 			, ExtendedScatterAction { false }
 			, MergeBuildingDamage { false }
 
