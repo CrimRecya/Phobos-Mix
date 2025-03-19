@@ -89,8 +89,6 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 
 static void MouseWheelDownCommand()
 {
-//	Debug::LogAndMessage("[Frame: %d] Mouse Wheel Down", Unsorted::CurrentFrame());
-
 	if (DistributionModeHoldDownCommandClass::Enabled)
 		DistributionModeHoldDownCommandClass::DistributionSpreadModeReduce();
 
@@ -100,8 +98,6 @@ static void MouseWheelDownCommand()
 
 static void MouseWheelUpCommand()
 {
-//	Debug::LogAndMessage("[Frame: %d] Mouse Wheel Up", Unsorted::CurrentFrame());
-
 	if (DistributionModeHoldDownCommandClass::Enabled)
 		DistributionModeHoldDownCommandClass::DistributionSpreadModeExpand();
 

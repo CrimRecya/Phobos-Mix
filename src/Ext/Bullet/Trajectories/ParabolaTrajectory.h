@@ -71,9 +71,9 @@ public:
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Parabola; }
 	virtual void OnUnlimbo() override;
-	virtual bool OnAIDetonateCheck() override;
-	virtual void OnAIVelocityCheck() override;
-	virtual void OnAIPreDetonate() override;
+	virtual bool OnVelocityCheck() override;
+	virtual TrajectoryCheckReturnType OnDetonateUpdate(const CoordStruct& position) override;
+	virtual void OnPreDetonate() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual void OpenFire() override;
 	virtual void FireTrajectory() override;
@@ -89,8 +89,8 @@ private:
 	double CheckFixedHeightEquation(const CoordStruct& pSourceCrd, const CoordStruct& pTargetCrd, const CoordStruct& pOffsetCrd, double meetTime, double gravity);
 	double SearchFixedAngleMeetTime(const CoordStruct& pSourceCrd, const CoordStruct& pTargetCrd, const CoordStruct& pOffsetCrd, double radian, double gravity);
 	double CheckFixedAngleEquation(const CoordStruct& pSourceCrd, const CoordStruct& pTargetCrd, const CoordStruct& pOffsetCrd, double meetTime, double radian, double gravity);
-	bool CalculateBulletVelocityAfterBounce(CellClass* pCell);
-	BulletVelocity GetGroundNormalVector(CellClass* pCell);
+	bool CalculateBulletVelocityAfterBounce(const CellClass* const pCell, const CoordStruct& position);
+	BulletVelocity GetGroundNormalVector(const CellClass* const pCell, const CoordStruct& position);
 	static bool CheckBulletHitCliff(short X, short Y, int bulletHeight, int lastCellHeight);
 
 	template <typename T>

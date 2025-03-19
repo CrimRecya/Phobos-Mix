@@ -46,14 +46,12 @@ void EngraveTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
-
+	// Limitation
 	this->Speed = Math::min(128.0, this->Speed);
-
 	// Virtual
 	this->VirtualSourceCoord.Read(exINI, pSection, "Trajectory.Engrave.SourceCoord");
 	this->VirtualTargetCoord.Read(exINI, pSection, "Trajectory.Engrave.TargetCoord");
-	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.Engrave.AllowFirerTurning");
-
+	this->AllowFirerTurning.Read(exINI, pSection, "Trajectory.AllowFirerTurning");
 	// Engrave
 	this->IsLaser.Read(exINI, pSection, "Trajectory.Engrave.IsLaser");
 	this->IsIntense.Read(exINI, pSection, "Trajectory.Engrave.IsIntense");
@@ -96,33 +94,31 @@ bool EngraveTrajectory::Save(PhobosStreamWriter& Stm) const
 void EngraveTrajectory::OnUnlimbo()
 {
 	this->VirtualTrajectory::OnUnlimbo();
-
+	// Engrave
 	this->LaserTimer.Start(0);
 	const auto pBullet = this->Bullet;
-
+	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }
 
-bool EngraveTrajectory::OnAIDetonateCheck()
+bool EngraveTrajectory::OnEarlyUpdate()
 {
-	if (this->VirtualTrajectory::OnAIDetonateCheck())
+	if (this->VirtualTrajectory::OnEarlyUpdate())
 		return true;
+	// Draw laser
+	if (this->Type->IsLaser && this->LaserTimer.Completed())
+		this->DrawEngraveLaser();
 
-	return this->PlaceOnCorrectHeight();
+	return false;
 }
 
-void EngraveTrajectory::OnAINextFrameCheck()
+bool EngraveTrajectory::OnVelocityCheck()
 {
-	this->PhobosTrajectory::OnAINextFrameCheck();
+	if (this->TargetInTheAir && this->PlaceOnCorrectHeight())
+		return true;
 
-	if (!this->Type->IsLaser || !this->LaserTimer.Completed())
-		return;
-
-	const auto pBullet = this->Bullet;
-	const auto pFirer = pBullet->Owner;
-	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
-	this->DrawEngraveLaser(pFirer, pOwner);
+	return this->PhobosTrajectory::OnVelocityCheck();
 }
 
 void EngraveTrajectory::OpenFire()
@@ -138,7 +134,7 @@ void EngraveTrajectory::OpenFire()
 	virtualSource.Z = 0;
 	virtualTarget.Z = 0;
 	const double rotateRadian = this->Get2DOpRadian((pFirer ? pFirer->GetCoords() : source), target);
-
+	// Mirror trajectory
 	if (!this->NotMainWeapon && pType->MirrorCoord && this->CurrentBurst < 0)
 	{
 		virtualSource.Y = -virtualSource.Y;
@@ -147,13 +143,12 @@ void EngraveTrajectory::OpenFire()
 	// Special case: Starting from the launch position
 	if (virtualSource.X != 0 || virtualSource.Y != 0)
 		source = target + PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(virtualSource, rotateRadian));
-
+	// If the target is in the air, there is no need to attach it to the ground
 	if (!this->TargetInTheAir)
 		source.Z = this->GetFloorCoordHeight(source);
-
+	// set initial status
 	pBullet->SetLocation(source);
 	target += PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(virtualTarget, rotateRadian));
-
 	this->MovingVelocity.X = target.X - source.X;
 	this->MovingVelocity.Y = target.Y - source.Y;
 	this->MovingVelocity.Z = 0;
@@ -194,8 +189,8 @@ bool EngraveTrajectory::CalculateBulletVelocity(const double speed)
 
 int EngraveTrajectory::GetFloorCoordHeight(const CoordStruct& coord)
 {
-	const auto onFloor = MapClass::Instance->GetCellFloorHeight(coord);
-	const auto onBridge = MapClass::Instance->GetCellAt(coord)->ContainsBridge() ? onFloor + CellClass::BridgeHeight : onFloor;
+	const auto onFloor = MapClass::Instance.GetCellFloorHeight(coord);
+	const auto onBridge = MapClass::Instance.GetCellAt(coord)->ContainsBridge() ? onFloor + CellClass::BridgeHeight : onFloor;
 	const auto pBullet = this->Bullet;
 	// Take the higher position
 	return (pBullet->SourceCoords.Z >= onBridge || pBullet->TargetCoords.Z >= onBridge) ? onBridge : onFloor;
@@ -203,9 +198,6 @@ int EngraveTrajectory::GetFloorCoordHeight(const CoordStruct& coord)
 
 bool EngraveTrajectory::PlaceOnCorrectHeight()
 {
-	if (this->TargetInTheAir)
-		return false;
-
 	const auto pBullet = this->Bullet;
 	auto bulletCoords = pBullet->Location;
 	const auto futureCoords = bulletCoords + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
@@ -242,68 +234,30 @@ bool EngraveTrajectory::PlaceOnCorrectHeight()
 	return false;
 }
 
-void EngraveTrajectory::DrawEngraveLaser(TechnoClass* pTechno, HouseClass* pOwner)
+void EngraveTrajectory::DrawEngraveLaser()
 {
 	const auto pBullet = this->Bullet;
+	auto pFirer = pBullet->Owner;
+	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 	const auto pType = this->Type;
 	this->LaserTimer.Start(pType->LaserDelay);
 	auto fireCoord = pBullet->SourceCoords;
-
-	for (auto pTrans = pTechno->Transporter; pTrans; pTrans = pTrans->Transporter)
-		pTechno = pTrans;
+	// Find the outermost transporter
+	pFirer = GetSurfaceFirer(pFirer);
 	// Considering that the CurrentBurstIndex may be different, it is not possible to call existing functions
-	if (!this->NotMainWeapon && pTechno && !pTechno->InLimbo)
-	{
-		if (pTechno->WhatAmI() != AbstractType::Building)
-		{
-			// The building turret uses PrimaryFacing and GetRenderCoords() to calculate the actual position, so this function is not available
-			fireCoord = TechnoExt::GetFLHAbsoluteCoords(pTechno, this->FLHCoord, pTechno->HasTurret());
-		}
-		else
-		{
-			const auto pBuilding = static_cast<BuildingClass*>(pTechno);
-			Matrix3D mtx;
-			mtx.MakeIdentity();
-
-			if (pTechno->HasTurret())
-			{
-				TechnoTypeExt::ApplyTurretOffset(pBuilding->Type, &mtx);
-				mtx.RotateZ(static_cast<float>(pTechno->TurretFacing().GetRadian<32>()));
-			}
-
-			mtx.Translate(static_cast<float>(this->FLHCoord.X), static_cast<float>(this->FLHCoord.Y), static_cast<float>(this->FLHCoord.Z));
-			const auto result = mtx.GetTranslation();
-			fireCoord = pBuilding->GetCoords() + this->BuildingCoord + CoordStruct { static_cast<int>(result.X), -static_cast<int>(result.Y), static_cast<int>(result.Z) };
-		}
-	}
-
-	auto targetCoord = pBullet->Location;
-
-	if (!pType->IgnoresFirestorm)
-	{
-		const auto fireStormCoords = MapClass::Instance->FindFirstFirestorm(fireCoord, targetCoord, pOwner);
-
-		if (fireStormCoords != CoordStruct::Empty)
-		{
-			const auto ratio = PhobosTrajectory::Get2DDistance(fireCoord, fireStormCoords) / PhobosTrajectory::Get2DDistance(fireCoord, targetCoord);
-			const auto height = MapClass::Instance->GetCellFloorHeight(fireStormCoords);
-			targetCoord = fireCoord + (targetCoord - fireCoord) * ratio;
-
-			if (targetCoord.Z < height)
-				targetCoord.Z = height;
-		}
-	}
+	if (!this->NotMainWeapon && pFirer && !pFirer->InLimbo)
+		fireCoord = TechnoExt::GetFLHAbsoluteCoords(pFirer, this->FLHCoord, pFirer->HasTurret());
 	// Draw laser from head to tail
 	if (pType->IsHouseColor || pType->IsSingleColor)
 	{
-		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, targetCoord, ((pType->IsHouseColor && pOwner) ? pOwner->LaserColor : pType->LaserInnerColor), ColorStruct { 0, 0, 0 }, ColorStruct { 0, 0, 0 }, pType->LaserDuration);
+		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, pBullet->Location, ((pType->IsHouseColor && pOwner) ? pOwner->LaserColor : pType->LaserInnerColor), ColorStruct { 0, 0, 0 }, ColorStruct { 0, 0, 0 }, pType->LaserDuration);
 		pLaser->IsHouseColor = true;
 		pLaser->Thickness = pType->LaserThickness;
 		pLaser->IsSupported = pType->IsIntense;
 	}
 	else
 	{
-		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, targetCoord, pType->LaserInnerColor, pType->LaserOuterColor, pType->LaserOuterSpread, pType->LaserDuration);
+		const auto pLaser = GameCreate<LaserDrawClass>(fireCoord, pBullet->Location, pType->LaserInnerColor, pType->LaserOuterColor, pType->LaserOuterSpread, pType->LaserDuration);
 		pLaser->IsHouseColor = false;
 		pLaser->Thickness = 3;
 		pLaser->IsSupported = false;

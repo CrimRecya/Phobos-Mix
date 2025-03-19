@@ -35,15 +35,13 @@ void StraightTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
-
 	// LiveShell
-	this->RotateCoord.Read(exINI, pSection, "Trajectory.Straight.RotateCoord");
-	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Straight.OffsetCoord");
-	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.Straight.AxisOfRotation");
-	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Straight.LeadTimeCalculate");
-	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Straight.DetonationDistance");
-	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Straight.TargetSnapDistance");
-
+	this->RotateCoord.Read(exINI, pSection, "Trajectory.RotateCoord");
+	this->OffsetCoord.Read(exINI, pSection, "Trajectory.OffsetCoord");
+	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.AxisOfRotation");
+	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.LeadTimeCalculate");
+	this->DetonationDistance.Read(exINI, pSection, "Trajectory.DetonationDistance");
+	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
 	// Straight
 	this->PassThrough.Read(exINI, pSection, "Trajectory.Straight.PassThrough");
 	this->ConfineAtHeight.Read(exINI, pSection, "Trajectory.Straight.ConfineAtHeight");
@@ -75,9 +73,9 @@ bool StraightTrajectory::Save(PhobosStreamWriter& Stm) const
 void StraightTrajectory::OnUnlimbo()
 {
 	this->ActualTrajectory::OnUnlimbo();
-
+	// Straight
 	const auto pBullet = this->Bullet;
-
+	// Calculate range bonus
 	if (this->Type->ApplyRangeModifiers)
 	{
 		if (const auto pFirer = pBullet->Owner)
@@ -92,47 +90,59 @@ void StraightTrajectory::OnUnlimbo()
 			}
 		}
 	}
-
+	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }
 
-bool StraightTrajectory::OnAIDetonateCheck()
+bool StraightTrajectory::OnVelocityCheck()
 {
-	if (this->PhobosTrajectory::OnAIDetonateCheck())
+	// Hover
+	if (this->MovingSpeed < 256.0 && this->Type->ConfineAtHeight > 0 && this->PassAndConfineAtHeight())
 		return true;
+
+	return this->PhobosTrajectory::OnVelocityCheck();
+}
+
+TrajectoryCheckReturnType StraightTrajectory::OnDetonateUpdate(const CoordStruct& position)
+{
+	if (this->WaitOneFrame)
+		return TrajectoryCheckReturnType::SkipGameCheck;
+	else if (this->PhobosTrajectory::OnDetonateUpdate(position) == TrajectoryCheckReturnType::Detonate)
+		return TrajectoryCheckReturnType::Detonate;
+
+	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
+	// Check the remaining travel distance of the bullet
+	if (this->RemainingDistance < 0)
+		return TrajectoryCheckReturnType::Detonate;
 
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	// Close enough
-	if (!pType->PassThrough && pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
-		return true;
-	// Hover
-	if (this->MovingSpeed < 256.0 && pType->ConfineAtHeight > 0 && this->PassAndConfineAtHeight())
-		return true;
-	// Check the remaining travel distance of the bullet
-	this->RemainingDistance -= static_cast<int>(this->MovingSpeed);
-	return this->RemainingDistance < 0;
+	if (!pType->PassThrough && pBullet->TargetCoords.DistanceFrom(position) < pType->DetonationDistance.Get())
+		return TrajectoryCheckReturnType::Detonate;
+
+	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
-void StraightTrajectory::OnAIPreDetonate()
+void StraightTrajectory::OnPreDetonate()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	// Whether to detonate at ground level?
 	if (pType->PassDetonateLocal)
-		pBullet->SetLocation(CoordStruct { pBullet->Location.X, pBullet->Location.Y, MapClass::Instance->GetCellFloorHeight(pBullet->Location) });
+		pBullet->SetLocation(CoordStruct { pBullet->Location.X, pBullet->Location.Y, MapClass::Instance.GetCellFloorHeight(pBullet->Location) });
 
 	if (!pType->PassThrough)
-		this->ActualTrajectory::OnAIPreDetonate();
+		this->ActualTrajectory::OnPreDetonate();
 	else
-		this->PhobosTrajectory::OnAIPreDetonate();
+		this->PhobosTrajectory::OnPreDetonate();
 }
 
 void StraightTrajectory::OpenFire()
 {
 	// Wait, or launch immediately?
-	if (!this->Type->LeadTimeCalculate || !abstract_cast<FootClass*>(this->Bullet->Target))
+	if (!this->Type->LeadTimeCalculate.Get(false) || !abstract_cast<FootClass*>(this->Bullet->Target))
 		this->FireTrajectory();
 	else
 		this->WaitOneFrame = 2;
@@ -157,11 +167,11 @@ void StraightTrajectory::FireTrajectory()
 		target = this->GetInaccurateTargetCoords(target, source.DistanceFrom(target));
 	// Determine the distance that the bullet can travel
 	if (!pType->PassThrough)
-		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target) + pType->Speed);
+		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target));
 	else if (this->DetonationDistance > 0)
-		this->RemainingDistance += static_cast<int>(this->DetonationDistance + pType->Speed);
+		this->RemainingDistance += static_cast<int>(this->DetonationDistance);
 	else if (this->DetonationDistance < 0)
-		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target) - this->DetonationDistance + pType->Speed);
+		this->RemainingDistance += static_cast<int>(source.DistanceFrom(target) - this->DetonationDistance);
 	else
 		this->RemainingDistance = INT_MAX;
 	// Determine the firing velocity vector of the bullet
@@ -182,7 +192,7 @@ CoordStruct StraightTrajectory::CalculateBulletLeadTime()
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 
-	if (pType->LeadTimeCalculate)
+	if (pType->LeadTimeCalculate.Get(false))
 	{
 		if (const auto pTarget = pBullet->Target)
 		{
@@ -296,9 +306,9 @@ bool StraightTrajectory::PassAndConfineAtHeight()
 {
 	const auto pBullet = this->Bullet;
 	const auto futureCoords = pBullet->Location + PhobosTrajectory::Vector2Coord(this->MovingVelocity);
-	auto checkDifference = MapClass::Instance->GetCellFloorHeight(futureCoords) - futureCoords.Z;
+	auto checkDifference = MapClass::Instance.GetCellFloorHeight(futureCoords) - futureCoords.Z;
 
-	if (MapClass::Instance->GetCellAt(futureCoords)->ContainsBridge())
+	if (MapClass::Instance.GetCellAt(futureCoords)->ContainsBridge())
 	{
 		const auto differenceOnBridge = checkDifference + CellClass::BridgeHeight;
 

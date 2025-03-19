@@ -55,7 +55,7 @@ int BuildingTypeExt::GetEnhancedPower(BuildingClass* pBuilding, HouseClass* pHou
 
 	for (const auto& [bTypeIdx, nCount] : pHouseExt->PowerPlantEnhancers)
 	{
-		auto bTypeExt = BuildingTypeExt::ExtMap.Find(BuildingTypeClass::Array->Items[bTypeIdx]);
+		auto bTypeExt = BuildingTypeExt::ExtMap.Find(BuildingTypeClass::Array[bTypeIdx]);
 		if (bTypeExt->PowerPlantEnhancer_Buildings.Contains(pBuilding->Type))
 		{
 			fFactor *= std::powf(bTypeExt->PowerPlantEnhancer_Factor, static_cast<float>(nCount));
@@ -132,7 +132,7 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 	{
 		auto currentCell = topLeftCell + *pFoundation;
 
-		if (const auto pCell = MapClass::Instance->TryGetCellAt(currentCell))
+		if (const auto pCell = MapClass::Instance.TryGetCellAt(currentCell))
 		{
 			auto pObject = pCell->FirstObject;
 
@@ -177,7 +177,7 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 	{
 		auto searchCell = topLeftCell + *pFoundation;
 
-		if (const auto pSearchCell = MapClass::Instance->TryGetCellAt(searchCell))
+		if (const auto pSearchCell = MapClass::Instance.TryGetCellAt(searchCell))
 		{
 			if (std::find(checkedCells.begin(), checkedCells.end(), pSearchCell) == checkedCells.end() // TODO If there is a cellflag (or CellExt) that can be used …
 				&& !pSearchCell->GetBuilding()
@@ -389,7 +389,7 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 					{
 						for (int j = 0; j < 2; ++j)
 						{
-							if (const auto pSearchCell = MapClass::Instance->TryGetCellAt(searchCell))
+							if (const auto pSearchCell = MapClass::Instance.TryGetCellAt(searchCell))
 							{
 								if (std::find(checkedCells.begin(), checkedCells.end(), pSearchCell) == checkedCells.end()
 									&& std::find(optionalCells.begin(), optionalCells.end(), pSearchCell) == optionalCells.end()
@@ -453,7 +453,7 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 
 void BuildingTypeExt::DrawAdjacentLines()
 {
-	const auto pType = abstract_cast<BuildingTypeClass*>(DisplayClass::Instance->CurrentBuildingType);
+	const auto pType = abstract_cast<BuildingTypeClass*>(DisplayClass::Instance.CurrentBuildingType);
 
 	if (!pType)
 		return;
@@ -468,14 +468,14 @@ void BuildingTypeExt::DrawAdjacentLines()
 	if (foundation == CellStruct::Empty)
 		return;
 
-	const auto topLeft = DisplayClass::Instance->CurrentFoundation_CenterCell + DisplayClass::Instance->CurrentFoundation_TopLeftOffset;
+	const auto topLeft = DisplayClass::Instance.CurrentFoundation_CenterCell + DisplayClass::Instance.CurrentFoundation_TopLeftOffset;
 	const auto min = CellStruct { static_cast<short>(topLeft.X - adjacent), static_cast<short>(topLeft.Y - adjacent) };
 	const auto max = CellStruct { static_cast<short>(topLeft.X + foundation.X + adjacent - 1), static_cast<short>(topLeft.Y + foundation.Y + adjacent - 1) };
 
 	auto rect = DSurface::Temp->GetRect();
 	rect.Height -= 32;
 
-	if (const auto pCell = MapClass::Instance->TryGetCellAt(min))
+	if (const auto pCell = MapClass::Instance.TryGetCellAt(min))
 	{
 		auto point = TacticalClass::Instance->CoordsToClient(CellClass::Cell2Coord(pCell->MapCoords, (1 + pCell->GetFloorHeight(Point2D::Empty)))).first;
 		point.Y -= 1;
@@ -490,7 +490,7 @@ void BuildingTypeExt::DrawAdjacentLines()
 		DSurface::Temp->DrawLineEx(&rect, &point, &nextPoint, COLOR_WHITE);
 	}
 
-	if (const auto pCell = MapClass::Instance->TryGetCellAt(CellStruct{ min.X, max.Y }))
+	if (const auto pCell = MapClass::Instance.TryGetCellAt(CellStruct{ min.X, max.Y }))
 	{
 		auto point = TacticalClass::Instance->CoordsToClient(CellClass::Cell2Coord(pCell->MapCoords, (1 + pCell->GetFloorHeight(Point2D::Empty)))).first;
 		point.X -= 1;
@@ -505,7 +505,7 @@ void BuildingTypeExt::DrawAdjacentLines()
 		DSurface::Temp->DrawLineEx(&rect, &point, &nextPoint, COLOR_WHITE);
 	}
 
-	if (const auto pCell = MapClass::Instance->TryGetCellAt(max))
+	if (const auto pCell = MapClass::Instance.TryGetCellAt(max))
 	{
 		auto point = TacticalClass::Instance->CoordsToClient(CellClass::Cell2Coord(pCell->MapCoords, (1 + pCell->GetFloorHeight(Point2D::Empty)))).first;
 		auto nextPoint = point;
@@ -519,7 +519,7 @@ void BuildingTypeExt::DrawAdjacentLines()
 		DSurface::Temp->DrawLineEx(&rect, &point, &nextPoint, COLOR_WHITE);
 	}
 
-	if (const auto pCell = MapClass::Instance->TryGetCellAt(CellStruct{ max.X, min.Y }))
+	if (const auto pCell = MapClass::Instance.TryGetCellAt(CellStruct{ max.X, min.Y }))
 	{
 		auto point = TacticalClass::Instance->CoordsToClient(CellClass::Cell2Coord(pCell->MapCoords, (1 + pCell->GetFloorHeight(Point2D::Empty)))).first;
 		auto nextPoint = point;
@@ -666,7 +666,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 			else if (flag & 0x1)
 				continue;
 
-			if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
+			if (const auto pCell = MapClass::Instance.TryGetCellAt(checkCell))
 			{
 				if (pCell->CanThisExistHere(pType->SpeedType, pType, pHouse))
 				{
@@ -754,7 +754,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 				else if (flag & 0x40)
 					continue;
 
-				if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
+				if (const auto pCell = MapClass::Instance.TryGetCellAt(checkCell))
 				{
 					if (const auto pCellBuilding = pCell->GetBuilding())
 					{
@@ -827,7 +827,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 				else if (flag & 0x2)
 					continue;
 
-				if (const auto pCell = MapClass::Instance->TryGetCellAt(checkCell))
+				if (const auto pCell = MapClass::Instance.TryGetCellAt(checkCell))
 				{
 					if (!pCell->GetBuilding())
 					{
@@ -867,9 +867,9 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 					continue;
 
 				auto coords = CellClass::Cell2Coord(checkCell);
-				coords.Z = MapClass::Instance->GetCellFloorHeight(coords);
+				coords.Z = MapClass::Instance.GetCellFloorHeight(coords);
 
-				if (MapClass::Instance->IsLocationShrouded(coords))
+				if (MapClass::Instance.IsLocationShrouded(coords))
 				{
 					checkedCells[cellIndex] |= 0x80;
 					return false;
@@ -1005,7 +1005,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 
 				check += (++count & 1) ? 1 : (height * 2 + width + 1);
 				const auto outsideCell = baseCell + *pFoundation;
-				const auto pCell = MapClass::Instance->TryGetCellAt(outsideCell);
+				const auto pCell = MapClass::Instance.TryGetCellAt(outsideCell);
 
 				if (pCell && pCell->CanThisExistHere(pOwnedType->SpeedType, pOwnedType, pHouse))
 				{
@@ -1017,7 +1017,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 			for (auto pFoundation = pOwnedType->FoundationOutside; *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
 			{
 				const auto outsideCell = baseCell + *pFoundation;
-				const auto pCell = MapClass::Instance->TryGetCellAt(outsideCell);
+				const auto pCell = MapClass::Instance.TryGetCellAt(outsideCell);
 
 				if (pCell && pCell->CanThisExistHere(pOwnedType->SpeedType, pOwnedType, pHouse))
 					cell = outsideCell;
@@ -1232,7 +1232,7 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	auto pThis = this->OwnerObject();
 	const char* pSection = pThis->ID;
 	const char* pArtSection = pThis->ImageFile;
-	auto pArtINI = &CCINIClass::INI_Art();
+	auto pArtINI = &CCINIClass::INI_Art;
 
 	if (!pINI->GetSection(pSection))
 		return;
@@ -1329,7 +1329,7 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	// Ares tag
 	this->SpyEffect_Custom.Read(exINI, pSection, "SpyEffect.Custom");
-	if (SuperWeaponTypeClass::Array->Count > 0)
+	if (SuperWeaponTypeClass::Array.Count > 0)
 	{
 		this->SuperWeapons.Read(exINI, pSection, "SuperWeapons");
 

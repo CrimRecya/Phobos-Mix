@@ -37,7 +37,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 
 	if (const auto CameoPCX = pTypeExt->CameoPCX.GetSurface())
 	{
-		PCX::Instance->BlitToSurface(&drawRect, DSurface::Composite, CameoPCX);
+		PCX::Instance.BlitToSurface(&drawRect, DSurface::Composite, CameoPCX);
 	}
 	else if (const auto pSHP = pType->GetCameo())
 	{
@@ -50,9 +50,9 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 
 			if (!_stricmp(pCameoRef->Filename, GameStrings::XXICON_SHP) && strstr(pFilename, ".pcx"))
 			{
-				PCX::Instance->LoadFile(pFilename);
+				PCX::Instance.LoadFile(pFilename);
 
-				if (const auto MissingCameoPCX = PCX::Instance->GetSurface(pFilename))
+				if (const auto MissingCameoPCX = PCX::Instance.GetSurface(pFilename))
 					return MissingCameoPCX;
 			}
 
@@ -61,7 +61,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 
 		if (const auto MissingCameoPCX = getMissingCameo())
 		{
-			PCX::Instance->BlitToSurface(&drawRect, DSurface::Composite, MissingCameoPCX);
+			PCX::Instance.BlitToSurface(&drawRect, DSurface::Composite, MissingCameoPCX);
 		}
 		else
 		{
@@ -73,7 +73,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 
 	if (!pTechno->InLimbo)
 	{
-		const auto pRules = RulesClass::Instance();
+		const auto pRules = RulesClass::Instance;
 		auto ratio = pTechno->GetHealthPercentage();
 
 		if (pTechno->IsIronCurtained())
@@ -191,7 +191,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 			pSelect = pTrans;
 
 		const auto pSelectExt = TechnoExt::ExtMap.Find(pSelect);
-		const auto pRules = RulesClass::Instance();
+		const auto pRules = RulesClass::Instance;
 		auto ratio = pTechno->GetHealthPercentage();
 
 		if (pSelect->IsIronCurtained())
@@ -346,7 +346,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 			rect.Width = static_cast<int>(50 * ratio + 0.5);
 			rect.Height = 3;
 
-			const auto pRules = RulesClass::Instance();
+			const auto pRules = RulesClass::Instance;
 			const int color = (ratio > pRules->ConditionYellow) ? 0x67EC : (ratio > pRules->ConditionRed ? 0xFFEC : 0xF986);
 			DSurface::Composite->FillRect(&rect, color);
 		}
@@ -374,14 +374,14 @@ void UniqueTechnoButtonClass::OnMouseEnter()
 
 	this->Hovering = true;
 	UniqueTechnoColumnClass::Instance.Hovering = index;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void UniqueTechnoButtonClass::OnMouseLeave()
 {
 	this->Hovering = false;
 	UniqueTechnoColumnClass::Instance.Hovering = -1;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 bool UniqueTechnoButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
@@ -401,7 +401,7 @@ bool UniqueTechnoButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier 
 	for (auto pTrans = pSelect->Transporter; pTrans; pTrans = pTrans->Transporter)
 		pSelect = pTrans;
 
-	if (ObjectClass::CurrentObjects->Count != 1 || !pSelect->IsSelected)
+	if (ObjectClass::CurrentObjects.Count != 1 || !pSelect->IsSelected)
 		MapClass::UnselectAll();
 
 	if (!pSelect->InLimbo && !pSelect->Select())

@@ -3,6 +3,8 @@
 #include <SpawnManagerClass.h>
 #include <TunnelLocomotionClass.h>
 
+#include <Ext/Anim/Body.h>
+
 #pragma region SlaveManagerClass
 
 // Issue #601
@@ -12,7 +14,7 @@ DEFINE_HOOK(0x6B0C2C, SlaveManagerClass_FreeSlaves_SlavesFreeSound, 0x5)
 	GET(TechnoClass*, pSlave, EDI);
 
 	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pSlave->GetTechnoType());
-	int sound = pTypeExt->SlavesFreeSound.Get(RulesClass::Instance()->SlavesFreeSound);
+	int sound = pTypeExt->SlavesFreeSound.Get(RulesClass::Instance->SlavesFreeSound);
 	if (sound != -1)
 		VocClass::PlayAt(sound, pSlave->Location);
 
@@ -112,7 +114,7 @@ DEFINE_HOOK(0x6B7600, SpawnManagerClass_AI_InitDestination, 0x6)
 	else
 	{
 		auto const mapCoords = pThis->Owner->GetMapCoords();
-		auto const pCell = MapClass::Instance->GetCellAt(mapCoords);
+		auto const pCell = MapClass::Instance.GetCellAt(mapCoords);
 		pSpawnee->SetDestination(pCell->GetNeighbourCell(FacingType::North), true);
 		pSpawnee->QueueMission(Mission::Move, false);
 	}
@@ -190,26 +192,124 @@ DEFINE_HOOK(0x6B7282, SpawnManagerClass_AI_PromoteSpawns, 0x5)
 	return 0;
 }
 
-DEFINE_HOOK(0x6B79BF, SpawnManagerClass_AI_CheckRepairDone, 0x5)
-{
-	enum { ResetTarget = 0x6B79C4, KeepTarget = 0x6B79D3 };
-	GET(SpawnManagerClass*, pThis, ESI);
+#pragma endregion
 
+#pragma region CheckRepairDone
+
+static inline bool ShouldResetSpawnManagerTarget(SpawnManagerClass* pThis)
+{
 	if (!pThis->Target)
-		return ResetTarget;
+		return true;
 
 	if (TechnoTypeExt::ExtMap.Find(pThis->Owner->GetTechnoType())->Spawner_ReturnOnRepairDone)
 	{
 		auto pTarget = abstract_cast<TechnoClass*>(pThis->Target);
 
 		if (pTarget && pTarget->GetHealthPercentage() >= RulesClass::Instance->unknown_double_16F8)
-			return ResetTarget;
+			return true;
 	}
 
-	return KeepTarget;
+	return false;
+}
+
+DEFINE_HOOK(0x6B7702, SpawnManagerClass_AI_CheckRepairDone1, 0x5)
+{
+	enum { KeepTarget = 0x6B770D, ResetTarget = 0x6B7663 };
+
+	GET(SpawnManagerClass*, pThis, ESI);
+
+	R->EAX(pThis->Target);
+	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
+}
+
+DEFINE_HOOK(0x6B7752, SpawnManagerClass_AI_CheckRepairDone2, 0x5)
+{
+	enum { KeepTarget = 0x6B7759, ResetTarget = 0x6B7793 };
+
+	GET(SpawnManagerClass*, pThis, ESI);
+
+	R->EAX(pThis->Target);
+	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
+}
+
+DEFINE_HOOK(0x6B79BF, SpawnManagerClass_AI_CheckRepairDone3, 0x5)
+{
+	enum { ResetTarget = 0x6B79C4, KeepTarget = 0x6B79D3 };
+	GET(SpawnManagerClass*, pThis, ESI);
+	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x6B77B4, SpawnManagerClass_Update_RecycleSpawned, 0x7)
+{
+	enum { Recycle = 0x6B77FF, NoRecycle = 0x6B7838 };
+
+	GET(SpawnManagerClass* const, pThis, ESI);
+	GET(AircraftClass* const, pSpawner, EDI);
+	GET(CellStruct* const, pCarrierMapCrd, EBP);
+
+	auto const pCarrier = pThis->Owner;
+	auto const pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
+	auto const spawnerCrd = pSpawner->GetCoords();
+
+	auto shouldRecycleSpawned = [&]()
+	{
+		auto const& FLH = pCarrierTypeExt->Spawner_RecycleCoord;
+		auto const recycleCrd = FLH != CoordStruct::Empty
+			? TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret)
+			: pCarrier->GetCoords();
+		auto const deltaCrd = spawnerCrd - recycleCrd;
+		const int recycleRange = pCarrierTypeExt->Spawner_RecycleRange.Get();
+
+		if (recycleRange < 0)
+		{
+			// This is a fix to vanilla behavior. Buildings bigger than 1x1 will recycle the spawner correctly.
+			// 182 is √2/2 * 256. 20 is same to vanilla behavior.
+			return (pCarrier->WhatAmI() == AbstractType::Building)
+				? (deltaCrd.X <= 182 && deltaCrd.Y <= 182 && deltaCrd.Z < 20)
+				: (pSpawner->GetMapCoords() == *pCarrierMapCrd && deltaCrd.Z < 20);
+		}
+
+		return deltaCrd.Magnitude() <= recycleRange;
+	};
+
+	if (shouldRecycleSpawned())
+	{
+		if (pCarrierTypeExt->Spawner_RecycleAnim)
+		{
+			auto pRecycleAnim = GameCreate<AnimClass>(pCarrierTypeExt->Spawner_RecycleAnim, spawnerCrd);
+			auto pAnimExt = AnimExt::ExtMap.Find(pRecycleAnim);
+			pAnimExt->SetInvoker(pSpawner);
+			AnimExt::SetAnimOwnerHouseKind(pRecycleAnim, pSpawner->Owner, pSpawner->Owner, false, true);
+		}
+
+		pSpawner->SetLocation(pCarrier->GetCoords());
+		return Recycle;
+	}
+
+	return NoRecycle;
+}
+
+// Change destination to RecycleFLH.
+DEFINE_HOOK(0x4D962B, FootClass_SetDestination_RecycleFLH, 0x5)
+{
+	GET(FootClass* const, pThis, EBP);
+	GET(CoordStruct*, pDestCrd, EAX);
+
+	auto pCarrier = pThis->SpawnOwner;
+
+	if (pCarrier && pCarrier == pThis->Destination) // This is a spawner returning to its carrier.
+	{
+		auto pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
+		auto const& FLH = pCarrierTypeExt->Spawner_RecycleCoord;
+
+		if (FLH != CoordStruct::Empty)
+			*pDestCrd += TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret) - pCarrier->GetCoords();
+	}
+
+	return 0;
+}
 
 #pragma region WakeAnims
 
@@ -523,7 +623,7 @@ bool __fastcall CanAttackMindControlled(TechnoClass* pControlled, TechnoClass* p
 	if (!pExt)
 		return true;
 
-	return pExt->BeControlledThreatFrame <= Unsorted::CurrentFrame();
+	return pExt->BeControlledThreatFrame <= Unsorted::CurrentFrame;
 }
 
 DEFINE_HOOK(0x7089E8, TechnoClass_AllowedToRetaliate_AttackMindControlledDelay, 0x6)

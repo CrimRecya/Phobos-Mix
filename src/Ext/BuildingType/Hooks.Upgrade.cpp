@@ -110,7 +110,7 @@ DEFINE_HOOK(0x4F8361, HouseClass_CanBuild_UpgradesInteraction, 0x5)
 			canBuild = CanBuildResult::TemporarilyUnbuildable;
 	}
 
-	if (!buildLimitOnly && includeInProduction && pThis == HouseClass::CurrentPlayer()) // Eliminate any non-producible calls
+	if (!buildLimitOnly && includeInProduction && pThis == HouseClass::CurrentPlayer) // Eliminate any non-producible calls
 		canBuild = TechnoTypeExt::CheckAlwaysExistCameo(pItem, canBuild);
 
 	R->EAX(canBuild);
@@ -143,7 +143,7 @@ DEFINE_HOOK(0x464749, BuildingTypeClass_ReadINI_PowerUpAnims, 0x6)
 
 	GET(BuildingTypeClass*, pThis, EBP);
 
-	auto const pINI = &CCINIClass::INI_Art();
+	auto const pINI = &CCINIClass::INI_Art;
 
 	int index = 1;
 	char buffer[0x20];

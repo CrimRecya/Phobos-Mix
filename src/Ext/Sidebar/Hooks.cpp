@@ -45,8 +45,8 @@ DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt_ProducingProgress, 0x6)
 {
 	if (Phobos::UI::ProducingProgress_Show)
 	{
-		auto pPlayer = HouseClass::CurrentPlayer();
-		auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->GetItem(HouseClass::CurrentPlayer->SideIndex));
+		auto pPlayer = HouseClass::CurrentPlayer;
+		auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.GetItem(HouseClass::CurrentPlayer->SideIndex));
 		int XOffset = pSideExt->Sidebar_GDIPositions ? 29 : 32;
 		int XBase = (pSideExt->Sidebar_GDIPositions ? 26 : 20) + pSideExt->Sidebar_ProducingProgress_Offset.Get().X;
 		int YBase = 197 + pSideExt->Sidebar_ProducingProgress_Offset.Get().Y;
@@ -76,11 +76,11 @@ DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt_ProducingProgress, 0x6)
 					: -1;
 
 				Point2D vPos = { XBase + i * XOffset, YBase };
-				RectangleStruct sidebarRect = DSurface::Sidebar()->GetRect();
+				RectangleStruct sidebarRect = DSurface::Sidebar->GetRect();
 
 				if (idxFrame != -1)
 				{
-					DSurface::Sidebar()->DrawSHP(FileSystem::SIDEBAR_PAL, pSHP, idxFrame, &vPos,
+					DSurface::Sidebar->DrawSHP(FileSystem::SIDEBAR_PAL, pSHP, idxFrame, &vPos,
 						&sidebarRect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 				}
 			}
@@ -111,7 +111,7 @@ DEFINE_HOOK(0x72FCB5, InitSideRectangles_CenterBackground, 0x5)
 
 DEFINE_HOOK(0x4F92DD, HouseClass_Update_RedrawSidebarWhenRecheckTechTree, 0x5)
 {
-	SidebarClass::Instance->SidebarBackgroundNeedsRedraw = true;
+	SidebarClass::Instance.SidebarBackgroundNeedsRedraw = true;
 	return 0;
 }
 
@@ -142,7 +142,7 @@ DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
 			if (const auto CameoPCX = pTypeExt->GreyCameoPCX.GetSurface())
 			{
 				auto drawRect = RectangleStruct { destX, destY, 60, 48 };
-				PCX::Instance->BlitToSurface(&drawRect, DSurface::Sidebar, CameoPCX);
+				PCX::Instance.BlitToSurface(&drawRect, DSurface::Sidebar, CameoPCX);
 			}
 
 			frame = frames[3];
@@ -189,7 +189,7 @@ DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
 
 		if ((frameSize && frames[0] >= 0) || statistics)
 		{
-			if (const auto count = HouseExt::CountOwnedPresentWithDeployOrUpgrade(HouseClass::CurrentPlayer(), pBuildingType, true))
+			if (const auto count = HouseExt::CountOwnedPresentWithDeployOrUpgrade(HouseClass::CurrentPlayer, pBuildingType, true))
 			{
 				if (frameSize && frames[0] >= 0)
 				{
@@ -232,7 +232,7 @@ DEFINE_HOOK(0x6A557A, SidebarClass_Init_IO_RecordDiplomacyHouses1, 0x5)
 {
 	enum { SkipGameCode = 0x6A5830, ContinueGameCode = 0x6A558D };
 
-	const GameMode mode = SessionClass::Instance->GameMode;
+	const GameMode mode = SessionClass::Instance.GameMode;
 
 	return (mode == GameMode::Skirmish || mode == GameMode::LAN || mode == GameMode::Internet) ? ContinueGameCode : SkipGameCode;
 }

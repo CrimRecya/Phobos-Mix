@@ -57,6 +57,7 @@ public:
 		CDTimerClass UnitAutoDeployTimer;
 		WeaponTypeClass* LastWeaponType;
 		CoordStruct LastWeaponFLH;
+		int CurrentTracingCount;
 		int LastHurtFrame;
 		int BeControlledThreatFrame;
 		int ScatteringStopFrame;
@@ -121,6 +122,7 @@ public:
 			, UnitAutoDeployTimer {}
 			, LastWeaponType {}
 			, LastWeaponFLH {}
+			, CurrentTracingCount { 0 }
 			, LastHurtFrame { 0 }
 			, BeControlledThreatFrame { 0 }
 			, ScatteringStopFrame { 0 }

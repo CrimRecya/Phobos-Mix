@@ -112,7 +112,7 @@ DEFINE_HOOK(0x73E730, UnitClass_MissionHarvest_HarvesterScanAfterUnload, 0x5)
 
 		if (*pCellStru != CellStruct::Empty)
 		{
-			const auto pCell = MapClass::Instance->TryGetCellAt(*pCellStru);
+			const auto pCell = MapClass::Instance.TryGetCellAt(*pCellStru);
 			const auto distFromTiberium = pCell ? pThis->DistanceFrom(pCell) : -1;
 			const auto distFromFocus = pThis->DistanceFrom(pFocus);
 
@@ -184,11 +184,11 @@ void __fastcall ArrivingRefineryNearBy(UnitClass* pThis, BuildingClass* pDock)
 			if (amount <= 0.0)
 				continue;
 
-			money += static_cast<int>(amount * TiberiumClass::Array->Items[idx]->Value);
+			money += static_cast<int>(amount * TiberiumClass::Array.Items[idx]->Value);
 			const auto amountFromPurifier = amount * multiplier;
 
 			if (amountFromPurifier > 0.0)
-				money += static_cast<int>(amountFromPurifier * TiberiumClass::Array->Items[idx]->Value);
+				money += static_cast<int>(amountFromPurifier * TiberiumClass::Array.Items[idx]->Value);
 		}
 
 		if (money)
@@ -279,7 +279,7 @@ DEFINE_HOOK(0x73EB2C, UnitClass_MissionHarvest_Status2, 0x6)
 		if (Unsorted::CurrentFrame - HouseExt::ExtMap.Find(pHouse)->LastRefineryBuildFrame >= pThis->UpdateTimer.TimeLeft)
 		{
 			const auto pDestinationCell = (pDestination->WhatAmI() == AbstractType::Cell) ?
-				static_cast<CellClass*>(pDestination) : MapClass::Instance->GetCellAt(pDestination->GetCoords());
+				static_cast<CellClass*>(pDestination) : MapClass::Instance.GetCellAt(pDestination->GetCoords());
 
 			for (int i = 0; i < 8; ++i)
 			{
@@ -324,7 +324,7 @@ DEFINE_HOOK(0x73EB2C, UnitClass_MissionHarvest_Status2, 0x6)
 				auto dockCell = CellStruct { static_cast<short>(dockLocation.X >> 8), static_cast<short>(dockLocation.Y >> 8) };
 
 				if (reinterpret_cast<bool(__thiscall*)(DisplayClass*, CellStruct*, CellStruct*, MovementZone, bool, bool, bool)>(0x56D100)
-					(DisplayClass::Instance, &destCell, &dockCell, move, pThis->IsOnBridge(), false ,false)) // Prevent send command
+					(&DisplayClass::Instance, &destCell, &dockCell, move, pThis->IsOnBridge(), false ,false)) // Prevent send command
 				{
 					const auto difference = Point2D { (thisPosition.X - (dockLocation.X >> 4)), (thisPosition.Y - (dockLocation.Y >> 4)) };
 					const auto newDistanceSquared = (difference.X * difference.X) + (difference.Y * difference.Y);
@@ -360,7 +360,7 @@ DEFINE_HOOK(0x73EB2C, UnitClass_MissionHarvest_Status2, 0x6)
 	if (distanceSquared > 6400)
 		closeTo = CellClass::Coord2Cell(thisLocation);
 
-	destCell = MapClass::Instance->NearByLocation(destCell, pType->SpeedType, -1, move, false, 1, 1, false, false, false, true, closeTo, false, false);
+	destCell = MapClass::Instance.NearByLocation(destCell, pType->SpeedType, -1, move, false, 1, 1, false, false, false, true, closeTo, false, false);
 
 	if (destCell == CellStruct::Empty)
 	{
@@ -368,7 +368,7 @@ DEFINE_HOOK(0x73EB2C, UnitClass_MissionHarvest_Status2, 0x6)
 		return SkipGameCode;
 	}
 
-	const auto pDestCell = MapClass::Instance->TryGetCellAt(destCell);
+	const auto pDestCell = MapClass::Instance.TryGetCellAt(destCell);
 
 	if (!pDestCell || !pType->Teleporter)
 	{

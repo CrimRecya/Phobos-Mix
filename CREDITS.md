@@ -350,6 +350,7 @@ This page lists all the individual contributions to the project by their author.
    - Campaign load screen PCX support
    - New condition for automatic self-destruction logic when TechnoTypes exist/don't exist
    - Fix `AltNextScenario` not taking effect
+   - Fix `Hospital=yes` building can't kick out infantry after loading a save
 - **NetsuNegi**:
    - Forbidding parallel AI queues by type
    - Jumpjet crash speed fix when crashing onto building
@@ -412,11 +413,11 @@ This page lists all the individual contributions to the project by their author.
   - Draw visual effects for airburst weapons
   - Technos recount current burst index when change the firing weapon
   - Units will not always stuck in the factory
+  - Technos can maintain a suitable distance after firing
   - Projectile subject to ground check before firing
   - New Missile trajectory
   - New Engrave trajectory
   - New Tracing trajectory
-  - Technos will maintain a suitable distance after firing
   - Jumpjet Climbing Logic Enhancement
   - Several new Infotypes, no display in specific status and a new single frame display method
   - Display factories, superweapons, iron curtain and temporal progress on specific technos

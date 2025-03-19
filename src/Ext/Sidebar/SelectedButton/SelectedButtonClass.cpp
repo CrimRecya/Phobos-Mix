@@ -7,7 +7,7 @@
 SelectedButtonClass::SelectedButtonClass(unsigned int id, int x, int y)
 	: ControlClass(id, x, y, 30, 30, GadgetFlag::LeftPress, false)
 {
-	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect;
+	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
 
 bool SelectedButtonClass::Draw(bool forced)
@@ -19,14 +19,14 @@ void SelectedButtonClass::OnMouseEnter()
 {
 	this->Hovering = true;
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedButtonClass::OnMouseLeave()
 {
 	this->Hovering = false;
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
@@ -84,7 +84,7 @@ void SelectedButtonClass::DrawInfo() const
 	const auto pExt = SelectedInfoClass::Instance.CurrentSelectTechno[0];
 	const auto pTechno = pExt->OwnerObject();
 	const auto pTypeExt = pExt->TypeExtData;
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	const auto pSHP = pTypeExt->SelectedInfo_Button.Get(pSideExt->SelectedInfo_Button.Get());
 
 	if (!pSHP || pSHP->Frames < 7)
@@ -111,7 +111,7 @@ void SelectedButtonClass::DrawInfo() const
 			auto location = Point2D { this->X + this->Width + 10, this->Y + 4 };
 			const auto text = GeneralUtils::LoadStringUnlessMissing("TIP:AggressiveStance", L"AggressiveStance");
 			RectangleStruct drawRect = Drawing::GetTextDimensions(text, location, 0, 3, 2);
-			location += Point2D { 5, 1 };
+			location += Point2D { 4, 1 };
 			drawRect.Width += 8;
 			ColorStruct color { 0, 0, 0 };
 			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
@@ -134,7 +134,7 @@ void SelectedButtonClass::DrawInfo() const
 			auto location = Point2D { this->X + this->Width + 10, this->Y + 4 };
 			const auto text = GeneralUtils::LoadStringUnlessMissing("TIP:ManualReloadAmmo", L"ManualReloadAmmo");
 			RectangleStruct drawRect = Drawing::GetTextDimensions(text, location, 0, 3, 2);
-			location += Point2D { 5, 1 };
+			location += Point2D { 4, 1 };
 			drawRect.Width += 8;
 			ColorStruct color { 0, 0, 0 };
 			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
@@ -149,7 +149,7 @@ void SelectedButtonClass::DrawInfo() const
 SelectedNotButtonClass::SelectedNotButtonClass(unsigned int id, int x, int y)
 	: ControlClass(id, x, y, 14, 14, static_cast<GadgetFlag>(0), false)
 {
-	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect;
+	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
 
 bool SelectedNotButtonClass::Draw(bool forced)
@@ -161,19 +161,19 @@ void SelectedNotButtonClass::OnMouseEnter()
 {
 	this->Hovering = true;
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedNotButtonClass::OnMouseLeave()
 {
 	this->Hovering = false;
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedNotButtonClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	const auto pSHP = pSideExt->SelectedInfo_Buff.Get();
 
 	if (!pSHP || pSHP->Frames < 15)
@@ -203,7 +203,7 @@ void SelectedNotButtonClass::DrawInfo() const
 			wchar_t buffer[0x20];
 			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("TIP:PowerMult", L"PowerMult:%5.2f"), mult);
 			RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
-			location += Point2D { 5, 1 };
+			location += Point2D { 4, 1 };
 			drawRect.Width += 8;
 			ColorStruct color { 0, 0, 0 };
 			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
@@ -231,7 +231,7 @@ void SelectedNotButtonClass::DrawInfo() const
 			wchar_t buffer[0x20];
 			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("TIP:ArmorMult", L"ArmorMult:%5.2f"), mult);
 			RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
-			location += Point2D { 5, 1 };
+			location += Point2D { 4, 1 };
 			drawRect.Width += 8;
 			ColorStruct color { 0, 0, 0 };
 			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
@@ -263,7 +263,7 @@ void SelectedNotButtonClass::DrawInfo() const
 			wchar_t buffer[0x20];
 			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("TIP:SpeedMult", L"SpeedMult:%5.2f"), mult);
 			RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
-			location += Point2D { 5, 1 };
+			location += Point2D { 4, 1 };
 			drawRect.Width += 8;
 			ColorStruct color { 0, 0, 0 };
 			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
@@ -278,7 +278,7 @@ void SelectedNotButtonClass::DrawInfo() const
 SelectedToggleClass::SelectedToggleClass(unsigned int id, int x, int y)
 	: ControlClass(id, x, y, 10, 14, GadgetFlag::LeftPress, false)
 {
-	this->Disabled = (id == (SelectedInfoClass::StartID + 9)) && (!Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect);
+	this->Disabled = (id == (SelectedInfoClass::StartID + 9)) && (!Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect);
 }
 
 bool SelectedToggleClass::Draw(bool forced)
@@ -290,14 +290,14 @@ void SelectedToggleClass::OnMouseEnter()
 {
 	this->Hovering = true;
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedToggleClass::OnMouseLeave()
 {
 	this->Hovering = false;
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 bool SelectedToggleClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
@@ -316,7 +316,7 @@ bool SelectedToggleClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 
 void SelectedToggleClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
 	const auto pSHP = pSideExt->SelectedInfo_Toggle.Get();
 
@@ -334,7 +334,7 @@ void SelectedToggleClass::DrawInfo() const
 SelectedScrollClass::SelectedScrollClass(unsigned int id, int x, int y)
 	: ControlClass(id, x, y, 10, 14, GadgetFlag::LeftPress, false)
 {
-	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect;
+	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
 
 bool SelectedScrollClass::Draw(bool forced)
@@ -346,14 +346,14 @@ void SelectedScrollClass::OnMouseEnter()
 {
 	this->Hovering = true;
 	SelectedInfoClass::Instance.IsHovering = true;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 void SelectedScrollClass::OnMouseLeave()
 {
 	this->Hovering = false;
 	SelectedInfoClass::Instance.IsHovering = false;
-	MouseClass::Instance->UpdateCursor(MouseCursorType::Default, false);
+	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
 }
 
 bool SelectedScrollClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
@@ -378,7 +378,7 @@ bool SelectedScrollClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 
 void SelectedScrollClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
 	const auto pSHP = pSideExt->SelectedInfo_Toggle.Get();
 

@@ -26,6 +26,17 @@ enum class TrajectoryCheckReturnType : int
 	Detonate = 3
 };
 
+enum class TrajectoryFacing : int
+{
+	Velocity = 0,
+	Spin = 1,
+	Stable = 2,
+	Target = 3,
+	Destination = 4,
+	FirerBody = 5,
+	FirerTurret = 6
+};
+
 class PhobosTrajectory;
 class PhobosTrajectoryType
 {
@@ -34,13 +45,12 @@ public:
 		Speed { 100.0 }
 		, Duration { 0 }
 		, TolerantTime { -1 }
-		, BulletROT { -1 }
-		, BulletSpin { false }
-		, BulletStable { false }
-		, BulletOnPlane { false }
-		, MirrorCoord { true }
+		, CreateCapacity { -1 }
+		, BulletROT { 0 }
+		, BulletFacing { TrajectoryFacing::Velocity }
 		, RetargetRadius { 0 }
 		, Synchronize { false }
+		, MirrorCoord { true }
 		, PeacefulVanish {}
 		, ApplyRangeModifiers { false }
 		, UseDisperseCoord { false }
@@ -89,13 +99,12 @@ public:
 	Valueable<double> Speed; // The speed that a projectile should reach
 	Valueable<int> Duration; // The existence time of projectile
 	Valueable<int> TolerantTime; // The tolerance time for the projectile to lose its target, after which it will explode
+	Valueable<int> CreateCapacity; // Only take effect when the number of trajectory fired by its firer on the map is less than this value
 	Valueable<int> BulletROT; // The rotational speed of the projectile image that does not affect the direction of movement
-	Valueable<bool> BulletSpin; // Image continue to rotate
-	Valueable<bool> BulletStable; // Image no longer rotate after launch
-	Valueable<bool> BulletOnPlane; // Image only rotates on the horizontal plane
-	Valueable<bool> MirrorCoord; // Should mirror offset
+	Valueable<TrajectoryFacing> BulletFacing; // Image facing
 	Valueable<double> RetargetRadius; // Searching for a new target after losing it
 	Valueable<bool> Synchronize; // Synchronize the target of its launcher
+	Valueable<bool> MirrorCoord; // Should mirror offset
 	Nullable<bool> PeacefulVanish; // Disappear directly when about to detonate
 	Valueable<bool> ApplyRangeModifiers; // Apply range bonus
 	Valueable<bool> UseDisperseCoord; // Use the recorded launch location
@@ -170,7 +179,6 @@ public:
 		, NotMainWeapon { false }
 		, ShouldDetonate { false }
 		, FLHCoord { CoordStruct::Empty }
-		, BuildingCoord { CoordStruct::Empty }
 		, CurrentBurst { 0 }
 		, CountOfBurst { 0 }
 
@@ -200,7 +208,6 @@ public:
 	bool NotMainWeapon; // Does it ignore the launcher
 	bool ShouldDetonate; // Should detonate in next frame
 	CoordStruct FLHCoord; // Launch FLH
-	CoordStruct BuildingCoord; // Offset on the building of launch FLH
 	int CurrentBurst; // Current burst index, mirror is required for negative numbers
 	int CountOfBurst; // Upper limit of burst counts
 
@@ -221,14 +228,11 @@ public:
 	virtual bool Save(PhobosStreamWriter& Stm) const;
 	virtual TrajectoryFlag Flag() const { return TrajectoryFlag::Invalid; }
 	virtual void OnUnlimbo();
-	virtual bool OnAI();
-	virtual bool OnAIDetonateCheck();
-	virtual void OnAIVelocityCheck();
-	virtual void OnAINextFrameCheck();
-	virtual void OnAIPreDetonate();
-	virtual void OnAIVelocity(BulletVelocity* pSpeed, BulletVelocity* pPosition) { *pSpeed = this->MovingVelocity; }
-	virtual TrajectoryCheckReturnType OnAITargetCoordCheck() { return TrajectoryCheckReturnType::SkipGameCheck; }
-	virtual TrajectoryCheckReturnType OnAITechnoCheck(TechnoClass* pTechno) { return TrajectoryCheckReturnType::SkipGameCheck; }
+	virtual bool OnEarlyUpdate();
+	virtual bool OnVelocityCheck();
+	virtual void OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* pPosition);
+	virtual TrajectoryCheckReturnType OnDetonateUpdate(const CoordStruct& position);
+	virtual void OnPreDetonate();
 	virtual const PhobosTrajectoryType* GetType() const = 0;
 	virtual void OpenFire();
 	virtual bool GetCanHitGround() const { return true; }
@@ -290,11 +294,21 @@ public:
 				damage = Math::sgn(damage);
 		}
 	}
+	static inline TechnoClass* GetSurfaceFirer(TechnoClass* pFirer)
+	{
+		for (auto pTrans = pFirer; pTrans; pTrans = pTrans->Transporter)
+			pFirer = pTrans;
+
+		return pFirer;
+	}
 	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
 	static BulletVelocity RotateVector(const BulletVelocity& from, const BulletVelocity& to, double turningRadian);
 	static BulletVelocity RotateAboutTheAxis(const BulletVelocity& vector, BulletVelocity& axis, double radian);
 
-	void ChangeBulletFacing();
+	bool OnFacingCheck();
+	void OnFacingUpdate();
+	bool FireAdditionals();
+	void DetonateOnObstacle();
 	bool CheckTolerantAndSynchronize();
 	std::vector<CellClass*> GetCellsInProximityRadius();
 	bool BulletRetargetTechno();
@@ -307,7 +321,6 @@ public:
 	double GetExtraDamageMultiplier();
 	void GetTechnoFLHCoord();
 	CoordStruct GetWeaponFireCoord(TechnoClass* pTechno);
-	bool CheckFireFacing();
 	bool PrepareDisperseWeapon();
 	bool FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner);
 	void CreateDisperseBullets(TechnoClass* pTechno, const CoordStruct& sourceCoord, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst);

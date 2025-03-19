@@ -11,6 +11,7 @@ public:
 		, UniqueCurve { false }
 		, FacingCoord { false }
 		, ReduceCoord { true }
+		, PreAimCoord { { 0, 0, 0 } }
 		, LaunchSpeed { 0 }
 		, Acceleration { 10.0 }
 		, TurningSpeed { 10.0 }
@@ -19,13 +20,14 @@ public:
 		, CruiseUnableRange { Leptons(1280) }
 		, CruiseAltitude { 800 }
 		, CruiseAlongLevel { false }
-		, SuicideAboveRange { -3 }
+		, SuicideAboveRange { -3.0 }
 		, SuicideShortOfROT { false }
 	{ }
 
 	Valueable<bool> UniqueCurve;
 	Valueable<bool> FacingCoord;
 	Valueable<bool> ReduceCoord;
+	Valueable<CoordStruct> PreAimCoord;
 	Valueable<double> LaunchSpeed;
 	Valueable<double> Acceleration;
 	Valueable<double> TurningSpeed;
@@ -59,6 +61,7 @@ public:
 		, InStraight { false }
 		, Accelerate { true }
 		, OriginalDistance { 0 }
+		, OffsetCoord { CoordStruct::Empty }
 		, PreAimDistance { 0 }
 		, LastDotProduct { 0 }
 	{ }
@@ -68,6 +71,7 @@ public:
 	bool InStraight;
 	bool Accelerate;
 	int OriginalDistance;
+	CoordStruct OffsetCoord;
 	double PreAimDistance;
 	double LastDotProduct;
 
@@ -75,9 +79,9 @@ public:
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Missile; }
 	virtual void OnUnlimbo() override;
-	virtual bool OnAI() override;
-	virtual bool OnAIDetonateCheck() override;
-	virtual void OnAIVelocityCheck() override;
+	virtual bool OnEarlyUpdate() override;
+	virtual bool OnVelocityCheck() override;
+	virtual TrajectoryCheckReturnType OnDetonateUpdate(const CoordStruct& position) override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual void OpenFire() override;
 	virtual CoordStruct GetRetargetCenter() const override;
@@ -86,7 +90,8 @@ public:
 
 private:
 	void InitializeBulletNotCurve();
-	inline bool CalculateReducedVelocity(double rotateRadian);
+	CoordStruct GetPreAimCoordsWithBurst();
+	bool CalculateReducedVelocity(double rotateRadian);
 	bool CurveVelocityChange();
 	bool NotCurveVelocityChange();
 	bool StandardVelocityChange();

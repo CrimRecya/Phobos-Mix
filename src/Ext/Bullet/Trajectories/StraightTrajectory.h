@@ -41,8 +41,9 @@ public:
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual TrajectoryFlag Flag() const override { return TrajectoryFlag::Straight; }
 	virtual void OnUnlimbo() override;
-	virtual bool OnAIDetonateCheck() override;
-	virtual void OnAIPreDetonate() override;
+	virtual bool OnVelocityCheck() override;
+	virtual TrajectoryCheckReturnType OnDetonateUpdate(const CoordStruct& position) override;
+	virtual void OnPreDetonate() override;
 	virtual const PhobosTrajectoryType* GetType() const override { return this->Type; }
 	virtual void OpenFire() override;
 	virtual void FireTrajectory() override;

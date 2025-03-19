@@ -46,17 +46,15 @@ void BombardTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 {
 	this->PhobosTrajectoryType::Read(pINI, pSection);
 	INI_EX exINI(pINI);
-
 	// LiveShell
-	this->RotateCoord.Read(exINI, pSection, "Trajectory.Bombard.RotateCoord");
-	this->OffsetCoord.Read(exINI, pSection, "Trajectory.Bombard.OffsetCoord");
-	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.Bombard.AxisOfRotation");
-	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.Bombard.LeadTimeCalculate");
-	this->EarlyDetonation.Read(exINI, pSection, "Trajectory.Bombard.EarlyDetonation");
-	this->DetonationHeight.Read(exINI, pSection, "Trajectory.Bombard.DetonationHeight");
-	this->DetonationDistance.Read(exINI, pSection, "Trajectory.Bombard.DetonationDistance");
-	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.Bombard.TargetSnapDistance");
-
+	this->RotateCoord.Read(exINI, pSection, "Trajectory.RotateCoord");
+	this->OffsetCoord.Read(exINI, pSection, "Trajectory.OffsetCoord");
+	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.AxisOfRotation");
+	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.LeadTimeCalculate");
+	this->EarlyDetonation.Read(exINI, pSection, "Trajectory.EarlyDetonation");
+	this->DetonationHeight.Read(exINI, pSection, "Trajectory.DetonationHeight");
+	this->DetonationDistance.Read(exINI, pSection, "Trajectory.DetonationDistance");
+	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
 	// Bombard
 	this->Height.Read(exINI, pSection, "Trajectory.Bombard.Height");
 	this->Height = Math::max(0.0, this->Height);
@@ -102,44 +100,65 @@ bool BombardTrajectory::Save(PhobosStreamWriter& Stm) const
 void BombardTrajectory::OnUnlimbo()
 {
 	this->ActualTrajectory::OnUnlimbo();
-
+	// Bombard
 	const auto pBullet = this->Bullet;
 	this->Height += pBullet->TargetCoords.Z;
 	// use scaling since RandomRanged only support int
 	this->FallPercent += ScenarioClass::Instance->Random.RandomRanged(0, static_cast<int>(200 * this->Type->FallPercentShift)) / 100.0;
 	// Record the initial target coordinates without offset
 	this->InitialTargetCoord = pBullet->TargetCoords;
+	// Special case: Set the target to the ground
+	if (this->Type->DetonationDistance.Get() <= -1e-10)
+	{
+		const auto pTarget = pBullet->Target;
 
+		if (pTarget->AbstractFlags & AbstractFlags::Foot)
+		{
+			if (const auto pCell = MapClass::Instance.TryGetCellAt(pTarget->GetCoords()))
+			{
+				pBullet->Target = pCell;
+				pBullet->TargetCoords = pCell->GetCoords();
+			}
+		}
+	}
+	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }
 
-bool BombardTrajectory::OnAIDetonateCheck()
+bool BombardTrajectory::OnVelocityCheck()
 {
-	if (this->PhobosTrajectory::OnAIDetonateCheck())
-		return true;
+	return this->BulletVelocityChange() || this->PhobosTrajectory::OnVelocityCheck();
+}
+
+TrajectoryCheckReturnType BombardTrajectory::OnDetonateUpdate(const CoordStruct& position)
+{
+	if (this->WaitOneFrame)
+		return TrajectoryCheckReturnType::SkipGameCheck;
+	else if (this->PhobosTrajectory::OnDetonateUpdate(position) == TrajectoryCheckReturnType::Detonate)
+		return TrajectoryCheckReturnType::Detonate;
 
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	// Close enough
-	if (pBullet->TargetCoords.DistanceFrom(pBullet->Location) < pType->DetonationDistance.Get())
-		return true;
+	if (pBullet->TargetCoords.DistanceFrom(position) < pType->DetonationDistance.Get())
+		return TrajectoryCheckReturnType::Detonate;
 	// Height
 	if (pType->DetonationHeight >= 0 && (pType->EarlyDetonation
-		? ((pBullet->Location.Z - pBullet->SourceCoords.Z) > pType->DetonationHeight)
-		: (this->IsFalling && (pBullet->Location.Z - pBullet->SourceCoords.Z) < pType->DetonationHeight)))
+		? ((position.Z - pBullet->SourceCoords.Z) > pType->DetonationHeight)
+		: (this->IsFalling && (position.Z - pBullet->SourceCoords.Z) < pType->DetonationHeight)))
 	{
-		return true;
+		return TrajectoryCheckReturnType::Detonate;
 	}
 
-	return this->BulletVelocityChange();
+	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
 void BombardTrajectory::OpenFire()
 {
 	const auto pType = this->Type;
 	// Wait, or launch immediately?
-	if (!pType->NoLaunch || !pType->LeadTimeCalculate || !abstract_cast<FootClass*>(this->Bullet->Target))
+	if (!pType->NoLaunch || !pType->LeadTimeCalculate.Get(false) || !abstract_cast<FootClass*>(this->Bullet->Target))
 		this->FireTrajectory();
 	else
 		this->WaitOneFrame = 2;
@@ -156,7 +175,7 @@ void BombardTrajectory::FireTrajectory()
 	if (!pType->NoLaunch)
 	{
 		const auto middleLocation = this->CalculateMiddleCoords();
-		this->RemainingDistance += static_cast<int>(middleLocation.DistanceFrom(pBullet->SourceCoords) + pType->Speed);
+		this->RemainingDistance += static_cast<int>(middleLocation.DistanceFrom(pBullet->SourceCoords));
 		this->MovingVelocity = PhobosTrajectory::Coord2Vector(middleLocation - pBullet->SourceCoords);
 
 		if (this->CalculateBulletVelocity(pType->Speed))
@@ -175,7 +194,7 @@ void BombardTrajectory::FireTrajectory()
 		{
 			middleLocation = this->CalculateMiddleCoords();
 			const auto fallSpeed = pType->FallSpeed.Get(pType->Speed);
-			this->RemainingDistance += static_cast<int>(pBullet->TargetCoords.DistanceFrom(middleLocation) + fallSpeed);
+			this->RemainingDistance += static_cast<int>(pBullet->TargetCoords.DistanceFrom(middleLocation));
 			this->MovingVelocity = PhobosTrajectory::Coord2Vector(pBullet->TargetCoords - middleLocation);
 
 			if (this->CalculateBulletVelocity(fallSpeed))
@@ -211,7 +230,7 @@ void BombardTrajectory::SetBulletNewTarget(AbstractClass* const pTarget)
 	pBullet->SetTarget(pTarget);
 	pBullet->TargetCoords = pTarget->GetCoords();
 
-	if (this->Type->LeadTimeCalculate && !this->IsFalling)
+	if (this->Type->LeadTimeCalculate.Get(false) && !this->IsFalling)
 		this->LastTargetCoord = pBullet->TargetCoords;
 }
 
@@ -292,7 +311,7 @@ CoordStruct BombardTrajectory::CalculateBulletLeadTime()
 	const auto pType = this->Type;
 	auto coords = CoordStruct::Empty;
 
-	if (pType->LeadTimeCalculate)
+	if (pType->LeadTimeCalculate.Get(false))
 	{
 		if (const auto pTarget = pBullet->Target)
 		{
@@ -391,7 +410,7 @@ bool BombardTrajectory::BulletVelocityChange()
 
 				if (!pType->FreeFallOnTarget)
 				{
-					if (pType->LeadTimeCalculate && pTarget)
+					if (pType->LeadTimeCalculate.Get(false) && pTarget)
 						pBullet->TargetCoords += pTarget->GetCoords() - this->InitialTargetCoord + this->CalculateBulletLeadTime();
 
 					middleLocation = pBullet->Location;
@@ -405,11 +424,11 @@ bool BombardTrajectory::BulletVelocityChange()
 					if (std::abs(pType->RotateCoord) > 1e-10 && this->CountOfBurst > 1)
 						this->DisperseBurstSubstitution(this->RotateRadian);
 
-					this->RemainingDistance += static_cast<int>(pBullet->TargetCoords.DistanceFrom(middleLocation) + fallSpeed);
+					this->RemainingDistance += static_cast<int>(pBullet->TargetCoords.DistanceFrom(middleLocation));
 				}
 				else
 				{
-					if (pType->LeadTimeCalculate && pTarget)
+					if (pType->LeadTimeCalculate.Get(false) && pTarget)
 						pBullet->TargetCoords += pTarget->GetCoords() - this->InitialTargetCoord + this->CalculateBulletLeadTime();
 
 					middleLocation = pBullet->TargetCoords;
@@ -417,7 +436,7 @@ bool BombardTrajectory::BulletVelocityChange()
 
 					this->MovingSpeed = 0;
 					this->CalculateBulletVelocity(0);
-					this->RemainingDistance += pBullet->Location.Z - MapClass::Instance->GetCellFloorHeight(middleLocation);
+					this->RemainingDistance += pBullet->Location.Z - MapClass::Instance.GetCellFloorHeight(middleLocation);
 				}
 
 				const auto pExt = BulletExt::ExtMap.Find(pBullet);
@@ -439,7 +458,7 @@ bool BombardTrajectory::BulletVelocityChange()
 				this->ToFalling = true;
 				const auto pTarget = pBullet->Target;
 
-				if (pType->LeadTimeCalculate && pTarget)
+				if (pType->LeadTimeCalculate.Get(false) && pTarget)
 					this->LastTargetCoord = pTarget->GetCoords();
 			}
 		}

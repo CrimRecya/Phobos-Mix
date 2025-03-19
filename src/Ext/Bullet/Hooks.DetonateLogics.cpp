@@ -100,7 +100,7 @@ DEFINE_HOOK(0x4690C1, BulletClass_Logics_DetonateOnAllMapObjects, 0x8)
 
 		if ((pWHExt->DetonateOnAllMapObjects_AffectTargets & AffectedTarget::Aircraft) != AffectedTarget::None)
 		{
-			auto const aircraft = copy_dvc(*AircraftClass::Array);
+			auto const aircraft = copy_dvc(AircraftClass::Array);
 
 			for (auto pAircraft : aircraft)
 				tryDetonate(pAircraft);
@@ -108,7 +108,7 @@ DEFINE_HOOK(0x4690C1, BulletClass_Logics_DetonateOnAllMapObjects, 0x8)
 
 		if ((pWHExt->DetonateOnAllMapObjects_AffectTargets & AffectedTarget::Building) != AffectedTarget::None)
 		{
-			auto const buildings = copy_dvc(*BuildingClass::Array);
+			auto const buildings = copy_dvc(BuildingClass::Array);
 
 			for (auto pBuilding : buildings)
 				tryDetonate(pBuilding);
@@ -116,7 +116,7 @@ DEFINE_HOOK(0x4690C1, BulletClass_Logics_DetonateOnAllMapObjects, 0x8)
 
 		if ((pWHExt->DetonateOnAllMapObjects_AffectTargets & AffectedTarget::Infantry) != AffectedTarget::None)
 		{
-			auto const infantry = copy_dvc(*InfantryClass::Array);
+			auto const infantry = copy_dvc(InfantryClass::Array);
 
 			for (auto pInf : infantry)
 				tryDetonate(pInf);
@@ -124,7 +124,7 @@ DEFINE_HOOK(0x4690C1, BulletClass_Logics_DetonateOnAllMapObjects, 0x8)
 
 		if ((pWHExt->DetonateOnAllMapObjects_AffectTargets & AffectedTarget::Unit) != AffectedTarget::None)
 		{
-			auto const units = copy_dvc(*UnitClass::Array);
+			auto const units = copy_dvc(UnitClass::Array);
 
 			for (auto const pUnit : units)
 				tryDetonate(pUnit);
@@ -213,7 +213,7 @@ DEFINE_HOOK(0x469C46, BulletClass_Logics_DamageAnimSelected, 0x8)
 	if (pAnimType)
 	{
 		auto const pWHExt = WarheadTypeExt::ExtMap.Find(pThis->WH);
-		int cellHeight = MapClass::Instance()->GetCellFloorHeight(*coords);
+		int cellHeight = MapClass::Instance.GetCellFloorHeight(*coords);
 		auto newCrds = pWHExt->PlayAnimAboveSurface ? CoordStruct { coords->X, coords->Y, Math::max(cellHeight, coords->Z) } : *coords;
 
 		if (cellHeight > newCrds.Z && !pWHExt->PlayAnimUnderground)
@@ -361,15 +361,15 @@ DEFINE_HOOK(0x469AA4, BulletClass_Logics_Extras, 0x5)
 
 				if (pWeaponExt->UnlimboDetonate_Force)
 				{
-					++Unsorted::IKnowWhatImDoing;
+					++Unsorted::ScenarioInit;
 					unlimboResult = pFirer->Unlimbo(*coords, pExt->LimboedDir);
-					--Unsorted::IKnowWhatImDoing;
+					--Unsorted::ScenarioInit;
 				}
 				else
 				{
 					auto const pFirerType = pFirer->GetTechnoType();
-					auto const isBridge = MapClass::Instance->GetCellAt(*coords)->ContainsBridge();
-					auto const nearByCell = MapClass::Instance->NearByLocation(CellClass::Coord2Cell(*coords),
+					auto const isBridge = MapClass::Instance.GetCellAt(*coords)->ContainsBridge();
+					auto const nearByCell = MapClass::Instance.NearByLocation(CellClass::Coord2Cell(*coords),
 						pFirerType->SpeedType, -1, pFirerType->MovementZone, isBridge, 1, 1, false,
 						false, false, isBridge, CellStruct::Empty, false, false);
 
@@ -459,7 +459,7 @@ DEFINE_HOOK(0x4899DA, MapClass_DamageArea_DamageUnderGround, 0x7)
 	bool cylinder = pWHExt->CellSpread_Cylinder;
 	float spread = pWH->CellSpread;
 
-	for (auto const& pTechno : *TechnoClass::Array)
+	for (auto const& pTechno : TechnoClass::Array)
 	{
 		if (pTechno->InWhichLayer() == Layer::Underground && // Layer.
 			pTechno->IsAlive && !pTechno->IsIronCurtained() &&
@@ -627,7 +627,7 @@ DEFINE_HOOK(0x469EC0, BulletClass_Logics_AirburstWeapon, 0x6)
 		}
 		else
 		{
-			for (auto const pTechno : *TechnoClass::Array)
+			for (auto const pTechno : TechnoClass::Array)
 			{
 				if (pTechno->IsInPlayfield && pTechno->IsOnMap && pTechno->Health > 0 && (pTypeExt->RetargetSelf || pTechno != pThis->Owner))
 				{
@@ -650,7 +650,7 @@ DEFINE_HOOK(0x469EC0, BulletClass_Logics_AirburstWeapon, 0x6)
 				int y = random.RandomRanged(-range, range);
 
 				CellStruct cell = { static_cast<short>(cellTarget.X + x), static_cast<short>(cellTarget.Y + y) };
-				auto const pCell = MapClass::Instance->GetCellAt(cell);
+				auto const pCell = MapClass::Instance.GetCellAt(cell);
 
 				targets.AddItem(pCell);
 			}

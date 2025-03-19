@@ -16,7 +16,7 @@ static inline void EnhancedScatterContent(CellClass* pCell, TechnoClass* pCaller
 
 		const auto pFootExt = TechnoExt::ExtMap.Find(pFoot);
 
-		if (pFootExt->ScatteringStopFrame >= Unsorted::CurrentFrame())
+		if (pFootExt->ScatteringStopFrame >= Unsorted::CurrentFrame)
 			continue;
 
 		if (pFoot->NavQueue.Count <= 0 && pFoot->CurrentMission == Mission::Move)
@@ -115,7 +115,7 @@ DEFINE_HOOK(0x4B1F2C, DriveLocomotionClass_MovingProcess_ScatterForwardContent, 
 	GET(Point2D* const, pCoords, ESI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(MapClass::Instance->GetTargetCell(*pCoords), pThis->LinkedTo, alt);
+	CallEnhancedScatterContent(MapClass::Instance.GetTargetCell(*pCoords), pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -154,7 +154,7 @@ DEFINE_HOOK(0x4B391F, DriveLocomotionClass_MovingProcess2_ScatterForwardContent3
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x5C, -0x48));
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(MapClass::Instance->GetCellAt(cell), pThis->LinkedTo, alt);
+	CallEnhancedScatterContent(MapClass::Instance.GetCellAt(cell), pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -180,7 +180,7 @@ DEFINE_HOOK(0x515966, HoverLocomotionClass_MovingProcess_ScatterForwardContent, 
 	GET(Point2D* const, pCoords, ESI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(MapClass::Instance->GetTargetCell(*pCoords), pThis->LinkedTo, alt);
+	CallEnhancedScatterContent(MapClass::Instance.GetTargetCell(*pCoords), pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -219,7 +219,7 @@ DEFINE_HOOK(0x6A156F, ShipLocomotionClass_MovingProcess_ScatterForwardContent, 0
 	GET(Point2D* const, pCoords, ESI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(MapClass::Instance->GetTargetCell(*pCoords), pThis->LinkedTo, alt);
+	CallEnhancedScatterContent(MapClass::Instance.GetTargetCell(*pCoords), pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -258,7 +258,7 @@ DEFINE_HOOK(0x6A2F6E, ShipLocomotionClass_MovingProcess2_ScatterForwardContent3,
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x5C, -0x48));
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(MapClass::Instance->GetCellAt(cell), pThis->LinkedTo, alt);
+	CallEnhancedScatterContent(MapClass::Instance.GetCellAt(cell), pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -304,7 +304,7 @@ static inline void ScatterPathCellContent(FootClass* pThis, CellClass* pCell)
 
 		const auto pFootExt = TechnoExt::ExtMap.Find(pFoot);
 
-		if (pFootExt->ScatteringStopFrame >= Unsorted::CurrentFrame())
+		if (pFootExt->ScatteringStopFrame >= Unsorted::CurrentFrame)
 			continue;
 
 		if (std::abs(static_cast<short>(static_cast<short>(pFoot->PrimaryFacing.Desired().Raw) - static_cast<short>(pThis->PrimaryFacing.Current().Raw))) < 16384)
@@ -330,7 +330,7 @@ static inline CellStruct GetScatterCell(FootClass* pThis, int face)
 {
 	const auto thisCoord = pThis->GetDestination();
 	const auto thisCell = CellClass::Coord2Cell(thisCoord);
-	const auto pThisCell = MapClass::Instance->GetCellAt(thisCell);
+	const auto pThisCell = MapClass::Instance.GetCellAt(thisCell);
 	const auto height = (pThisCell->Level + (pThis->IsOnBridge() ? 4 : 0)) * Unsorted::LevelHeight;
 	auto alternativeCell = CellStruct::Empty;
 	auto alternativeMove = Move::No;
@@ -339,9 +339,9 @@ static inline CellStruct GetScatterCell(FootClass* pThis, int face)
 	{
 		const auto facing = static_cast<size_t>(face + i) & 7u;
 		const auto cell = thisCell + CellSpread::GetNeighbourOffset(facing);
-		const auto pCell = MapClass::Instance->GetCellAt(cell);
+		const auto pCell = MapClass::Instance.GetCellAt(cell);
 
-		if (!MapClass::Instance->IsWithinUsableArea(cell, true))
+		if (!MapClass::Instance.IsWithinUsableArea(cell, true))
 			continue;
 
 		const auto move = pThis->IsCellOccupied(pCell, static_cast<FacingType>(facing), pThis->GetCellLevel(), nullptr, true);
@@ -405,7 +405,7 @@ static inline CellStruct GetScatterCell(FootClass* pThis, int face)
 
 		auto coords = CellClass::Cell2Coord(cell, height);
 		auto buffer = CellStruct::Empty;
-		const auto mapCell = *reinterpret_cast<CellStruct*(__thiscall*)(TacticalClass*, CellStruct*, CoordStruct*)>(0x6D6410)(TacticalClass::Instance(), &buffer, &coords);
+		const auto mapCell = *reinterpret_cast<CellStruct*(__thiscall*)(TacticalClass*, CellStruct*, CoordStruct*)>(0x6D6410)(TacticalClass::Instance, &buffer, &coords);
 
 		if (cell != mapCell) // || pCell->ContainsBridge()
 		{
@@ -426,7 +426,7 @@ static inline CellStruct GetScatterCell(FootClass* pThis, int face)
 
 static inline int GetTechnoCloseEnoughRange(TechnoClass* pCaller)
 {
-	if (TechnoExt::ExtMap.Find(pCaller)->ScatteringStopFrame >= Unsorted::CurrentFrame())
+	if (TechnoExt::ExtMap.Find(pCaller)->ScatteringStopFrame >= Unsorted::CurrentFrame)
 		return pCaller->WhatAmI() == AbstractType::Infantry ? 128 : 0;
 
 	return RulesClass::Instance->CloseEnough;
@@ -446,7 +446,7 @@ DEFINE_HOOK(0x4B3659, DriveLocomotionClass_MovingProcess2_CheckOverrideMission, 
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x5C, -0x48));
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		ScatterPathCellContent(pThis, MapClass::Instance->GetCellAt(cell));
+		ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
 
 	return 0;
 }
@@ -457,7 +457,7 @@ DEFINE_HOOK(0x515D30, HoverLocomotionClass_MovingProcess_CheckOverrideMission, 0
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x68, -0x5C));
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		ScatterPathCellContent(pThis, MapClass::Instance->GetCellAt(cell));
+		ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
 
 	return 0;
 }
@@ -468,7 +468,7 @@ DEFINE_HOOK(0x5B0BCA, MechLocomotionClass_MovingProcess_CheckOverrideMission, 0x
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x68, -0x54));
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		ScatterPathCellContent(pThis, MapClass::Instance->GetCellAt(cell));
+		ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
 
 	return 0;
 }
@@ -479,7 +479,7 @@ DEFINE_HOOK(0x6A2CA8, ShipLocomotionClass_MovingProcess2_CheckOverrideMission, 0
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x5C, -0x48));
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		ScatterPathCellContent(pThis, MapClass::Instance->GetCellAt(cell));
+		ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
 
 	return 0;
 }
@@ -490,7 +490,7 @@ DEFINE_HOOK(0x75B8AC, WalkLocomotionClass_MovingProcess_CheckOverrideMission, 0x
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x48, -0x38));
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		ScatterPathCellContent(pThis, MapClass::Instance->GetCellAt(cell));
+		ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
 
 	return 0;
 }
@@ -507,11 +507,11 @@ DEFINE_HOOK(0x51D43F, InfantryClass_Scatter_ScatterRecord, 0x6)
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x50, -0x38));
 
 	if (pThis->CurrentMission == Mission::Area_Guard && pThis->ArchiveTarget == pThis->GetCell())
-		pThis->SetArchiveTarget(MapClass::Instance->GetCellAt(cell));
+		pThis->SetArchiveTarget(MapClass::Instance.GetCellAt(cell));
 	else
-		pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
+		pThis->SetDestination(MapClass::Instance.GetCellAt(cell), true);
 
-	TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame() + 60;
+	TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
 
 	return ProcessNow;
 }
@@ -533,11 +533,11 @@ DEFINE_HOOK(0x51D487, InfantryClass_Scatter_EnhancedScatter, 0x6)
 		pThis->QueueMission(Mission::Move, false);
 
 		if (pThis->CurrentMission == Mission::Area_Guard && pThis->ArchiveTarget == pThis->GetCell())
-			pThis->SetArchiveTarget(MapClass::Instance->GetCellAt(cell));
+			pThis->SetArchiveTarget(MapClass::Instance.GetCellAt(cell));
 		else
-			pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
+			pThis->SetDestination(MapClass::Instance.GetCellAt(cell), true);
 
-		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame() + 60;
+		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
 	}
 
 	return SkipGameCode;
@@ -551,12 +551,12 @@ DEFINE_HOOK(0x743C91, UnitClass_Scatter_ScatterRecord, 0x7)
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x58, 0x4));
 
 	if (pThis->CurrentMission == Mission::Area_Guard && pThis->ArchiveTarget == pThis->GetCell())
-		pThis->SetArchiveTarget(MapClass::Instance->GetCellAt(cell));
+		pThis->SetArchiveTarget(MapClass::Instance.GetCellAt(cell));
 	else
-		pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
+		pThis->SetDestination(MapClass::Instance.GetCellAt(cell), true);
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame() + 60;
+		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
 
 	return SkipGameCode;
 }
@@ -576,11 +576,11 @@ DEFINE_HOOK(0x743E08, UnitClass_Scatter_EnhancedScatter, 0x7)
 	if (cell != CellStruct::Empty)
 	{
 		if (pThis->CurrentMission == Mission::Area_Guard && pThis->ArchiveTarget == pThis->GetCell())
-			pThis->SetArchiveTarget(MapClass::Instance->GetCellAt(cell));
+			pThis->SetArchiveTarget(MapClass::Instance.GetCellAt(cell));
 		else
-			pThis->SetDestination(MapClass::Instance->GetCellAt(cell), true);
+			pThis->SetDestination(MapClass::Instance.GetCellAt(cell), true);
 
-		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame() + 60;
+		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
 	}
 
 	return SkipGameCode;

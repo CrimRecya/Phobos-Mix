@@ -9,7 +9,7 @@ public:
 		, RotateCoord { 0 }
 		, OffsetCoord { { 0, 0, 0 } }
 		, AxisOfRotation { { 0, 0, 1 } }
-		, LeadTimeCalculate { false }
+		, LeadTimeCalculate {}
 		, SubjectToGround { false }
 		, EarlyDetonation { false }
 		, DetonationHeight { -1 }
@@ -20,7 +20,7 @@ public:
 	Valueable<double> RotateCoord; // The maximum rotation angle of the initial velocity vector on the axis of rotation
 	Valueable<CoordStruct> OffsetCoord; // Offset of target position, refers to the initial target position on Missile
 	Valueable<CoordStruct> AxisOfRotation; // RotateCoord's rotation axis
-	Valueable<bool> LeadTimeCalculate; // Predict the moving direction of the target
+	Nullable<bool> LeadTimeCalculate; // Predict the moving direction of the target
 	bool SubjectToGround; // Auto set
 	Valueable<bool> EarlyDetonation; // Calculating DetonationHeight in the rising phase rather than the falling phase
 	Valueable<int> DetonationHeight; // At what height did it detonate in advance
@@ -53,8 +53,8 @@ public:
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
 	virtual void OnUnlimbo() override;
-	virtual bool OnAI() override;
-	virtual void OnAIPreDetonate() override;
+	virtual bool OnEarlyUpdate() override;
+	virtual void OnPreDetonate() override;
 	virtual void FireTrajectory() { this->OpenFire(); } // New
 
 	bool BulletPrepareCheck();

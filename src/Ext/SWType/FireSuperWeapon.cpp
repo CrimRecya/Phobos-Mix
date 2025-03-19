@@ -100,7 +100,7 @@ void SWTypeExt::ExtData::ApplyLimboKill(HouseClass* pHouse)
 {
 	for (int limboKillID : this->LimboKill_IDs)
 	{
-		for (HouseClass* pTargetHouse : *HouseClass::Array)
+		for (HouseClass* pTargetHouse : HouseClass::Array)
 		{
 			if (EnumFunctions::CanTargetHouse(this->LimboKill_Affected, pHouse, pTargetHouse))
 			{
@@ -138,7 +138,7 @@ void SWTypeExt::ExtData::ApplyLimboKill(HouseClass* pHouse)
 
 void SWTypeExt::ExtData::ApplyDetonation(HouseClass* pHouse, const CellStruct& cell)
 {
-	auto coords = MapClass::Instance->GetCellAt(cell)->GetCoords();
+	auto coords = MapClass::Instance.GetCellAt(cell)->GetCoords();
 	BuildingClass* pFirer = nullptr;
 
 	for (auto const& pBld : pHouse->Buildings)
@@ -156,7 +156,7 @@ void SWTypeExt::ExtData::ApplyDetonation(HouseClass* pHouse, const CellStruct& c
 	const auto pWeapon = this->Detonate_Weapon;
 	auto const mapCoords = CellClass::Coord2Cell(coords);
 
-	if (!MapClass::Instance->CoordinatesLegal(mapCoords))
+	if (!MapClass::Instance.CoordinatesLegal(mapCoords))
 	{
 		auto const ID = pWeapon ? pWeapon->get_ID() : this->Detonate_Warhead->get_ID();
 		Debug::Log("ApplyDetonation: Superweapon [%s] failed to detonate [%s] - cell at %d, %d is invalid.\n", this->OwnerObject()->get_ID(), ID, mapCoords.X, mapCoords.Y);
@@ -224,7 +224,7 @@ void SWTypeExt::ExtData::ApplyTypeConversion(SuperClass* pSW)
 	if (this->Convert_Pairs.size() == 0)
 		return;
 
-	for (const auto pTargetFoot : *FootClass::Array)
+	for (const auto pTargetFoot : FootClass::Array)
 		TypeConvertGroup::Convert(pTargetFoot, this->Convert_Pairs, pSW->Owner);
 }
 
@@ -258,8 +258,8 @@ void SWTypeExt::ExtData::GrantOneTimeFromList(SuperClass* pSW)
 
 				if (notObserver && pHouse->IsCurrentPlayer())
 				{
-					if (MouseClass::Instance->AddCameo(AbstractType::Special, swIdxToAdd))
-						MouseClass::Instance->RepaintSidebar(1);
+					if (MouseClass::Instance.AddCameo(AbstractType::Special, swIdxToAdd))
+						MouseClass::Instance.RepaintSidebar(1);
 				}
 			}
 
@@ -296,7 +296,7 @@ void SWTypeExt::ExtData::GrantOneTimeFromList(SuperClass* pSW)
 		if (this->EVA_GrantOneTimeLaunched.isset())
 			VoxClass::PlayIndex(this->EVA_GrantOneTimeLaunched.Get(), -1, -1);
 
-		MessageListClass::Instance->PrintMessage(this->Message_GrantOneTimeLaunched.Get(), RulesClass::Instance->MessageDelay, HouseClass::CurrentPlayer->ColorSchemeIndex, true);
+		MessageListClass::Instance.PrintMessage(this->Message_GrantOneTimeLaunched.Get(), RulesClass::Instance->MessageDelay, HouseClass::CurrentPlayer->ColorSchemeIndex, true);
 	}
 }
 

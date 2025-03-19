@@ -24,7 +24,7 @@ DEFINE_HOOK(0x709866, TechnoClass_TargetAndEstimateDamage_ScanDelayGuardArea, 0x
 	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
 	auto const pOwner = pThis->Owner;
 	auto const pRulesExt = RulesExt::Global();
-	auto const pRules = RulesClass::Instance();
+	auto const pRules = RulesClass::Instance;
 	int delay = 1;
 
 	if (pOwner->IsHumanPlayer || pOwner->IsControlledByHuman())
@@ -43,7 +43,7 @@ DEFINE_HOOK(0x70989C, TechnoClass_TargetAndEstimateDamage_ScanDelayNormal, 0x6)
 	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
 	auto const pOwner = pThis->Owner;
 	auto const pRulesExt = RulesExt::Global();
-	auto const pRules = RulesClass::Instance();
+	auto const pRules = RulesClass::Instance;
 	int delay = (pThis->Location.X + pThis->Location.Y + Unsorted::CurrentFrame) % 3;
 
 	if (pOwner->IsHumanPlayer || pOwner->IsControlledByHuman())

@@ -32,9 +32,9 @@ void AnimTypeExt::ProcessDestroyAnims(UnitClass* pThis, TechnoClass* pKiller)
 
 			if (pType->DestroyAnim.Count >= 8)
 			{
-				idxAnim = pType->DestroyAnim.Count;
-				if (pType->DestroyAnim.Count % 2 == 0)
-					idxAnim *= static_cast<int>(static_cast<unsigned char>(facing) / 256.0);
+				idxAnim = pThis->Type->DestroyAnim.Count - 1;
+				if (pThis->Type->DestroyAnim.Count % 2 == 0)
+					idxAnim = static_cast<int>(static_cast<unsigned char>(facing) / 256.0 * idxAnim);
 			}
 
 			pAnimType = pType->DestroyAnim[idxAnim];

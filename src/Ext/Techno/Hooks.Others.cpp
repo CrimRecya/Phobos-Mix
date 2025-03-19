@@ -2,13 +2,17 @@
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
+#include <OverlayClass.h>
+#include <TerrainClass.h>
 #include <JumpjetLocomotionClass.h>
 #include <HoverLocomotionClass.h>
 
 #include <Ext/Building/Body.h>
-#include <Ext/WeaponType/Body.h>
 #include "Ext/BulletType/Body.h"
+#include <Ext/WeaponType/Body.h>
 #include "Ext/WarheadType/Body.h"
+#include <Ext/OverlayType/Body.h>
+#include <Ext/TerrainType/Body.h>
 #include <Utilities/AresHelper.h>
 #include <Utilities/Helpers.Alex.h>
 #include <Helpers/Macro.h>
@@ -310,10 +314,10 @@ DEFINE_HOOK(0x55B4E1, LogicClass_Update_UnmarkCellOccupationFlags, 0x5)
 
 	if (delay > 0 && !(Unsorted::CurrentFrame % delay))
 	{
-		const auto pMap = MapClass::Instance();
-		pMap->CellIteratorReset();
+		auto& pMap = MapClass::Instance;
+		pMap.CellIteratorReset();
 
-		for (auto pCell = pMap->CellIteratorNext(); pCell; pCell = pMap->CellIteratorNext())
+		for (auto pCell = pMap.CellIteratorNext(); pCell; pCell = pMap.CellIteratorNext())
 		{
 			if ((0xFF & pCell->OccupationFlags) && !pCell->FirstObject)
 			{
@@ -590,7 +594,7 @@ static inline bool CanBuildingUnloadOccupants(BuildingClass* pThis)
 
 	for (auto pFoundation = pThis->Type->FoundationOutside; *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
 	{
-		if (const auto pSearchCell = MapClass::Instance->TryGetCellAt(topLeftCell + *pFoundation))
+		if (const auto pSearchCell = MapClass::Instance.TryGetCellAt(topLeftCell + *pFoundation))
 		{
 			if (pOccupant->IsCellOccupied(pSearchCell, FacingType::None, -1, nullptr, true) == Move::OK)
 				return true;
@@ -631,7 +635,7 @@ DEFINE_HOOK(0x4D621D, FootClass_ApproachTarget_InRangeSourceCoordsFix, 0x6)
 	}
 	else if (pWeapon && pWeapon->CellRangefinding)
 	{
-		const auto pCell = MapClass::Instance->GetCellAt(sourceCoords);
+		const auto pCell = MapClass::Instance.GetCellAt(sourceCoords);
 		sourceCoords = pCell->GetCoords();
 
 		if (pCell->ContainsBridge())
@@ -639,7 +643,7 @@ DEFINE_HOOK(0x4D621D, FootClass_ApproachTarget_InRangeSourceCoordsFix, 0x6)
 	}
 	else if (R->Origin() == 0x4D6541)
 	{
-		const auto pCell = MapClass::Instance->GetCellAt(sourceCoords);
+		const auto pCell = MapClass::Instance.GetCellAt(sourceCoords);
 		sourceCoords.Z = pCell->GetFloorHeight(Point2D { sourceCoords.X, sourceCoords.Y });
 
 		if (pCell->ContainsBridge())
@@ -661,7 +665,7 @@ DEFINE_HOOK(0x5865E2, MapClass_IsLocationFogged_Check, 0x5)
 	const int extra = (level & 1) ? ((level >> 1) + 1) : (level >> 1);
 	const CellStruct cell { static_cast<short>((pCoords->X >> 8) - extra), static_cast<short>((pCoords->Y >> 8) - extra) };
 
-	R->EAX(!(MapClass::Instance->GetCellAt(cell)->AltFlags & AltCellFlags::NoFog));
+	R->EAX(!(MapClass::Instance.GetCellAt(cell)->AltFlags & AltCellFlags::NoFog));
 	return 0;
 }
 */
@@ -783,7 +787,7 @@ DEFINE_HOOK(0x6F8D32, TechnoClass_ScanToAttackWall_DestroyOwnerlessWalls, 0x9)
 	GET(int, OwnerIdx, EAX);
 	GET(TechnoClass*, pThis, ESI);
 
-	if (auto const pOwner = (OwnerIdx != -1) ? HouseClass::Array->Items[OwnerIdx] : nullptr)
+	if (auto const pOwner = (OwnerIdx != -1) ? HouseClass::Array.Items[OwnerIdx] : nullptr)
 	{
 		if (pOwner->IsAlliedWith(pThis->Owner)
 			&& (!RulesExt::Global()->DestroyOwnerlessWalls
@@ -831,76 +835,6 @@ DEFINE_HOOK(0x6F7891, TechnoClass_IsCloseEnough_CylinderRangefinding, 0x7)
 
 #pragma endregion
 
-#pragma region RecycleSpawned
-
-DEFINE_HOOK(0x6B77B4, SpawnManagerClass_Update_RecycleSpawned, 0x7)
-{
-	enum { Recycle = 0x6B77FF, NoRecycle = 0x6B7838 };
-
-	GET(SpawnManagerClass* const, pThis, ESI);
-	GET(AircraftClass* const, pSpawner, EDI);
-	GET(CellStruct* const, pCarrierMapCrd, EBP);
-
-	const auto pCarrier = pThis->Owner;
-	const auto pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
-	const auto spawnerCrd = pSpawner->GetCoords();
-
-	auto shouldRecycleSpawned = [&]()
-	{
-		const auto& FLH = pCarrierTypeExt->Spawner_RecycleFLH.Get();
-		const auto recycleCrd = FLH != CoordStruct::Empty
-			? TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret)
-			: pCarrier->GetCoords();
-
-		const auto deltaCrd = spawnerCrd - recycleCrd;
-		const int recycleRange = pCarrierTypeExt->Spawner_RecycleRange;
-
-		if (recycleRange < 0)
-		{
-			// This is a fix to vanilla behavior. Buildings bigger than 1x1 will recycle the spawner correctly.
-			// 182 is √2/2 * 256. 20 is same to vanilla behavior.
-			return (pCarrier->WhatAmI() == AbstractType::Building)
-				? (deltaCrd.X <= 182 && deltaCrd.Y <= 182 && deltaCrd.Z < 20)
-				: (pSpawner->GetMapCoords() == *pCarrierMapCrd && deltaCrd.Z < 20);
-		}
-
-		return deltaCrd.Magnitude() <= recycleRange;
-	};
-
-	if (shouldRecycleSpawned())
-	{
-		if (pCarrierTypeExt->Spawner_RecycleAnim)
-			GameCreate<AnimClass>(pCarrierTypeExt->Spawner_RecycleAnim, spawnerCrd);
-
-		pSpawner->SetLocation(pCarrier->GetCoords());
-		return Recycle;
-	}
-
-	return NoRecycle;
-}
-
-// Change destination to RecycleFLH.
-DEFINE_HOOK(0x4D962B, FootClass_SetDestination_RecycleFLH, 0x5)
-{
-	GET(FootClass* const, pThis, EBP);
-	GET(CoordStruct*, pDestCrd, EAX);
-
-	const auto pCarrier = pThis->SpawnOwner;
-
-	if (pCarrier && pCarrier == pThis->Destination) // This is a spawner returning to its carrier.
-	{
-		const auto pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
-		const auto& FLH = pCarrierTypeExt->Spawner_RecycleFLH.Get();
-
-		if (FLH != CoordStruct::Empty)
-			*pDestCrd += TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret) - pCarrier->GetCoords();
-	}
-
-	return 0;
-}
-
-#pragma endregion
-
 #pragma region ScatterFix
 
 DEFINE_HOOK(0x481778, CellClass_ScatterContent_Fix, 0x6)
@@ -910,7 +844,7 @@ DEFINE_HOOK(0x481778, CellClass_ScatterContent_Fix, 0x6)
 	GET(TechnoClass* const, pTechno, ESI);
 	GET_STACK(bool, force, STACK_OFFSET(0x2C, 0xC));
 
-	return ((pTechno && pTechno->Owner->IsControlledByHuman() && RulesClass::Instance()->PlayerScatter) || force) ? Scatter : Continue;
+	return ((pTechno && pTechno->Owner->IsControlledByHuman() && RulesClass::Instance->PlayerScatter) || force) ? Scatter : Continue;
 }
 
 #pragma endregion
@@ -1066,7 +1000,7 @@ DEFINE_HOOK(0x4D6E83, FootClass_MissionAreaGuard_FollowStray, 0x6)
 
 	GET(FootClass* const, pThis, ESI);
 
-	int range = RulesClass::Instance()->GuardModeStray;
+	int range = RulesClass::Instance->GuardModeStray;
 
 	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType()))
 		range = pThis->Owner->IsControlledByHuman() ? pTypeExt->PlayerGuardModeStray.Get(Leptons(range)) : pTypeExt->AIGuardModeStray.Get(Leptons(range));
@@ -1358,9 +1292,9 @@ DEFINE_HOOK(0x4448B0, BuildingClass_KickOutUnit_ExitCoords, 0x6)
 	if (!isJJ)
 	{
 		auto nCell = CellClass::Coord2Cell(*pCrd);
-		auto const pCell = MapClass::Instance->GetCellAt(nCell);
+		auto const pCell = MapClass::Instance.GetCellAt(nCell);
 		bool isBridge = pCell->ContainsBridge();
-		nCell = MapClass::Instance->NearByLocation(CellClass::Coord2Cell(*pCrd),
+		nCell = MapClass::Instance.NearByLocation(CellClass::Coord2Cell(*pCrd),
 			pProductType->SpeedType, -1, pProductType->MovementZone, isBridge, 1, 1, false,
 			false, false, isBridge, nCell, false, false);
 		*pCrd = CellClass::Cell2Coord(nCell, pCrd->Z);
@@ -1551,9 +1485,9 @@ DEFINE_HOOK(0x4448F8, BuildingClass_KickOutUnit_CloningFacilityFix, 0x6)
 	GET(const BuildingClass* const, pThis, ESI);
 	GET(const UnitClass* const, pUnit, EDI);
 
-	--Unsorted::IKnowWhatImDoing;
+	--Unsorted::ScenarioInit;
 	KickOutClones(BuildingExt::ExtMap.Find(pThis), pUnit);
-	++Unsorted::IKnowWhatImDoing;
+	++Unsorted::ScenarioInit;
 
 	return 0;
 }
@@ -1799,7 +1733,7 @@ DEFINE_HOOK(0x6FFE00, TechnoClass_ClickedEvent_CacheClickedEvent, 0x5)
 	GET(TechnoClass*, pThis, ECX);
 	GET_STACK(EventType, event, 0x4);
 
-	if (EventClass::OutList->Count >= 128)
+	if (EventClass::OutList.Count >= 128)
 	{
 		auto const pExt = TechnoExt::ExtMap.Find(pThis);
 		pExt->HasCachedClickEvent = true;
@@ -1821,7 +1755,7 @@ DEFINE_HOOK(0x6FFDA5, TechnoClass_ClickedMission_CacheClickedMission, 0x7)
 	GET(AbstractClass* const, pTarget, EBP);
 	GET(Mission const, mission, EDI);
 
-	if (EventClass::OutList->Count >= 128)
+	if (EventClass::OutList.Count >= 128)
 	{
 		auto const pExt = TechnoExt::ExtMap.Find(pThis);
 		pExt->HasCachedClickMission = true;
@@ -1863,7 +1797,7 @@ DEFINE_HOOK(0x522937, InfantryClass_EnterOccupyBuilding_KeepUpdate, 0xA)
 	GET(InfantryClass*, pThis, ESI);
 
 	if (RulesExt::Global()->UpdateInLimbo_Occupier)
-		LogicClass::Instance->AddObject(pThis, false);
+		LogicClass::Instance.AddObject(pThis, false);
 
 	return 0;
 }
@@ -1873,7 +1807,7 @@ DEFINE_HOOK(0x4733B6, PassengerClass_AddPassenger_KeepUpdate, 0x5)
 	GET(InfantryClass*, pThis, ESI);
 
 	if (RulesExt::Global()->UpdateInLimbo_NormalPassenger)
-		LogicClass::Instance->AddObject(pThis, false);
+		LogicClass::Instance.AddObject(pThis, false);
 
 	return 0;
 }
@@ -1898,9 +1832,159 @@ DEFINE_HOOK(0x6FF7F9, SITechnoClass_Fire_LimboLaunch, 0x6)
 	GET(TechnoClass*, pThis, ESI);
 
 	if (RulesExt::Global()->UpdateInLimbo_LimboLaunch)
-		LogicClass::Instance->AddObject(pThis, false);
+		LogicClass::Instance.AddObject(pThis, false);
 
 	return 0;
+}
+
+#pragma endregion
+
+#pragma region RadarDrawing
+
+DEFINE_HOOK(0x655DDD, RadarClass_ProcessPoint_RadarInvisible, 0x6)
+{
+	enum { Invisible = 0x655E66, GoOtherChecks = 0x655E19 };
+
+	GET_STACK(const bool, isInShrouded, STACK_OFFSET(0x40, 0x4));
+	GET(TechnoClass* const, pThis, EBP);
+
+	const auto pTechno = abstract_cast<TechnoClass*>(pThis);
+
+	if (!pTechno)
+		return 0;
+
+	const auto pTechnoOwner = pTechno->Owner;
+	const auto pType = pTechno->GetTechnoType();
+
+	if (HouseClass::CurrentPlayer == pTechnoOwner)
+	{
+		if (TechnoTypeExt::ExtMap.Find(pType)->RadarInvisible_ToSelf)
+			return Invisible;
+	}
+	else if (pTechnoOwner->IsAlliedWith(HouseClass::CurrentPlayer)) // TODO: check asymmetric alliance
+	{
+		if (TechnoTypeExt::ExtMap.Find(pType)->RadarInvisible_ToAlly)
+			return Invisible;
+	}
+	else if (pType->RadarInvisible)
+	{
+		return Invisible;
+	}
+
+	return isInShrouded && !pTechnoOwner->IsControlledByCurrentPlayer() ? Invisible : GoOtherChecks;
+}
+
+#pragma endregion
+
+#pragma region VisualCharacter
+
+namespace VisualCharacterContext
+{
+	TechnoClass* pThis = nullptr;
+	bool specificOwner = false;
+	HouseClass* pWatcher = nullptr;
+}
+
+// Set context
+DEFINE_HOOK(0x703860, TechnoClass_VisualCharacter_Start, 0x6)
+{
+	GET(TechnoClass* const, pThis, ECX);
+	GET_STACK(const bool, specificOwner, STACK_OFFSET(0, 0x4));
+	GET_STACK(HouseClass* const, pWatcher, STACK_OFFSET(0, 0x8));
+
+	VisualCharacterContext::pThis = pThis;
+	VisualCharacterContext::specificOwner = specificOwner;
+	VisualCharacterContext::pWatcher = pWatcher;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x703B0B, TechnoClass_VisualCharacter_Normal, 0x5)
+{
+	if (const HouseClass* const pWatcher = VisualCharacterContext::specificOwner ? VisualCharacterContext::pWatcher : HouseClass::CurrentPlayer)
+	{
+		const auto pThis = VisualCharacterContext::pThis;
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+		const auto pOwner = pThis->Owner;
+
+		if (pOwner == pWatcher)
+			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToSelf.Get()));
+		else if (pOwner->IsAlliedWith(pWatcher))
+			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToAlly.Get()));
+		else
+			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToEnemy.Get()));
+	}
+	else
+	{
+		R->EAX(VisualType::Normal);
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
+#pragma region IgnoreByMouse
+
+static inline bool ShouldIgnoreByMouse(ObjectClass* pObject)
+{
+	const auto pType = pObject->GetType();
+
+	if (!pType)
+		return true;
+
+	if (pObject->AbstractFlags & AbstractFlags::Techno)
+	{
+		const auto pTechno = static_cast<TechnoClass*>(pObject);
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
+		const auto pOwner = pTechno->Owner;
+
+		if (pOwner == HouseClass::CurrentPlayer)
+			return pTypeExt->IgnoredByMouse_ToSelf.Get();
+		else if (pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
+			return pTypeExt->IgnoredByMouse_ToAlly.Get();
+
+		return pTypeExt->IgnoredByMouse_ToEnemy.Get();
+	}
+
+	const auto absType = pObject->WhatAmI();
+
+	if (absType == OverlayClass::AbsID)
+	{
+		const auto pOverlay = static_cast<OverlayClass*>(pObject);
+		const auto pTypeExt = OverlayTypeExt::ExtMap.Find(pOverlay->Type);
+		return pTypeExt->IgnoredByMouse.Get();
+	}
+	else if (absType == TerrainClass::AbsID)
+	{
+		const auto pTerrain = static_cast<TerrainClass*>(pObject);
+		const auto pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
+		return pTypeExt->IgnoredByMouse.Get();
+	}
+
+	return false;
+}
+
+DEFINE_HOOK(0x6DA3D2, TacticalClass_GetObjectOnCrd_IgnoredByMouse1, 0x8)
+{
+	enum { Ignore = 0x6DA491, DontIgnore = 0x6DA3DA };
+	GET(ObjectClass* const, pObject, ESI);
+	return !pObject || ShouldIgnoreByMouse(pObject) ? Ignore : DontIgnore;
+}
+
+DEFINE_HOOK(0x6DA4FB, TacticalClass_GetObjectOnCrd_IgnoredByMouse2, 0x6)
+{
+	enum { SkipGameCode = 0x6DA501 };
+
+	GET(CellClass* const, pCell, EAX);
+
+	auto pObject = pCell->FirstObject;
+
+	for (; pObject && ShouldIgnoreByMouse(pObject); pObject = pObject->NextObject);
+
+	R->EAX(pObject);
+
+	return SkipGameCode;
 }
 
 #pragma endregion

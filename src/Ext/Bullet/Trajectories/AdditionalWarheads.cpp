@@ -49,14 +49,26 @@ std::vector<CellClass*> PhobosTrajectory::GetCellsInProximityRadius()
 
 	for (const auto& pCells : recCells)
 	{
-		if (CellClass* pRecCell = MapClass::Instance->TryGetCellAt(pCells))
+		if (CellClass* pRecCell = MapClass::Instance.TryGetCellAt(pCells))
 			recCellClass.push_back(pRecCell);
 	}
 
 	return recCellClass;
 }
 
-// Can ONLY fill RECTANGLE. Record cells in the order of "draw left boundary, draw right boundary, fill middle, and move up one level".
+/*!
+	Can ONLY fill RECTANGLE.
+	Record cells in the order of "draw left boundary, draw right boundary, fill middle, and move up one level".
+
+	\param bottomStaCell Starting point vertex, located at the lowest point of the Y-axis.
+	\param leftMidCell The vertex in the middle of the left path.
+	\param rightMidCell The vertex in the middle of the right path.
+	\param topEndCell The endpoint vertex, located at the highest point on the Y-axis.
+
+	\returns A container that records all the cells inside, rounded outward.
+
+	\author CrimRecya
+*/
 std::vector<CellStruct> PhobosTrajectory::GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell)
 {
 	std::vector<CellStruct> recCells;
@@ -359,7 +371,7 @@ void PhobosTrajectory::PassWithDetonateAt()
 
 	// Whether to detonate at ground level?
 	if (pType->PassDetonateLocal)
-		detonateCoords.Z = MapClass::Instance->GetCellFloorHeight(detonateCoords);
+		detonateCoords.Z = MapClass::Instance.GetCellFloorHeight(detonateCoords);
 
 	const auto pFirer = pBullet->Owner;
 	const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
@@ -437,7 +449,7 @@ void PhobosTrajectory::PrepareForDetonateAt()
 	if (pType->ProximityFlight)
 	{
 		const auto airTracker = &AircraftTrackerClass::Instance;
-		airTracker->FillCurrentVector(MapClass::Instance->GetCellAt(pBullet->Location + velocityCrd * 0.5),
+		airTracker->FillCurrentVector(MapClass::Instance.GetCellAt(pBullet->Location + velocityCrd * 0.5),
 			Game::F2I(sqrt(radius * radius + (velocitySq / 4)) / Unsorted::LeptonsPerCell));
 
 		for (auto pTechno = airTracker->Get(); pTechno; pTechno = airTracker->Get())

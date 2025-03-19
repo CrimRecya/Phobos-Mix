@@ -216,12 +216,12 @@ CoordStruct TechnoExt::PassengerKickOutLocation(TechnoClass* pThis, FootClass* p
 	do
 	{
 		placeCoords = pThis->GetMapCoords() - CellStruct { static_cast<short>(extraDistance / 2), static_cast<short>(extraDistance / 2) };
-		placeCoords = MapClass::Instance->NearByLocation(placeCoords, speedType, -1, movementZone, false, extraDistance, extraDistance, true, false, false, false, CellStruct::Empty, false, false);
+		placeCoords = MapClass::Instance.NearByLocation(placeCoords, speedType, -1, movementZone, false, extraDistance, extraDistance, true, false, false, false, CellStruct::Empty, false, false);
 
 		if (placeCoords == CellStruct::Empty)
 			return CoordStruct::Empty;
 
-		const auto pCell = MapClass::Instance->GetCellAt(placeCoords);
+		const auto pCell = MapClass::Instance.GetCellAt(placeCoords);
 
 		if (pThis->IsCellOccupied(pCell, FacingType::None, -1, nullptr, false) == Move::OK)
 			break;
@@ -230,7 +230,7 @@ CoordStruct TechnoExt::PassengerKickOutLocation(TechnoClass* pThis, FootClass* p
 	}
 	while (extraDistance <= maxAttempts);
 
-	if (const auto pCell = MapClass::Instance->TryGetCellAt(placeCoords))
+	if (const auto pCell = MapClass::Instance.TryGetCellAt(placeCoords))
 		return pCell->GetCoordsWithBridge();
 
 	return CoordStruct::Empty;
@@ -245,14 +245,14 @@ bool TechnoExt::AllowedTargetByZone(TechnoClass* pThis, TechnoClass* pTarget, Ta
 		return true;
 
 	MovementZone mZone = pThis->GetTechnoType()->MovementZone;
-	int currentZone = useZone ? zone : MapClass::Instance->GetMovementZoneType(pThis->GetMapCoords(), mZone, pThis->OnBridge);
+	int currentZone = useZone ? zone : MapClass::Instance.GetMovementZoneType(pThis->GetMapCoords(), mZone, pThis->OnBridge);
 
 	if (currentZone != -1)
 	{
 		if (zoneScanType == TargetZoneScanType::Any)
 			return true;
 
-		int targetZone = MapClass::Instance->GetMovementZoneType(pTarget->GetMapCoords(), mZone, pTarget->OnBridge);
+		int targetZone = MapClass::Instance.GetMovementZoneType(pTarget->GetMapCoords(), mZone, pTarget->OnBridge);
 
 		if (zoneScanType == TargetZoneScanType::Same)
 		{
@@ -265,14 +265,14 @@ bool TechnoExt::AllowedTargetByZone(TechnoClass* pThis, TechnoClass* pTarget, Ta
 				return true;
 
 			auto const speedType = pThis->GetTechnoType()->SpeedType;
-			auto cellStruct = MapClass::Instance->NearByLocation(CellClass::Coord2Cell(pTarget->Location),
+			auto cellStruct = MapClass::Instance.NearByLocation(CellClass::Coord2Cell(pTarget->Location),
 				speedType, -1, mZone, false, 1, 1, true,
 				false, false, speedType != SpeedType::Float, CellStruct::Empty, false, false);
 
 			if (cellStruct == CellStruct::Empty)
 				return false;
 
-			auto const pCell = MapClass::Instance->TryGetCellAt(cellStruct);
+			auto const pCell = MapClass::Instance.TryGetCellAt(cellStruct);
 
 			if (!pCell)
 				return false;
@@ -395,7 +395,7 @@ bool TechnoExt::ConvertToType(FootClass* pThis, TechnoTypeClass* pToType)
 	}
 
 	// TODO : Jumpjet locomotor special treatement, some brainfart, must be uncorrect, HELP ME!
-	const auto& jjLoco = LocomotionClass::CLSIDs::Jumpjet();
+	const auto& jjLoco = LocomotionClass::CLSIDs::Jumpjet;
 	if (pToType->BalloonHover && pToType->DeployToLand && prevType->Locomotor != jjLoco && toLoco == jjLoco)
 		pThis->Locomotor->Move_To(pThis->Location);
 
@@ -572,7 +572,7 @@ void TechnoExt::ExtData::ToggleAggressiveStance()
 			const auto& voiceList = pTechnoType->VoiceAttack.Count ? pTechnoType->VoiceAttack : pTechnoType->VoiceMove;
 
 			if (const auto count = voiceList.Count)
-				voiceIndex = voiceList.GetItem(Randomizer::Global().Random() % count);
+				voiceIndex = voiceList.GetItem(Randomizer::Global.Random() % count);
 		}
 
 		pThis->QueueVoice(voiceIndex);
@@ -588,17 +588,33 @@ bool TechnoExt::ExtData::CanToggleAggressiveStance()
 
 	if (!pTypeExt->AggressiveStance_Togglable.isset())
 	{
+		const auto pType = pTypeExt->OwnerObject();
+
 		// Only techno that are armed and open-topped can be aggressive stance.
-		if (!this->OwnerObject()->IsArmed() && !pTypeExt->OwnerObject()->OpenTopped)
+		if (!this->OwnerObject()->IsArmed() && !pType->OpenTopped)
 		{
 			pTypeExt->AggressiveStance_Togglable = false;
 			return false;
 		}
 
+		const auto absType = pType->WhatAmI();
+
 		// Engineers and Agents are default to not allow aggressive stance.
-		if (auto pInfantryTypeClass = abstract_cast<InfantryTypeClass*>(pTypeExt->OwnerObject()))
+		if (absType == AbstractType::InfantryType)
 		{
-			if (pInfantryTypeClass->Engineer || pInfantryTypeClass->Agent)
+			const auto pInfantryType = static_cast<InfantryTypeClass*>(pType);
+
+			if (pInfantryType->Engineer || pInfantryType->Agent)
+			{
+				pTypeExt->AggressiveStance_Togglable = false;
+				return false;
+			}
+		}
+		else if (absType == AbstractType::BuildingType)
+		{
+			const auto pBuildingType = static_cast<BuildingTypeClass*>(pType);
+
+			if (pBuildingType->EMPulseCannon)
 			{
 				pTypeExt->AggressiveStance_Togglable = false;
 				return false;
@@ -668,6 +684,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->UnitAutoDeployTimer)
 		.Process(this->LastWeaponType)
 		.Process(this->LastWeaponFLH)
+		.Process(this->CurrentTracingCount)
 		.Process(this->LastHurtFrame)
 		.Process(this->BeControlledThreatFrame)
 		.Process(this->ScatteringStopFrame)

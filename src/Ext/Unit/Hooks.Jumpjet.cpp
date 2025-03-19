@@ -245,7 +245,7 @@ int JumpjetRushHelpers::JumpjetLocomotionPredictHeight(JumpjetLocomotionClass* p
 
 	// Initial
 	auto curCoord = Point2D { pLocation->X, pLocation->Y };
-	auto pCurCell = MapClass::Instance->GetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
+	auto pCurCell = MapClass::Instance.GetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
 	auto maxHeight = pCurCell->GetFloorHeight(Point2D { curCoord.X, curCoord.Y }) + JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(pCurCell);
 
 	// If is moving
@@ -262,7 +262,7 @@ int JumpjetRushHelpers::JumpjetLocomotionPredictHeight(JumpjetLocomotionClass* p
 		// Check forward
 		auto lastCoord = curCoord;
 		curCoord += stepCoord;
-		pCurCell = MapClass::Instance->GetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
+		pCurCell = MapClass::Instance.GetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
 		auto newHeight = pCurCell->GetFloorHeight(Point2D { curCoord.X, curCoord.Y }) + JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(pCurCell);
 
 		if (newHeight > maxHeight)
@@ -281,7 +281,7 @@ int JumpjetRushHelpers::JumpjetLocomotionPredictHeight(JumpjetLocomotionClass* p
 					: ((curCoord.Y & 0XFF) - Unsorted::LeptonsPerCell))
 				* checkCoord.X / checkCoord.Y) >> 8) != (curCoord.X >> 8));
 
-			if (const auto pCheckCell = MapClass::Instance->TryGetCellAt(lastX
+			if (const auto pCheckCell = MapClass::Instance.TryGetCellAt(lastX
 				? CellStruct { static_cast<short>(lastCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) }
 				: CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(lastCoord.Y >> 8) }))
 			{
@@ -301,7 +301,7 @@ int JumpjetRushHelpers::JumpjetLocomotionPredictHeight(JumpjetLocomotionClass* p
 		{
 			lastCoord = curCoord;
 			curCoord += stepCoord;
-			pCurCell = MapClass::Instance->TryGetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
+			pCurCell = MapClass::Instance.TryGetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
 
 			if (!pCurCell)
 				return maxHeight;
@@ -324,7 +324,7 @@ int JumpjetRushHelpers::JumpjetLocomotionPredictHeight(JumpjetLocomotionClass* p
 						: ((curCoord.Y & 0XFF) - Unsorted::LeptonsPerCell))
 					* checkCoord.X / checkCoord.Y) >> 8) != (curCoord.X >> 8));
 
-				if (const auto pCheckCell = MapClass::Instance->TryGetCellAt(lastX
+				if (const auto pCheckCell = MapClass::Instance.TryGetCellAt(lastX
 					? CellStruct { static_cast<short>(lastCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) }
 					: CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(lastCoord.Y >> 8) }))
 				{

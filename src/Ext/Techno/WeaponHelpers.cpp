@@ -105,7 +105,7 @@ WeaponTypeClass* TechnoExt::GetDeployFireWeapon(TechnoClass* pThis, int& weaponI
 			if (!pTypeExt->DeployFireWeapon.isset())
 			{
 				weaponIndex = 0;
-				auto pCell = MapClass::Instance->GetCellAt(pThis->GetMapCoords());
+				auto pCell = MapClass::Instance.GetCellAt(pThis->GetMapCoords());
 
 				if (pThis->GetFireError(pCell, 0, true) != FireError::OK)
 					weaponIndex = 1;

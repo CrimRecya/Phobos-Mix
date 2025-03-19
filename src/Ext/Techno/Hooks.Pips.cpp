@@ -81,7 +81,7 @@ DEFINE_HOOK(0x6F5EE3, TechnoClass_DrawExtras_DrawAboveHealth, 0x9)
 	GET(TechnoClass*, pThis, EBP);
 	GET_STACK(RectangleStruct*, pBounds, STACK_OFFSET(0x98, 0x8));
 
-	const auto pCell = MapClass::Instance->TryGetCellAt(pThis->GetCenterCoords());
+	const auto pCell = MapClass::Instance.TryGetCellAt(pThis->GetCenterCoords());
 
 	if ((pCell && !pCell->IsFogged() && !pCell->IsShrouded()) || pThis->IsSelected || pThis->IsMouseHovering)
 	{
@@ -309,7 +309,7 @@ DEFINE_HOOK(0x70A1F6, TechnoClass_DrawPips_Tiberium, 0x6)
 	}
 	else
 	{
-		std::vector<int> tiberiumPipCounts(TiberiumClass::Array->Count);
+		std::vector<int> tiberiumPipCounts(TiberiumClass::Array.Count);
 
 		for (size_t i = 0; i < tiberiumPipCounts.size(); i++)
 		{
@@ -326,14 +326,14 @@ DEFINE_HOOK(0x70A1F6, TechnoClass_DrawPips_Tiberium, 0x6)
 		for (int index : rawPipOrder)
 		{
 			if (std::find(pipOrder.begin(), pipOrder.end(), index) == pipOrder.end() &&
-				index >= 0 && index < TiberiumClass::Array->Count)
+				index >= 0 && index < TiberiumClass::Array.Count)
 			{
 				pipOrder.push_back(index);
 			}
 		}
 
 		// Then add any tiberium types that are missing
-		for (int i = 0; i < TiberiumClass::Array->Count; i++)
+		for (int i = 0; i < TiberiumClass::Array.Count; i++)
 		{
 			if (std::find(pipOrder.begin(), pipOrder.end(), i) == pipOrder.end())
 			{
