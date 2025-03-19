@@ -25,6 +25,8 @@ void EngraveTrajectoryType::Serialize(T& Stm)
 		.Process(this->LaserThickness)
 		.Process(this->LaserDuration)
 		.Process(this->LaserDelay)
+		.Process(this->AttachToTarget)
+		.Process(this->UpdateDirection)
 		;
 }
 
@@ -66,6 +68,8 @@ void EngraveTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->LaserDuration = Math::max(1, this->LaserDuration);
 	this->LaserDelay.Read(exINI, pSection, "Trajectory.Engrave.LaserDelay");
 	this->LaserDelay = Math::max(1, this->LaserDelay);
+	this->AttachToTarget.Read(exINI, pSection, "Trajectory.Engrave.AttachToTarget");
+	this->UpdateDirection.Read(exINI, pSection, "Trajectory.Engrave.UpdateDirection");
 }
 
 template<typename T>
@@ -74,6 +78,7 @@ void EngraveTrajectory::Serialize(T& Stm)
 	Stm
 		.Process(this->Type)
 		.Process(this->LaserTimer)
+		.Process(this->RotateRadian)
 		;
 }
 
@@ -115,6 +120,11 @@ bool EngraveTrajectory::OnEarlyUpdate()
 
 bool EngraveTrajectory::OnVelocityCheck()
 {
+	const auto pType = this->Type;
+
+	if (pType->AttachToTarget || pType->UpdateDirection)
+		this->ChangeVelocity();
+
 	if (!this->TargetInTheAir && this->PlaceOnCorrectHeight())
 		return true;
 
@@ -126,29 +136,28 @@ void EngraveTrajectory::OpenFire()
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 	const auto pFirer = pBullet->Owner;
-	// To be used later, no reference
-	auto source = pBullet->SourceCoords;
-	auto target = pBullet->TargetCoords;
-	CoordStruct virtualSource = pType->VirtualSourceCoord.Get();
-	CoordStruct virtualTarget = pType->VirtualTargetCoord.Get();
-	virtualSource.Z = 0;
-	virtualTarget.Z = 0;
-	const double rotateRadian = this->Get2DOpRadian((pFirer ? pFirer->GetCoords() : source), target);
+	auto virtualSource = PhobosTrajectory::Coord2Point(pType->VirtualSourceCoord.Get());
+	auto virtualTarget = PhobosTrajectory::Coord2Point(pType->VirtualTargetCoord.Get());
 	// Mirror trajectory
 	if (!this->NotMainWeapon && pType->MirrorCoord && this->CurrentBurst < 0)
 	{
 		virtualSource.Y = -virtualSource.Y;
 		virtualTarget.Y = -virtualTarget.Y;
 	}
+	// To be used later, no reference
+	auto source = pBullet->SourceCoords;
+	auto target = pBullet->TargetCoords;
+	this->RotateRadian = this->Get2DOpRadian((pFirer ? pFirer->GetCoords() : source), target);
 	// Special case: Starting from the launch position
 	if (virtualSource.X != 0 || virtualSource.Y != 0)
-		source = target + PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(virtualSource, rotateRadian));
+		source = target + PhobosTrajectory::Point2Coord(PhobosTrajectory::PointRotate(virtualSource, this->RotateRadian));
 	// If the target is in the air, there is no need to attach it to the ground
 	if (!this->TargetInTheAir)
 		source.Z = this->GetFloorCoordHeight(source);
 	// set initial status
 	pBullet->SetLocation(source);
-	target += PhobosTrajectory::Vector2Coord(PhobosTrajectory::HorizontalRotate(virtualTarget, rotateRadian));
+	target += PhobosTrajectory::Point2Coord(PhobosTrajectory::PointRotate(virtualTarget, this->RotateRadian));
+
 	this->MovingVelocity.X = target.X - source.X;
 	this->MovingVelocity.Y = target.Y - source.Y;
 	this->MovingVelocity.Z = 0;
@@ -196,6 +205,58 @@ int EngraveTrajectory::GetFloorCoordHeight(const CoordStruct& coord)
 	const auto pBullet = this->Bullet;
 	// Take the higher position
 	return (pBullet->SourceCoords.Z >= onBridge || pBullet->TargetCoords.Z >= onBridge) ? onBridge : onFloor;
+}
+
+void EngraveTrajectory::ChangeVelocity()
+{
+	const auto pBullet = this->Bullet;
+	const auto pType = this->Type;
+	// The center is located on the target
+	if (pType->AttachToTarget)
+	{
+		// No need to synchronize the target again
+		if (!pType->Synchronize)
+		{
+			if (const auto pTarget = pBullet->Target)
+				pBullet->TargetCoords = pTarget->GetCoords();
+		}
+	}
+	// The angle will be updated according to the orientation
+	if (pType->UpdateDirection)
+	{
+		const auto pFirer = pBullet->Owner;
+		this->RotateRadian = this->Get2DOpRadian((pFirer ? pFirer->GetCoords() : pBullet->SourceCoords), pBullet->TargetCoords);
+	}
+	// Recalculate speed and position
+	auto virtualSource = PhobosTrajectory::Coord2Point(pType->VirtualSourceCoord.Get());
+	auto virtualTarget = PhobosTrajectory::Coord2Point(pType->VirtualTargetCoord.Get());
+
+	if (!this->NotMainWeapon && pType->MirrorCoord && this->CurrentBurst < 0)
+	{
+		virtualSource.Y = -virtualSource.Y;
+		virtualTarget.Y = -virtualTarget.Y;
+	}
+
+	const auto path = (this->DurationTimer.CurrentTime - this->DurationTimer.StartTime + 1) * pType->Speed;
+	auto source = PhobosTrajectory::Coord2Point(pBullet->SourceCoords);
+	auto target = PhobosTrajectory::Coord2Point(pBullet->TargetCoords);
+	// Special case: Starting from the launch position
+	if (virtualSource.X != 0 || virtualSource.Y != 0)
+		source = target + PhobosTrajectory::PointRotate(virtualSource, this->RotateRadian);
+
+	target += PhobosTrajectory::PointRotate(virtualTarget, this->RotateRadian);
+	const auto delta = target - source;
+	const auto distance = delta.Magnitude();
+
+	if (distance < 1e-10)
+	{
+		this->ShouldDetonate = true;
+		return;
+	}
+
+	const auto newLocation = PhobosTrajectory::Point2Coord((source + delta * (path / distance)), pBullet->TargetCoords.Z);
+	this->MovingVelocity = PhobosTrajectory::Coord2Vector(newLocation - pBullet->Location);
+	this->MovingSpeed = this->MovingVelocity.Magnitude();
 }
 
 bool EngraveTrajectory::PlaceOnCorrectHeight()

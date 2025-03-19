@@ -1090,6 +1090,8 @@ Trajectory.Missile.SuicideShortOfROT=no    ; boolean
     - `Trajectory.Engrave.LaserThickness` controls the thickness of the engrave laser. Need to set `Trajectory.Engrave.IsHouseColor` or `Trajectory.Engrave.IsSingleColor` to true.
     - `Trajectory.Engrave.LaserDuration` controls the duration of the engrave laser.
     - `Trajectory.Engrave.LaserDelay` controls how often to draw the engrave laser.
+  - `Trajectory.Engrave.AttachToTarget` controls whether the center position of the engrave laser will update with the target position.
+  - `Trajectory.Engrave.UpdateDirection` controls whether the engrave laser updates the direction with the firer and target position.
 
 In `rulesmd.ini`:
 ```ini
@@ -1105,6 +1107,8 @@ Trajectory.Engrave.LaserOuterSpread=0,0,0  ; integer - Red,Green,Blue
 Trajectory.Engrave.LaserThickness=3        ; integer
 Trajectory.Engrave.LaserDuration=1         ; integer
 Trajectory.Engrave.LaserDelay=1            ; integer
+Trajectory.Engrave.AttachToTarget=no       ; boolean
+Trajectory.Engrave.UpdateDirection=no      ; boolean
 ```
 
 ```{note}

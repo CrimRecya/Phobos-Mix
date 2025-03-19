@@ -265,6 +265,18 @@ public:
 	{
 		return BulletVelocity { coords.X * Math::cos(radian) + coords.Y * Math::sin(radian), coords.X * Math::sin(radian) - coords.Y * Math::cos(radian), static_cast<double>(coords.Z) };
 	}
+	static inline Point2D Coord2Point(const CoordStruct& coords)
+	{
+		return Point2D { coords.X, coords.Y };
+	}
+	static inline CoordStruct Point2Coord(const Point2D& point, const int z = 0)
+	{
+		return CoordStruct { point.X, point.Y, z };
+	}
+	static inline Point2D PointRotate(const Point2D& point, const double radian)
+	{
+		return Point2D { static_cast<int>(point.X * Math::cos(radian) + point.Y * Math::sin(radian)), static_cast<int>(point.X * Math::sin(radian) - point.Y * Math::cos(radian)) };
+	}
 	static inline bool CheckTechnoIsInvalid(const TechnoClass* const pTechno)
 	{
 		return (!pTechno->IsAlive || !pTechno->IsOnMap || pTechno->InLimbo || pTechno->IsSinking || pTechno->Health <= 0);

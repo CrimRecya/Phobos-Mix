@@ -16,6 +16,8 @@ public:
 		, LaserThickness { 3 }
 		, LaserDuration { 1 }
 		, LaserDelay { 1 }
+		, AttachToTarget { false }
+		, UpdateDirection { false }
 	{ }
 
 	Valueable<bool> IsLaser;
@@ -28,6 +30,8 @@ public:
 	Valueable<int> LaserThickness;
 	Valueable<int> LaserDuration;
 	Valueable<int> LaserDelay;
+	Valueable<bool> AttachToTarget;
+	Valueable<bool> UpdateDirection;
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
@@ -48,10 +52,12 @@ public:
 		: VirtualTrajectory(trajType, pBullet)
 		, Type { trajType }
 		, LaserTimer {}
+		, RotateRadian { 0 }
 	{ }
 
 	const EngraveTrajectoryType* Type;
 	CDTimerClass LaserTimer;
+	double RotateRadian;
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
@@ -66,6 +72,7 @@ public:
 
 private:
 	int GetFloorCoordHeight(const CoordStruct& coord);
+	void ChangeVelocity();
 	bool PlaceOnCorrectHeight();
 	void DrawEngraveLaser();
 
