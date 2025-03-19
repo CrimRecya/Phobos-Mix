@@ -1434,7 +1434,7 @@ void __fastcall KickOutClones(const BuildingExt::ExtData* const pThis, const Tec
 	if (!pProductionTypeExt->Cloneable)
 		return;
 
-	if (auto clonedAs = pProductionTypeExt->ClonedAs)
+	if (const auto clonedAs = pProductionTypeExt->ClonedAs)
 	{
 		pProductionType = clonedAs;
 		pProductionTypeExt = TechnoTypeExt::ExtMap.Find(pProductionType);
