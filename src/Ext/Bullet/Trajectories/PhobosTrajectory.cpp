@@ -771,6 +771,8 @@ void PhobosTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->CreateCapacity.Read(exINI, pSection, "Trajectory.CreateCapacity");
 	this->BulletROT.Read(exINI, pSection, "Trajectory.BulletROT");
 	this->BulletFacing.Read(exINI, pSection, "Trajectory.BulletFacing");
+	this->RetargetInterval.Read(exINI, pSection, "Trajectory.RetargetInterval");
+	this->RetargetInterval = Math::max(1, this->RetargetInterval);
 	this->RetargetRadius.Read(exINI, pSection, "Trajectory.RetargetRadius");
 	this->Synchronize.Read(exINI, pSection, "Trajectory.Synchronize");
 	this->MirrorCoord.Read(exINI, pSection, "Trajectory.MirrorCoord");
@@ -845,6 +847,7 @@ void PhobosTrajectoryType::Serialize(T& Stm)
 		.Process(this->CreateCapacity)
 		.Process(this->BulletROT)
 		.Process(this->BulletFacing)
+		.Process(this->RetargetInterval)
 		.Process(this->RetargetRadius)
 		.Process(this->Synchronize)
 		.Process(this->MirrorCoord)
@@ -915,6 +918,7 @@ void PhobosTrajectory::Serialize(T& Stm)
 		.Process(this->MovingSpeed)
 		.Process(this->DurationTimer)
 		.Process(this->TolerantTimer)
+		.Process(this->RetargetTimer)
 		.Process(this->FirepowerMult)
 		.Process(this->AttenuationRange)
 		.Process(this->RemainingDistance)

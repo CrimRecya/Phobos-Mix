@@ -48,6 +48,7 @@ public:
 		, CreateCapacity { -1 }
 		, BulletROT { 0 }
 		, BulletFacing { TrajectoryFacing::Velocity }
+		, RetargetInterval { 1 }
 		, RetargetRadius { 0 }
 		, Synchronize { false }
 		, MirrorCoord { true }
@@ -102,6 +103,7 @@ public:
 	Valueable<int> CreateCapacity; // Only take effect when the number of trajectory fired by its firer on the map is less than this value
 	Valueable<int> BulletROT; // The rotational speed of the projectile image that does not affect the direction of movement
 	Valueable<TrajectoryFacing> BulletFacing; // Image facing
+	Valueable<int> RetargetInterval; // Wait before attempting to searching for a new target each time we fail to do so
 	Valueable<double> RetargetRadius; // Searching for a new target after losing it
 	Valueable<bool> Synchronize; // Synchronize the target of its launcher
 	Valueable<bool> MirrorCoord; // Should mirror offset
@@ -171,6 +173,7 @@ public:
 		, MovingSpeed { 0 }
 		, DurationTimer {}
 		, TolerantTimer {}
+		, RetargetTimer {}
 		, FirepowerMult { 1.0 }
 		, AttenuationRange { 0 }
 		, RemainingDistance { 1 }
@@ -200,6 +203,7 @@ public:
 	double MovingSpeed; // The current speed value
 	CDTimerClass DurationTimer; // Bullet existence timer
 	CDTimerClass TolerantTimer; // Target tolerance timer
+	CDTimerClass RetargetTimer; // Target searching timer
 	double FirepowerMult; // Inherited firepower bonus
 	int AttenuationRange; // Maximum range
 	int RemainingDistance; // Remaining distance from the self explosion location

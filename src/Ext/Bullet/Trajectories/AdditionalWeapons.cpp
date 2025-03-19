@@ -21,13 +21,17 @@ bool PhobosTrajectory::BulletRetargetTechno()
 			check = PhobosTrajectory::CheckTechnoIsInvalid(static_cast<TechnoClass*>(pBullet->Target));
 		// Current target may be a bullet, and will not retarget at this time, in order to adapt to thermal decoys
 	}
-
+	// It has not lost its target
 	if (!check)
 		return false;
 	// Check whether need to detonate directly after the target was lost
 	if (pType->RetargetRadius < 0)
 		return true;
-
+	// Check the timer
+	if (this->RetargetTimer.HasTimeLeft())
+		return false;
+	// Next time wait for so long first
+	this->RetargetTimer.Start(pType->RetargetInterval);
 	const auto pFirer = pBullet->Owner;
 	auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 	// Replace with neutral house when the firer house does not exist
@@ -36,9 +40,9 @@ bool PhobosTrajectory::BulletRetargetTechno()
 		if (const auto pNeutral = HouseClass::FindNeutral())
 			pOwner = pNeutral;
 		else
-			return false;
+			return true;
 	}
-
+	// The central location and radius for searching for enemies
 	const auto retargetCoords = this->GetRetargetCenter();
 	const auto retargetRange = pType->RetargetRadius * Unsorted::LeptonsPerCell;
 	TechnoClass* pNewTechno = nullptr;
