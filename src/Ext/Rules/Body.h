@@ -300,6 +300,8 @@ public:
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
+		Valueable<bool> AllyShareControl;
+
 		Valueable<bool> InTransportInfantryAmmoFix;
 
 		Valueable<bool> UpdateInLimbo_Occupier;
@@ -554,6 +556,7 @@ public:
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
+			, AllyShareControl { false }
 			, InTransportInfantryAmmoFix { false }
 			, UpdateInLimbo_Occupier { false }
 			, UpdateInLimbo_NormalPassenger { false }
