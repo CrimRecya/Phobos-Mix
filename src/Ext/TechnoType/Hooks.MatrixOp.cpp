@@ -9,25 +9,33 @@
 #include <UnitClass.h>
 #include <Utilities/AresHelper.h>
 #include <Utilities/Macro.h>
+#include <Ext/Techno/Body.h>
 
 #include "Body.h"
 
 
-constexpr reference<double, 0xB1D008> const Pixel_Per_Lepton {};
+DEFINE_REFERENCE(double, Pixel_Per_Lepton, 0xB1D008)
 
 #pragma region FLH_Turrets
 
-void TechnoTypeExt::ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor)
+void TechnoTypeExt::ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor, int turIdx)
 {
-	TechnoTypeExt::ExtMap.Find(pType)->ApplyTurretOffset(mtx, factor);
+	TechnoTypeExt::ExtMap.Find(pType)->ApplyTurretOffset(mtx, factor, turIdx);
 }
 
 DEFINE_HOOK(0x6F3C56, TechnoClass_GetFLH_TurretMultiOffset, 0x0)
 {
 	LEA_STACK(Matrix3D*, mtx, STACK_OFFSET(0xD8, -0x90));
 	GET(TechnoTypeClass*, technoType, EDX);
+	GET(TechnoClass*, pThis, EBX);
 
-	TechnoTypeExt::ApplyTurretOffset(technoType, mtx);
+	auto turIdx = -1;
+	auto pTypeExt = TechnoTypeExt::ExtMap.Find(technoType);
+
+	if (pTypeExt->BurstPerTurret > 0)
+		turIdx = ((pThis->CurrentBurstIndex / pTypeExt->BurstPerTurret) % (pTypeExt->ExtraTurretCount + 1)) - 1;
+
+	TechnoTypeExt::ApplyTurretOffset(technoType, mtx, 1.0, turIdx);
 
 	return 0x6F3C6D;
 }
@@ -54,15 +62,108 @@ DEFINE_HOOK(0x73B780, UnitClass_DrawVXL_TurretMultiOffset, 0x0)
 	return 0x73B790;
 }
 
-
-DEFINE_HOOK(0x73BA4C, UnitClass_DrawVXL_TurretMultiOffset1, 0x0)
+DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 {
-	LEA_STACK(Matrix3D*, mtx, STACK_OFFSET(0x1D0, -0x13C));
-	GET(TechnoTypeClass*, technoType, EBX);
+	enum { SkipGameCode = 0x73BC26 };
 
-	TechnoTypeExt::ApplyTurretOffset(technoType, mtx, Pixel_Per_Lepton);
+	GET_STACK(const bool, haveTurretCache, STACK_OFFSET(0x1C4, -0x1B3));
+	GET_STACK(const bool, haveBarrelVXL, STACK_OFFSET(0x1C4, -0x1B2));
+	GET(const bool, haveBarrelCache, EAX);
+	LEA_STACK(Matrix3D* const, pMtx_buffer1, STACK_OFFSET(0x1C4, -0x130));
+	LEA_STACK(Matrix3D* const, pMtx_turret, STACK_OFFSET(0x1C4, -0xF0));
+	LEA_STACK(Matrix3D* const, pMtx_barrel, STACK_OFFSET(0x1C4, -0x90));
 
-	return 0x73BA68;
+	if (haveTurretCache && (!haveBarrelVXL || haveBarrelCache))
+	{
+		memcpy(pMtx_turret, pMtx_buffer1, sizeof(*pMtx_turret));
+		memcpy(pMtx_barrel, pMtx_buffer1, sizeof(*pMtx_barrel));
+	}
+	else
+	{
+		GET(UnitClass* const, pThis, EBP);
+		GET(UnitTypeClass* const, pType, EBX);
+		LEA_STACK(Matrix3D* const, pMtx_buffer2, STACK_OFFSET(0x1C4, -0xC0));
+		LEA_STACK(Matrix3D* const, pMtx_buffer3, STACK_OFFSET(0x1C4, -0x60));
+		LEA_STACK(Matrix3D* const, pMtx_buffer4, STACK_OFFSET(0x1C4, -0x30));
+
+		// Turret
+		TechnoTypeExt::ApplyTurretOffset(pType, pMtx_buffer1, Pixel_Per_Lepton);
+		pMtx_buffer1->RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - pThis->PrimaryFacing.Current().GetRadian<32>()));
+		memcpy(pMtx_buffer2, pMtx_buffer1, sizeof(*pMtx_buffer2));
+		memcpy(pMtx_buffer4, &Matrix3D::VoxelDefaultMatrix, sizeof(*pMtx_buffer4));
+		memcpy(pMtx_turret, Matrix3D::MatrixMultiply(pMtx_buffer3, pMtx_buffer4, pMtx_buffer1), sizeof(*pMtx_turret));
+
+		// Barrel
+		pMtx_buffer2->Translate(-pMtx_buffer1->Row[0].W, -pMtx_buffer1->Row[1].W, -pMtx_buffer1->Row[2].W);
+		pMtx_buffer2->RotateY(static_cast<float>(-pThis->BarrelFacing.Current().GetRadian<32>()));
+		pMtx_buffer2->Translate(pMtx_buffer1->Row[0].W, pMtx_buffer1->Row[1].W, pMtx_buffer1->Row[2].W);
+		memcpy(pMtx_buffer3, &Matrix3D::VoxelDefaultMatrix, sizeof(*pMtx_buffer3));
+		memcpy(pMtx_barrel, Matrix3D::MatrixMultiply(pMtx_buffer4, pMtx_buffer3, pMtx_buffer2), sizeof(*pMtx_barrel));
+	}
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x73BD79, UnitClass_DrawAsVXL_RewriteDrawSingleTurret, 0x6)
+{
+	enum { SkipGameCode = 0x73BEA4 };
+
+	GET(UnitClass* const, pThis, EBP);
+	GET(UnitTypeClass* const, pType, EBX);
+	GET_STACK(const int, flags, STACK_OFFSET(0x1C4, -0x198));
+	GET_STACK(const int, brightness, STACK_OFFSET(0x1C4, 0x1C));
+	GET_STACK(const int, hvaFrameIdx, STACK_OFFSET(0x1C4, -0x18C));
+	LEA_STACK(Point2D* const, center, STACK_OFFSET(0x1C4, -0x194));
+	LEA_STACK(RectangleStruct* const, rect, STACK_OFFSET(0x1C4, -0x164));
+	LEA_STACK(Matrix3D* const, pMtx_turret, STACK_OFFSET(0x1C4, -0xF0));
+	LEA_STACK(Matrix3D* const, pMtx_barrel, STACK_OFFSET(0x1C4, -0x90));
+
+	bool notDrawBarrelYet = true;
+	const bool canDrawBarrel = pType->BarrelVoxel.VXL && pType->BarrelVoxel.HVA;
+
+	// Barrel behind
+	if (canDrawBarrel) // Adjusted the inspection sequence
+	{
+		const auto dir = pThis->SecondaryFacing.Current().GetFacing<4>();
+
+		if (dir == 0 || dir == 3)
+		{
+			pThis->Draw_A_VXL(&pType->BarrelVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretBarrelCache),
+				rect, center, pMtx_barrel, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+
+			notDrawBarrelYet = false;
+		}
+	}
+
+	// Turret
+	pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
+		rect, center, pMtx_turret, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	const auto exTurCount = pTypeExt->ExtraTurretCount.Get();
+
+	if (exTurCount > 0)
+	{
+		const auto turCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->TurretOffset.Get(), false);
+
+		for (int i = 0; i < exTurCount; ++i)
+		{
+			const auto deltaCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->ExtraTurretOffsets[i], false) - turCrd;
+			auto turScreenCrd2nd = *center + TacticalClass::CoordsToScreen(deltaCrd);
+
+			pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
+				rect, &turScreenCrd2nd, pMtx_turret, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+		}
+	}
+
+	// Barrel above
+	if (canDrawBarrel && notDrawBarrelYet) // Adjusted the inspection sequence
+	{
+		pThis->Draw_A_VXL(&pType->BarrelVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretBarrelCache),
+			rect, center, pMtx_barrel, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+	}
+
+	return SkipGameCode;
 }
 
 DEFINE_HOOK(0x73C890, UnitClass_DrawSHP_BarrelMultiOffset, 0x0)
@@ -122,7 +223,7 @@ DEFINE_HOOK(0x4CF68D, FlyLocomotionClass_DrawMatrix_OnAirport, 0x5)
 	if (pThis->GetHeight() <= 0)
 	{
 		REF_STACK(Matrix3D, mat, STACK_OFFSET(0x38, -0x30));
-		auto slope_idx = MapClass::Instance->GetCellAt(pThis->Location)->SlopeIndex;
+		auto slope_idx = MapClass::Instance.GetCellAt(pThis->Location)->SlopeIndex;
 		mat = Matrix3D::VoxelRampMatrix[slope_idx] * mat;
 		float ars = pThis->AngleRotatedSideways;
 		float arf = pThis->AngleRotatedForwards;
@@ -147,7 +248,7 @@ Matrix3D* __stdcall JumpjetLocomotionClass_Draw_Matrix(ILocomotion* iloco, Matri
 	// no more TiltCrashJumpjet, do that above svp
 	bool const onGround = pThis->State == JumpjetLocomotionClass::State::Grounded;
 	// Man, what can I say, you don't want to stick your rotor into the ground
-	auto slope_idx = MapClass::Instance->GetCellAt(linked->Location)->SlopeIndex;
+	auto slope_idx = MapClass::Instance.GetCellAt(linked->Location)->SlopeIndex;
 	*ret = Matrix3D::VoxelRampMatrix[onGround ? slope_idx : 0];
 	// Only use LocomotionFacing for general Jumpjet to avoid the problem that ground units being lifted will turn to attacker weirdly.
 	auto curf = linked->IsAttackedByLocomotor ? linked->PrimaryFacing.Current() : pThis->LocomotionFacing.Current();
@@ -178,6 +279,48 @@ Matrix3D* __stdcall JumpjetLocomotionClass_Draw_Matrix(ILocomotion* iloco, Matri
 			ret->RotateY(arf);
 		}
 	}
+	else
+	{
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(linked->GetTechnoType());
+
+		if (pTypeExt->JumpjetTilt.Get(RulesExt::Global()->JumpjetTilt)
+			&& !onGround && linked->IsAlive && linked->Health > 0 && !linked->IsAttackedByLocomotor)
+		{
+			if (pThis->CurrentSpeed > 0.0)
+			{
+				constexpr auto maxTilt = static_cast<float>(Math::HalfPi / 2);
+				constexpr auto baseSpeed = 32;
+				constexpr auto baseTilt = Math::HalfPi / 4;
+
+				constexpr auto forwardBaseTilt = baseTilt / baseSpeed;
+				const auto forwardSpeedFactor = pThis->CurrentSpeed * pTypeExt->JumpjetTilt_ForwardSpeedFactor;
+				const auto forwardAccelFactor = pThis->Accel * pTypeExt->JumpjetTilt_ForwardAccelFactor;
+
+				arf += std::min(maxTilt, static_cast<float>((forwardAccelFactor + forwardSpeedFactor) * forwardBaseTilt));
+
+				const auto& locoFace = pThis->LocomotionFacing;
+
+				if (locoFace.IsRotating())
+				{
+					constexpr auto baseTurnRaw = 32768;
+
+					constexpr auto sidewaysBaseTilt = baseTilt / (baseTurnRaw * baseSpeed);
+					const auto sidewaysSpeedFactor = pThis->CurrentSpeed * pTypeExt->JumpjetTilt_SidewaysSpeedFactor;
+					const auto sidewaysRotationFactor = static_cast<short>(locoFace.Difference().Raw) * pTypeExt->JumpjetTilt_SidewaysRotationFactor;
+
+					ars += Math::clamp(static_cast<float>(sidewaysSpeedFactor * sidewaysRotationFactor * sidewaysBaseTilt), -maxTilt, maxTilt);
+				}
+			}
+
+			if (std::abs(ars) >= 0.005 || std::abs(arf) >= 0.005)
+			{
+				if (pIndex) *pIndex = -1;
+
+				ret->RotateX(ars);
+				ret->RotateY(arf);
+			}
+		}
+	}
 
 	if (pIndex && *pIndex != -1)
 	{
@@ -197,7 +340,7 @@ Matrix3D* __stdcall TeleportLocomotionClass_Draw_Matrix(ILocomotion* iloco, Matr
 	__assume(iloco != nullptr);
 	auto const pThis = static_cast<LocomotionClass*>(iloco);
 	auto linked = pThis->LinkedTo;
-	auto slope_idx = MapClass::Instance->GetCellAt(linked->Location)->SlopeIndex;
+	auto slope_idx = MapClass::Instance.GetCellAt(linked->Location)->SlopeIndex;
 
 	if (pIndex && pIndex->Is_Valid_Key())
 		*(int*)(pIndex) = slope_idx + (*(int*)(pIndex) << 6);
@@ -397,7 +540,7 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 		shadow_matrix.RotateX(ars);
 	}
 
-	auto mtx = Matrix3D::VoxelDefaultMatrix() * shadow_matrix;
+	auto mtx = Matrix3D::VoxelDefaultMatrix * shadow_matrix;
 
 	if (height > 0)
 		shadow_point.Y += 1;
@@ -581,7 +724,7 @@ DEFINE_HOOK(0x4147F9, AircraftClass_Draw_Shadow, 0x6)
 		key.Invalidate();
 	}
 
-	shadow_mtx = Matrix3D::VoxelDefaultMatrix() * shadow_mtx;
+	shadow_mtx = Matrix3D::VoxelDefaultMatrix * shadow_mtx;
 
 	auto const main_vxl = &pThis->Type->MainVoxel;
 	// flor += loco->Shadow_Point(); // no longer needed

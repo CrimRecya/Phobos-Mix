@@ -1,4 +1,5 @@
 #include "Body.h"
+#include "Ext/House/Body.h"
 
 #include <BitFont.h>
 
@@ -62,9 +63,9 @@ bool BuildingExt::ExtData::HasSuperWeapon(const int index, const bool withUpgrad
 
 void BuildingExt::StoreTiberium(BuildingClass* pThis, float amount, int idxTiberiumType, int idxStorageTiberiumType)
 {
-	auto const pDepositableTiberium = TiberiumClass::Array->GetItem(idxStorageTiberiumType);
+	auto const pDepositableTiberium = TiberiumClass::Array.GetItem(idxStorageTiberiumType);
 	float depositableTiberiumAmount = 0.0f; // Number of 'bails' that will be stored.
-	auto const pTiberium = TiberiumClass::Array->GetItem(idxTiberiumType);
+	auto const pTiberium = TiberiumClass::Array.GetItem(idxTiberiumType);
 
 	if (amount > 0.0)
 	{
@@ -90,7 +91,7 @@ void BuildingExt::ExtData::UpdatePrimaryFactoryAI()
 	if (!pOwner || pOwner->ProducingAircraftTypeIndex < 0)
 		return;
 
-	AircraftTypeClass* pAircraft = AircraftTypeClass::Array->GetItem(pOwner->ProducingAircraftTypeIndex);
+	AircraftTypeClass* pAircraft = AircraftTypeClass::Array.GetItem(pOwner->ProducingAircraftTypeIndex);
 	FactoryClass* currFactory = pOwner->GetFactoryProducing(pAircraft);
 	std::vector<BuildingClass*> airFactoryBuilding;
 	BuildingClass* newBuilding = nullptr;
@@ -339,6 +340,19 @@ bool BuildingExt::ExtData::HandleInfiltrate(HouseClass* pInfiltratorHouse, int m
 		idx = this->TypeExtData->SpyEffect_InfiltratorSuperWeapon;
 		if (idx >= 0)
 			launchTheSWHere(pInfiltratorHouse->Supers.Items[idx], pInfiltratorHouse);
+
+		auto jamTime = this->TypeExtData->SpyEffect_RadarJamDuration;
+
+		if (jamTime > 0)
+		{
+			pVictimHouse->RecheckRadar = true;
+			auto pVictimExt = HouseExt::ExtMap.Find(pVictimHouse);
+			if (pVictimExt->SpyEffect_RadarJamTimer.TimeLeft < jamTime)
+			{
+				pVictimExt->SpyEffect_RadarJamTimer.Stop();
+				pVictimExt->SpyEffect_RadarJamTimer.Start(jamTime);
+			}
+		}
 	}
 
 	return true;
@@ -361,7 +375,7 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 	}
 
 	auto buffer = CoordStruct::Empty;
-	auto pCell = MapClass::Instance->GetCellAt(*pThis->GetExitCoords(&buffer, 0));
+	auto pCell = MapClass::Instance.GetCellAt(*pThis->GetExitCoords(&buffer, 0));
 	int i = 0;
 
 	while (true)
@@ -461,6 +475,8 @@ void BuildingExt::ExtData::Serialize(T& Stm)
 		.Process(this->CurrentLaserWeaponIndex)
 		.Process(this->PoweredUpToLevel)
 		.Process(this->EMPulseSW)
+		.Process(this->OwnerObject()->RepairProgress) // Swizzle can't be used here
+		.Process(this->SecondaryArchiveTarget)
 		;
 }
 
@@ -537,7 +553,7 @@ DEFINE_HOOK(0x454174, BuildingClass_Load_LightSource, 0xA)
 {
 	GET(BuildingClass*, pThis, EDI);
 
-	SwizzleManagerClass::Instance->Swizzle((void**)&pThis->LightSource);
+	SwizzleManagerClass::Instance.Swizzle((void**)&pThis->LightSource);
 
 	return 0x45417E;
 }

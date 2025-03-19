@@ -563,7 +563,7 @@ namespace detail
 			auto const& powerupNames = Powerups::Effects;
 			int index = -1;
 
-			for (size_t i = 0; i < powerupNames.size(); i++)
+			for (size_t i = 0; i < std::size(powerupNames); i++)
 			{
 				if (!_strcmpi(parser.value(), powerupNames[i]))
 				{
@@ -1250,6 +1250,46 @@ if(_strcmpi(parser.value(), #name) == 0){ value = __uuidof(name ## LocomotionCla
 			else if (_strcmpi(str, "gattlingstage") == 0)
 			{
 				value = DisplayInfoType::GattlingStage;
+			}
+			else if (_strcmpi(str, "rof") == 0)
+			{
+				value = DisplayInfoType::ROF;
+			}
+			else if (_strcmpi(str, "reload") == 0)
+			{
+				value = DisplayInfoType::Reload;
+			}
+			else if (_strcmpi(str, "spawntimer") == 0)
+			{
+				value = DisplayInfoType::SpawnTimer;
+			}
+			else if (_strcmpi(str, "gattlingtimer") == 0)
+			{
+				value = DisplayInfoType::GattlingTimer;
+			}
+			else if (_strcmpi(str, "producecash") == 0)
+			{
+				value = DisplayInfoType::ProduceCash;
+			}
+			else if (_strcmpi(str, "passengerkill") == 0)
+			{
+				value = DisplayInfoType::PassengerKill;
+			}
+			else if (_strcmpi(str, "autodeath") == 0)
+			{
+				value = DisplayInfoType::AutoDeath;
+			}
+			else if (_strcmpi(str, "superweapon") == 0)
+			{
+				value = DisplayInfoType::SuperWeapon;
+			}
+			else if (_strcmpi(str, "ironcurtain") == 0)
+			{
+				value = DisplayInfoType::IronCurtain;
+			}
+			else if (_strcmpi(str, "temporallife") == 0)
+			{
+				value = DisplayInfoType::TemporalLife;
 			}
 			else
 			{

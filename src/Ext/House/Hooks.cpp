@@ -76,11 +76,11 @@ DEFINE_HOOK(0x508D8D, HouseClass_UpdatePower_Techno, 0x6)
 				pThis->PowerDrain -= pExt->Power * count;
 	};
 
-	for (const auto pType : *InfantryTypeClass::Array)
+	for (const auto pType : InfantryTypeClass::Array)
 		updateDrainForThisType(pType);
-	for (const auto pType : *UnitTypeClass::Array)
+	for (const auto pType : UnitTypeClass::Array)
 		updateDrainForThisType(pType);
-	for (const auto pType : *AircraftTypeClass::Array)
+	for (const auto pType : AircraftTypeClass::Array)
 		updateDrainForThisType(pType);
 	// Don't do this for buildings, they've already been counted.
 
@@ -129,7 +129,7 @@ DEFINE_HOOK(0x4FD1CD, HouseClass_RecalcCenter_LimboDelivery, 0x6)
 
 	auto const pExt = RecalcCenterTemp::pExtData;
 
-	if (!MapClass::Instance->CoordinatesLegal(pBuilding->GetMapCoords())
+	if (!MapClass::Instance.CoordinatesLegal(pBuilding->GetMapCoords())
 		|| (pExt && pExt->OwnsLimboDeliveredBuilding(pBuilding)))
 	{
 		return R->Origin() == 0x4FD1CD ? SkipBuilding1 : SkipBuilding2;
@@ -144,7 +144,7 @@ DEFINE_HOOK(0x4AC534, DisplayClass_ComputeStartPosition_IllegalCoords, 0x6)
 
 	GET(TechnoClass* const, pTechno, ECX);
 
-	if (!MapClass::Instance->CoordinatesLegal(pTechno->GetMapCoords()))
+	if (!MapClass::Instance.CoordinatesLegal(pTechno->GetMapCoords()))
 		return SkipTechno;
 
 	return 0;
@@ -164,7 +164,7 @@ namespace LimboTrackingTemp
 
 DEFINE_HOOK(0x687B18, ScenarioClass_ReadINI_StartTracking, 0x7)
 {
-	for (auto const pTechno : *TechnoClass::Array())
+	for (auto const pTechno : TechnoClass::Array)
 	{
 		auto const pType = pTechno->GetTechnoType();
 
@@ -252,6 +252,33 @@ DEFINE_HOOK(0x7015C9, TechnoClass_Captured_UpdateTracking, 0x6)
 		pNewOwnerExt->AddToLimboTracking(pType);
 	}
 
+	if (RulesExt::Global()->ExtendedBuildingPlacing && pThis->WhatAmI() == AbstractType::Unit && pType->DeploysInto)
+	{
+		auto& vec = pOwnerExt->OwnedDeployingUnits;
+		vec.erase(std::remove(vec.begin(), vec.end(), pThis), vec.end());
+	}
+
+	if (pExt->TypeExtData->UniqueTechno)
+	{
+		const auto pOldOwner = pThis->Owner;
+
+		if (pOldOwner->IsControlledByCurrentPlayer())
+		{
+			if (!pNewOwner->IsControlledByCurrentPlayer())
+			{
+				auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
+				vec.erase(std::remove(vec.begin(), vec.end(), pExt), vec.end());
+			}
+		}
+		else if (pNewOwner->IsControlledByCurrentPlayer())
+		{
+			auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
+
+			if (std::find(vec.begin(), vec.end(), pExt) == vec.end())
+				vec.push_back(pExt);
+		}
+	}
+
 	if (pExt->TypeExtData->Harvester_Counted)
 	{
 		auto& vec = pOwnerExt->OwnedCountedHarvesters;
@@ -331,7 +358,7 @@ static inline bool CheckShouldDisableDefensesCameo(HouseClass* pHouse, TechnoTyp
 				const auto BuildLimit = pBldType->BuildLimit;
 
 				if (BuildLimit >= 0)
-					return BuildLimit - BuildingTypeExt::CountOwnedNowWithDeployOrUpgrade(pBldType, pHouse);
+					return BuildLimit - HouseExt::CountOwnedNowWithDeployOrUpgrade(pHouse, pBldType);
 				else
 					return -BuildLimit - pHouse->CountOwnedEver(pBldType);
 			};
@@ -344,17 +371,62 @@ static inline bool CheckShouldDisableDefensesCameo(HouseClass* pHouse, TechnoTyp
 	return false;
 }
 
+static inline bool CheckShowGreyCameo(const HouseClass* const pHouse, const TechnoTypeClass* const pType, const int address)
+{
+	return (pHouse == HouseClass::CurrentPlayer
+		&& (address == 0x6A5FED // Check redraw sidebar when techno loss
+		|| address == 0x6A97EF // Draw sidebar cameos
+		|| address == 0x6AB65B) // Prevent click sidebar cameo
+		&& TechnoTypeExt::ExtMap.Find(pType)->IsGreyCameoForCurrentPlayer);
+}
+
 DEFINE_HOOK(0x50B669, HouseClass_ShouldDisableCameo_GreyCameo, 0x5)
 {
-	GET(HouseClass*, pThis, ECX);
-	GET_STACK(TechnoTypeClass*, pType, 0x4);
-	GET(bool, aresDisable, EAX);
+	GET(HouseClass* const, pThis, ECX);
+	GET_STACK(TechnoTypeClass* const, pType, 0x4);
+	GET(const bool, aresDisable, EAX);
 
 	if (aresDisable || !pType)
 		return 0;
 
-	if (CheckShouldDisableDefensesCameo(pThis, pType) || HouseExt::ReachedBuildLimit(pThis, pType, false))
+	if (CheckShouldDisableDefensesCameo(pThis, pType)
+		|| HouseExt::ReachedBuildLimit(pThis, pType, false)
+		|| CheckShowGreyCameo(pThis, pType, *R->ESP<int*>()))
+	{
 		R->EAX(true);
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x4F9286, HouseClass_Update_RecheckOwnerBitfield, 0x6)
+{
+	enum { SkipLoop = 0x4F92DD, StartLoop = 0x4F928C };
+
+	GET(const int, buildingCount, EBP);
+
+	R->EBX(0);
+
+	if (!buildingCount)
+		return SkipLoop;
+
+	HouseExt::RecheckOwnerBitfieldForCurrentPlayer();
+	return StartLoop;
+}
+
+// All technos have Cameo_AlwaysExist=true need to change the EVA_NewConstructionOptions playing time
+DEFINE_HOOK(0x6A640B, SideBarClass_AddCameo_DoNotPlayEVA, 0x5)
+{
+	enum { SkipPlaying = 0x6A641A };
+
+	GET(AbstractType, absType, ESI);
+	GET(int, idxType, EBP);
+
+	if (const auto pType = ObjectTypeClass::GetTechnoType(absType, idxType))
+	{
+		if (TechnoTypeExt::ExtMap.Find(pType)->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist))
+			return SkipPlaying;
+	}
 
 	return 0;
 }
@@ -464,4 +536,52 @@ DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
 		pThis->IsAlliedWith(HouseClass::CurrentPlayer) :
 		pThis == HouseClass::CurrentPlayer);
 	return 0x50B723;
+}
+
+namespace SpyEffectRadarJamContext
+{
+	HouseClass* pThis;
+}
+
+DEFINE_HOOK(0x4F8440, HouseCLass_Update_SpyEffectRadarJam, 0x5)
+{
+	GET(HouseClass*, pThis, ECX);
+
+	auto pExt = HouseExt::ExtMap.Find(pThis);
+
+	int StartTime = pExt->SpyEffect_RadarJamTimer.StartTime;
+	int TimeLeft = pExt->SpyEffect_RadarJamTimer.TimeLeft;
+
+	if (StartTime != -1 && Unsorted::CurrentFrame - StartTime == TimeLeft)
+	{
+		pExt->SpyEffect_RadarJamTimer.Stop();
+		pThis->RecheckRadar = true;
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x508DF0, HouseClass_UpdateRadar_SetContext, 0x7)
+{
+	GET(HouseClass*, pThis, ECX);
+	SpyEffectRadarJamContext::pThis = pThis;
+	return 0;
+}
+
+DEFINE_HOOK(0x508F2A, HouseClass_UpdateRadar_CheckSpyEffectRadarJam, 0x5)
+{
+	enum { RadarUnavailable = 0x508F2F };
+	auto const pExt = HouseExt::ExtMap.Find(SpyEffectRadarJamContext::pThis);
+	return pExt->SpyEffect_RadarJamTimer.IsTicking() ? RadarUnavailable : 0;
+}
+
+// WW's code set anger on every houses, even on the allies.
+DEFINE_HOOK(0x4FD616, HouseClass_sub4FD500_DontAngerOnAlly, 0x9)
+{
+	enum { SkipAlly = 0x4FD6FE };
+
+	GET(HouseClass*, pThis, EBX);
+	GET(HouseClass*, pTargetHouse, ESI);
+
+	return (!RulesExt::Global()->AIAngerOnAlly && pThis->IsAlliedWith(pTargetHouse)) ? SkipAlly : 0;
 }

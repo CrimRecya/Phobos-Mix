@@ -18,8 +18,12 @@ public:
 	class ExtData final : public Extension<SidebarClass>
 	{
 	public:
+		bool SWSidebar_Enable;
+		std::vector<int> SWSidebar_Indices;
 
 		ExtData(SidebarClass* OwnerObject) : Extension<SidebarClass>(OwnerObject)
+			, SWSidebar_Enable { true }
+			, SWSidebar_Indices {}
 		{ }
 
 		virtual ~ExtData() = default;
@@ -51,7 +55,7 @@ public:
 
 	static void Clear()
 	{
-		Allocate(SidebarClass::Instance);
+		Allocate(&SidebarClass::Instance);
 	}
 
 	static void PointerGotInvalid(void* ptr, bool removed)

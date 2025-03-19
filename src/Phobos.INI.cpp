@@ -5,6 +5,7 @@
 #include <SessionClass.h>
 #include <MessageListClass.h>
 #include <HouseClass.h>
+#include <GameOptionsClass.h>
 
 #include <Utilities/Parser.h>
 #include <Utilities/GeneralUtils.h>
@@ -32,6 +33,12 @@ bool Phobos::UI::PowerDelta_Show = false;
 double Phobos::UI::PowerDelta_ConditionYellow = 0.75;
 double Phobos::UI::PowerDelta_ConditionRed = 1.0;
 bool Phobos::UI::CenterPauseMenuBackground = false;
+bool Phobos::UI::SuperWeaponSidebar = false;
+int Phobos::UI::SuperWeaponSidebar_Interval = 0;
+int Phobos::UI::SuperWeaponSidebar_LeftOffset = 0;
+int Phobos::UI::SuperWeaponSidebar_CameoHeight = 48;
+int Phobos::UI::SuperWeaponSidebar_Max = 0;
+int Phobos::UI::SuperWeaponSidebar_MaxColumns = INT32_MAX;
 bool Phobos::UI::WeedsCounter_Show = false;
 bool Phobos::UI::AnchoredToolTips = false;
 
@@ -43,6 +50,9 @@ bool Phobos::Config::ShowPlanningPath = false;
 bool Phobos::Config::ArtImageSwap = false;
 bool Phobos::Config::ShowPlacementPreview = false;
 bool Phobos::Config::DigitalDisplay_Enable = false;
+bool Phobos::Config::MessageDisplayInCenter = false;
+bool Phobos::Config::ShowBuildingStatistics = false;
+bool Phobos::Config::DrawAdjacentBoundary = false;
 bool Phobos::Config::RealTimeTimers = false;
 bool Phobos::Config::RealTimeTimers_Adaptive = false;
 int Phobos::Config::CampaignDefaultGameSpeed = 2;
@@ -57,6 +67,18 @@ bool Phobos::Config::ShowWeedsCounter = false;
 bool Phobos::Config::HideLightFlashEffects = true;
 bool Phobos::Config::ShowFlashOnSelecting = false;
 bool Phobos::Config::UnitPowerDrain = false;
+bool Phobos::Config::SelectedDisplay_Enable = false;
+bool Phobos::Config::SelectedDisplay_Expand = false;
+int Phobos::Config::SelectedDisplay_MaxCameo = 10;
+bool Phobos::Config::AllowDistributionCommand = false;
+int Phobos::Config::DistributionSpreadMode = 2;
+int Phobos::Config::DistributionFilterMode = 2;
+bool Phobos::Config::ScrollSidebarStripInTactical = true;
+bool Phobos::Config::ScrollSidebarStripWhenHoldAlt = true;
+bool Phobos::Config::ScrollSidebarStripWhenHoldCtrl = true;
+bool Phobos::Config::ScrollSidebarStripWhenHoldShift = true;
+bool Phobos::Config::AutomaticPlacingBuilding = true;
+bool Phobos::Config::AutomaticPlacingCombatBuilding = true;
 
 bool Phobos::Misc::CustomGS = false;
 int Phobos::Misc::CustomGS_ChangeInterval[7] = { -1, -1, -1, -1, -1, -1, -1 };
@@ -65,23 +87,36 @@ int Phobos::Misc::CustomGS_DefaultDelay[7] = { 0, 1, 2, 3, 4, 5, 6 };
 
 DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 {
-	Phobos::Config::ToolTipDescriptions = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ToolTipDescriptions", true);
-	Phobos::Config::ToolTipBlur = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ToolTipBlur", false);
-	Phobos::Config::PrioritySelectionFiltering = CCINIClass::INI_RA2MD->ReadBool("Phobos", "PrioritySelectionFiltering", true);
-	Phobos::Config::ShowPlacementPreview = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ShowPlacementPreview", true);
-	Phobos::Config::RealTimeTimers = CCINIClass::INI_RA2MD->ReadBool("Phobos", "RealTimeTimers", false);
-	Phobos::Config::RealTimeTimers_Adaptive = CCINIClass::INI_RA2MD->ReadBool("Phobos", "RealTimeTimers.Adaptive", false);
-	Phobos::Config::DigitalDisplay_Enable = CCINIClass::INI_RA2MD->ReadBool("Phobos", "DigitalDisplay.Enable", false);
-	Phobos::Config::SaveGameOnScenarioStart = CCINIClass::INI_RA2MD->ReadBool("Phobos", "SaveGameOnScenarioStart", true);
-	Phobos::Config::ShowBriefing = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ShowBriefing", true);
-	Phobos::Config::ShowPowerDelta = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ShowPowerDelta", true);
-	Phobos::Config::ShowHarvesterCounter = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ShowHarvesterCounter", true);
-	Phobos::Config::ShowWeedsCounter = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ShowWeedsCounter", true);
-	Phobos::Config::HideLightFlashEffects = CCINIClass::INI_RA2MD->ReadBool("Phobos", "HideLightFlashEffects", false);
-	Phobos::Config::ShowFlashOnSelecting = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ShowFlashOnSelecting", false);
+	Phobos::Config::ToolTipDescriptions = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ToolTipDescriptions", true);
+	Phobos::Config::ToolTipBlur = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ToolTipBlur", false);
+	Phobos::Config::PrioritySelectionFiltering = CCINIClass::INI_RA2MD.ReadBool("Phobos", "PrioritySelectionFiltering", true);
+	Phobos::Config::ShowPlacementPreview = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowPlacementPreview", true);
+	Phobos::Config::RealTimeTimers = CCINIClass::INI_RA2MD.ReadBool("Phobos", "RealTimeTimers", false);
+	Phobos::Config::RealTimeTimers_Adaptive = CCINIClass::INI_RA2MD.ReadBool("Phobos", "RealTimeTimers.Adaptive", false);
+	Phobos::Config::DigitalDisplay_Enable = CCINIClass::INI_RA2MD.ReadBool("Phobos", "DigitalDisplay.Enable", false);
+	Phobos::Config::MessageDisplayInCenter = CCINIClass::INI_RA2MD.ReadBool("Phobos", "MessageDisplayInCenter", false);
+	Phobos::Config::ShowBuildingStatistics = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowBuildingStatistics", false);
+	Phobos::Config::DrawAdjacentBoundary = CCINIClass::INI_RA2MD.ReadBool("Phobos", "DrawAdjacentBoundary", false);
+	Phobos::Config::SaveGameOnScenarioStart = CCINIClass::INI_RA2MD.ReadBool("Phobos", "SaveGameOnScenarioStart", true);
+	Phobos::Config::ShowBriefing = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowBriefing", true);
+	Phobos::Config::ShowPowerDelta = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowPowerDelta", true);
+	Phobos::Config::ShowHarvesterCounter = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowHarvesterCounter", true);
+	Phobos::Config::ShowWeedsCounter = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowWeedsCounter", true);
+	Phobos::Config::HideLightFlashEffects = CCINIClass::INI_RA2MD.ReadBool("Phobos", "HideLightFlashEffects", false);
+	Phobos::Config::ShowFlashOnSelecting = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowFlashOnSelecting", false);
+	Phobos::Config::DistributionSpreadMode = CCINIClass::INI_RA2MD.ReadInteger("Phobos", "DefaultDistributionSpreadMode", 2);
+	Phobos::Config::DistributionSpreadMode = std::clamp(Phobos::Config::DistributionSpreadMode, 0, 3);
+	Phobos::Config::DistributionFilterMode = CCINIClass::INI_RA2MD.ReadInteger("Phobos", "DefaultDistributionFilterMode", 2);
+	Phobos::Config::DistributionFilterMode = std::clamp(Phobos::Config::DistributionFilterMode, 0, 3);
+	Phobos::Config::ScrollSidebarStripInTactical = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ScrollSidebarStripInTactical", true);
+	Phobos::Config::ScrollSidebarStripWhenHoldAlt = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ScrollSidebarStripWhenHoldAlt", true);
+	Phobos::Config::ScrollSidebarStripWhenHoldCtrl = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ScrollSidebarStripWhenHoldCtrl", true);
+	Phobos::Config::ScrollSidebarStripWhenHoldShift = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ScrollSidebarStripWhenHoldShift", true);
+	Phobos::Config::AutomaticPlacingBuilding = CCINIClass::INI_RA2MD.ReadBool("Phobos", "AutomaticPlacingBuilding", true);
+	Phobos::Config::AutomaticPlacingCombatBuilding = CCINIClass::INI_RA2MD.ReadBool("Phobos", "AutomaticPlacingCombatBuilding", true);
 
 	// Custom game speeds, 6 - i so that GS6 is index 0, just like in the engine
-	Phobos::Config::CampaignDefaultGameSpeed = 6 - CCINIClass::INI_RA2MD->ReadInteger("Phobos", "CampaignDefaultGameSpeed", 4);
+	Phobos::Config::CampaignDefaultGameSpeed = 6 - CCINIClass::INI_RA2MD.ReadInteger("Phobos", "CampaignDefaultGameSpeed", 4);
 	if (Phobos::Config::CampaignDefaultGameSpeed > 6 || Phobos::Config::CampaignDefaultGameSpeed < 0)
 	{
 		Phobos::Config::CampaignDefaultGameSpeed = 2;
@@ -94,7 +129,7 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 		Patch::Apply_RAW(0x55D78D, { temp }); // when speed control is off. Doesn't need a hook.
 	}
 
-	Phobos::Config::ShowDesignatorRange = CCINIClass::INI_RA2MD->ReadBool("Phobos", "ShowDesignatorRange", false);
+	Phobos::Config::ShowDesignatorRange = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowDesignatorRange", false);
 
 	CCINIClass ini_uimd {};
 	ini_uimd.LoadFromFile(GameStrings::UIMD_INI);
@@ -104,6 +139,14 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 		Phobos::UI::DisableEmptySpawnPositions =
 			ini_uimd.ReadBool("LoadingScreen", "DisableEmptySpawnPositions", false);
 	}
+
+	Phobos::Config::SelectedDisplay_Enable = CCINIClass::INI_RA2MD.ReadBool("Phobos", "SelectedDisplay.Enable", false);
+
+	Phobos::Config::SelectedDisplay_Expand = CCINIClass::INI_RA2MD.ReadBool("Phobos", "SelectedDisplay.Expand", false);
+
+	Phobos::Config::SelectedDisplay_MaxCameo = CCINIClass::INI_RA2MD.ReadInteger("Phobos", "SelectedDisplay.MaxCameo", 10);
+
+	Phobos::Config::SelectedDisplay_MaxCameo = std::clamp(Phobos::Config::SelectedDisplay_MaxCameo, 5, 20);
 
 	// ToolTips
 	{
@@ -163,6 +206,36 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 
 		Phobos::UI::CenterPauseMenuBackground =
 			ini_uimd.ReadBool(SIDEBAR_SECTION, "CenterPauseMenuBackground", Phobos::UI::CenterPauseMenuBackground);
+
+		Phobos::UI::SuperWeaponSidebar =
+			ini_uimd.ReadBool(SIDEBAR_SECTION, "SuperWeaponSidebar", Phobos::UI::SuperWeaponSidebar);
+
+		Phobos::UI::SuperWeaponSidebar_Interval =
+			ini_uimd.ReadInteger(SIDEBAR_SECTION, "SuperWeaponSidebar.Interval", Phobos::UI::SuperWeaponSidebar_Interval);
+
+		Phobos::UI::SuperWeaponSidebar_LeftOffset =
+			ini_uimd.ReadInteger(SIDEBAR_SECTION, "SuperWeaponSidebar.LeftOffset", Phobos::UI::SuperWeaponSidebar_LeftOffset);
+
+		Phobos::UI::SuperWeaponSidebar_LeftOffset = std::min(Phobos::UI::SuperWeaponSidebar_Interval, Phobos::UI::SuperWeaponSidebar_LeftOffset);
+
+		Phobos::UI::SuperWeaponSidebar_CameoHeight =
+			ini_uimd.ReadInteger(SIDEBAR_SECTION, "SuperWeaponSidebar.CameoHeight", Phobos::UI::SuperWeaponSidebar_CameoHeight);
+
+		Phobos::UI::SuperWeaponSidebar_CameoHeight = std::max(48, Phobos::UI::SuperWeaponSidebar_CameoHeight);
+
+		Phobos::UI::SuperWeaponSidebar_Max =
+			ini_uimd.ReadInteger(SIDEBAR_SECTION, "SuperWeaponSidebar.Max", Phobos::UI::SuperWeaponSidebar_Max);
+
+		const int reserveHeight = 300;
+		const int screenHeight = GameOptionsClass::Instance.ScreenHeight - reserveHeight;
+
+		if (Phobos::UI::SuperWeaponSidebar_Max > 0)
+			Phobos::UI::SuperWeaponSidebar_Max = std::min(Phobos::UI::SuperWeaponSidebar_Max, screenHeight / Phobos::UI::SuperWeaponSidebar_CameoHeight);
+		else
+			Phobos::UI::SuperWeaponSidebar_Max = screenHeight / Phobos::UI::SuperWeaponSidebar_CameoHeight;
+
+		Phobos::UI::SuperWeaponSidebar_MaxColumns =
+			ini_uimd.ReadInteger(SIDEBAR_SECTION, "SuperWeaponSidebar.MaxColumns", Phobos::UI::SuperWeaponSidebar_MaxColumns);
 	}
 
 	// UISettings
@@ -222,6 +295,8 @@ DEFINE_HOOK(0x52D21F, InitRules_ThingsThatShouldntBeSerailized, 0x6)
 #endif
 	Phobos::Config::ShowPlanningPath = pINI_RULESMD->ReadBool("GlobalControls", "DebugPlanningPaths", Phobos::Config::ShowPlanningPath);
 
+	Phobos::Config::AllowDistributionCommand = pINI_RULESMD->ReadBool("GlobalControls", "AllowDistributionCommand", Phobos::Config::AllowDistributionCommand);
+
 	return 0;
 }
 
@@ -233,7 +308,7 @@ void Phobos::PassiveSaveGame()
 {
 	auto PrintMessage = [](const wchar_t* pMessage)
 	{
-		MessageListClass::Instance->PrintMessage(
+		MessageListClass::Instance.PrintMessage(
 			pMessage,
 			RulesClass::Instance->MessageDelay,
 			HouseClass::CurrentPlayer->ColorSchemeIndex,

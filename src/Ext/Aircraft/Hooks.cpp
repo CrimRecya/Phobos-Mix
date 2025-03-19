@@ -1,10 +1,10 @@
 #include <AircraftClass.h>
+#include <EventClass.h>
 #include <FlyLocomotionClass.h>
 
 #include <Ext/Aircraft/Body.h>
 #include <Ext/Techno/Body.h>
 #include <Ext/Anim/Body.h>
-#include <Ext/Techno/Body.h>
 #include <Ext/WeaponType/Body.h>
 #include <Utilities/Macro.h>
 
@@ -96,7 +96,7 @@ DEFINE_HOOK(0x4197F3, AircraftClass_GetFireLocation_Strafing, 0x5)
 	if (fireError == FireError::ILLEGAL || fireError == FireError::CANT)
 		return 0;
 
-	R->EAX(MapClass::Instance->GetCellAt(pObject->GetCoords()));
+	R->EAX(MapClass::Instance.GetCellAt(pObject->GetCoords()));
 
 	return 0;
 }
@@ -328,9 +328,6 @@ bool __fastcall AircraftTypeClass_CanUseWaypoint(AircraftTypeClass* pThis)
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7E2908, AircraftTypeClass_CanUseWaypoint)
 
-// KickOut: skip useless tether
-DEFINE_JUMP(LJMP, 0x444021, 0x44402E)
-
 // Move: smooth the planning paths and returning route
 DEFINE_HOOK_AGAIN(0x4168C7, AircraftClass_Mission_Move_SmoothMoving, 0x5)
 DEFINE_HOOK(0x416A0A, AircraftClass_Mission_Move_SmoothMoving, 0x5)
@@ -373,7 +370,7 @@ DEFINE_HOOK(0x4DDD66, FootClass_IsLandZoneClear_ReplaceHardcode, 0x6) // To avoi
 
 	// In vanilla, only aircrafts or `foots with fly locomotion` will call this virtual function
 	// So I don't know why WW use hard-coded `SpeedType::Track` and `MovementZone::Normal` to check this
-	R->AL(MapClass::Instance->GetCellAt(cell)->IsClearToMove(pType->SpeedType, false, false, -1, pType->MovementZone, -1, true));
+	R->AL(MapClass::Instance.GetCellAt(cell)->IsClearToMove(pType->SpeedType, false, false, -1, pType->MovementZone, -1, true));
 	return SkipGameCode;
 }
 
@@ -390,10 +387,9 @@ DEFINE_HOOK(0x41A96C, AircraftClass_Mission_AreaGuard, 0x6)
 		auto coords = pThis->GetCoords();
 
 		if (pThis->TargetAndEstimateDamage(coords, ThreatType::Area))
-		{
 			pThis->QueueMission(Mission::Attack, false);
-			return SkipGameCode;
-		}
+
+		return SkipGameCode;
 	}
 
 	return 0;
@@ -429,7 +425,13 @@ DEFINE_HOOK(0x4DF3BA, FootClass_UpdateAttackMove_AircraftHoldAttackMoveTarget1, 
 	if (RulesExt::Global()->ExtendedAircraftMissions && pThis->WhatAmI() == AbstractType::Aircraft)
 		return HoldTarget;
 
-	return pThis->InAuxiliarySearchRange(pThis->Target) ? HoldTarget : LoseTarget;
+	const auto inSearchRange = pThis->InAuxiliarySearchRange(pThis->Target);
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+
+	if (pTypeExt && pTypeExt->AttackMove_PursuitTarget && inSearchRange)
+		pThis->SetDestination(pThis->Target, true);
+
+	return inSearchRange ? HoldTarget : LoseTarget;
 }
 
 DEFINE_HOOK(0x4DF42A, FootClass_UpdateAttackMove_AircraftHoldAttackMoveTarget2, 0x6) // When it have MegaTarget
@@ -505,6 +507,130 @@ AbstractClass* __fastcall AircraftClass_GreatestThreat(AircraftClass* pThis, voi
 	return pThis->FootClass::GreatestThreat(threatType, pSelectCoords, onlyTargetHouseEnemy);
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7E2668, AircraftClass_GreatestThreat)
+
+// Handle assigning area guard mission to aircraft.
+DEFINE_HOOK(0x4C7403, EventClass_Execute_AircraftAreaGuard, 0x6)
+{
+	enum { SkipGameCode = 0x4C7435 };
+
+	GET(TechnoClass* const, pTechno, EDI);
+
+	if (RulesExt::Global()->ExtendedAircraftMissions && pTechno->WhatAmI() == AbstractType::Aircraft)
+	{
+		// If we're on dock reloading but have ammo, untether from dock and try to scan for targets.
+		if (pTechno->CurrentMission == Mission::Sleep && pTechno->Ammo)
+			pTechno->SendToEachLink(RadioCommand::NotifyUnlink);
+
+		// Skip assigning destination / target here.
+		return SkipGameCode;
+	}
+
+	return 0;
+}
+
+// Do not untether aircraft when assigning area guard mission by default.
+DEFINE_HOOK(0x4C72F2, EventClass_Execute__AircraftAreaGuard_Untether, 0x6)
+{
+	enum { SkipGameCode = 0x4C7349 };
+
+	GET(EventClass* const, pThis, ESI);
+	GET(TechnoClass* const, pTechno, EDI);
+
+	if (RulesExt::Global()->ExtendedAircraftMissions && pTechno->WhatAmI() == AbstractType::Aircraft
+		&& pThis->MegaMission.Mission == (char)Mission::Area_Guard)
+	{
+		return SkipGameCode;
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
+#pragma region AircraftScatterCell
+
+DEFINE_HOOK(0x41847E, AircraftClass_MissionAttack_ScatterCell1, 0x6)
+{
+	enum { SkipScatter = 0x4184C2, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+DEFINE_HOOK(0x4186DD, AircraftClass_MissionAttack_ScatterCell2, 0x5)
+{
+	enum { SkipScatter = 0x418720, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+DEFINE_HOOK(0x41882C, AircraftClass_MissionAttack_ScatterCell3, 0x6)
+{
+	enum { SkipScatter = 0x418870, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+DEFINE_HOOK(0x41893B, AircraftClass_MissionAttack_ScatterCell4, 0x6)
+{
+	enum { SkipScatter = 0x41897F, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+DEFINE_HOOK(0x418A4A, AircraftClass_MissionAttack_ScatterCell5, 0x6)
+{
+	enum { SkipScatter = 0x418A8E, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+DEFINE_HOOK(0x418B46, AircraftClass_MissionAttack_ScatterCell6, 0x6)
+{
+	enum { SkipScatter = 0x418B8A, Scatter = 0 };
+	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
+}
+
+#pragma endregion
+
+#pragma region AircraftFlight
+
+DEFINE_HOOK(0x4CDF84, FlyLocomotionClass_UpdateLoaction_FlightCrash, 0x5)
+{
+	GET(int, deltaZ, ECX);
+	GET(FootClass* const, pLinkedTo, EAX);
+
+	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType()))
+	{
+		const int crashSpeed = pTypeExt->FlightCrash;
+
+		if (crashSpeed >= 0)
+			deltaZ = crashSpeed;
+	}
+
+	R->ECX(deltaZ);
+	return 0;
+}
+
+DEFINE_HOOK(0x4CDE96, FlyLocomotionClass_UpdateLoaction_FlightClimb, 0x6)
+{
+	GET(int, deltaZ, EAX);
+	GET(const int, bridgeHeight, EBX);
+	GET(const int, technoHeight, EDI);
+	GET(FootClass* const, pLinkedTo, ECX);
+
+	auto const pType = pLinkedTo->GetTechnoType();
+
+	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType))
+	{
+		const int climbSpeed = pTypeExt->FlightClimb;
+
+		if (climbSpeed >= 0)
+			deltaZ = climbSpeed;
+	}
+
+	const int extraHeight = bridgeHeight + technoHeight + deltaZ - pType->GetFlightLevel();
+
+	if (extraHeight > 0)
+		deltaZ -= extraHeight;
+
+	R->EAX(deltaZ);
+	return 0;
+}
 
 #pragma endregion
 

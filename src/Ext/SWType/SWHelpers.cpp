@@ -1,4 +1,5 @@
 #include "Body.h"
+#include <MessageListClass.h>
 
 // Universal handler of the rolls-weights system
 std::vector<int> SWTypeExt::ExtData::WeightedRollsHandler(ValueableVector<float>* rolls, std::vector<ValueableVector<int>>* weights, size_t size)
@@ -79,7 +80,7 @@ bool SWTypeExt::ExtData::HasInhibitor(HouseClass* pOwner, const CellStruct& coor
 		return false;
 
 	// a single inhibitor in range suffices
-	return std::any_of(TechnoClass::Array->begin(), TechnoClass::Array->end(), [=, &coords](TechnoClass* pTechno)
+	return std::any_of(TechnoClass::Array.begin(), TechnoClass::Array.end(), [=, &coords](TechnoClass* pTechno)
 		{ return this->IsInhibitorEligible(pOwner, coords, pTechno); }
 	);
 }
@@ -117,7 +118,7 @@ bool SWTypeExt::ExtData::HasDesignator(HouseClass* pOwner, const CellStruct& coo
 		return true;
 
 	// a single designator in range suffices
-	return std::any_of(TechnoClass::Array->begin(), TechnoClass::Array->end(), [=, &coords](TechnoClass* pTechno)
+	return std::any_of(TechnoClass::Array.begin(), TechnoClass::Array.end(), [=, &coords](TechnoClass* pTechno)
 		{ return this->IsDesignatorEligible(pOwner, coords, pTechno); });
 }
 
@@ -267,4 +268,36 @@ std::pair<double, double> SWTypeExt::ExtData::GetEMPulseCannonRange(BuildingClas
 	}
 
 	return std::make_pair(this->SW_RangeMinimum.Get(), this->SW_RangeMaximum.Get());
+}
+
+void SWTypeExt::ExtData::PrintMessage(const CSFText& message, HouseClass* pFirer) const
+{
+	if (message.empty())
+		return;
+
+	int color = ColorScheme::FindIndex("Gold");
+	if (this->Message_FirerColor)
+	{
+		// firer color
+		if (pFirer)
+		{
+			color = pFirer->ColorSchemeIndex;
+		}
+	}
+	else
+	{
+		if (this->Message_ColorScheme > -1)
+		{
+			// user defined color
+			color = this->Message_ColorScheme;
+		}
+		else if (const auto pCurrent = HouseClass::CurrentPlayer)
+		{
+			// default way: the current player's color
+			color = pCurrent->ColorSchemeIndex;
+		}
+	}
+
+	// print the message
+	MessageListClass::Instance.PrintMessage(message, RulesClass::Instance->MessageDelay, color);
 }
