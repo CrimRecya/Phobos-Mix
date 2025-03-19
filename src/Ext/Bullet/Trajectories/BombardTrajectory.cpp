@@ -249,6 +249,15 @@ bool BombardTrajectory::CalculateBulletVelocity(const double speed)
 	return this->PhobosTrajectory::CalculateBulletVelocity(speed);
 }
 
+void BombardTrajectory::MultiplyBulletVelocity(const double ratio, const bool shouldDetonate)
+{
+	this->MovingVelocity *= ratio;
+	this->MovingSpeed = this->MovingSpeed * ratio;
+	// Only be truly detonated during the descent phase
+	if (shouldDetonate && this->IsFalling)
+		this->ShouldDetonate = true;
+}
+
 CoordStruct BombardTrajectory::CalculateMiddleCoords()
 {
 	const auto pBullet = this->Bullet;

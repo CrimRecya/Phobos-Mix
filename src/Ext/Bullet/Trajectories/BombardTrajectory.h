@@ -75,6 +75,7 @@ public:
 	virtual bool GetCanHitGround() const override { return this->Type->SubjectToGround || this->IsFalling; }
 	virtual void SetBulletNewTarget(AbstractClass* const pTarget) override;
 	virtual bool CalculateBulletVelocity(const double speed) override;
+	virtual void MultiplyBulletVelocity(const double ratio, const bool shouldDetonate) override;
 
 private:
 	CoordStruct CalculateMiddleCoords();
