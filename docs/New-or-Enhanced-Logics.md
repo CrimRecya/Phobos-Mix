@@ -1105,6 +1105,7 @@ Trajectory.Engrave.LaserDelay=1            ; integer
 
 ```{note}
 - It's best not to let it be intercepted.
+- Directly using the laser drawing in `Trajectory=Engrave` with `Trajectory.PassDetonateWarhead` is more cost-effective than using `Trajectory.DisperseWeapons`. Please consider using it at your own discretion.
 ```
 
 #### Parabola trajectory
