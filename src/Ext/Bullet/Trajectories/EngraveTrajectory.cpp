@@ -180,6 +180,8 @@ bool EngraveTrajectory::CalculateBulletVelocity(const double speed)
 	// Automatically calculate duration
 	if (pType->Duration <= 0)
 		this->DurationTimer.Start(static_cast<int>(velocityLength / pType->Speed) + 1);
+	else
+		this->DurationTimer.Start(pType->Duration);
 
 	this->MovingVelocity *= speed / velocityLength;
 	this->MovingSpeed = speed;
