@@ -239,6 +239,9 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->BuildingTypeSelectable.Read(exINI, GameStrings::General, "BuildingTypeSelectable");
 
+	this->ExtraTargeting_OnLoseTarget.Read(exINI, GameStrings::General, "ExtraTargeting.OnLoseTarget");
+	this->ExtraTargeting_OnStopCommand.Read(exINI, GameStrings::General, "ExtraTargeting.OnStopCommand");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -444,6 +447,8 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->CombatLightDetailLevel)
 		.Process(this->LightFlashAlphaImageDetailLevel)
 		.Process(this->BuildingTypeSelectable)
+		.Process(this->ExtraTargeting_OnLoseTarget)
+		.Process(this->ExtraTargeting_OnStopCommand)
 		;
 }
 
