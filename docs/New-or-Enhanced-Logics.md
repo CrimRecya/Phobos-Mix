@@ -892,6 +892,10 @@ Trajectory.AllowFirerTurning=yes   ; boolean
 | `Trajectory.DetonationHeight` | · | ⚪ | · | · | ⚪ | · |
 | `Trajectory.AllowFirerTurning` | · | · | · | ⚪ | · | ⚪ |
 
+```{note}
+- `SubjectToGround` can cause the projectile with `Trajectory=Straight` during the entire process or the projectile with `Trajectory=Bombard` during the ascent phase to detonate prematurely due to impact with the ground.
+```
+
 - In addition, these types of projectile also have some general functions for detonating warheads. Effective for all types.
   - `Trajectory.PassDetonate` enables extra detonations when the projectile is traveling. (You can use this when you want the projectile to detonate warheads every other distance/time during the flight.)
     - `Trajectory.PassDetonateWarhead` defines the warhead detonated by `Trajectory.PassDetonate`. If not set, use the original warhead of the projectile.
