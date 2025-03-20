@@ -2120,7 +2120,7 @@ DEFINE_HOOK(0x4B3DD4, DriveLocomotionClass_SomeFunc_DamagedSpeed, 0x5)
 	else if (ratio <= RulesClass::Instance->ConditionYellow)
 		speedPercent *= TechnoTypeExt::ExtMap.Find(pFoot->GetTechnoType())->VehicleDamagedSpeedMultiplier_Yellow.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Yellow);
 
-	if (pThis->TrackNumber < 64)
+	if (static_cast<int>(pThis->TrackNumber) < 64)
 		pThis->movementspeed_50 = speedPercent;
 	else if (speedPercent != pFoot->SpeedPercentage)
 		pFoot->SetSpeedPercentage(speedPercent);
@@ -2143,7 +2143,7 @@ DEFINE_HOOK(0x6A3423, ShipLocomotionClass_SomeFunc_DamagedSpeed, 0x5)
 	else if (ratio <= RulesClass::Instance->ConditionYellow)
 		speedPercent *= TechnoTypeExt::ExtMap.Find(pFoot->GetTechnoType())->VehicleDamagedSpeedMultiplier_Yellow.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Yellow);
 
-	if (pThis->TrackNumber < 64)
+	if (static_cast<int>(pThis->TrackNumber) < 64)
 		pThis->movementspeed_50 = speedPercent;
 	else if (speedPercent != pFoot->SpeedPercentage)
 		pFoot->SetSpeedPercentage(speedPercent);
