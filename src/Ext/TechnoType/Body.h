@@ -269,6 +269,8 @@ public:
 		Valueable<AnimTypeClass*> Spawner_RecycleAnim;
 		Valueable<CoordStruct> Spawner_RecycleCoord;
 		Valueable<bool> Spawner_RecycleOnTurret;
+
+		Nullable<double> VehicleDamagedSpeedMultiplier;
 		
 		struct LaserTrailDataEntry
 		{
@@ -532,6 +534,8 @@ public:
 			, Spawner_RecycleAnim { }
 			, Spawner_RecycleCoord { {0,0,0} }
 			, Spawner_RecycleOnTurret { false }
+
+			, VehicleDamagedSpeedMultiplier { }
 		{ }
 
 		virtual ~ExtData() = default;
