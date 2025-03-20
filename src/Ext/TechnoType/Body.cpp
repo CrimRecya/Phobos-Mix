@@ -831,6 +831,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Spawner_RecycleCoord.Read(exINI, pSection, "Spawner.RecycleCoord");
 	this->Spawner_RecycleOnTurret.Read(exINI, pSection, "Spawner.RecycleOnTurret");
 
+	this->ProneSpeed.Read(exINI, pSection, "ProneSpeed");
+  
 	this->RadarInvisible_ToSelf.Read(exINI, pSection, "RadarInvisible.ToSelf");
 	this->RadarInvisible_ToAlly.Read(exINI, pSection, "RadarInvisible.ToAlly");
 
@@ -1425,6 +1427,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Spawner_RecycleAnim)
 		.Process(this->Spawner_RecycleCoord)
 		.Process(this->Spawner_RecycleOnTurret)
+
+		.Process(this->ProneSpeed)
 
 		;
 }

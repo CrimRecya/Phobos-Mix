@@ -299,6 +299,8 @@ public:
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
+		Nullable<double> ProneSpeed;
+    
 		Valueable<bool> ExtraTargeting_OnLoseTarget;
 		Valueable<bool> ExtraTargeting_OnStopCommand;
     
@@ -558,6 +560,7 @@ public:
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
+			, ProneSpeed { }
 			, ExtraTargeting_OnLoseTarget { false }
 			, ExtraTargeting_OnStopCommand { false }
 			, AllyShareControl { false }

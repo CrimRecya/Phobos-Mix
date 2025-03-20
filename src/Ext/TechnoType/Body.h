@@ -414,6 +414,8 @@ public:
 		Valueable<CoordStruct> Spawner_RecycleCoord;
 		Valueable<bool> Spawner_RecycleOnTurret;
 
+		Nullable<double> ProneSpeed;
+		
 		struct LaserTrailDataEntry
 		{
 			ValueableIdx<LaserTrailTypeClass> idxType;
@@ -829,6 +831,8 @@ public:
 			, Spawner_RecycleAnim { }
 			, Spawner_RecycleCoord { {0,0,0} }
 			, Spawner_RecycleOnTurret { false }
+
+			, ProneSpeed { }
 		{ }
 
 		virtual ~ExtData() = default;
