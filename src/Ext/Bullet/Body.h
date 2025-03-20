@@ -46,6 +46,7 @@ public:
 			, DamageNumberOffset { INT32_MIN }
 			, LimboedLauncher { nullptr }
 			, LimboedDir { 0 }
+
 			, Trajectory { nullptr }
 			, DispersedTrajectory { false }
 		{ }

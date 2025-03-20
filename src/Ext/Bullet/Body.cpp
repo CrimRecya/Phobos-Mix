@@ -374,7 +374,7 @@ void BulletExt::ExtData::Serialize(T& Stm)
 		.Process(this->LimboedLauncher)
 		.Process(this->LimboedDir)
 
-		.Process(this->Trajectory) // Keep this shit at last
+		.Process(this->Trajectory)
 		.Process(this->DispersedTrajectory)
 		;
 }

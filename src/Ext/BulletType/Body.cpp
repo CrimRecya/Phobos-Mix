@@ -1,7 +1,6 @@
 #include "Body.h"
 
 #include <Ext/Bullet/Trajectories/PhobosActualTrajectory.h>
-#include <Ext/Bullet/Trajectories/PhobosVirtualTrajectory.h>
 
 BulletTypeExt::ExtContainer BulletTypeExt::ExtMap;
 
