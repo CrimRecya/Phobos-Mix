@@ -134,12 +134,7 @@ void BulletTypeExt::ExtData::TrajectoryValidation() const
 
 		const auto flag = pTrajType->Flag();
 
-		if (flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing)
-		{
-			if (!pThis->IgnoresFirestorm)
-				pThis->IgnoresFirestorm = true; // Ignore this setting
-		}
-		else if (flag == TrajectoryFlag::Straight || flag == TrajectoryFlag::Bombard)
+		if (flag == TrajectoryFlag::Straight || flag == TrajectoryFlag::Bombard)
 		{
 			if (this->SubjectToGround)
 				static_cast<ActualTrajectoryType*>(pTrajType)->SubjectToGround = true;

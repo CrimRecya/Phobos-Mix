@@ -210,7 +210,7 @@ public:
 	bool TargetInTheAir; // Is the original target the Air Force
 	bool TargetIsTechno; // Is the original target a techno type
 	bool NotMainWeapon; // Does it ignore the launcher
-	bool ShouldDetonate; // Should detonate in next frame
+	bool ShouldDetonate; // Should detonate when checking before and after moving
 	CoordStruct FLHCoord; // Launch FLH
 	int CurrentBurst; // Current burst index, mirror is required for negative numbers
 	int CountOfBurst; // Upper limit of burst counts
@@ -329,9 +329,10 @@ public:
 	void OnFacingUpdate();
 	bool FireAdditionals();
 	void DetonateOnObstacle();
-	bool CheckTolerantAndSynchronize();
+	bool CheckSynchronize();
+	bool CheckTolerantTime();
+
 	std::vector<CellClass*> GetCellsInProximityRadius();
-	bool BulletRetargetTechno();
 	bool CheckThroughAndSubjectInCell(CellClass* pCell, HouseClass* pOwner);
 	void CalculateNewDamage();
 	void PassWithDetonateAt();
@@ -339,6 +340,8 @@ public:
 	void ProximityDetonateAt(HouseClass* pOwner, TechnoClass* pTarget);
 	int GetTheTrueDamage(int damage, bool self);
 	double GetExtraDamageMultiplier();
+
+	bool BulletRetargetTechno();
 	void GetTechnoFLHCoord();
 	CoordStruct GetWeaponFireCoord(TechnoClass* pTechno);
 	bool PrepareDisperseWeapon();

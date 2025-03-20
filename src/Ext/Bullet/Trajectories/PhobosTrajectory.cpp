@@ -264,14 +264,20 @@ void PhobosTrajectory::OnUnlimbo()
 // Something that needs to be done before updating the velocity of the projectile
 bool PhobosTrajectory::OnEarlyUpdate()
 {
+	// The previous check requires detonation at this time
+	if (this->ShouldDetonate)
+		return true;
 	// Check the remaining existence time
 	if (this->DurationTimer.Completed())
 		return true;
-	// Check if the tolerance time has ended or if the firer's target can be synchronized
-	if (this->CheckTolerantAndSynchronize())
+	// Check if the firer's target can be synchronized
+	if (this->CheckSynchronize())
 		return true;
 	// Check if the target needs to be changed
 	if (std::abs(this->GetType()->RetargetRadius) > 1e-10 && this->BulletRetargetTechno())
+		return true;
+	// Check if the tolerance time has ended
+	if (this->CheckTolerantTime())
 		return true;
 	// Check whether need to slow down then detonate
 	if (this->OnVelocityCheck())
@@ -423,13 +429,13 @@ void PhobosTrajectory::OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* 
 // Something that needs to be done after updating the velocity of the projectile
 TrajectoryCheckReturnType PhobosTrajectory::OnDetonateUpdate(const CoordStruct& position)
 {
-	// The previous frame requires detonation at this time
+	// Need to detonate at the next location
 	if (this->ShouldDetonate)
 		return TrajectoryCheckReturnType::Detonate;
 	// Below ground level? (16 ->error range)
 	if (this->GetCanHitGround() && MapClass::Instance.GetCellFloorHeight(position) >= (position.Z + 16))
 		return TrajectoryCheckReturnType::Detonate;
-
+	// Skip all vanilla checks
 	return TrajectoryCheckReturnType::SkipGameCheck;
 }
 
@@ -713,36 +719,41 @@ void PhobosTrajectory::DetonateOnObstacle()
 	this->ProximityDetonateAt(pOwner, pDetonateAt);
 }
 
-// Synchronization target inspection and tolerance time inspection
-bool PhobosTrajectory::CheckTolerantAndSynchronize()
+// Synchronization target inspection
+bool PhobosTrajectory::CheckSynchronize()
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
-
-	if (!pBullet->Target && !pType->TolerantTime)
-		return true;
 	// Find the outermost transporter
 	const auto pFirer = GetSurfaceFirer(pBullet->Owner);
-
-	if (pType->Synchronize)
+	// Synchronize to the target of the firer
+	if (pType->Synchronize && pFirer)
 	{
-		if (pFirer)
-		{
-			auto pTarget = pFirer->Target;
-
-			if (pBullet->Target != pTarget && !pType->TolerantTime)
-				return true;
-
-			if (pTarget && (pTarget->IsInAir() != this->TargetInTheAir))
-				pTarget = nullptr;
-
-			pBullet->SetTarget(pTarget);
-		}
+		auto pTarget = pFirer->Target;
+		// Check should detonate when changing target
+		if (pBullet->Target != pTarget && !this->GetType()->TolerantTime)
+			return true;
+		// Check if the target can be synchronized
+		if (pTarget && (pTarget->IsInAir() != this->TargetInTheAir))
+			pTarget = nullptr;
+		// Replace with a new target
+		this->SetBulletNewTarget(pTarget);
 	}
 
-	if (const auto pTarget = pBullet->Target)
+	return false;
+}
+
+// Tolerance timer inspection
+bool PhobosTrajectory::CheckTolerantTime()
+{
+	const auto pBullet = this->Bullet;
+	const auto pType = this->GetType();
+	// Check should detonate when no target
+	if (!pBullet->Target && !pType->TolerantTime)
+		return true;
+	// Update timer
+	if (pBullet->Target)
 	{
-		pBullet->TargetCoords = pTarget->GetCoords();
 		this->TolerantTimer.Stop();
 	}
 	else if (pType->TolerantTime > 0)
