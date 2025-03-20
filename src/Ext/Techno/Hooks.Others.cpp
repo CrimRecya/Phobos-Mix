@@ -1539,26 +1539,6 @@ DEFINE_HOOK(0x741925, UnitClass_CrushCell_CrushBuilding, 0x5)
 
 #pragma endregion
 
-#pragma region FollowTargetSelf
-
-DEFINE_HOOK(0x4D9620, FootClass_SetDestination_FollowTargetSelf, 0x5)
-{
-	enum { SkipGameCode = 0x4D962B };
-
-	GET(AbstractClass*, pDestination, ECX);
-
-	if (RulesExt::Global()->FollowTargetSelf && pDestination->WhatAmI() != AbstractType::Building)
-	{
-		auto crd = pDestination->GetCoords();
-		R->EAX(&crd);
-		return SkipGameCode;
-	}
-
-	return 0;
-}
-
-#pragma endregion
-
 #pragma region Sink
 
 DEFINE_HOOK(0x7364DC, UnitClass_Update_SinkSpeed, 0x7)
@@ -1579,6 +1559,30 @@ DEFINE_HOOK(0x737DE2, UnitClass_ReceiveDamage_Sinkable, 0x6)
 	const bool shouldSink = pType->Weight > RulesClass::Instance->ShipSinkingWeight && pType->Naval && !pType->Underwater && !pType->Organic;
 
 	return TechnoTypeExt::ExtMap.Find(pType)->Sinkable.Get(shouldSink) ? GoOtherChecks : NoSink;
+}
+
+DEFINE_HOOK(0x629C67, ParasiteClass_UpdateSquid_SinkableBySquid, 0x9)
+{
+	enum { SkipGameCode = 0x629C86 };
+
+	GET(ParasiteClass*, pThis, ESI);
+	GET(FootClass*, pVictim, EDI);
+
+	const auto pVictimType = pVictim->GetTechnoType();
+
+	if (TechnoTypeExt::ExtMap.Find(pVictimType)->SinkableBySquid || pVictim->WhatAmI() != AbstractType::Unit)
+	{
+		pVictim->IsSinking = true;
+		pVictim->Destroyed(pThis->Owner);
+		pVictim->Stun();
+	}
+	else
+	{
+		auto damage = pVictimType->Strength;
+		pVictim->ReceiveDamage(&damage, 0, RulesClass::Instance->C4Warhead, pThis->Owner, true, false, pThis->Owner->Owner);
+	}
+
+	return SkipGameCode;
 }
 
 #pragma endregion
@@ -2091,7 +2095,7 @@ DEFINE_HOOK(0x521D94, InfantryClass_CurrentSpeed_ProneSpeed, 0x6)
 	GET(int, currentSpeed, ECX);
 
 	const auto pType = pThis->Type;
-	currentSpeed *= TechnoTypeExt::ExtMap.Find(pType)->ProneSpeed.Get(RulesExt::Global()->ProneSpeed.Get(pType->Crawls ? 0.67 : 1.5));
+	currentSpeed = static_cast<int>(currentSpeed * TechnoTypeExt::ExtMap.Find(pType)->ProneSpeed.Get(RulesExt::Global()->ProneSpeed.Get(pType->Crawls ? 0.67 : 1.5)));
 
 	R->ECX(currentSpeed);
 	return SkipGameCode;

@@ -798,6 +798,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->IgnoreRallyPoint.Read(exINI, pSection, "IgnoreRallyPoint");
 
 	this->Sinkable.Read(exINI, pSection, "Sinkable");
+	this->SinkableBySquid.Read(exINI, pSection, "SinkableBySquid");
 	this->SinkSpeed.Read(exINI, pSection, "SinkSpeed");
 
 	this->JumpjetSpeedType.Read(exINI, pSection, "JumpjetSpeedType");
@@ -1377,6 +1378,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->IgnoreRallyPoint)
 
 		.Process(this->Sinkable)
+		.Process(this->SinkableBySquid)
 		.Process(this->SinkSpeed)
 
 		.Process(this->JumpjetSpeedType)

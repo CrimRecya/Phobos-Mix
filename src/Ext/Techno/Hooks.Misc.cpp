@@ -295,17 +295,23 @@ DEFINE_HOOK(0x6B77B4, SpawnManagerClass_Update_RecycleSpawned, 0x7)
 DEFINE_HOOK(0x4D962B, FootClass_SetDestination_RecycleFLH, 0x5)
 {
 	GET(FootClass* const, pThis, EBP);
-	GET(CoordStruct*, pDestCrd, EAX);
+	GET(CoordStruct* const, pDestCrd, EAX);
 
-	auto pCarrier = pThis->SpawnOwner;
+	const auto pCarrier = pThis->SpawnOwner;
+	const auto pDestination = pThis->Destination;
 
 	if (pCarrier && pCarrier == pThis->Destination) // This is a spawner returning to its carrier.
 	{
-		auto pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
+		auto const pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
 		auto const& FLH = pCarrierTypeExt->Spawner_RecycleCoord;
 
 		if (FLH != CoordStruct::Empty)
 			*pDestCrd += TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret) - pCarrier->GetCoords();
+	}
+	else if (RulesExt::Global()->FollowTargetSelf)
+	{
+		if (const auto pFoot = abstract_cast<FootClass*>(pDestination))
+			*pDestCrd = pFoot->GetCoords();
 	}
 
 	return 0;

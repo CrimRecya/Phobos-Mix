@@ -364,6 +364,7 @@ public:
 		Valueable<bool> IgnoreRallyPoint;
 
 		Nullable<bool> Sinkable;
+		Valueable<bool> SinkableBySquid;
 		Valueable<int> SinkSpeed;
 
 		Valueable<int> JumpjetSpeedType;
@@ -781,6 +782,7 @@ public:
 			, IgnoreRallyPoint { false }
 
 			, Sinkable { }
+			, SinkableBySquid { true }
 			, SinkSpeed { 5 }
 
 			, JumpjetSpeedType { 3 }
