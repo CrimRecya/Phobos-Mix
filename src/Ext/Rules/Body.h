@@ -299,6 +299,9 @@ public:
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
+		Valueable<bool> ExtraTargeting_OnLoseTarget;
+		Valueable<bool> ExtraTargeting_OnStopCommand;
+    
 		Valueable<bool> AllyShareControl;
 
 		Valueable<bool> InTransportInfantryAmmoFix;
@@ -555,6 +558,8 @@ public:
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
+			, ExtraTargeting_OnLoseTarget { false }
+			, ExtraTargeting_OnStopCommand { false }
 			, AllyShareControl { false }
 			, InTransportInfantryAmmoFix { false }
 			, UpdateInLimbo_Occupier { false }

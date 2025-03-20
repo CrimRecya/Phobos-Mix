@@ -1,5 +1,7 @@
 #include "Body.h"
 
+#include <AircraftClass.h>
+
 #include <Ext/BuildingType/Body.h>
 
 // Cursor & target acquisition stuff not directly tied to other features can go here.
@@ -37,6 +39,66 @@ FireError __fastcall TechnoClass_TargetSomethingNearby_CanFire_Wrapper(TechnoCla
 }
 
 DEFINE_FUNCTION_JUMP(CALL6, 0x7098E6, TechnoClass_TargetSomethingNearby_CanFire_Wrapper);
+
+DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting, 0x7)
+{
+	GET(TechnoClass*, pTechno, ESI);
+
+	if (RulesExt::Global()->ExtraTargeting_OnStopCommand)
+	{
+		auto crd = pTechno->GetCoords();
+		pTechno->TargetAndEstimateDamage(crd, ThreatType::Range);
+	}
+
+	R->EAX(pTechno->WhatAmI());
+
+	return R->Origin() + 0x7;
+}
+
+DEFINE_HOOK(0x4D4E72, FootClass_MissionAttack_ExtraTargeting, 0x6)
+{
+	GET(FootClass*, pThis, ESI);
+
+	if (RulesExt::Global()->ExtraTargeting_OnLoseTarget)
+	{
+		auto crd = pThis->GetCoords();
+
+		if (pThis->TargetAndEstimateDamage(crd, ThreatType::Range))
+		{
+			return 0x4D4E64;
+		}
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x44AF86, BuildingClass_MissionAttack_ExtraTargeting, 0x6)
+{
+	GET(BuildingClass*, pThis, ESI);
+
+	if (!pThis->Target && RulesExt::Global()->ExtraTargeting_OnLoseTarget)
+	{
+		auto crd = pThis->GetCoords();
+		pThis->TargetAndEstimateDamage(crd, ThreatType::Range);
+	}
+
+	R->EAX(pThis->Target);
+
+	return R->Origin() + 0x6;
+}
+
+DEFINE_HOOK(0x417FE0, AircraftClass_MissionAttack_ExtraTargeting, 0x6)
+{
+	GET(AircraftClass*, pThis, ECX);
+
+	if (RulesExt::Global()->ExtraTargeting_OnLoseTarget)
+	{
+		auto crd = pThis->GetCoords();
+		pThis->TargetAndEstimateDamage(crd, ThreatType::Range);
+	}
+
+	return 0;
+}
 
 #pragma endregion
 
