@@ -1562,12 +1562,9 @@ DEFINE_HOOK(0x4D9620, FootClass_SetDestination_FollowTargetSelf, 0x5)
 DEFINE_HOOK(0x7364DC, UnitClass_Update_SinkSpeed, 0x7)
 {
 	GET(UnitClass* const, pThis, ESI);
+	GET(int, coordZ, EDX);
 
-	GET(int, CoordZ, EDX);
-
-	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type))
-		R->EDX(CoordZ - (pTypeExt->SinkSpeed - 5));
-
+	R->EDX(coordZ - (TechnoTypeExt::ExtMap.Find(pThis->Type)->SinkSpeed - 5));
 	return 0;
 }
 
@@ -1577,12 +1574,9 @@ DEFINE_HOOK(0x737DE2, UnitClass_ReceiveDamage_Sinkable, 0x6)
 
 	GET(UnitTypeClass*, pType, EAX);
 
-	bool ShouldSink = pType->Weight > RulesClass::Instance->ShipSinkingWeight && pType->Naval && !pType->Underwater && !pType->Organic;
+	const bool shouldSink = pType->Weight > RulesClass::Instance->ShipSinkingWeight && pType->Naval && !pType->Underwater && !pType->Organic;
 
-	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType))
-		ShouldSink = pTypeExt->Sinkable.Get(ShouldSink);
-
-	return ShouldSink ? GoOtherChecks : NoSink;
+	return TechnoTypeExt::ExtMap.Find(pType)->Sinkable.Get(shouldSink) ? GoOtherChecks : NoSink;
 }
 
 #pragma endregion
