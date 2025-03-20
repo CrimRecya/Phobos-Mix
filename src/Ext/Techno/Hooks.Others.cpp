@@ -5,6 +5,8 @@
 #include <OverlayClass.h>
 #include <TerrainClass.h>
 #include <JumpjetLocomotionClass.h>
+#include <DriveLocomotionClass.h>
+#include <ShipLocomotionClass.h>
 #include <HoverLocomotionClass.h>
 
 #include <Ext/Building/Body.h>
@@ -1977,6 +1979,170 @@ DEFINE_HOOK(0x6DA4FB, TacticalClass_GetObjectOnCrd_IgnoredByMouse2, 0x6)
 	for (; pObject && ShouldIgnoreByMouse(pObject); pObject = pObject->NextObject);
 
 	R->EAX(pObject);
+
+	return SkipGameCode;
+}
+
+#pragma endregion
+
+#pragma region StructureFindingFix
+
+// These functions should consider reachablity.
+DEFINE_HOOK(0x4DFC39, FootClass_FindBioReactor_CheckValid, 0x6)
+{
+	GET(FootClass*, pThis, ESI);
+	GET(BuildingClass*, pBuilding, EDI);
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4DFC3F;
+}
+
+DEFINE_HOOK(0x4DFED2, FootClass_FindGarrisonStructure_CheckValid, 0x6)
+{
+	GET(FootClass*, pThis, ESI);
+	GET(BuildingClass*, pBuilding, EBX);
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4DFED8;
+}
+
+DEFINE_HOOK(0x4E0024, FootClass_FindTankBunker_CheckValid, 0x8)
+{
+	GET(FootClass*, pThis, EDI);
+	GET(BuildingClass*, pBuilding, ESI);
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4E002C;
+}
+
+DEFINE_HOOK_AGAIN(0x4DFB28, FootClass_FindXXX_CheckValid, 0x8) // FindGrinder
+DEFINE_HOOK(0x4DFD92, FootClass_FindXXX_CheckValid, 0x8) // FindBattleBunker
+{
+	GET(FootClass*, pThis, ESI);
+	GET(BuildingClass*, pBuilding, EBX);
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x8;
+}
+
+#pragma endregion
+
+#pragma region HealingWeaponFix
+
+// Fix the hardcode of healing weapon can't acquire in air target.
+DEFINE_HOOK(0x6F9222, TechnoClass_SelectAutoTarget_HealingTargetAir, 0x6)
+{
+	GET(TechnoClass*, pThis, ESI);
+	return pThis->CombatDamage(-1) < 0 ? 0x6F922E : 0;
+}
+
+// Skip the hardcode of healing weapon auto target range.
+DEFINE_JUMP(LJMP, 0x6F9024, 0x6F9042);
+
+#pragma endregion
+
+#pragma region ExtraTargeting
+
+DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting, 0x7)
+{
+	enum { SkipGameCode = 0x4C765C };
+
+	GET(TechnoClass*, pTechno, ESI);
+
+	if (RulesExt::Global()->ExtraTargeting_OnStopCommand)
+	{
+		auto coord = pTechno->GetCoords();
+		pTechno->TargetAndEstimateDamage(coord, ThreatType::Range);
+	}
+
+	R->EAX(pTechno->WhatAmI());
+	return SkipGameCode;
+}
+
+static inline bool ExtraTargeting(TechnoClass* pThis)
+{
+	if (!RulesExt::Global()->ExtraTargeting_OnLoseTarget) return false;
+	auto coord = pThis->GetCoords();
+	return pThis->TargetAndEstimateDamage(coord, ThreatType::Range);
+}
+
+DEFINE_HOOK(0x4D4E72, FootClass_MissionAttack_ExtraTargeting, 0x6)
+{
+	enum { ApproachTarget = 0x4D4E64 };
+	GET(FootClass*, pThis, ESI);
+	return ExtraTargeting(pThis) ? ApproachTarget : 0;
+}
+
+DEFINE_HOOK(0x44AF90, BuildingClass_MissionAttack_ExtraTargeting, 0x5)
+{
+	enum { AttackTarget = 0x44AFED };
+	GET(BuildingClass*, pThis, ESI);
+	return ExtraTargeting(pThis) ? AttackTarget : 0;
+}
+
+DEFINE_HOOK(0x417FE0, AircraftClass_MissionAttack_ExtraTargeting, 0x6)
+{
+	GET(AircraftClass*, pThis, ECX);
+	if (!pThis->Target) ExtraTargeting(pThis);
+	return 0;
+}
+
+#pragma endregion
+
+#pragma region ProneSpeed
+
+DEFINE_HOOK(0x521D94, InfantryClass_CurrentSpeed_ProneSpeed, 0x6)
+{
+	enum { SkipGameCode = 0x521DC5 };
+
+	GET(InfantryClass*, pThis, ESI);
+	GET(int, currentSpeed, ECX);
+
+	const auto pType = pThis->Type;
+	currentSpeed *= TechnoTypeExt::ExtMap.Find(pType)->ProneSpeed.Get(RulesExt::Global()->ProneSpeed.Get(pType->Crawls ? 0.67 : 1.5));
+
+	R->ECX(currentSpeed);
+	return SkipGameCode;
+}
+
+#pragma endregion
+
+#pragma region DamagedSpeed
+
+DEFINE_HOOK(0x4B3DD4, DriveLocomotionClass_SomeFunc_DamagedSpeed, 0x5)
+{
+	enum { SkipGameCode = 0x4B3E27 };
+
+	GET(FootClass*, pFoot, ECX);
+	GET(DriveLocomotionClass*, pThis, EBP);
+	GET_STACK(double, speedPercent, STACK_OFFSET(0x5C, -0x44));
+
+	const auto ratio = pFoot->GetHealthPercentage();
+
+	if (ratio <= RulesClass::Instance->ConditionRed)
+		speedPercent *= TechnoTypeExt::ExtMap.Find(pFoot->GetTechnoType())->VehicleDamagedSpeedMultiplier_Red.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Red);
+	else if (ratio <= RulesClass::Instance->ConditionYellow)
+		speedPercent *= TechnoTypeExt::ExtMap.Find(pFoot->GetTechnoType())->VehicleDamagedSpeedMultiplier_Yellow.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Yellow);
+
+	if (pThis->TrackNumber < 64)
+		pThis->movementspeed_50 = speedPercent;
+	else if (speedPercent != pFoot->SpeedPercentage)
+		pFoot->SetSpeedPercentage(speedPercent);
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x6A3423, ShipLocomotionClass_SomeFunc_DamagedSpeed, 0x5)
+{
+	enum { SkipGameCode = 0x6A3476 };
+
+	GET(FootClass*, pFoot, ECX);
+	GET(ShipLocomotionClass*, pThis, EBP);
+	GET_STACK(double, speedPercent, STACK_OFFSET(0x5C, -0x44));
+
+	const auto ratio = pFoot->GetHealthPercentage();
+
+	if (ratio <= RulesClass::Instance->ConditionRed)
+		speedPercent *= TechnoTypeExt::ExtMap.Find(pFoot->GetTechnoType())->VehicleDamagedSpeedMultiplier_Red.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Red);
+	else if (ratio <= RulesClass::Instance->ConditionYellow)
+		speedPercent *= TechnoTypeExt::ExtMap.Find(pFoot->GetTechnoType())->VehicleDamagedSpeedMultiplier_Yellow.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Yellow);
+
+	if (pThis->TrackNumber < 64)
+		pThis->movementspeed_50 = speedPercent;
+	else if (speedPercent != pFoot->SpeedPercentage)
+		pFoot->SetSpeedPercentage(speedPercent);
 
 	return SkipGameCode;
 }

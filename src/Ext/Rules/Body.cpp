@@ -343,13 +343,14 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->BuildingTypeSelectable.Read(exINI, GameStrings::General, "BuildingTypeSelectable");
 
-	this->VehicleDamagedSpeedMultiplier.Read(exINI, GameStrings::General, "VehicleDamagedSpeedMultiplier");
-  
+	this->VehicleDamagedSpeedMultiplier_Yellow.Read(exINI, GameStrings::General, "VehicleDamagedSpeedMultiplier.Yellow");
+	this->VehicleDamagedSpeedMultiplier_Red.Read(exINI, GameStrings::General, "VehicleDamagedSpeedMultiplier.Red");
+
 	this->ProneSpeed.Read(exINI, GameStrings::General, "ProneSpeed");
-  
+
 	this->ExtraTargeting_OnLoseTarget.Read(exINI, GameStrings::General, "ExtraTargeting.OnLoseTarget");
 	this->ExtraTargeting_OnStopCommand.Read(exINI, GameStrings::General, "ExtraTargeting.OnStopCommand");
-  
+
 	this->AllyShareControl.Read(exINI, GameStrings::General, "AllyShareControl");
 	this->InTransportInfantryAmmoFix.Read(exINI, GameStrings::General, "InTransportInfantryAmmoFix");
 	this->UpdateInLimbo_Occupier.Read(exINI, GameStrings::General, "UpdateInLimbo.Occupier");
@@ -662,7 +663,8 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->CombatLightDetailLevel)
 		.Process(this->LightFlashAlphaImageDetailLevel)
 		.Process(this->BuildingTypeSelectable)
-		.Process(this->VehicleDamagedSpeedMultiplier)
+		.Process(this->VehicleDamagedSpeedMultiplier_Yellow)
+		.Process(this->VehicleDamagedSpeedMultiplier_Red)
 		.Process(this->ProneSpeed)
 		.Process(this->ExtraTargeting_OnLoseTarget)
 		.Process(this->ExtraTargeting_OnStopCommand)

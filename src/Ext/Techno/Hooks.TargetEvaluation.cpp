@@ -1,7 +1,5 @@
 #include "Body.h"
 
-#include <AircraftClass.h>
-
 #include <Ext/BuildingType/Body.h>
 
 // Cursor & target acquisition stuff not directly tied to other features can go here.
@@ -40,66 +38,6 @@ FireError __fastcall TechnoClass_TargetSomethingNearby_CanFire_Wrapper(TechnoCla
 
 DEFINE_FUNCTION_JUMP(CALL6, 0x7098E6, TechnoClass_TargetSomethingNearby_CanFire_Wrapper);
 
-DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting, 0x7)
-{
-	GET(TechnoClass*, pTechno, ESI);
-
-	if (RulesExt::Global()->ExtraTargeting_OnStopCommand)
-	{
-		auto crd = pTechno->GetCoords();
-		pTechno->TargetAndEstimateDamage(crd, ThreatType::Range);
-	}
-
-	R->EAX(pTechno->WhatAmI());
-
-	return R->Origin() + 0x7;
-}
-
-DEFINE_HOOK(0x4D4E72, FootClass_MissionAttack_ExtraTargeting, 0x6)
-{
-	GET(FootClass*, pThis, ESI);
-
-	if (RulesExt::Global()->ExtraTargeting_OnLoseTarget)
-	{
-		auto crd = pThis->GetCoords();
-
-		if (pThis->TargetAndEstimateDamage(crd, ThreatType::Range))
-		{
-			return 0x4D4E64;
-		}
-	}
-
-	return 0;
-}
-
-DEFINE_HOOK(0x44AF86, BuildingClass_MissionAttack_ExtraTargeting, 0x6)
-{
-	GET(BuildingClass*, pThis, ESI);
-
-	if (!pThis->Target && RulesExt::Global()->ExtraTargeting_OnLoseTarget)
-	{
-		auto crd = pThis->GetCoords();
-		pThis->TargetAndEstimateDamage(crd, ThreatType::Range);
-	}
-
-	R->EAX(pThis->Target);
-
-	return R->Origin() + 0x6;
-}
-
-DEFINE_HOOK(0x417FE0, AircraftClass_MissionAttack_ExtraTargeting, 0x6)
-{
-	GET(AircraftClass*, pThis, ECX);
-
-	if (RulesExt::Global()->ExtraTargeting_OnLoseTarget)
-	{
-		auto crd = pThis->GetCoords();
-		pThis->TargetAndEstimateDamage(crd, ThreatType::Range);
-	}
-
-	return 0;
-}
-
 #pragma endregion
 
 #pragma region MapZone
@@ -135,16 +73,6 @@ DEFINE_HOOK(0x6F7E47, TechnoClass_EvaluateObject_MapZone, 0x7)
 
 	return AllowedObject;
 }
-
-// Fix the hardcode of healing weapon can't acquire in air target.
-DEFINE_HOOK(0x6F9222, TechnoClass_SelectAutoTarget_HealingTargetAir, 0x6)
-{
-	GET(TechnoClass*, pThis, ESI);
-	return pThis->CombatDamage(-1) < 0 ? 0x6F922E : 0;
-}
-
-// Skip the hardcode of healing weapon auto target range.
-DEFINE_JUMP(LJMP, 0x6F9024, 0x6F9042);
 
 #pragma endregion
 

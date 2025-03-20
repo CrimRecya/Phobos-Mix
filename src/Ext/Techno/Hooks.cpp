@@ -4,8 +4,6 @@
 #include <EventClass.h>
 #include <ScenarioClass.h>
 #include <TunnelLocomotionClass.h>
-#include <DriveLocomotionClass.h>
-#include <ShipLocomotionClass.h>
 
 #include <Ext/Anim/Body.h>
 #include <Ext/BuildingType/Body.h>
@@ -823,70 +821,3 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 }
 
 #pragma endregion
-
-DEFINE_HOOK(0x4B3DD4, DriveLocomotionClass_SomeFunc_DamagedSpeed, 0x5)
-{
-	enum { ret = 0x4B3E27 };
-
-	GET(FootClass*, pFoot, ECX);
-	GET(DriveLocomotionClass*, pThis, EBP);
-	GET_STACK(double, speedPercent, STACK_OFFSET(0x5C, -0x44));
-
-	if (pFoot->GetHealthPercentage() <= RulesClass::Instance->ConditionYellow)
-	{
-		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pFoot->GetTechnoType());
-		speedPercent *= pTypeExt->VehicleDamagedSpeedMultiplier.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier);
-	}
-
-	if (pThis->TrackNumber >= 64)
-	{
-		if (speedPercent != pFoot->SpeedPercentage)
-			pFoot->SetSpeedPercentage(speedPercent);
-	}
-	else
-	{
-		pThis->movementspeed_50 = speedPercent;
-	}
-
-	return ret;
-}
-
-DEFINE_HOOK(0x6A3423, ShipLocomotionClass_SomeFunc_DamagedSpeed, 0x5)
-{
-	enum { ret = 0x6A3476 };
-
-	GET(FootClass*, pFoot, ECX);
-	GET(ShipLocomotionClass*, pThis, EBP);
-	GET_STACK(double, speedPercent, STACK_OFFSET(0x5C, -0x44));
-
-	if (pFoot->GetHealthPercentage() <= RulesClass::Instance->ConditionYellow)
-	{
-		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pFoot->GetTechnoType());
-		speedPercent *= pTypeExt->VehicleDamagedSpeedMultiplier.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier);
-	}
-
-	if (pThis->TrackNumber >= 64)
-	{
-		if (speedPercent != pFoot->SpeedPercentage)
-			pFoot->SetSpeedPercentage(speedPercent);
-	}
-	else
-	{
-		pThis->movementspeed_50 = speedPercent;
-	}
-
-	return ret;
-}
-
-DEFINE_HOOK(0x521D94, InfantryClass_CurrentSpeed_ProneSpeed, 0x6)
-{
-	GET(InfantryClass*, pThis, ESI);
-	GET(int, currentSpeed, ECX);
-
-	auto pType = pThis->Type;
-	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-	auto multiplier = pTypeExt->ProneSpeed.Get(RulesExt::Global()->ProneSpeed.Get(pType->Crawls ? 0.67 : 1.5));
-	currentSpeed *= multiplier;
-	R->ECX(currentSpeed);
-	return 0x521DC5;
-}

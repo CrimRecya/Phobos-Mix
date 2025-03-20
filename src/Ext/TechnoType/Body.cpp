@@ -831,7 +831,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Spawner_RecycleCoord.Read(exINI, pSection, "Spawner.RecycleCoord");
 	this->Spawner_RecycleOnTurret.Read(exINI, pSection, "Spawner.RecycleOnTurret");
 
-	this->VehicleDamagedSpeedMultiplier.Read(exINI, pSection, "VehicleDamagedSpeedMultiplier");
+	this->VehicleDamagedSpeedMultiplier_Yellow.Read(exINI, pSection, "VehicleDamagedSpeedMultiplier.Yellow");
+	this->VehicleDamagedSpeedMultiplier_Red.Read(exINI, pSection, "VehicleDamagedSpeedMultiplier.Red");
 
 	this->ProneSpeed.Read(exINI, pSection, "ProneSpeed");
 
@@ -1430,7 +1431,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Spawner_RecycleCoord)
 		.Process(this->Spawner_RecycleOnTurret)
 
-		.Process(this->VehicleDamagedSpeedMultiplier)
+		.Process(this->VehicleDamagedSpeedMultiplier_Yellow)
+		.Process(this->VehicleDamagedSpeedMultiplier_Red)
 
 		.Process(this->ProneSpeed)
 
