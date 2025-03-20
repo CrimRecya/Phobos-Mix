@@ -343,6 +343,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->BuildingTypeSelectable.Read(exINI, GameStrings::General, "BuildingTypeSelectable");
 
+	this->VehicleDamagedSpeedMultiplier.Read(exINI, GameStrings::General, "VehicleDamagedSpeedMultiplier");
+  
 	this->ProneSpeed.Read(exINI, GameStrings::General, "ProneSpeed");
   
 	this->ExtraTargeting_OnLoseTarget.Read(exINI, GameStrings::General, "ExtraTargeting.OnLoseTarget");
@@ -660,6 +662,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->CombatLightDetailLevel)
 		.Process(this->LightFlashAlphaImageDetailLevel)
 		.Process(this->BuildingTypeSelectable)
+		.Process(this->VehicleDamagedSpeedMultiplier)
 		.Process(this->ProneSpeed)
 		.Process(this->ExtraTargeting_OnLoseTarget)
 		.Process(this->ExtraTargeting_OnStopCommand)

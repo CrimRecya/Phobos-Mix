@@ -299,6 +299,8 @@ public:
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
+		Valueable<double> VehicleDamagedSpeedMultiplier;
+    
 		Nullable<double> ProneSpeed;
     
 		Valueable<bool> ExtraTargeting_OnLoseTarget;
@@ -560,6 +562,7 @@ public:
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
+			, VehicleDamagedSpeedMultiplier { 0.75 }
 			, ProneSpeed { }
 			, ExtraTargeting_OnLoseTarget { false }
 			, ExtraTargeting_OnStopCommand { false }
