@@ -244,14 +244,6 @@ DEFINE_HOOK(0x4438B4, BuildingClass_SetRallyPoint_Naval, 0x6)
 	return NotNaval;
 }
 
-DEFINE_HOOK(0x6DAAB2, TacticalClass_DrawRallyPointLines_NoUndeployBlyat, 0x6)
-{
-	GET(BuildingClass*, pBld, EDI);
-	if (pBld->ArchiveTarget && pBld->CurrentMission != Mission::Selling)
-		return 0x6DAAC0;
-	return 0x6DAD45;
-}
-
 // bugfix: DeathWeapon not properly detonates
 // Author: Uranusian
 DEFINE_HOOK(0x70D77F, TechnoClass_FireDeathWeapon_ProjectileFix, 0x8)
@@ -790,15 +782,14 @@ bool __fastcall BuildingClass_SetOwningHouse_Wrapper(BuildingClass* pThis, void*
 
 	bool res = reinterpret_cast<bool(__thiscall*)(BuildingClass*, HouseClass*, bool)>(0x448260)(pThis, pHouse, announce);
 
-	// Fix : update powered anims
+	// Fix : update powered anims next frame
 	if (res && (pThis->Type->Powered || pThis->Type->PoweredSpecial))
-		reinterpret_cast<void(__thiscall*)(BuildingClass*)>(0x4549B0)(pThis);
+		pThis->WasOnline = !pThis->WasOnline;
 	return res;
 }
 
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7E4290, BuildingClass_SetOwningHouse_Wrapper);
-DEFINE_JUMP(LJMP, 0x6E0BD4, 0x6E0BFE);
-DEFINE_JUMP(LJMP, 0x6E0C1D, 0x6E0C8B);//Simplify TAction 36
+DEFINE_JUMP(LJMP, 0x6E0C78, 0x6E0C7F);//Simplify TAction 36
 
 // Fix a glitch related to incorrect target setting for missiles
 // Author: Belonit
@@ -822,13 +813,15 @@ DEFINE_HOOK(0x689EB0, ScenarioClass_ReadMap_SkipHeaderInCampaign, 0x6)
 
 #pragma region save_load
 
-//Skip incorrect load ctor call in various LocomotionClass_Load
+//Skip incorrect load ctor call in various Load
 DEFINE_JUMP(LJMP, 0x719CBC, 0x719CD8);//Teleport, notorious CLEG frozen state removal on loading game
 DEFINE_JUMP(LJMP, 0x72A16A, 0x72A186);//Tunnel, not a big deal
 DEFINE_JUMP(LJMP, 0x663428, 0x663445);//Rocket, not a big deal
 DEFINE_JUMP(LJMP, 0x5170CE, 0x5170E0);//Hover, not a big deal
 DEFINE_JUMP(LJMP, 0x65B3F7, 0x65B416);//RadSite, no effect
-
+DEFINE_JUMP(LJMP, 0x6F4317, 0x6F43AB);
+DEFINE_JUMP(LJMP, 0x6F43B5, 0x6F43C7);//Techno (AirstrikeTimer,CloakProgress,TurretRecoil,BarrelRecoil)
+DEFINE_JUMP(LJMP, 0x43B694, 0x43B6C3);//Building(RepairProgress)
 // Save GameModeOptions in campaign modes
 DEFINE_JUMP(LJMP, 0x67E3BD, 0x67E3D3); // Save
 DEFINE_JUMP(LJMP, 0x67F72E, 0x67F744); // Load
@@ -973,6 +966,55 @@ DEFINE_HOOK(0x5B11DD, MechLocomotionClass_ProcessMoving_SlowdownDistance, 0x9)
 	GET(int const, distance, EAX);
 
 	return distance >= pLinkedTo->GetCurrentSpeed() ? KeepMoving : CloseEnough;
+}
+
+// Jumpjet infantry will no longer acts stupid when assigned a attack mission.
+DEFINE_HOOK(0x51AB5C, InfantryClass_SetDestination_JJInfFix, 0x6)
+{
+	enum { FuncRet = 0x51B1D7 };
+
+	GET(InfantryClass* const, pThis, EBP);
+	GET(AbstractClass* const, pDest, EBX);
+
+	auto pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor);
+
+	if (pThis->Type->BalloonHover && !pDest && pThis->Destination && pJumpjetLoco && pThis->Target)
+	{
+		if (pThis->IsCloseEnoughToAttack(pThis->Target))
+		{
+			auto crd = pThis->GetCoords();
+			pJumpjetLoco->DestinationCoords.X = crd.X;
+			pJumpjetLoco->DestinationCoords.Y = crd.Y;
+			pJumpjetLoco->CurrentSpeed = 0;
+			pJumpjetLoco->MaxSpeed = 0;
+			pThis->AbortMotion();
+		}
+
+		pThis->ForceMission(Mission::Attack);
+		return FuncRet;
+	}
+
+	return 0;
+}
+
+// For vehicles. If in range, then stop.
+DEFINE_HOOK(0x741A66, UnitClass_SetDestination_JJVehFix, 0x5)
+{
+	GET(UnitClass* const, pThis, EBP);
+
+	auto pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor);
+
+	if (pThis->IsCloseEnough(pThis->Target, pThis->SelectWeapon(pThis->Target)) && pJumpjetLoco)
+	{
+		auto crd = pThis->GetCoords();
+		pJumpjetLoco->DestinationCoords.X = crd.X;
+		pJumpjetLoco->DestinationCoords.Y = crd.Y;
+		pJumpjetLoco->CurrentSpeed = 0;
+		pJumpjetLoco->MaxSpeed = 0;
+		pThis->AbortMotion();
+	}
+
+	return 0;
 }
 
 DEFINE_JUMP(LJMP, 0x517FF5, 0x518016); // Warhead with InfDeath=9 versus infantry in air
@@ -1217,6 +1259,21 @@ DEFINE_HOOK(0x4C75DA, EventClass_RespondToEvent_Stop, 0x6)
 
 #pragma region UntetherFix
 
+DEFINE_HOOK(0x6F4B67, TechnoClass_ReceiveCommand_RequestTether, 0x6)
+{
+	GET(TechnoClass* const, pThis, ESI);
+	GET_STACK(TechnoClass*, pSender, STACK_OFFSET(0x18, 0x4));
+
+	if (pThis->FindLinkIndex(pSender) == -1)
+	{
+		const auto thisCell = pThis->GetMapCoords();
+		const auto sendCell = pSender->GetMapCoords();
+		Debug::LogAndMessage("%s at (%d,%d) is trying to tether with %s at (%d,%d) without link!\n", pThis->get_ID(), thisCell.X, thisCell.Y, pSender->get_ID(), sendCell.X, sendCell.Y);
+	}
+
+	return 0;
+}
+
 // Radio: do not untether techno who have other tether link
 DEFINE_HOOK(0x6F4BB3, TechnoClass_ReceiveCommand_NotifyUnlink, 0x7)
 {
@@ -1284,6 +1341,17 @@ size_t __fastcall HexStr2Int_replacement(const char* str)
 }
 DEFINE_FUNCTION_JUMP(CALL, 0x6E8305, HexStr2Int_replacement); // TaskForce
 DEFINE_FUNCTION_JUMP(CALL, 0x6E5FA6, HexStr2Int_replacement); // TagType
+
+// In theory, a projectile with Inviso=yes should detonate at the center of the target the next frame after firing, assuming it is not intercepted.
+// In fact, when the target is moving at high speed, the projectile may have to delay multiple frames to hit, or even fail and hit the ground.
+// I didn't study the specific reasons for this, but this hook does solve the problem.
+// Netsu_Negi told me this method, and I verified it.
+DEFINE_HOOK(0x467C1C, BulletClass_Update_InvisoLatencyFix, 0x6)
+{
+	GET(BulletTypeClass*, pType, EAX);
+	R->CL(RulesExt::Global()->InvisoLatencyFix ? (pType->Inviso || pType->Ranged) : pType->Ranged);
+	return 0x467C22;
+}
 
 #pragma region Sensors
 
@@ -1569,3 +1637,48 @@ DEFINE_HOOK(0x75EE49, WaveClass_DrawSonic_CrashFix, 0x7)
 // in this case, we can also dismiss ElectricBolt on Unit, to prevent the crash that caused by its invalidation
 DEFINE_JUMP(LJMP, 0x6FD5F2, 0x6FD5FC)
 DEFINE_JUMP(LJMP, 0x6FD600, 0x6FD606)
+
+#pragma region StructureFindingFix
+
+// These functions should consider reachablity.
+DEFINE_HOOK(0x4DFC39, FootClass_FindBioReactor_CheckValid, 0x6)
+{
+	GET(FootClass*, pThis, ESI);
+	GET(BuildingClass*, pBuilding, EDI);
+
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x6;
+}
+
+DEFINE_HOOK(0x4DFED2, FootClass_FindGarrisonStructure_CheckValid, 0x6)
+{
+	GET(FootClass*, pThis, ESI);
+	GET(BuildingClass*, pBuilding, EBX);
+
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x6;
+}
+
+DEFINE_HOOK(0x4E0024, FootClass_FindTankBunker_CheckValid, 0x8)
+{
+	GET(FootClass*, pThis, EDI);
+	GET(BuildingClass*, pBuilding, ESI);
+
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x8;
+}
+
+DEFINE_HOOK(0x4DFD92, FootClass_FindBattleBunker_CheckValid, 0x8)
+{
+	GET(FootClass*, pThis, ESI);
+	GET(BuildingClass*, pBuilding, EBX);
+
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x8;
+}
+
+DEFINE_HOOK(0x4DFB28, FootClass_FindGrinder_CheckValid, 0x8)
+{
+	GET(FootClass*, pThis, ESI);
+	GET(BuildingClass*, pBuilding, EBX);
+
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x8;
+}
+
+#pragma endregion
