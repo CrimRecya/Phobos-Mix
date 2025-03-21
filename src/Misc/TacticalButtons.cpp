@@ -290,6 +290,86 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		}
 	}
 
+	if (pTechno)
+	{
+		const auto pTactical = TacticalClass::Instance;
+		const auto technoCoord = pTechno->GetCoords();
+		const auto point = pTactical->CoordsToScreen(technoCoord) - pTactical->TacticalPos;
+		auto drawMtxLine = [pTactical, &technoCoord](const Matrix3D& mtx, const Point2D& point)
+		{
+			const auto result = mtx.GetTranslation();
+			const auto location = CoordStruct { (int)result.X, -(int)result.Y, (int)result.Z };
+			auto point1 = point;
+			auto point2 = pTactical->CoordsToScreen(technoCoord + location) - pTactical->TacticalPos;
+			DSurface::Composite->DrawLine(&point1, &point2, COLOR_WHITE);
+		};
+
+		if (const auto pFoot = abstract_cast<FootClass*>(pTechno))
+		{
+			const auto mtxBase = pFoot->Locomotor ? pFoot->Locomotor->Draw_Matrix(nullptr) : Matrix3D::GetIdentity();
+			const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
+
+			auto mtx = mtxBase;
+			mtx.RotateZ((float)rotateRadian);
+			mtx.TranslateX(256.0f);
+			drawMtxLine(mtx, point);
+
+			mtx = mtxBase;
+			mtx.RotateZ((float)(pTechno->PrimaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
+			mtx.TranslateX(256.0f);
+			drawMtxLine(mtx, point);
+
+			mtx = mtxBase;
+			mtx.RotateZ((float)(pTechno->PrimaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
+			mtx.TranslateX(256.0f);
+			drawMtxLine(mtx, point);
+
+			if (pTechno->HasTurret())
+			{
+				auto mtxTur = mtxBase;
+				TechnoTypeExt::ApplyTurretOffset(pTechno->GetTechnoType(), &mtxTur, 1.0);
+
+				const auto turret = mtx.GetTranslation();
+				const auto turretPoint = pTactical->CoordsToScreen(CoordStruct{(int)turret.X,-(int)turret.Y,(int)turret.Z}) - pTactical->TacticalPos;
+
+				mtx = mtxTur;
+				mtx.RotateZ((float)(pTechno->SecondaryFacing.Current().GetRadian<32>() - rotateRadian));
+				mtx.TranslateX(256.0f);
+				drawMtxLine(mtx, turretPoint);
+
+				mtx = mtxTur;
+				mtx.RotateZ((float)(pTechno->SecondaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
+				mtx.TranslateX(256.0f);
+				drawMtxLine(mtx, turretPoint);
+
+				mtx = mtxTur;
+				mtx.RotateZ((float)(pTechno->SecondaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
+				mtx.TranslateX(256.0f);
+				drawMtxLine(mtx, turretPoint);
+			}
+		}
+		else
+		{
+			const auto mtxBase = Matrix3D::GetIdentity();
+			const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
+
+			auto mtx = mtxBase;
+			mtx.RotateZ((float)rotateRadian);
+			mtx.TranslateX(256.0f);
+			drawMtxLine(mtx, point);
+
+			mtx = mtxBase;
+			mtx.RotateZ((float)(pTechno->PrimaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
+			mtx.TranslateX(256.0f);
+			drawMtxLine(mtx, point);
+
+			mtx = mtxBase;
+			mtx.RotateZ((float)(pTechno->PrimaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
+			mtx.TranslateX(256.0f);
+			drawMtxLine(mtx, point);
+		}
+	}
+
 	ColorStruct fillColor { 0, 0, 0 };
 	RectangleStruct drawRect { 0, 0, 360, DSurface::Composite->GetHeight() - 32 };
 	DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 30);
