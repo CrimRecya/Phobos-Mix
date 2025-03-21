@@ -310,19 +310,19 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
 
 			auto mtx = mtxBase;
-			// mtx.RotateZ((float)rotateRadian); // No need to rotate again
-			mtx.TranslateX(512.0f);
-			drawMtxLine(mtx, point, COLOR_WHITE);
-
-			mtx = mtxBase;
 			mtx.RotateZ((float)(pTechno->PrimaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
 			mtx.TranslateX(512.0f);
-			drawMtxLine(mtx, point, COLOR_BLUE);
+			drawMtxLine(mtx, point, COLOR_PURPLE);
 
 			mtx = mtxBase;
 			mtx.RotateZ((float)(pTechno->PrimaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
 			mtx.TranslateX(512.0f);
-			drawMtxLine(mtx, point, COLOR_YELLOW);
+			drawMtxLine(mtx, point, COLOR_RED);
+
+			mtx = mtxBase;
+			// mtx.RotateZ((float)rotateRadian); // No need to rotate again
+			mtx.TranslateX(512.0f);
+			drawMtxLine(mtx, point, COLOR_GREEN);
 
 			if (pTechno->HasTurret())
 			{
@@ -333,11 +333,6 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const auto turretPoint = pTactical->CoordsToScreen(technoCoord + CoordStruct{(int)turret.X,-(int)turret.Y,(int)turret.Z}) - pTactical->TacticalPos;
 
 				mtx = mtxTur;
-				mtx.RotateZ((float)(pTechno->SecondaryFacing.Current().GetRadian<32>() - rotateRadian));
-				mtx.TranslateX(512.0f);
-				drawMtxLine(mtx, turretPoint, COLOR_WHITE);
-
-				mtx = mtxTur;
 				mtx.RotateZ((float)(pTechno->SecondaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
 				mtx.TranslateX(512.0f);
 				drawMtxLine(mtx, turretPoint, COLOR_BLUE);
@@ -346,6 +341,11 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				mtx.RotateZ((float)(pTechno->SecondaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
 				mtx.TranslateX(512.0f);
 				drawMtxLine(mtx, turretPoint, COLOR_YELLOW);
+
+				mtx = mtxTur;
+				mtx.RotateZ((float)(pTechno->SecondaryFacing.Current().GetRadian<32>() - rotateRadian));
+				mtx.TranslateX(512.0f);
+				drawMtxLine(mtx, turretPoint, COLOR_WHITE);
 			}
 		}
 		else
