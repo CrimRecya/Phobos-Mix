@@ -356,24 +356,18 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 	{
 		const auto pType = pTechno->GetTechnoType();
 		const auto absType = pTechno->WhatAmI();
-
-		if (absType == AbstractType::Unit)
-			drawText("%s: %s , UniqueID: %d", "Vehicle", pType->ID, pTechno->UniqueID);
-		else if (absType == AbstractType::Infantry)
-			drawText("%s: %s , UniqueID: %d", "Infantry", pType->ID, pTechno->UniqueID);
-		else if (absType == AbstractType::Aircraft)
-			drawText("%s: %s , UniqueID: %d", "Aircraft", pType->ID, pTechno->UniqueID);
-		else if (absType == AbstractType::Building)
-			drawText("%s: %s , UniqueID: %d", "Building", pType->ID, pTechno->UniqueID);
-		else
-			drawText("%s: %s , UniqueID: %d", "Unknown", pType->ID, pTechno->UniqueID);
-
 		const auto pOwner = pTechno->Owner;
 
-		if (pOwner)
-			drawText("Owner = %s ( %s )", pOwner->get_ID(), pOwner->PlainName);
+		if (absType == AbstractType::Unit)
+			drawText("%s: %s , UniqueID: %d , Owner = %s ( %s )", "Vehicle", pType->ID, pTechno->UniqueID, (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+		else if (absType == AbstractType::Infantry)
+			drawText("%s: %s , UniqueID: %d , Owner = %s ( %s )", "Infantry", pType->ID, pTechno->UniqueID, (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+		else if (absType == AbstractType::Aircraft)
+			drawText("%s: %s , UniqueID: %d , Owner = %s ( %s )", "Aircraft", pType->ID, pTechno->UniqueID, (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+		else if (absType == AbstractType::Building)
+			drawText("%s: %s , UniqueID: %d , Owner = %s ( %s )", "Building", pType->ID, pTechno->UniqueID, (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
 		else
-			drawText("Owner = %s ( %s )", "N/A", "N/A");
+			drawText("%s: %s , UniqueID: %d , Owner = %s ( %s )", "Unknown", pType->ID, pTechno->UniqueID, (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
 
 		const auto cell = pTechno->GetMapCoords();
 		const auto coords = pTechno->GetCoords();
@@ -382,35 +376,33 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 		constexpr const char* facingTypes[8] = { "North", "NorthEast", "East", "SouthEast", "South", "SouthWest", "West", "NorthWest" };
 		const auto facing1 = pTechno->PrimaryFacing.Current();
-		const auto facing2 = pTechno->SecondaryFacing.Current();
 		const auto primaryFacing = facing1.GetValue<3>();
 
-		drawText("PriFacing = [ %d ( %d )]( %s )", facing1.Raw, facing1.GetValue<5>(), facingTypes[primaryFacing]);
-		drawText("SecFacing = [ %d ( %d )]( %s )", facing2.Raw, facing2.GetValue<5>(), facingTypes[facing2.GetValue<3>()]);
+		{
+			const auto facing11 = pTechno->PrimaryFacing.StartFacing;
+			const auto facing12 = pTechno->PrimaryFacing.DesiredFacing;
 
-		drawText("Tether = ( %s , %s )", (pTechno->IsTether ? "Yes" : "No"), (pTechno->IsAlternativeTether ? "Yes" : "No"));
-		drawText("Health = ( %d / %d )", pTechno->Health, pType->Strength);
+			drawText("PriFacing = [ %d ( %d )]( %s )", facing1.Raw, facing1.GetValue<5>(), facingTypes[primaryFacing]);
+			drawText("PriF = [ %d ]( %s ) , PriT = [ %d ]( %s )", facing11.Raw, facingTypes[facing11.GetValue<3>()], facing12.Raw, facingTypes[facing12.GetValue<3>()]);
+
+			const auto facing2 = pTechno->SecondaryFacing.Current();
+			const auto facing21 = pTechno->SecondaryFacing.StartFacing;
+			const auto facing22 = pTechno->SecondaryFacing.DesiredFacing;
+
+			drawText("SecFacing = [ %d ( %d )]( %s )", facing2.Raw, facing2.GetValue<5>(), facingTypes[facing2.GetValue<3>()]);
+			drawText("SecF = [ %d ]( %s ) , SecT = [ %d ]( %s )", facing21.Raw, facingTypes[facing21.GetValue<3>()], facing22.Raw, facingTypes[facing22.GetValue<3>()]);
+		}
 
 		const auto pExt = TechnoExt::ExtMap.Find(pTechno);
 
-		drawText("Shield = ( %d / %d )", (pExt->Shield ? pExt->Shield->GetHP() : -1), (pExt->CurrentShieldType ? pExt->CurrentShieldType->Strength : -1));
-		drawText("Ammo = ( %d / %d )( %s )", pTechno->Ammo, pType->Ammo, (pType->ManualReload ? "Yes" : "No"));
+		drawText("Ammo = ( %d / %d )( %s ) , Tether = ( %s , %s )", pTechno->Ammo, pType->Ammo, (pType->ManualReload ? "No" : "Yes"), (pTechno->IsTether ? "Yes" : "No"), (pTechno->IsAlternativeTether ? "Yes" : "No"));
+		drawText("Health = ( %d / %d ) , Shield = ( %d / %d )", pTechno->Health, pType->Strength, (pExt->Shield ? pExt->Shield->GetHP() : -1), (pExt->CurrentShieldType ? pExt->CurrentShieldType->Strength : -1));
 
 		drawTime("ReloadTimer", pTechno->ReloadTimer);
 		drawTime("RearmTimer", pTechno->RearmTimer);
 
 		drawText("TurretRecoil = %.3f , BarrelRecoil = %.3f", pTechno->TurretRecoil.TravelSoFar, pTechno->BarrelRecoil.TravelSoFar);
-
-		if (pTechno->Passengers.NumPassengers > 0)
-		{
-			drawText("%d Passengers", pTechno->Passengers.NumPassengers);
-			drawText("First Passenger = %s", pTechno->Passengers.FirstPassenger->GetTechnoType()->ID);
-		}
-		else
-		{
-			drawText("%d Passengers", 0);
-			drawText("First Passenger = %s", "N/A");
-		}
+		drawText("%d Passengers , First Passenger = %s", pTechno->Passengers.NumPassengers, (pTechno->Passengers.NumPassengers > 0 ? pTechno->Passengers.FirstPassenger->GetTechnoType()->ID : "N/A"));
 
 		drawInfo("Target", pTechno, pTechno->Target);
 		drawInfo("Last Target", pTechno, pTechno->LastTarget);
@@ -431,16 +423,8 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawInfo("Archive Target", pTechno, pTechno->ArchiveTarget);
 		drawInfo("Transporter", pTechno, pTechno->Transporter);
 		drawInfo("Enter Target", pTechno, pTechno->QueueUpToEnter);
-
-		if (pTechno->CurrentTargets.Count > 0)
-			drawInfo("First CurTarget", pTechno, pTechno->CurrentTargets.GetItem(0));
-		else
-			drawInfo("First CurTarget", pTechno, nullptr);
-
-		if (pTechno->AttackedTargets.Count > 0)
-			drawInfo("First OldTarget", pTechno, pTechno->AttackedTargets.GetItem(0));
-		else
-			drawInfo("First OldTarget", pTechno, nullptr);
+		drawInfo("First CurTarget", pTechno, (pTechno->CurrentTargets.Count > 0 ? pTechno->CurrentTargets.GetItem(0) : nullptr));
+		drawInfo("First OldTarget", pTechno, (pTechno->AttackedTargets.Count > 0 ? pTechno->AttackedTargets.GetItem(0) : nullptr));
 
 		drawTime("UpdateTimer", pTechno->UpdateTimer);
 
@@ -454,25 +438,20 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			const auto pFoot = static_cast<FootClass*>(pTechno);
 
 			drawTask("TheMegaMission", pFoot->MegaMission);
-			drawText("PlanningPathIdx = %d", pFoot->PlanningPathIdx);
-			drawText("FootCell = ( %d , %d )", pFoot->CurrentMapCoords.X, pFoot->CurrentMapCoords.Y);
-			drawText("LastCell = ( %d , %d )", pFoot->LastMapCoords.X, pFoot->LastMapCoords.Y);
+			drawText("FootCell = ( %d , %d ) , LastCell = ( %d , %d )", pFoot->CurrentMapCoords.X, pFoot->CurrentMapCoords.Y, pFoot->LastMapCoords.X, pFoot->LastMapCoords.Y);
 
-			const auto destination = pFoot->Locomotor->Destination();
-			const auto headToCoord = pFoot->Locomotor->Head_To_Coord();
+			{
+				const auto destination = pFoot->Locomotor->Destination();
+				const auto headToCoord = pFoot->Locomotor->Head_To_Coord();
 
-			drawText("LocoDestination = ( %d , %d , %d )", destination.X, destination.Y, destination.Z);
-			drawText("LocoHeadToCoord = ( %d , %d , %d )", headToCoord.X, headToCoord.Y, headToCoord.Z);
-
-			drawText("PathWaitTime = %d , WaitingBlockage = %s", pFoot->unknown_int_64C, (pFoot->unknown_bool_6B7 ? "Yes" : "No"));
-			drawTime("PathFindTimer", pFoot->PathDelayTimer);
-			drawTime("BlockageTimer", pFoot->BlockagePathTimer);
+				drawText("LocoDest = ( %d , %d , %d ) , LocoHead = ( %d , %d , %d )", destination.X, destination.Y, destination.Z, headToCoord.X, headToCoord.Y, headToCoord.Z);
+			}
 
 			constexpr const char* moveTypes[8] = { "Clear", "Cloak", "Move", "Gate", "A-Block", "E-Block", "Temp", "Unable" };
 			const auto facingType = static_cast<FacingType>(primaryFacing);
 			const auto moveType = static_cast<int>(pFoot->IsCellOccupied(MapClass::Instance.GetCellAt(pFoot->CurrentMapCoords)->GetNeighbourCell(facingType), facingType, pFoot->GetCellLevel(), nullptr, true));
 
-			drawText("FaceMoveType = ( %s )", (moveType >= 0 && moveType < 8) ? moveTypes[moveType] : "N/A");
+			drawText("PlanningPathIdx = %d , FaceMoveType = ( %s )", pFoot->PlanningPathIdx, (moveType >= 0 && moveType < 8) ? moveTypes[moveType] : "N/A");
 
 			const auto& pD = pFoot->PathDirections;
 
@@ -495,8 +474,8 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			else
 				drawText("PathDir = %d , %d , %d , %d , %d , %d , %d , %d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5], pD[6], pD[7]);
 
-			drawText("CurrentSpeed = %d", static_cast<int>(pFoot->GetCurrentSpeed()));
-			drawText("PercentSpeed = %d", static_cast<int>(pFoot->SpeedPercentage * 100));
+			drawText("CurrentSpeed = %d , PercentSpeed = %d", static_cast<int>(pFoot->GetCurrentSpeed()), static_cast<int>(pFoot->SpeedPercentage * 100));
+			drawText("Scattering = %s , Aggressive = %s", (pExt->ScatteringStopFrame >= Unsorted::CurrentFrame ? "Yes" : "No"), (pExt->AggressiveStance ? "Yes" : "No"));
 
 			drawInfo("Destination", pFoot, pFoot->Destination);
 			drawInfo("Last Destination", pFoot, pFoot->LastDestination);
@@ -505,18 +484,8 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawInfo("Mega Target", pFoot, pFoot->MegaTarget);
 			drawInfo("Mega Destination", pFoot, pFoot->MegaDestination);
 			drawInfo("Parasite", pFoot, pFoot->ParasiteEatingMe);
-
-			if (pFoot->unknown_abstract_array_588.Count > 0)
-				drawInfo("First ArrayItem", pFoot, pFoot->unknown_abstract_array_588.GetItem(0));
-			else
-				drawInfo("First ArrayItem", pFoot, nullptr);
-
-			if (pFoot->NavQueue.Count > 0)
-				drawInfo("First Nav-Queue", pFoot, pFoot->NavQueue.GetItem(0));
-			else
-				drawInfo("First Nav-Queue", pFoot, nullptr);
-
-			drawText("Scattering = %s , Aggressive = %s", (pExt->ScatteringStopFrame >= Unsorted::CurrentFrame ? "Yes" : "No"), (pExt->AggressiveStance ? "Yes" : "No"));
+			drawInfo("First ArrayItem", pFoot, (pFoot->unknown_abstract_array_588.Count > 0 ? pFoot->unknown_abstract_array_588.GetItem(0) : nullptr));
+			drawInfo("First Nav-Queue", pFoot, (pFoot->NavQueue.Count > 0 ? pFoot->NavQueue.GetItem(0) : nullptr));
 
 			if (pFoot->BelongsToATeam())
 			{
@@ -531,8 +500,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 					if (pTeamType && (pTriggerType->Team1 == pTeamType || pTriggerType->Team2 == pTeamType))
 					{
 						found = true;
-						drawText("Trigger = %s", pTriggerType->ID);
-						drawText("weights [ Cur , Min , Max ]:");
+						drawText("Trigger = %s , weights [ Cur , Min , Max ]:", pTriggerType->ID);
 						drawText(" [ %.2f , %.2f , %.2f ]", pTriggerType->Weight_Current, pTriggerType->Weight_Minimum, pTriggerType->Weight_Maximum);
 						break;
 					}
@@ -540,34 +508,22 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 				if (!found)
 				{
-					drawText("Trigger = %s", "N/A");
-					drawText("weights [ Cur , Min , Max ]:");
+					drawText("Trigger = %s , weights [ Cur , Min , Max ]:", "N/A");
 					drawText(" [ %.2f , %.2f , %.2f ]", -1, -1, -1);
 				}
 
 				const auto pScriptType = pTeam->CurrentScript->Type;
 				const auto mission = pTeam->CurrentScript->CurrentMission;
 
-				drawText("Team    = %s", pTeamType->ID);
-				drawText("Task    = %s", pTeamType->TaskForce->ID);
-				drawText("Script  = %s", pScriptType->get_ID());
-				drawText(" [ Line = Action , Argument ]:");
-
-				if (mission >= 0)
-					drawText(" [ %d = %d , %d ]", mission, pScriptType->ScriptActions[mission].Action, pScriptType->ScriptActions[mission].Argument);
-				else
-					drawText(" [ %d = %d , %d ]", mission, -1, -1);
+				drawText("Team = %s , Task = %s , Script = %s", pTeamType->ID, pTeamType->TaskForce->ID, pScriptType->get_ID());
+				drawText(" [ Line = Action , Argument ] : [ %d = %d , %d ]", mission, (mission >= 0 ? pScriptType->ScriptActions[mission].Action : -1), (mission >= 0 ? pScriptType->ScriptActions[mission].Argument : -1));
 			}
 			else
 			{
-				drawText("Trigger = %s", "N/A");
-				drawText("weights [ Cur , Min , Max ]:");
+				drawText("Trigger = %s , weights [ Cur , Min , Max ]:", "N/A");
 				drawText(" [ %.2f , %.2f , %.2f ]", -1, -1, -1);
-				drawText("Team    = %s", "N/A");
-				drawText("Task    = %s", "N/A");
-				drawText("Script  = %s", "N/A");
-				drawText(" [ Line = Action , Argument ]:");
-				drawText(" [ %d = %d , %d ]", -1, -1, -1);
+				drawText("Team = %s , Task = %s , Script = %s", "N/A", "N/A", "N/A");
+				drawText(" [ Line = Action , Argument ] : [ %d = %d , %d ]", -1, -1, -1);
 			}
 
 			if (absType == AbstractType::Unit)
@@ -595,27 +551,8 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			const auto pBuildingType = pBuilding->Type;
 			const auto pBuildingTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType);
 
-			if (pBuilding->Occupants.Count > 0)
-			{
-				drawText("%d Occupants", pBuilding->Occupants.Count);
-				drawText("First Occupant = %s", pBuilding->Occupants.GetItem(0)->Type->ID);
-			}
-			else
-			{
-				drawText("%d Occupants", 0);
-				drawText("First Occupant = %s", "N/A");
-			}
-
-			if (pBuilding->Overpowerers.Count > 0)
-			{
-				drawText("%d Overpowerers", pBuilding->Overpowerers.Count);
-				drawText("First Overpowerer = %s", pBuilding->Overpowerers.GetItem(0)->Type->ID);
-			}
-			else
-			{
-				drawText("%d Overpowerers", 0);
-				drawText("First Overpowerer = %s", "N/A");
-			}
+			drawText("%d Occupants , First Occupant = %s", pBuilding->Occupants.Count, (pBuilding->Occupants.Count > 0 ? pBuilding->Occupants.GetItem(0)->Type->ID : "N/A"));
+			drawText("%d Overpowerers , First Overpowerer = %s", pBuilding->Overpowerers.Count, (pBuilding->Overpowerers.Count > 0 ? pBuilding->Overpowerers.GetItem(0)->Type->ID : "N/A"));
 
 			FactoryClass* pFactory = nullptr;
 			TechnoClass* pProduct = nullptr;
@@ -667,16 +604,12 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const auto pType3 = pBuilding->Upgrades[2];
 
 				drawText("Upgrades ( %d / %d ):", pBuilding->UpgradeLevel, upgrades);
-				drawText("Slot 1 = %s", (pType1 ? pType1->get_ID() : "N/A"));
-				drawText("Slot 2 = %s", (pType2 ? pType2->get_ID() : "N/A"));
-				drawText("Slot 3 = %s", (pType3 ? pType3->get_ID() : "N/A"));
+				drawText("Slot 1 = %s , Slot 2 = %s , Slot 3 = %s", (pType1 ? pType1->get_ID() : "N/A"), (pType2 ? pType2->get_ID() : "N/A"), (pType3 ? pType3->get_ID() : "N/A"));
 			}
 			else
 			{
 				drawText("Upgrades ( %d / %d ):", -1, -1);
-				drawText("Slot 1 = %s", "N/A");
-				drawText("Slot 2 = %s", "N/A");
-				drawText("Slot 3 = %s", "N/A");
+				drawText("Slot 1 = %s , Slot 2 = %s , Slot 3 = %s", "N/A", "N/A", "N/A");
 			}
 		}
 	}
