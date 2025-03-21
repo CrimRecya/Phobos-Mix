@@ -1753,11 +1753,16 @@ MultiMindControl.ReleaseVictim=false  ; boolean
 ### No Manual Move
 
 - You can now specify whether a TechnoType is unable to receive move command.
+- Set this to `true` on a building with `UndeploysInto` set could prevent it from undeploying when setting the rally point.
 
 In `rulesmd.ini`:
 ```ini
 [SOMETECHNO]        ; TechnoType
 NoManualMove=false  ; boolean
+```
+
+```{note}
+Note that you can still undeploy the building by using a `BuildingUndeploy=true` warhead or by setting a rally point and selling it.
 ```
 
 ### Promoted Spawns
@@ -1968,19 +1973,6 @@ Turret.BodyOrientationAngle=0       ; floating point value
 Turret.BodyOrientationSymmetric=yes ; boolean
 ```
 
-### Delay automatic attack on the controlled unit
-
-- Now you can make the techno that has just been mind controlled not be automatically attacked by its original friendly forces for a period of time defined by `MindControl.ThreatDelay` on the mind control warhead, default to `[General]->AttackMindControlledDelay`. This will not affect the manual selection of attacks and is useless with permanent mind control.
-
-In `rulesmd.ini`:
-```ini
-[General]
-AttackMindControlledDelay=0   ; integer, game frames
-
-[SOMEWARHEAD]                 ; Warhead
-MindControl.ThreatDelay=      ; integer, game frames
-```
-
 ### Aggressive attack move mission
 
 - `AttackMove.Aggressive` allows your technos to attack the enemy's unarmed buildings more aggressively when in attack move mission (Ctrl+Shift). Default to `[General]->AttackMove.Aggressive`.
@@ -2077,6 +2069,19 @@ JumpjetTilt.ForwardAccelFactor=1.0      ; floating point value
 JumpjetTilt.ForwardSpeedFactor=1.0      ; floating point value
 JumpjetTilt.SidewaysRotationFactor=1.0  ; floating point value
 JumpjetTilt.SidewaysSpeedFactor=1.0     ; floating point value
+```
+
+### Delay automatic attack on the controlled unit
+
+- Now you can make the techno that has just been mind controlled not be automatically attacked by its original friendly forces for a period of time defined by `MindControl.ThreatDelay` on the mind control warhead, default to `[General]->MindControl.ThreatDelay`. This will not affect the manual selection of attacks and is useless with permanent mind control.
+
+In `rulesmd.ini`:
+```ini
+[General]
+MindControl.ThreatDelay=0     ; integer, game frames
+
+[SOMEWARHEAD]                 ; Warhead
+MindControl.ThreatDelay=      ; integer, game frames
 ```
 
 ## Terrain

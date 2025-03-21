@@ -140,7 +140,6 @@ public:
 		Valueable<bool> AIBiasSpawnCell;
 		Valueable<bool> AIForbidConYard;
 		Valueable<int> CleanUpAirBarrier;
-		Valueable<int> AttackMindControlledDelay;
 		Valueable<bool> NoQueueUpToEnter;
 		Valueable<bool> NoQueueUpToUnload;
 		Valueable<bool> AttackMove_Aggressive;
@@ -276,6 +275,8 @@ public:
 		Nullable<Vector3D<float>> VoxelLightSource;
 		// Nullable<Vector3D<float>> VoxelShadowLightSource;
 		Valueable<bool> UseFixedVoxelLighting;
+
+		Valueable<int> MindControl_ThreatDelay;
 
 		Valueable<bool> RecountBurst;
 		Valueable<bool> NoRearm_UnderEMP;
@@ -423,7 +424,6 @@ public:
 			, SelectedAircraftMissingPCX {}
 			, SelectedBuildingMissingPCX {}
 			, CleanUpAirBarrier { 0 }
-			, AttackMindControlledDelay { 0 }
 			, NoQueueUpToEnter { false }
 			, NoQueueUpToUnload { false }
 			, AttackMove_Aggressive { false }
@@ -546,6 +546,7 @@ public:
 			, EndDistributionModeSound { -1 }
 			, AddDistributionModeCommandSound { -1 }
 			, UseFixedVoxelLighting { false }
+			, MindControl_ThreatDelay { 0 }
 			, RecountBurst { false }
 			, NoRearm_UnderEMP { false }
 			, NoRearm_Temporal { false }

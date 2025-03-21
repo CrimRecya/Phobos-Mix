@@ -186,7 +186,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->AIBiasSpawnCell.Read(exINI, GameStrings::AI, "AIBiasSpawnCell");
 	this->AIForbidConYard.Read(exINI, GameStrings::AI, "AIForbidConYard");
 	this->CleanUpAirBarrier.Read(exINI, GameStrings::General, "CleanUpAirBarrier");
-	this->AttackMindControlledDelay.Read(exINI, GameStrings::General, "AttackMindControlledDelay");
 	this->NoQueueUpToEnter.Read(exINI, GameStrings::General, "NoQueueUpToEnter");
 	this->NoQueueUpToUnload.Read(exINI, GameStrings::General, "NoQueueUpToUnload");
 	this->AttackMove_Aggressive.Read(exINI, GameStrings::General, "AttackMove.Aggressive");
@@ -321,6 +320,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->ReplaceVoxelLightSources();
 
 	this->UseFixedVoxelLighting.Read(exINI, GameStrings::AudioVisual, "UseFixedVoxelLighting");
+
+	this->MindControl_ThreatDelay.Read(exINI, GameStrings::General, "MindControl.ThreatDelay");
 
 	this->RecountBurst.Read(exINI, GameStrings::General, "RecountBurst");
 	this->NoRearm_UnderEMP.Read(exINI, GameStrings::General, "NoRearm.UnderEMP");
@@ -528,7 +529,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AIBiasSpawnCell)
 		.Process(this->AIForbidConYard)
 		.Process(this->CleanUpAirBarrier)
-		.Process(this->AttackMindControlledDelay)
 		.Process(this->NoQueueUpToEnter)
 		.Process(this->NoQueueUpToUnload)
 		.Process(this->AttackMove_Aggressive)
@@ -647,6 +647,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->EndDistributionModeSound)
 		.Process(this->AddDistributionModeCommandSound)
 		.Process(this->UseFixedVoxelLighting)
+		.Process(this->MindControl_ThreatDelay)
 		.Process(this->RecountBurst)
 		.Process(this->NoRearm_UnderEMP)
 		.Process(this->NoRearm_Temporal)

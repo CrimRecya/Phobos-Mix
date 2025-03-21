@@ -401,6 +401,7 @@ This page lists all the individual contributions to the project by their author.
   - Fix `Stop` command not working so well in some cases
   - Fix aircraft `MovementZone` and `SpeedType` inconsistencies
   - Use 2D distance instead of 3D to check whether in air team members have arrived destination
+  - No rearm and reload in EMP or temporal
   - Enhanced Straight trajectory
   - Enable building production queue
   - Fix for sidebar not updating queued unit numbers when on hold
@@ -432,7 +433,6 @@ This page lists all the individual contributions to the project by their author.
   - Exclusive Sidebar for Superweapons
   - Delay automatic attack on the controlled unit
   - Aggressive attack move mission
-  - No rearm and reload in EMP or temporal
   - Manually empty and reload ammo
   - Allow merging AOE damage to buildings into one
   - Distribution click action mode
