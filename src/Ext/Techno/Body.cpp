@@ -709,6 +709,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->AggressiveStance)
 		.Process(this->KeepTargetOnMove)
 		.Process(this->LastSensorsMapCoords)
+		.Process(this->PlayerAssignedLastTarget)
 		;
 }
 

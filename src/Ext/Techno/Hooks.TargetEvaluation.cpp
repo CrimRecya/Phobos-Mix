@@ -1,6 +1,7 @@
 #include "Body.h"
 
 #include <Ext/BuildingType/Body.h>
+#include <EventClass.h>
 
 // Cursor & target acquisition stuff not directly tied to other features can go here.
 
@@ -37,6 +38,21 @@ FireError __fastcall TechnoClass_TargetSomethingNearby_CanFire_Wrapper(TechnoCla
 }
 
 DEFINE_FUNCTION_JUMP(CALL6, 0x7098E6, TechnoClass_TargetSomethingNearby_CanFire_Wrapper);
+
+DEFINE_HOOK(0x4C73B0, EventClass_RespondToEvent_RecordTarget, 0x6)
+{
+	GET(EventClass*, pThis, ESI);
+	GET(TechnoClass*, pTechno, EDI);
+	GET(Mission, mission, EAX);
+
+	if (mission == Mission::Attack)
+	{
+		auto pExt = TechnoExt::ExtMap.Find(pTechno);
+		pExt->PlayerAssignedLastTarget = pThis->MegaMission.Target;
+	}
+
+	return 0;
+}
 
 #pragma endregion
 

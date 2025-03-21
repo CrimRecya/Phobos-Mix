@@ -316,6 +316,7 @@ public:
 		Valueable<bool> UpdateInLimbo_LimboLaunch;
 
 		Valueable<bool> InvisoLatencyFix;
+		Valueable<bool> RetaliateIfNoTargetAssigned;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -574,6 +575,7 @@ public:
 			, UpdateInLimbo_NormalPassenger { false }
 			, UpdateInLimbo_LimboLaunch { false }
 			, InvisoLatencyFix { false }
+			, RetaliateIfNoTargetAssigned { false }
 		{ }
 
 		virtual ~ExtData() = default;

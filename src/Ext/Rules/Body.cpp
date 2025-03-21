@@ -358,6 +358,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->UpdateInLimbo_LimboLaunch.Read(exINI, GameStrings::General, "UpdateInLimbo.Parasite");
 
 	this->InvisoLatencyFix.Read(exINI, GameStrings::General, "InvisoLatencyFix");
+	this->RetaliateIfNoTargetAssigned.Read(exINI, GameStrings::General, "RetaliateIfNoTargetAssigned");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -674,6 +675,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->UpdateInLimbo_NormalPassenger)
 		.Process(this->UpdateInLimbo_LimboLaunch)
 		.Process(this->InvisoLatencyFix)
+		.Process(this->RetaliateIfNoTargetAssigned)
 		;
 }
 
