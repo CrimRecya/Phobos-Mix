@@ -293,15 +293,15 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 	if (pTechno)
 	{
 		const auto pTactical = TacticalClass::Instance;
-		const auto technoCoord = pTechno->GetCoords();
+		const auto technoCoord = pTechno->GetRenderCoords();
 		const auto point = pTactical->CoordsToScreen(technoCoord) - pTactical->TacticalPos;
-		auto drawMtxLine = [pTactical, &technoCoord](const Matrix3D& mtx, const Point2D& point)
+		auto drawMtxLine = [pTactical, &technoCoord](const Matrix3D& mtx, const Point2D& point, const COLORREF color)
 		{
 			const auto result = mtx.GetTranslation();
 			const auto location = CoordStruct { (int)result.X, -(int)result.Y, (int)result.Z };
 			auto point1 = point;
 			auto point2 = pTactical->CoordsToScreen(technoCoord + location) - pTactical->TacticalPos;
-			DSurface::Composite->DrawLine(&point1, &point2, COLOR_WHITE);
+			DSurface::Composite->DrawLine(&point1, &point2, color);
 		};
 
 		if (const auto pFoot = abstract_cast<FootClass*>(pTechno))
@@ -310,42 +310,42 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
 
 			auto mtx = mtxBase;
-			mtx.RotateZ((float)rotateRadian);
-			mtx.TranslateX(256.0f);
-			drawMtxLine(mtx, point);
+			// mtx.RotateZ((float)rotateRadian); // No need to rotate again
+			mtx.TranslateX(512.0f);
+			drawMtxLine(mtx, point, COLOR_WHITE);
 
 			mtx = mtxBase;
 			mtx.RotateZ((float)(pTechno->PrimaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
-			mtx.TranslateX(256.0f);
-			drawMtxLine(mtx, point);
+			mtx.TranslateX(512.0f);
+			drawMtxLine(mtx, point, COLOR_BLUE);
 
 			mtx = mtxBase;
 			mtx.RotateZ((float)(pTechno->PrimaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
-			mtx.TranslateX(256.0f);
-			drawMtxLine(mtx, point);
+			mtx.TranslateX(512.0f);
+			drawMtxLine(mtx, point, COLOR_YELLOW);
 
 			if (pTechno->HasTurret())
 			{
 				auto mtxTur = mtxBase;
 				TechnoTypeExt::ApplyTurretOffset(pTechno->GetTechnoType(), &mtxTur, 1.0);
 
-				const auto turret = mtx.GetTranslation();
-				const auto turretPoint = pTactical->CoordsToScreen(CoordStruct{(int)turret.X,-(int)turret.Y,(int)turret.Z}) - pTactical->TacticalPos;
+				const auto turret = mtxTur.GetTranslation();
+				const auto turretPoint = pTactical->CoordsToScreen(technoCoord + CoordStruct{(int)turret.X,-(int)turret.Y,(int)turret.Z}) - pTactical->TacticalPos;
 
 				mtx = mtxTur;
 				mtx.RotateZ((float)(pTechno->SecondaryFacing.Current().GetRadian<32>() - rotateRadian));
-				mtx.TranslateX(256.0f);
-				drawMtxLine(mtx, turretPoint);
+				mtx.TranslateX(512.0f);
+				drawMtxLine(mtx, turretPoint, COLOR_WHITE);
 
 				mtx = mtxTur;
 				mtx.RotateZ((float)(pTechno->SecondaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
-				mtx.TranslateX(256.0f);
-				drawMtxLine(mtx, turretPoint);
+				mtx.TranslateX(512.0f);
+				drawMtxLine(mtx, turretPoint, COLOR_BLUE);
 
 				mtx = mtxTur;
 				mtx.RotateZ((float)(pTechno->SecondaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
-				mtx.TranslateX(256.0f);
-				drawMtxLine(mtx, turretPoint);
+				mtx.TranslateX(512.0f);
+				drawMtxLine(mtx, turretPoint, COLOR_YELLOW);
 			}
 		}
 		else
@@ -355,18 +355,18 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 			auto mtx = mtxBase;
 			mtx.RotateZ((float)rotateRadian);
-			mtx.TranslateX(256.0f);
-			drawMtxLine(mtx, point);
+			mtx.TranslateX(512.0f);
+			drawMtxLine(mtx, point, COLOR_WHITE);
 
 			mtx = mtxBase;
 			mtx.RotateZ((float)(pTechno->PrimaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
-			mtx.TranslateX(256.0f);
-			drawMtxLine(mtx, point);
+			mtx.TranslateX(512.0f);
+			drawMtxLine(mtx, point, COLOR_BLUE);
 
 			mtx = mtxBase;
 			mtx.RotateZ((float)(pTechno->PrimaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
-			mtx.TranslateX(256.0f);
-			drawMtxLine(mtx, point);
+			mtx.TranslateX(512.0f);
+			drawMtxLine(mtx, point, COLOR_YELLOW);
 		}
 	}
 
@@ -436,18 +436,21 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 	{
 		const auto pType = pTechno->GetTechnoType();
 		const auto absType = pTechno->WhatAmI();
-		const auto pOwner = pTechno->Owner;
 
 		if (absType == AbstractType::Unit)
-			drawText("%s: %s , UniqueID: %d , Owner = %s ( %s )", "Vehicle", pType->ID, pTechno->UniqueID, (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+			drawText("%s: %s , UniqueID: %d", "Vehicle", pType->ID, pTechno->UniqueID);
 		else if (absType == AbstractType::Infantry)
-			drawText("%s: %s , UniqueID: %d , Owner = %s ( %s )", "Infantry", pType->ID, pTechno->UniqueID, (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+			drawText("%s: %s , UniqueID: %d", "Infantry", pType->ID, pTechno->UniqueID);
 		else if (absType == AbstractType::Aircraft)
-			drawText("%s: %s , UniqueID: %d , Owner = %s ( %s )", "Aircraft", pType->ID, pTechno->UniqueID, (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+			drawText("%s: %s , UniqueID: %d", "Aircraft", pType->ID, pTechno->UniqueID);
 		else if (absType == AbstractType::Building)
-			drawText("%s: %s , UniqueID: %d , Owner = %s ( %s )", "Building", pType->ID, pTechno->UniqueID, (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+			drawText("%s: %s , UniqueID: %d", "Building", pType->ID, pTechno->UniqueID);
 		else
-			drawText("%s: %s , UniqueID: %d , Owner = %s ( %s )", "Unknown", pType->ID, pTechno->UniqueID, (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+			drawText("%s: %s , UniqueID: %d", "Unknown", pType->ID, pTechno->UniqueID);
+
+		const auto pOwner = pTechno->Owner;
+
+		drawText("Owner = %s ( %s )", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
 
 		const auto cell = pTechno->GetMapCoords();
 		const auto coords = pTechno->GetCoords();
@@ -581,7 +584,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 					{
 						found = true;
 						drawText("Trigger = %s , weights [ Cur , Min , Max ]:", pTriggerType->ID);
-						drawText(" [ %.2f , %.2f , %.2f ]", pTriggerType->Weight_Current, pTriggerType->Weight_Minimum, pTriggerType->Weight_Maximum);
+						drawText("[ %.2f , %.2f , %.2f ]", pTriggerType->Weight_Current, pTriggerType->Weight_Minimum, pTriggerType->Weight_Maximum);
 						break;
 					}
 				}
@@ -589,21 +592,21 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				if (!found)
 				{
 					drawText("Trigger = %s , weights [ Cur , Min , Max ]:", "N/A");
-					drawText(" [ %.2f , %.2f , %.2f ]", -1, -1, -1);
+					drawText("[ %.2f , %.2f , %.2f ]", -1.0, -1.0, -1.0);
 				}
 
 				const auto pScriptType = pTeam->CurrentScript->Type;
 				const auto mission = pTeam->CurrentScript->CurrentMission;
 
 				drawText("Team = %s , Task = %s , Script = %s", pTeamType->ID, pTeamType->TaskForce->ID, pScriptType->get_ID());
-				drawText(" [ Line = Action , Argument ] : [ %d = %d , %d ]", mission, (mission >= 0 ? pScriptType->ScriptActions[mission].Action : -1), (mission >= 0 ? pScriptType->ScriptActions[mission].Argument : -1));
+				drawText("[ Line = Action , Argument ] : [ %d = %d , %d ]", mission, (mission >= 0 ? pScriptType->ScriptActions[mission].Action : -1), (mission >= 0 ? pScriptType->ScriptActions[mission].Argument : -1));
 			}
 			else
 			{
 				drawText("Trigger = %s , weights [ Cur , Min , Max ]:", "N/A");
-				drawText(" [ %.2f , %.2f , %.2f ]", -1, -1, -1);
+				drawText("[ %.2f , %.2f , %.2f ]", -1.0, -1.0, -1.0);
 				drawText("Team = %s , Task = %s , Script = %s", "N/A", "N/A", "N/A");
-				drawText(" [ Line = Action , Argument ] : [ %d = %d , %d ]", -1, -1, -1);
+				drawText("[ Line = Action , Argument ] : [ %d = %d , %d ]", -1, -1, -1);
 			}
 
 			if (absType == AbstractType::Unit)
