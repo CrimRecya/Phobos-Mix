@@ -857,6 +857,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->RadarInvisible_ToSelf.Read(exINI, pSection, "RadarInvisible.ToSelf");
 	this->RadarInvisible_ToAlly.Read(exINI, pSection, "RadarInvisible.ToAlly");
 
+	this->IgnoredByMouse.Read(exINI, pSection, "IgnoredByMouse");
 	this->IgnoredByMouse_ToSelf.Read(exINI, pSection, "IgnoredByMouse.ToSelf");
 	this->IgnoredByMouse_ToAlly.Read(exINI, pSection, "IgnoredByMouse.ToAlly");
 	this->IgnoredByMouse_ToEnemy.Read(exINI, pSection, "IgnoredByMouse.ToEnemy");
@@ -985,6 +986,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 			this->AlternateFLHs.push_back(alternateFLH);
 	}
 
+	this->DefaultVisualCharacter.Read(exArtINI, pArtSection, "DefaultVisualCharacter");
 	this->DefaultVisualCharacterToSelf.Read(exArtINI, pArtSection, "DefaultVisualCharacterToSelf");
 	this->DefaultVisualCharacterToAlly.Read(exArtINI, pArtSection, "DefaultVisualCharacterToAlly");
 	this->DefaultVisualCharacterToEnemy.Read(exArtINI, pArtSection, "DefaultVisualCharacterToEnemy");
@@ -1434,10 +1436,12 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->RadarInvisible_ToSelf)
 		.Process(this->RadarInvisible_ToAlly)
 
+		.Process(this->DefaultVisualCharacter)
 		.Process(this->DefaultVisualCharacterToSelf)
 		.Process(this->DefaultVisualCharacterToAlly)
 		.Process(this->DefaultVisualCharacterToEnemy)
 
+		.Process(this->IgnoredByMouse)
 		.Process(this->IgnoredByMouse_ToSelf)
 		.Process(this->IgnoredByMouse_ToAlly)
 		.Process(this->IgnoredByMouse_ToEnemy)

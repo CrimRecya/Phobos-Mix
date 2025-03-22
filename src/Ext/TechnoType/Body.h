@@ -403,9 +403,10 @@ public:
 		Valueable<bool> RadarInvisible_ToSelf;
 		Valueable<bool> RadarInvisible_ToAlly;
 
-		Valueable<int> DefaultVisualCharacterToSelf;
-		Valueable<int> DefaultVisualCharacterToAlly;
-		Valueable<int> DefaultVisualCharacterToEnemy;
+		Valueable<int> DefaultVisualCharacter;
+		Nullable<int> DefaultVisualCharacterToSelf;
+		Nullable<int> DefaultVisualCharacterToAlly;
+		Nullable<int> DefaultVisualCharacterToEnemy;
 
 		Valueable<bool> Cloneable;
 		ValueableVector<BuildingTypeClass*> ClonedAt;
@@ -440,9 +441,10 @@ public:
 		std::vector<std::vector<CoordStruct>> DeployedWeaponBurstFLHs;
 		std::vector<std::vector<CoordStruct>> EliteDeployedWeaponBurstFLHs;
 
-		Valueable<bool> IgnoredByMouse_ToSelf;
-		Valueable<bool> IgnoredByMouse_ToAlly;
-		Valueable<bool> IgnoredByMouse_ToEnemy;
+		Valueable<bool> IgnoredByMouse;
+		Nullable<bool> IgnoredByMouse_ToSelf;
+		Nullable<bool> IgnoredByMouse_ToAlly;
+		Nullable<bool> IgnoredByMouse_ToEnemy;
 
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
@@ -822,13 +824,15 @@ public:
 			, RadarInvisible_ToSelf { false }
 			, RadarInvisible_ToAlly { false }
 
-			, DefaultVisualCharacterToSelf { 0 }
-			, DefaultVisualCharacterToAlly { 0 }
-			, DefaultVisualCharacterToEnemy { 0 }
+			, DefaultVisualCharacter { 0 }
+			, DefaultVisualCharacterToSelf { }
+			, DefaultVisualCharacterToAlly { }
+			, DefaultVisualCharacterToEnemy { }
 
-			, IgnoredByMouse_ToSelf { false }
-			, IgnoredByMouse_ToAlly { false }
-			, IgnoredByMouse_ToEnemy { false }
+			, IgnoredByMouse { false }
+			, IgnoredByMouse_ToSelf { }
+			, IgnoredByMouse_ToAlly { }
+			, IgnoredByMouse_ToEnemy { }
 
 			, Cloneable { true }
 			, ClonedAt { }

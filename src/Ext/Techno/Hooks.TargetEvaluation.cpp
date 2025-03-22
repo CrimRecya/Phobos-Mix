@@ -1,6 +1,7 @@
 #include "Body.h"
 
 #include <Ext/BuildingType/Body.h>
+#include <EventClass.h>
 
 // Cursor & target acquisition stuff not directly tied to other features can go here.
 
@@ -37,6 +38,137 @@ FireError __fastcall TechnoClass_TargetSomethingNearby_CanFire_Wrapper(TechnoCla
 }
 
 DEFINE_FUNCTION_JUMP(CALL6, 0x7098E6, TechnoClass_TargetSomethingNearby_CanFire_Wrapper);
+
+DEFINE_HOOK(0x4C73B0, EventClass_RespondToEvent_RecordTarget, 0x6)
+{
+	GET(EventClass*, pThis, ESI);
+	GET(TechnoClass*, pTechno, EDI);
+	GET(Mission, mission, EAX);
+
+	if (mission == Mission::Attack)
+	{
+		auto pExt = TechnoExt::ExtMap.Find(pTechno);
+		pExt->PlayerAssignedLastTarget = pThis->MegaMission.Target;
+	}
+
+	return 0;
+}
+
+bool IsAThreatToMe(TechnoClass* pTechno, AbstractClass* pTarget)
+{
+	auto pTechnoTarget = abstract_cast<TechnoClass*>(pTarget);
+	bool targetThreat = false;
+
+	if (pTechnoTarget)
+	{
+		auto error = pTechnoTarget->GetFireError(pTechno, pTechnoTarget->SelectWeapon(pTechno), false);
+		targetThreat = pTechnoTarget->WhatAmI() == AbstractType::Building ? (error != FireError::ILLEGAL) && (error != FireError::RANGE) : (error != FireError::ILLEGAL);
+	}
+
+	return targetThreat;
+}
+
+bool IsAssignedTarget(TechnoClass* pTechno, AbstractClass* pTarget)
+{
+	auto pExt = TechnoExt::ExtMap.Find(pTechno);
+	return pTarget && pExt->PlayerAssignedLastTarget == pTarget;
+}
+
+DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_ReturnFireCheck, 0x7)
+{
+	enum { SkipReturnFire = 0x702B47 };
+
+	GET(TechnoClass* const, pThis, ESI);
+	GET_STACK(TechnoClass*, pAttacker, STACK_OFFSET(0xC4, 0x10));
+
+	auto const pOwner = pThis->Owner;
+
+	// Vanilla behavior.
+	if (!pOwner->IsControlledByHuman() || !RulesExt::Global()->PlayerReturnFire_Smarter)
+		return 0;
+
+	// Too far. Can't attack.
+	if (!pThis->IsCloseEnoughToAttack(pAttacker))
+		return SkipReturnFire;
+
+	auto pCurrentTarget = pThis->Target;
+
+	// Target is assigned by player. I must kill it first.
+	if (IsAssignedTarget(pThis, pCurrentTarget))
+		return SkipReturnFire;
+
+	// Current target may hurt me. I must kill it first.
+	if (IsAThreatToMe(pThis, pCurrentTarget) && pThis->IsCloseEnoughToAttack(pCurrentTarget))
+		return SkipReturnFire;
+
+	// OK I will attack it, but no override mission.
+	pThis->Target = pAttacker; // 如果使用 Settter，当 pAttacker 为建筑时单位会停下。我不知道这是为什么。
+	// pThis->SetTarget(pAttacker);
+	// pThis->QueueMission(Mission::Attack, false);
+	return SkipReturnFire;
+}
+
+DEFINE_HOOK(0x708859, TechnoClass_CanRetaliate_SmarterReturnFire, 0x6)
+{
+	enum { CanRetaliate = 0x708867 };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	auto pTarget = pThis->Target;
+
+	return RulesClass::Instance->PlayerReturnFire
+		&& RulesExt::Global()->PlayerReturnFire_Smarter
+		&& !IsAssignedTarget(pThis, pTarget)
+		&& !(IsAThreatToMe(pThis, pTarget) && pThis->IsCloseEnoughToAttack(pTarget))
+		? CanRetaliate : 0;
+}
+
+DEFINE_HOOK(0x6FA697, TechnoClass_Update_AutoTargetMissionCheck, 0x6)
+{
+	enum { CanTargeting = 0x6FA6AC };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned ? CanTargeting : 0;
+}
+
+DEFINE_HOOK(0x7093E9, TechnoClass_CanPassiveAquireNow_MissionCheck, 0x7)
+{
+	enum { CanTargeting = 0x7093F8 };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	auto pTarget = pThis->Target;
+
+	return pThis->CurrentMission == Mission::Attack
+		&& RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned
+		&& !IsAssignedTarget(pThis, pTarget)
+		&& !(IsAThreatToMe(pThis, pTarget) && pThis->IsCloseEnoughToAttack(pTarget))
+		? CanTargeting : 0;
+}
+
+DEFINE_HOOK(0x70CF1D, TechnoClass_ThreatCoefficient_CanAttackMeThreatBonus, 0x6)
+{
+	REF_STACK(double, totalThreat, STACK_OFFSET(0x58, -0x48));
+
+	totalThreat += RulesExt::Global()->CanAttackMeThreatBonus;
+	return 0;
+}
+
+DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
+{
+	enum { CanTargeting = 0x709926 };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	auto pTarget = pThis->Target;
+
+	return pTarget
+		&& RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned
+		&& !IsAssignedTarget(pThis, pTarget)
+		&& !(IsAThreatToMe(pThis, pTarget) && pThis->IsCloseEnoughToAttack(pTarget))
+		? CanTargeting : 0;
+}
 
 #pragma endregion
 
