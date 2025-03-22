@@ -416,6 +416,7 @@ This page lists all the individual contributions to the project by their author.
   - Units will not always stuck in the factory
   - Technos can maintain a suitable distance after firing
   - Projectile subject to ground check before firing
+  - Delay automatic attack on the controlled unit
   - New trajectory system
   - New Missile trajectory
   - New Engrave trajectory
@@ -431,7 +432,6 @@ This page lists all the individual contributions to the project by their author.
   - Grey cameo preview and cameo overlays
   - Optimize aircrafts stop action and allow they using area guard and attack moving
   - Exclusive Sidebar for Superweapons
-  - Delay automatic attack on the controlled unit
   - Aggressive attack move mission
   - Manually empty and reload ammo
   - Allow merging AOE damage to buildings into one
