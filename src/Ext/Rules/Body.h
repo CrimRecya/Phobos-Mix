@@ -577,7 +577,7 @@ public:
 			, UpdateInLimbo_LimboLaunch { false }
 			, InvisoLatencyFix { false }
 
-			, CanAttackMeThreatBonus { false }
+			, CanAttackMeThreatBonus { 0.0 }
 			, ExtraTargeting_OnNoTargetAssigned { false }
 		{ }
 
