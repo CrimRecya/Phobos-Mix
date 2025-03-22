@@ -102,8 +102,9 @@ DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_ReturnFireCheck, 0x7)
 		return SkipReturnFire;
 
 	// OK I will attack it, but no override mission.
-	pThis->SetTarget(pAttacker);
-	pThis->QueueMission(Mission::Attack, false);
+	pThis->Target = pAttacker; // 如果使用 Settter，当 pAttacker 为建筑时单位会停下。我不知道这是为什么。
+	// pThis->SetTarget(pAttacker);
+	// pThis->QueueMission(Mission::Attack, false);
 	return SkipReturnFire;
 }
 
@@ -152,6 +153,21 @@ DEFINE_HOOK(0x70CF1D, TechnoClass_ThreatCoefficient_CanAttackMeThreatBonus, 0x6)
 
 	totalThreat += RulesExt::Global()->CanAttackMeThreatBonus;
 	return 0;
+}
+
+DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
+{
+	enum { CanTargeting = 0x709926 };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	auto pTarget = pThis->Target;
+
+	return pTarget
+		&& RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned
+		&& !IsAssignedTarget(pThis, pTarget)
+		&& !(IsAThreatToMe(pThis, pTarget) && pThis->IsCloseEnoughToAttack(pTarget))
+		? CanTargeting : 0;
 }
 
 #pragma endregion
