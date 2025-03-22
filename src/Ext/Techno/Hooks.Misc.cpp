@@ -576,34 +576,6 @@ DEFINE_HOOK(0x74691D, UnitClass_UpdateDisguise_EMP, 0x6)
 
 #pragma endregion
 
-#pragma region ReturnFire
-
-DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_ReturnFireCheck, 0x7)
-{
-	enum { SkipReturnFire = 0x702B47, NotSkip = 0 };
-
-	GET(TechnoClass* const, pThis, ESI);
-
-	auto const pOwner = pThis->Owner;
-
-	if (!(pOwner->IsHumanPlayer || pOwner->IsInPlayerControl) || !RulesExt::Global()->PlayerReturnFire_Smarter)
-		return NotSkip;
-	else if (pThis->Target)
-		return SkipReturnFire;
-
-	auto const pThisFoot = abstract_cast<FootClass*>(pThis);
-
-	if (!pThisFoot)
-		return NotSkip;
-
-	auto const mission = pThis->CurrentMission;
-	const bool isJJMoving = pThisFoot->GetHeight() > Unsorted::CellHeight && mission == Mission::Move && pThisFoot->Locomotor->Is_Moving_Now();
-
-	return (isJJMoving || (mission == Mission::Move && pThisFoot->GetHeight() <= 0)) ? SkipReturnFire : NotSkip;
-}
-
-#pragma endregion
-
 #pragma region AttackMindControlledDelay
 
 bool __fastcall CanAttackMindControlled(TechnoClass* pControlled, TechnoClass* pRetaliator)

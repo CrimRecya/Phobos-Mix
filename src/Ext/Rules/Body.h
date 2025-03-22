@@ -317,6 +317,8 @@ public:
 		Valueable<bool> UpdateInLimbo_LimboLaunch;
 
 		Valueable<bool> InvisoLatencyFix;
+		Valueable<double> CanAttackMeThreatBonus;
+		Valueable<bool> ExtraTargeting_OnNoTargetAssigned;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -575,6 +577,9 @@ public:
 			, UpdateInLimbo_NormalPassenger { false }
 			, UpdateInLimbo_LimboLaunch { false }
 			, InvisoLatencyFix { false }
+
+			, CanAttackMeThreatBonus { 0.0 }
+			, ExtraTargeting_OnNoTargetAssigned { false }
 		{ }
 
 		virtual ~ExtData() = default;

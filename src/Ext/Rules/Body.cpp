@@ -360,6 +360,9 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->InvisoLatencyFix.Read(exINI, GameStrings::General, "InvisoLatencyFix");
 
+	this->CanAttackMeThreatBonus.Read(exINI, GameStrings::General, "CanAttackMeThreatBonus");
+	this->ExtraTargeting_OnNoTargetAssigned.Read(exINI, GameStrings::General, "ExtraTargeting.OnNoTargetAssigned");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -675,6 +678,8 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->UpdateInLimbo_NormalPassenger)
 		.Process(this->UpdateInLimbo_LimboLaunch)
 		.Process(this->InvisoLatencyFix)
+		.Process(this->CanAttackMeThreatBonus)
+		.Process(this->ExtraTargeting_OnNoTargetAssigned)
 		;
 }
 

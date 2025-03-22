@@ -1906,13 +1906,14 @@ DEFINE_HOOK(0x703B0B, TechnoClass_VisualCharacter_Normal, 0x5)
 		const auto pThis = VisualCharacterContext::pThis;
 		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
 		const auto pOwner = pThis->Owner;
+		const auto defaultValue = pTypeExt->DefaultVisualCharacter;
 
 		if (pOwner == pWatcher)
-			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToSelf.Get()));
+			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToSelf.Get(defaultValue)));
 		else if (pOwner->IsAlliedWith(pWatcher))
-			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToAlly.Get()));
+			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToAlly.Get(defaultValue)));
 		else
-			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToEnemy.Get()));
+			R->EAX(static_cast<VisualType>(pTypeExt->DefaultVisualCharacterToEnemy.Get(defaultValue)));
 	}
 	else
 	{
@@ -1938,13 +1939,14 @@ static inline bool ShouldIgnoreByMouse(ObjectClass* pObject)
 		const auto pTechno = static_cast<TechnoClass*>(pObject);
 		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
 		const auto pOwner = pTechno->Owner;
+		const auto defaultValue = pTypeExt->IgnoredByMouse;
 
 		if (pOwner == HouseClass::CurrentPlayer)
-			return pTypeExt->IgnoredByMouse_ToSelf.Get();
+			return pTypeExt->IgnoredByMouse_ToSelf.Get(defaultValue);
 		else if (pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
-			return pTypeExt->IgnoredByMouse_ToAlly.Get();
+			return pTypeExt->IgnoredByMouse_ToAlly.Get(defaultValue);
 
-		return pTypeExt->IgnoredByMouse_ToEnemy.Get();
+		return pTypeExt->IgnoredByMouse_ToEnemy.Get(defaultValue);
 	}
 
 	const auto absType = pObject->WhatAmI();
