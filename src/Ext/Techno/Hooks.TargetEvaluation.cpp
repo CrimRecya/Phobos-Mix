@@ -54,6 +54,106 @@ DEFINE_HOOK(0x4C73B0, EventClass_RespondToEvent_RecordTarget, 0x6)
 	return 0;
 }
 
+bool IsAThreatToMe(TechnoClass* pTechno, AbstractClass* pTarget)
+{
+	auto pTechnoTarget = abstract_cast<TechnoClass*>(pTarget);
+	bool targetThreat = false;
+
+	if (pTechnoTarget)
+	{
+		auto error = pTechnoTarget->GetFireError(pTechno, pTechnoTarget->SelectWeapon(pTechno), false);
+		targetThreat = pTechnoTarget->WhatAmI() == AbstractType::Building ? (error != FireError::ILLEGAL) && (error != FireError::RANGE) : (error != FireError::ILLEGAL);
+	}
+
+	return targetThreat;
+}
+
+bool IsAssignedTarget(TechnoClass* pTechno, AbstractClass* pTarget)
+{
+	auto pExt = TechnoExt::ExtMap.Find(pTechno);
+	return pTarget && pExt->PlayerAssignedLastTarget == pTarget;
+}
+
+DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_ReturnFireCheck, 0x7)
+{
+	enum { SkipReturnFire = 0x702B47 };
+
+	GET(TechnoClass* const, pThis, ESI);
+	GET_STACK(TechnoClass*, pAttacker, STACK_OFFSET(0xC4, 0x10));
+
+	auto const pOwner = pThis->Owner;
+
+	// Vanilla behavior.
+	if (!pOwner->IsControlledByHuman() || !RulesExt::Global()->PlayerReturnFire_Smarter)
+		return 0;
+
+	// Too far. Can't attack.
+	if (!pThis->IsCloseEnoughToAttack(pAttacker))
+		return SkipReturnFire;
+
+	auto pCurrentTarget = pThis->Target;
+
+	// Target is assigned by player. I must kill it first.
+	if (IsAssignedTarget(pThis, pCurrentTarget))
+		return SkipReturnFire;
+
+	// Current target may hurt me. I must kill it first.
+	if (IsAThreatToMe(pThis, pCurrentTarget) && pThis->IsCloseEnoughToAttack(pCurrentTarget))
+		return SkipReturnFire;
+
+	// OK I will attack it, but no override mission.
+	pThis->SetTarget(pAttacker);
+	pThis->QueueMission(Mission::Attack, false);
+	return SkipReturnFire;
+}
+
+DEFINE_HOOK(0x708859, TechnoClass_CanRetaliate_SmarterReturnFire, 0x6)
+{
+	enum { CanRetaliate = 0x708867 };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	auto pTarget = pThis->Target;
+
+	return RulesClass::Instance->PlayerReturnFire
+		&& RulesExt::Global()->PlayerReturnFire_Smarter
+		&& !IsAssignedTarget(pThis, pTarget)
+		&& !(IsAThreatToMe(pThis, pTarget) && pThis->IsCloseEnoughToAttack(pTarget))
+		? CanRetaliate : 0;
+}
+
+DEFINE_HOOK(0x6FA697, TechnoClass_Update_AutoTargetMissionCheck, 0x6)
+{
+	enum { CanTargeting = 0x6FA6AC };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned ? CanTargeting : 0;
+}
+
+DEFINE_HOOK(0x7093E9, TechnoClass_CanPassiveAquireNow_MissionCheck, 0x7)
+{
+	enum { CanTargeting = 0x7093F8 };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	auto pTarget = pThis->Target;
+
+	return pThis->CurrentMission == Mission::Attack
+		&& RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned
+		&& !IsAssignedTarget(pThis, pTarget)
+		&& !(IsAThreatToMe(pThis, pTarget) && pThis->IsCloseEnoughToAttack(pTarget))
+		? CanTargeting : 0;
+}
+
+DEFINE_HOOK(0x70CF1D, TechnoClass_ThreatCoefficient_CanAttackMeThreatBonus, 0x6)
+{
+	REF_STACK(double, totalThreat, STACK_OFFSET(0x58, -0x48));
+
+	totalThreat += RulesExt::Global()->CanAttackMeThreatBonus;
+	return 0;
+}
+
 #pragma endregion
 
 #pragma region MapZone
