@@ -308,6 +308,8 @@ public:
 
 		Valueable<bool> ExtraTargeting_OnLoseTarget;
 		Valueable<bool> ExtraTargeting_OnStopCommand;
+		Valueable<bool> ExtraTargeting_OnNoTargetAssigned;
+		Valueable<double> CanAttackMeThreatBonus;
 
 		Valueable<bool> AllyShareControl;
 
@@ -318,8 +320,6 @@ public:
 		Valueable<bool> UpdateInLimbo_LimboLaunch;
 
 		Valueable<bool> InvisoLatencyFix;
-		Valueable<double> CanAttackMeThreatBonus;
-		Valueable<bool> ExtraTargeting_OnNoTargetAssigned;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -573,15 +573,14 @@ public:
 			, ProneSpeed { }
 			, ExtraTargeting_OnLoseTarget { false }
 			, ExtraTargeting_OnStopCommand { false }
+			, ExtraTargeting_OnNoTargetAssigned { false }
+			, CanAttackMeThreatBonus { 0.0 }
 			, AllyShareControl { false }
 			, InTransportInfantryAmmoFix { false }
 			, UpdateInLimbo_Occupier { false }
 			, UpdateInLimbo_NormalPassenger { false }
 			, UpdateInLimbo_LimboLaunch { false }
 			, InvisoLatencyFix { false }
-
-			, CanAttackMeThreatBonus { 0.0 }
-			, ExtraTargeting_OnNoTargetAssigned { false }
 		{ }
 
 		virtual ~ExtData() = default;

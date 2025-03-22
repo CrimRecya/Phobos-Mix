@@ -2155,6 +2155,111 @@ DEFINE_HOOK(0x6A3423, ShipLocomotionClass_SomeFunc_DamagedSpeed, 0x5)
 
 #pragma endregion
 
+#pragma region SmartTarget
+
+DEFINE_HOOK(0x4C73B0, EventClass_RespondToEvent_RecordTarget, 0x6)
+{
+	GET(EventClass* const, pThis, ESI);
+	GET(TechnoClass* const, pTechno, EDI);
+	GET(const Mission, mission, EAX);
+
+	if (mission == Mission::Attack)
+	{
+		if (const auto pTarget = pThis->MegaMission.Target.As_Abstract())
+			TechnoExt::ExtMap.Find(pTechno)->PlayerAssignedLastTarget = pTarget->UniqueID;
+	}
+
+	return 0;
+}
+
+// Current target may hurt me.
+static inline bool IsAThreatToMe(TechnoClass* const pTechno, AbstractClass* const pTarget, int weaponIndex = -1)
+{
+	if (const auto pTechnoTarget = abstract_cast<TechnoClass*>(pTarget))
+	{
+		if (weaponIndex < 0)
+			weaponIndex = pTechnoTarget->SelectWeapon(pTechno);
+
+		const auto error = pTechnoTarget->GetFireError(pTechno, weaponIndex, true);
+		return pTechnoTarget->WhatAmI() == AbstractType::Building ? (error != FireError::ILLEGAL) && (error != FireError::RANGE) : (error != FireError::ILLEGAL);
+	}
+
+	return false;
+}
+
+// Target is assigned by player.
+static inline bool IsAssignedTarget(TechnoClass* const pTechno, AbstractClass* const pTarget)
+{
+	return pTarget && TechnoExt::ExtMap.Find(pTechno)->PlayerAssignedLastTarget == pTarget->UniqueID;
+}
+
+static inline bool CanRetarget(TechnoClass* const pThis, AbstractClass* const pTarget)
+{
+	return !IsAssignedTarget(pThis, pTarget) && !(IsAThreatToMe(pThis, pTarget) && pThis->IsCloseEnoughToAttack(pTarget));
+}
+
+DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_ReturnFireCheck, 0x7)
+{
+	enum { SkipReturnFire = 0x702B47 };
+
+	GET(TechnoClass* const, pThis, ESI);
+	GET_STACK(TechnoClass* const, pAttacker, STACK_OFFSET(0xC4, 0x10));
+
+	if (!pThis->Owner->IsControlledByHuman() || !RulesExt::Global()->PlayerReturnFire_Smarter) // Vanilla behavior.
+		return 0;
+
+	if (!pThis->IsCloseEnoughToAttack(pAttacker) || !CanRetarget(pThis, pThis->Target))
+		return SkipReturnFire;
+
+	pThis->Target = pAttacker; // Use SetTarget will result in pThis stop when pAttacker is a building
+	// pThis->SetTarget(pAttacker);
+	// pThis->QueueMission(Mission::Attack, false);
+	return SkipReturnFire;
+}
+
+DEFINE_HOOK(0x708859, TechnoClass_CanRetaliate_SmarterReturnFire, 0x6)
+{
+	enum { CanRetaliate = 0x708867 };
+	GET(TechnoClass* const, pThis, ESI);
+	return RulesClass::Instance->PlayerReturnFire && RulesExt::Global()->PlayerReturnFire_Smarter && CanRetarget(pThis, pThis->Target) ? CanRetaliate : 0;
+}
+
+DEFINE_HOOK(0x6FA697, TechnoClass_Update_AutoTargetMissionCheck, 0x6)
+{
+	enum { CanTargeting = 0x6FA6AC };
+	GET(TechnoClass* const, pThis, ESI);
+	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned ? CanTargeting : 0;
+}
+
+DEFINE_HOOK(0x7093E9, TechnoClass_CanPassiveAquireNow_MissionCheck, 0x7)
+{
+	enum { CanTargeting = 0x7093F8 };
+	GET(TechnoClass* const, pThis, ESI);
+	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
+}
+
+DEFINE_HOOK(0x70CE85, TechnoClass_ThreatCoefficient_CanAttackMeThreatBonus, 0x5)
+{
+	GET(TechnoClass* const, pThis, EDI);
+	GET(TechnoClass* const, pTarget, ESI);
+	GET(const int, weaponIndex, EAX);
+	REF_STACK(double, totalThreat, STACK_OFFSET(0x58, -0x48));
+
+	if (IsAThreatToMe(pThis, pTarget, weaponIndex))
+		totalThreat += RulesExt::Global()->CanAttackMeThreatBonus;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
+{
+	enum { CanTargeting = 0x709926 };
+	GET(TechnoClass* const, pThis, ESI);
+	return RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
+}
+
+#pragma endregion
+
 // TODO Self-made impl
 
 

@@ -352,6 +352,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->ExtraTargeting_OnLoseTarget.Read(exINI, GameStrings::General, "ExtraTargeting.OnLoseTarget");
 	this->ExtraTargeting_OnStopCommand.Read(exINI, GameStrings::General, "ExtraTargeting.OnStopCommand");
+	this->ExtraTargeting_OnNoTargetAssigned.Read(exINI, GameStrings::General, "ExtraTargeting.OnNoTargetAssigned");
+	this->CanAttackMeThreatBonus.Read(exINI, GameStrings::General, "CanAttackMeThreatBonus");
 
 	this->AllyShareControl.Read(exINI, GameStrings::General, "AllyShareControl");
 	this->InTransportInfantryAmmoFix.Read(exINI, GameStrings::General, "InTransportInfantryAmmoFix");
@@ -360,9 +362,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->UpdateInLimbo_LimboLaunch.Read(exINI, GameStrings::General, "UpdateInLimbo.Parasite");
 
 	this->InvisoLatencyFix.Read(exINI, GameStrings::General, "InvisoLatencyFix");
-
-	this->CanAttackMeThreatBonus.Read(exINI, GameStrings::General, "CanAttackMeThreatBonus");
-	this->ExtraTargeting_OnNoTargetAssigned.Read(exINI, GameStrings::General, "ExtraTargeting.OnNoTargetAssigned");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -674,14 +673,14 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->ProneSpeed)
 		.Process(this->ExtraTargeting_OnLoseTarget)
 		.Process(this->ExtraTargeting_OnStopCommand)
+		.Process(this->ExtraTargeting_OnNoTargetAssigned)
+		.Process(this->CanAttackMeThreatBonus)
 		.Process(this->AllyShareControl)
 		.Process(this->InTransportInfantryAmmoFix)
 		.Process(this->UpdateInLimbo_Occupier)
 		.Process(this->UpdateInLimbo_NormalPassenger)
 		.Process(this->UpdateInLimbo_LimboLaunch)
 		.Process(this->InvisoLatencyFix)
-		.Process(this->CanAttackMeThreatBonus)
-		.Process(this->ExtraTargeting_OnNoTargetAssigned)
 		;
 }
 

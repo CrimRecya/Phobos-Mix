@@ -86,7 +86,7 @@ public:
 		CellStruct LastSensorsMapCoords;
 
 		bool AggressiveStance;                  // Aggressive stance that will auto target buildings
-		AbstractClass* PlayerAssignedLastTarget;
+		DWORD PlayerAssignedLastTarget;
 
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
@@ -148,7 +148,7 @@ public:
 			, AggressiveStance { false }
 			, KeepTargetOnMove { false }
 			, LastSensorsMapCoords { CellStruct::Empty }
-			, PlayerAssignedLastTarget { }
+			, PlayerAssignedLastTarget { 0xFFFFFFFF }
 		{ }
 
 		void OnEarlyUpdate();
