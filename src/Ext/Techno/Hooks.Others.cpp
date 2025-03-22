@@ -2180,6 +2180,9 @@ static inline bool IsAThreatToMe(TechnoClass* const pTechno, AbstractClass* cons
 		if (weaponIndex < 0)
 			weaponIndex = pTechnoTarget->SelectWeapon(pTechno);
 
+		if (!pTechnoTarget->GetWeapon(weaponIndex)->WeaponType)
+			return false;
+
 		const auto error = pTechnoTarget->GetFireError(pTechno, weaponIndex, true);
 		return pTechnoTarget->WhatAmI() == AbstractType::Building ? (error != FireError::ILLEGAL) && (error != FireError::RANGE) : (error != FireError::ILLEGAL);
 	}
