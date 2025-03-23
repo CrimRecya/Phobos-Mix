@@ -2037,6 +2037,21 @@ DEFINE_HOOK(0x6F9222, TechnoClass_SelectAutoTarget_HealingTargetAir, 0x6)
 // Skip the hardcode of healing weapon auto target range.
 DEFINE_JUMP(LJMP, 0x6F9024, 0x6F9042);
 
+DEFINE_HOOK(0x0707ED0, TechnoClass_GetGuardRange_FixForIFV, 0x6)
+{
+	enum { SkipGameCode = 0x707F08 };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	auto pType = pThis->GetTechnoType();
+
+	if (!pType->HasMultipleTurrets() || pType->IsGattling)
+		return 0;
+
+	R->EAX(pThis->GetWeaponRange(pThis->CurrentWeaponNumber));
+	return SkipGameCode;
+}
+
 #pragma endregion
 
 #pragma region ExtraTargeting
@@ -2259,6 +2274,20 @@ DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
 	enum { CanTargeting = 0x709926 };
 	GET(TechnoClass* const, pThis, ESI);
 	return RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
+}
+
+#pragma endregion
+
+#pragma region BombParachute
+
+DEFINE_HOOK(0x5F5A8C, ObjectClass_SpawnParachuted_BombParachute, 0x5)
+{
+	GET(BulletClass*, pThis, ESI);
+
+	if (const auto pAnimType = BulletTypeExt::ExtMap.Find(pThis->Type)->BombParachute.Get())
+		R->EDX(pAnimType);
+
+	return 0;
 }
 
 #pragma endregion
