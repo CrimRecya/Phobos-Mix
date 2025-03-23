@@ -70,6 +70,8 @@ public:
 		Valueable<bool> Splits_UseWeaponTargeting;
 		Valueable<bool> AirburstWeapon_ApplyFirepowerMult;
 
+		Valueable<AnimTypeClass*> BombParachute;
+
 		// Ares 0.7
 		Nullable<Leptons> BallisticScatter_Min;
 		Nullable<Leptons> BallisticScatter_Max;
@@ -118,6 +120,7 @@ public:
 			, Splits_TargetCellRange { 3 }
 			, Splits_UseWeaponTargeting { false }
 			, AirburstWeapon_ApplyFirepowerMult { false }
+			, BombParachute { }
 		{ }
 
 		virtual ~ExtData() = default;
