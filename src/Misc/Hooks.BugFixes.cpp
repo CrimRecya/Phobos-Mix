@@ -1637,3 +1637,18 @@ DEFINE_HOOK(0x75EE49, WaveClass_DrawSonic_CrashFix, 0x7)
 // in this case, we can also dismiss ElectricBolt on Unit, to prevent the crash that caused by its invalidation
 DEFINE_JUMP(LJMP, 0x6FD5F2, 0x6FD5FC)
 DEFINE_JUMP(LJMP, 0x6FD600, 0x6FD606)
+
+DEFINE_HOOK(0x0707ED0, TechnoClass_GetGuardRange_FixForIFV, 0x6)
+{
+	enum { SkipGameCode = 0x707F08 };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	auto pType = pThis->GetTechnoType();
+
+	if (!pType->HasMultipleTurrets() || pType->IsGattling)
+		return 0;
+
+	R->EAX(pThis->GetWeaponRange(pThis->CurrentWeaponNumber));
+	return SkipGameCode;
+}
