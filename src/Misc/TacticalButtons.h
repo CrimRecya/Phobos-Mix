@@ -34,6 +34,7 @@ public:
 
 	// Button index N/A : Message Lists
 	bool OnMessages { false };
+	bool NewMsgList { false };
 
 	// Button index N/A : Show Current Info
 

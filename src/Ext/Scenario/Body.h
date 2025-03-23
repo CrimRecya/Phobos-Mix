@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ScenarioClass.h>
+#include <MessageListClass.h>
 
 #include <Helpers/Macro.h>
 #include <Utilities/Container.h>
@@ -49,6 +50,8 @@ public:
 		std::vector<TechnoExt::ExtData*> BaseNormalTechnos;
 		std::vector<TechnoExt::ExtData*> OwnedUniqueTechnos;
 
+		MessageListClass NewMessageList;
+
 		ExtData(ScenarioClass* OwnerObject) : Extension<ScenarioClass>(OwnerObject)
 			, ShowBriefing { false }
 			, BriefingTheme { -1 }
@@ -66,6 +69,7 @@ public:
 			, BaseNormalCells {}
 			, BaseNormalTechnos {}
 			, OwnedUniqueTechnos {}
+			, NewMessageList {}
 		{ }
 
 		void SetVariableToByID(bool bIsGlobal, int nIndex, char bState);
@@ -116,5 +120,4 @@ public:
 	{
 		Global()->InvalidatePointer(ptr, removed);
 	}
-
 };

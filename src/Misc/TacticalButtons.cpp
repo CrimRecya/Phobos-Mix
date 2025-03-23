@@ -22,22 +22,7 @@ TacticalButtonsClass TacticalButtonsClass::Instance;
 int TacticalButtonsClass::CheckMouseOverButtons(const Point2D* pMousePosition)
 {
 	if (Phobos::Config::MessageDisplayInCenter)
-	{
-		if (this->MouseIsOverMessageLists(pMousePosition))
-		{
-			if (!Make_Global<int>(0xABCD40)) // Frame index in this second
-			{
-				for (auto pText = MessageListClass::Instance.MessageList; pText; pText = static_cast<TextLabelClass*>(pText->GetNext()))
-					pText->UserData1 = reinterpret_cast<void*>(reinterpret_cast<int>(pText->UserData1) + 60);
-			}
-
-			this->OnMessages = true;
-		}
-		else
-		{
-			this->OnMessages = false;
-		}
-	}
+		this->OnMessages = this->MouseIsOverMessageLists(pMousePosition);
 
 	// TODO New buttons
 
@@ -102,7 +87,7 @@ void TacticalButtonsClass::PressDesignatedButton(int triggerIndex)
 
 bool TacticalButtonsClass::MouseIsOverMessageLists(const Point2D* pMousePosition)
 {
-	const auto pMessages = &MessageListClass::Instance;
+	const auto pMessages = &ScenarioExt::Global()->NewMessageList;
 
 	if (TextLabelClass* pText = pMessages->MessageList)
 	{
@@ -889,8 +874,81 @@ DEFINE_HOOK(0x6D4941, TacticalClass_Render_DrawButtonCameo, 0x6)
 */
 DEFINE_HOOK(0x4F4583, GScreenClass_DrawCurrentSelectInfo, 0x6)
 {
+	TacticalButtonsClass::Instance.NewMsgList = true;
+	ScenarioExt::Global()->NewMessageList.Draw();
+	TacticalButtonsClass::Instance.NewMsgList = false;
+
 	TacticalButtonsClass::Instance.CurrentSelectInfoDraw();
+
 	return 0;
+}
+
+#pragma endregion
+
+#pragma region MessageList
+
+DEFINE_HOOK(0x55DDA0, MainLoop_FrameStep_NewMessageListManage, 0x5)
+{
+	if (!TacticalButtonsClass::Instance.OnMessages)
+		ScenarioExt::Global()->NewMessageList.Manage();
+
+	return 0;
+}
+
+DEFINE_HOOK(0x5D3BA0, MessageListClass_AddMessage_InCenter, 0x6)
+{
+	if (Phobos::Config::MessageDisplayInCenter && *R->ESP<int*>() == 0x6DE127) // TActionClass::Execute
+		R->ECX(&ScenarioExt::Global()->NewMessageList);
+
+	return 0;
+}
+
+DEFINE_HOOK(0x4A8B9B, DisplayClass_Set_View_Dimensions, 0x6)
+{
+	if (Phobos::Config::MessageDisplayInCenter)
+	{
+		const auto& rect = DSurface::ViewBounds;
+		const auto sideWidth = rect.Width / 6;
+		const auto width = rect.Width - (sideWidth << 1);
+		const auto pList = &ScenarioExt::Global()->NewMessageList;
+		pList->Init((rect.X + sideWidth), (rect.Height - rect.Height / 8 - 120), 6, 98, 18, -1, -1, 0, 20, 98, width);
+		pList->SetWidth(width);
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x684A9A, UnknownClass_sub_684620_InitMessageList, 0x6)
+{
+	if (Phobos::Config::MessageDisplayInCenter)
+	{
+		const auto& rect = DSurface::ViewBounds;
+		const auto sideWidth = rect.Width / 6;
+		const auto width = rect.Width - (sideWidth << 1);
+		const auto pList = &ScenarioExt::Global()->NewMessageList;
+		pList->Init((rect.X + sideWidth), (rect.Height - rect.Height / 8 - 120), 6, 98, 18, -1, -1, 0, 20, 98, width);
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x623A9F, DSurface_sub_623880_DrawBitFontStrings, 0x5)
+{
+	if (!TacticalButtonsClass::Instance.NewMsgList)
+		return 0;
+
+	enum { SkipGameCode = 0x623AAB };
+
+	GET(RectangleStruct* const, pRect, EAX);
+	GET(DSurface* const, pSurface, ECX);
+	GET(const int, height, EBP);
+
+	pRect->Height = height;
+	auto black = ColorStruct { 0, 0, 0 };
+	auto trans = (TacticalButtonsClass::Instance.OnMessages || ScenarioClass::Instance->UserInputLocked) ? 80 : 40;
+	pSurface->FillRectTrans(pRect, &black, trans);
+
+	return SkipGameCode;
 }
 
 #pragma endregion
