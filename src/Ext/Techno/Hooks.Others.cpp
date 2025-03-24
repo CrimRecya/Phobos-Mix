@@ -2035,9 +2035,9 @@ DEFINE_HOOK(0x6F9222, TechnoClass_SelectAutoTarget_HealingTargetAir, 0x6)
 }
 
 // Skip the hardcode of healing weapon auto target range.
-DEFINE_JUMP(LJMP, 0x6F9024, 0x6F9042);
+// DEFINE_JUMP(LJMP, 0x6F9024, 0x6F9042); // No, have troubles
 
-DEFINE_HOOK(0x0707ED0, TechnoClass_GetGuardRange_FixForIFV, 0x6)
+DEFINE_HOOK(0x707ED0, TechnoClass_GetGuardRange_FixForIFV, 0x6)
 {
 	enum { SkipGameCode = 0x707F08 };
 
@@ -2050,6 +2050,17 @@ DEFINE_HOOK(0x0707ED0, TechnoClass_GetGuardRange_FixForIFV, 0x6)
 
 	R->EAX(pThis->GetWeaponRange(pThis->CurrentWeaponNumber));
 	return SkipGameCode;
+}
+
+#pragma endregion
+
+#pragma region SharedControl
+
+DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
+{
+	GET(HouseClass*, pThis, ECX);
+	R->EAX(RulesExt::Global()->AllyShareControl ? pThis->IsAlliedWith(HouseClass::CurrentPlayer) : pThis == HouseClass::CurrentPlayer);
+	return 0x50B723;
 }
 
 #pragma endregion

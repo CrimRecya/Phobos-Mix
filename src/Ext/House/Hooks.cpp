@@ -510,32 +510,16 @@ DEFINE_HOOK(0x4FD8F7, HouseClass_UpdateAI_OnLastLegs, 0x10)
 	{
 		auto const pExt = HouseExt::ExtMap.Find(pThis);
 
-		if (pRules->AIFireSaleDelay <= 0 || !pExt ||
-			pExt->AIFireSaleDelayTimer.Completed())
-		{
+		if (pRules->AIFireSaleDelay <= 0 || pExt->AIFireSaleDelayTimer.Completed())
 			pThis->Fire_Sale();
-		}
 		else if (!pExt->AIFireSaleDelayTimer.HasStarted())
-		{
 			pExt->AIFireSaleDelayTimer.Start(pRules->AIFireSaleDelay);
-		}
 	}
 
 	if (pRules->AIAllToHunt)
-	{
 		pThis->All_To_Hunt();
-	}
 
 	return ret;
-}
-
-DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
-{
-	GET(HouseClass*, pThis, ECX);
-	R->EAX(RulesExt::Global()->AllyShareControl ?
-		pThis->IsAlliedWith(HouseClass::CurrentPlayer) :
-		pThis == HouseClass::CurrentPlayer);
-	return 0x50B723;
 }
 
 namespace SpyEffectRadarJamContext
