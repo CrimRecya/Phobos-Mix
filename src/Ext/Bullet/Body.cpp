@@ -265,7 +265,7 @@ inline void BulletExt::SimulatedFiringElectricBolt(BulletClass* pBullet)
 	if (!pWeapon->IsElectricBolt)
 		return;
 
-	auto const pEBolt = GameCreate<EBolt>();
+	const auto pEBolt = GameCreate<EBolt>();
 	pEBolt->AlternateColor = pWeapon->IsAlternateColor;
 	//TODO Weapon's Bolt.Color1, Bolt.Color2, Bolt.Color3(Ares)
 	WeaponTypeExt::BoltWeaponMap[pEBolt] = WeaponTypeExt::ExtMap.Find(pWeapon);
