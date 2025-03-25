@@ -169,11 +169,11 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 	std::vector<CellClass*> optionalCells;
 	optionalCells.reserve(24);
 
-	// Sometimes, FoundationOutside may be wrong (like 2*5 , 4*3 or 4*4)
 //	for (auto pFoundation = pBuildingType->FoundationOutside; *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
-	for (auto pFoundation = pBuildingType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+	// Sometimes, FoundationOutside may be wrong (like 2*5 , 4*3 or 4*4)
+	for (const auto& pCheckedCell : checkedCells)
 	{
-		auto searchCell = (topLeftCell + *pFoundation) - CellStruct { 1, 1 };
+		auto searchCell = pCheckedCell->MapCoords - CellStruct { 1, 1 };
 
 		for (int i = 0; i < 4; ++i)
 		{
@@ -183,6 +183,7 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 				{
 					if (std::find(checkedCells.begin(), checkedCells.end(), pSearchCell) == checkedCells.end()
 						&& std::find(optionalCells.begin(), optionalCells.end(), pSearchCell) == optionalCells.end()
+						&& !(pSearchCell->OccupationFlags & 0x80)
 						&& pSearchCell->IsClearToMove(SpeedType::Amphibious, true, true, -1, MovementZone::Amphibious, -1, false))
 					{
 						optionalCells.push_back(pSearchCell);
@@ -403,6 +404,7 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 						{
 							if (std::find(checkedCells.begin(), checkedCells.end(), pSearchCell) == checkedCells.end()
 								&& std::find(optionalCells.begin(), optionalCells.end(), pSearchCell) == optionalCells.end()
+								&& !(pSearchCell->OccupationFlags & 0x80)
 								&& pSearchCell->IsClearToMove(SpeedType::Amphibious, true, true, -1, MovementZone::Amphibious, -1, false))
 							{
 								optionalCells.push_back(pSearchCell);
