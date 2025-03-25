@@ -363,6 +363,15 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->InvisoLatencyFix.Read(exINI, GameStrings::General, "InvisoLatencyFix");
 
+	this->UnifiedRadarColor.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor");
+	this->UnifiedRadarColor_Self.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Self");
+	this->UnifiedRadarColor_Ally.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Ally");
+	this->UnifiedRadarColor_Enemy.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Enemy");
+	this->UnifiedRadarColor_Neutral.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Neutral");
+	this->UnifiedRadarColor_Land.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Land");
+	this->UnifiedRadarColor_Water.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Water");
+	this->UnifiedRadarColor_Cliff.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Cliff");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -681,6 +690,14 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->UpdateInLimbo_NormalPassenger)
 		.Process(this->UpdateInLimbo_LimboLaunch)
 		.Process(this->InvisoLatencyFix)
+		.Process(this->UnifiedRadarColor)
+		.Process(this->UnifiedRadarColor_Self)
+		.Process(this->UnifiedRadarColor_Ally)
+		.Process(this->UnifiedRadarColor_Enemy)
+		.Process(this->UnifiedRadarColor_Neutral)
+		.Process(this->UnifiedRadarColor_Land)
+		.Process(this->UnifiedRadarColor_Water)
+		.Process(this->UnifiedRadarColor_Cliff)
 		;
 }
 
