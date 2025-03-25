@@ -321,6 +321,15 @@ public:
 
 		Valueable<bool> InvisoLatencyFix;
 
+		Valueable<bool> UnifiedRadarColor;
+		Valueable<ColorStruct> UnifiedRadarColor_Self;
+		Valueable<ColorStruct> UnifiedRadarColor_Ally;
+		Valueable<ColorStruct> UnifiedRadarColor_Enemy;
+		Valueable<ColorStruct> UnifiedRadarColor_Neutral;
+		Valueable<ColorStruct> UnifiedRadarColor_Land;
+		Valueable<ColorStruct> UnifiedRadarColor_Water;
+		Valueable<ColorStruct> UnifiedRadarColor_Cliff;
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, InfantryGainSelfHealCap {}
@@ -581,6 +590,14 @@ public:
 			, UpdateInLimbo_NormalPassenger { false }
 			, UpdateInLimbo_LimboLaunch { false }
 			, InvisoLatencyFix { false }
+			, UnifiedRadarColor { false }
+			, UnifiedRadarColor_Self { ColorStruct(0,255,0) }
+			, UnifiedRadarColor_Ally { ColorStruct(255,255,0) }
+			, UnifiedRadarColor_Enemy { ColorStruct(255,0,0) }
+			, UnifiedRadarColor_Neutral { ColorStruct(255,255,255) }
+			, UnifiedRadarColor_Land { ColorStruct(255,127,0) }
+			, UnifiedRadarColor_Water { ColorStruct(95,127,207) }
+			, UnifiedRadarColor_Cliff { ColorStruct(63,63,63) }
 		{ }
 
 		virtual ~ExtData() = default;

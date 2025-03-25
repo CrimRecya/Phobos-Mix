@@ -1874,6 +1874,69 @@ DEFINE_HOOK(0x655DDD, RadarClass_ProcessPoint_RadarInvisible, 0x6)
 	return isInShrouded && !pTechnoOwner->IsControlledByCurrentPlayer() ? Invisible : GoOtherChecks;
 }
 
+DEFINE_HOOK(0x655F80, RadarClass_ProcessPoint_UnifiedRadarColor, 0x6)
+{
+	enum { SkipGameCode = 0x655FEB };
+
+	GET_STACK(HouseClass*, pOwner, STACK_OFFSET(0x40, 0x4));
+
+	auto pRulesExt = RulesExt::Global();
+
+	if (!pRulesExt->UnifiedRadarColor)
+		return 0;
+
+	int colorCode = 0;
+
+	if (pOwner->Type->MultiplayPassive)
+	{
+		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Neutral);
+	}
+	else if (pOwner->IsControlledByCurrentPlayer())
+	{
+		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Self);
+	}
+	else if (HouseClass::CurrentPlayer->IsAlliedWith(pOwner))
+	{
+		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Ally);
+	}
+	else
+	{
+		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Enemy);
+	}
+
+	R->EBX(colorCode);
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x47C329, CellClass_GetRadarColor_UnifiedRadarColor, 0x7)
+{
+	REF_STACK(ColorStruct, rgb1, STACK_OFFSET(0x14, -0x8));
+	REF_STACK(ColorStruct, rgb2, STACK_OFFSET(0x14, -0xC));
+	GET(CellClass*, pThis, ESI);
+
+	auto pRulesExt = RulesExt::Global();
+
+	if (!pRulesExt->UnifiedRadarColor)
+		return 0;
+
+	if (pThis->Tile_Is_Cliff())
+	{
+		rgb1 = pRulesExt->UnifiedRadarColor_Cliff;
+	}
+	else if (pThis->Tile_Is_Water())
+	{
+		rgb1 = pRulesExt->UnifiedRadarColor_Water;
+	}
+	else
+	{
+		rgb1 = pRulesExt->UnifiedRadarColor_Land;
+	}
+
+	rgb2 = rgb1;
+
+	return 0;
+}
+
 #pragma endregion
 
 #pragma region VisualCharacter
