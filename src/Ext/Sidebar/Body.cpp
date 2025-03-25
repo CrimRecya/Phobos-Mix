@@ -51,16 +51,16 @@ bool __stdcall SidebarExt::AresTabCameo_RemoveCameo(BuildType* pItem)
 		// It is not necessary to remove buildings on the mouse in all cases here
 		const auto pBldType = static_cast<BuildingTypeClass*>(pTechnoType);
 		buildCat = pBldType->BuildCat;
-		auto& display = DisplayClass::Instance;
-		const auto pCurType = abstract_cast<BuildingTypeClass*>(display.CurrentBuildingType);
+		const auto pDisplay = &DisplayClass::Instance;
+		const auto pCurType = abstract_cast<BuildingTypeClass*>(pDisplay->CurrentBuildingType);
 
 		if (!RulesExt::Global()->ExtendedBuildingPlacing || !pCurType
 			|| BuildingTypeExt::IsSameBuildingType(pBldType, pCurType))
 		{
-			display.SetActiveFoundation(nullptr);
-			display.CurrentBuilding = nullptr;
-			display.CurrentBuildingType = nullptr;
-			display.CurrentBuildingOwnerArrayIndex = -1;
+			pDisplay->SetActiveFoundation(nullptr);
+			pDisplay->CurrentBuilding = nullptr;
+			pDisplay->CurrentBuildingType = nullptr;
+			pDisplay->CurrentBuildingOwnerArrayIndex = -1;
 		}
 	}
 
