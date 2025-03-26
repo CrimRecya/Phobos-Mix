@@ -736,8 +736,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->SelectedInfo_Button.Read(exINI, pSection, "SelectedInfo.Button");
 	this->UIDescription_HoveredInfo.Read(exINI, pSection, "UIDescription.HoveredInfo");
 
-	this->FakeOf.Read(exINI, pSection, "FakeOf");
-
 	this->RateDown_Delay.Read(exINI, pSection, "RateDown.Delay");
 	this->RateDown_Reset.Read(exINI, pSection, "RateDown.Reset");
 	this->RateDown_Cover_Value.Read(exINI, pSection, "RateDown.Cover.Value");
@@ -880,6 +878,10 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->NoAmmoWeapon.Read(exINI, pSection, "NoAmmoWeapon");
 	this->NoAmmoAmount.Read(exINI, pSection, "NoAmmoAmount");
 
+	// Ares 2.0
+	this->Passengers_BySize.Read(exINI, pSection, "Passengers.BySize");
+	this->FakeOf.Read(exINI, pSection, "FakeOf");
+
 	// Ares 3.0
 	this->KeepAlive.Read(exINI, pSection, "KeepAlive");
 
@@ -914,10 +916,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	// Art tags
 	INI_EX exArtINI(CCINIClass::INI_Art);
 	auto pArtSection = pThis->ImageFile;
-
-	this->CameoPCX.Read(&CCINIClass::INI_Art, pArtSection, "CameoPCX");
-	this->GreyCameoPCX.Read(&CCINIClass::INI_Art, pArtSection, "GreyCameoPCX");
-	this->CameoPal.LoadFromINI(&CCINIClass::INI_Art, pArtSection, "CameoPalette");
 
 	this->TurretOffset.Read(exArtINI, pArtSection, "TurretOffset");
 	this->TurretShadow.Read(exArtINI, pArtSection, "TurretShadow");
@@ -1051,6 +1049,14 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	if (GeneralUtils::IsValidString(pThis->PaletteFile) && !pThis->Palette)
 		Debug::Log("[Developer warning] [%s] has Palette=%s set but no palette file was loaded (missing file or wrong filename). Missing palettes cause issues with lighting recalculations.\n", pArtSection, pThis->PaletteFile);
+
+	this->GreyCameoPCX.Read(&CCINIClass::INI_Art, pArtSection, "GreyCameoPCX");
+
+	// Ares 0.1
+	this->CameoPal.LoadFromINI(&CCINIClass::INI_Art, pArtSection, "CameoPalette");
+
+	// Ares 0.2
+	this->CameoPCX.Read(&CCINIClass::INI_Art, pArtSection, "CameoPCX");
 }
 
 template <typename T>
@@ -1331,6 +1337,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->NoQueueUpToEnter)
 		.Process(this->NoQueueUpToUnload)
+		.Process(this->Passengers_BySize)
 
 		.Process(this->CanManualReload)
 		.Process(this->CanManualReload_ResetROF)

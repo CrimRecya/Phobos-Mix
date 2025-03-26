@@ -297,6 +297,7 @@ public:
 
 		Nullable<bool> NoQueueUpToEnter;
 		Nullable<bool> NoQueueUpToUnload;
+		Valueable<bool> Passengers_BySize;
 
 		Valueable<bool> CanManualReload;
 		Valueable<bool> CanManualReload_ResetROF;
@@ -719,6 +720,7 @@ public:
 
 			, NoQueueUpToEnter {}
 			, NoQueueUpToUnload {}
+			, Passengers_BySize { true }
 
 			, CanManualReload { false }
 			, CanManualReload_ResetROF { true }
