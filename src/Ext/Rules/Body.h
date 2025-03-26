@@ -198,10 +198,10 @@ public:
 		Valueable<bool> BuildingTypeSelectable;
 
 		bool UnifiedTechnoColor;
-		short UnifiedTechnoColor_SelfColorIdx;
-		short UnifiedTechnoColor_AllyColorIdx;
-		short UnifiedTechnoColor_EnemyColorIdx;
-		short UnifiedTechnoColor_NeutralColorIdx;
+		int UnifiedTechnoColor_SelfColorIdx;
+		int UnifiedTechnoColor_AllyColorIdx;
+		int UnifiedTechnoColor_EnemyColorIdx;
+		int UnifiedTechnoColor_NeutralColorIdx;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }

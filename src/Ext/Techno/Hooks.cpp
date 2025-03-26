@@ -718,7 +718,7 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 
 #pragma endregion
 
-DEFINE_HOOK(0x705D8A, TechnoClass_GetRemapColour_UnifiedColor, 0x6)
+DEFINE_HOOK(0x705D88, TechnoClass_GetRemapColour_UnifiedColor, 0x8)
 {
 	enum { ret = 0x705DF1 };
 
