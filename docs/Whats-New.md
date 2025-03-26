@@ -343,7 +343,7 @@ New:
 - Technos can maintain a suitable distance after firing (by CrimRecya)
 - Projectile subject to ground check before firing (by CrimRecya)
 - Delay automatic attack on the controlled unit (by CrimRecya)
-- Laser, electric bolt and rad beam scatter (by CrimRecya)
+- `BombParachute` deglobalization (by TaranDahl)
 
 - New trajectory system (by CrimRecya)
 - New Missile trajectory (by CrimRecya)

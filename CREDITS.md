@@ -465,6 +465,7 @@ This page lists all the individual contributions to the project by their author.
   - Play an anim when recycling a spawner
   - Recycle the spawner on other FLH
   - Fixed the bug that spawned can not return to buildings with foundation bigger than 1x1
+  - `BombParachute` deglobalization
   - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller
   - `CellSpread.Cylinder`
   - `AffectsInAir` and `AffectsOnFloor`
