@@ -300,7 +300,7 @@ public:
 
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
-    
+
 		Valueable<double> VehicleDamagedSpeedMultiplier_Yellow;
 		Valueable<double> VehicleDamagedSpeedMultiplier_Red;
 
@@ -330,7 +330,7 @@ public:
 		Valueable<ColorStruct> UnifiedRadarColor_Water;
 		Valueable<ColorStruct> UnifiedRadarColor_Cliff;
 
-		bool UnifiedTechnoColor;
+		Valueable<bool> UnifiedTechnoColor;
 		int UnifiedTechnoColor_SelfColorIdx;
 		int UnifiedTechnoColor_AllyColorIdx;
 		int UnifiedTechnoColor_EnemyColorIdx;

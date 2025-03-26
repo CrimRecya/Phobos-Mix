@@ -2336,6 +2336,52 @@ DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
 
 #pragma endregion
 
+#pragma region UnifiedTechnoColor
+
+DEFINE_HOOK(0x705D88, TechnoClass_GetRemapColour_UnifiedColor, 0x8)
+{
+	enum { SkipGameCode = 0x705DF1 };
+
+	GET(TechnoClass*, pThis, ESI);
+	GET(DynamicVectorClass<ColorScheme*>*, pPalette, EAX);
+
+	const auto pRulesExt = RulesExt::Global();
+
+	if (!pRulesExt->UnifiedTechnoColor)
+		return 0;
+
+	auto getOwner = [pThis]()
+	{
+		if (pThis->IsClearlyVisibleTo(HouseClass::CurrentPlayer))
+			return pThis->Owner;
+
+		if (const auto pDisguiseHouse = pThis->GetDisguiseHouse(true))
+			return pDisguiseHouse;
+
+		return pThis->Owner;
+	};
+	const auto pOwner = getOwner();
+
+	auto getSchemeIdx = [pOwner, pRulesExt]()
+	{
+		if (pOwner->Type->MultiplayPassive)
+			return pRulesExt->UnifiedTechnoColor_NeutralColorIdx;
+		else if (pOwner->IsControlledByCurrentPlayer())
+			return pRulesExt->UnifiedTechnoColor_SelfColorIdx;
+		else if (HouseClass::CurrentPlayer->IsAlliedWith(pOwner))
+			return pRulesExt->UnifiedTechnoColor_AllyColorIdx;
+
+		return pRulesExt->UnifiedTechnoColor_EnemyColorIdx;
+	};
+	const int unifiedColorScheme = getSchemeIdx();
+	const int colorSchemeIdx = unifiedColorScheme != -1 ? unifiedColorScheme : pOwner->ColorSchemeIndex;
+
+	R->ECX(pPalette ? pPalette->Items[colorSchemeIdx] : ColorScheme::Array.Items[colorSchemeIdx]);
+	return SkipGameCode;
+}
+
+#pragma endregion
+
 // TODO Self-made impl
 
 

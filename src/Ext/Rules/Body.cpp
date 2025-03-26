@@ -372,6 +372,17 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->UnifiedRadarColor_Water.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Water");
 	this->UnifiedRadarColor_Cliff.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Cliff");
 
+	// Unified techno color
+	this->UnifiedTechnoColor.Read(exINI, GameStrings::AudioVisual, "UnifiedTechnoColor");
+	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.SelfColor", "Green", Phobos::readBuffer);
+	this->UnifiedTechnoColor_SelfColorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
+	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.AllyColor", "Gold", Phobos::readBuffer);
+	this->UnifiedTechnoColor_AllyColorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
+	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.EnemyColor", "Red", Phobos::readBuffer);
+	this->UnifiedTechnoColor_EnemyColorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
+	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.NeutralColor", "LightGrey", Phobos::readBuffer);
+	this->UnifiedTechnoColor_NeutralColorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -428,46 +439,6 @@ void RulesExt::ExtData::LoadAfterTypeData(RulesClass* pThis, CCINIClass* pINI)
 		return;
 
 	INI_EX exINI(pINI);
-
-	// Unified techno color
-	Valueable<bool> shouldRead;
-	shouldRead.Read(exINI, GameStrings::AudioVisual, "UnifiedTechnoColor");
-	do
-	{
-		if (!shouldRead)
-			break;
-
-		pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.SelfColor", "", Phobos::readBuffer);
-		auto colorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
-		if (colorIdx >= 0)
-			this->UnifiedTechnoColor_SelfColorIdx = colorIdx;
-		else
-			break;
-
-		pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.AllyColor", "", Phobos::readBuffer);
-		colorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
-		if (colorIdx >= 0)
-			this->UnifiedTechnoColor_AllyColorIdx = colorIdx;
-		else
-			break;
-
-		pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.EnemyColor", "", Phobos::readBuffer);
-		colorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
-		if (colorIdx >= 0)
-			this->UnifiedTechnoColor_EnemyColorIdx = colorIdx;
-		else
-			break;
-
-		pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.NeutralColor", "", Phobos::readBuffer);
-		colorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
-		if (colorIdx >= 0)
-			this->UnifiedTechnoColor_NeutralColorIdx = colorIdx;
-		else
-			break;
-
-		this->UnifiedTechnoColor = true;
-	}
-	while (false);
 }
 
 // =============================
