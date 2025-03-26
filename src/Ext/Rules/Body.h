@@ -300,7 +300,7 @@ public:
 
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
-
+    
 		Valueable<double> VehicleDamagedSpeedMultiplier_Yellow;
 		Valueable<double> VehicleDamagedSpeedMultiplier_Red;
 
@@ -329,6 +329,12 @@ public:
 		Valueable<ColorStruct> UnifiedRadarColor_Land;
 		Valueable<ColorStruct> UnifiedRadarColor_Water;
 		Valueable<ColorStruct> UnifiedRadarColor_Cliff;
+
+		bool UnifiedTechnoColor;
+		int UnifiedTechnoColor_SelfColorIdx;
+		int UnifiedTechnoColor_AllyColorIdx;
+		int UnifiedTechnoColor_EnemyColorIdx;
+		int UnifiedTechnoColor_NeutralColorIdx;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -577,6 +583,7 @@ public:
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
+
 			, VehicleDamagedSpeedMultiplier_Yellow { 0.75 }
 			, VehicleDamagedSpeedMultiplier_Red { 0.75 }
 			, ProneSpeed { }
@@ -598,6 +605,11 @@ public:
 			, UnifiedRadarColor_Land { ColorStruct(255,127,0) }
 			, UnifiedRadarColor_Water { ColorStruct(95,127,207) }
 			, UnifiedRadarColor_Cliff { ColorStruct(63,63,63) }
+			, UnifiedTechnoColor { false }
+			, UnifiedTechnoColor_SelfColorIdx { -1 }
+			, UnifiedTechnoColor_AllyColorIdx { -1 }
+			, UnifiedTechnoColor_EnemyColorIdx { -1 }
+			, UnifiedTechnoColor_NeutralColorIdx { -1 }
 		{ }
 
 		virtual ~ExtData() = default;

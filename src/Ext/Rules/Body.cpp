@@ -428,6 +428,46 @@ void RulesExt::ExtData::LoadAfterTypeData(RulesClass* pThis, CCINIClass* pINI)
 		return;
 
 	INI_EX exINI(pINI);
+
+	// Unified techno color
+	Valueable<bool> shouldRead;
+	shouldRead.Read(exINI, GameStrings::AudioVisual, "UnifiedTechnoColor");
+	do
+	{
+		if (!shouldRead)
+			break;
+
+		pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.SelfColor", "", Phobos::readBuffer);
+		auto colorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
+		if (colorIdx >= 0)
+			this->UnifiedTechnoColor_SelfColorIdx = colorIdx;
+		else
+			break;
+
+		pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.AllyColor", "", Phobos::readBuffer);
+		colorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
+		if (colorIdx >= 0)
+			this->UnifiedTechnoColor_AllyColorIdx = colorIdx;
+		else
+			break;
+
+		pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.EnemyColor", "", Phobos::readBuffer);
+		colorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
+		if (colorIdx >= 0)
+			this->UnifiedTechnoColor_EnemyColorIdx = colorIdx;
+		else
+			break;
+
+		pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.NeutralColor", "", Phobos::readBuffer);
+		colorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
+		if (colorIdx >= 0)
+			this->UnifiedTechnoColor_NeutralColorIdx = colorIdx;
+		else
+			break;
+
+		this->UnifiedTechnoColor = true;
+	}
+	while (false);
 }
 
 // =============================
@@ -698,6 +738,11 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->UnifiedRadarColor_Land)
 		.Process(this->UnifiedRadarColor_Water)
 		.Process(this->UnifiedRadarColor_Cliff)
+		.Process(this->UnifiedTechnoColor)
+		.Process(this->UnifiedTechnoColor_SelfColorIdx)
+		.Process(this->UnifiedTechnoColor_AllyColorIdx)
+		.Process(this->UnifiedTechnoColor_EnemyColorIdx)
+		.Process(this->UnifiedTechnoColor_NeutralColorIdx)
 		;
 }
 

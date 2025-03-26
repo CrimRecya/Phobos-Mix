@@ -836,3 +836,49 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x705D88, TechnoClass_GetRemapColour_UnifiedColor, 0x8)
+{
+	enum { ret = 0x705DF1 };
+
+	GET(TechnoClass*, pThis, ESI);
+	GET(DynamicVectorClass<ColorScheme*>*, pPalette, EAX);
+
+	auto pRulesExt = RulesExt::Global();
+
+	if (!pRulesExt->UnifiedTechnoColor)
+		return 0;
+
+	int colorSchemeIdx;
+	ColorScheme* pColor;
+	auto pOwner = pThis->IsClearlyVisibleTo(HouseClass::CurrentPlayer) || !pThis->GetDisguiseHouse(true) ? pThis->Owner : pThis->GetDisguiseHouse(true);
+
+	if (pOwner->Type->MultiplayPassive)
+	{
+		colorSchemeIdx = pRulesExt->UnifiedTechnoColor_NeutralColorIdx;
+	}
+	else if (pOwner->IsControlledByCurrentPlayer())
+	{
+		colorSchemeIdx = pRulesExt->UnifiedTechnoColor_SelfColorIdx;
+	}
+	else if (HouseClass::CurrentPlayer->IsAlliedWith(pOwner))
+	{
+		colorSchemeIdx = pRulesExt->UnifiedTechnoColor_AllyColorIdx;
+	}
+	else
+	{
+		colorSchemeIdx = pRulesExt->UnifiedTechnoColor_EnemyColorIdx;
+	}
+
+	if (pPalette)
+	{
+		pColor = pPalette->Items[colorSchemeIdx];
+	}
+	else
+	{
+		pColor = ColorScheme::Array.Items[colorSchemeIdx];
+	}
+	
+	R->ECX(pColor);
+	return ret;
+}
