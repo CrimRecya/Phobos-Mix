@@ -2338,20 +2338,6 @@ DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
 
 #pragma endregion
 
-#pragma region BombParachute
-
-DEFINE_HOOK(0x5F5A8C, ObjectClass_SpawnParachuted_BombParachute, 0x5)
-{
-	GET(BulletClass*, pThis, ESI);
-
-	if (const auto pAnimType = BulletTypeExt::ExtMap.Find(pThis->Type)->BombParachute.Get())
-		R->EDX(pAnimType);
-
-	return 0;
-}
-
-#pragma endregion
-
 // TODO Self-made impl
 
 
