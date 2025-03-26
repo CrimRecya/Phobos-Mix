@@ -1,6 +1,7 @@
 #include "UnifiedTechnoColor.h"
 
 #include <TacticalClass.h>
+#include <VocClass.h>
 
 #include <Utilities/GeneralUtils.h>
 
@@ -27,6 +28,7 @@ const wchar_t* UnifiedTechnoColorCommandClass::GetUIDescription() const
 void UnifiedTechnoColorCommandClass::Execute(WWKey eInput) const
 {
 	Phobos::Config::UnifiedTechnoColor = !Phobos::Config::UnifiedTechnoColor;
+	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
 
 	// Redraw tactical
 	TacticalClass::Instance->RegisterDirtyArea(DSurface::ViewBounds, false);
