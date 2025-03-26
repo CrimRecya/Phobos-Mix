@@ -1872,32 +1872,6 @@ DEFINE_HOOK(0x655DDD, RadarClass_ProcessPoint_RadarInvisible, 0x6)
 	return isInShrouded && !pTechnoOwner->IsControlledByCurrentPlayer() ? Invisible : GoOtherChecks;
 }
 
-DEFINE_HOOK(0x655F80, RadarClass_ProcessPoint_UnifiedRadarColor, 0x6)
-{
-	enum { SkipGameCode = 0x655FEB };
-
-	GET_STACK(HouseClass*, pOwner, STACK_OFFSET(0x40, 0x4));
-
-	const auto pRulesExt = RulesExt::Global();
-
-	if (!pRulesExt->UnifiedRadarColor)
-		return 0;
-
-	int colorCode = 0;
-
-	if (pOwner->Type->MultiplayPassive)
-		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Neutral);
-	else if (pOwner->IsControlledByCurrentPlayer())
-		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Self);
-	else if (HouseClass::CurrentPlayer->IsAlliedWith(pOwner))
-		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Ally);
-	else
-		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Enemy);
-
-	R->EBX(colorCode);
-	return SkipGameCode;
-}
-
 DEFINE_HOOK(0x47C329, CellClass_GetRadarColor_UnifiedRadarColor, 0x7)
 {
 	REF_STACK(ColorStruct, rgb1, STACK_OFFSET(0x14, -0x8));
@@ -1919,6 +1893,77 @@ DEFINE_HOOK(0x47C329, CellClass_GetRadarColor_UnifiedRadarColor, 0x7)
 	rgb2 = rgb1;
 
 	return 0;
+}
+
+#pragma endregion
+
+#pragma region UnifiedTechnoColor
+
+DEFINE_HOOK(0x655F80, RadarClass_ProcessPoint_UnifiedRadarColor, 0x6)
+{
+	enum { SkipGameCode = 0x655FEB };
+
+	GET_STACK(HouseClass*, pOwner, STACK_OFFSET(0x40, 0x4));
+
+	if (!Phobos::Config::UnifiedTechnoColor)
+		return 0;
+
+	const auto pRulesExt = RulesExt::Global();
+	int colorCode = 0;
+
+	if (pOwner->Type->MultiplayPassive)
+		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Neutral);
+	else if (pOwner->IsControlledByCurrentPlayer())
+		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Self);
+	else if (HouseClass::CurrentPlayer->IsAlliedWith(pOwner))
+		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Ally);
+	else
+		colorCode = Drawing::RGB_To_Int(pRulesExt->UnifiedRadarColor_Enemy);
+
+	R->EBX(colorCode);
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x705D88, TechnoClass_GetRemapColour_UnifiedColor, 0x8)
+{
+	enum { SkipGameCode = 0x705DF1 };
+
+	GET(TechnoClass*, pThis, ESI);
+	GET(DynamicVectorClass<ColorScheme*>*, pPalette, EAX);
+
+	if (!Phobos::Config::UnifiedTechnoColor)
+		return 0;
+
+	auto getOwner = [pThis]()
+	{
+		if (pThis->IsClearlyVisibleTo(HouseClass::CurrentPlayer))
+			return pThis->Owner;
+
+		if (const auto pDisguiseHouse = pThis->GetDisguiseHouse(true))
+			return pDisguiseHouse;
+
+		return pThis->Owner;
+	};
+	const auto pOwner = getOwner();
+
+	auto getSchemeIdx = [pOwner]()
+	{
+		const auto pRulesExt = RulesExt::Global();
+
+		if (pOwner->Type->MultiplayPassive)
+			return pRulesExt->UnifiedTechnoColor_NeutralColorIdx;
+		else if (pOwner->IsControlledByCurrentPlayer())
+			return pRulesExt->UnifiedTechnoColor_SelfColorIdx;
+		else if (HouseClass::CurrentPlayer->IsAlliedWith(pOwner))
+			return pRulesExt->UnifiedTechnoColor_AllyColorIdx;
+
+		return pRulesExt->UnifiedTechnoColor_EnemyColorIdx;
+	};
+	const int unifiedColorScheme = getSchemeIdx();
+	const int colorSchemeIdx = unifiedColorScheme != -1 ? unifiedColorScheme : pOwner->ColorSchemeIndex;
+
+	R->ECX(pPalette ? pPalette->Items[colorSchemeIdx] : ColorScheme::Array.Items[colorSchemeIdx]);
+	return SkipGameCode;
 }
 
 #pragma endregion
@@ -2332,52 +2377,6 @@ DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
 	enum { CanTargeting = 0x709926 };
 	GET(TechnoClass* const, pThis, ESI);
 	return RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
-}
-
-#pragma endregion
-
-#pragma region UnifiedTechnoColor
-
-DEFINE_HOOK(0x705D88, TechnoClass_GetRemapColour_UnifiedColor, 0x8)
-{
-	enum { SkipGameCode = 0x705DF1 };
-
-	GET(TechnoClass*, pThis, ESI);
-	GET(DynamicVectorClass<ColorScheme*>*, pPalette, EAX);
-
-	if (!Phobos::Config::UnifiedTechnoColor)
-		return 0;
-
-	auto getOwner = [pThis]()
-	{
-		if (pThis->IsClearlyVisibleTo(HouseClass::CurrentPlayer))
-			return pThis->Owner;
-
-		if (const auto pDisguiseHouse = pThis->GetDisguiseHouse(true))
-			return pDisguiseHouse;
-
-		return pThis->Owner;
-	};
-	const auto pOwner = getOwner();
-
-	auto getSchemeIdx = [pOwner]()
-	{
-		const auto pRulesExt = RulesExt::Global();
-
-		if (pOwner->Type->MultiplayPassive)
-			return pRulesExt->UnifiedTechnoColor_NeutralColorIdx;
-		else if (pOwner->IsControlledByCurrentPlayer())
-			return pRulesExt->UnifiedTechnoColor_SelfColorIdx;
-		else if (HouseClass::CurrentPlayer->IsAlliedWith(pOwner))
-			return pRulesExt->UnifiedTechnoColor_AllyColorIdx;
-
-		return pRulesExt->UnifiedTechnoColor_EnemyColorIdx;
-	};
-	const int unifiedColorScheme = getSchemeIdx();
-	const int colorSchemeIdx = unifiedColorScheme != -1 ? unifiedColorScheme : pOwner->ColorSchemeIndex;
-
-	R->ECX(pPalette ? pPalette->Items[colorSchemeIdx] : ColorScheme::Array.Items[colorSchemeIdx]);
-	return SkipGameCode;
 }
 
 #pragma endregion

@@ -1,5 +1,7 @@
 #include "UnifiedTechnoColor.h"
 
+#include <TacticalClass.h>
+
 #include <Utilities/GeneralUtils.h>
 
 const char* UnifiedTechnoColorCommandClass::GetName() const
@@ -25,4 +27,19 @@ const wchar_t* UnifiedTechnoColorCommandClass::GetUIDescription() const
 void UnifiedTechnoColorCommandClass::Execute(WWKey eInput) const
 {
 	Phobos::Config::UnifiedTechnoColor = !Phobos::Config::UnifiedTechnoColor;
+
+	// Redraw tactical
+	TacticalClass::Instance->RegisterDirtyArea(DSurface::ViewBounds, false);
+
+	// Redraw radar
+	const auto pRadar = &RadarClass::Instance;
+	const auto pSurface = reinterpret_cast<DSurface*>(pRadar->unknown_121C);
+	const auto width = pSurface->GetWidth();
+	const auto height = pSurface->GetHeight();
+
+	for (int x = 0; x < width; ++x)
+	{
+		for (int y = 0; y < height; ++y)
+			reinterpret_cast<void(__thiscall*)(RadarClass*, const Point2D&)>(0x6562D0)(pRadar, Point2D{x,y});
+	}
 }

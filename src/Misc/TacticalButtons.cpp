@@ -735,7 +735,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawText("Display: LeftDrag ( %s ) , LeftDown ( %s )", pMouse->DraggingRectangle ? "Yes" : "No", pMouse->unknown_bool_11D0 ? "Yes" : "No");
 		drawText("Display: LeftDownLocation ( %d , %d )", pMouse->unknown_11D4.X, pMouse->unknown_11D4.Y);
 
-		drawText("Radar: RadarScope ( %d , %d , %d , %d )", pMouse->unknown_rect_14DC.X, pMouse->unknown_rect_14DC.Y, pMouse->unknown_rect_14DC.Width, pMouse->unknown_rect_14DC.Height);
+		drawText("Radar: RadarScopeRect ( %d , %d , %d , %d )", pMouse->unknown_rect_14DC.X, pMouse->unknown_rect_14DC.Y, pMouse->unknown_rect_14DC.Width, pMouse->unknown_rect_14DC.Height);
 
 		drawText("Power: Wait ( %d ) , Floating ( %s )", pMouse->unknown_151C, pMouse->unknown_bool_1538 ? "Yes" : "No");
 		drawText("Power: Green ( %d ) , Yellow ( %d ) , Red ( %d )", pMouse->unknown_152C, pMouse->unknown_1530, pMouse->unknown_1534);
