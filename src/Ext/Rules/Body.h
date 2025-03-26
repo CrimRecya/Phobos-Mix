@@ -197,6 +197,12 @@ public:
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
+		bool UnifiedTechnoColor;
+		short UnifiedTechnoColor_SelfColorIdx;
+		short UnifiedTechnoColor_AllyColorIdx;
+		short UnifiedTechnoColor_EnemyColorIdx;
+		short UnifiedTechnoColor_NeutralColorIdx;
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, InfantryGainSelfHealCap {}
@@ -344,6 +350,12 @@ public:
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
+
+			, UnifiedTechnoColor { false }
+			, UnifiedTechnoColor_SelfColorIdx { -1 }
+			, UnifiedTechnoColor_AllyColorIdx { -1 }
+			, UnifiedTechnoColor_EnemyColorIdx { -1 }
+			, UnifiedTechnoColor_NeutralColorIdx { -1 }
 		{ }
 
 		virtual ~ExtData() = default;
