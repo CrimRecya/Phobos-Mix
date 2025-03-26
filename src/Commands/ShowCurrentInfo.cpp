@@ -1,8 +1,5 @@
 #include "ShowCurrentInfo.h"
 
-#include <MessageListClass.h>
-#include <Utilities/GeneralUtils.h>
-
 const char* ShowCurrentInfoCommandClass::GetName() const
 {
 	return "Show Current Object Info";

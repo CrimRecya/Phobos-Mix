@@ -20,6 +20,7 @@
 #include "ToggleSWSidebar.h"
 #include "FireTacticalSW.h"
 #include "AggressiveStance.h"
+#include "UnifiedTechnoColor.h"
 
 #include <CCINIClass.h>
 #include <InputManagerClass.h>
@@ -46,6 +47,7 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<AssignSecondaryRallyPointCommandClass>();
 	MakeCommand<AutoBuildingCommandClass>();
 	MakeCommand<AutoBuildingCombatCommandClass>();
+	MakeCommand<UnifiedTechnoColorCommandClass>();
 
 	if (Phobos::Config::AllowDistributionCommand)
 	{

@@ -330,7 +330,6 @@ public:
 		Valueable<ColorStruct> UnifiedRadarColor_Water;
 		Valueable<ColorStruct> UnifiedRadarColor_Cliff;
 
-		Valueable<bool> UnifiedTechnoColor;
 		int UnifiedTechnoColor_SelfColorIdx;
 		int UnifiedTechnoColor_AllyColorIdx;
 		int UnifiedTechnoColor_EnemyColorIdx;
@@ -605,7 +604,6 @@ public:
 			, UnifiedRadarColor_Land { ColorStruct(255,127,0) }
 			, UnifiedRadarColor_Water { ColorStruct(95,127,207) }
 			, UnifiedRadarColor_Cliff { ColorStruct(63,63,63) }
-			, UnifiedTechnoColor { false }
 			, UnifiedTechnoColor_SelfColorIdx { -1 }
 			, UnifiedTechnoColor_AllyColorIdx { -1 }
 			, UnifiedTechnoColor_EnemyColorIdx { -1 }

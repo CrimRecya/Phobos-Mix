@@ -2345,9 +2345,7 @@ DEFINE_HOOK(0x705D88, TechnoClass_GetRemapColour_UnifiedColor, 0x8)
 	GET(TechnoClass*, pThis, ESI);
 	GET(DynamicVectorClass<ColorScheme*>*, pPalette, EAX);
 
-	const auto pRulesExt = RulesExt::Global();
-
-	if (!pRulesExt->UnifiedTechnoColor)
+	if (!Phobos::Config::UnifiedTechnoColor)
 		return 0;
 
 	auto getOwner = [pThis]()
@@ -2362,8 +2360,10 @@ DEFINE_HOOK(0x705D88, TechnoClass_GetRemapColour_UnifiedColor, 0x8)
 	};
 	const auto pOwner = getOwner();
 
-	auto getSchemeIdx = [pOwner, pRulesExt]()
+	auto getSchemeIdx = [pOwner]()
 	{
+		const auto pRulesExt = RulesExt::Global();
+
 		if (pOwner->Type->MultiplayPassive)
 			return pRulesExt->UnifiedTechnoColor_NeutralColorIdx;
 		else if (pOwner->IsControlledByCurrentPlayer())

@@ -45,6 +45,7 @@
     <ClCompile Include="src\Commands\HerosInfo.cpp" />
     <ClCompile Include="src\Commands\AutoBuilding.cpp" />
     <ClCompile Include="src\Commands\AssignRallyPoint.cpp" />
+    <ClCompile Include="src\Commands\UnifiedTechnoColor.cpp" />
     <ClCompile Include="src\Commands\ToggleSWSidebar.cpp" />
     <ClCompile Include="src\Commands\DistributionMode.cpp" />
     <ClCompile Include="src\Commands\ShowCurrentInfo.cpp" />
@@ -249,6 +250,7 @@
     <ClInclude Include="src\Commands\HerosInfo.h" />
     <ClInclude Include="src\Commands\AutoBuilding.h" />
     <ClInclude Include="src\Commands\AssignRallyPoint.h" />
+    <ClInclude Include="src\Commands\UnifiedTechnoColor.h" />
     <ClInclude Include="src\Commands\FireTacticalSW.h" />
     <ClInclude Include="src\Commands\ToggleSWSidebar.h" />
     <ClInclude Include="src\Commands\DistributionMode.h" />

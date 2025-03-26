@@ -115,6 +115,7 @@ public:
 		static bool ScrollSidebarStripWhenHoldShift;
 		static bool AutomaticPlacingBuilding;
 		static bool AutomaticPlacingCombatBuilding;
+		static bool UnifiedTechnoColor;
 	};
 
 	class Misc

@@ -373,7 +373,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->UnifiedRadarColor_Cliff.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Cliff");
 
 	// Unified techno color
-	this->UnifiedTechnoColor.Read(exINI, GameStrings::AudioVisual, "UnifiedTechnoColor");
 	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.SelfColor", "Green", Phobos::readBuffer);
 	this->UnifiedTechnoColor_SelfColorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
 	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.AllyColor", "Gold", Phobos::readBuffer);
@@ -709,7 +708,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->UnifiedRadarColor_Land)
 		.Process(this->UnifiedRadarColor_Water)
 		.Process(this->UnifiedRadarColor_Cliff)
-		.Process(this->UnifiedTechnoColor)
 		.Process(this->UnifiedTechnoColor_SelfColorIdx)
 		.Process(this->UnifiedTechnoColor_AllyColorIdx)
 		.Process(this->UnifiedTechnoColor_EnemyColorIdx)

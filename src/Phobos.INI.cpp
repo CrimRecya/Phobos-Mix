@@ -79,6 +79,7 @@ bool Phobos::Config::ScrollSidebarStripWhenHoldCtrl = true;
 bool Phobos::Config::ScrollSidebarStripWhenHoldShift = true;
 bool Phobos::Config::AutomaticPlacingBuilding = true;
 bool Phobos::Config::AutomaticPlacingCombatBuilding = true;
+bool Phobos::Config::UnifiedTechnoColor = false;
 
 bool Phobos::Misc::CustomGS = false;
 int Phobos::Misc::CustomGS_ChangeInterval[7] = { -1, -1, -1, -1, -1, -1, -1 };
@@ -114,6 +115,7 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 	Phobos::Config::ScrollSidebarStripWhenHoldShift = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ScrollSidebarStripWhenHoldShift", true);
 	Phobos::Config::AutomaticPlacingBuilding = CCINIClass::INI_RA2MD.ReadBool("Phobos", "AutomaticPlacingBuilding", true);
 	Phobos::Config::AutomaticPlacingCombatBuilding = CCINIClass::INI_RA2MD.ReadBool("Phobos", "AutomaticPlacingCombatBuilding", true);
+	Phobos::Config::UnifiedTechnoColor = CCINIClass::INI_RA2MD.ReadBool("Phobos", "UnifiedTechnoColor", false);
 
 	// Custom game speeds, 6 - i so that GS6 is index 0, just like in the engine
 	Phobos::Config::CampaignDefaultGameSpeed = 6 - CCINIClass::INI_RA2MD.ReadInteger("Phobos", "CampaignDefaultGameSpeed", 4);
