@@ -167,6 +167,8 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Conventional_IgnoreUnits.Read(exINI, pSection, "Conventional.IgnoreUnits");
 	this->RemoveDisguise.Read(exINI, pSection, "RemoveDisguise");
 	this->RemoveMindControl.Read(exINI, pSection, "RemoveMindControl");
+	this->RemoveMindControl_OnVictim.Read(exINI, pSection, "RemoveMindControl.OnVictim");
+	this->RemoveMindControl_OnController.Read(exINI, pSection, "RemoveMindControl.OnController");
 	this->RemoveParasite.Read(exINI, pSection, "RemoveParasite");
 	this->DecloakDamagedTargets.Read(exINI, pSection, "DecloakDamagedTargets");
 	this->ShakeIsLocal.Read(exINI, pSection, "ShakeIsLocal");
@@ -256,12 +258,27 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->DetonateOnAllMapObjects_AffectTypes.Read(exINI, pSection, "DetonateOnAllMapObjects.AffectTypes");
 	this->DetonateOnAllMapObjects_IgnoreTypes.Read(exINI, pSection, "DetonateOnAllMapObjects.IgnoreTypes");
 
+	this->AffectsOnFloor.Read(exINI, pSection, "AffectsOnFloor");
+	this->AffectsInAir.Read(exINI, pSection, "AffectsInAir");
+	this->AffectsUnderground.Read(exINI, pSection, "AffectsUnderground");
+	this->PlayAnimUnderground.Read(exINI, pSection, "PlayAnimUnderground");
+	this->PlayAnimAboveSurface.Read(exINI, pSection, "PlayAnimAboveSurface");
+	this->CellSpread_Cylinder.Read(exINI, pSection, "CellSpread.Cylinder");
+	this->LightChanging.Read(exINI, pSection, "LightChanging");
+	this->SetAmbientLight.Read(exINI, pSection, "SetAmbientLight");
+	this->SetAmbientRed.Read(exINI, pSection, "SetAmbientRed");
+	this->SetAmbientGreen.Read(exINI, pSection, "SetAmbientGreen");
+	this->SetAmbientBlue.Read(exINI, pSection, "SetAmbientBlue");
+	this->ReduceTiberium.Read(exINI, pSection, "ReduceTiberium");
+
 	this->Nonprovocative.Read(exINI, pSection, "Nonprovocative");
 
 	this->CombatLightDetailLevel.Read(exINI, pSection, "CombatLightDetailLevel");
 	this->CombatLightChance.Read(exINI, pSection, "CombatLightChance");
 	this->CLIsBlack.Read(exINI, pSection, "CLIsBlack");
 	this->Particle_AlphaImageIsLightFlash.Read(exINI, pSection, "Particle.AlphaImageIsLightFlash");
+
+	this->MergeBuildingDamage.Read(exINI, pSection, "MergeBuildingDamage");
 
 	this->DamageOwnerMultiplier.Read(exINI, pSection, "DamageOwnerMultiplier");
 	this->DamageAlliesMultiplier.Read(exINI, pSection, "DamageAlliesMultiplier");
@@ -401,6 +418,8 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Conventional_IgnoreUnits)
 		.Process(this->RemoveDisguise)
 		.Process(this->RemoveMindControl)
+		.Process(this->RemoveMindControl_OnVictim)
+		.Process(this->RemoveMindControl_OnController)
 		.Process(this->RemoveParasite)
 		.Process(this->DecloakDamagedTargets)
 		.Process(this->ShakeIsLocal)
@@ -489,7 +508,21 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->DetonateOnAllMapObjects_AffectTypes)
 		.Process(this->DetonateOnAllMapObjects_IgnoreTypes)
 
+		.Process(this->AffectsOnFloor)
+		.Process(this->AffectsInAir)
+		.Process(this->AffectsUnderground)
+		.Process(this->PlayAnimUnderground)
+		.Process(this->PlayAnimAboveSurface)
+		.Process(this->CellSpread_Cylinder)
+		.Process(this->LightChanging)
+		.Process(this->SetAmbientLight)
+		.Process(this->SetAmbientRed)
+		.Process(this->SetAmbientGreen)
+		.Process(this->SetAmbientBlue)
+		.Process(this->ReduceTiberium)
+
 		.Process(this->Convert_Pairs)
+
 		.Process(this->AttachEffects)
 
 		.Process(this->SuppressRevengeWeapons)
@@ -499,6 +532,8 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->InflictLocomotor)
 		.Process(this->RemoveInflictedLocomotor)
+
+		.Process(this->MergeBuildingDamage)
 
 		.Process(this->DamageOwnerMultiplier)
 		.Process(this->DamageAlliesMultiplier)

@@ -47,6 +47,16 @@ public:
 
 		Valueable<bool> SubjectToGround;
 
+		Valueable<bool> AU;
+		Valueable<bool> BallisticScatter_IncreaseByRange;
+		Nullable<Leptons> BallisticScatter_MinRange;
+		Nullable<Leptons> BallisticScatter_MaxRange;
+		Nullable<Leptons> BallisticScatter_Min_InMinRange;
+		Nullable<Leptons> BallisticScatter_Min_InMaxRange;
+		Nullable<Leptons> BallisticScatter_Max_InMinRange;
+		Nullable<Leptons> BallisticScatter_Max_InMaxRange;
+		Valueable<double> BallisticScatter_Chance;
+
 		Valueable<bool> Splits;
 		Valueable<double> AirburstSpread;
 		Valueable<double> RetargetAccuracy;
@@ -59,6 +69,8 @@ public:
 		Valueable<int> Splits_TargetCellRange;
 		Valueable<bool> Splits_UseWeaponTargeting;
 		Valueable<bool> AirburstWeapon_ApplyFirepowerMult;
+
+		Valueable<AnimTypeClass*> BombParachute;
 
 		// Ares 0.7
 		Nullable<Leptons> BallisticScatter_Min;
@@ -87,6 +99,15 @@ public:
 			, Arcing_AllowElevationInaccuracy { true }
 			, ReturnWeapon {}
 			, SubjectToGround { false }
+			, AU { false }
+			, BallisticScatter_IncreaseByRange { false }
+			, BallisticScatter_MinRange {}
+			, BallisticScatter_MaxRange {}
+			, BallisticScatter_Min_InMinRange {}
+			, BallisticScatter_Min_InMaxRange {}
+			, BallisticScatter_Max_InMinRange {}
+			, BallisticScatter_Max_InMaxRange {}
+			, BallisticScatter_Chance { 1.0 }
 			, Splits { false }
 			, AirburstSpread { 1.5 }
 			, RetargetAccuracy { 0.0 }
@@ -99,6 +120,7 @@ public:
 			, Splits_TargetCellRange { 3 }
 			, Splits_UseWeaponTargeting { false }
 			, AirburstWeapon_ApplyFirepowerMult { false }
+			, BombParachute { }
 		{ }
 
 		virtual ~ExtData() = default;

@@ -18,85 +18,83 @@
 
 bool TestLocomotionClass::Is_Moving()
 {
-	return IsMoving;
+	return this->IsMoving;
 }
 
 CoordStruct TestLocomotionClass::Destination()
 {
-	if (IsMoving)
-	{
-		return DestinationCoord;
-	}
+	if (this->IsMoving)
+		return this->DestinationCoord;
 
 	return CoordStruct::Empty;
 }
 
 CoordStruct TestLocomotionClass::Head_To_Coord()
 {
-	if (IsMoving)
-		return HeadToCoord;
+	if (this->IsMoving)
+		return this->HeadToCoord;
 
-	return LinkedTo->GetCenterCoords();
+	return this->LinkedTo->GetCenterCoords();
 }
 
 Move TestLocomotionClass::Can_Enter_Cell(CellStruct cell)
 {
-	return LinkedTo->IsCellOccupied(MapClass::Instance.GetCellAt(cell), FacingType::None, -1, nullptr, false);
+	return this->LinkedTo->IsCellOccupied(MapClass::Instance.GetCellAt(cell), FacingType::None, -1, nullptr, false);
 }
 
 bool TestLocomotionClass::Process()
 {
-	if (IsMoving)
+	if (this->IsMoving)
 	{
-		CoordStruct coord = DestinationCoord;
+		CoordStruct coord = this->DestinationCoord;
 
 		// Rotate the object around the center coord
 		int radius = Unsorted::LeptonsPerCell * 2;
-		coord.X += static_cast<int>(radius * Math::sin(Angle));
-		coord.Y += static_cast<int>(radius * Math::cos(Angle));
+		coord.X += static_cast<int>(radius * Math::sin(this->Angle));
+		coord.Y += static_cast<int>(radius * Math::cos(this->Angle));
 		//coord.Z // No need to adjust the height of the object.
 
 		// Pickup the object the game world before we set the new coord.
-		LinkedTo->Mark(MarkType::Up);
+		this->LinkedTo->Mark(MarkType::Up);
 
-		if (Can_Enter_Cell(CellClass::Coord2Cell(coord)) == Move::OK)
+		if (this->Can_Enter_Cell(CellClass::Coord2Cell(coord)) == Move::OK)
 		{
-			LinkedTo->SetLocation(coord);
+			this->LinkedTo->SetLocation(coord);
 
 			// Increase the angle, wrapping if full circle is complete.
 			double scale = 360.0;
-			Angle += Math::deg2rad(360.0) / scale;
-			if (Angle > 360.0)
-				Angle -= 360.0;
+			this->Angle += Math::deg2rad(360.0) / scale;
+			if (this->Angle > 360.0)
+				this->Angle -= 360.0;
 		}
 
-		LinkedTo->Mark(MarkType::Down);
+		this->LinkedTo->Mark(MarkType::Down);
 	}
 
-	return Is_Moving();
+	return this->Is_Moving();
 }
 
 void TestLocomotionClass::Move_To(CoordStruct to)
 {
-	DestinationCoord = to;
+	this->DestinationCoord = to;
 
-	IsMoving = HeadToCoord != CoordStruct::Empty
-		|| DestinationCoord != CoordStruct::Empty;
+	this->IsMoving = this->HeadToCoord != CoordStruct::Empty
+		|| this->DestinationCoord != CoordStruct::Empty;
 }
 
 void TestLocomotionClass::Stop_Moving()
 {
-	HeadToCoord = CoordStruct::Empty;
-	DestinationCoord = CoordStruct::Empty;
+	this->HeadToCoord = CoordStruct::Empty;
+	this->DestinationCoord = CoordStruct::Empty;
 
-	Angle = 0.0;
+	this->Angle = 0.0;
 
-	IsMoving = false;
+	this->IsMoving = false;
 }
 
 void TestLocomotionClass::Do_Turn(DirStruct coord)
 {
-	LinkedTo->PrimaryFacing.SetCurrent(coord);
+	this->LinkedTo->PrimaryFacing.SetCurrent(coord);
 }
 
 Layer TestLocomotionClass::In_Which_Layer()
@@ -106,39 +104,39 @@ Layer TestLocomotionClass::In_Which_Layer()
 
 void TestLocomotionClass::Force_Immediate_Destination(CoordStruct coord)
 {
-	DestinationCoord = coord;
+	this->DestinationCoord = coord;
 }
 
 bool TestLocomotionClass::Is_Moving_Now()
 {
-	if (LinkedTo->PrimaryFacing.IsRotating())
+	if (this->LinkedTo->PrimaryFacing.IsRotating())
 		return true;
 
-	if (Is_Moving())
-		return HeadToCoord != CoordStruct::Empty && Apparent_Speed() > 0;
+	if (this->Is_Moving())
+		return this->HeadToCoord != CoordStruct::Empty && this->Apparent_Speed() > 0;
 
 	return false;
 }
 
 void TestLocomotionClass::Mark_All_Occupation_Bits(MarkType mark)
 {
-	CoordStruct headTo = Head_To_Coord();
+	CoordStruct headTo = this->Head_To_Coord();
 	if (mark != MarkType::Up)
-		LinkedTo->MarkAllOccupationBits(headTo);
+		this->LinkedTo->MarkAllOccupationBits(headTo);
 	else
-		LinkedTo->UnmarkAllOccupationBits(headTo);
+		this->LinkedTo->UnmarkAllOccupationBits(headTo);
 }
 
 bool TestLocomotionClass::Is_Moving_Here(CoordStruct to)
 {
-	CoordStruct headTo = Head_To_Coord();
+	CoordStruct headTo = this->Head_To_Coord();
 	return CellClass::Coord2Cell(headTo) == CellClass::Coord2Cell(to)
 		&& std::abs(headTo.Z - to.Z) <= Unsorted::CellHeight;
 }
 
 bool TestLocomotionClass::Is_Really_Moving_Now()
 {
-	return IsMoving;
+	return this->IsMoving;
 }
 
 void TestLocomotionClass::Limbo()
