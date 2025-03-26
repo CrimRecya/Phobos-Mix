@@ -55,6 +55,7 @@ public:
 
 		Valueable<CSFText> UIDescription;
 		Valueable<int> CameoPriority;
+		DWORD CameoPriority_Houses;
 		ValueableVector<BuildingTypeClass*> LimboDelivery_Types;
 		ValueableVector<int> LimboDelivery_IDs;
 		ValueableVector<float> LimboDelivery_RollChances;
@@ -137,6 +138,7 @@ public:
 			, Message_FirerColor { false }
 			, UIDescription {}
 			, CameoPriority { 0 }
+			, CameoPriority_Houses { 0 }
 			, LimboDelivery_Types {}
 			, LimboDelivery_IDs {}
 			, LimboDelivery_RollChances {}

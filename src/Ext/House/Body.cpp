@@ -155,7 +155,7 @@ bool HouseExt::ExtData::UpdateHarvesterProduction()
 {
 	auto pThis = this->OwnerObject();
 	auto const AIDifficulty = static_cast<int>(pThis->GetAIDifficultyIndex());
-	auto const idxParentCountry = pThis->Type->FindParentCountryIndex();
+	auto const idxParentCountry = pThis->Type->ArrayIndex2;
 	auto const pHarvesterUnit = HouseExt::FindOwned(pThis, idxParentCountry, make_iterator(RulesClass::Instance->HarvesterUnit));
 
 	if (pHarvesterUnit)
@@ -432,7 +432,7 @@ bool HouseExt::CheckOwnerBitfieldForCurrentPlayer(TechnoTypeClass* pType)
 {
 	const auto pScenarioExt = ScenarioExt::Global();
 	DWORD baseBits = TechnoTypeExt::ExtMap.Find(pType)->Cameo_RequiredHouses & pType->GetOwners();
-	baseBits &= (1u << HouseClass::CurrentPlayer->Type->FindParentCountryIndex());
+	baseBits &= (1u << HouseClass::CurrentPlayer->Type->ArrayIndex2);
 
 	if (!baseBits)
 		return false;

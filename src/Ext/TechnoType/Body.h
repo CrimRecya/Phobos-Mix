@@ -52,6 +52,7 @@ public:
 		Valueable<bool> ImmuneToCrit;
 		Valueable<bool> MultiMindControl_ReleaseVictim;
 		Valueable<int> CameoPriority;
+		DWORD CameoPriority_Houses;
 		Valueable<bool> NoManualMove;
 		Valueable<bool> NoManualEject;
 		Nullable<int> InitialStrength;
@@ -473,6 +474,7 @@ public:
 			, ImmuneToCrit { false }
 			, MultiMindControl_ReleaseVictim { false }
 			, CameoPriority { 0 }
+			, CameoPriority_Houses { 0 }
 			, NoManualMove { false }
 			, NoManualEject { false }
 			, InitialStrength {}
