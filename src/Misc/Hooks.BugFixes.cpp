@@ -1262,7 +1262,7 @@ DEFINE_HOOK(0x4C75DA, EventClass_RespondToEvent_Stop, 0x6)
 
 #pragma region UntetherFix
 
-// Do not untether techno who have other tether link
+// Change enter to move when unlink
 DEFINE_HOOK(0x6F4C50, TechnoClass_ReceiveCommand_NotifyUnlink, 0x6)
 {
 	GET(TechnoClass* const, pThis, ESI);
