@@ -364,7 +364,7 @@ DEFINE_HOOK(0x55B4E1, LogicClass_Update_UnmarkCellOccupationFlags, 0x5)
 
 #pragma region NoQueueUpToEnterAndUnload
 
-// Rewrite from 0x73758A
+// Rewrite from 0x73758A, replace send RadioCommand::QueryCanEnter
 bool __fastcall CanEnterNow(UnitClass* pTransport, FootClass* pPassenger)
 {
 	if (!pTransport->Owner->IsAlliedWith(pPassenger) || pTransport->IsBeingWarpedOut())
@@ -380,9 +380,9 @@ bool __fastcall CanEnterNow(UnitClass* pTransport, FootClass* pPassenger)
 
 	const auto pTransportType = pTransport->Type;
 	const auto bySize = TechnoTypeExt::ExtMap.Find(pTransportType)->Passengers_BySize;
-	const auto passengerSize = bySize ? static_cast<int>(pPassenger->GetTechnoType()->Size) : 1;
+	const auto passengerSize = bySize ? Game::F2I(pPassenger->GetTechnoType()->Size) : 1;
 
-	if (passengerSize > static_cast<int>(pTransportType->SizeLimit))
+	if (passengerSize > Game::F2I(pTransportType->SizeLimit))
 		return false;
 
 	const auto maxSize = pTransportType->Passengers;
@@ -396,22 +396,10 @@ bool __fastcall CanEnterNow(UnitClass* pTransport, FootClass* pPassenger)
 
 		// When the most important passenger is close, need to prevent overlap
 		if (abs(delta.X) <= 384 && abs(delta.Y) <= 384)
-			return (predictSize <= (maxSize - (bySize ? static_cast<int>(pLink->GetTechnoType()->Size) : 1)));
+			return (predictSize <= (maxSize - (bySize ? Game::F2I(pLink->GetTechnoType()->Size) : 1)));
 	}
 
-	const auto remain = maxSize - predictSize;
-
-	if (remain < 0)
-		return false;
-
-	if (needCalculate && remain < (bySize ? static_cast<int>(pLink->GetTechnoType()->Size) : 1))
-	{
-		// Avoid passenger moving forward, resulting in overlap with transport and create invisible barrier
-		pLink->SendToFirstLink(RadioCommand::NotifyUnlink);
-		pLink->EnterIdleMode(false, true);
-	}
-
-	return true;
+	return predictSize < maxSize;
 }
 
 // Rewrite from 0x51A21B
@@ -511,7 +499,7 @@ DEFINE_HOOK(0x51A0D4, InfantryClass_UpdatePosition_NoQueueUpToEnter, 0x6)
 
 			if (abs(delta.X) <= 384 && abs(delta.Y) <= 384)
 			{
-				if (CanEnterNow(pDest, pThis)) // Replace send radio command: QueryCanEnter
+				if (CanEnterNow(pDest, pThis))
 				{
 					InfantryEnterNow(pDest, pThis);
 					return EnteredThenReturn;
@@ -537,7 +525,7 @@ DEFINE_HOOK(0x73A5EA, UnitClass_UpdatePosition_NoQueueUpToEnter, 0x5)
 
 			if (abs(delta.X) <= 384 && abs(delta.Y) <= 384)
 			{
-				if (CanEnterNow(pDest, pThis)) // Replace send radio command: QueryCanEnter
+				if (CanEnterNow(pDest, pThis))
 				{
 					UnitEnterNow(pDest, pThis);
 					return EnteredThenReturn;

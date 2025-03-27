@@ -1262,23 +1262,27 @@ DEFINE_HOOK(0x4C75DA, EventClass_RespondToEvent_Stop, 0x6)
 
 #pragma region UntetherFix
 
-DEFINE_HOOK(0x6F4B67, TechnoClass_ReceiveCommand_RequestTether, 0x6)
+// Do not untether techno who have other tether link
+DEFINE_HOOK(0x6F4C50, TechnoClass_ReceiveCommand_NotifyUnlink, 0x6)
 {
 	GET(TechnoClass* const, pThis, ESI);
-	GET_STACK(TechnoClass*, pSender, STACK_OFFSET(0x18, 0x4));
-
-	if (pThis->FindLinkIndex(pSender) == -1)
+	GET_STACK(TechnoClass* const, pCall, STACK_OFFSET(0x18, 0x4));
+	// If the link connection is cancelled and foot A is entering techno B, it may cause A and B to overlap
+	if (!pCall->InLimbo // Has not already entered
+		&& (pCall->AbstractFlags & AbstractFlags::Foot) // Is foot
+		&& pCall->CurrentMission == Mission::Enter // Is entering
+		&& static_cast<FootClass*>(pCall)->Destination == pThis) // Is entering techno B
 	{
-		const auto thisCell = pThis->GetMapCoords();
-		const auto sendCell = pSender->GetMapCoords();
-		Debug::LogAndMessage("%s at (%d,%d) is trying to tether with %s at (%d,%d) without link!\n", pThis->get_ID(), thisCell.X, thisCell.Y, pSender->get_ID(), sendCell.X, sendCell.Y);
+		pCall->SetDestination(pThis->GetCell(), false); // Set the destination at its feet
+		pCall->QueueMission(Mission::Move, false); // Replace entering with moving
+		pCall->NextMission(); // Immediately respond to the Mission::Move
 	}
 
 	return 0;
 }
 
-// Radio: do not untether techno who have other tether link
-DEFINE_HOOK(0x6F4BB3, TechnoClass_ReceiveCommand_NotifyUnlink, 0x7)
+// Do not untether techno who have other tether link
+DEFINE_HOOK(0x6F4BB3, TechnoClass_ReceiveCommand_RequestUntether, 0x7)
 {
 	// Place the hook after processing to prevent functions from calling each other and getting stuck in a dead loop.
 	GET(TechnoClass* const, pThis, ESI);

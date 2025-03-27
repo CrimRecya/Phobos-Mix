@@ -311,7 +311,7 @@ public:
 		Valueable<bool> ExtraTargeting_OnNoTargetAssigned;
 		Valueable<double> CanAttackMeThreatBonus;
 
-		Valueable<bool> AllyShareControl;
+//		Valueable<bool> AllyShareControl;
 
 		Valueable<bool> InTransportInfantryAmmoFix;
 
@@ -589,7 +589,7 @@ public:
 			, ExtraTargeting_OnStopCommand { false }
 			, ExtraTargeting_OnNoTargetAssigned { false }
 			, CanAttackMeThreatBonus { 0.0 }
-			, AllyShareControl { false }
+//			, AllyShareControl { false }
 			, InTransportInfantryAmmoFix { false }
 			, UpdateInLimbo_Occupier { false }
 			, UpdateInLimbo_NormalPassenger { false }
