@@ -1204,6 +1204,9 @@ DEFINE_HOOK(0x4C75DA, EventClass_RespondToEvent_Stop, 0x6)
 	// Clearing the current target should still be necessary for all technos
 	pTechno->SetTarget(nullptr);
 
+	// Stop any enter action
+	pTechno->QueueUpToEnter = nullptr;
+
 	if (commonAircraft)
 	{
 		if (pAircraft->Type->AirportBound)
