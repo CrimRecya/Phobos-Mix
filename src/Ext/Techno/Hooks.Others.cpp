@@ -423,10 +423,9 @@ DEFINE_HOOK(0x51A0D4, InfantryClass_UpdatePosition_NoQueueUpToEnter, 0x6)
 	{
 		if (pDest->Type->Passengers > 0 && TechnoTypeExt::ExtMap.Find(pDest->Type)->NoQueueUpToEnter.Get(RulesExt::Global()->NoQueueUpToEnter))
 		{
-			const auto thisCell = pThis->GetCoords();
-			const auto destCell = pDest->GetCoords();
+			const auto delta = pThis->GetCoords() - pDest->GetCoords();
 
-			if (abs(thisCell.X - destCell.X) <= 384 && abs(thisCell.Y - destCell.Y) <= 384)
+			if (abs(delta.X) <= 384 && abs(delta.Y) <= 384)
 			{
 				if (CanEnterNow(pDest, pThis)) // Replace send radio command: QueryCanEnter
 				{
@@ -439,11 +438,13 @@ DEFINE_HOOK(0x51A0D4, InfantryClass_UpdatePosition_NoQueueUpToEnter, 0x6)
 					pThis->GattlingValue = 0;
 					pThis->CurrentGattlingStage = 0;
 
+					/* Have checked in CanEnterNow
 					if (const auto pMind = pThis->MindControlledBy)
 					{
 						if (const auto pManager = pMind->CaptureManager)
 							pManager->FreeUnit(pThis);
 					}
+					*/
 
 					pThis->Limbo();
 
@@ -483,10 +484,9 @@ DEFINE_HOOK(0x73A5EA, UnitClass_UpdatePosition_NoQueueUpToEnter, 0x5)
 	{
 		if (pDest->Type->Passengers > 0 && TechnoTypeExt::ExtMap.Find(pDest->Type)->NoQueueUpToEnter.Get(RulesExt::Global()->NoQueueUpToEnter))
 		{
-			const auto thisCell = pThis->GetCoords();
-			const auto destCell = pDest->GetCoords();
+			const auto delta = pThis->GetCoords() - pDest->GetCoords();
 
-			if (abs(thisCell.X - destCell.X) <= 384 && abs(thisCell.Y - destCell.Y) <= 384)
+			if (abs(delta.X) <= 384 && abs(delta.Y) <= 384)
 			{
 				if (CanEnterNow(pDest, pThis)) // Replace send radio command: QueryCanEnter
 				{
@@ -498,11 +498,13 @@ DEFINE_HOOK(0x73A5EA, UnitClass_UpdatePosition_NoQueueUpToEnter, 0x5)
 					pThis->GattlingValue = 0;
 					pThis->CurrentGattlingStage = 0;
 
+					/* Have checked in CanEnterNow
 					if (const auto pMind = pThis->MindControlledBy)
 					{
 						if (const auto pManager = pMind->CaptureManager)
 							pManager->FreeUnit(pThis);
 					}
+					*/
 
 					pThis->Limbo();
 					pDest->AddPassenger(pThis);
@@ -2145,7 +2147,7 @@ DEFINE_HOOK(0x707ED0, TechnoClass_GetGuardRange_FixForIFV, 0x6)
 }
 
 #pragma endregion
-
+/*
 #pragma region SharedControl
 
 DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
@@ -2156,7 +2158,7 @@ DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
 }
 
 #pragma endregion
-
+*/
 #pragma region ExtraTargeting
 
 DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting, 0x7)
