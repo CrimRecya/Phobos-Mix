@@ -753,3 +753,24 @@ DEFINE_HOOK(0x70FB73, FootClass_IsBunkerableNow_Dehardcode, 0x6)
 	return pTypeExt->BunkerableAnyway ? CanEnter : 0;
 }
 #pragma endregion
+
+#pragma region Airstrike
+
+DEFINE_HOOK(0x6F3477, TechnoClass_SelectWeapon_AirstrikeHardCode, 0xA)
+{
+	return RulesExt::Global()->Airstrike_SelectWeaponHardCode ? 0 : 0x6F3528;
+}
+
+DEFINE_HOOK(0x41D90C, AirstrikeClass_StartNewMission_SpawnAirSupport, 0x7)
+{
+	GET(AbstractClass*, pTarget, ESI);
+
+	if (!RulesExt::Global()->Airstrike_TargetCell)
+	{
+		R->EAX(pTarget);
+	}
+
+	return 0;
+}
+
+#pragma endregion

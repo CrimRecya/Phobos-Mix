@@ -197,6 +197,9 @@ public:
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
+		Valueable<bool> Airstrike_TargetCell;
+		Valueable<bool> Airstrike_SelectWeaponHardCode;
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, InfantryGainSelfHealCap {}
@@ -344,6 +347,8 @@ public:
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
+			, Airstrike_TargetCell { true }
+			, Airstrike_SelectWeaponHardCode { true }
 		{ }
 
 		virtual ~ExtData() = default;
