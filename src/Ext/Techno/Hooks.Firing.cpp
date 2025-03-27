@@ -412,6 +412,14 @@ DEFINE_HOOK(0x6FCBE6, TechnoClass_CanFire_BridgeAAFix, 0x6)
 	return 0;
 }
 
+DEFINE_HOOK(0x6FC617, TechnoClass_GetFireError_SpawnerRelatedStupidCheck, 0x8)
+{
+	enum { CheckPass = 0x6FC61F, NotPass = 0x6FCD29 };
+
+	GET(bool, stupidBool, EAX);
+	return (!RulesExt::Global()->SpawnerBridgeFix && stupidBool) ? NotPass : CheckPass;
+}
+
 #pragma endregion
 
 #pragma region TechnoClass_Fire
