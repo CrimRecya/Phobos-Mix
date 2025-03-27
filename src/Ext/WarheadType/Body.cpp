@@ -279,6 +279,9 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->CombatAlert_Suppress.Read(exINI, pSection, "CombatAlert.Suppress");
 
+	this->NoCellSpread.Read(exINI, pSection, "NoCellSpread");
+	this->NoCellSpread_SnapDistance.Read(exINI, pSection, "NoCellSpread_SnapDistance");
+
 	// Convert.From & Convert.To
 	TypeConvertGroup::Parse(this->Convert_Pairs, exINI, pSection, AffectedHouse::All);
 
@@ -517,6 +520,8 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->BuildingUndeploy_Leave)
 
 		.Process(this->CombatAlert_Suppress)
+		.Process(this->NoCellSpread)
+		.Process(this->NoCellSpread_SnapDistance)
 
 		// Ares tags
 		.Process(this->AffectsEnemies)

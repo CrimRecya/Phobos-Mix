@@ -163,6 +163,9 @@ public:
 
 		Nullable<bool> CombatAlert_Suppress;
 
+		Valueable<bool> NoCellSpread;
+		Valueable<Leptons> NoCellSpread_SnapDistance;
+
 		// Ares tags
 		// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
 		Valueable<bool> AffectsEnemies;
@@ -328,6 +331,9 @@ public:
 			, BuildingUndeploy_Leave { false }
 
 			, CombatAlert_Suppress {}
+
+			, NoCellSpread { false }
+			, NoCellSpread_SnapDistance { Leptons(128) }
 
 			, AffectsEnemies { true }
 			, AffectsOwner {}
