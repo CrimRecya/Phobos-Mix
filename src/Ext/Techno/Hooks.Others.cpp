@@ -636,46 +636,6 @@ DEFINE_HOOK(0x44733A, BuildingClass_MouseOverObject_BuildingCheckDeploy, 0xA)
 */
 #pragma endregion
 
-#pragma region TechnoInRangeFix
-
-DEFINE_HOOK_AGAIN(0x4D6541, FootClass_ApproachTarget_InRangeSourceCoordsFix, 0x6)
-DEFINE_HOOK(0x4D621D, FootClass_ApproachTarget_InRangeSourceCoordsFix, 0x6)
-{
-	GET(FootClass*, pThis, EBX);
-	GET(WeaponTypeClass*, pWeapon, ECX);
-	REF_STACK(CoordStruct, sourceCoords, STACK_OFFSET(0x158, -0x12C));
-
-	bool cylinder = RulesExt::Global()->CylinderRangefinding;
-
-	if (auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon))
-		cylinder = pWeaponExt->CylinderRangefinding.Get(cylinder);
-
-	if (cylinder || pThis->IsInAir())
-	{
-		sourceCoords.Z = pThis->Target->GetCoords().Z;
-	}
-	else if (pWeapon && pWeapon->CellRangefinding)
-	{
-		const auto pCell = MapClass::Instance.GetCellAt(sourceCoords);
-		sourceCoords = pCell->GetCoords();
-
-		if (pCell->ContainsBridge())
-			sourceCoords.Z += CellClass::BridgeHeight;
-	}
-	else if (R->Origin() == 0x4D6541)
-	{
-		const auto pCell = MapClass::Instance.GetCellAt(sourceCoords);
-		sourceCoords.Z = pCell->GetFloorHeight(Point2D { sourceCoords.X, sourceCoords.Y });
-
-		if (pCell->ContainsBridge())
-			sourceCoords.Z += CellClass::BridgeHeight;
-	}
-
-	return 0;
-}
-
-#pragma endregion
-
 #pragma region DetectionLogic
 /*
 DEFINE_HOOK(0x5865E2, MapClass_IsLocationFogged_Check, 0x5)
@@ -838,20 +798,14 @@ DEFINE_HOOK(0x6F9B64, TechnoClass_SelectAutoTarget_RecordAttackWall, 0x7)
 
 #pragma region CylinderRange
 
-DEFINE_HOOK(0x6F7891, TechnoClass_IsCloseEnough_CylinderRangefinding, 0x7)
+DEFINE_HOOK(0x6F755A, TechnoClass_IsCloseEnough_CylinderRangefinding, 0x7)
 {
-	enum { SkipGameCode = 0x6F789A };
-
-	GET(WeaponTypeClass* const, pWeaponType, EDI);
-	GET(TechnoClass* const, pThis, ESI);
-
-	bool cylinder = RulesExt::Global()->CylinderRangefinding;
-
-	if (auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeaponType))
-		cylinder = pWeaponExt->CylinderRangefinding.Get(cylinder);
-
-	R->AL(cylinder ? true : pThis->IsInAir());
-	return SkipGameCode;
+	GET_BASE(WeaponTypeClass* const, pWeaponType, 0x10);
+	GET(CoordStruct* const, pCoord, ESI);
+	GET(TechnoClass* const, pThis, EDI);
+	const bool cylinder = WeaponTypeExt::ExtMap.Find(pWeaponType)->CylinderRangefinding.Get(RulesExt::Global()->CylinderRangefinding.Get(pThis->WhatAmI() == AbstractType::Aircraft));
+	R->EAX(pCoord->X);
+	return cylinder ? 0x6F75B2 : 0x6F7568;
 }
 
 #pragma endregion
