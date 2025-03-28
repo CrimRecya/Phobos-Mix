@@ -78,24 +78,13 @@ DEFINE_HOOK(0x469A75, BulletClass_Logics_DamageHouse, 0x7)
 
 			auto pObject = abstract_cast<ObjectClass*>(pTarget);
 
-			auto dist = 0;
+			auto dist = coord->DistanceFrom(pObject->GetCoords());
 			auto pBuilding = abstract_cast<BuildingClass*>(pObject);
 
 			if (pBuilding)
 			{
-				auto const buildingCell = pBuilding->GetMapCoords();
-
-				for (auto pFoundation = pBuilding->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
-				{
-					CellStruct currentCell = buildingCell + *pFoundation;
-					auto pCurrentCell = MapClass::Instance.GetCellAt(currentCell);
-					auto currentDist = coord->DistanceFrom(pCurrentCell->GetCoords());
-					dist = currentDist < dist ? currentDist : dist;
-				}
-			}
-			else
-			{
-				dist = coord->DistanceFrom(pObject->GetCoords());
+				auto pBuildingType = pBuilding->Type;
+				dist -= ((pBuildingType->GetFoundationHeight(0) + pBuildingType->GetFoundationWidth()) << 6);
 			}
 
 			if (dist > pWHExt->NoCellSpread_SnapDistance.Get())
