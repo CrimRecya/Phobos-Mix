@@ -531,14 +531,11 @@ DEFINE_HOOK(0x4F8440, HouseCLass_Update_SpyEffectRadarJam, 0x5)
 {
 	GET(HouseClass*, pThis, ECX);
 
-	auto pExt = HouseExt::ExtMap.Find(pThis);
+	auto& radarJamTimer = HouseExt::ExtMap.Find(pThis)->SpyEffect_RadarJamTimer;
 
-	int StartTime = pExt->SpyEffect_RadarJamTimer.StartTime;
-	int TimeLeft = pExt->SpyEffect_RadarJamTimer.TimeLeft;
-
-	if (StartTime != -1 && Unsorted::CurrentFrame - StartTime == TimeLeft)
+	if (radarJamTimer.Completed())
 	{
-		pExt->SpyEffect_RadarJamTimer.Stop();
+		radarJamTimer.Stop();
 		pThis->RecheckRadar = true;
 	}
 
