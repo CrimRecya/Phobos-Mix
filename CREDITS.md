@@ -418,8 +418,8 @@ This page lists all the individual contributions to the project by their author.
   - Technos can maintain a suitable distance after firing
   - Projectile subject to ground check before firing
   - Delay automatic attack on the controlled unit
-  - Fixed an issue that aircraft carriers can not find suitable locations for attacks when under elevated bridges on their own.
-  - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges.
+  - Fixed an issue that aircraft carriers can not find suitable locations for attacks when under elevated bridges on their own
+  - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges
   - New trajectory system
   - New Missile trajectory
   - New Engrave trajectory
@@ -469,15 +469,14 @@ This page lists all the individual contributions to the project by their author.
   - Recycle the spawner on other FLH
   - Fixed the bug that spawned can not return to buildings with foundation bigger than 1x1
   - `BombParachute` deglobalization
+  - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges
   - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller
-  - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges.
   - `CellSpread.Cylinder`
   - `AffectsInAir` and `AffectsOnFloor`
   - Infantry fire while moving
   - Weapon range finding in cylinder
   - Units are now unable to kick out from a factory that is in construction process
   - No turret unit turn to the target
-  - Units are now unable to kick out from a factory that is in construction process
   - Fix issues caused by incorrect reference removal (f.ex. If the unit cloaks/enters transport, it cannot gain experience from previously launched spawners/C4/projectiles)
 - **Aephiex**:
   - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
