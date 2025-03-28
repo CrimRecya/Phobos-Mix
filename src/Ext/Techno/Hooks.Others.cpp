@@ -803,9 +803,9 @@ DEFINE_HOOK(0x6F755A, TechnoClass_IsCloseEnough_CylinderRangefinding, 0x7)
 	GET_BASE(WeaponTypeClass* const, pWeaponType, 0x10);
 	GET(CoordStruct* const, pCoord, ESI);
 	GET(TechnoClass* const, pThis, EDI);
-	const bool cylinder = WeaponTypeExt::ExtMap.Find(pWeaponType)->CylinderRangefinding.Get(RulesExt::Global()->CylinderRangefinding.Get(pThis->WhatAmI() == AbstractType::Aircraft));
+	const bool cylinder = WeaponTypeExt::ExtMap.Find(pWeaponType)->CylinderRangefinding.Get(RulesExt::Global()->CylinderRangefinding.Get());
 	R->EAX(pCoord->X);
-	return cylinder ? 0x6F75B2 : 0x6F7568;
+	return (cylinder || pThis->WhatAmI() == AbstractType::Aircraft) ? 0x6F75B2 : 0x6F7568;
 }
 
 #pragma endregion

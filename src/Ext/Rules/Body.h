@@ -208,7 +208,7 @@ public:
 		Valueable<AnimTypeClass*> Promote_VeteranAnimation;
 		Valueable<AnimTypeClass*> Promote_EliteAnimation;
 
-		Nullable<bool> CylinderRangefinding;
+		Valueable<bool> CylinderRangefinding;
 		Valueable<bool> StopPlanningOnEnter;
 		Valueable<bool> StrafingTargetScatter;
 		Nullable<int> AINormalTargetingDelay;
@@ -499,7 +499,7 @@ public:
 			, ShowDesignatorRange { true }
 			, DropPodTrailer { }
 			, PodImage { }
-			, CylinderRangefinding {}
+			, CylinderRangefinding { false }
 			, StopPlanningOnEnter { true }
 			, StrafingTargetScatter { true }
 			, AINormalTargetingDelay {}
