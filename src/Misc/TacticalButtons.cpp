@@ -543,6 +543,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				drawText("PathDir = %d , %d , %d , %d , %d , %d , %d , %d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5], pD[6], pD[7]);
 
 			drawText("CurrentSpeed = %d , PercentSpeed = %d", static_cast<int>(pFoot->GetCurrentSpeed()), static_cast<int>(pFoot->SpeedPercentage * 100));
+			drawText("OnBridge = %s , NearBridge = %s", (pFoot->OnBridge ? "Yes" : "No"), (reinterpret_cast<bool(__thiscall*)(FootClass*)>(0x703B10)(pFoot) ? "Yes" : "No"));
 			drawText("Scattering = %s , Aggressive = %s", (pExt->ScatteringStopFrame >= Unsorted::CurrentFrame ? "Yes" : "No"), (pExt->AggressiveStance ? "Yes" : "No"));
 
 			drawInfo("Destination", pFoot, pFoot->Destination);

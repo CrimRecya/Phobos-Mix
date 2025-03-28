@@ -2356,6 +2356,20 @@ DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
 
 #pragma endregion
 
+#pragma region SpawnerFireFix
+
+DEFINE_HOOK(0x6FC617, TechnoClass_GetFireError_AirCarrierSkipCheckNearBridge, 0x8)
+{
+	enum { ContinueCheck = 0x6FC61F, CannotFire = 0x6FCD29 };
+
+	GET(TechnoClass* const, pThis, ESI);
+	GET(const bool, nearBridge, EAX);
+
+	return (nearBridge && !pThis->IsInAir()) ? CannotFire : ContinueCheck;
+}
+
+#pragma endregion
+
 // TODO Self-made impl
 
 
