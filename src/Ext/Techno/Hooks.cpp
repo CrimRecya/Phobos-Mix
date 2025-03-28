@@ -723,3 +723,25 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 
 #pragma endregion
 
+DEFINE_HOOK(0x7466D8, UnitClass_DisguiseAs_DisguiseUnit, 0xA)
+{
+	enum { ret = 0x746712 };
+
+	GET(UnitClass*, pThis, EDI);
+	GET(UnitClass*, pTarget, ESI);
+
+	pThis->TechnoClass::DisguiseAs(pTarget);
+
+	if (pTarget->IsDisguised())
+	{
+		pThis->Disguise = pTarget->GetDisguise(true);
+		pThis->DisguisedAsHouse = pTarget->GetDisguiseHouse(true);
+	}
+	else
+	{
+		pThis->Disguise = pTarget->Type;
+		pThis->DisguisedAsHouse = pTarget->GetOwningHouse();
+	}
+
+	return ret;
+}
