@@ -464,6 +464,9 @@ This page lists all the individual contributions to the project by their author.
   - Parasite returning bug fix
   - Bunkerable checks dehardcode
   - Prevent the units with locomotors that cause problems from entering the tank bunker
+  - No turret unit turn to the target
+  - Units are now unable to kick out from a factory that is in construction process
+  - Fix issues caused by incorrect reference removal (f.ex. If the unit cloaks/enters transport, it cannot gain experience from previously launched spawners/C4/projectiles)
   - Recycle spawner in long-range
   - Play an anim when recycling a spawner
   - Recycle the spawner on other FLH
@@ -475,9 +478,6 @@ This page lists all the individual contributions to the project by their author.
   - `AffectsInAir` and `AffectsOnFloor`
   - Infantry fire while moving
   - Weapon range finding in cylinder
-  - Units are now unable to kick out from a factory that is in construction process
-  - No turret unit turn to the target
-  - Fix issues caused by incorrect reference removal (f.ex. If the unit cloaks/enters transport, it cannot gain experience from previously launched spawners/C4/projectiles)
 - **Aephiex**:
   - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
   - Aggressive stance toggle command (auto target unarmed enemy buildings)
