@@ -28,6 +28,8 @@ const wchar_t* UnifiedTechnoColorCommandClass::GetUIDescription() const
 void UnifiedTechnoColorCommandClass::Execute(WWKey eInput) const
 {
 	Phobos::Config::UnifiedTechnoColor = !Phobos::Config::UnifiedTechnoColor;
+
+	// Play sound
 	VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
 
 	// Redraw tactical
@@ -35,13 +37,17 @@ void UnifiedTechnoColorCommandClass::Execute(WWKey eInput) const
 
 	// Redraw radar
 	const auto pRadar = &RadarClass::Instance;
-	const auto pSurface = reinterpret_cast<DSurface*>(pRadar->unknown_121C);
-	const auto width = pSurface->GetWidth();
-	const auto height = pSurface->GetHeight();
 
-	for (int x = 0; x < width; ++x)
+	if (pRadar->IsAvailableNow)
 	{
-		for (int y = 0; y < height; ++y)
-			reinterpret_cast<void(__thiscall*)(RadarClass*, const Point2D&)>(0x6562D0)(pRadar, Point2D{x,y});
+		const auto pSurface = reinterpret_cast<DSurface*>(pRadar->unknown_121C);
+		const auto width = pSurface->GetWidth();
+		const auto height = pSurface->GetHeight();
+
+		for (int x = 0; x < width; ++x)
+		{
+			for (int y = 0; y < height; ++y)
+				reinterpret_cast<void(__thiscall*)(RadarClass*, const Point2D&)>(0x6562D0)(pRadar, Point2D{x,y});
+		}
 	}
 }
