@@ -17,13 +17,40 @@
 
 #pragma region Update
 
+// Early, before ObjectClass_AI
 DEFINE_HOOK(0x6F9E50, TechnoClass_AI, 0x5)
 {
 	GET(TechnoClass*, pThis, ECX);
 
-	// Do not search this up again in any functions called here because it is costly for performance - Starkku
 	TechnoExt::ExtMap.Find(pThis)->OnEarlyUpdate();
-	TechnoExt::ApplyMindControlRangeLimit(pThis);
+
+	return 0;
+}
+
+// After TechnoClass_AI
+DEFINE_HOOK(0x4DA54E, FootClass_AI, 0x6)
+{
+	GET(FootClass*, pThis, ESI);
+
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+
+	if (pExt->PreviousType)
+		pExt->UpdateTypeData_Foot();
+
+	pExt->UpdateWarpInDelay();
+
+	return 0;
+}
+
+// After FootClass_AI
+DEFINE_HOOK(0x736480, UnitClass_AI, 0x6)
+{
+	GET(UnitClass*, pThis, ESI);
+
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+	pExt->UpdateKeepTargetOnMove();
+	pExt->DepletedAmmoActions();
+	pExt->UpdateGattlingRateDownReset();
 
 	return 0;
 }
@@ -45,13 +72,24 @@ DEFINE_HOOK(0x71A88D, TemporalClass_AI, 0x0)
 	return R->EAX<int>() <= 0 ? 0x71A895 : 0x71AB08;
 }
 
-DEFINE_HOOK_AGAIN(0x51BAC7, FootClass_AI_Tunnel, 0x6)//InfantryClass_AI_Tunnel
-DEFINE_HOOK(0x7363B5, FootClass_AI_Tunnel, 0x6)//UnitClass_AI_Tunnel
+DEFINE_HOOK_AGAIN(0x51B389, FootClass_TunnelAI_Enter, 0x6) // InfantryClass_TunnelAI
+DEFINE_HOOK(0x735A26, FootClass_TunnelAI_Enter, 0x6)       // UnitClass_TunnelAI
 {
 	GET(FootClass*, pThis, ESI);
 
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 	pExt->UpdateOnTunnelEnter();
+
+	return 0;
+}
+
+DEFINE_HOOK_AGAIN(0x51BA94, FootClass_TunnelAI_Exit, 0x7) // InfantryClass_TunnelAI
+DEFINE_HOOK(0x736005, FootClass_TunnelAI_Exit, 0x6)       // UnitClass_TunnelAI
+{
+	GET(FootClass*, pThis, ESI);
+
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+	pExt->UpdateOnTunnelExit();
 
 	return 0;
 }
@@ -145,8 +183,8 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	pExt->TypeExtData = TechnoTypeExt::ExtMap.Find(pType);
 
 	pExt->CurrentShieldType = pExt->TypeExtData->ShieldType;
-	pExt->InitializeLaserTrails();
 	pExt->InitializeAttachEffects();
+	pExt->InitializeLaserTrails();
 	pExt->InitializeDisplayInfo();
 	pExt->InitAggressiveStance();
 
@@ -692,8 +730,6 @@ DEFINE_HOOK(0x73C602, UnitClass_DrawSHP_WaterType_Extra, 0x6)
 	return Continue;
 }
 
-#pragma region KeepTargetOnMove
-
 // Do not explicitly reset target for KeepTargetOnMove vehicles when issued move command.
 DEFINE_HOOK(0x4C7462, EventClass_Execute_KeepTargetOnMove, 0x5)
 {
@@ -722,59 +758,6 @@ DEFINE_HOOK(0x4C7462, EventClass_Execute_KeepTargetOnMove, 0x5)
 	}
 
 	pExt->KeepTargetOnMove = false;
-
-	return 0;
-}
-
-// Reset the target if beyond weapon range.
-// This was originally in UnitClass::Mission_Move() but because that
-// is only checked every ~15 frames, it can cause responsiveness issues.
-DEFINE_HOOK(0x736480, UnitClass_AI_KeepTargetOnMove, 0x6)
-{
-	GET(UnitClass*, pThis, ESI);
-
-	auto const pExt = TechnoExt::ExtMap.Find(pThis);
-
-	if (!pExt->KeepTargetOnMove)
-		return 0;
-
-	if (!pThis->Target)
-	{
-		pExt->KeepTargetOnMove = false;
-		return 0;
-	}
-
-	if (!pExt->TypeExtData->KeepTargetOnMove)
-	{
-		pThis->SetTarget(nullptr);
-		pExt->KeepTargetOnMove = false;
-		return 0;
-	}
-
-	if (pThis->CurrentMission == Mission::Move)
-	{
-		const int weaponIndex = pThis->SelectWeapon(pThis->Target);
-
-		if (auto const pWeapon = pThis->GetWeapon(weaponIndex)->WeaponType)
-		{
-			const int extraDistance = static_cast<int>(pExt->TypeExtData->KeepTargetOnMove_ExtraDistance.Get());
-			const int range = pWeapon->Range;
-			pWeapon->Range += extraDistance; // Temporarily adjust weapon range based on the extra distance.
-
-			if (!pThis->IsCloseEnough(pThis->Target, weaponIndex))
-			{
-				pThis->SetTarget(nullptr);
-				pExt->KeepTargetOnMove = false;
-			}
-
-			pWeapon->Range = range;
-		}
-	}
-	else if (pThis->CurrentMission == Mission::Guard)
-	{
-		pThis->QueueMission(Mission::Attack, false);
-		pExt->KeepTargetOnMove = false;
-	}
 
 	return 0;
 }
@@ -836,3 +819,4 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 }
 
 #pragma endregion
+

@@ -60,6 +60,18 @@ TechnoExt::ExtData::~ExtData()
 		auto& vec = HouseExt::ExtMap.Find(pThis->Owner)->OwnedCountedHarvesters;
 		vec.erase(std::remove(vec.begin(), vec.end(), pThis), vec.end());
 	}
+
+	this->ClearElectricBolts();
+}
+
+void TechnoExt::ExtData::ClearElectricBolts()
+{
+	for (auto const pBolt : this->ElectricBolts)
+	{
+		pBolt->Owner = nullptr;
+	}
+
+	this->ElectricBolts.clear();
 }
 
 bool TechnoExt::IsActiveIgnoreEMP(TechnoClass* pThis)
@@ -659,6 +671,8 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->AE)
 		.Process(this->SubterraneanHarvFreshFromFactory)
 		.Process(this->SubterraneanHarvRallyDest)
+		.Process(this->PreviousType)
+		.Process(this->ElectricBolts)
 		.Process(this->AnimRefCount)
 		.Process(this->ReceiveDamage)
 		.Process(this->PassengerDeletionTimer)
@@ -734,6 +748,8 @@ void TechnoExt::ExtData::SaveToStream(PhobosStreamWriter& Stm)
 {
 	Extension<TechnoClass>::SaveToStream(Stm);
 	this->Serialize(Stm);
+
+	this->ClearElectricBolts();
 }
 
 bool TechnoExt::LoadGlobals(PhobosStreamReader& Stm)
@@ -801,3 +817,4 @@ DEFINE_HOOK(0x70C264, TechnoClass_Save_Suffix, 0x5)
 
 	return 0;
 }
+
