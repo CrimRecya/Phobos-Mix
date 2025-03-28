@@ -418,6 +418,8 @@ This page lists all the individual contributions to the project by their author.
   - Technos can maintain a suitable distance after firing
   - Projectile subject to ground check before firing
   - Delay automatic attack on the controlled unit
+  - Fixed an issue that aircraft carriers can not find suitable locations for attacks when under elevated bridges on their own.
+  - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges.
   - New trajectory system
   - New Missile trajectory
   - New Engrave trajectory
@@ -468,6 +470,7 @@ This page lists all the individual contributions to the project by their author.
   - Fixed the bug that spawned can not return to buildings with foundation bigger than 1x1
   - `BombParachute` deglobalization
   - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller
+  - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges.
   - `CellSpread.Cylinder`
   - `AffectsInAir` and `AffectsOnFloor`
   - Infantry fire while moving
