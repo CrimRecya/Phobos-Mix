@@ -301,6 +301,9 @@ public:
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
+		Valueable<bool> Airstrike_TargetCell;
+		Valueable<bool> Airstrike_SelectWeaponHardCode;
+
 		Valueable<double> VehicleDamagedSpeedMultiplier_Yellow;
 		Valueable<double> VehicleDamagedSpeedMultiplier_Red;
 
@@ -581,6 +584,9 @@ public:
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
+
+			, Airstrike_TargetCell { true }
+			, Airstrike_SelectWeaponHardCode { true }
 
 			, VehicleDamagedSpeedMultiplier_Yellow { 0.75 }
 			, VehicleDamagedSpeedMultiplier_Red { 0.75 }
