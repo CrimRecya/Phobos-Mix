@@ -346,8 +346,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->BuildingTypeSelectable.Read(exINI, GameStrings::General, "BuildingTypeSelectable");
 
 	this->Airstrike_TargetCell.Read(exINI, GameStrings::General, "Airstrike.TargetCell");
-	this->Airstrike_SelectWeaponHardCode.Read(exINI, GameStrings::General, "Airstrike.SelectWeaponHardCode");
-  
+	this->Airstrike_SecondaryFirst.Read(exINI, GameStrings::General, "Airstrike.SecondaryFirst");
+
 	this->VehicleDamagedSpeedMultiplier_Yellow.Read(exINI, GameStrings::General, "VehicleDamagedSpeedMultiplier.Yellow");
 	this->VehicleDamagedSpeedMultiplier_Red.Read(exINI, GameStrings::General, "VehicleDamagedSpeedMultiplier.Red");
 
@@ -690,7 +690,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->LightFlashAlphaImageDetailLevel)
 		.Process(this->BuildingTypeSelectable)
 		.Process(this->Airstrike_TargetCell)
-		.Process(this->Airstrike_SelectWeaponHardCode)
+		.Process(this->Airstrike_SecondaryFirst)
 		.Process(this->VehicleDamagedSpeedMultiplier_Yellow)
 		.Process(this->VehicleDamagedSpeedMultiplier_Red)
 		.Process(this->ProneSpeed)

@@ -55,73 +55,41 @@ DEFINE_HOOK(0x469A75, BulletClass_Logics_DamageHouse, 0x7)
 		R->ECX(pHouse);
 	}
 
-	auto pWH = pThis->WH;
-	auto pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
+	const auto pWH = pThis->WH;
+	const auto pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	if (pWHExt->NoCellSpread)
+	if (pWHExt->NoCellSpread && damage)
 	{
 		DamageAreaResult result = DamageAreaResult::Missed;
 
-		do
+		if (const auto pObject = abstract_cast<ObjectClass*>(pThis->Target))
 		{
-			if (damage == 0)
-			{
-				break;
-			}
-
-			auto pTarget = pThis->Target;
-
-			if (!pTarget || pTarget->WhatAmI() == AbstractType::Cell)
-			{
-				break;
-			}
-
-			auto pObject = abstract_cast<ObjectClass*>(pTarget);
-
 			auto dist = coord->DistanceFrom(pObject->GetCoords());
-			auto pBuilding = abstract_cast<BuildingClass*>(pObject);
+			const auto isBuilding = pObject->WhatAmI() == AbstractType::Building;
 
-			if (pBuilding)
+			if (isBuilding)
 			{
-				auto pBuildingType = pBuilding->Type;
-				dist -= ((pBuildingType->GetFoundationHeight(0) + pBuildingType->GetFoundationWidth()) << 6);
+				const auto pBuildingType = static_cast<BuildingClass*>(pObject)->Type;
+				dist -= ((pBuildingType->GetFoundationHeight(false) + pBuildingType->GetFoundationWidth()) << 6);
 			}
 
-			if (dist > pWHExt->NoCellSpread_SnapDistance.Get())
+			if (dist <= pWHExt->NoCellSpread_SnapDistance.Get())
 			{
-				break;
-			}
-
-			auto pTechno = abstract_cast<TechnoClass*>(pObject);
-
-			if (!pTechno)
-			{
-				pObject->ReceiveDamage(&damage, 0, pWH, pThis->Owner, false, false, pHouse);
-				result = DamageAreaResult::Hit;
-			}
-			else
-			{
-				if (pTechno->IsAlive
-					&& (!pBuilding || !pBuilding->Type->InvisibleInGame)
-					&& pTechno->Health > 0
-					&& pTechno->IsOnMap
-					&& !pTechno->InLimbo
-					&& !(pTechno == pThis->Owner && pTechno->GetTechnoType()->DamageSelf && pWH != RulesClass::Instance->CrushWarhead))
+				if (!(pObject->AbstractFlags & AbstractFlags::Techno))
 				{
-					if (pTechno->IsIronCurtained() && !pTechno->ForceShielded)
-					{
-						result = DamageAreaResult::Nullified;
-					}
-					else
-					{
-						result = DamageAreaResult::Hit;
-					}
-
+					result = DamageAreaResult::Hit;
+					pObject->ReceiveDamage(&damage, 0, pWH, pThis->Owner, false, false, pHouse);
+				}
+				else if (pObject->IsAlive && pObject->Health > 0 && pObject->IsOnMap && !pObject->InLimbo
+					&& (!isBuilding || !static_cast<BuildingClass*>(pObject)->Type->InvisibleInGame)
+					&& !(pObject == pThis->Owner && pObject->GetTechnoType()->DamageSelf && pWH != RulesClass::Instance->CrushWarhead))
+				{
+					result = (pObject->IsIronCurtained() && !static_cast<TechnoClass*>(pObject)->ForceShielded)
+						? DamageAreaResult::Nullified : DamageAreaResult::Hit;
 					pObject->ReceiveDamage(&damage, 0, pWH, pThis->Owner, false, false, pHouse);
 				}
 			}
 		}
-		while (false);
 
 		R->EAX(result);
 		return SkipDamageArea;
