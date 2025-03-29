@@ -1311,6 +1311,25 @@ DEFINE_HOOK(0x6F4BB3, TechnoClass_ReceiveCommand_RequestUntether, 0x7)
 
 #pragma region SpawnerFix
 
+// Enable the carrier on the bridge to retrieve the aircraft normally
+DEFINE_HOOK(0x4CF3F9, FlyLocomotionClass_FlightUpdate_FixFlightLevel, 0x5)
+{
+	enum { SkipGameCode = 0x4CF4D2 };
+
+	GET(FlyLocomotionClass* const, pThis, EBP);
+
+	const auto pFoot = pThis->LinkedTo;
+
+	if (pFoot->GetMapCoords() == CellClass::Coord2Cell(pThis->MovingDestination)
+		&& MapClass::Instance.GetCellAt(pFoot->Location)->ContainsBridge()
+		&& pThis->FlightLevel >= CellClass::BridgeHeight)
+	{
+		pThis->FlightLevel -= CellClass::BridgeHeight;
+	}
+
+	return SkipGameCode;
+}
+
 // Let in air aircraft carrier ignore nearby elevated bridge check
 DEFINE_HOOK(0x6FC617, TechnoClass_GetFireError_Spawner, 0x8)
 {
