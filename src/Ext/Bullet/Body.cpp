@@ -265,15 +265,13 @@ inline void BulletExt::SimulatedFiringElectricBolt(BulletClass* pBullet)
 	if (!pWeapon->IsElectricBolt)
 		return;
 
-	if (auto const pEBolt = GameCreate<EBolt>())
-	{
-		pEBolt->AlternateColor = pWeapon->IsAlternateColor;
-		//TODO Weapon's Bolt.Color1, Bolt.Color2, Bolt.Color3(Ares)
-		auto& weaponStruct = WeaponTypeExt::BoltWeaponMap[pEBolt];
-		weaponStruct.Weapon = WeaponTypeExt::ExtMap.Find(pWeapon);
-		weaponStruct.BurstIndex = 0;
-		pEBolt->Fire(pBullet->SourceCoords, pBullet->TargetCoords, 0);
-	}
+	auto const pEBolt = GameCreate<EBolt>();
+	pEBolt->AlternateColor = pWeapon->IsAlternateColor;
+	//TODO Weapon's Bolt.Color1, Bolt.Color2, Bolt.Color3(Ares)
+	auto& weaponStruct = WeaponTypeExt::BoltWeaponMap[pEBolt];
+	weaponStruct.Weapon = WeaponTypeExt::ExtMap.Find(pWeapon);
+	weaponStruct.BurstIndex = 0;
+	pEBolt->Fire(pBullet->SourceCoords, pBullet->Data.Location, 0);
 }
 
 // Make sure pBullet and pBullet->WeaponType is not empty before call
