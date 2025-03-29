@@ -42,11 +42,90 @@ DEFINE_HOOK(0x4692BD, BulletClass_Logics_ApplyMindControl, 0x6)
 
 DEFINE_HOOK(0x469A75, BulletClass_Logics_DamageHouse, 0x7)
 {
+	enum { SkipDamageArea = 0x469A88 };
+
 	GET(BulletClass*, pThis, ESI);
 	GET(HouseClass*, pHouse, ECX);
+	GET(int, damage, EDX);
+	GET_BASE(CoordStruct*, coord, 0x8);
 
 	if (!pHouse)
-		R->ECX(BulletExt::ExtMap.Find(pThis)->FirerHouse);
+	{
+		pHouse = BulletExt::ExtMap.Find(pThis)->FirerHouse;
+		R->ECX(pHouse);
+	}
+
+	auto pWH = pThis->WH;
+	auto pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
+
+	if (pWHExt->NoCellSpread)
+	{
+		DamageAreaResult result = DamageAreaResult::Missed;
+
+		do
+		{
+			if (damage == 0)
+			{
+				break;
+			}
+
+			auto pTarget = pThis->Target;
+
+			if (!pTarget || pTarget->WhatAmI() == AbstractType::Cell)
+			{
+				break;
+			}
+
+			auto pObject = abstract_cast<ObjectClass*>(pTarget);
+
+			auto dist = coord->DistanceFrom(pObject->GetCoords());
+			auto pBuilding = abstract_cast<BuildingClass*>(pObject);
+
+			if (pBuilding)
+			{
+				auto pBuildingType = pBuilding->Type;
+				dist -= ((pBuildingType->GetFoundationHeight(0) + pBuildingType->GetFoundationWidth()) << 6);
+			}
+
+			if (dist > pWHExt->NoCellSpread_SnapDistance.Get())
+			{
+				break;
+			}
+
+			auto pTechno = abstract_cast<TechnoClass*>(pObject);
+
+			if (!pTechno)
+			{
+				pObject->ReceiveDamage(&damage, 0, pWH, pThis->Owner, false, false, pHouse);
+				result = DamageAreaResult::Hit;
+			}
+			else
+			{
+				if (pTechno->IsAlive
+					&& (!pBuilding || !pBuilding->Type->InvisibleInGame)
+					&& pTechno->Health > 0
+					&& pTechno->IsOnMap
+					&& !pTechno->InLimbo
+					&& !(pTechno == pThis->Owner && pTechno->GetTechnoType()->DamageSelf && pWH != RulesClass::Instance->CrushWarhead))
+				{
+					if (pTechno->IsIronCurtained() && !pTechno->ForceShielded)
+					{
+						result = DamageAreaResult::Nullified;
+					}
+					else
+					{
+						result = DamageAreaResult::Hit;
+					}
+
+					pObject->ReceiveDamage(&damage, 0, pWH, pThis->Owner, false, false, pHouse);
+				}
+			}
+		}
+		while (false);
+
+		R->EAX(result);
+		return SkipDamageArea;
+	}
 
 	return 0;
 }
