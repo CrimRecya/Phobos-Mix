@@ -634,44 +634,33 @@ DEFINE_HOOK(0x418B46, AircraftClass_MissionAttack_ScatterCell6, 0x6)
 
 DEFINE_HOOK(0x4CDF84, FlyLocomotionClass_UpdateLoaction_FlightCrash, 0x5)
 {
-	GET(int, deltaZ, ECX);
+	GET(int, vZ, ECX);
+	GET(const int, height, EDI);
+	GET(FlyLocomotionClass* const, pThis, ESI);
 	GET(FootClass* const, pLinkedTo, EAX);
 
-	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType()))
-	{
-		const int crashSpeed = pTypeExt->FlightCrash;
+	const int crashSpeed = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType())->FlightCrash;
 
-		if (crashSpeed >= 0)
-			deltaZ = crashSpeed;
-	}
+	if (crashSpeed >= 0)
+		vZ = crashSpeed;
 
-	R->ECX(deltaZ);
+	R->ECX(Math::min(vZ, (height - pThis->FlightLevel)));
 	return 0;
 }
 
 DEFINE_HOOK(0x4CDE96, FlyLocomotionClass_UpdateLoaction_FlightClimb, 0x6)
 {
-	GET(int, deltaZ, EAX);
-	GET(const int, bridgeHeight, EBX);
-	GET(const int, technoHeight, EDI);
+	GET(int, vZ, EAX);
+	GET(const int, height, EDI);
+	GET(FlyLocomotionClass* const, pThis, ESI);
 	GET(FootClass* const, pLinkedTo, ECX);
 
-	auto const pType = pLinkedTo->GetTechnoType();
+	const int climbSpeed = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType())->FlightClimb;
 
-	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType))
-	{
-		const int climbSpeed = pTypeExt->FlightClimb;
+	if (climbSpeed >= 0)
+		vZ = climbSpeed;
 
-		if (climbSpeed >= 0)
-			deltaZ = climbSpeed;
-	}
-
-	const int extraHeight = bridgeHeight + technoHeight + deltaZ - pType->GetFlightLevel();
-
-	if (extraHeight > 0)
-		deltaZ -= extraHeight;
-
-	R->EAX(deltaZ);
+	R->EAX(Math::min(vZ, (pThis->FlightLevel - height)));
 	return 0;
 }
 
