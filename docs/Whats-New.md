@@ -21,6 +21,7 @@ You can use the migration utility (can be found on [Phobos supplementaries repo]
 
 #### From post-0.3 devbuilds
 
+- Aircraft with weapons that have `Strafing.Shots` < 5 will now keep flying after last shot like those with `Strafing.Shots` >= 5 do. This delay can now be customized explicitly by setting `Strafing.EndDelay` on the weapon.
 - Selecting weapons other than primary against walls based on `Wall=true` on Warhead etc. now requires `[CombatDamage] -> AllowWeaponSelectAgainstWalls` to be set to true first.
 - Lunar theater tileset parsing unhardcoding is now only applied if `lunarmd.ini` has `[General] -> ApplyLunarFixes` set to true.
 - `Units.DisableRepairCost` was changed to `Units.UseRepairCost` (note inverted expected value) as it no longer has discrete default value and affects `Hospital=true` buildings, infantry do not have repair cost by default.
@@ -327,6 +328,7 @@ New:
 - No turret unit turn to the target (by CrimRecya & TaranDahl)
 - Damage multiplier for different houses (by CrimRecya)
 - Customizable duration for electric bolts (by Starkku)
+- Customizable FLH tracking for electric bolts (by Starkku)
 - Extended gattling rate down logic (by CrimRecya)
 - Sell or undeploy building on impact (by CrimRecya)
 - No rearm and reload in EMP or temporal (by CrimRecya)
@@ -345,10 +347,50 @@ New:
 - Delay automatic attack on the controlled unit (by CrimRecya)
 - `BombParachute` deglobalization (by TaranDahl)
 
+- New trajectory system (by CrimRecya)
+- New Missile trajectory (by CrimRecya)
+- New Engrave trajectory (by CrimRecya)
+- New Tracing trajectory (by CrimRecya)
+- Technos will maintain a suitable distance after firing (by CrimRecya)
+- Several new Infotypes, no display in specific status and a new single frame display method (by CrimRecya)
+- Display factories, superweapons, iron curtain and temporal progress on specific technos (by CrimRecya)
+- Customized Vehicle Turret Rotation (by CrimRecya)
+- Jumpjet Climbing Logic Enhancement (by CrimRecya)
+- Building placing and deploying logic enhancement (by CrimRecya)
+- Techno base normal and new placing grids (by CrimRecya)
+- Grey cameo preview and cameo overlays (by CrimRecya)
+- Aggressive attack move mission (by CrimRecya)
+- Manually empty and reload ammo (by CrimRecya)
+- Exclusive SuperWeapon Sidebar (by NetsuNegi & CrimRecya)
+- Allow merging AOE damage to buildings into one (by CrimRecya)
+- Distribution click action mode (by CrimRecya)
+- Jumpjet Tilts While Moving (by CrimRecya)
+- Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll (by CrimRecya)
+- Laser, electric bolt and rad beam scatter (by CrimRecya)
+- New hotkey to select the units within the current screen that are captured by non-permanent mind-controller. (by TaranDahl)
+- CellSpread in cylinder shape (by TaranDahl)
+- CellSpread damage check if victim is in air (by TaranDahl)
+- Toggle waypoint for building and aircraft (by TaranDahl)
+- Weapon range finding in cylinder (by TaranDahl)
+- Infantry firing while moving (by TaranDahl)
+- Fix the bug that parasite will vanish if it missed its target when its previous cell is occupied (by TaranDahl)
+- Grant new superweapons in superweapons (by FS-21).
+- Enhance bombard trajectory with vertical and meteor trajectory (by NaotoYuuki & Ollerus)
+- Option for vehicles to keep target when issued move command (by Starkku)
+- Aggressive stance toggle command (auto target unarmed enemy buildings) (by Aephiex)
+
 Vanilla fixes:
 - Prevent the units with locomotors that cause problems from entering the tank bunker (by TaranDahl)
 - Fixed an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface (by NetsuNegi)
+- Fixed `MovementZone=Subterannean` harvesters being unable to find docks if in area enclosed by water, cliffs etc.
+- Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory (by CrimRecya & TaranDahl)
 - Buildings with foundation bigger than 1x1 can now recycle spawned correctly (by TaranDahl)
+- Electric bolts that are supposed to update their position based on units current firing coords (by default, those fired by vehicles) now do so correctly for more than one concurrent electric bolt (by Starkku)
+
+- Fixed an issue that aircraft carriers can not find suitable locations for attacks when under elevated bridges on their own (by CrimRecya)
+- Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges (by CrimRecya & TaranDahl)
+- Observer sidebar in skirmish game mode (by CrimRecya)
+- Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles (by CrimRecya)
 
 Fixes / interactions with other extensions:
 - Allowed `AuxBuilding` and Ares' `SW.Aux/NegBuildings` to count building upgrades (by Ollerus)
@@ -504,7 +546,7 @@ New:
 - Custom object palettes for TerrainTypes (by Starkku)
 - Forbidding parallel AI queues for specific TechnoTypes (by Starkku)
 - Nonprovocative Warheads (by Starkku)
-- Buildings considered as destroyable pathfinding obstacles (by Starkku)
+- Option to restore `PowerSurplus` setting for AI (by Starkku)
 - `FireOnce` infantry sequence reset toggle (by Starkku)
 - Assign Super Weapon cameo to any sidebar tab (by NetsuNegi)
 - Customizing effect of level lighting on air units (by Starkku)
@@ -620,6 +662,7 @@ Vanilla fixes:
 - Fixed issues caused by incorrect reference removal (f.ex. If the unit cloaks/enters transport, it cannot gain experience from previously launched spawners/C4/projectiles)
 - Fixed an issue that caused `IsSonic=true` wave drawing to crash the game if the wave traveled over a certain distance (by Starkku)
 - Fixed `Hospital=yes` building can't kick out infantry after loading a save (by FlyStar)
+- Electric bolts that are supposed to update their position based on units current firing coords (by default, those fired by vehicles) now do so correctly for more than one concurrent electric bolt (by Starkku)
 
 Phobos fixes:
 - Fixed a few errors of calling for superweapon launch by `LaunchSW` or building infiltration (by Trsdy)

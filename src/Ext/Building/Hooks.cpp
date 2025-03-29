@@ -13,24 +13,15 @@
 
 #pragma region Update
 
-//After TechnoClass_AI?
+// After TechnoClass_AI
 DEFINE_HOOK(0x43FE69, BuildingClass_AI, 0xA)
 {
 	GET(BuildingClass*, pThis, ESI);
 
-	// Do not search this up again in any functions called here because it is costly for performance - Starkku
-	auto pExt = BuildingExt::ExtMap.Find(pThis);
-
-	/*
-	// Set only if unset or type has changed - Not currently useful as building type does not change.
-	auto pType = pThis->Type;
-
-	if (!pExt->TypeExtData || pExt->TypeExtData->OwnerObject() != pType)
-		pExt->TypeExtData = BuildingTypeExt::ExtMap.Find(pType);
-	*/
-
+	auto const pExt = BuildingExt::ExtMap.Find(pThis);
 	pExt->DisplayIncomeString();
 	pExt->ApplyPoweredKillSpawns();
+	pExt->TechnoExtData->UpdateGattlingRateDownReset();
 
 	return 0;
 }
@@ -204,6 +195,7 @@ DEFINE_HOOK(0x44D455, BuildingClass_Mission_Missile_EMPulseBulletWeapon, 0x8)
 
 #pragma endregion
 
+// Kick out stuck units when the factory building is not busy
 #pragma region KickOutStuckUnits
 
 // Kick out stuck units when the factory building is not busy, only factory buildings can enter this hook
@@ -383,6 +375,38 @@ DEFINE_HOOK(0x449149, BuildingClass_Captured_FactoryPlant2, 0x6)
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x450630, BuildingClass_UpdateRepair_PlayerAutoRepair, 0x9)
+{
+	GET(BuildingClass*, pThis, ECX);
+
+	if (!pThis->CanBeRepaired())
+		return 0;
+
+	auto const mission = pThis->CurrentMission;
+
+	if (mission == Mission::Construction || mission == Mission::Selling)
+		return 0;
+
+	auto const pOwner = pThis->Owner;
+
+	if (pOwner->IsControlledByHuman() && RulesExt::Global()->PlayerAutoRepair)
+		pThis->IsBeingRepaired = true;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x448480, BuildingClass_SetOwningHouse_CapturedEVA, 0x5)
+{
+	GET(HouseClass*, pToHouse, EBX);
+
+	if (pToHouse->IsControlledByCurrentPlayer()) // Not necessary to per techno customize this, I guess?
+		VoxClass::PlayIndex(RulesExt::Global()->EVA_WeCaptureABuilding.Get(VoxClass::FindIndex((const char*)"EVA_BuildingCaptured")));
+	else
+		VoxClass::PlayIndex(RulesExt::Global()->EVA_OurBuildingIsCaptured.Get(VoxClass::FindIndex((const char*)"EVA_BuildingCaptured")));
+
+	return 0x44848F;
+}
 
 #pragma region DestroyableObstacle
 

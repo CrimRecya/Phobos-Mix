@@ -134,6 +134,7 @@ This page lists all the individual contributions to the project by their author.
   - Shared ammo logic
   - Customizable FLH when infantry is prone or deployed
   - Initial strength for cloned infantry
+  - Grant new superweapons in superweapons
   - Map Events 604 & 605 for checking if a specific Techno enters in a cell
 - **Starkku**:
   - Misc. minor bugfixes & improvements
@@ -242,6 +243,8 @@ This page lists all the individual contributions to the project by their author.
   - Customizable ChronoSphere teleport delays for units
   - Allowed and disallowed types for `FactoryPlant`
   - Forbidding parallel AI queues for specific TechnoTypes
+  - Vehicles keeping target on move command
+  - Reimplemented `Airburst` & `Splits` logic with more customization options
   - Nonprovocative Warheads
   - Customizing effect of level lighting on air units
   - Reimplemented `Airburst` & `Splits` logic with more customization options
@@ -256,6 +259,7 @@ This page lists all the individual contributions to the project by their author.
   - Custom exit cell for infantry factory
   - Vehicles keeping target on move command
   - `IsSonic` wave drawing crash fix
+  - Customizable electric bolt duration and electric bolt-related fixes
 - **Morton (MortonPL)**:
   - `XDrawOffset` for animations
   - Shield passthrough & absorption
@@ -361,6 +365,7 @@ This page lists all the individual contributions to the project by their author.
    - Fix amphibious harvesters can not automatically return to refineries with `WaterBound`
    - Fix [EIP 004C2C19](https://modenc.renegadeprojects.com/Internal_Error#eip_004C2C19) concerning the electric bolt
    - Fix `DefaultDisguise` showing wrong house colors for different players
+   - Exclusive SuperWeapon Sidebar
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**:
    - Customizable `ShowTimer` priority of superweapons
@@ -399,7 +404,7 @@ This page lists all the individual contributions to the project by their author.
   - Use 2D distance instead of 3D to check whether in air team members have arrived destination
   - No rearm and reload in EMP or temporal
   - Enhanced Straight trajectory
-  - Enable Building Production Queue
+  - Enable building production queue
   - Fix for sidebar not updating queued unit numbers when on hold
   - New Parabola trajectory
   - Enhanced Bombard trajectory
@@ -413,6 +418,31 @@ This page lists all the individual contributions to the project by their author.
   - Technos can maintain a suitable distance after firing
   - Projectile subject to ground check before firing
   - Delay automatic attack on the controlled unit
+  - Fixed an issue that aircraft carriers can not find suitable locations for attacks when under elevated bridges on their own
+  - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges
+  - New trajectory system
+  - New Missile trajectory
+  - New Engrave trajectory
+  - New Tracing trajectory
+  - Jumpjet Climbing Logic Enhancement
+  - Several new Infotypes, no display in specific status and a new single frame display method
+  - Display factories, superweapons, iron curtain and temporal progress on specific technos
+  - Customized Vehicle Turret Rotation
+  - Exclusive SuperWeapon Sidebar
+  - Observer sidebar in skirmish game mode
+  - Building placing and deploying logic enhancement
+  - Techno base normal and new placing grids
+  - Grey cameo preview and cameo overlays
+  - Optimize aircrafts stop action and allow they using area guard and attack moving
+  - Exclusive Sidebar for Superweapons
+  - Aggressive attack move mission
+  - Manually empty and reload ammo
+  - Allow merging AOE damage to buildings into one
+  - Distribution click action mode
+  - Jumpjet Tilts While Moving
+  - Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll
+  - Laser, electric bolt and rad beam scatter
+  - Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles
 - **Ollerus**:
   - Build limit group enhancement
   - Customizable rocker amplitude
@@ -442,10 +472,18 @@ This page lists all the individual contributions to the project by their author.
   - Recycle the spawner on other FLH
   - Fixed the bug that spawned can not return to buildings with foundation bigger than 1x1
   - `BombParachute` deglobalization
+  - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges
+  - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller
+  - `CellSpread.Cylinder`
+  - `AffectsInAir` and `AffectsOnFloor`
+  - Infantry fire while moving
+  - Weapon range finding in cylinder
+- **Aephiex**:
+  - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
+  - Aggressive stance toggle command (auto target unarmed enemy buildings)
 - **tyuah8**:
   - Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix
   - Destroyed unit leaves sensors bugfix
-- **Aephiex** - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
 - **Multfinite** - Allow to toggle main exception handler via command line argument `-ExceptionHandler=boolean`
 - **hejiajun107, Xkein** - Fix a jumpjet crash related to voxel shadow drawing
 - **Ares developers**:

@@ -30,6 +30,7 @@ public:
 
 	static const char* AppIconPath;
 	static const wchar_t* VersionDescription;
+	static bool ShowCurrentInfo;
 	static bool DisplayDamageNumbers;
 	static bool IsLoadingSaveGame;
 	static bool ShouldQuickSave;
@@ -54,6 +55,12 @@ public:
 		static double PowerDelta_ConditionYellow;
 		static double PowerDelta_ConditionRed;
 		static bool CenterPauseMenuBackground;
+		static bool SuperWeaponSidebar;
+		static int SuperWeaponSidebar_Interval;
+		static int SuperWeaponSidebar_LeftOffset;
+		static int SuperWeaponSidebar_CameoHeight;
+		static int SuperWeaponSidebar_Max;
+		static int SuperWeaponSidebar_MaxColumns;
 		static bool WeedsCounter_Show;
 		static bool AnchoredToolTips;
 
@@ -78,6 +85,9 @@ public:
 		static bool ShowPlacementPreview;
 		static bool EnableBuildingPlacementPreview;
 		static bool DigitalDisplay_Enable;
+		static bool MessageDisplayInCenter;
+		static bool ShowBuildingStatistics;
+		static bool DrawAdjacentBoundary;
 		static bool RealTimeTimers;
 		static bool RealTimeTimers_Adaptive;
 		static int CampaignDefaultGameSpeed;
@@ -93,6 +103,19 @@ public:
 		static bool HideLightFlashEffects;
 		static bool ShowFlashOnSelecting;
 		static bool UnitPowerDrain;
+		static bool SelectedDisplay_Enable;
+		static bool SelectedDisplay_Expand;
+		static int SelectedDisplay_MaxCameo;
+		static bool AllowDistributionCommand;
+		static int DistributionSpreadMode;
+		static int DistributionFilterMode;
+		static bool ScrollSidebarStripInTactical;
+		static bool ScrollSidebarStripWhenHoldAlt;
+		static bool ScrollSidebarStripWhenHoldCtrl;
+		static bool ScrollSidebarStripWhenHoldShift;
+		static bool AutomaticPlacingBuilding;
+		static bool AutomaticPlacingCombatBuilding;
+		static bool UnifiedTechnoColor;
 	};
 
 	class Misc

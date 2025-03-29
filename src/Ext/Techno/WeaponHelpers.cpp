@@ -3,6 +3,7 @@
 #include <OverlayTypeClass.h>
 
 #include <Ext/WeaponType/Body.h>
+#include <Ext/BulletType/Body.h>
 #include <Utilities/EnumFunctions.h>
 
 // Compares two weapons and returns index of which one is eligible to fire against current target (0 = first, 1 = second), or -1 if neither works.
@@ -10,8 +11,8 @@ int TechnoExt::PickWeaponIndex(TechnoClass* pThis, TechnoClass* pTargetTechno, A
 {
 	CellClass* pTargetCell = nullptr;
 
-	// Ignore target cell for airborne target technos.
-	if (!pTargetTechno || !pTargetTechno->IsInAir())
+	// Ignore target cell for airborne and underground target technos.
+	if (!pTargetTechno || (!pTargetTechno->IsInAir() && !(pTargetTechno->InWhichLayer() == Layer::Underground)))
 	{
 		if (auto const pCell = abstract_cast<CellClass*>(pTarget))
 			pTargetCell = pCell;
@@ -43,10 +44,12 @@ int TechnoExt::PickWeaponIndex(TechnoClass* pThis, TechnoClass* pTargetTechno, A
 		}
 		else if (auto const pFirstExt = WeaponTypeExt::ExtMap.Find(pWeaponOne))
 		{
+			auto const pSecondProjExt = BulletTypeExt::ExtMap.Find(pWeaponTwo->Projectile);
 			bool secondIsAA = pTargetTechno && pTargetTechno->IsInAir() && pWeaponTwo->Projectile->AA;
+			bool secondIsAU = pTargetTechno && pTargetTechno->InWhichLayer() == Layer::Underground && pSecondProjExt && pSecondProjExt->AU;
 			bool firstAllowedAE = pFirstExt->HasRequiredAttachedEffects(pTargetTechno, pThis);
 
-			if (!allowFallback && (!allowAAFallback || !secondIsAA) && !TechnoExt::CanFireNoAmmoWeapon(pThis, 1) && firstAllowedAE)
+			if (!allowFallback && (!allowAAFallback || !secondIsAA) && !secondIsAU && !TechnoExt::CanFireNoAmmoWeapon(pThis, 1) && firstAllowedAE)
 				return weaponIndexOne;
 
 			if ((pTargetCell && !EnumFunctions::IsCellEligible(pTargetCell, pFirstExt->CanTarget, true, true)) ||
