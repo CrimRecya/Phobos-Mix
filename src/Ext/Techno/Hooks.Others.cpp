@@ -2120,7 +2120,7 @@ DEFINE_HOOK(0x707ED0, TechnoClass_GetGuardRange_FixForIFV, 0x6)
 }
 
 #pragma endregion
-/*
+
 #pragma region SharedControl
 
 DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
@@ -2131,7 +2131,7 @@ DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
 }
 
 #pragma endregion
-*/
+
 #pragma region ExtraTargeting
 
 DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting, 0x7)

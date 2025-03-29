@@ -358,7 +358,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->ExtraTargeting_OnNoTargetAssigned.Read(exINI, GameStrings::General, "ExtraTargeting.OnNoTargetAssigned");
 	this->CanAttackMeThreatBonus.Read(exINI, GameStrings::General, "CanAttackMeThreatBonus");
 
-//	this->AllyShareControl.Read(exINI, GameStrings::General, "AllyShareControl");
+	this->AllyShareControl.Read(exINI, GameStrings::General, "AllyShareControl");
 	this->InTransportInfantryAmmoFix.Read(exINI, GameStrings::General, "InTransportInfantryAmmoFix");
 	this->UpdateInLimbo_Occupier.Read(exINI, GameStrings::General, "UpdateInLimbo.Occupier");
 	this->UpdateInLimbo_NormalPassenger.Read(exINI, GameStrings::General, "UpdateInLimbo.NormalPassenger");
@@ -698,7 +698,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->ExtraTargeting_OnStopCommand)
 		.Process(this->ExtraTargeting_OnNoTargetAssigned)
 		.Process(this->CanAttackMeThreatBonus)
-//		.Process(this->AllyShareControl)
+		.Process(this->AllyShareControl)
 		.Process(this->InTransportInfantryAmmoFix)
 		.Process(this->UpdateInLimbo_Occupier)
 		.Process(this->UpdateInLimbo_NormalPassenger)
