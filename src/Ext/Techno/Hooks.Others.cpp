@@ -1512,54 +1512,6 @@ DEFINE_HOOK(0x741925, UnitClass_CrushCell_CrushBuilding, 0x5)
 
 #pragma endregion
 
-#pragma region Sink
-
-DEFINE_HOOK(0x7364DC, UnitClass_Update_SinkSpeed, 0x7)
-{
-	GET(UnitClass* const, pThis, ESI);
-	GET(int, coordZ, EDX);
-
-	R->EDX(coordZ - (TechnoTypeExt::ExtMap.Find(pThis->Type)->SinkSpeed - 5));
-	return 0;
-}
-
-DEFINE_HOOK(0x737DE2, UnitClass_ReceiveDamage_Sinkable, 0x6)
-{
-	enum { GoOtherChecks = 0x737E18, NoSink = 0x737E63 };
-
-	GET(UnitTypeClass*, pType, EAX);
-
-	const bool shouldSink = pType->Weight > RulesClass::Instance->ShipSinkingWeight && pType->Naval && !pType->Underwater && !pType->Organic;
-
-	return TechnoTypeExt::ExtMap.Find(pType)->Sinkable.Get(shouldSink) ? GoOtherChecks : NoSink;
-}
-
-DEFINE_HOOK(0x629C67, ParasiteClass_UpdateSquid_SinkableBySquid, 0x9)
-{
-	enum { SkipGameCode = 0x629C86 };
-
-	GET(ParasiteClass*, pThis, ESI);
-	GET(FootClass*, pVictim, EDI);
-
-	const auto pVictimType = pVictim->GetTechnoType();
-
-	if (TechnoTypeExt::ExtMap.Find(pVictimType)->SinkableBySquid || pVictim->WhatAmI() != AbstractType::Unit)
-	{
-		pVictim->IsSinking = true;
-		pVictim->Destroyed(pThis->Owner);
-		pVictim->Stun();
-	}
-	else
-	{
-		auto damage = pVictimType->Strength;
-		pVictim->ReceiveDamage(&damage, 0, RulesClass::Instance->C4Warhead, pThis->Owner, true, false, pThis->Owner->Owner);
-	}
-
-	return SkipGameCode;
-}
-
-#pragma endregion
-
 #pragma region JumpjetSpeedType
 
 namespace JumpjetSpeedType

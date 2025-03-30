@@ -1416,7 +1416,7 @@ In `rulesmd.ini`:
 [SOMEVEHICLE]           ; VehicleType
 Sinkable=               ; bool
 SinkSpeed=5             ; integer, lepton per frame
-Sinkable.SquidGrab=true    ; bool
+Sinkable.SquidGrab=true ; bool
 ```
 
 ### Stationary vehicles

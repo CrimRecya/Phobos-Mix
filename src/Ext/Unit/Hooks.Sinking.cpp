@@ -1,15 +1,4 @@
-#include <AircraftClass.h>
-
-#include <ScenarioClass.h>
-#include <TunnelLocomotionClass.h>
-
 #include <Ext/Techno/Body.h>
-#include <Ext/TechnoType/Body.h>
-#include <Ext/BuildingType/Body.h>
-#include <Ext/House/Body.h>
-#include <Ext/WarheadType/Body.h>
-#include <Ext/WeaponType/Body.h>
-#include <Utilities/EnumFunctions.h>
 
 DEFINE_HOOK(0x7364DC, UnitClass_Update_SinkSpeed, 0x7)
 {

@@ -2,9 +2,8 @@
 #include <UnitClass.h>
 #include <BuildingClass.h>
 #include <Utilities/Macro.h>
-#include <Ext/TechnoType/Body.h>
-#include <Ext/WeaponType/Body.h>
 #include <Ext/Techno/Body.h>
+#include <Ext/WeaponType/Body.h>
 
 // Misc jumpjet facing, turning, drawing fix -- Author: Trsdy
 // Jumpjets stuck at FireError::FACING because Jumpjet has its own facing just for JumpjetTurnRate
