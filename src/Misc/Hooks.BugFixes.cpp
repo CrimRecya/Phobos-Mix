@@ -1320,9 +1320,9 @@ DEFINE_HOOK(0x4CF3F9, FlyLocomotionClass_FlightUpdate_FixFlightLevel, 0x5)
 
 	const auto pFoot = pThis->LinkedTo;
 
-	if (pFoot->GetMapCoords() == CellClass::Coord2Cell(pThis->MovingDestination)
-		&& MapClass::Instance.GetCellAt(pFoot->Location)->ContainsBridge()
-		&& pThis->FlightLevel >= CellClass::BridgeHeight)
+	if (pFoot->GetMapCoords() == CellClass::Coord2Cell(pThis->MovingDestination) // Maintain height until on same cell to prevent poor visual display
+		&& MapClass::Instance.GetCellAt(pFoot->Location)->ContainsBridge() // Only effective when on the bridge
+		&& pThis->FlightLevel >= CellClass::BridgeHeight) // Not lower than the ground level
 	{
 		pThis->FlightLevel -= CellClass::BridgeHeight;
 	}
@@ -1336,9 +1336,9 @@ DEFINE_HOOK(0x6FC617, TechnoClass_GetFireError_Spawner, 0x8)
 	enum { ContinueCheck = 0x6FC61F, TemporaryCannotFire = 0x6FCD0E };
 
 	GET(TechnoClass* const, pThis, ESI);
-	GET(const bool, nearBridge, EAX);
+	GET(const bool, nearElevatedBridge, EAX);
 
-	return (nearBridge && !pThis->IsInAir()) ? TemporaryCannotFire : ContinueCheck;
+	return (nearElevatedBridge && !pThis->IsInAir()) ? TemporaryCannotFire : ContinueCheck;
 }
 
 #pragma endregion
