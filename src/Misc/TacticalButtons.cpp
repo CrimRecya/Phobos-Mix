@@ -543,7 +543,8 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				drawText("PathDir = %d , %d , %d , %d , %d , %d , %d , %d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5], pD[6], pD[7]);
 
 			drawText("CurrentSpeed = %d , PercentSpeed = %d", static_cast<int>(pFoot->GetCurrentSpeed()), static_cast<int>(pFoot->SpeedPercentage * 100));
-			drawText("OnBridge = %s , NearBridge = %s", (pFoot->OnBridge ? "Yes" : "No"), (reinterpret_cast<bool(__thiscall*)(FootClass*)>(0x703B10)(pFoot) ? "Yes" : "No"));
+			drawText("OnBridge = %s , NearElevatedBridge = %s", (pFoot->OnBridge ? "Yes" : "No"), (reinterpret_cast<bool(__thiscall*)(FootClass*)>(0x703B10)(pFoot) ? "Yes" : "No"));
+			drawText("CellAfterBridge = %s", (pFoot->vt_entry_2B0() ? "Yes" : "No"));
 			drawText("Scattering = %s , Aggressive = %s", (pExt->ScatteringStopFrame >= Unsorted::CurrentFrame ? "Yes" : "No"), (pExt->AggressiveStance ? "Yes" : "No"));
 
 			drawInfo("Destination", pFoot, pFoot->Destination);
@@ -713,6 +714,8 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawText("  Unknown_200 - %s", (pCell->Flags & CellFlags::Unknown_200 ? "Yes" : "No"));
 		drawText("  BridgeBody - %s", (pCell->Flags & CellFlags::BridgeBody ? "Yes" : "No"));
 		drawText("  BridgeDir - %s", (pCell->Flags & CellFlags::BridgeDir ? "Yes" : "No"));
+		drawText("  PixelFX - %s", (pCell->Flags & CellFlags::PixelFX ? "Yes" : "No"));
+		drawText("  DrawDarkenIfInAir - %s", (pCell->Flags & CellFlags::DrawDarkenIfInAir ? "Yes" : "No"));
 
 		const auto nOF = pCell->OccupationFlags;
 		const auto nAF = pCell->AltOccupationFlags;
