@@ -743,6 +743,10 @@ DEFINE_HOOK(0x7466D8, UnitClass_DisguiseAs_DisguiseUnit, 0xA)
 		pThis->DisguisedAsHouse = pTarget->GetOwningHouse();
 	}
 
+	// Use the same FireAngle
+	if (pThis->Disguise && pThis->Disguise->WhatAmI() == AbstractType::UnitType)
+		pThis->BarrelFacing.SetCurrent(pTarget->BarrelFacing.Current());
+
 	return ret;
 }
 
@@ -792,3 +796,30 @@ DEFINE_HOOK(0x73B780, UnitClass_DrawAsVXL_TypeFix, 0x6)
 
 	return 0;
 }
+
+/*
+DEFINE_HOOK(0x737BA0, UnitClass_Unlimbo_Start, 0x7)
+{
+	GET(UnitClass*, pThis, ECX);
+
+	auto pType = pThis->Type;
+	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+
+	if (!pTypeExt->HasImageCached)
+	{
+		auto primaryDir = pThis->PrimaryFacing.Current().Raw;
+		auto secondaryDir = pThis->SecondaryFacing.Current().Raw;
+		DirStruct dir;
+
+
+		for (int i = 0; i != 32; ++i)
+		{
+			dir.SetValue<5>(i);
+			pThis->PrimaryFacing.SetCurrent(dir);
+			pThis->SecondaryFacing.SetCurrent(dir);
+		}
+	}
+
+	return 0;
+}
+*/

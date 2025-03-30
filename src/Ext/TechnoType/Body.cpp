@@ -907,6 +907,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Spawner_RecycleCoord)
 		.Process(this->Spawner_RecycleOnTurret)
 
+		.Process(this->HasImageCached)
 		;
 }
 void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)
