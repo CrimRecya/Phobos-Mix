@@ -444,6 +444,7 @@ This page lists all the individual contributions to the project by their author.
   - Fixed an issue that aircraft carriers can not find suitable locations for attacks when under elevated bridges on their own
   - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges
   - Fixed an issue that aircraft carriers cannot retract its spawned aircraft when on the bridge
+  - Fixed an issue that some amphibious technos being unable to enter on water structures
 - **Ollerus**:
   - Build limit group enhancement
   - Customizable rocker amplitude
