@@ -386,7 +386,6 @@ Vanilla fixes:
 - Fixed `MovementZone=Subterannean` harvesters being unable to find docks if in area enclosed by water, cliffs etc.
 - Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory (by CrimRecya & TaranDahl)
 - Buildings with foundation bigger than 1x1 can now recycle spawned correctly (by TaranDahl)
-- Technos are no longer unable to stop when it is above the elevated bridge, and they are still not allowed to stop moving under the elevated bridge, but can stop other missions (by CrimRecya)
 
 - Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles (by CrimRecya)
 - Fixed an issue that aircraft carriers can not find suitable locations for attacks when under elevated bridges on their own (by CrimRecya)
@@ -394,6 +393,7 @@ Vanilla fixes:
 - Fixed an issue that aircraft carriers cannot retract its spawned aircraft when on the bridge (by CrimRecya)
 - Observer sidebar in skirmish game mode (by CrimRecya)
 - Fixed an issue that `MovementZone=AmphibiousDestroyer` and `MovementZone=AmphibiousCrusher` technos being unable to enter on water structures (by CrimRecya)
+- Technos are no longer unable to stop when it is above the elevated bridge, and they are still not allowed to stop moving under the elevated bridge, but can stop other missions (by CrimRecya)
 
 Fixes / interactions with other extensions:
 - Allowed `AuxBuilding` and Ares' `SW.Aux/NegBuildings` to count building upgrades (by Ollerus)
