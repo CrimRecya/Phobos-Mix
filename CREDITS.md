@@ -474,6 +474,8 @@ This page lists all the individual contributions to the project by their author.
   - Recycle the spawner on other FLH
   - Fixed the bug that spawned can not return to buildings with foundation bigger than 1x1
   - `BombParachute` deglobalization
+  - Sinkablity and sinking speed customization
+  - Fixed an issue where `FireAngle` would not work properly under certain circumstances
   - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges
   - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller
   - `CellSpread.Cylinder`

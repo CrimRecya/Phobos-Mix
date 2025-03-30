@@ -813,10 +813,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->IgnoreRallyPoint.Read(exINI, pSection, "IgnoreRallyPoint");
 
-	this->Sinkable.Read(exINI, pSection, "Sinkable");
-	this->SinkableBySquid.Read(exINI, pSection, "SinkableBySquid");
-	this->SinkSpeed.Read(exINI, pSection, "SinkSpeed");
-
 	this->JumpjetSpeedType.Read(exINI, pSection, "JumpjetSpeedType");
 
 	this->FallingDownDamage.Read(exINI, pSection, "FallingDownDamage");
@@ -860,6 +856,10 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->IgnoredByMouse_ToSelf.Read(exINI, pSection, "IgnoredByMouse.ToSelf");
 	this->IgnoredByMouse_ToAlly.Read(exINI, pSection, "IgnoredByMouse.ToAlly");
 	this->IgnoredByMouse_ToEnemy.Read(exINI, pSection, "IgnoredByMouse.ToEnemy");
+
+	this->Sinkable.Read(exINI, pSection, "Sinkable");
+	this->Sinkable_SquidGrab.Read(exINI, pSection, "Sinkable.SquidGrab");
+	this->SinkSpeed.Read(exINI, pSection, "SinkSpeed");
 
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
@@ -1406,10 +1406,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->IgnoreRallyPoint)
 
-		.Process(this->Sinkable)
-		.Process(this->SinkableBySquid)
-		.Process(this->SinkSpeed)
-
 		.Process(this->JumpjetSpeedType)
 
 		.Process(this->KeepAlive)
@@ -1469,6 +1465,9 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->ProneSpeed)
 
+		.Process(this->Sinkable)
+		.Process(this->Sinkable_SquidGrab)
+		.Process(this->SinkSpeed)
 		;
 }
 void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)

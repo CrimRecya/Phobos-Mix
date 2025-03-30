@@ -199,6 +199,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fixed an issue that caused `IsSonic=true` wave drawing to crash the game if the wave traveled over a certain distance.
 - Buildings with foundation bigger than 1x1 can now recycle spawner correctly.
 - Electric bolts that are supposed to update their position based on units current firing coords (by default, those fired by vehicles) now do so correctly for more than one concurrent electric bolt.
+- Fixed an issue where `FireAngle` would not work properly under certain circumstances.
 - Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles.
 - Fixed an issue that aircraft carriers can not find suitable locations for attacks when under elevated bridges on their own.
 - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges.
@@ -1402,6 +1403,20 @@ In `rulesmd.ini`:
 [SOMEVEHICLE]                     ; VehicleType
 KeepTargetOnMove=false            ; boolean
 KeepTargetOnMove.ExtraDistance=0  ; floating point value, distance in cells
+```
+
+### Sinking behavior dehardcode
+
+- In vanilla, whether a ship sinks when it dies on the water is determined by multiple settings of hardcoding. The speed of the sinking is hardcoded to 5 Leptons per frame.
+- Now you can determine whether a ship sinks with a dedicated flag `Sinkable`, and use `SinkSpeed` to customize the speed at which the ship sinks.
+- `Sinkable.SquidGrab` controls the behavior of a ship when it is killed by a squid. Set it to `false` to cause the ship to take a lethal damage instead of sinking directly at that time (and thus obey `Sinkable` settings).
+
+In `rulesmd.ini`:
+```ini
+[SOMEVEHICLE]           ; VehicleType
+Sinkable=               ; bool
+SinkSpeed=5             ; integer, lepton per frame
+Sinkable.SquidGrab=true    ; bool
 ```
 
 ### Stationary vehicles

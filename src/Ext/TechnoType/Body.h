@@ -366,10 +366,6 @@ public:
 
 		Valueable<bool> IgnoreRallyPoint;
 
-		Nullable<bool> Sinkable;
-		Valueable<bool> SinkableBySquid;
-		Valueable<int> SinkSpeed;
-
 		Valueable<int> JumpjetSpeedType;
 
 		Nullable<bool> KeepAlive;
@@ -423,6 +419,10 @@ public:
 		Nullable<double> VehicleDamagedSpeedMultiplier_Red;
 
 		Nullable<double> ProneSpeed;
+
+		Nullable<bool> Sinkable;
+		Valueable<bool> Sinkable_SquidGrab;
+		Valueable<int> SinkSpeed;
 
 		struct LaserTrailDataEntry
 		{
@@ -789,10 +789,6 @@ public:
 
 			, IgnoreRallyPoint { false }
 
-			, Sinkable { }
-			, SinkableBySquid { true }
-			, SinkSpeed { 5 }
-
 			, JumpjetSpeedType { 3 }
 
 			, KeepAlive {}
@@ -851,6 +847,10 @@ public:
 			, VehicleDamagedSpeedMultiplier_Red { }
 
 			, ProneSpeed { }
+
+			, Sinkable { }
+			, Sinkable_SquidGrab { true }
+			, SinkSpeed { 5 }
 		{ }
 
 		virtual ~ExtData() = default;
