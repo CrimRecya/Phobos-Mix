@@ -745,3 +745,50 @@ DEFINE_HOOK(0x7466D8, UnitClass_DisguiseAs_DisguiseUnit, 0xA)
 
 	return ret;
 }
+
+namespace RotatingContext
+{
+	UnitClass* pThis;
+	UnitTypeClass* pType;
+}
+
+DEFINE_HOOK(0x736990, UnitClass_UpdateRotating_Start, 0x6)
+{
+	GET(UnitClass*, pThis, ECX);
+
+	RotatingContext::pThis = pThis;
+	RotatingContext::pType = pThis->Type;
+
+	if (pThis->IsDisguised())
+	{
+		auto pDisguisedType = pThis->GetDisguise(true);
+
+		if (pDisguisedType->WhatAmI() == AbstractType::UnitType)
+		{
+			pThis->Type = (UnitTypeClass*)pDisguisedType;
+		}
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x736C0E, UnitClass_UpdateRotating_End, 0x5)
+{
+	RotatingContext::pThis->Type = RotatingContext::pType;
+	return 0;
+}
+
+DEFINE_HOOK(0x73C61C, UnitClass_DrawAsSHP_Disguise, 0x5)
+{
+	return 0x73C62B;
+}
+
+DEFINE_HOOK(0x73B780, UnitClass_DrawAsVXL_TypeFix, 0x6)
+{
+	GET(ObjectTypeClass*, pType, EBX);
+
+	if (pType->WhatAmI() == AbstractType::UnitType)
+		R->EAX(pType);
+
+	return 0;
+}
