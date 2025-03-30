@@ -1324,6 +1324,7 @@ DEFINE_HOOK(0x4CF3F9, FlyLocomotionClass_FlightUpdate_FixFlightLevel, 0x5)
 		&& MapClass::Instance.GetCellAt(pFoot->Location)->ContainsBridge() // Only effective when on the bridge
 		&& pThis->FlightLevel >= CellClass::BridgeHeight) // Not lower than the ground level
 	{
+		// Subtract the excess bridge height to allow the aircraft to return to the correct altitude
 		pThis->FlightLevel -= CellClass::BridgeHeight;
 	}
 
@@ -1338,6 +1339,7 @@ DEFINE_HOOK(0x6FC617, TechnoClass_GetFireError_Spawner, 0x8)
 	GET(TechnoClass* const, pThis, ESI);
 	GET(const bool, nearElevatedBridge, EAX);
 
+	// In addition, the return value of the function has been changed to allow the aircraft carrier to retain the current target
 	return (nearElevatedBridge && !pThis->IsInAir()) ? TemporaryCannotFire : ContinueCheck;
 }
 
