@@ -285,7 +285,7 @@ inline void BulletExt::SimulatedFiringRadBeam(BulletClass* pBullet, HouseClass* 
 	const auto pRadBeam = RadBeam::Allocate(isTemporal ? RadBeamType::Temporal : RadBeamType::RadBeam);
 
 	pRadBeam->SetCoordsSource(pBullet->SourceCoords);
-	pRadBeam->SetCoordsTarget(pBullet->TargetCoords);
+	pRadBeam->SetCoordsTarget(pBullet->Data.Location);
 
 	const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
 
