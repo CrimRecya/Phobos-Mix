@@ -347,6 +347,7 @@ New:
 - Delay automatic attack on the controlled unit (by CrimRecya)
 - `BombParachute` deglobalization (by TaranDahl)
 - Sinkablity and sinking speed customization (by TaranDahl)
+- Fast access vehicle (by CrimRecya)
 
 - New trajectory system (by CrimRecya)
 - New Missile trajectory (by CrimRecya)

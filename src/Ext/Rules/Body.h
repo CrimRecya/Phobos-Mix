@@ -121,6 +121,8 @@ public:
 		Valueable<SHPStruct*> ProgressDisplay_Others_PipsShape;
 		Valueable<SHPStruct*> ProgressDisplay_Buildings_PipsShape;
 		Valueable<bool> ExtendedAircraftMissions;
+		Valueable<bool> NoQueueUpToEnter;
+		Valueable<bool> NoQueueUpToUnload;
 		Valueable<bool> CheckExtraBaseNormal;
 		Valueable<bool> Cameo_AlwaysExist;
 		Valueable<SHPStruct*> Cameo_OverlayShapes;
@@ -128,6 +130,7 @@ public:
 		CustomPalette Cameo_OverlayPalette;
 		Valueable<bool> ExtendedBuildingPlacing;
 		Valueable<bool> AutoBuilding;
+
 		Valueable<bool> BuildingProductionQueue;
 		Valueable<bool> PlacementGrid_Expand;
 		Valueable<Vector3D<int>> PlacementGrid_LandFrames;
@@ -141,8 +144,6 @@ public:
 		Valueable<bool> AIBiasSpawnCell;
 		Valueable<bool> AIForbidConYard;
 		Valueable<int> CleanUpAirBarrier;
-		Valueable<bool> NoQueueUpToEnter;
-		Valueable<bool> NoQueueUpToUnload;
 		Valueable<bool> AttackMove_Aggressive;
 		Valueable<bool> AttackMove_UpdateTarget;
 		Valueable<bool> ExtendedScatterAction;
@@ -424,6 +425,8 @@ public:
 			, ProgressDisplay_Others_PipsShape { FileSystem::PIPS_SHP }
 			, ProgressDisplay_Buildings_PipsShape { FileSystem::PIPS_SHP }
 			, ExtendedAircraftMissions { false }
+			, NoQueueUpToEnter { false }
+			, NoQueueUpToUnload { false }
 			, CheckExtraBaseNormal { false }
 			, Cameo_AlwaysExist { false }
 			, Cameo_OverlayShapes { FileSystem::PIPS_SHP }
@@ -431,6 +434,7 @@ public:
 			, Cameo_OverlayPalette {}
 			, ExtendedBuildingPlacing { false }
 			, AutoBuilding { false }
+
 			, BuildingProductionQueue { false }
 			, PlacementGrid_Expand { false }
 			, PlacementGrid_LandFrames { { 1, 0, 0 } }
@@ -444,8 +448,6 @@ public:
 			, SelectedAircraftMissingPCX {}
 			, SelectedBuildingMissingPCX {}
 			, CleanUpAirBarrier { 0 }
-			, NoQueueUpToEnter { false }
-			, NoQueueUpToUnload { false }
 			, AttackMove_Aggressive { false }
 			, AttackMove_UpdateTarget { false }
 			, ExtendedScatterAction { false }

@@ -418,6 +418,7 @@ This page lists all the individual contributions to the project by their author.
   - Technos can maintain a suitable distance after firing
   - Projectile subject to ground check before firing
   - Delay automatic attack on the controlled unit
+  - Fast access vehicle
   - New trajectory system
   - New Missile trajectory
   - New Engrave trajectory

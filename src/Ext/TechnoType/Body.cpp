@@ -736,15 +736,15 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->SelectedInfo_Button.Read(exINI, pSection, "SelectedInfo.Button");
 	this->UIDescription_HoveredInfo.Read(exINI, pSection, "UIDescription.HoveredInfo");
 
+	this->NoQueueUpToEnter.Read(exINI, pSection, "NoQueueUpToEnter");
+	this->NoQueueUpToUnload.Read(exINI, pSection, "NoQueueUpToUnload");
+
 	this->RateDown_Delay.Read(exINI, pSection, "RateDown.Delay");
 	this->RateDown_Reset.Read(exINI, pSection, "RateDown.Reset");
 	this->RateDown_Cover_Value.Read(exINI, pSection, "RateDown.Cover.Value");
 	this->RateDown_Cover_AmmoBelow.Read(exINI, pSection, "RateDown.Cover.AmmoBelow");
 
 	this->UniqueTechno.Read(exINI, pSection, "UniqueTechno");
-
-	this->NoQueueUpToEnter.Read(exINI, pSection, "NoQueueUpToEnter");
-	this->NoQueueUpToUnload.Read(exINI, pSection, "NoQueueUpToUnload");
 
 	this->CanManualReload.Read(exINI, pSection, "CanManualReload");
 	this->CanManualReload_ResetROF.Read(exINI, pSection, "CanManualReload.ResetROF");
@@ -1328,16 +1328,16 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->FakeOf)
 		.Process(this->CameoPal)
 
+		.Process(this->NoQueueUpToEnter)
+		.Process(this->NoQueueUpToUnload)
+		.Process(this->Passengers_BySize)
+
 		.Process(this->RateDown_Delay)
 		.Process(this->RateDown_Reset)
 		.Process(this->RateDown_Cover_Value)
 		.Process(this->RateDown_Cover_AmmoBelow)
 
 		.Process(this->UniqueTechno)
-
-		.Process(this->NoQueueUpToEnter)
-		.Process(this->NoQueueUpToUnload)
-		.Process(this->Passengers_BySize)
 
 		.Process(this->CanManualReload)
 		.Process(this->CanManualReload_ResetROF)
@@ -1438,6 +1438,11 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->InitialSpawnsNumber)
 		.Process(this->Spawns_Queue)
 
+		.Process(this->Spawner_RecycleRange)
+		.Process(this->Spawner_RecycleAnim)
+		.Process(this->Spawner_RecycleCoord)
+		.Process(this->Spawner_RecycleOnTurret)
+
 		.Process(this->RadarInvisible_ToSelf)
 		.Process(this->RadarInvisible_ToAlly)
 
@@ -1454,11 +1459,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Cloneable)
 		.Process(this->ClonedAt)
 		.Process(this->ClonedAs)
-
-		.Process(this->Spawner_RecycleRange)
-		.Process(this->Spawner_RecycleAnim)
-		.Process(this->Spawner_RecycleCoord)
-		.Process(this->Spawner_RecycleOnTurret)
 
 		.Process(this->VehicleDamagedSpeedMultiplier_Yellow)
 		.Process(this->VehicleDamagedSpeedMultiplier_Red)

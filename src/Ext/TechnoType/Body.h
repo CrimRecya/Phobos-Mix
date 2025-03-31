@@ -288,16 +288,16 @@ public:
 		Valueable<TechnoTypeClass*> FakeOf;
 		CustomPalette CameoPal;
 
+		Nullable<bool> NoQueueUpToEnter;
+		Nullable<bool> NoQueueUpToUnload;
+		Valueable<bool> Passengers_BySize;
+
 		Valueable<int> RateDown_Delay;
 		Valueable<bool> RateDown_Reset;
 		Valueable<int> RateDown_Cover_Value;
 		Valueable<int> RateDown_Cover_AmmoBelow;
 
 		Valueable<bool> UniqueTechno;
-
-		Nullable<bool> NoQueueUpToEnter;
-		Nullable<bool> NoQueueUpToUnload;
-		Valueable<bool> Passengers_BySize;
 
 		Valueable<bool> CanManualReload;
 		Valueable<bool> CanManualReload_ResetROF;
@@ -711,16 +711,16 @@ public:
 			, FakeOf {}
 			, CameoPal {}
 
+			, NoQueueUpToEnter {}
+			, NoQueueUpToUnload {}
+			, Passengers_BySize { true }
+
 			, RateDown_Delay { 0 }
 			, RateDown_Reset { false }
 			, RateDown_Cover_Value { 0 }
 			, RateDown_Cover_AmmoBelow { -2 }
 
 			, UniqueTechno { false }
-
-			, NoQueueUpToEnter {}
-			, NoQueueUpToUnload {}
-			, Passengers_BySize { true }
 
 			, CanManualReload { false }
 			, CanManualReload_ResetROF { true }
@@ -821,6 +821,11 @@ public:
 			, InitialSpawnsNumber { }
 			, Spawns_Queue { }
 
+			, Spawner_RecycleRange { Leptons(-1) }
+			, Spawner_RecycleAnim { }
+			, Spawner_RecycleCoord { {0,0,0} }
+			, Spawner_RecycleOnTurret { false }
+
 			, RadarInvisible_ToSelf { false }
 			, RadarInvisible_ToAlly { false }
 
@@ -837,11 +842,6 @@ public:
 			, Cloneable { true }
 			, ClonedAt { }
 			, ClonedAs { }
-
-			, Spawner_RecycleRange { Leptons(-1) }
-			, Spawner_RecycleAnim { }
-			, Spawner_RecycleCoord { {0,0,0} }
-			, Spawner_RecycleOnTurret { false }
 
 			, VehicleDamagedSpeedMultiplier_Yellow { }
 			, VehicleDamagedSpeedMultiplier_Red { }
