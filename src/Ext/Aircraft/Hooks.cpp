@@ -645,7 +645,6 @@ DEFINE_HOOK(0x418B46, AircraftClass_MissionAttack_ScatterCell6, 0x6)
 
 DEFINE_HOOK(0x4CDF84, FlyLocomotionClass_UpdateLoaction_FlightCrash, 0x5)
 {
-	GET(int, vZ, ECX);
 	GET(FootClass* const, pLinkedTo, EAX);
 
 	const int crashSpeed = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType())->FlightCrash;
