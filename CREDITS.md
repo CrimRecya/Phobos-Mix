@@ -426,7 +426,7 @@ This page lists all the individual contributions to the project by their author.
   - Fixed an issue that aircraft carriers cannot retract its spawned aircraft when on the bridge
   - Fixed an issue where the shadow of jumpjet remained on the ground when it was above the elevated bridge
   - Laser, electric bolt and rad beam scatter
-  - Fixed an issue that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles
+  - Fixed an issue that laser, electric bolt and rad beam not support `Inviso=true` projectiles with `FlakScatter=true` to scatter
   - New trajectory system
   - New Missile trajectory
   - New Engrave trajectory
@@ -476,11 +476,12 @@ This page lists all the individual contributions to the project by their author.
   - Recycle spawner in long-range
   - Play an anim when recycling a spawner
   - Recycle the spawner on other FLH
-  - Fixed the bug that spawned can not return to buildings with foundation bigger than 1x1
+  - Fix the bug that spawned can not return to buildings with foundation bigger than 1x1
   - `BombParachute` deglobalization
   - Sinkablity and sinking speed customization
-  - Fixed an issue where `FireAngle` would not work properly under certain circumstances
-  - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges
+  - Fix an issue where `FireAngle` would not work properly under certain circumstances
+  - Fix an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges
+  - Fix the bug that healing weapons could not automatically acquire aerial targets
   - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller
   - `CellSpread.Cylinder`
   - `AffectsInAir` and `AffectsOnFloor`
