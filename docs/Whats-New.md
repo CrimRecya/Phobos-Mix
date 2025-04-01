@@ -354,7 +354,6 @@ New:
 - New Missile trajectory (by CrimRecya)
 - New Engrave trajectory (by CrimRecya)
 - New Tracing trajectory (by CrimRecya)
-- Technos will maintain a suitable distance after firing (by CrimRecya)
 - Several new Infotypes, no display in specific status and a new single frame display method (by CrimRecya)
 - Display factories, superweapons, iron curtain and temporal progress on specific technos (by CrimRecya)
 - Customized Vehicle Turret Rotation (by CrimRecya)
@@ -369,17 +368,13 @@ New:
 - Distribution click action mode (by CrimRecya)
 - Jumpjet Tilts While Moving (by CrimRecya)
 - Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll (by CrimRecya)
-- Laser, electric bolt and rad beam scatter (by CrimRecya)
 - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller. (by TaranDahl)
 - CellSpread in cylinder shape (by TaranDahl)
 - CellSpread damage check if victim is in air (by TaranDahl)
 - Toggle waypoint for building and aircraft (by TaranDahl)
 - Weapon range finding in cylinder (by TaranDahl)
 - Infantry firing while moving (by TaranDahl)
-- Fix the bug that parasite will vanish if it missed its target when its previous cell is occupied (by TaranDahl)
 - Grant new superweapons in superweapons (by FS-21).
-- Enhance bombard trajectory with vertical and meteor trajectory (by NaotoYuuki & Ollerus)
-- Option for vehicles to keep target when issued move command (by Starkku)
 - Aggressive stance toggle command (auto target unarmed enemy buildings) (by Aephiex)
 
 Vanilla fixes:
@@ -396,12 +391,7 @@ Vanilla fixes:
 - Fixed an issue where the shadow of jumpjet remained on the ground when it was above the elevated bridge (by CrimRecya)
 - Fixed an issue that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles (by CrimRecya)
 
-- Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles (by CrimRecya)
-- Fixed an issue that aircraft carriers can not find suitable locations for attacks when under elevated bridges on their own (by CrimRecya)
-- Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges (by CrimRecya & TaranDahl)
-- Fixed an issue that aircraft carriers cannot retract its spawned aircraft when on the bridge (by CrimRecya)
 - Observer sidebar in skirmish game mode (by CrimRecya)
-- Fixed an issue that `MovementZone=AmphibiousDestroyer` and `MovementZone=AmphibiousCrusher` technos being unable to enter on water structures (by CrimRecya)
 
 Fixes / interactions with other extensions:
 - Allowed `AuxBuilding` and Ares' `SW.Aux/NegBuildings` to count building upgrades (by Ollerus)
