@@ -5,13 +5,16 @@
 
 #pragma region EnhancedScatterContent
 
-static inline void EnhancedScatterContent(CellClass* pCell, TechnoClass* pCaller, const CoordStruct& coords, bool alt)
+static inline void EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, const CoordStruct& coords, bool alt)
 {
 	for (auto pObject = (alt ? pCell->AltObject : pCell->FirstObject); pObject; pObject = pObject->NextObject)
 	{
 		const auto pFoot = abstract_cast<FootClass*>(pObject);
 
-		if (!pFoot || pFoot == pCaller || pFoot->IsTether || !pFoot->Owner->IsAlliedWith(pCaller))
+		if (!pFoot || pFoot == pThis || pFoot->IsTether || !pFoot->Owner->IsAlliedWith(pThis))
+			continue;
+
+		if (pThis->QueueUpToEnter == pFoot || pThis->GetNthLink() == pFoot)
 			continue;
 
 		const auto pFootExt = TechnoExt::ExtMap.Find(pFoot);
@@ -33,9 +36,9 @@ static inline void EnhancedScatterContent(CellClass* pCell, TechnoClass* pCaller
 	}
 }
 
-static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass* pCaller, const CoordStruct& coords, bool alt)
+static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, const CoordStruct& coords, bool alt)
 {
-	if (const auto pFoot = abstract_cast<FootClass*>(pCaller))
+	if (const auto pFoot = abstract_cast<FootClass*>(pThis))
 	{
 		if (RulesExt::Global()->ExtendedScatterAction)
 		{
@@ -44,7 +47,7 @@ static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass*
 			for (int i = 0; i < 8; ++i)
 			{
 				const auto pNearCell = pCell->GetNeighbourCell(static_cast<FacingType>(i));
-				EnhancedScatterContent(pNearCell, pCaller, coords, alt);
+				EnhancedScatterContent(pNearCell, pThis, coords, alt);
 			}
 		}
 		else
@@ -56,12 +59,12 @@ static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass*
 	{
 		if (RulesExt::Global()->ExtendedScatterAction)
 		{
-			EnhancedScatterContent(pCell, pCaller, CoordStruct::Empty, alt);
+			EnhancedScatterContent(pCell, pThis, CoordStruct::Empty, alt);
 
 			for (int i = 0; i < 8; ++i)
 			{
 				const auto pNearCell = pCell->GetNeighbourCell(static_cast<FacingType>(i));
-				EnhancedScatterContent(pNearCell, pCaller, coords, alt);
+				EnhancedScatterContent(pNearCell, pThis, coords, alt);
 			}
 		}
 		else
@@ -72,7 +75,7 @@ static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass*
 			{
 				const auto pNearCell = pCell->GetNeighbourCell(static_cast<FacingType>(i));
 
-				if (pNearCell->FindTechnoNearestTo(Point2D::Empty, false, pCaller))
+				if (pNearCell->FindTechnoNearestTo(Point2D::Empty, false, pThis))
 					pNearCell->ScatterContent(coords, true, true, alt);
 			}
 		}
@@ -302,6 +305,9 @@ static inline void ScatterPathCellContent(FootClass* pThis, CellClass* pCell)
 		if (!pFoot || pFoot == pThis || pFoot->IsTether || !pFoot->Owner->IsAlliedWith(pThis))
 			continue;
 
+		if (pThis->QueueUpToEnter == pFoot || pThis->GetNthLink() == pFoot)
+			continue;
+
 		const auto pFootExt = TechnoExt::ExtMap.Find(pFoot);
 
 		if (pFootExt->ScatteringStopFrame >= Unsorted::CurrentFrame)
@@ -424,10 +430,10 @@ static inline CellStruct GetScatterCell(FootClass* pThis, int face)
 	return alternativeCell;
 }
 
-static inline int GetTechnoCloseEnoughRange(TechnoClass* pCaller)
+static inline int GetTechnoCloseEnoughRange(TechnoClass* pThis)
 {
-	if (TechnoExt::ExtMap.Find(pCaller)->ScatteringStopFrame >= Unsorted::CurrentFrame)
-		return pCaller->WhatAmI() == AbstractType::Infantry ? 128 : 0;
+	if (TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame >= Unsorted::CurrentFrame)
+		return pThis->WhatAmI() == AbstractType::Infantry ? 128 : 0;
 
 	return RulesClass::Instance->CloseEnough;
 }
