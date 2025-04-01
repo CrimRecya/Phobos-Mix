@@ -349,6 +349,7 @@ New:
 - Sinkablity and sinking speed customization (by TaranDahl)
 - Fast access vehicle (by CrimRecya)
 - Laser, electric bolt and rad beam scatter (by CrimRecya)
+- Amphibious access vehicle (by CrimRecya)
 
 - New trajectory system (by CrimRecya)
 - New Missile trajectory (by CrimRecya)

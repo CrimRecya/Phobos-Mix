@@ -435,7 +435,7 @@ DEFINE_HOOK(0x70D894, FootClass_UpdateEnter_UpdateEnterPosition, 0x7)
 	GET(FootClass* const, pThis, ESI);
 	GET(UnitClass* const, pDest, EDI); // Is techno not unit, only for convenience
 
-	if (pDest->WhatAmI() == AbstractType::Unit && !pThis->Deactivated && !pThis->IsUnderEMP())
+	if (pDest->WhatAmI() == AbstractType::Unit && !pThis->Deactivated && !pThis->IsUnderEMP() && !pDest->Locomotor->Is_Moving())
 	{
 		if (IsCloseEnoughToEnter(pDest, pThis))
 		{
