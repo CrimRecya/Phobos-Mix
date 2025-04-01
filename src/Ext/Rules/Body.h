@@ -121,6 +121,8 @@ public:
 		Valueable<SHPStruct*> ProgressDisplay_Others_PipsShape;
 		Valueable<SHPStruct*> ProgressDisplay_Buildings_PipsShape;
 		Valueable<bool> ExtendedAircraftMissions;
+		Valueable<bool> AmphibiousEnter;
+		Valueable<bool> AmphibiousUnload;
 		Valueable<bool> NoQueueUpToEnter;
 		Valueable<bool> NoQueueUpToUnload;
 		Valueable<bool> CheckExtraBaseNormal;
@@ -425,6 +427,8 @@ public:
 			, ProgressDisplay_Others_PipsShape { FileSystem::PIPS_SHP }
 			, ProgressDisplay_Buildings_PipsShape { FileSystem::PIPS_SHP }
 			, ExtendedAircraftMissions { false }
+			, AmphibiousEnter { false }
+			, AmphibiousUnload { false }
 			, NoQueueUpToEnter { false }
 			, NoQueueUpToUnload { false }
 			, CheckExtraBaseNormal { false }

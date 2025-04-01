@@ -288,6 +288,8 @@ public:
 		Valueable<TechnoTypeClass*> FakeOf;
 		CustomPalette CameoPal;
 
+		Nullable<bool> AmphibiousEnter;
+		Nullable<bool> AmphibiousUnload;
 		Nullable<bool> NoQueueUpToEnter;
 		Nullable<bool> NoQueueUpToUnload;
 		Valueable<bool> Passengers_BySize;
@@ -711,6 +713,8 @@ public:
 			, FakeOf {}
 			, CameoPal {}
 
+			, AmphibiousEnter {}
+			, AmphibiousUnload {}
 			, NoQueueUpToEnter {}
 			, NoQueueUpToUnload {}
 			, Passengers_BySize { true }

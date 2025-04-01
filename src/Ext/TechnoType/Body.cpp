@@ -736,6 +736,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->SelectedInfo_Button.Read(exINI, pSection, "SelectedInfo.Button");
 	this->UIDescription_HoveredInfo.Read(exINI, pSection, "UIDescription.HoveredInfo");
 
+	this->AmphibiousEnter.Read(exINI, pSection, "AmphibiousEnter");
+	this->AmphibiousUnload.Read(exINI, pSection, "AmphibiousUnload");
 	this->NoQueueUpToEnter.Read(exINI, pSection, "NoQueueUpToEnter");
 	this->NoQueueUpToUnload.Read(exINI, pSection, "NoQueueUpToUnload");
 
@@ -1328,6 +1330,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->FakeOf)
 		.Process(this->CameoPal)
 
+		.Process(this->AmphibiousEnter)
+		.Process(this->AmphibiousUnload)
 		.Process(this->NoQueueUpToEnter)
 		.Process(this->NoQueueUpToUnload)
 		.Process(this->Passengers_BySize)
