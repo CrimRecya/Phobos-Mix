@@ -1805,13 +1805,6 @@ DEFINE_HOOK(0x4DFD92, FootClass_FindXXX_CheckValid, 0x8) // FindBattleBunker
 
 #pragma region HealingWeaponFix
 
-// Fix the hardcode of healing weapon can't acquire in air target.
-DEFINE_HOOK(0x6F9222, TechnoClass_SelectAutoTarget_HealingTargetAir, 0x6)
-{
-	GET(TechnoClass*, pThis, ESI);
-	return pThis->CombatDamage(-1) < 0 ? 0x6F922E : 0;
-}
-
 // Skip the hardcode of healing weapon auto target range.
 // DEFINE_JUMP(LJMP, 0x6F9024, 0x6F9042); // No, have troubles
 
