@@ -65,6 +65,7 @@ public:
 		ValueableVector<AnimTypeClass*> LargeFireAnims;
 		ValueableVector<double> LargeFireChances;
 		ValueableVector<double> LargeFireDistances;
+		Valueable<bool> RenderIfOutOfScreen;
 
 		ExtData(AnimTypeClass* OwnerObject) : Extension<AnimTypeClass>(OwnerObject)
 			, Palette { CustomPalette::PaletteMode::Temperate }
@@ -114,6 +115,7 @@ public:
 			, LargeFireAnims {}
 			, LargeFireChances {}
 			, LargeFireDistances {}
+			, RenderIfOutOfScreen { false }
 		{ }
 
 		virtual ~ExtData() = default;
