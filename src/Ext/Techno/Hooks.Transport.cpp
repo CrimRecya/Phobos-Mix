@@ -570,14 +570,17 @@ DEFINE_HOOK(0x73796B, UnitClass_ReceiveCommand_AmphibiousEnter, 0x7)
 {
 	enum { ContinueCheck = 0x737990, MoveToPassenger = 0x737974 };
 
+	GET(UnitClass* const, pThis, ESI);
+	GET(TechnoClass* const, pCall, EDI);
 	GET(CellClass* const, pCell, EBP);
 
-	if (pCell->LandType != LandType::Water)
+	if (GroundType::Array[static_cast<int>(pCell->LandType)].Cost[static_cast<int>(pCall->GetTechnoType()->SpeedType)] == 0.0)
+		return MoveToPassenger;
+
+	if (TechnoTypeExt::ExtMap.Find(pThis->Type)->AmphibiousEnter.Get(RulesExt::Global()->AmphibiousEnter))
 		return ContinueCheck;
 
-	GET(UnitClass* const, pThis, ESI);
-
-	return TechnoTypeExt::ExtMap.Find(pThis->Type)->AmphibiousEnter.Get(RulesExt::Global()->AmphibiousEnter) ? ContinueCheck : MoveToPassenger;
+	return (pCell->LandType != LandType::Water) ? ContinueCheck : MoveToPassenger;
 }
 
 // Unit unload
@@ -606,7 +609,7 @@ DEFINE_HOOK(0x70106A, TechnoClass_CanDeploySlashUnload_AmphibiousUnload, 0x6)
 	return !pThis->Owner->IsHumanPlayer || CanUnloadLater(pThis) ? ContinueCheck : CannotUnload;
 }
 
-DEFINE_HOOK(0x73D769, UnitClass_Mission_Unload_ReplaceLandTypeCheck, 0x7)
+DEFINE_HOOK(0x73D769, UnitClass_Mission_Unload_AmphibiousUnload, 0x7)
 {
 	enum { MoveToLand = 0x73D772, UnloadCheck = 0x73D7E4 };
 
@@ -615,6 +618,26 @@ DEFINE_HOOK(0x73D769, UnitClass_Mission_Unload_ReplaceLandTypeCheck, 0x7)
 	const auto pPassenger = pThis->Passengers.GetFirstPassenger();
 
 	return (!pPassenger || CanUnloadNow(pThis, pPassenger)) ? UnloadCheck : MoveToLand;
+}
+
+DEFINE_HOOK(0x73D7AB, UnitClass_Mission_Unload_FindUnloadPosition, 0x5)
+{
+	GET(UnitClass* const, pThis, ESI);
+
+	if (TechnoTypeExt::ExtMap.Find(pThis->Type)->AmphibiousUnload.Get(RulesExt::Global()->AmphibiousUnload))
+	{
+		if (const auto pPassenger = pThis->Passengers.GetFirstPassenger())
+		{
+			REF_STACK(SpeedType, speedType, STACK_OFFSET(0xBC, -0xB4));
+			REF_STACK(MovementZone, movementZone, STACK_OFFSET(0xBC, -0xAC));
+
+			const auto pType = pPassenger->GetTechnoType();
+			speedType = pType->SpeedType; // Replace hard code SpeedType::Wheel
+			movementZone = pType->MovementZone; // Replace hard code MovementZone::Normal
+		}
+	}
+
+	return 0;
 }
 
 DEFINE_HOOK(0x73D7B7, UnitClass_Mission_Unload_CheckInvalidCell, 0x6)
@@ -626,7 +649,7 @@ DEFINE_HOOK(0x73D7B7, UnitClass_Mission_Unload_CheckInvalidCell, 0x6)
 	return cell != CellStruct::Empty ? 0 : CannotUnload;
 }
 
-DEFINE_HOOK(0x740C9C, UnitClass_vt_entry_304_ReplaceSpeedType, 0x7)
+DEFINE_HOOK(0x740C9C, UnitClass_GetUnloadDirection_CheckUnloadPosition, 0x7)
 {
 	GET(UnitClass* const, pThis, EDI);
 
@@ -635,21 +658,22 @@ DEFINE_HOOK(0x740C9C, UnitClass_vt_entry_304_ReplaceSpeedType, 0x7)
 		if (const auto pPassenger = pThis->Passengers.GetFirstPassenger())
 		{
 			GET(const int, speedType, EDX);
-			R->EDX(speedType + static_cast<int>(pPassenger->GetTechnoType()->SpeedType)); // For GroundType.Cost
+			R->EDX(speedType + static_cast<int>(pPassenger->GetTechnoType()->SpeedType)); // Replace hard code SpeedType::Foot
 		}
 	}
 
 	return 0;
 }
 
-DEFINE_HOOK(0x73DAB9, UnitClass_Mission_Unload_ReplaceMovementZone, 0x5)
+DEFINE_HOOK(0x73DAD8, UnitClass_Mission_Unload_PassengerLeavePosition, 0x5)
 {
 	GET(UnitClass* const, pThis, ESI);
 
 	if (TechnoTypeExt::ExtMap.Find(pThis->Type)->AmphibiousUnload.Get(RulesExt::Global()->AmphibiousUnload))
 	{
-		GET(FootClass* const, pFoot, EDI);
-		R->EDX(pFoot->GetTechnoType()->MovementZone); // Replace hard code
+		GET(FootClass* const, pPassenger, EDI);
+		REF_STACK(MovementZone, movementZone, STACK_OFFSET(0xBC, -0xAC));
+		movementZone = pPassenger->GetTechnoType()->MovementZone; // Replace hard code MovementZone::Normal
 	}
 
 	return 0;
