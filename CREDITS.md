@@ -419,6 +419,13 @@ This page lists all the individual contributions to the project by their author.
   - Projectile subject to ground check before firing
   - Delay automatic attack on the controlled unit
   - Fast access vehicle
+  - Fixed an issue that some amphibious technos being unable to enter on water structures
+  - Fixed an issue that aircraft carriers can not find suitable locations for attacks when under elevated bridges on their own
+  - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges
+  - Fixed an issue that aircraft carriers cannot retract its spawned aircraft when on the bridge
+  - Fixed an issue where the shadow of jumpjet remained on the ground when it was above the elevated bridge
+  - Laser, electric bolt and rad beam scatter
+  - Fixed an issue that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles
   - New trajectory system
   - New Missile trajectory
   - New Engrave trajectory
@@ -440,12 +447,6 @@ This page lists all the individual contributions to the project by their author.
   - Distribution click action mode
   - Jumpjet Tilts While Moving
   - Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll
-  - Laser, electric bolt and rad beam scatter
-  - Fix the bug that laser, electric bolt and rad beam not support `FlakScatter=true` and `Inaccurate=true` projectiles
-  - Fixed an issue that aircraft carriers can not find suitable locations for attacks when under elevated bridges on their own
-  - Fixed an issue that in air aircraft carriers being unable to attack when it is near by elevated bridges
-  - Fixed an issue that aircraft carriers cannot retract its spawned aircraft when on the bridge
-  - Fixed an issue that some amphibious technos being unable to enter on water structures
 - **Ollerus**:
   - Build limit group enhancement
   - Customizable rocker amplitude

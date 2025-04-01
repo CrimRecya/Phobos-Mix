@@ -1316,6 +1316,31 @@ DEFINE_HOOK(0x6F4BB3, TechnoClass_ReceiveCommand_RequestUntether, 0x7)
 
 #pragma endregion
 
+#pragma region JumpjetShadowPointFix
+
+Point2D *__stdcall JumpjetLoco_ILoco_Shadow_Point(ILocomotion * iloco, Point2D *pPoint)
+{
+	__assume(iloco != nullptr);
+	const auto pLoco = static_cast<JumpjetLocomotionClass*>(iloco);
+	const auto pThis = pLoco->LinkedTo;
+	const auto pCell = MapClass::Instance.GetCellAt(pThis->Location);
+	auto height = pThis->Location.Z - MapClass::Instance.GetCellFloorHeight(pThis->Location);
+	// Vanilla GetHeight check OnBridge flag, which can not work on jumpjet
+	// Here, we simulate the drawing of an airplane for altitude calculation
+	if (pCell->ContainsBridge()
+		&& ((pCell->Flags & CellFlags::BridgeDir) && pCell->GetNeighbourCell(FacingType::North)->ContainsBridge()
+			|| !(pCell->Flags & CellFlags::BridgeDir) && pCell->GetNeighbourCell(FacingType::West)->ContainsBridge()))
+	{
+		height -= CellClass::BridgeHeight;
+	}
+
+	*pPoint = Point2D { 0, TacticalClass::AdjustForZ(height) };
+	return pPoint;
+}
+DEFINE_FUNCTION_JUMP(VTABLE, 0x7ECD98, JumpjetLoco_ILoco_Shadow_Point);
+
+#pragma endregion
+
 #pragma region SpawnerFix
 
 // Enable the carrier on the bridge to retrieve the aircraft normally
@@ -1349,31 +1374,6 @@ DEFINE_HOOK(0x6FC617, TechnoClass_GetFireError_Spawner, 0x8)
 	// In addition, the return value of the function has been changed to allow the aircraft carrier to retain the current target
 	return (nearElevatedBridge && !pThis->IsInAir()) ? TemporaryCannotFire : ContinueCheck;
 }
-
-#pragma endregion
-
-#pragma region JumpjetShadowPointFix
-
-Point2D *__stdcall JumpjetLoco_ILoco_Shadow_Point(ILocomotion * iloco, Point2D *pPoint)
-{
-	__assume(iloco != nullptr);
-	const auto pLoco = static_cast<JumpjetLocomotionClass*>(iloco);
-	const auto pThis = pLoco->LinkedTo;
-	const auto pCell = MapClass::Instance.GetCellAt(pThis->Location);
-	auto height = pThis->Location.Z - MapClass::Instance.GetCellFloorHeight(pThis->Location);
-	// Vanilla GetHeight check OnBridge flag, which can not work on jumpjet
-	// Here, we simulate the drawing of an airplane for altitude calculation
-	if (pCell->ContainsBridge()
-		&& ((pCell->Flags & CellFlags::BridgeDir) && pCell->GetNeighbourCell(FacingType::North)->ContainsBridge()
-			|| !(pCell->Flags & CellFlags::BridgeDir) && pCell->GetNeighbourCell(FacingType::West)->ContainsBridge()))
-	{
-		height -= CellClass::BridgeHeight;
-	}
-
-	*pPoint = Point2D { 0, TacticalClass::AdjustForZ(height) };
-	return pPoint;
-}
-DEFINE_FUNCTION_JUMP(VTABLE, 0x7ECD98, JumpjetLoco_ILoco_Shadow_Point);
 
 #pragma endregion
 
