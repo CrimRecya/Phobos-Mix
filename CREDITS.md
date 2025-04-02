@@ -450,6 +450,8 @@ This page lists all the individual contributions to the project by their author.
   - Jumpjet Tilts While Moving
   - Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll
   - Amphibious access vehicle
+  - Amphibious access vehicle
+  - Fixed an issue that the first passenger who call the transport ship no longer board the transport ship when the land units call for boarding
 - **Ollerus**:
   - Build limit group enhancement
   - Customizable rocker amplitude
