@@ -1273,25 +1273,15 @@ DEFINE_HOOK(0x741925, UnitClass_CrushCell_CrushBuilding, 0x5)
 
 #pragma region JumpjetSpeedType
 
-namespace JumpjetSpeedType
+DEFINE_HOOK(0x54B36A, JumpjetLocomotionClass_MoveTo_JumpjetSpeedType, 0x5)
 {
-	int speedType;
-}
+	GET(ILocomotion* const, iloco, ESI);
+	REF_STACK(SpeedType, speedType, STACK_OFFSET(0x5C, -0x54));
 
-DEFINE_HOOK(0x54B255, JumpjetLocomotionClass_MoveTo_JumpjetSpeedType, 0x5)
-{
-	GET(ILocomotionPtr, pThis, ESI);
-
-	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(locomotion_cast<JumpjetLocomotionClass*>(pThis)->LinkedTo->GetTechnoType()))
-		JumpjetSpeedType::speedType = pTypeExt->JumpjetSpeedType;
-
-	return 0;
-}
-
-DEFINE_HOOK(0x56DC20, MapClass_NearByLocation_JumpjetSpeedType, 0x6)
-{
-	if (*R->ESP<int*>() == 0x54B374) // Ret_in_JJLoco_MoveTo
-		R->Stack(STACK_OFFSET(0, 0xC), JumpjetSpeedType::speedType);
+	__assume(iloco != nullptr);
+	const auto pLoco = static_cast<JumpjetLocomotionClass*>(iloco);
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pLoco->LinkedTo->GetTechnoType());
+	speedType = static_cast<SpeedType>(pTypeExt->JumpjetSpeedType.Get());
 
 	return 0;
 }
