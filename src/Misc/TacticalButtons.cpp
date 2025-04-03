@@ -472,7 +472,30 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawText("TurretRecoil = %.3f , BarrelRecoil = %.3f", pTechno->TurretRecoil.TravelSoFar, pTechno->BarrelRecoil.TravelSoFar);
 		drawText("%d Passengers , First Passenger = %s", pTechno->Passengers.NumPassengers, (pTechno->Passengers.NumPassengers > 0 ? pTechno->Passengers.FirstPassenger->GetTechnoType()->ID : "N/A"));
 
-		drawInfo("Target", pTechno, pTechno->Target);
+		if (const auto pTarget = pTechno->Target)
+		{
+			auto mapCoords = CellStruct::Empty;
+			auto ID = "Unknown";
+
+			if (auto const pObject = abstract_cast<ObjectClass*>(pTarget))
+			{
+				mapCoords = pObject->GetMapCoords();
+				ID = pObject->GetType()->get_ID();
+			}
+			else if (auto const pCell = abstract_cast<CellClass*>(pTarget))
+			{
+				mapCoords = pCell->MapCoords;
+				ID = "Cell";
+			}
+
+			const auto distance = (pTechno->DistanceFrom(pTarget) / Unsorted::LeptonsPerCell);
+			drawText("Target: %s , At( %d , %d ) , %d apart , In range : %s", ID, mapCoords.X, mapCoords.Y, distance, (pTechno->IsCloseEnough(pTarget, pTechno->SelectWeapon(pTarget)) ? "Yes" : "No"));
+		}
+		else
+		{
+			drawText("Target: N/A");
+		}
+
 		drawInfo("Last Target", pTechno, pTechno->LastTarget);
 		drawInfo("Nth Link", pTechno, pTechno->GetNthLink());
 

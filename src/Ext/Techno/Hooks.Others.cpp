@@ -1796,7 +1796,24 @@ DEFINE_HOOK(0x4DFD92, FootClass_FindXXX_CheckValid, 0x8) // FindBattleBunker
 #pragma region HealingWeaponFix
 
 // Skip the hardcode of healing weapon auto target range.
-// DEFINE_JUMP(LJMP, 0x6F9024, 0x6F9042); // No, have troubles
+DEFINE_JUMP(LJMP, 0x6F9024, 0x6F9042);
+
+DEFINE_HOOK(0x6FA9D8, TechnoClass_Update_FixRepairWeapon, 0x6)
+{
+	enum { SkipGameCode = 0x6FAA6F };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	if (pThis->Target && pThis->CombatDamage(-1) < 0)
+	{
+		if ((SessionClass::IsCampaign() ? pThis->Owner->IsControlledByCurrentPlayer() : pThis->Owner->IsHumanPlayer) && !pThis->Owner->IsAlliedWith(pThis->Target))
+			pThis->SetTarget(nullptr);
+		else if (pThis->CurrentMission == Mission::Guard && !pThis->IsCloseEnoughToAttack(pThis->Target))
+			pThis->SetTarget(nullptr);
+	}
+
+	return SkipGameCode;
+}
 
 DEFINE_HOOK(0x707ED0, TechnoClass_GetGuardRange_FixForIFV, 0x6)
 {
