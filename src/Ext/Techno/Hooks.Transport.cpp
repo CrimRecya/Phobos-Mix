@@ -577,12 +577,11 @@ DEFINE_HOOK(0x4B08EF, DriveLocomotionClass_Process_CheckUnload, 0x5)
 	GET(ILocomotion* const, iloco, ESI);
 
 	__assume(iloco != nullptr);
-
 	const auto pFoot = static_cast<LocomotionClass*>(iloco)->LinkedTo;
 
 	if (pFoot->GetCurrentMission() != Mission::Unload)
 		return ContinueProcess;
-
+	// When in the state of unloading passengers, it should be able to move to reach the appropriate position.
 	return (pFoot->GetTechnoType()->Passengers > 0 && pFoot->Passengers.GetFirstPassenger()) ? ContinueProcess : SkipGameCode;
 }
 
@@ -593,12 +592,11 @@ DEFINE_HOOK(0x69FFB6, ShipLocomotionClass_Process_CheckUnload, 0x5)
 	GET(ILocomotion* const, iloco, ESI);
 
 	__assume(iloco != nullptr);
-
 	const auto pFoot = static_cast<LocomotionClass*>(iloco)->LinkedTo;
 
 	if (pFoot->GetCurrentMission() != Mission::Unload)
 		return ContinueProcess;
-
+	// When in the state of unloading passengers, it should be able to move to reach the appropriate position.
 	return (pFoot->GetTechnoType()->Passengers > 0 && pFoot->Passengers.GetFirstPassenger()) ? ContinueProcess : SkipGameCode;
 }
 
