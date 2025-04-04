@@ -570,8 +570,11 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 		const auto pPrevBuildingType = static_cast<BuildingTypeClass*>(pPrevType);
 
 		// Maybe buggy
-		for (auto pAnim = pBuilding->Anims[0]; pAnim; pAnim++)
-			GameDelete(pAnim);
+		for (int i = 0; i < 21; ++i)
+		{
+			if (const auto pAnim = pBuilding->Anims[i])
+				GameDelete(pAnim);
+		}
 
 		// Skip audio related
 
@@ -616,6 +619,7 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 		// --Unsorted::ScenarioInit;
 
 		pBuilding->Place(false);
+
 		pBuilding->unknown_coord_64C = CoordStruct::Empty;
 
 		pThis->SetHealthPercentage(static_cast<double>(oldHealth) / pPrevBuildingType->Strength);
