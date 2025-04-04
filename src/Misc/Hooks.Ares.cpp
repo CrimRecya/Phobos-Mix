@@ -62,6 +62,9 @@ void Apply_Ares3_0_Patches()
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x528C8, &Helpers::Alex::getCellSpreadItems);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x5273A, &Helpers::Alex::getCellSpreadItems);
 
+	// Redirect Ares's RequirementsMet to our implementation:
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x021B40, GET_OFFSET(TechnoTypeExt::RequirementsMetExtraCheck));
+
 	// Redirect Ares's RemoveCameo to our implementation:
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x02BDD0, GET_OFFSET(SidebarExt::AresTabCameo_RemoveCameo));
 
@@ -92,6 +95,9 @@ void Apply_Ares3_0p1_Patches()
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x62FB7, &Helpers::Alex::getCellSpreadItems);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x53578, &Helpers::Alex::getCellSpreadItems);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x533EA, &Helpers::Alex::getCellSpreadItems);
+
+	// Redirect Ares's RequirementsMet to our implementation:
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x0225C0, GET_OFFSET(TechnoTypeExt::RequirementsMetExtraCheck));
 
 	// Redirect Ares's RemoveCameo to our implementation:
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x02C910, GET_OFFSET(SidebarExt::AresTabCameo_RemoveCameo));

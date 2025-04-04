@@ -483,4 +483,23 @@ DEFINE_HOOK(0x425060, AnimClass_Expire_ScorchFlamer, 0x6)
 
 #pragma endregion
 
+DEFINE_HOOK(0x5F4B7A, ObjectClass_DrawIfVisible_OnScreenCheck, 0x5)
+{
+	enum { Draw = 0x5F4B88, NoDraw = 0x5F4B7F };
 
+	GET(AbstractType, absType, EAX);
+	GET(ObjectClass*, pThis, ESI);
+
+	if (absType == AbstractType::ParticleSystem)
+		return Draw;
+
+	if (auto pAnim = abstract_cast<AnimClass*>(pThis))
+	{
+		auto pTypeExt = AnimTypeExt::ExtMap.Find(pAnim->Type);
+
+		if (pTypeExt && pTypeExt->RenderIfOutOfScreen)
+			return Draw;
+	}
+
+	return NoDraw;
+}
