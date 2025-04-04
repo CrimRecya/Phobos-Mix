@@ -460,6 +460,7 @@ This page lists all the individual contributions to the project by their author.
   - Enhanced Bombard trajectory
   - Shield armor inheritance customization
   - Fix `DefaultDisguise` showing wrong house colors for different players
+  - Fire weapon when kill
 - **NaotoYuuki** - Vertical & meteor trajectory projectile prototypes
 - **handama** - AI script action to `16005 Jump Back To Previous Script`
 - **TaranDahl (航味麻酱)**:
@@ -490,12 +491,13 @@ This page lists all the individual contributions to the project by their author.
   - `AffectsInAir` and `AffectsOnFloor`
   - Infantry fire while moving
   - Weapon range finding in cylinder
-- **Aephiex**:
-  - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
-  - Aggressive stance toggle command (auto target unarmed enemy buildings)
+  - Fix an issue where AI would select unreachable buildings and get stuck when looking for buildings like tank bunkers, bio reactors, etc
 - **tyuah8**:
   - Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix
   - Destroyed unit leaves sensors bugfix
+- **Aephiex**:
+  - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
+  - Aggressive stance toggle command (auto target unarmed enemy buildings)
 - **Multfinite** - Allow to toggle main exception handler via command line argument `-ExceptionHandler=boolean`
 - **hejiajun107, Xkein** - Fix a jumpjet crash related to voxel shadow drawing
 - **Ares developers**:

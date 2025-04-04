@@ -23,23 +23,6 @@ void TechnoTypeExt::ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, dou
 	TechnoTypeExt::ExtMap.Find(pType)->ApplyTurretOffset(mtx, factor, turIdx);
 }
 
-DEFINE_HOOK(0x6F3C56, TechnoClass_GetFLH_TurretMultiOffset, 0x0)
-{
-	LEA_STACK(Matrix3D*, mtx, STACK_OFFSET(0xD8, -0x90));
-	GET(TechnoTypeClass*, technoType, EDX);
-	GET(TechnoClass*, pThis, EBX);
-
-	auto turIdx = -1;
-	auto pTypeExt = TechnoTypeExt::ExtMap.Find(technoType);
-
-	if (pTypeExt->BurstPerTurret > 0)
-		turIdx = ((pThis->CurrentBurstIndex / pTypeExt->BurstPerTurret) % (pTypeExt->ExtraTurretCount + 1)) - 1;
-
-	TechnoTypeExt::ApplyTurretOffset(technoType, mtx, 1.0, turIdx);
-
-	return 0x6F3C6D;
-}
-
 DEFINE_HOOK(0x6F3E6E, TechnoClass_ActionLines_TurretMultiOffset, 0x0)
 {
 	LEA_STACK(Matrix3D*, mtx, STACK_OFFSET(0xCC, -0x90));
