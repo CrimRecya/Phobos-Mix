@@ -36,6 +36,9 @@ public:
 		std::vector<TechnoExt::ExtData*> AutoDeathObjects;
 		std::vector<TechnoExt::ExtData*> TransportReloaders; // Objects that can reload ammo in limbo
 
+		DynamicVectorClass<TechnoClass*> UndergroundTracker;
+		DynamicVectorClass<TechnoClass*> SpecialTracker;
+
 		ExtData(ScenarioClass* OwnerObject) : Extension<ScenarioClass>(OwnerObject)
 			, ShowBriefing { false }
 			, BriefingTheme { -1 }
