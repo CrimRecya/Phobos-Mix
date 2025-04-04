@@ -1776,40 +1776,6 @@ DEFINE_HOOK(0x6DA4FB, TacticalClass_GetObjectOnCrd_IgnoredByMouse2, 0x6)
 
 #pragma endregion
 
-#pragma region StructureFindingFix
-
-// These functions should consider reachablity.
-DEFINE_HOOK(0x4DFC39, FootClass_FindBioReactor_CheckValid, 0x6)
-{
-	GET(FootClass*, pThis, ESI);
-	GET(BuildingClass*, pBuilding, EDI);
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4DFC3F;
-}
-
-DEFINE_HOOK(0x4DFED2, FootClass_FindGarrisonStructure_CheckValid, 0x6)
-{
-	GET(FootClass*, pThis, ESI);
-	GET(BuildingClass*, pBuilding, EBX);
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4DFED8;
-}
-
-DEFINE_HOOK(0x4E0024, FootClass_FindTankBunker_CheckValid, 0x8)
-{
-	GET(FootClass*, pThis, EDI);
-	GET(BuildingClass*, pBuilding, ESI);
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4E002C;
-}
-
-DEFINE_HOOK_AGAIN(0x4DFB28, FootClass_FindXXX_CheckValid, 0x8) // FindGrinder
-DEFINE_HOOK(0x4DFD92, FootClass_FindXXX_CheckValid, 0x8) // FindBattleBunker
-{
-	GET(FootClass*, pThis, ESI);
-	GET(BuildingClass*, pBuilding, EBX);
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x8;
-}
-
-#pragma endregion
-
 #pragma region HealingWeaponFix
 
 // Skip the hardcode of healing weapon auto target range.
