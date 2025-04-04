@@ -224,8 +224,8 @@ void SWTypeExt::ExtData::ApplyTypeConversion(SuperClass* pSW)
 	if (this->Convert_Pairs.size() == 0)
 		return;
 
-	for (const auto pTargetFoot : FootClass::Array)
-		TypeConvertGroup::Convert(pTargetFoot, this->Convert_Pairs, pSW->Owner);
+	for (const auto pTarget : TechnoClass::Array)
+		TypeConvertGroup::Convert(pTarget, this->Convert_Pairs, pSW->Owner);
 }
 
 void SWTypeExt::ExtData::GrantOneTimeFromList(SuperClass* pSW)
