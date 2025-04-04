@@ -151,6 +151,15 @@ void ScenarioExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	}
 }
 
+void ScenarioExt::ExtData::InvalidatePointer(void* ptr, bool bRemoved)
+{
+	if (bRemoved)
+	{
+		this->UndergroundTracker.Remove(static_cast<TechnoClass*>(ptr));
+		this->SpecialTracker.Remove(static_cast<TechnoClass*>(ptr));
+	}
+}
+
 template <typename T>
 void ScenarioExt::ExtData::Serialize(T& Stm)
 {

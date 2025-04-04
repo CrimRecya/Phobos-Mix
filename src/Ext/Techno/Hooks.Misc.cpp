@@ -4,6 +4,7 @@
 #include <TunnelLocomotionClass.h>
 
 #include <Ext/Anim/Body.h>
+#include <Ext/Scenario/Body.h>
 
 #pragma region SlaveManagerClass
 
@@ -424,6 +425,21 @@ DEFINE_HOOK(0x7295E2, TunnelLocomotionClass_ProcessStateDigging_SubterraneanHeig
 	height = pTypeExt->SubterraneanHeight.Get(RulesExt::Global()->SubterraneanHeight);
 
 	return SkipGameCode;
+}
+
+DEFINE_HOOK_AGAIN(0x729029, TunnelLocomotionClass_Process_Track, 0x7);
+DEFINE_HOOK(0x728F9A, TunnelLocomotionClass_Process_Track, 0x7)
+{
+	GET(FootClass*, pTechno, ECX);
+	ScenarioExt::Global()->UndergroundTracker.AddUnique(pTechno);
+	return 0;
+}
+
+DEFINE_HOOK(0x7297F6, TunnelLocomotionClass_ProcessDigging_Track, 0x7)
+{
+	GET(FootClass*, pTechno, ECX);
+	ScenarioExt::Global()->UndergroundTracker.Remove(pTechno);
+	return 0;
 }
 
 #pragma endregion
