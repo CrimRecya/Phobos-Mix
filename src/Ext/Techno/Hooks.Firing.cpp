@@ -884,91 +884,69 @@ DEFINE_HOOK(0x6FF29E, TechnoClass_FireAt_ChargeTurret2, 0x6)
 // and neither Ares nor Phobos has touched it, even that crawling flh one was in TechnoClass
 DEFINE_JUMP(VTABLE, 0x7F5D20, 0x523250);// Redirect UnitClass::GetFLH to InfantryClass::GetFLH (used to be TechnoClass::GetFLH)
 
-DEFINE_HOOK(0x6F3AF9, TechnoClass_GetFLH_AlternateFLH, 0x6)
+// 4.4.2025 - Starkku: Consolidated all the FLH hooks into single one & using TechnoExt::GetFLHAbsoluteCoord() to get the actual coordinate.
+DEFINE_HOOK(0x6F3AEB, TechnoClass_GetFLH, 0x6)
 {
+	enum { SkipGameCode = 0x6F3D50 };
+
 	GET(TechnoClass*, pThis, EBX);
-	GET(int, weaponIdx, ESI);
+	GET(TechnoTypeClass*, pType, EAX);
+	GET(int, weaponIndex, ESI);
+	GET_STACK(CoordStruct*, pCoords, STACK_OFFSET(0xD8, 0x4));
 
-	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
-	weaponIdx = -weaponIdx - 1;
+	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	bool allowOnTurret = true;
+	CoordStruct flh = CoordStruct::Empty;
 
-	const CoordStruct& flh =
-		weaponIdx < static_cast<int>(pTypeExt->AlternateFLHs.size())
-		? pTypeExt->AlternateFLHs[weaponIdx]
-		: CoordStruct::Empty;
-
-	R->ECX(flh.X);
-	R->EBP(flh.Y);
-	R->EAX(flh.Z);
-
-	return 0x6F3B37;
-}
-
-namespace BurstFLHTemp
-{
-	bool FLHFound;
-}
-
-DEFINE_HOOK(0x6F3B37, TechnoClass_GetFLH_BurstFLH_1, 0x7)
-{
-	GET(TechnoClass*, pThis, EBX);
-	GET(int, OriginalX, ECX);
-	GET(int, OriginalY, EBP);
-	GET(int, OriginalZ, EAX);
-	GET_STACK(int, weaponIndex, STACK_OFFSET(0xD8, 0x8));
-
-	if (weaponIndex < 0)
+	if (weaponIndex >= 0)
 	{
-		auto currentPassenger = pThis->Passengers.FirstPassenger;
-		const auto passengerIndex = -weaponIndex - 1;
+		bool found = false;
+		flh = TechnoExt::GetBurstFLH(pThis, weaponIndex, found);
 
-		for (int i = 0; i < passengerIndex && currentPassenger; i++)
+		if (!found)
+		{
+			if (auto const pInf = abstract_cast<InfantryClass*>(pThis))
+				flh = TechnoExt::GetSimpleFLH(pInf, weaponIndex, found);
+
+			if (!found)
+				flh = pThis->GetWeapon(weaponIndex)->FLH;
+
+			if (pThis->CurrentBurstIndex % 2 != 0)
+				flh.Y = -flh.Y;
+		}
+
+		TechnoExt::ExtMap.Find(pThis)->LastWeaponFLH = flh;
+	}
+	else
+	{
+		const int index = -weaponIndex - 1;
+
+		if (index < static_cast<int>(pTypeExt->AlternateFLHs.size()))
+			flh = pTypeExt->AlternateFLHs[index];
+
+		if (!pTypeExt->AlternateFLH_OnTurret)
+			allowOnTurret = false;
+
+		auto currentPassenger = pThis->Passengers.FirstPassenger;
+
+		for (int i = 0; i < index && currentPassenger; i++)
 			currentPassenger = abstract_cast<FootClass*>(currentPassenger->NextObject);
 
-		if (const auto pPassengerExt = TechnoExt::ExtMap.Find(currentPassenger))
-			pPassengerExt->LastWeaponFLH = { OriginalX, OriginalY, OriginalZ };
-
-		return 0;
+		if (currentPassenger)
+			TechnoExt::ExtMap.Find(currentPassenger)->LastWeaponFLH = flh;
 	}
 
-	bool FLHFound = false;
-	auto FLH = TechnoExt::GetBurstFLH(pThis, weaponIndex, FLHFound);
-	BurstFLHTemp::FLHFound = FLHFound;
+	auto turIdx = -1;
 
-	if (!FLHFound)
-	{
-		if (auto pInf = abstract_cast<InfantryClass*>(pThis))
-			FLH = TechnoExt::GetSimpleFLH(pInf, weaponIndex, FLHFound);
-	}
+	if (pTypeExt->BurstPerTurret > 0)
+		turIdx = ((pThis->CurrentBurstIndex / pTypeExt->BurstPerTurret) % (pTypeExt->ExtraTurretCount + 1)) - 1;
 
-	if (FLHFound)
-	{
-		if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
-			pExt->LastWeaponFLH = FLH;
+	*pCoords = TechnoExt::GetFLHAbsoluteCoords(pThis, flh, allowOnTurret, turIdx);
 
-		R->ECX(FLH.X);
-		R->EBP(FLH.Y);
-		R->EAX(FLH.Z);
-	}
-	else if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
-	{
-		pExt->LastWeaponFLH = { OriginalX, ((pThis->CurrentBurstIndex % 2 == 1) ? -OriginalY : OriginalY), OriginalZ };
-	}
-
-	return 0;
+	R->EAX(pCoords);
+	return SkipGameCode;
 }
 
-DEFINE_HOOK(0x6F3C88, TechnoClass_GetFLH_BurstFLH_2, 0x6)
-{
-	GET_STACK(int, weaponIndex, STACK_OFFSET(0xD8, 0x8));
-
-	if (BurstFLHTemp::FLHFound || weaponIndex < 0)
-		R->EAX(0);
-
-	BurstFLHTemp::FLHFound = false;
-
-	return 0;
-}
 #pragma endregion
 
 // Basically a hack to make game and Ares pick laser properties from non-Primary weapons.
