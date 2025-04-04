@@ -73,7 +73,7 @@ void Apply_Ares3_0_Patches()
 
 	// Replace the TemporalClass::Detach call by LetGo in convert function:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x436DA, &LetGo);
-	
+
 	// Use new convert
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x39DAE, &ConvertToType);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x46C6D, &ConvertToType);

@@ -416,7 +416,7 @@ bool ConvertToType_ProcessLikeAres(FootClass* pThis, TechnoTypeClass* pToType)
 // BTW, who said it was merely a Type pointer replacement and he could make a better one than Ares?
 bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 {
-	auto pPrevType = pThis->GetTechnoType();
+	const auto pPrevType = pThis->GetTechnoType();
 
 	// Different types prohibited
 	if (pPrevType->WhatAmI() != pToType->WhatAmI())
@@ -427,13 +427,15 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 
 	if (pToType->Spawns)
 	{
-		if (!pThis->SpawnManager)
+		const auto pManager = pThis->SpawnManager;
+
+		if (!pManager)
 		{
-			pThis->SpawnManager = GameCreate<SpawnManagerClass>(pThis, pToType->Spawns, pToType->SpawnsNumber, pToType->SpawnRegenRate, pToType->SpawnReloadRate);
+			pThis->SpawnManager = GameCreate<SpawnManagerClass>(pThis, pToType->Spawns, pToType->SpawnsNumber,
+				pToType->SpawnRegenRate, pToType->SpawnReloadRate);
 		}
 		else
 		{
-			auto pManager = pThis->SpawnManager;
 			pManager->SpawnType = pToType->Spawns;
 			pManager->SpawnCount = pToType->SpawnsNumber;
 			pManager->RegenRate = pToType->SpawnRegenRate;
@@ -443,13 +445,15 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 
 	if (pToType->Enslaves)
 	{
-		if (!pThis->SlaveManager)
+		const auto pManager = pThis->SlaveManager;
+
+		if (!pManager)
 		{
-			pThis->SlaveManager = GameCreate<SlaveManagerClass>(pThis, pToType->Enslaves, pToType->SlavesNumber, pToType->SlaveRegenRate, pToType->SlaveReloadRate);
+			pThis->SlaveManager = GameCreate<SlaveManagerClass>(pThis, pToType->Enslaves, pToType->SlavesNumber,
+				pToType->SlaveRegenRate, pToType->SlaveReloadRate);
 		}
 		else
 		{
-			auto pManager = pThis->SlaveManager;
 			pManager->SlaveType = pToType->Enslaves;
 			pManager->SlaveCount = pToType->SlavesNumber;
 			pManager->RegenRate = pToType->SlaveRegenRate;
@@ -457,28 +461,38 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 		}
 	}
 
-	if (auto pWeapon = pToType->GetWeapon(0, pThis->Veterancy.IsElite()).WeaponType)
+	if (const auto pWeapon = pToType->GetWeapon(0, pThis->Veterancy.IsElite()).WeaponType)
 	{
-		if (pWeapon->Warhead->MindControl)
+		const auto pWH = pWeapon->Warhead;
+
+		if (pWH->MindControl)
 		{
-			if (!pThis->CaptureManager)
+			const auto pManager = pThis->CaptureManager;
+
+			if (!pManager)
 			{
-				pThis->CaptureManager = GameCreate<CaptureManagerClass>(pThis, pWeapon->Damage, pWeapon->InfiniteMindControl);
+				pThis->CaptureManager = GameCreate<CaptureManagerClass>(pThis, pWeapon->Damage,
+					pWeapon->InfiniteMindControl);
 			}
 			else
 			{
-				auto pManager = pThis->CaptureManager;
 				pManager->MaxControlNodes = pWeapon->Damage;
 				pManager->InfiniteMindControl = pWeapon->InfiniteMindControl;
 			}
 		}
 
-		if (pWeapon->Warhead->Temporal)
+		if (pWH->Temporal)
 		{
-			if (!pThis->TemporalImUsing)
+			const auto pTemporal = pThis->TemporalImUsing;
+
+			if (!pTemporal)
 			{
 				pThis->TemporalImUsing = GameCreate<TemporalClass>(pThis);
 				pThis->TemporalImUsing->WarpPerStep = pWeapon->Damage;
+			}
+			else
+			{
+				pTemporal->WarpPerStep = pWeapon->Damage;
 			}
 		}
 	}
@@ -486,13 +500,11 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 	if (pToType->AirstrikeTeam > 0)
 	{
 		if (!pThis->Airstrike)
-		{
 			pThis->Airstrike = GameCreate<AirstrikeClass>(pThis);
-		}
 
 		if (pThis->Airstrike->Owner == pThis)
 		{
-			auto pAirstrike = pThis->Airstrike;
+			const auto pAirstrike = pThis->Airstrike;
 			pAirstrike->AirstrikeTeam = pToType->AirstrikeTeam;
 			pAirstrike->EliteAirstrikeTeam = pToType->EliteAirstrikeTeam;
 			pAirstrike->AirstrikeRechargeTime = pToType->AirstrikeRechargeTime;
@@ -500,44 +512,50 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 			pAirstrike->AirstrikeTeamType = pToType->AirstrikeTeamType;
 			pAirstrike->EliteAirstrikeTeamType = pToType->EliteAirstrikeTeamType;
 		}
+		else
+		{
+			Debug::Log("Failed to replace AirstrikeTeam on %s when convert to type %s, because it is locking an airstrike target/locked as an airstrike target.\n",
+				pThis->get_ID(), pToType->get_ID());
+		}
 	}
 
 	// Skip disguise related
 	// if (pToType->CanDisguise && pToType->PermaDisguise)
 
-	auto pTurretRecoil = pThis->TurretRecoil.Turret;
-	auto pTurretData = pToType->TurretAnimData;
-	pTurretRecoil.Travel = pTurretData.Travel;
-	pTurretRecoil.CompressFrames = pTurretData.CompressFrames;
-	pTurretRecoil.RecoverFrames = pTurretData.RecoverFrames;
-	pTurretRecoil.HoldFrames = pTurretData.HoldFrames;
-	auto pBarrelRecoil = pThis->BarrelRecoil.Turret;
-	auto pBarrelData = pToType->BarrelAnimData;
-	pBarrelRecoil.Travel = pBarrelData.Travel;
-	pBarrelRecoil.CompressFrames = pBarrelData.CompressFrames;
-	pBarrelRecoil.RecoverFrames = pBarrelData.RecoverFrames;
-	pBarrelRecoil.HoldFrames = pBarrelData.HoldFrames;
+	auto turretRecoil = pThis->TurretRecoil.Turret;
+	auto turretData = pToType->TurretAnimData;
+	turretRecoil.Travel = turretData.Travel;
+	turretRecoil.CompressFrames = turretData.CompressFrames;
+	turretRecoil.RecoverFrames = turretData.RecoverFrames;
+	turretRecoil.HoldFrames = turretData.HoldFrames;
+	auto barrelRecoil = pThis->BarrelRecoil.Turret;
+	auto barrelData = pToType->BarrelAnimData;
+	barrelRecoil.Travel = barrelData.Travel;
+	barrelRecoil.CompressFrames = barrelData.CompressFrames;
+	barrelRecoil.RecoverFrames = barrelData.RecoverFrames;
+	barrelRecoil.HoldFrames = barrelData.HoldFrames;
 
 	if (pThis->Cloakable && !pToType->Cloakable)
 		pThis->Uncloak(true);
+
 	pThis->Cloakable = pToType->Cloakable;
 
 	if (pPrevType->BombSight)
 		BombListClass::Instance.RemoveDetector(pThis);
+
 	if (pToType->BombSight)
 		BombListClass::Instance.AddDetector(pThis);
 
-	auto dir = DirStruct();
-	dir.Raw = 0x4000 - pToType->FireAngle;
-	pThis->BarrelFacing.SetCurrent(dir);
+	pThis->BarrelFacing.SetCurrent(DirStruct(0x4000 - pToType->FireAngle));
 
 	pThis->UpdateSight(0, 0, 0, 0, 0);
 
 	if (pPrevType->GapGenerator)
 		pThis->DestroyGap();
+
 	if (pToType->GapGenerator)
 	{
-		auto temp = pPrevType->GapRadiusInCells;
+		const auto temp = pPrevType->GapRadiusInCells;
 		pThis->GapRadius = pToType->GapRadiusInCells;
 		pPrevType->GapRadiusInCells = pToType->GapRadiusInCells;
 		pThis->CreateGap();
@@ -546,9 +564,9 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 
 	if (pThis->WhatAmI() == AbstractType::Building)
 	{
-		auto pBuilding = (BuildingClass*)pThis;
-		auto pToBuildingType = (BuildingTypeClass*)pToType;
-		auto pPrevBuildingType = (BuildingTypeClass*)pPrevType;
+		const auto pBuilding = static_cast<BuildingClass*>(pThis);
+		const auto pToBuildingType = static_cast<BuildingTypeClass*>(pToType);
+		const auto pPrevBuildingType = static_cast<BuildingTypeClass*>(pPrevType);
 
 		// Maybe buggy
 		for (auto pAnim = pBuilding->Anims[0]; pAnim; pAnim++)
@@ -557,8 +575,7 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 		// Skip audio related
 
 		// Maybe buggy
-		auto dockNumber = std::max(pToBuildingType->NumberOfDocks, 1);
-		pBuilding->SetLinkCount(dockNumber);
+		pBuilding->SetLinkCount(std::max(pToBuildingType->NumberOfDocks, 1));
 
 		if (pToBuildingType->LoadBuildup())
 			pBuilding->HasBuildUp = true;
@@ -566,37 +583,41 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 			pBuilding->AI_Sellable = false;
 
 		// Skip SecretLab related
-		
+
 		// Same as foot
 
-		auto tempUsing = pThis->TemporalImUsing;
+		const auto tempUsing = pThis->TemporalImUsing;
+
 		if (tempUsing && tempUsing->Target)
 			tempUsing->LetGo();
 
-		HouseClass* const pOwner = pThis->Owner;
+		const auto pOwner = pThis->Owner;
 
 		if (!pThis->InLimbo)
 			pOwner->RegisterLoss(pThis, false);
+
 		pOwner->RemoveTracking(pThis);
 
-		int oldHealth = pThis->Health;
+		const auto oldHealth = pThis->Health;
 
 		// Maybe buggy
-		auto pCrd = pBuilding->Location;
+		const auto coord = pBuilding->Location;
 		pBuilding->Limbo();
 		pBuilding->Type = pToBuildingType;
 		pBuilding->ActuallyPlacedOnMap = false;
 		++Unsorted::ScenarioInit;
-		pBuilding->Unlimbo(pCrd, DirType::North);
+		pBuilding->Unlimbo(coord, DirType::North);
 		--Unsorted::ScenarioInit;
 		pBuilding->Place(false);
 
-		pThis->SetHealthPercentage((double)(oldHealth) / (double)pPrevBuildingType->Strength);
+		pThis->SetHealthPercentage(static_cast<double>(oldHealth) / pPrevBuildingType->Strength);
 		pThis->EstimatedHealth = pThis->Health;
 
 		pOwner->AddTracking(pThis);
+
 		if (!pThis->InLimbo)
 			pOwner->RegisterGain(pThis, false);
+
 		pOwner->RecheckTechTree = true;
 
 		pThis->Ammo = Math::min(pThis->Ammo, pToType->Ammo);
@@ -604,14 +625,13 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 		pThis->SecondaryFacing.SetROT(pToType->ROT);
 		pThis->PrimaryFacing.SetROT(pToType->ROT);
 
-
 		return true;
 	}
 	else
 	{
-		auto pFoot = (FootClass*)pThis;
+		const auto pFoot = static_cast<FootClass*>(pThis);
 
-		if (auto pWeapon = pToType->GetWeapon(0, pThis->Veterancy.IsElite()).WeaponType)
+		if (const auto pWeapon = pToType->GetWeapon(0, pThis->Veterancy.IsElite()).WeaponType)
 		{
 			if (!pFoot->ParasiteImUsing && pWeapon->Warhead->Parasite)
 				pFoot->ParasiteImUsing = GameCreate<ParasiteClass>(pFoot);
@@ -619,48 +639,47 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 
 		if (pPrevType->SensorsSight)
 			pFoot->RemoveSensorsAt(CellStruct::Empty);
+
 		if (pToType->SensorsSight)
 		{
-			auto temp = pPrevType->SensorsSight;
+			const auto temp = pPrevType->SensorsSight;
 			pPrevType->SensorsSight = pToType->SensorsSight;
 			pFoot->AddSensorsAt(CellStruct::Empty);
 			pPrevType->SensorsSight = temp;
 		}
 
-		if (auto pInfantry = abstract_cast<InfantryClass*>(pFoot))
+		if (pFoot->WhatAmI() == AbstractType::Unit)
 		{
-			auto pToInfantryType = (InfantryTypeClass*)pToType;
-			auto pInfantryPrevType = (InfantryTypeClass*)pPrevType;
-		}
-
-		if (auto pUnit = abstract_cast<UnitClass*>(pFoot))
-		{
-			auto pToUnitType = (UnitTypeClass*)pToType;
-			auto pUnitPrevType = (UnitTypeClass*)pPrevType;
+			const auto pUnit = static_cast<UnitClass*>(pFoot);
+			const auto pToUnitType = static_cast<UnitTypeClass*>(pToType);
+			const auto pUnitPrevType = static_cast<UnitTypeClass*>(pPrevType);
 
 			// Maybe buggy
+			const auto pPassenger = pUnit->Passengers.GetFirstPassenger();
+
 			if (pUnitPrevType->Gunner)
-				pUnit->RemoveGunner(pUnit->Passengers.GetFirstPassenger());
+				pUnit->RemoveGunner(pPassenger);
+
 			if (pToUnitType->Gunner)
-				pUnit->ReceiveGunner(pUnit->Passengers.GetFirstPassenger());
-
-
+				pUnit->ReceiveGunner(pPassenger);
 		}
-
-		if (auto pAircraft = abstract_cast<AircraftClass*>(pFoot))
+/*		else if (pFoot->WhatAmI() == AbstractType::Aircraft)
 		{
-			auto pToAircraftType = (AircraftTypeClass*)pToType;
-			auto pAircraftPrevType = (AircraftTypeClass*)pPrevType;
+			const auto pAircraft = static_cast<AircraftClass*>(pFoot);
+			const auto pToAircraftType = static_cast<AircraftTypeClass*>(pToType);
+			const auto pAircraftPrevType = static_cast<AircraftTypeClass*>(pPrevType);
 		}
+		else if (pFoot->WhatAmI() == AbstractType::Infantry)
+		{
+			const auto pInfantry = static_cast<InfantryClass*>(pFoot);
+			const auto pToInfantryType = static_cast<InfantryTypeClass*>(pToType);
+			const auto pInfantryPrevType = static_cast<InfantryTypeClass*>(pPrevType);
+		}*/
 
 		if (AresFunctions::ConvertTypeTo)
-		{
 			return AresFunctions::ConvertTypeTo(pThis, pToType);
-		}
 		else
-		{
 			return ConvertToType_ProcessLikeAres((FootClass*)pThis, pToType);
-		}
 	}
 }
 
