@@ -384,7 +384,7 @@ bool ConvertToType_ProcessLikeAres(FootClass* pThis, TechnoTypeClass* pToType)
 	else
 		pThis->PrimaryFacing.SetROT(pToType->ROT);
 	// Adjust Ares TurretROT -- skipped
-	// pThis->SecondaryFacing.SetROT(TechnoTypeExt::ExtMap.Find(pToType)->TurretROT.Get(pToType->ROT));
+	//  pThis->SecondaryFacing.SetROT(TechnoTypeExt::ExtMap.Find(pToType)->TurretROT.Get(pToType->ROT));
 
 	// Locomotor change, referenced from Ares 0.A's abduction code, not sure if correct, untested
 	CLSID nowLocoID;
