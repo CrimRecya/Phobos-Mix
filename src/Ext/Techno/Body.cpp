@@ -9,6 +9,7 @@
 #include <TemporalClass.h>
 #include <AirstrikeClass.h>
 #include <BombListClass.h>
+#include <TacticalClass.h>
 
 #include <Ext/Anim/Body.h>
 #include <Ext/House/Body.h>
@@ -592,10 +593,6 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 			tempUsing->LetGo();
 
 		const auto pOwner = pThis->Owner;
-
-		if (!pThis->InLimbo)
-			pOwner->RegisterLoss(pThis, false);
-
 		pOwner->RemoveTracking(pThis);
 
 		const auto oldHealth = pThis->Health;
@@ -605,19 +602,26 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 		pBuilding->Limbo();
 		pBuilding->Type = pToBuildingType;
 		pBuilding->ActuallyPlacedOnMap = false;
-		++Unsorted::ScenarioInit;
-		pBuilding->Unlimbo(coord, DirType::North);
-		--Unsorted::ScenarioInit;
+
+		// ++Unsorted::ScenarioInit;
+
+		if (!pBuilding->Unlimbo(coord, DirType::North))
+		{
+			pBuilding->UnInit();
+
+			Debug::Log("Failed to place %s with new building type %s, its place has already been occupied.\n", pPrevType->get_ID(), pToType->get_ID());
+			return true;
+		}
+
+		// --Unsorted::ScenarioInit;
+
 		pBuilding->Place(false);
+		pBuilding->unknown_coord_64C = CoordStruct::Empty;
 
 		pThis->SetHealthPercentage(static_cast<double>(oldHealth) / pPrevBuildingType->Strength);
 		pThis->EstimatedHealth = pThis->Health;
 
 		pOwner->AddTracking(pThis);
-
-		if (!pThis->InLimbo)
-			pOwner->RegisterGain(pThis, false);
-
 		pOwner->RecheckTechTree = true;
 
 		pThis->Ammo = Math::min(pThis->Ammo, pToType->Ammo);
