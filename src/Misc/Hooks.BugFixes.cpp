@@ -1763,39 +1763,28 @@ DEFINE_HOOK(0x4DFC39, FootClass_FindBioReactor_CheckValid, 0x6)
 {
 	GET(FootClass*, pThis, ESI);
 	GET(BuildingClass*, pBuilding, EDI);
-
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x6;
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4DFC3F;
 }
 
 DEFINE_HOOK(0x4DFED2, FootClass_FindGarrisonStructure_CheckValid, 0x6)
 {
 	GET(FootClass*, pThis, ESI);
 	GET(BuildingClass*, pBuilding, EBX);
-
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x6;
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4DFED8;
 }
 
 DEFINE_HOOK(0x4E0024, FootClass_FindTankBunker_CheckValid, 0x8)
 {
 	GET(FootClass*, pThis, EDI);
 	GET(BuildingClass*, pBuilding, ESI);
-
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x8;
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4E002C;
 }
 
-DEFINE_HOOK(0x4DFD92, FootClass_FindBattleBunker_CheckValid, 0x8)
+DEFINE_HOOK_AGAIN(0x4DFB28, FootClass_FindXXX_CheckValid, 0x8) // FindGrinder
+DEFINE_HOOK(0x4DFD92, FootClass_FindXXX_CheckValid, 0x8) // FindBattleBunker
 {
 	GET(FootClass*, pThis, ESI);
 	GET(BuildingClass*, pBuilding, EBX);
-
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x8;
-}
-
-DEFINE_HOOK(0x4DFB28, FootClass_FindGrinder_CheckValid, 0x8)
-{
-	GET(FootClass*, pThis, ESI);
-	GET(BuildingClass*, pBuilding, EBX);
-
 	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x8;
 }
 
