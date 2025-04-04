@@ -633,6 +633,9 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 		pThis->SecondaryFacing.SetROT(pToType->ROT);
 		pThis->PrimaryFacing.SetROT(pToType->ROT);
 
+		if (pPrevBuildingType->Turret != pToBuildingType->Turret)
+			pThis->PrimaryFacing.SetCurrent(DirStruct(0));
+
 		return true;
 	}
 	else
@@ -660,28 +663,32 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 		{
 			const auto pUnit = static_cast<UnitClass*>(pFoot);
 			const auto pToUnitType = static_cast<UnitTypeClass*>(pToType);
-			const auto pUnitPrevType = static_cast<UnitTypeClass*>(pPrevType);
+			const auto pPrevUnitType = static_cast<UnitTypeClass*>(pPrevType);
 
 			// Maybe buggy
-			const auto pPassenger = pUnit->Passengers.GetFirstPassenger();
-
-			if (pUnitPrevType->Gunner)
-				pUnit->RemoveGunner(pPassenger);
+			if (pPrevUnitType->Gunner)
+				pUnit->RemoveGunner(nullptr);
 
 			if (pToUnitType->Gunner)
-				pUnit->ReceiveGunner(pPassenger);
+			{
+				if (const auto pPassenger = pUnit->Passengers.GetFirstPassenger())
+					pUnit->ReceiveGunner(pPassenger);
+			}
+
+			if (pPrevUnitType->Turret != pToUnitType->Turret)
+				pUnit->SecondaryFacing.SetCurrent(pUnit->PrimaryFacing.Current());
 		}
 /*		else if (pFoot->WhatAmI() == AbstractType::Aircraft)
 		{
 			const auto pAircraft = static_cast<AircraftClass*>(pFoot);
 			const auto pToAircraftType = static_cast<AircraftTypeClass*>(pToType);
-			const auto pAircraftPrevType = static_cast<AircraftTypeClass*>(pPrevType);
+			const auto pPrevAircraftType = static_cast<AircraftTypeClass*>(pPrevType);
 		}
 		else if (pFoot->WhatAmI() == AbstractType::Infantry)
 		{
 			const auto pInfantry = static_cast<InfantryClass*>(pFoot);
 			const auto pToInfantryType = static_cast<InfantryTypeClass*>(pToType);
-			const auto pInfantryPrevType = static_cast<InfantryTypeClass*>(pPrevType);
+			const auto pPrevInfantryType = static_cast<InfantryTypeClass*>(pPrevType);
 		}*/
 
 		if (AresFunctions::ConvertTypeTo)
