@@ -1,9 +1,6 @@
 #pragma once
 
 #include <LocomotionClass.h>
-#include <FootClass.h>
-#include <VocClass.h>
-#include <Utilities/Debug.h>
 #include <MapClass.h>
 
 #include <Interfaces.h>
@@ -11,9 +8,77 @@
 #include <comip.h>
 #include <comdef.h>
 
+class NOVTABLE TubeClass : public AbstractClass
+{
+public:
+	static const AbstractType AbsID = AbstractType::Tube;
+	static constexpr uintptr_t AbsVTable = 0x7F59B0;
+
+	DEFINE_REFERENCE(DynamicVectorClass<TubeClass*>, Array, 0x8B4138u)
+
+	//IPersist
+	virtual HRESULT __stdcall GetClassID(CLSID* pClassID) R0;
+
+	//IPersistStream
+	virtual HRESULT __stdcall Load(IStream* pStm) R0;
+	virtual HRESULT __stdcall Save(IStream* pStm, BOOL fClearDirty) R0;
+
+	//AbstractClass
+	virtual AbstractType WhatAmI() const RT(AbstractType);
+	virtual int Size() const R0;
+
+	//Destructor
+	virtual ~TubeClass() RX;
+
+	//Constructor
+	TubeClass(CellStruct* a2, int a3) noexcept
+		: TubeClass(noinit_t())
+	{ JMP_THIS(0x727FD0); }
+
+protected:
+	explicit __forceinline TubeClass(noinit_t) noexcept
+		: AbstractClass(noinit_t())
+	{ }
+
+public:
+	CellStruct EnterCell;
+	CellStruct ExitCell;
+	int unknown_int_2C;
+	int unknown_int_30[100];
+	int unknown_int_1C0;
+};
+
 class __declspec(uuid("4A582751-9839-11d1-B709-00A024DDAFD1"))
 	SkillLocomotionClass : public LocomotionClass, public IPiggyback
 {
+public:
+	struct TrackNumStruct
+	{
+		char NormalTrackStructIndex;
+		char ShortTrackStructIndex;
+		int Face;
+		int Flag;
+	};
+
+	struct TrackPtStruct
+	{
+		Point2D Point;
+		int Flag;
+	};
+
+	struct TrackIdxStruct
+	{
+		TrackPtStruct* TrackPoint;
+		int TrackIndex1;
+		int TrackIndex2;
+		int TrackIndex3;
+	};
+
+	// Reference, no write permission
+	DEFINE_ARRAY_REFERENCE(Point2D, [8], CoordDirections, 0x89F6D8)
+	DEFINE_ARRAY_REFERENCE(TrackNumStruct, [72], TrackData, 0x7E7B28)
+	DEFINE_ARRAY_REFERENCE(TrackIdxStruct, [16], TrackStruct, 0x7E7A28)
+
 public:
 	// IUnknown
 	virtual HRESULT __stdcall QueryInterface(REFIID iid, LPVOID* ppvObject) override
@@ -111,47 +176,84 @@ public:
 
 		return hr;
 	}*/
-	virtual bool __stdcall Is_Moving() override { JMP_STD(0x4AFB80); }
-	virtual CoordStruct __stdcall Destination() override { JMP_STD(0x4AFC90); }
-	virtual CoordStruct __stdcall Head_To_Coord() override { JMP_STD(0x4AFCC0); }
-	//virtual Move __stdcall Can_Enter_Cell(CellStruct cell) override { return Move::OK; }
-	//virtual bool __stdcall Is_To_Have_Shadow() override { return true; }
-	virtual Matrix3D __stdcall Draw_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4AFF60); }
-	virtual Matrix3D __stdcall Shadow_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4B0410); }
-	//virtual Point2D __stdcall Draw_Point() override { return this->LocomotionClass::Draw_Point(); } // Point2D*
-	//virtual Point2D __stdcall Shadow_Point() override { return this->LocomotionClass::Shadow_Point(); } // Point2D*
-	//virtual VisualType __stdcall Visual_Character(bool raw) override { return VisualType::Normal; }
+	virtual bool __stdcall Is_Moving() override
+	{
+		if (this->TargetCoord != CoordStruct::Empty)
+			return true;
+
+		return this->HeadToCoord != CoordStruct::Empty
+			&& (this->HeadToCoord.X != this->LinkedTo->Location.X
+				|| this->HeadToCoord.Y != this->LinkedTo->Location.Y);
+	}
+	virtual CoordStruct __stdcall Destination() override { return this->TargetCoord; } // CoordStruct*
+	virtual CoordStruct __stdcall Head_To_Coord() override // CoordStruct*
+	{
+		if (this->HeadToCoord == CoordStruct::Empty)
+			return this->LinkedTo->Location;
+
+		return this->HeadToCoord;
+	}
+//	virtual Move __stdcall Can_Enter_Cell(CellStruct cell) override { return Move::OK; }
+//	virtual bool __stdcall Is_To_Have_Shadow() override { return true; }
+	virtual Matrix3D __stdcall Draw_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4AFF60); } // TODO but lazy
+	virtual Matrix3D __stdcall Shadow_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4B0410); } // TODO but lazy
+//	virtual Point2D __stdcall Draw_Point() override { return this->LocomotionClass::Draw_Point(); } // Point2D*
+//	virtual Point2D __stdcall Shadow_Point() override { return this->LocomotionClass::Shadow_Point(); } // Point2D*
+//	virtual VisualType __stdcall Visual_Character(bool raw) override { return VisualType::Normal; }
 	virtual int __stdcall Z_Adjust() override { return 0; }
 	virtual ZGradient __stdcall Z_Gradient() override { return ZGradient::Deg90; }
-	virtual bool __stdcall Process() override { JMP_STD(0x4B0500); }
-	virtual void __stdcall Move_To(CoordStruct to) override { JMP_STD(0x4AFD40); }
-	virtual void __stdcall Stop_Moving() override { JMP_STD(0x4AFE00); }
-	virtual void __stdcall Do_Turn(DirStruct coord) override { JMP_STD(0x4B0EF0); }
-	virtual void __stdcall Unlimbo() override { JMP_STD(0x4B04D0); }
-	//virtual void __stdcall Tilt_Pitch_AI() override {}
-	//virtual bool __stdcall Power_On() override { return this->LocomotionClass::Power_On(); }
-	//virtual bool __stdcall Power_Off() override { return this->LocomotionClass::Power_Off(); }
-	//virtual bool __stdcall Is_Powered() override { return this->Powered; }
-	//virtual bool __stdcall Is_Ion_Sensitive() override { return false; }
-	//virtual bool __stdcall Push(DirStruct dir) override { return false; }
-	//virtual bool __stdcall Shove(DirStruct dir) override { return false; }
-	virtual void __stdcall Force_Track(int track, CoordStruct coord) override { JMP_STD(0x4B0C40); }
+	virtual bool __stdcall Process() override;
+	virtual void __stdcall Move_To(CoordStruct to) override;
+	virtual void __stdcall Stop_Moving() override;
+	virtual void __stdcall Do_Turn(DirStruct dir) override;
+	virtual void __stdcall Unlimbo() override { this->Force_New_Slope(this->LinkedTo->GetCell()->SlopeIndex); }
+//	virtual void __stdcall Tilt_Pitch_AI() override {}
+/*	virtual bool __stdcall Power_On() override
+	{
+		this->Powered = true;
+		return this->Is_Powered();
+	}*/
+/*	virtual bool __stdcall Power_Off() override
+	{
+		this->Powered = false;
+		return this->Is_Powered();
+	}*/
+//	virtual bool __stdcall Is_Powered() override { return this->Powered; }
+//	virtual bool __stdcall Is_Ion_Sensitive() override { return false; }
+//	virtual bool __stdcall Push(DirStruct dir) override { return false; }
+//	virtual bool __stdcall Shove(DirStruct dir) override { return false; }
+	virtual void __stdcall Force_Track(int track, CoordStruct coord) override;
 	virtual Layer __stdcall In_Which_Layer() override { return Layer::Ground; }
-	//virtual void __stdcall Force_Immediate_Destination(CoordStruct coord) override {}
-	virtual void __stdcall Force_New_Slope(int ramp) override { JMP_STD(0x4AFB40); }
-	virtual bool __stdcall Is_Moving_Now() override { JMP_STD(0x4AFC20); }
-	//virtual int __stdcall Apparent_Speed() override { return this->LinkedTo->GetCurrentSpeed(); }
-	//virtual int __stdcall Drawing_Code() override { return 0; }
-	//virtual FireError __stdcall Can_Fire() override { return FireError::OK; }
-	//virtual int __stdcall Get_Status() override { return 0; }
-	//virtual void __stdcall Acquire_Hunter_Seeker_Target() override {}
-	//virtual bool __stdcall Is_Surfacing() override { return false; }
-	virtual void __stdcall Mark_All_Occupation_Bits(MarkType mark) override { JMP_STD(0x4B48D0); }
-	virtual bool __stdcall Is_Moving_Here(CoordStruct to) override { JMP_STD(0x4B4920); }
-	virtual bool __stdcall Will_Jump_Tracks() override { JMP_STD(0x4B4B00); }
-	//virtual bool __stdcall Is_Really_Moving_Now() override { return this->Is_Moving_Now(); }
-	//virtual void __stdcall Stop_Movement_Animation() override {}
-	//virtual void __stdcall Limbo() override {}
+//	virtual void __stdcall Force_Immediate_Destination(CoordStruct coord) override {}
+	virtual void __stdcall Force_New_Slope(int ramp) override
+	{
+		this->CurrentRamp = ramp;
+		this->PreviousRamp = ramp;
+		this->SlopeTimer.Start(0);
+	}
+	virtual bool __stdcall Is_Moving_Now() override
+	{
+		if (this->LinkedTo->PrimaryFacing.IsRotating())
+			return true;
+
+		return (this->TargetCoord != CoordStruct::Empty
+				|| this->HeadToCoord.X != this->LinkedTo->Location.X
+				|| this->HeadToCoord.Y != this->LinkedTo->Location.Y)
+			&& this->HeadToCoord != CoordStruct::Empty
+			&& this->LinkedTo->GetCurrentSpeed() > 0;
+	}
+//	virtual int __stdcall Apparent_Speed() override { return this->LinkedTo->GetCurrentSpeed(); }
+//	virtual int __stdcall Drawing_Code() override { return 0; }
+//	virtual FireError __stdcall Can_Fire() override { return FireError::OK; }
+//	virtual int __stdcall Get_Status() override { return 0; }
+//	virtual void __stdcall Acquire_Hunter_Seeker_Target() override {}
+//	virtual bool __stdcall Is_Surfacing() override { return false; }
+	virtual void __stdcall Mark_All_Occupation_Bits(MarkType mark) override;
+	virtual bool __stdcall Is_Moving_Here(CoordStruct to) override;
+	virtual bool __stdcall Will_Jump_Tracks() override;
+//	virtual bool __stdcall Is_Really_Moving_Now() override { return this->Is_Moving_Now(); }
+//	virtual void __stdcall Stop_Movement_Animation() override {}
+//	virtual void __stdcall Limbo() override {}
 	virtual void __stdcall Lock() override { this->UnLocked = false; }
 	virtual void __stdcall Unlock() override { this->UnLocked = true; }
 	virtual int __stdcall Get_Track_Number() override { return this->TrackNumber; }
@@ -181,6 +283,13 @@ public:
 			return S_FALSE;
 
 		*pointer = this->Piggybacker.Detach();
+
+		const auto pLinkedTo = this->LinkedTo;
+
+		if (!pLinkedTo->Deactivated && !pLinkedTo->IsUnderEMP())
+			this->Power_On();
+		else
+			this->Power_Off();
 
 		return S_OK;
 	}
@@ -221,6 +330,14 @@ public:
 	}
 
 public:
+	void MarkOccupation(const CoordStruct& to, const MarkType mark);
+	void GetTrackOffset(CoordStruct& buffer, const Point2D& base, int& flag);
+	bool MovingProcess(bool fix);
+	bool MovingProcess2(bool* pStop, bool force, bool check);
+
+	static CoordStruct* __fastcall CoordLerp(CoordStruct* pBuffer, const CoordStruct& crd1, const CoordStruct& crd2, float alpha);
+
+public:
 	inline SkillLocomotionClass() : LocomotionClass { }
 		, PreviousRamp { 0 }
 		, CurrentRamp { 0 }
@@ -238,7 +355,6 @@ public:
 		, IsRocking { false }
 		, UnLocked { true }
 		, IsForward { true }
-		, IsMoving { false }
 		, Piggybacker { nullptr }
 		, Standby { 0 }
 	{ }
@@ -263,7 +379,6 @@ public:
 	bool IsRocking;
 	bool UnLocked;
 	bool IsForward;
-	bool IsMoving;
 	ILocomotionPtr Piggybacker;
 	int Standby;
 };
