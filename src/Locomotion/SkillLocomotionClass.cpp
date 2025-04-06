@@ -153,9 +153,8 @@ bool SkillLocomotionClass::Process()
 	if (this->Is_Moving_Now() && !(Unsorted::CurrentFrame % 10) && !pLinked->OnBridge
 		&& pLinked->GetCell()->LandType == LandType::Water)
 	{
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pLinked->GetTechnoType());
-
-		if (const auto pAnimType = pTypeExt->Wake.Get(RulesClass::Instance->Wake))
+		// Customized wake
+		if (const auto pAnimType = TechnoTypeExt::ExtMap.Find(pLinked->GetTechnoType())->Wake.Get(RulesClass::Instance->Wake))
 			GameCreate<AnimClass>(pAnimType, pLinked->Location);
 	}
 
@@ -401,6 +400,8 @@ bool SkillLocomotionClass::MovingProcess(bool fix)
 		return false;
 	}
 
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+
 	if (pType->Accelerates)
 	{
 		if (this->TrackNumber < 64
@@ -440,9 +441,10 @@ bool SkillLocomotionClass::MovingProcess(bool fix)
 
 			do
 			{
-				if (pLinked->unknown_bool_6B5)
+				if (pLinked->unknown_bool_6B5 && !pTypeExt->SkipCrushSlowdown)
 				{
-					speed = Math::min(0.2, this->MovementSpeed);
+					// Customized crush slow down speed
+					speed = Math::min(pTypeExt->CrushSlowdownMultiplier, this->MovementSpeed);
 				}
 				else if (!adjustedSpeed)
 				{
@@ -650,7 +652,8 @@ bool SkillLocomotionClass::MovingProcess(bool fix)
 						if ((pType->Crusher || pLinked->HasAbility(Ability::Crusher))
 							&& OverlayTypeClass::Array.Items[pNewCell->OverlayTypeIndex]->Wall && pType->TiltsWhenCrushes)
 						{
-							pLinked->RockingForwardsPerFrame = -0.05f;
+							// Customized crush tilt speed
+							pLinked->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
 						}
 					}
 					else if (!this->IsRocking)
@@ -663,7 +666,7 @@ bool SkillLocomotionClass::MovingProcess(bool fix)
 						pLinked->unknown_bool_6B5 = true;
 
 						if (pType->TiltsWhenCrushes)
-							pLinked->RockingForwardsPerFrame = -0.05f;
+							pLinked->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
 					}
 				}
 				while (false);
