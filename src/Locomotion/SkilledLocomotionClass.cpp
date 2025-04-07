@@ -1517,10 +1517,8 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 	// Customized damaged speed
 	const auto ratio = pLinked->GetHealthPercentage();
 
-	if (ratio <= RulesClass::Instance->ConditionRed)
-		speedFactor *= pTypeExt->VehicleDamagedSpeedMultiplier_Red.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Red);
-	else if (ratio <= RulesClass::Instance->ConditionYellow)
-		speedFactor *= pTypeExt->VehicleDamagedSpeedMultiplier_Yellow.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Yellow);
+	if (ratio <= RulesClass::Instance->ConditionYellow)
+		speedFactor *= pTypeExt->DamagedSpeed.Get(RulesExt::Global()->DamagedSpeed);
 
 	if (this->TrackNumber >= 64)
 		pLinked->SetSpeedPercentage(speedFactor);
