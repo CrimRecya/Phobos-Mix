@@ -63,7 +63,7 @@ public:
 	struct TrackPtStruct
 	{
 		Point2D Point;
-		int Flag;
+		int Face;
 	};
 
 	struct TrackIdxStruct
@@ -227,8 +227,8 @@ public:
 //	virtual void __stdcall Force_Immediate_Destination(CoordStruct coord) override {}
 	virtual void __stdcall Force_New_Slope(int ramp) override
 	{
-		this->CurrentRamp = ramp;
 		this->PreviousRamp = ramp;
+		this->CurrentRamp = ramp;
 		this->SlopeTimer.Start(0);
 	}
 	virtual bool __stdcall Is_Moving_Now() override
@@ -330,17 +330,17 @@ public:
 	}
 
 public:
-	void MarkOccupation(const CoordStruct& to, const MarkType mark);
-	void GetTrackOffset(CoordStruct& buffer, const Point2D& base, int& flag);
-	bool MovingProcess(bool fix);
-	bool MovingProcess2(bool* pStop, bool force, bool check);
+	bool PassableCheck(bool fix);
+	bool MovingProcess(bool* pStop, bool force, bool check);
+	void MarkOccupation(const CoordStruct& to, MarkType mark);
+	CoordStruct GetTrackOffset(const Point2D& base, int& face, int z = 0);
 
-	static CoordStruct* __fastcall CoordLerp(CoordStruct* pBuffer, const CoordStruct& crd1, const CoordStruct& crd2, float alpha);
+	static CoordStruct CoordLerp(const CoordStruct& crd1, const CoordStruct& crd2, float alpha);
 
 public:
 	inline SkilledLocomotionClass() : LocomotionClass { }
-		, PreviousRamp { 0 }
 		, CurrentRamp { 0 }
+		, PreviousRamp { 0 }
 		, SlopeTimer {}
 		, TargetCoord { CoordStruct::Empty }
 		, HeadToCoord { CoordStruct::Empty }
@@ -363,8 +363,8 @@ public:
 	inline virtual ~SkilledLocomotionClass() override = default;
 
 public:
-	int PreviousRamp;
 	int CurrentRamp;
+	int PreviousRamp;
 	RateTimer SlopeTimer;
 	CoordStruct TargetCoord;
 	CoordStruct HeadToCoord;

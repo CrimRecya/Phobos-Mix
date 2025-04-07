@@ -16,11 +16,12 @@ bool SkilledLocomotionClass::Process()
 	const auto pLinked = this->LinkedTo;
 	const auto slopeIndex = pLinked->GetCell()->SlopeIndex;
 
-	if (slopeIndex != this->PreviousRamp)
+	if (slopeIndex != this->CurrentRamp)
 	{
-		this->CurrentRamp = this->PreviousRamp;
-		this->PreviousRamp = slopeIndex;
-		this->SlopeTimer.Start(3);
+		// Dynamic slope change
+		this->PreviousRamp = this->CurrentRamp;
+		this->CurrentRamp = slopeIndex;
+		this->SlopeTimer.Start((90 / pLinked->GetTechnoType()->Speed));
 	}
 
 	do
@@ -96,12 +97,12 @@ bool SkilledLocomotionClass::Process()
 				}
 
 				bool stop = false;
-				this->MovingProcess2(&stop, true, false);
+				this->MovingProcess(&stop, true, false);
 
 				if (stop || !pLinked->IsAlive)
 					return false;
 
-				this->MovingProcess(false);
+				this->PassableCheck(false);
 
 				return !pLinked->IsAlive;
 			}
@@ -117,7 +118,7 @@ bool SkilledLocomotionClass::Process()
 			return false;
 		}
 
-		if (this->MovingProcess(false) || !pLinked->IsAlive)
+		if (this->PassableCheck(false) || !pLinked->IsAlive)
 			return false;
 
 		if (this->TrackNumber == -1 && (this->Is_Moving() || pLinked->PathDirections[0] != -1))
@@ -137,12 +138,12 @@ bool SkilledLocomotionClass::Process()
 			}
 
 			bool stop = false;
-			this->MovingProcess2(&stop, true, false);
+			this->MovingProcess(&stop, true, false);
 
 			if (stop || !pLinked->IsAlive)
 				return false;
 
-			this->MovingProcess(true);
+			this->PassableCheck(true);
 
 			if (!pLinked->IsAlive)
 				return false;
@@ -270,10 +271,8 @@ bool SkilledLocomotionClass::Is_Moving_Here(CoordStruct to)
 				{
 					const auto trackPt = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
 					const auto& trackPtr = trackPt[trackIdx];
-					auto flag = trackPtr.Flag; // copy
-					auto location = CoordStruct::Empty;
-					this->GetTrackOffset(location, trackPtr.Point, flag);
-					location.Z = this->LinkedTo->Location.Z;
+					auto face = trackPtr.Face; // copy
+					const auto location = this->GetTrackOffset(trackPtr.Point, face, this->LinkedTo->Location.Z);
 
 					if (CellClass::Coord2Cell(location) == CellClass::Coord2Cell(to)
 						&& std::abs(location.Z - to.Z) <= Unsorted::CellHeight)
@@ -314,81 +313,7 @@ bool SkilledLocomotionClass::Will_Jump_Tracks()
 
 // No virtual
 
-void SkilledLocomotionClass::MarkOccupation(const CoordStruct& to, const MarkType mark)
-{
-	if (to == CoordStruct::Empty)
-		return;
-
-	if (!this->IsOnShortTrack)
-	{
-		const auto trackNum = this->TrackNumber;
-
-		if (trackNum != -1)
-		{
-			if (const auto trackStructIndex = SkilledLocomotionClass::TrackData[TrackNumber].NormalTrackStructIndex)
-			{
-				const auto trackIdx = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3;
-
-				if (trackIdx > -1 && this->TrackIndex < trackIdx)
-				{
-					const auto trackPt = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
-					const auto& trackPtr = trackPt[trackIdx];
-					auto flag = trackPtr.Flag; // copy
-					auto location = CoordStruct::Empty;
-					this->GetTrackOffset(location, trackPtr.Point, flag);
-
-					if (mark == MarkType::Up)
-					{
-						const auto pLinked = this->LinkedTo;
-						location.Z = pLinked->GetZ();
-						pLinked->UnmarkAllOccupationBits(location);
-					}
-					else if (mark == MarkType::Down || mark == MarkType::ChangeRedraw)
-					{
-						const auto pLinked = this->LinkedTo;
-						location.Z = pLinked->GetZ();
-						pLinked->UnmarkAllOccupationBits(location);
-					}
-				}
-			}
-		}
-	}
-
-	if (mark == MarkType::Up)
-		this->LinkedTo->UnmarkAllOccupationBits(to);
-	else if (mark == MarkType::Down || mark == MarkType::ChangeRedraw)
-		this->LinkedTo->MarkAllOccupationBits(to);
-}
-
-void SkilledLocomotionClass::GetTrackOffset(CoordStruct& buffer, const Point2D& base, int& flag)
-{
-	const auto dataFlag = SkilledLocomotionClass::TrackData[this->TrackNumber].Flag;
-	auto pt = base;
-
-	if (dataFlag & 1)
-	{
-		pt.X = base.Y;
-		pt.Y = base.X;
-		flag = static_cast<unsigned char>(0xC0 - flag);
-	}
-
-	if (dataFlag & 2)
-	{
-		pt.X = -pt.X;
-		flag = static_cast<unsigned char>(-static_cast<char>(flag));
-	}
-
-	if (dataFlag & 4)
-	{
-		pt.Y = -pt.Y;
-		flag = static_cast<unsigned char>(0x80 - flag);
-	}
-
-	buffer.X = this->HeadToCoord.X + pt.X;
-	buffer.Y = this->HeadToCoord.Y + pt.Y;
-}
-
-bool SkilledLocomotionClass::MovingProcess(bool fix)
+bool SkilledLocomotionClass::PassableCheck(bool fix)
 {
 	const auto pLinked = this->LinkedTo;
 	const auto pType = pLinked->GetTechnoType();
@@ -571,21 +496,17 @@ bool SkilledLocomotionClass::MovingProcess(bool fix)
 
 			if (trackIndex)
 			{
-				const auto& newTrackPoint = pTrackPoints[trackIndex - 1];
-				auto prevFlag = newTrackPoint.Flag;
-				auto location = CoordStruct::Empty;
-				this->GetTrackOffset(location, newTrackPoint.Point, prevFlag);
-				previousCell = CellClass::Coord2Cell(location);
+				const auto& prevTrackPoint = pTrackPoints[trackIndex - 1];
+				auto prevFace = prevTrackPoint.Face;
+				previousCell = CellClass::Coord2Cell(this->GetTrackOffset(prevTrackPoint.Point, prevFace));
 			}
 			else
 			{
 				previousCell = pLinked->GetMapCoords();
 			}
 
-			auto flag = trackPoint.Flag;
-			auto newPos = CoordStruct::Empty;
-			this->GetTrackOffset(newPos, trackPoint.Point, flag);
-			newPos.Z = pLinked->Location.Z;
+			auto face = trackPoint.Face;
+			const auto newPos = this->GetTrackOffset(trackPoint.Point, face, pLinked->Location.Z);
 
 			if (CellClass::Coord2Cell(newPos) == CellClass::Coord2Cell(pLinked->Location))
 			{
@@ -679,7 +600,7 @@ bool SkilledLocomotionClass::MovingProcess(bool fix)
 			pLinked->IsOnMap = false;
 			pLinked->SetHeight(0);
 			pLinked->IsOnMap = wasOnMap;
-			pLinked->PrimaryFacing.SetCurrent(DirStruct((flag << 8) + (this->IsForward ? 0 : 32768)));
+			pLinked->PrimaryFacing.SetCurrent(DirStruct((face << 8) + (this->IsForward ? 0 : 32768)));
 
 			if (trackIndex && SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3 == trackIndex)
 				pLinked->UnmarkAllOccupationBits(pLinked->Location);
@@ -882,17 +803,14 @@ END_ACCUM:
 	if (pTrackPoint->Point == Point2D::Empty && this->TrackIndex)
 		return false;
 
-	int flag = pTrackPoint->Flag;
-	auto location = CoordStruct::Empty;
-	this->GetTrackOffset(location, pTrackPoint->Point, flag);
+	int face = pTrackPoint->Face;
+	auto location = this->GetTrackOffset(pTrackPoint->Point, face);
 	const auto record = location;
 	const auto pTrackCell = MapClass::Instance.GetCellAt(location);
 	location -= pLinked->Location;
 
 	const auto ratio = static_cast<float>(this->SpeedAccum * 0.1428571428571428);
-	auto movement = CoordStruct::Empty;
-	SkilledLocomotionClass::CoordLerp(&movement, CoordStruct::Empty, location, ratio);
-	auto newPos = pLinked->Location + movement;
+	auto newPos = pLinked->Location + SkilledLocomotionClass::CoordLerp(CoordStruct::Empty, location, ratio);
 
 	const auto pOldCell = MapClass::Instance.GetCellAt(pLinked->Location);
 	auto pNewCell = MapClass::Instance.GetCellAt(newPos);
@@ -937,7 +855,7 @@ END_ACCUM:
 	return false;
 }
 
-bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
+bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 {
 	const auto pLinked = this->LinkedTo;
 	int pathDir = pLinked->PathDirections[0];
@@ -1314,7 +1232,7 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 				{
 					pLinked->PathDirections[0] = -1;
 					pLinked->PathDelayTimer.Start(0);
-					return this->MovingProcess2(pStop, false, false);
+					return this->MovingProcess(pStop, false, false);
 				}
 
 				if ((pLinked->Location - this->TargetCoord).Magnitude() < RulesClass::Instance->CloseEnough
@@ -1353,7 +1271,7 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 			if (force)
 			{
 				pLinked->PathDirections[0] = -1;
-				return this->MovingProcess2(pStop, false, false);
+				return this->MovingProcess(pStop, false, false);
 			}
 
 			if (this->HeadToCoord != CoordStruct::Empty)
@@ -1428,7 +1346,7 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 			{
 				pLinked->PathDirections[0] = -1;
 				pLinked->PathDelayTimer.Start(0);
-				return this->MovingProcess2(pStop, false, false);
+				return this->MovingProcess(pStop, false, false);
 			}
 
 			if (const auto pObject = pNextCell->GetSomeObject(CoordStruct::Empty, false))
@@ -1454,7 +1372,7 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 		{
 			pLinked->PathDirections[0] = -1;
 			pLinked->PathDelayTimer.Start(0);
-			return this->MovingProcess2(pStop, false, false);
+			return this->MovingProcess(pStop, false, false);
 		}
 
 		if (this->HeadToCoord != CoordStruct::Empty)
@@ -1635,7 +1553,7 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 			}
 			else if (nextMoveResult == Move::MovingBlock)
 			{
-				return this->MovingProcess2(pStop, force, true);
+				return this->MovingProcess(pStop, force, true);
 			}
 			else if (nextMoveResult == Move::Temp)
 			{
@@ -1645,7 +1563,7 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 					{
 						pLinked->PathDirections[0] = -1;
 						pLinked->PathDelayTimer.Start(0);
-						return this->MovingProcess2(pStop, false, false);
+						return this->MovingProcess(pStop, false, false);
 					}
 
 					if ((pLinked->Location - this->TargetCoord).Magnitude() < RulesClass::Instance->CloseEnough
@@ -1684,7 +1602,7 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 				if (force)
 				{
 					pLinked->PathDirections[0] = -1;
-					return this->MovingProcess2(pStop, false, false);
+					return this->MovingProcess(pStop, false, false);
 				}
 
 				if (this->HeadToCoord != CoordStruct::Empty)
@@ -1708,7 +1626,7 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 				{
 					pLinked->PathDirections[0] = -1;
 					pLinked->PathDelayTimer.Start(0);
-					return this->MovingProcess2(pStop, false, false);
+					return this->MovingProcess(pStop, false, false);
 				}
 
 				if (this->HeadToCoord != CoordStruct::Empty)
@@ -1732,7 +1650,7 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 			nextPos = CoordStruct::Empty;
 
 			if (nextMoveResult == Move::Destroyable || nextMoveResult == Move::FriendlyDestroyable)
-				return this->MovingProcess2(pStop, force, true);
+				return this->MovingProcess(pStop, force, true);
 		}
 		else
 		{
@@ -1781,11 +1699,82 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 	return false;
 }
 
-CoordStruct* __fastcall SkilledLocomotionClass::CoordLerp(CoordStruct* pBuffer, const CoordStruct& crd1, const CoordStruct& crd2, float alpha)
+void SkilledLocomotionClass::MarkOccupation(const CoordStruct& to, MarkType mark)
+{
+	if (to == CoordStruct::Empty)
+		return;
+
+	if (!this->IsOnShortTrack)
+	{
+		const auto trackNum = this->TrackNumber;
+
+		if (trackNum != -1)
+		{
+			if (const auto trackStructIndex = SkilledLocomotionClass::TrackData[TrackNumber].NormalTrackStructIndex)
+			{
+				const auto trackIdx = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3;
+
+				if (trackIdx > -1 && this->TrackIndex < trackIdx)
+				{
+					if (mark == MarkType::Up)
+					{
+						const auto& trackPtr = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint[trackIdx];
+						auto face = trackPtr.Face; // copy
+						const auto pLinked = this->LinkedTo;
+						pLinked->UnmarkAllOccupationBits(this->GetTrackOffset(trackPtr.Point, face, pLinked->Location.Z));
+					}
+					else if (mark == MarkType::Down || mark == MarkType::ChangeRedraw)
+					{
+						const auto& trackPtr = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint[trackIdx];
+						auto face = trackPtr.Face; // copy
+						const auto pLinked = this->LinkedTo;
+						pLinked->MarkAllOccupationBits(this->GetTrackOffset(trackPtr.Point, face, pLinked->Location.Z));
+					}
+				}
+			}
+		}
+	}
+
+	if (mark == MarkType::Up)
+		this->LinkedTo->UnmarkAllOccupationBits(to);
+	else if (mark == MarkType::Down || mark == MarkType::ChangeRedraw)
+		this->LinkedTo->MarkAllOccupationBits(to);
+}
+
+CoordStruct SkilledLocomotionClass::GetTrackOffset(const Point2D& base, int& face, int z)
+{
+	const auto dataFlag = SkilledLocomotionClass::TrackData[this->TrackNumber].Flag;
+	auto pt = base;
+
+	if (dataFlag & 1)
+	{
+		pt.X = base.Y;
+		pt.Y = base.X;
+		face = static_cast<unsigned char>(0xC0 - face);
+	}
+
+	if (dataFlag & 2)
+	{
+		pt.X = -pt.X;
+		face = static_cast<unsigned char>(-static_cast<char>(face));
+	}
+
+	if (dataFlag & 4)
+	{
+		pt.Y = -pt.Y;
+		face = static_cast<unsigned char>(0x80 - face);
+	}
+
+	return CoordStruct { this->HeadToCoord.X + pt.X, this->HeadToCoord.Y + pt.Y, z };
+}
+
+CoordStruct SkilledLocomotionClass::CoordLerp(const CoordStruct& crd1, const CoordStruct& crd2, float alpha)
 {
 	const float i_alpha = 1.0f - alpha;
-	pBuffer->X = Game::F2I(crd2.X * alpha + crd1.X * i_alpha);
-	pBuffer->Y = Game::F2I(crd2.Y * alpha + crd1.Y * i_alpha);
-	pBuffer->Z = Game::F2I(crd2.Z * alpha + crd1.Z * i_alpha);
-	return pBuffer;
+	return CoordStruct
+		{
+			Game::F2I(crd2.X * alpha + crd1.X * i_alpha),
+			Game::F2I(crd2.Y * alpha + crd1.Y * i_alpha),
+			Game::F2I(crd2.Z * alpha + crd1.Z * i_alpha)
+		};
 }
