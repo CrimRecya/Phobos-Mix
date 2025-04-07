@@ -1238,18 +1238,19 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 	if (!MapClass::Instance.MakeTraversable(pLinked, nextCell))
 		return true;
 
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+
 	// Reverse movement
 	const int desiredRaw = pathDir << 13;
 
-	if (const auto pTarget = pLinked->Target)
+	if (pLinked->Target && (pLinked->DistanceFrom(pLinked->Target) <= Game::F2I(pTypeExt->Skilled_FaceTargetRange * Unsorted::LeptonsPerCell)))
 	{
-		const auto tgtDir = (pLinked->DistanceFrom(pTarget) > 16 * Unsorted::LeptonsPerCell)
-			? pLinked->GetTargetDirection(pTarget) : pLinked->PrimaryFacing.Current();
-		const auto deltaCurDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(tgtDir.Raw)));
+		const auto tgtDir = pLinked->GetTargetDirection(pLinked->Target);
+		const auto deltaTgtDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(tgtDir.Raw)));
 		const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768) - static_cast<short>(tgtDir.Raw)));
-		this->IsForward = deltaCurDir <= deltaOppDir;
+		this->IsForward = deltaTgtDir <= deltaOppDir;
 	}
-	else if (Unsorted::CurrentFrame - TechnoExt::ExtMap.Find(pLinked)->LastHurtFrame <= 150)
+	else if (Unsorted::CurrentFrame - TechnoExt::ExtMap.Find(pLinked)->LastHurtFrame <= pTypeExt->Skilled_RetreatDuration)
 	{
 		const auto curDir = pLinked->PrimaryFacing.Current();
 		const auto deltaCurDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(curDir.Raw)));
@@ -1509,11 +1510,9 @@ bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 	if (speedFactor == 0.0)
 		speedFactor = 0.5;
 
-	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-
 	// Customized backward speed
 	if (!this->IsForward)
-		speedFactor *= 0.85;
+		speedFactor *= pTypeExt->Skilled_ReverseSpeed;
 
 	// Customized damaged speed
 	const auto ratio = pLinked->GetHealthPercentage();
