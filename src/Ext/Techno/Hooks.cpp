@@ -198,7 +198,7 @@ DEFINE_HOOK(0x6F421C, TechnoClass_Init_DefaultDisguise, 0x6)
 	auto const pExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
 
 	// mirage is not here yet
-	if (pThis->WhatAmI() == AbstractType::Infantry && pExt->DefaultDisguise)
+	if ((pThis->WhatAmI() == AbstractType::Infantry || pThis->WhatAmI() == AbstractType::Unit) && pExt->DefaultDisguise)
 	{
 		pThis->Disguise = pExt->DefaultDisguise;
 		pThis->DisguisedAsHouse = pThis->Owner;
@@ -723,6 +723,8 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 
 #pragma endregion
 
+#pragma region UnitDisguise
+
 DEFINE_HOOK(0x7466D8, UnitClass_DisguiseAs_DisguiseUnit, 0xA)
 {
 	enum { ret = 0x746712 };
@@ -782,11 +784,6 @@ DEFINE_HOOK(0x736C0E, UnitClass_UpdateRotating_End, 0x5)
 	return 0;
 }
 
-DEFINE_HOOK(0x73C61C, UnitClass_DrawAsSHP_Disguise, 0x5)
-{
-	return 0x73C62B;
-}
-
 DEFINE_HOOK(0x73B780, UnitClass_DrawAsVXL_TypeFix, 0x6)
 {
 	GET(ObjectTypeClass*, pType, EBX);
@@ -798,28 +795,43 @@ DEFINE_HOOK(0x73B780, UnitClass_DrawAsVXL_TypeFix, 0x6)
 }
 
 /*
-DEFINE_HOOK(0x737BA0, UnitClass_Unlimbo_Start, 0x7)
+SHP still needs more improvment.
+
+namespace DrawAsSHPContext
+{
+	UnitClass* pThis;
+	UnitTypeClass* OriginalType;
+}
+
+DEFINE_HOOK(0x73C5F0, UnitClass_DrawAsSHP_Start, 0x6)
 {
 	GET(UnitClass*, pThis, ECX);
 
-	auto pType = pThis->Type;
-	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	DrawAsSHPContext::pThis = pThis;
+	DrawAsSHPContext::OriginalType = pThis->Type;
 
-	if (!pTypeExt->HasImageCached)
+	if (!pThis->IsClearlyVisibleTo(HouseClass::CurrentPlayer))
 	{
-		auto primaryDir = pThis->PrimaryFacing.Current().Raw;
-		auto secondaryDir = pThis->SecondaryFacing.Current().Raw;
-		DirStruct dir;
-
-
-		for (int i = 0; i != 32; ++i)
-		{
-			dir.SetValue<5>(i);
-			pThis->PrimaryFacing.SetCurrent(dir);
-			pThis->SecondaryFacing.SetCurrent(dir);
-		}
+		if (auto pDisguiseUnitType = abstract_cast<UnitTypeClass*>(pThis->GetDisguise(true)))
+			pThis->Type = pDisguiseUnitType;
 	}
 
 	return 0;
 }
+
+DEFINE_HOOK_AGAIN(0x73CE68, UnitClass_DrawAsSHP_End, 0x6);
+DEFINE_HOOK_AGAIN(0x73CEB7, UnitClass_DrawAsSHP_End, 0x6);
+DEFINE_HOOK(0x73CE04, UnitClass_DrawAsSHP_End, 0x6)
+{
+	DrawAsSHPContext::pThis->Type = DrawAsSHPContext::OriginalType;
+	return 0;
+}
+
+DEFINE_HOOK(0x73C61C, UnitClass_DrawAsSHP_Disguise, 0x5)
+{
+	return 0x73C62B;
+}
+
 */
+
+#pragma endregion
