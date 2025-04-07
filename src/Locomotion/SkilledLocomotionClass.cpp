@@ -1,4 +1,4 @@
-#include "SkillLocomotionClass.h"
+#include "SkilledLocomotionClass.h"
 
 #include <InfantryClass.h>
 #include <UnitClass.h>
@@ -7,11 +7,11 @@
 #include <OverlayTypeClass.h>
 #include <SpawnManagerClass.h>
 
-#include <Ext/TechnoType/Body.h>
+#include <Ext/Techno/Body.h>
 
 // Virtual
 
-bool SkillLocomotionClass::Process()
+bool SkilledLocomotionClass::Process()
 {
 	const auto pLinked = this->LinkedTo;
 	const auto slopeIndex = pLinked->GetCell()->SlopeIndex;
@@ -167,7 +167,7 @@ bool SkillLocomotionClass::Process()
 	return this->Is_Moving();
 }
 
-void SkillLocomotionClass::Move_To(CoordStruct to)
+void SkilledLocomotionClass::Move_To(CoordStruct to)
 {
 	const auto pLinked = this->LinkedTo;
 
@@ -181,7 +181,7 @@ void SkillLocomotionClass::Move_To(CoordStruct to)
 	}
 }
 
-void SkillLocomotionClass::Stop_Moving()
+void SkilledLocomotionClass::Stop_Moving()
 {
 	if (this->HeadToCoord != CoordStruct::Empty && this->LinkedTo->GetTechnoType()->IsTrain)
 	{
@@ -207,12 +207,12 @@ void SkillLocomotionClass::Stop_Moving()
 	this->TargetCoord = CoordStruct::Empty;
 }
 
-void SkillLocomotionClass::Do_Turn(DirStruct dir)
+void SkilledLocomotionClass::Do_Turn(DirStruct dir)
 {
 	this->LinkedTo->PrimaryFacing.SetDesired(dir);
 }
 
-void SkillLocomotionClass::Force_Track(int track, CoordStruct coord)
+void SkilledLocomotionClass::Force_Track(int track, CoordStruct coord)
 {
 	this->TrackNumber = track;
 	this->TrackIndex = 0;
@@ -243,13 +243,13 @@ void SkillLocomotionClass::Force_Track(int track, CoordStruct coord)
 	}
 }
 
-void SkillLocomotionClass::Mark_All_Occupation_Bits(MarkType mark)
+void SkilledLocomotionClass::Mark_All_Occupation_Bits(MarkType mark)
 {
 	if (this->HeadToCoord != CoordStruct::Empty)
 		this->MarkOccupation(this->HeadToCoord, mark);
 }
 
-bool SkillLocomotionClass::Is_Moving_Here(CoordStruct to)
+bool SkilledLocomotionClass::Is_Moving_Here(CoordStruct to)
 {
 	const auto headToCoord = this->Head_To_Coord();
 
@@ -262,13 +262,13 @@ bool SkillLocomotionClass::Is_Moving_Here(CoordStruct to)
 
 		if (trackNum != -1)
 		{
-			if (const auto trackStructIndex = SkillLocomotionClass::TrackData[TrackNumber].NormalTrackStructIndex)
+			if (const auto trackStructIndex = SkilledLocomotionClass::TrackData[TrackNumber].NormalTrackStructIndex)
 			{
-				const auto trackIdx = SkillLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3;
+				const auto trackIdx = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3;
 
 				if (trackIdx > -1 && this->TrackIndex < trackIdx)
 				{
-					const auto trackPt = SkillLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
+					const auto trackPt = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
 					const auto& trackPtr = trackPt[trackIdx];
 					auto flag = trackPtr.Flag; // copy
 					auto location = CoordStruct::Empty;
@@ -289,14 +289,14 @@ bool SkillLocomotionClass::Is_Moving_Here(CoordStruct to)
 		&& std::abs(headToCoord.Z - to.Z) <= Unsorted::CellHeight);
 }
 
-bool SkillLocomotionClass::Will_Jump_Tracks()
+bool SkilledLocomotionClass::Will_Jump_Tracks()
 {
 	const auto pathDir = this->LinkedTo->PathDirections[0];
 
 	if (pathDir < 0 || pathDir >= 8)
 		return false;
 
-	const auto& data = SkillLocomotionClass::TrackData[this->TrackNumber];
+	const auto& data = SkilledLocomotionClass::TrackData[this->TrackNumber];
 	const auto dir = DirStruct(data.Face << 8).GetValue<3>();
 
 	if (static_cast<int>(dir) == pathDir || !this->TrackIndex)
@@ -304,17 +304,17 @@ bool SkillLocomotionClass::Will_Jump_Tracks()
 
 	const auto trackStructIndex = this->IsOnShortTrack ? data.ShortTrackStructIndex : data.NormalTrackStructIndex;
 
-	if (SkillLocomotionClass::TrackStruct[trackStructIndex].TrackIndex1 != this->TrackIndex)
+	if (SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex1 != this->TrackIndex)
 		return false;
 
-	const auto dirIndex = SkillLocomotionClass::TrackData[8 * dir + pathDir].NormalTrackStructIndex;
+	const auto dirIndex = SkilledLocomotionClass::TrackData[8 * dir + pathDir].NormalTrackStructIndex;
 
-	return dirIndex && SkillLocomotionClass::TrackStruct[dirIndex].TrackIndex2;
+	return dirIndex && SkilledLocomotionClass::TrackStruct[dirIndex].TrackIndex2;
 }
 
 // No virtual
 
-void SkillLocomotionClass::MarkOccupation(const CoordStruct& to, const MarkType mark)
+void SkilledLocomotionClass::MarkOccupation(const CoordStruct& to, const MarkType mark)
 {
 	if (to == CoordStruct::Empty)
 		return;
@@ -325,13 +325,13 @@ void SkillLocomotionClass::MarkOccupation(const CoordStruct& to, const MarkType 
 
 		if (trackNum != -1)
 		{
-			if (const auto trackStructIndex = SkillLocomotionClass::TrackData[TrackNumber].NormalTrackStructIndex)
+			if (const auto trackStructIndex = SkilledLocomotionClass::TrackData[TrackNumber].NormalTrackStructIndex)
 			{
-				const auto trackIdx = SkillLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3;
+				const auto trackIdx = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3;
 
 				if (trackIdx > -1 && this->TrackIndex < trackIdx)
 				{
-					const auto trackPt = SkillLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
+					const auto trackPt = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
 					const auto& trackPtr = trackPt[trackIdx];
 					auto flag = trackPtr.Flag; // copy
 					auto location = CoordStruct::Empty;
@@ -360,9 +360,9 @@ void SkillLocomotionClass::MarkOccupation(const CoordStruct& to, const MarkType 
 		this->LinkedTo->MarkAllOccupationBits(to);
 }
 
-void SkillLocomotionClass::GetTrackOffset(CoordStruct& buffer, const Point2D& base, int& flag)
+void SkilledLocomotionClass::GetTrackOffset(CoordStruct& buffer, const Point2D& base, int& flag)
 {
-	const auto dataFlag = SkillLocomotionClass::TrackData[this->TrackNumber].Flag;
+	const auto dataFlag = SkilledLocomotionClass::TrackData[this->TrackNumber].Flag;
 	auto pt = base;
 
 	if (dataFlag & 1)
@@ -388,7 +388,7 @@ void SkillLocomotionClass::GetTrackOffset(CoordStruct& buffer, const Point2D& ba
 	buffer.Y = this->HeadToCoord.Y + pt.Y;
 }
 
-bool SkillLocomotionClass::MovingProcess(bool fix)
+bool SkilledLocomotionClass::MovingProcess(bool fix)
 {
 	const auto pLinked = this->LinkedTo;
 	const auto pType = pLinked->GetTechnoType();
@@ -535,9 +535,9 @@ bool SkillLocomotionClass::MovingProcess(bool fix)
 
 	if (speedAccum > 7)
 	{
-		auto pTrackData = &SkillLocomotionClass::TrackData[this->TrackNumber];
+		auto pTrackData = &SkilledLocomotionClass::TrackData[this->TrackNumber];
 		int trackStructIndex = this->IsOnShortTrack ? pTrackData->ShortTrackStructIndex : pTrackData->NormalTrackStructIndex;
-		auto pTrackPoints = SkillLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
+		auto pTrackPoints = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
 		const auto pathDir = pLinked->PathDirections[0];
 
 		if (pathDir < -1 || pathDir > 8)
@@ -679,24 +679,24 @@ bool SkillLocomotionClass::MovingProcess(bool fix)
 			pLinked->IsOnMap = false;
 			pLinked->SetHeight(0);
 			pLinked->IsOnMap = wasOnMap;
-			pLinked->PrimaryFacing.SetCurrent(DirStruct(flag << 8));
+			pLinked->PrimaryFacing.SetCurrent(DirStruct((flag << 8) + (this->IsForward ? 0 : 32768)));
 
-			if (trackIndex && SkillLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3 == trackIndex)
+			if (trackIndex && SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3 == trackIndex)
 				pLinked->UnmarkAllOccupationBits(pLinked->Location);
 
 			if (pathDir != 8 && pathDir != -1 && dirChanged
-				&& SkillLocomotionClass::TrackStruct[trackStructIndex].TrackIndex1 == trackIndex
+				&& SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex1 == trackIndex
 				&& trackIndex)
 			{
 				const int newTrack = pathDir + 8 * DirStruct(pTrackData->Face << 8).GetValue<3>();
-				const auto pNewTrackData = &SkillLocomotionClass::TrackData[newTrack];
+				const auto pNewTrackData = &SkilledLocomotionClass::TrackData[newTrack];
 
 				if (pNewTrackData->NormalTrackStructIndex
-					&& SkillLocomotionClass::TrackStruct[pNewTrackData->NormalTrackStructIndex].TrackIndex2)
+					&& SkilledLocomotionClass::TrackStruct[pNewTrackData->NormalTrackStructIndex].TrackIndex2)
 				{
 					auto coords = this->HeadToCoord;
-					coords.X += SkillLocomotionClass::CoordDirections[pathDir].X;
-					coords.Y += SkillLocomotionClass::CoordDirections[pathDir].Y;
+					coords.X += SkilledLocomotionClass::CoordDirections[pathDir].X;
+					coords.Y += SkilledLocomotionClass::CoordDirections[pathDir].Y;
 					const auto pCell = MapClass::Instance.GetCellAt(coords);
 
 					switch (pLinked->IsCellOccupied(pCell, static_cast<FacingType>(pathDir), pLinked->GetCellLevel(), nullptr, true))
@@ -713,8 +713,8 @@ bool SkillLocomotionClass::MovingProcess(bool fix)
 							pTrackData = pNewTrackData;
 							dirChanged = false;
 							trackStructIndex = pNewTrackData->NormalTrackStructIndex;
-							this->TrackIndex = SkillLocomotionClass::TrackStruct[trackStructIndex].TrackIndex2 - 1;
-							pTrackPoints = SkillLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
+							this->TrackIndex = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex2 - 1;
+							pTrackPoints = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
 
 							if (this->HeadToCoord != CoordStruct::Empty)
 							{
@@ -875,9 +875,9 @@ END_ACCUM:
 	if (this->TrackNumber <= -1)
 		return false;
 
-	const auto pTrackData = &SkillLocomotionClass::TrackData[this->TrackNumber];
+	const auto pTrackData = &SkilledLocomotionClass::TrackData[this->TrackNumber];
 	const int trackStructIndex = this->IsOnShortTrack ? pTrackData->ShortTrackStructIndex : pTrackData->NormalTrackStructIndex;
-	const auto pTrackPoint = &SkillLocomotionClass::TrackStruct[trackStructIndex].TrackPoint[this->TrackIndex];
+	const auto pTrackPoint = &SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint[this->TrackIndex];
 
 	if (pTrackPoint->Point == Point2D::Empty && this->TrackIndex)
 		return false;
@@ -891,7 +891,7 @@ END_ACCUM:
 
 	const auto ratio = static_cast<float>(this->SpeedAccum * 0.1428571428571428);
 	auto movement = CoordStruct::Empty;
-	SkillLocomotionClass::CoordLerp(&movement, CoordStruct::Empty, location, ratio);
+	SkilledLocomotionClass::CoordLerp(&movement, CoordStruct::Empty, location, ratio);
 	auto newPos = pLinked->Location + movement;
 
 	const auto pOldCell = MapClass::Instance.GetCellAt(pLinked->Location);
@@ -937,7 +937,7 @@ END_ACCUM:
 	return false;
 }
 
-bool SkillLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
+bool SkilledLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 {
 	const auto pLinked = this->LinkedTo;
 	int pathDir = pLinked->PathDirections[0];
@@ -1050,8 +1050,8 @@ bool SkillLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 			}
 			else
 			{
-				const auto primaryFace = pLinked->PrimaryFacing.Current();
-				const auto primaryDir = primaryFace.GetValue<3>();
+				auto primaryFace = pLinked->PrimaryFacing.Current();
+				const auto primaryDir = (primaryFace.GetValue<3>() + (this->IsForward ? 0 : 4)) & 7;
 				const auto faceCell = pLinked->GetMapCoords() + CellSpread::GetNeighbourOffset(primaryDir);
 
 				if (MapClass::Instance.IsWithinUsableArea(faceCell, true))
@@ -1221,8 +1221,8 @@ bool SkillLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 		return false;
 
 	auto nextPos = pLinked->Location;
-	nextPos.X += SkillLocomotionClass::CoordDirections[pathDir & 7].X;
-	nextPos.Y += SkillLocomotionClass::CoordDirections[pathDir & 7].Y;
+	nextPos.X += SkilledLocomotionClass::CoordDirections[pathDir & 7].X;
+	nextPos.Y += SkilledLocomotionClass::CoordDirections[pathDir & 7].Y;
 
 	const int cellLevel = MapClass::Instance.GetCellAt(pLinked->Location)->Level + (pLinked->OnBridge ? 4 : 0);
 	auto pNextCell = MapClass::Instance.GetCellAt(nextPos);
@@ -1238,11 +1238,34 @@ bool SkillLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 	if (!MapClass::Instance.MakeTraversable(pLinked, nextCell))
 		return true;
 
-	DirStruct desiredFacing(pathDir << 13);
+	// Reverse movement
+	const int desiredRaw = pathDir << 13;
 
-	if (pLinked->PrimaryFacing.Current() != desiredFacing)
+	if (const auto pTarget = pLinked->Target)
 	{
-		this->Do_Turn(desiredFacing);
+		const auto tgtDir = (pLinked->DistanceFrom(pTarget) > 16 * Unsorted::LeptonsPerCell)
+			? pLinked->GetTargetDirection(pTarget) : pLinked->PrimaryFacing.Current();
+		const auto deltaCurDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(tgtDir.Raw)));
+		const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768) - static_cast<short>(tgtDir.Raw)));
+		this->IsForward = deltaCurDir <= deltaOppDir;
+	}
+	else if (Unsorted::CurrentFrame - TechnoExt::ExtMap.Find(pLinked)->LastHurtFrame <= 150)
+	{
+		const auto curDir = pLinked->PrimaryFacing.Current();
+		const auto deltaCurDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(curDir.Raw)));
+		const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768) - static_cast<short>(curDir.Raw)));
+		this->IsForward = deltaCurDir <= deltaOppDir;
+	}
+	else
+	{
+		this->IsForward = true;
+	}
+
+	const auto desDir = DirStruct(this->IsForward ? desiredRaw : (desiredRaw + 32768));
+
+	if (pLinked->PrimaryFacing.Current() != desDir)
+	{
+		this->Do_Turn(desDir);
 		return true;
 	}
 
@@ -1486,13 +1509,19 @@ bool SkillLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 	if (speedFactor == 0.0)
 		speedFactor = 0.5;
 
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+
+	// Customized backward speed
+	if (!this->IsForward)
+		speedFactor *= 0.85;
+
 	// Customized damaged speed
 	const auto ratio = pLinked->GetHealthPercentage();
 
 	if (ratio <= RulesClass::Instance->ConditionRed)
-		speedFactor *= TechnoTypeExt::ExtMap.Find(pType)->VehicleDamagedSpeedMultiplier_Red.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Red);
+		speedFactor *= pTypeExt->VehicleDamagedSpeedMultiplier_Red.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Red);
 	else if (ratio <= RulesClass::Instance->ConditionYellow)
-		speedFactor *= TechnoTypeExt::ExtMap.Find(pType)->VehicleDamagedSpeedMultiplier_Yellow.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Yellow);
+		speedFactor *= pTypeExt->VehicleDamagedSpeedMultiplier_Yellow.Get(RulesExt::Global()->VehicleDamagedSpeedMultiplier_Yellow);
 
 	if (this->TrackNumber >= 64)
 		pLinked->SetSpeedPercentage(speedFactor);
@@ -1570,10 +1599,10 @@ bool SkillLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 	this->IsOnShortTrack = false;
 	this->TrackNumber = nextDir + 8 * pathDir;
 
-	if (!SkillLocomotionClass::TrackData[this->TrackNumber].NormalTrackStructIndex)
+	if (!SkilledLocomotionClass::TrackData[this->TrackNumber].NormalTrackStructIndex)
 		this->TrackNumber = 9 * pathDir;
 
-	if (SkillLocomotionClass::TrackData[this->TrackNumber].Flag & 8)
+	if (SkilledLocomotionClass::TrackData[this->TrackNumber].Flag & 8)
 	{
 		auto nextMoveResult = Move::No;
 
@@ -1583,8 +1612,8 @@ bool SkillLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 			if (!pLinked->IsAlive)
 				return false;
 
-			nextPos.X += SkillLocomotionClass::CoordDirections[nextDir & 7].X;
-			nextPos.Y += SkillLocomotionClass::CoordDirections[nextDir & 7].Y;
+			nextPos.X += SkilledLocomotionClass::CoordDirections[nextDir & 7].X;
+			nextPos.Y += SkilledLocomotionClass::CoordDirections[nextDir & 7].Y;
 			nextCell = CellClass::Coord2Cell(nextPos);
 			pNextCell = MapClass::Instance.GetCellAt(nextCell);
 			nextMoveResult = pLinked->IsCellOccupied(pNextCell, static_cast<FacingType>(nextDir), landLevel, nullptr, true);
@@ -1755,7 +1784,7 @@ bool SkillLocomotionClass::MovingProcess2(bool* pStop, bool force, bool check)
 	return false;
 }
 
-CoordStruct* __fastcall SkillLocomotionClass::CoordLerp(CoordStruct* pBuffer, const CoordStruct& crd1, const CoordStruct& crd2, float alpha)
+CoordStruct* __fastcall SkilledLocomotionClass::CoordLerp(CoordStruct* pBuffer, const CoordStruct& crd1, const CoordStruct& crd2, float alpha)
 {
 	const float i_alpha = 1.0f - alpha;
 	pBuffer->X = Game::F2I(crd2.X * alpha + crd1.X * i_alpha);

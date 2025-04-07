@@ -49,7 +49,7 @@ public:
 };
 
 class __declspec(uuid("4A582751-9839-11d1-B709-00A024DDAFD1"))
-	SkillLocomotionClass : public LocomotionClass, public IPiggyback
+	SkilledLocomotionClass : public LocomotionClass, public IPiggyback
 {
 public:
 	struct TrackNumStruct
@@ -126,7 +126,7 @@ public:
 		if (this)
 		{
 			this->Piggybacker.Detach();
-			new (this) SkillLocomotionClass(noinit_t());
+			new (this) SkilledLocomotionClass(noinit_t());
 		}
 
 		bool piggybackerPresent = false;
@@ -172,7 +172,7 @@ public:
 		HRESULT hr = this->LocomotionClass::Link_To_Object(pointer);
 
 		if (SUCCEEDED(hr))
-			Debug::Log("SkillLocomotionClass - Sucessfully linked to \"%s\"\n", Owner->get_ID());
+			Debug::Log("SkilledLocomotionClass - Sucessfully linked to \"%s\"\n", Owner->get_ID());
 
 		return hr;
 	}*/
@@ -195,8 +195,8 @@ public:
 	}
 //	virtual Move __stdcall Can_Enter_Cell(CellStruct cell) override { return Move::OK; }
 //	virtual bool __stdcall Is_To_Have_Shadow() override { return true; }
-	virtual Matrix3D __stdcall Draw_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4AFF60); } // TODO but lazy
-	virtual Matrix3D __stdcall Shadow_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4B0410); } // TODO but lazy
+	virtual Matrix3D __stdcall Draw_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4AFF60); } // TODO
+	virtual Matrix3D __stdcall Shadow_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4B0410); } // TODO
 //	virtual Point2D __stdcall Draw_Point() override { return this->LocomotionClass::Draw_Point(); } // Point2D*
 //	virtual Point2D __stdcall Shadow_Point() override { return this->LocomotionClass::Shadow_Point(); } // Point2D*
 //	virtual VisualType __stdcall Visual_Character(bool raw) override { return VisualType::Normal; }
@@ -338,7 +338,7 @@ public:
 	static CoordStruct* __fastcall CoordLerp(CoordStruct* pBuffer, const CoordStruct& crd1, const CoordStruct& crd2, float alpha);
 
 public:
-	inline SkillLocomotionClass() : LocomotionClass { }
+	inline SkilledLocomotionClass() : LocomotionClass { }
 		, PreviousRamp { 0 }
 		, CurrentRamp { 0 }
 		, SlopeTimer {}
@@ -359,8 +359,8 @@ public:
 		, Standby { 0 }
 	{ }
 
-	inline SkillLocomotionClass(noinit_t) : LocomotionClass { noinit_t() } { }
-	inline virtual ~SkillLocomotionClass() override = default;
+	inline SkilledLocomotionClass(noinit_t) : LocomotionClass { noinit_t() } { }
+	inline virtual ~SkilledLocomotionClass() override = default;
 
 public:
 	int PreviousRamp;
