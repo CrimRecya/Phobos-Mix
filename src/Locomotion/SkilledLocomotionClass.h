@@ -339,6 +339,7 @@ private:
 
 	static CoordStruct CoordLerp(const CoordStruct& crd1, const CoordStruct& crd2, float alpha);
 
+public:
 	inline SkilledLocomotionClass() : LocomotionClass { }
 		, CurrentRamp { 0 }
 		, PreviousRamp { 0 }
