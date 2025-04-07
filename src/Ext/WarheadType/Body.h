@@ -186,6 +186,8 @@ public:
 		Valueable<WeaponTypeClass*> KillWeapon;
 		Valueable<AffectedHouse> KillWeapon_AffectsHouses;
 
+    	Valueable<int> ElectricAssaultLevel;
+
 		// Ares tags
 		// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
 		Valueable<bool> AffectsEnemies;
@@ -348,7 +350,7 @@ public:
 
 			, CombatLightDetailLevel {}
 			, CombatLightChance { 1.0 }
-		    , CLIsBlack { false }
+			, CLIsBlack { false }
 			, Particle_AlphaImageIsLightFlash {}
 
 			, MergeBuildingDamage {}
@@ -371,6 +373,8 @@ public:
 
 			, NoCellSpread { false }
 			, NoCellSpread_SnapDistance { Leptons(128) }
+
+			, ElectricAssaultLevel { 1 }
 
 			, AffectsEnemies { true }
 			, AffectsOwner {}

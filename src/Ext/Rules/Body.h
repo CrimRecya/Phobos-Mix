@@ -307,11 +307,6 @@ public:
 		Valueable<bool> Airstrike_TargetCell;
 		Valueable<bool> Airstrike_SecondaryFirst;
 
-		Valueable<double> VehicleDamagedSpeedMultiplier_Yellow;
-		Valueable<double> VehicleDamagedSpeedMultiplier_Red;
-
-		Nullable<double> ProneSpeed;
-
 		Valueable<bool> ExtraTargeting_OnLoseTarget;
 		Valueable<bool> ExtraTargeting_OnStopCommand;
 		Valueable<bool> ExtraTargeting_OnNoTargetAssigned;
@@ -339,6 +334,11 @@ public:
 		int UnifiedTechnoColor_AllyColorIdx;
 		int UnifiedTechnoColor_EnemyColorIdx;
 		int UnifiedTechnoColor_NeutralColorIdx;
+
+		Valueable<double> ProneSpeed_Crawls;
+		Valueable<double> ProneSpeed_NoCrawls;
+
+    	Valueable<double> DamagedSpeed;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -594,9 +594,6 @@ public:
 			, Airstrike_TargetCell { true }
 			, Airstrike_SecondaryFirst { true }
 
-			, VehicleDamagedSpeedMultiplier_Yellow { 0.75 }
-			, VehicleDamagedSpeedMultiplier_Red { 0.75 }
-			, ProneSpeed { }
 			, ExtraTargeting_OnLoseTarget { false }
 			, ExtraTargeting_OnStopCommand { false }
 			, ExtraTargeting_OnNoTargetAssigned { false }
@@ -619,6 +616,11 @@ public:
 			, UnifiedTechnoColor_AllyColorIdx { -1 }
 			, UnifiedTechnoColor_EnemyColorIdx { -1 }
 			, UnifiedTechnoColor_NeutralColorIdx { -1 }
+
+			, ProneSpeed_Crawls { 0.67 }
+			, ProneSpeed_NoCrawls { 1.5 }
+
+      		, DamagedSpeed { 0.75 }
 		{ }
 
 		virtual ~ExtData() = default;
