@@ -422,14 +422,13 @@ public:
 		Valueable<CoordStruct> Spawner_RecycleCoord;
 		Valueable<bool> Spawner_RecycleOnTurret;
 
-		Nullable<double> VehicleDamagedSpeedMultiplier_Yellow;
-		Nullable<double> VehicleDamagedSpeedMultiplier_Red;
-
-		Nullable<double> ProneSpeed;
-
 		Nullable<bool> Sinkable;
 		Valueable<bool> Sinkable_SquidGrab;
 		Valueable<int> SinkSpeed;
+
+		Nullable<double> ProneSpeed;
+
+    	Nullable<double> DamagedSpeed;
 
 		struct LaserTrailDataEntry
 		{
@@ -860,17 +859,16 @@ public:
 			, ClonedAt { }
 			, ClonedAs { }
 
-			, VehicleDamagedSpeedMultiplier_Yellow { }
-			, VehicleDamagedSpeedMultiplier_Red { }
-
-			, ProneSpeed { }
-
 			, Sinkable { }
 			, Sinkable_SquidGrab { true }
 			, SinkSpeed { 5 }
 
+			, DamagedSpeed { }
+
 			, SuppressKillWeapons { false }
 			, SuppressKillWeapons_Types {}
+
+			, ProneSpeed { }
 		{ }
 
 		virtual ~ExtData() = default;

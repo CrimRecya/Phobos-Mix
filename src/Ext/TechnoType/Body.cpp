@@ -850,11 +850,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Spawner_RecycleCoord.Read(exINI, pSection, "Spawner.RecycleCoord");
 	this->Spawner_RecycleOnTurret.Read(exINI, pSection, "Spawner.RecycleOnTurret");
 
-	this->VehicleDamagedSpeedMultiplier_Yellow.Read(exINI, pSection, "VehicleDamagedSpeedMultiplier.Yellow");
-	this->VehicleDamagedSpeedMultiplier_Red.Read(exINI, pSection, "VehicleDamagedSpeedMultiplier.Red");
-
-	this->ProneSpeed.Read(exINI, pSection, "ProneSpeed");
-
 	this->RadarInvisible_ToSelf.Read(exINI, pSection, "RadarInvisible.ToSelf");
 	this->RadarInvisible_ToAlly.Read(exINI, pSection, "RadarInvisible.ToAlly");
 
@@ -866,6 +861,10 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Sinkable.Read(exINI, pSection, "Sinkable");
 	this->Sinkable_SquidGrab.Read(exINI, pSection, "Sinkable.SquidGrab");
 	this->SinkSpeed.Read(exINI, pSection, "SinkSpeed");
+
+	this->ProneSpeed.Read(exINI, pSection, "ProneSpeed");
+
+	this->DamagedSpeed.Read(exINI, pSection, "DamagedSpeed");
 
 	this->SuppressKillWeapons.Read(exINI, pSection, "SuppressKillWeapons");
 	this->SuppressKillWeapons_Types.Read(exINI, pSection, "SuppressKillWeapons.Types");
@@ -1477,17 +1476,16 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->ClonedAt)
 		.Process(this->ClonedAs)
 
-		.Process(this->VehicleDamagedSpeedMultiplier_Yellow)
-		.Process(this->VehicleDamagedSpeedMultiplier_Red)
-
-		.Process(this->ProneSpeed)
-
 		.Process(this->Sinkable)
 		.Process(this->Sinkable_SquidGrab)
 		.Process(this->SinkSpeed)
 
+		.Process(this->DamagedSpeed)
+
 		.Process(this->SuppressKillWeapons)
 		.Process(this->SuppressKillWeapons_Types)
+
+		.Process(this->ProneSpeed)
 		;
 }
 void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)

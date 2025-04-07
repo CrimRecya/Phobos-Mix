@@ -351,11 +351,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->Airstrike_TargetCell.Read(exINI, GameStrings::General, "Airstrike.TargetCell");
 	this->Airstrike_SecondaryFirst.Read(exINI, GameStrings::General, "Airstrike.SecondaryFirst");
 
-	this->VehicleDamagedSpeedMultiplier_Yellow.Read(exINI, GameStrings::General, "VehicleDamagedSpeedMultiplier.Yellow");
-	this->VehicleDamagedSpeedMultiplier_Red.Read(exINI, GameStrings::General, "VehicleDamagedSpeedMultiplier.Red");
-
-	this->ProneSpeed.Read(exINI, GameStrings::General, "ProneSpeed");
-
 	this->ExtraTargeting_OnLoseTarget.Read(exINI, GameStrings::General, "ExtraTargeting.OnLoseTarget");
 	this->ExtraTargeting_OnStopCommand.Read(exINI, GameStrings::General, "ExtraTargeting.OnStopCommand");
 	this->ExtraTargeting_OnNoTargetAssigned.Read(exINI, GameStrings::General, "ExtraTargeting.OnNoTargetAssigned");
@@ -386,6 +381,11 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->UnifiedTechnoColor_EnemyColorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
 	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.NeutralColor", "LightGrey", Phobos::readBuffer);
 	this->UnifiedTechnoColor_NeutralColorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
+
+	this->ProneSpeed_Crawls.Read(exINI, GameStrings::General, "ProneSpeed.Crawls");
+	this->ProneSpeed_NoCrawls.Read(exINI, GameStrings::General, "ProneSpeed.NoCrawls");
+
+  	this->DamagedSpeed.Read(exINI, GameStrings::General, "DamagedSpeed");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -696,9 +696,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->BuildingTypeSelectable)
 		.Process(this->Airstrike_TargetCell)
 		.Process(this->Airstrike_SecondaryFirst)
-		.Process(this->VehicleDamagedSpeedMultiplier_Yellow)
-		.Process(this->VehicleDamagedSpeedMultiplier_Red)
-		.Process(this->ProneSpeed)
 		.Process(this->ExtraTargeting_OnLoseTarget)
 		.Process(this->ExtraTargeting_OnStopCommand)
 		.Process(this->ExtraTargeting_OnNoTargetAssigned)
@@ -721,6 +718,9 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->UnifiedTechnoColor_AllyColorIdx)
 		.Process(this->UnifiedTechnoColor_EnemyColorIdx)
 		.Process(this->UnifiedTechnoColor_NeutralColorIdx)
+		.Process(this->ProneSpeed_Crawls)
+		.Process(this->ProneSpeed_NoCrawls)
+    	.Process(this->DamagedSpeed)
 		;
 }
 
