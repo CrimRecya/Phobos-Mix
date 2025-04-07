@@ -332,8 +332,8 @@ public:
 	}
 
 private:
-	bool PassableCheck(bool fix);
-	bool MovingProcess(bool* pStop, bool force, bool check);
+	bool MovingProcess(bool fix);
+	bool PassableCheck(bool* pStop, bool force, bool check);
 	void MarkOccupation(const CoordStruct& to, MarkType mark);
 	CoordStruct GetTrackOffset(const Point2D& base, int& face, int z = 0);
 
@@ -357,6 +357,7 @@ public:
 		, IsRocking { false }
 		, UnLocked { true }
 		, IsForward { true }
+		, IsShifting { false }
 		, Piggybacker { nullptr }
 		, Standby { 0 }
 	{ }
@@ -380,6 +381,7 @@ public:
 	bool IsRocking;
 	bool UnLocked;
 	bool IsForward;
+	bool IsShifting;
 	ILocomotionPtr Piggybacker;
 	int Standby;
 };

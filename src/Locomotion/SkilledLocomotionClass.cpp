@@ -97,12 +97,12 @@ bool SkilledLocomotionClass::Process()
 				}
 
 				bool stop = false;
-				this->MovingProcess(&stop, true, false);
+				this->PassableCheck(&stop, true, false);
 
 				if (stop || !pLinked->IsAlive)
 					return false;
 
-				this->PassableCheck(false);
+				this->MovingProcess(false);
 
 				return !pLinked->IsAlive;
 			}
@@ -118,7 +118,7 @@ bool SkilledLocomotionClass::Process()
 			return false;
 		}
 
-		if (this->PassableCheck(false) || !pLinked->IsAlive)
+		if (this->MovingProcess(false) || !pLinked->IsAlive)
 			return false;
 
 		if (this->TrackNumber == -1 && (this->Is_Moving() || pLinked->PathDirections[0] != -1))
@@ -138,12 +138,12 @@ bool SkilledLocomotionClass::Process()
 			}
 
 			bool stop = false;
-			this->MovingProcess(&stop, true, false);
+			this->PassableCheck(&stop, true, false);
 
 			if (stop || !pLinked->IsAlive)
 				return false;
 
-			this->PassableCheck(true);
+			this->MovingProcess(true);
 
 			if (!pLinked->IsAlive)
 				return false;
@@ -313,7 +313,7 @@ bool SkilledLocomotionClass::Will_Jump_Tracks()
 
 // No virtual
 
-bool SkilledLocomotionClass::PassableCheck(bool fix)
+bool SkilledLocomotionClass::MovingProcess(bool fix)
 {
 	const auto pLinked = this->LinkedTo;
 	const auto pType = pLinked->GetTechnoType();
@@ -806,6 +806,22 @@ END_MOVE_ACCUM:
 	const auto pTrackCell = MapClass::Instance.GetCellAt(location);
 	location -= pLinked->Location;
 
+	// Fix UpdateLocation bug
+	if (this->IsShifting)
+	{
+		const auto curDir = pLinked->PrimaryFacing.Current();
+		const auto nextDir = DirStruct((this->TrackNumber & 7) << 13);
+
+		if (std::abs(static_cast<short>(static_cast<short>(curDir.Raw) - static_cast<short>(nextDir.Raw))) <= 4096)
+		{
+			this->IsShifting = false;
+			const auto oldPlan = pLinked->PlanningPathIdx;
+			pLinked->PlanningPathIdx = -1;
+			pLinked->UpdatePosition(PCPType::Rotation);
+			pLinked->PlanningPathIdx = oldPlan;
+		}
+	}
+
 	const auto ratio = static_cast<float>(this->SpeedAccum * 0.1428571428571428);
 	auto newPos = pLinked->Location + SkilledLocomotionClass::CoordLerp(CoordStruct::Empty, location, ratio);
 
@@ -852,7 +868,7 @@ END_MOVE_ACCUM:
 	return false;
 }
 
-bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
+bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 {
 	const auto pLinked = this->LinkedTo;
 	int pathDir = pLinked->PathDirections[0];
@@ -1229,7 +1245,7 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 				{
 					pLinked->PathDirections[0] = -1;
 					pLinked->PathDelayTimer.Start(0);
-					return this->MovingProcess(pStop, false, false);
+					return this->PassableCheck(pStop, false, false);
 				}
 
 				if ((pLinked->Location - this->TargetCoord).Magnitude() < RulesClass::Instance->CloseEnough
@@ -1268,7 +1284,7 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 			if (force)
 			{
 				pLinked->PathDirections[0] = -1;
-				return this->MovingProcess(pStop, false, false);
+				return this->PassableCheck(pStop, false, false);
 			}
 
 			if (this->HeadToCoord != CoordStruct::Empty)
@@ -1343,7 +1359,7 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 			{
 				pLinked->PathDirections[0] = -1;
 				pLinked->PathDelayTimer.Start(0);
-				return this->MovingProcess(pStop, false, false);
+				return this->PassableCheck(pStop, false, false);
 			}
 
 			if (const auto pObject = pNextCell->GetSomeObject(CoordStruct::Empty, false))
@@ -1369,7 +1385,7 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 		{
 			pLinked->PathDirections[0] = -1;
 			pLinked->PathDelayTimer.Start(0);
-			return this->MovingProcess(pStop, false, false);
+			return this->PassableCheck(pStop, false, false);
 		}
 
 		if (this->HeadToCoord != CoordStruct::Empty)
@@ -1516,6 +1532,7 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 
 	if (Unsorted::TrackData[this->TrackNumber].Flag & 8)
 	{
+		this->IsShifting = true;
 		auto nextMoveResult = Move::No;
 
 		if (reinterpret_cast<bool(__thiscall*)(CellClass*, FootClass*)>(0x481A00)(pNextCell, pLinked) // CollectCrate
@@ -1550,7 +1567,7 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 			}
 			else if (nextMoveResult == Move::MovingBlock)
 			{
-				return this->MovingProcess(pStop, force, true);
+				return this->PassableCheck(pStop, force, true);
 			}
 			else if (nextMoveResult == Move::Temp)
 			{
@@ -1560,7 +1577,7 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 					{
 						pLinked->PathDirections[0] = -1;
 						pLinked->PathDelayTimer.Start(0);
-						return this->MovingProcess(pStop, false, false);
+						return this->PassableCheck(pStop, false, false);
 					}
 
 					if ((pLinked->Location - this->TargetCoord).Magnitude() < RulesClass::Instance->CloseEnough
@@ -1599,7 +1616,7 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 				if (force)
 				{
 					pLinked->PathDirections[0] = -1;
-					return this->MovingProcess(pStop, false, false);
+					return this->PassableCheck(pStop, false, false);
 				}
 
 				if (this->HeadToCoord != CoordStruct::Empty)
@@ -1623,7 +1640,7 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 				{
 					pLinked->PathDirections[0] = -1;
 					pLinked->PathDelayTimer.Start(0);
-					return this->MovingProcess(pStop, false, false);
+					return this->PassableCheck(pStop, false, false);
 				}
 
 				if (this->HeadToCoord != CoordStruct::Empty)
@@ -1647,7 +1664,7 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 			nextPos = CoordStruct::Empty;
 
 			if (nextMoveResult == Move::Destroyable || nextMoveResult == Move::FriendlyDestroyable)
-				return this->MovingProcess(pStop, force, true);
+				return this->PassableCheck(pStop, force, true);
 		}
 		else
 		{
