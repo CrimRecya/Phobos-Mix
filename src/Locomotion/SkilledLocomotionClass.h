@@ -8,6 +8,36 @@
 #include <comip.h>
 #include <comdef.h>
 
+namespace Unsorted
+{
+	struct TrackNumStruct
+	{
+		char NormalTrackStructIndex;
+		char ShortTrackStructIndex;
+		int Face;
+		int Flag;
+	};
+
+	struct TrackPtStruct
+	{
+		Point2D Point;
+		int Face;
+	};
+
+	struct TrackIdxStruct
+	{
+		TrackPtStruct* TrackPoint;
+		int TrackIndex1;
+		int TrackIndex2;
+		int TrackIndex3;
+	};
+
+	// Reference, no write permission
+	DEFINE_ARRAY_REFERENCE(Point2D, [8], CoordDirections, 0x89F6D8)
+	DEFINE_ARRAY_REFERENCE(TrackNumStruct, [72], TrackData, 0x7E7B28)
+	DEFINE_ARRAY_REFERENCE(TrackIdxStruct, [16], TrackStruct, 0x7E7A28)
+}
+
 class NOVTABLE TubeClass : public AbstractClass
 {
 public:
@@ -51,34 +81,6 @@ public:
 class __declspec(uuid("4A582751-9839-11d1-B709-00A024DDAFD1"))
 	SkilledLocomotionClass : public LocomotionClass, public IPiggyback
 {
-public:
-	struct TrackNumStruct
-	{
-		char NormalTrackStructIndex;
-		char ShortTrackStructIndex;
-		int Face;
-		int Flag;
-	};
-
-	struct TrackPtStruct
-	{
-		Point2D Point;
-		int Face;
-	};
-
-	struct TrackIdxStruct
-	{
-		TrackPtStruct* TrackPoint;
-		int TrackIndex1;
-		int TrackIndex2;
-		int TrackIndex3;
-	};
-
-	// Reference, no write permission
-	DEFINE_ARRAY_REFERENCE(Point2D, [8], CoordDirections, 0x89F6D8)
-	DEFINE_ARRAY_REFERENCE(TrackNumStruct, [72], TrackData, 0x7E7B28)
-	DEFINE_ARRAY_REFERENCE(TrackIdxStruct, [16], TrackStruct, 0x7E7A28)
-
 public:
 	// IUnknown
 	virtual HRESULT __stdcall QueryInterface(REFIID iid, LPVOID* ppvObject) override
@@ -329,7 +331,7 @@ public:
 		return this->Piggybacker != nullptr;
 	}
 
-public:
+private:
 	bool PassableCheck(bool fix);
 	bool MovingProcess(bool* pStop, bool force, bool check);
 	void MarkOccupation(const CoordStruct& to, MarkType mark);
@@ -337,7 +339,6 @@ public:
 
 	static CoordStruct CoordLerp(const CoordStruct& crd1, const CoordStruct& crd2, float alpha);
 
-public:
 	inline SkilledLocomotionClass() : LocomotionClass { }
 		, CurrentRamp { 0 }
 		, PreviousRamp { 0 }
@@ -362,7 +363,6 @@ public:
 	inline SkilledLocomotionClass(noinit_t) : LocomotionClass { noinit_t() } { }
 	inline virtual ~SkilledLocomotionClass() override = default;
 
-public:
 	int CurrentRamp;
 	int PreviousRamp;
 	RateTimer SlopeTimer;

@@ -263,13 +263,13 @@ bool SkilledLocomotionClass::Is_Moving_Here(CoordStruct to)
 
 		if (trackNum != -1)
 		{
-			if (const auto trackStructIndex = SkilledLocomotionClass::TrackData[TrackNumber].NormalTrackStructIndex)
+			if (const auto trackStructIndex = Unsorted::TrackData[TrackNumber].NormalTrackStructIndex)
 			{
-				const auto trackIdx = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3;
+				const auto trackIdx = Unsorted::TrackStruct[trackStructIndex].TrackIndex3;
 
 				if (trackIdx > -1 && this->TrackIndex < trackIdx)
 				{
-					const auto trackPt = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
+					const auto trackPt = Unsorted::TrackStruct[trackStructIndex].TrackPoint;
 					const auto& trackPtr = trackPt[trackIdx];
 					auto face = trackPtr.Face; // copy
 					const auto location = this->GetTrackOffset(trackPtr.Point, face, this->LinkedTo->Location.Z);
@@ -295,7 +295,7 @@ bool SkilledLocomotionClass::Will_Jump_Tracks()
 	if (pathDir < 0 || pathDir >= 8)
 		return false;
 
-	const auto& data = SkilledLocomotionClass::TrackData[this->TrackNumber];
+	const auto& data = Unsorted::TrackData[this->TrackNumber];
 	const auto dir = DirStruct(data.Face << 8).GetValue<3>();
 
 	if (static_cast<int>(dir) == pathDir || !this->TrackIndex)
@@ -303,12 +303,12 @@ bool SkilledLocomotionClass::Will_Jump_Tracks()
 
 	const auto trackStructIndex = this->IsOnShortTrack ? data.ShortTrackStructIndex : data.NormalTrackStructIndex;
 
-	if (SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex1 != this->TrackIndex)
+	if (Unsorted::TrackStruct[trackStructIndex].TrackIndex1 != this->TrackIndex)
 		return false;
 
-	const auto dirIndex = SkilledLocomotionClass::TrackData[8 * dir + pathDir].NormalTrackStructIndex;
+	const auto dirIndex = Unsorted::TrackData[8 * dir + pathDir].NormalTrackStructIndex;
 
-	return dirIndex && SkilledLocomotionClass::TrackStruct[dirIndex].TrackIndex2;
+	return dirIndex && Unsorted::TrackStruct[dirIndex].TrackIndex2;
 }
 
 // No virtual
@@ -460,9 +460,9 @@ bool SkilledLocomotionClass::PassableCheck(bool fix)
 
 	if (speedAccum > 7)
 	{
-		auto pTrackData = &SkilledLocomotionClass::TrackData[this->TrackNumber];
+		auto pTrackData = &Unsorted::TrackData[this->TrackNumber];
 		int trackStructIndex = this->IsOnShortTrack ? pTrackData->ShortTrackStructIndex : pTrackData->NormalTrackStructIndex;
-		auto pTrackPoints = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
+		auto pTrackPoints = Unsorted::TrackStruct[trackStructIndex].TrackPoint;
 		const auto pathDir = pLinked->PathDirections[0];
 
 		if (pathDir < -1 || pathDir > 8)
@@ -471,10 +471,7 @@ bool SkilledLocomotionClass::PassableCheck(bool fix)
 			return false;
 		}
 
-		bool dirChanged = false;
-
-		if (pathDir != 8 && pathDir != -1)
-			dirChanged = (static_cast<int>(DirStruct(pTrackData->Face << 8).GetValue<3>()) != pathDir);
+		bool dirChanged = pathDir != 8 && pathDir != -1 && static_cast<int>(DirStruct(pTrackData->Face << 8).GetValue<3>()) != pathDir;
 
 		while (true)
 		{
@@ -602,22 +599,22 @@ bool SkilledLocomotionClass::PassableCheck(bool fix)
 			pLinked->IsOnMap = wasOnMap;
 			pLinked->PrimaryFacing.SetCurrent(DirStruct((face << 8) + (this->IsForward ? 0 : 32768)));
 
-			if (trackIndex && SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3 == trackIndex)
+			if (trackIndex && Unsorted::TrackStruct[trackStructIndex].TrackIndex3 == trackIndex)
 				pLinked->UnmarkAllOccupationBits(pLinked->Location);
 
 			if (pathDir != 8 && pathDir != -1 && dirChanged
-				&& SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex1 == trackIndex
+				&& Unsorted::TrackStruct[trackStructIndex].TrackIndex1 == trackIndex
 				&& trackIndex)
 			{
 				const int newTrack = pathDir + 8 * DirStruct(pTrackData->Face << 8).GetValue<3>();
-				const auto pNewTrackData = &SkilledLocomotionClass::TrackData[newTrack];
+				const auto pNewTrackData = &Unsorted::TrackData[newTrack];
 
 				if (pNewTrackData->NormalTrackStructIndex
-					&& SkilledLocomotionClass::TrackStruct[pNewTrackData->NormalTrackStructIndex].TrackIndex2)
+					&& Unsorted::TrackStruct[pNewTrackData->NormalTrackStructIndex].TrackIndex2)
 				{
 					auto coords = this->HeadToCoord;
-					coords.X += SkilledLocomotionClass::CoordDirections[pathDir].X;
-					coords.Y += SkilledLocomotionClass::CoordDirections[pathDir].Y;
+					coords.X += Unsorted::CoordDirections[pathDir].X;
+					coords.Y += Unsorted::CoordDirections[pathDir].Y;
 					const auto pCell = MapClass::Instance.GetCellAt(coords);
 
 					switch (pLinked->IsCellOccupied(pCell, static_cast<FacingType>(pathDir), pLinked->GetCellLevel(), nullptr, true))
@@ -634,8 +631,8 @@ bool SkilledLocomotionClass::PassableCheck(bool fix)
 							pTrackData = pNewTrackData;
 							dirChanged = false;
 							trackStructIndex = pNewTrackData->NormalTrackStructIndex;
-							this->TrackIndex = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex2 - 1;
-							pTrackPoints = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint;
+							this->TrackIndex = Unsorted::TrackStruct[trackStructIndex].TrackIndex2 - 1;
+							pTrackPoints = Unsorted::TrackStruct[trackStructIndex].TrackPoint;
 
 							if (this->HeadToCoord != CoordStruct::Empty)
 							{
@@ -713,7 +710,7 @@ bool SkilledLocomotionClass::PassableCheck(bool fix)
 			++this->TrackIndex;
 
 			if (speedAccum <= 7)
-				goto END_ACCUM;
+				goto END_MOVE_ACCUM;
 		}
 
 		const auto delta = this->HeadToCoord - pLinked->Location;
@@ -787,7 +784,7 @@ bool SkilledLocomotionClass::PassableCheck(bool fix)
 			return false;
 	}
 
-END_ACCUM:
+END_MOVE_ACCUM:
 	this->SpeedAccum = speedAccum;
 
 	if (this->SpeedAccum <= 0)
@@ -796,9 +793,9 @@ END_ACCUM:
 	if (this->TrackNumber <= -1)
 		return false;
 
-	const auto pTrackData = &SkilledLocomotionClass::TrackData[this->TrackNumber];
+	const auto pTrackData = &Unsorted::TrackData[this->TrackNumber];
 	const int trackStructIndex = this->IsOnShortTrack ? pTrackData->ShortTrackStructIndex : pTrackData->NormalTrackStructIndex;
-	const auto pTrackPoint = &SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint[this->TrackIndex];
+	const auto pTrackPoint = &Unsorted::TrackStruct[trackStructIndex].TrackPoint[this->TrackIndex];
 
 	if (pTrackPoint->Point == Point2D::Empty && this->TrackIndex)
 		return false;
@@ -1139,8 +1136,8 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 		return false;
 
 	auto nextPos = pLinked->Location;
-	nextPos.X += SkilledLocomotionClass::CoordDirections[pathDir & 7].X;
-	nextPos.Y += SkilledLocomotionClass::CoordDirections[pathDir & 7].Y;
+	nextPos.X += Unsorted::CoordDirections[pathDir & 7].X;
+	nextPos.Y += Unsorted::CoordDirections[pathDir & 7].Y;
 
 	const int cellLevel = MapClass::Instance.GetCellAt(pLinked->Location)->Level + (pLinked->OnBridge ? 4 : 0);
 	auto pNextCell = MapClass::Instance.GetCellAt(nextPos);
@@ -1514,10 +1511,10 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 	this->IsOnShortTrack = false;
 	this->TrackNumber = nextDir + 8 * pathDir;
 
-	if (!SkilledLocomotionClass::TrackData[this->TrackNumber].NormalTrackStructIndex)
+	if (!Unsorted::TrackData[this->TrackNumber].NormalTrackStructIndex)
 		this->TrackNumber = 9 * pathDir;
 
-	if (SkilledLocomotionClass::TrackData[this->TrackNumber].Flag & 8)
+	if (Unsorted::TrackData[this->TrackNumber].Flag & 8)
 	{
 		auto nextMoveResult = Move::No;
 
@@ -1527,8 +1524,8 @@ bool SkilledLocomotionClass::MovingProcess(bool* pStop, bool force, bool check)
 			if (!pLinked->IsAlive)
 				return false;
 
-			nextPos.X += SkilledLocomotionClass::CoordDirections[nextDir & 7].X;
-			nextPos.Y += SkilledLocomotionClass::CoordDirections[nextDir & 7].Y;
+			nextPos.X += Unsorted::CoordDirections[nextDir & 7].X;
+			nextPos.Y += Unsorted::CoordDirections[nextDir & 7].Y;
 			nextCell = CellClass::Coord2Cell(nextPos);
 			pNextCell = MapClass::Instance.GetCellAt(nextCell);
 			nextMoveResult = pLinked->IsCellOccupied(pNextCell, static_cast<FacingType>(nextDir), landLevel, nullptr, true);
@@ -1710,22 +1707,22 @@ void SkilledLocomotionClass::MarkOccupation(const CoordStruct& to, MarkType mark
 
 		if (trackNum != -1)
 		{
-			if (const auto trackStructIndex = SkilledLocomotionClass::TrackData[TrackNumber].NormalTrackStructIndex)
+			if (const auto trackStructIndex = Unsorted::TrackData[TrackNumber].NormalTrackStructIndex)
 			{
-				const auto trackIdx = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackIndex3;
+				const auto trackIdx = Unsorted::TrackStruct[trackStructIndex].TrackIndex3;
 
 				if (trackIdx > -1 && this->TrackIndex < trackIdx)
 				{
 					if (mark == MarkType::Up)
 					{
-						const auto& trackPtr = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint[trackIdx];
+						const auto& trackPtr = Unsorted::TrackStruct[trackStructIndex].TrackPoint[trackIdx];
 						auto face = trackPtr.Face; // copy
 						const auto pLinked = this->LinkedTo;
 						pLinked->UnmarkAllOccupationBits(this->GetTrackOffset(trackPtr.Point, face, pLinked->Location.Z));
 					}
 					else if (mark == MarkType::Down || mark == MarkType::ChangeRedraw)
 					{
-						const auto& trackPtr = SkilledLocomotionClass::TrackStruct[trackStructIndex].TrackPoint[trackIdx];
+						const auto& trackPtr = Unsorted::TrackStruct[trackStructIndex].TrackPoint[trackIdx];
 						auto face = trackPtr.Face; // copy
 						const auto pLinked = this->LinkedTo;
 						pLinked->MarkAllOccupationBits(this->GetTrackOffset(trackPtr.Point, face, pLinked->Location.Z));
@@ -1743,7 +1740,7 @@ void SkilledLocomotionClass::MarkOccupation(const CoordStruct& to, MarkType mark
 
 CoordStruct SkilledLocomotionClass::GetTrackOffset(const Point2D& base, int& face, int z)
 {
-	const auto dataFlag = SkilledLocomotionClass::TrackData[this->TrackNumber].Flag;
+	const auto dataFlag = Unsorted::TrackData[this->TrackNumber].Flag;
 	auto pt = base;
 
 	if (dataFlag & 1)
