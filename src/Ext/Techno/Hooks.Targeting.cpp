@@ -25,7 +25,7 @@ DEFINE_HOOK(0x709866, TechnoClass_TargetAndEstimateDamage_ScanDelayGuardArea, 0x
 	auto const pOwner = pThis->Owner;
 	auto const pRulesExt = RulesExt::Global();
 	auto const pRules = RulesClass::Instance;
-	int delay = 1;
+	int delay = ScenarioClass::Instance->Random.RandomRanged(0, 2);
 
 	if (pOwner->IsHumanPlayer || pOwner->IsControlledByHuman())
 		delay = pTypeExt->PlayerGuardAreaTargetingDelay.Get(pRulesExt->PlayerGuardAreaTargetingDelay.Get(pRules->GuardAreaTargetingDelay));
@@ -44,7 +44,7 @@ DEFINE_HOOK(0x70989C, TechnoClass_TargetAndEstimateDamage_ScanDelayNormal, 0x6)
 	auto const pOwner = pThis->Owner;
 	auto const pRulesExt = RulesExt::Global();
 	auto const pRules = RulesClass::Instance;
-	int delay = (pThis->Location.X + pThis->Location.Y + Unsorted::CurrentFrame) % 3;
+	int delay = ScenarioClass::Instance->Random.RandomRanged(0, 2);
 
 	if (pOwner->IsHumanPlayer || pOwner->IsControlledByHuman())
 		delay += pTypeExt->PlayerNormalTargetingDelay.Get(pRulesExt->PlayerNormalTargetingDelay.Get(pRules->NormalTargetingDelay));
