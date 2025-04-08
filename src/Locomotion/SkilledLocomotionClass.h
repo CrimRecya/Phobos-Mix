@@ -73,7 +73,7 @@ protected:
 public:
 	CellStruct EnterCell;
 	CellStruct ExitCell;
-	int unknown_int_2C;
+	int ExitFace;
 	int unknown_int_30[100];
 	int unknown_int_1C0;
 };
