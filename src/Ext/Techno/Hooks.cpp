@@ -211,8 +211,9 @@ DEFINE_HOOK(0x6F421C, TechnoClass_Init_DefaultDisguise, 0x6)
 
 	auto const pExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
 
+	const auto absType = pThis->WhatAmI();
 	// mirage is not here yet
-	if ((pThis->WhatAmI() == AbstractType::Infantry || pThis->WhatAmI() == AbstractType::Unit) && pExt->DefaultDisguise)
+	if ((absType == AbstractType::Infantry || absType == AbstractType::Unit) && pExt->DefaultDisguise)
 	{
 		pThis->Disguise = pExt->DefaultDisguise;
 		pThis->DisguisedAsHouse = pThis->Owner;
@@ -848,8 +849,8 @@ DEFINE_HOOK(0x7466D8, UnitClass_DisguiseAs_DisguiseUnit, 0xA)
 
 namespace RotatingContext
 {
-	UnitClass* pThis;
-	UnitTypeClass* pType;
+	UnitClass* pThis = nullptr;
+	UnitTypeClass* pType = nullptr;
 }
 
 DEFINE_HOOK(0x736990, UnitClass_UpdateRotating_Start, 0x6)
@@ -864,9 +865,7 @@ DEFINE_HOOK(0x736990, UnitClass_UpdateRotating_Start, 0x6)
 		auto pDisguisedType = pThis->GetDisguise(true);
 
 		if (pDisguisedType->WhatAmI() == AbstractType::UnitType)
-		{
 			pThis->Type = (UnitTypeClass*)pDisguisedType;
-		}
 	}
 
 	return 0;
@@ -887,10 +886,8 @@ DEFINE_HOOK(0x73B780, UnitClass_DrawAsVXL_TypeFix, 0x6)
 
 	return 0;
 }
-
 /*
-SHP still needs more improvment.
-
+// SHP still needs more improvment.
 namespace DrawAsSHPContext
 {
 	UnitClass* pThis;
@@ -925,9 +922,7 @@ DEFINE_HOOK(0x73C61C, UnitClass_DrawAsSHP_Disguise, 0x5)
 {
 	return 0x73C62B;
 }
-
 */
-
 #pragma endregion
 
 DEFINE_HOOK(0x521D94, InfantryClass_CurrentSpeed_ProneSpeed, 0x6)
