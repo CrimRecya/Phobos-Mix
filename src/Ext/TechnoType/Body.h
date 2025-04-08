@@ -128,7 +128,7 @@ public:
 		Valueable<bool> DestroyAnim_Random;
 		Valueable<bool> NotHuman_RandomDeathSequence;
 
-		Valueable<InfantryTypeClass*> DefaultDisguise;
+		Valueable<TechnoTypeClass*> DefaultDisguise;
 		Valueable<bool> UseDisguiseMovementSpeed;
 
 		Nullable<int> OpenTopped_RangeBonus;
@@ -427,8 +427,10 @@ public:
 		Valueable<int> SinkSpeed;
 
 		Nullable<double> ProneSpeed;
-
     	Nullable<double> DamagedSpeed;
+
+		Nullable<AnimTypeClass*> Promote_VeteranAnimation;
+		Nullable<AnimTypeClass*> Promote_EliteAnimation;
 
 		struct LaserTrailDataEntry
 		{
@@ -863,12 +865,14 @@ public:
 			, Sinkable_SquidGrab { true }
 			, SinkSpeed { 5 }
 
+			, ProneSpeed { }
 			, DamagedSpeed { }
 
 			, SuppressKillWeapons { false }
-			, SuppressKillWeapons_Types {}
+			, SuppressKillWeapons_Types { }
 
-			, ProneSpeed { }
+			, Promote_VeteranAnimation { }
+			, Promote_EliteAnimation { }
 		{ }
 
 		virtual ~ExtData() = default;

@@ -112,16 +112,21 @@ DEFINE_HOOK(0x6F9FA9, TechnoClass_AI_PromoteAnim, 0x6)
 
 	auto aresProcess = [pThis]() { return (pThis->GetTechnoType()->Turret) ? 0x6F9FB7 : 0x6FA054; };
 
-	if (!RulesExt::Global()->Promote_VeteranAnimation && !RulesExt::Global()->Promote_EliteAnimation)
+	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+	auto const pVeteranAnim = pTypeExt->Promote_VeteranAnimation.Get(RulesExt::Global()->Promote_VeteranAnimation);
+	auto const pEliteAnim = pTypeExt->Promote_EliteAnimation.Get(RulesExt::Global()->Promote_EliteAnimation);
+
+	if (!pVeteranAnim && !pEliteAnim)
 		return aresProcess();
 
 	if (pThis->CurrentRanking != pThis->Veterancy.GetRemainingLevel() && pThis->CurrentRanking != Rank::Invalid && (pThis->Veterancy.GetRemainingLevel() != Rank::Rookie))
 	{
 		AnimClass* promAnim = nullptr;
-		if (pThis->Veterancy.GetRemainingLevel() == Rank::Veteran && RulesExt::Global()->Promote_VeteranAnimation)
-			promAnim = GameCreate<AnimClass>(RulesExt::Global()->Promote_VeteranAnimation, pThis->GetCenterCoords());
-		else if (RulesExt::Global()->Promote_EliteAnimation)
-			promAnim = GameCreate<AnimClass>(RulesExt::Global()->Promote_EliteAnimation, pThis->GetCenterCoords());
+
+		if (pThis->Veterancy.GetRemainingLevel() == Rank::Veteran && pVeteranAnim)
+			promAnim = GameCreate<AnimClass>(pVeteranAnim, pThis->GetCenterCoords());
+		else if (pEliteAnim)
+			promAnim = GameCreate<AnimClass>(pEliteAnim, pThis->GetCenterCoords());
 
 		if (promAnim)
 		{
@@ -206,8 +211,9 @@ DEFINE_HOOK(0x6F421C, TechnoClass_Init_DefaultDisguise, 0x6)
 
 	auto const pExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
 
+	const auto absType = pThis->WhatAmI();
 	// mirage is not here yet
-	if (pThis->WhatAmI() == AbstractType::Infantry && pExt->DefaultDisguise)
+	if ((absType == AbstractType::Infantry || absType == AbstractType::Unit) && pExt->DefaultDisguise)
 	{
 		pThis->Disguise = pExt->DefaultDisguise;
 		pThis->DisguisedAsHouse = pThis->Owner;
@@ -810,6 +816,113 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 	return SkipGameCode;
 }
 
+#pragma endregion
+
+#pragma region UnitDisguise
+
+DEFINE_HOOK(0x7466D8, UnitClass_DisguiseAs_DisguiseUnit, 0xA)
+{
+	enum { ret = 0x746712 };
+
+	GET(UnitClass*, pThis, EDI);
+	GET(UnitClass*, pTarget, ESI);
+
+	pThis->TechnoClass::DisguiseAs(pTarget);
+
+	if (pTarget->IsDisguised())
+	{
+		pThis->Disguise = pTarget->GetDisguise(true);
+		pThis->DisguisedAsHouse = pTarget->GetDisguiseHouse(true);
+	}
+	else
+	{
+		pThis->Disguise = pTarget->Type;
+		pThis->DisguisedAsHouse = pTarget->GetOwningHouse();
+	}
+
+	// Use the same FireAngle
+	if (pThis->Disguise && pThis->Disguise->WhatAmI() == AbstractType::UnitType)
+		pThis->BarrelFacing.SetCurrent(pTarget->BarrelFacing.Current());
+
+	return ret;
+}
+
+namespace RotatingContext
+{
+	UnitClass* pThis = nullptr;
+	UnitTypeClass* pType = nullptr;
+}
+
+DEFINE_HOOK(0x736990, UnitClass_UpdateRotating_Start, 0x6)
+{
+	GET(UnitClass*, pThis, ECX);
+
+	RotatingContext::pThis = pThis;
+	RotatingContext::pType = pThis->Type;
+
+	if (pThis->IsDisguised())
+	{
+		auto pDisguisedType = pThis->GetDisguise(true);
+
+		if (pDisguisedType->WhatAmI() == AbstractType::UnitType)
+			pThis->Type = (UnitTypeClass*)pDisguisedType;
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x736C0E, UnitClass_UpdateRotating_End, 0x5)
+{
+	RotatingContext::pThis->Type = RotatingContext::pType;
+	return 0;
+}
+
+DEFINE_HOOK(0x73B780, UnitClass_DrawAsVXL_TypeFix, 0x6)
+{
+	GET(ObjectTypeClass*, pType, EBX);
+
+	if (pType->WhatAmI() == AbstractType::UnitType)
+		R->EAX(pType);
+
+	return 0;
+}
+/*
+// SHP still needs more improvment.
+namespace DrawAsSHPContext
+{
+	UnitClass* pThis;
+	UnitTypeClass* OriginalType;
+}
+
+DEFINE_HOOK(0x73C5F0, UnitClass_DrawAsSHP_Start, 0x6)
+{
+	GET(UnitClass*, pThis, ECX);
+
+	DrawAsSHPContext::pThis = pThis;
+	DrawAsSHPContext::OriginalType = pThis->Type;
+
+	if (!pThis->IsClearlyVisibleTo(HouseClass::CurrentPlayer))
+	{
+		if (auto pDisguiseUnitType = abstract_cast<UnitTypeClass*>(pThis->GetDisguise(true)))
+			pThis->Type = pDisguiseUnitType;
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK_AGAIN(0x73CE68, UnitClass_DrawAsSHP_End, 0x6);
+DEFINE_HOOK_AGAIN(0x73CEB7, UnitClass_DrawAsSHP_End, 0x6);
+DEFINE_HOOK(0x73CE04, UnitClass_DrawAsSHP_End, 0x6)
+{
+	DrawAsSHPContext::pThis->Type = DrawAsSHPContext::OriginalType;
+	return 0;
+}
+
+DEFINE_HOOK(0x73C61C, UnitClass_DrawAsSHP_Disguise, 0x5)
+{
+	return 0x73C62B;
+}
+*/
 #pragma endregion
 
 DEFINE_HOOK(0x521D94, InfantryClass_CurrentSpeed_ProneSpeed, 0x6)
