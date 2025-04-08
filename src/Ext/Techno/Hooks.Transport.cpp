@@ -509,6 +509,16 @@ DEFINE_HOOK(0x70D910, FootClass_QueueEnter_NoMoveToBridge, 0x5)
 	return pEnter->OnBridge && (pEnter->WhatAmI() == AbstractType::Unit && static_cast<UnitClass*>(pEnter)->Type->Passengers > 0) ? NoMove : 0;
 }
 
+DEFINE_HOOK(0x7196BB, TeleportLocomotionClass_Process_MarkDown, 0xA)
+{
+	GET(FootClass*, pLinkedTo, ECX);
+
+	if (pLinkedTo->GetCurrentMission() != Mission::Enter)
+		pLinkedTo->Mark(MarkType::Down);
+
+	return 0x7196C5;
+}
+
 #pragma endregion
 
 #pragma region AmphibiousEnterAndUnload
