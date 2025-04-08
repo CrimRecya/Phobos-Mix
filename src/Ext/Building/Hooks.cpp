@@ -195,6 +195,7 @@ DEFINE_HOOK(0x44D455, BuildingClass_Mission_Missile_EMPulseBulletWeapon, 0x8)
 
 #pragma endregion
 
+// Kick out stuck units when the factory building is not busy
 #pragma region KickOutStuckUnits
 
 // Kick out stuck units when the factory building is not busy, only factory buildings can enter this hook
@@ -374,6 +375,38 @@ DEFINE_HOOK(0x449149, BuildingClass_Captured_FactoryPlant2, 0x6)
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x450630, BuildingClass_UpdateRepair_PlayerAutoRepair, 0x9)
+{
+	GET(BuildingClass*, pThis, ECX);
+
+	if (!pThis->CanBeRepaired())
+		return 0;
+
+	auto const mission = pThis->CurrentMission;
+
+	if (mission == Mission::Construction || mission == Mission::Selling)
+		return 0;
+
+	auto const pOwner = pThis->Owner;
+
+	if (pOwner->IsControlledByHuman() && RulesExt::Global()->PlayerAutoRepair)
+		pThis->IsBeingRepaired = true;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x448480, BuildingClass_SetOwningHouse_CapturedEVA, 0x5)
+{
+	GET(HouseClass*, pToHouse, EBX);
+
+	if (pToHouse->IsControlledByCurrentPlayer()) // Not necessary to per techno customize this, I guess?
+		VoxClass::PlayIndex(RulesExt::Global()->EVA_WeCaptureABuilding.Get(VoxClass::FindIndex((const char*)"EVA_BuildingCaptured")));
+	else
+		VoxClass::PlayIndex(RulesExt::Global()->EVA_OurBuildingIsCaptured.Get(VoxClass::FindIndex((const char*)"EVA_BuildingCaptured")));
+
+	return 0x44848F;
+}
 
 #pragma region DestroyableObstacle
 
@@ -776,3 +809,80 @@ DEFINE_HOOK(0x4AE95E, DisplayClass_sub_4AE750_DisallowBuildingNonAttackPlanning,
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x4400F9, BuildingClass_AI_UpdateOverpower, 0x6)
+{
+	enum { SkipGameCode = 0x44019D };
+
+	GET(BuildingClass*, pThis, ESI);
+
+	if (!pThis->Type->Overpowerable)
+		return SkipGameCode;
+
+	int overPower = 0;
+
+	for (int idx = pThis->Overpowerers.Count - 1; idx >= 0; idx--)
+	{
+		const auto pCharger = pThis->Overpowerers[idx];
+
+		if (pCharger->Target != pThis)
+		{
+			pThis->Overpowerers.RemoveItem(idx);
+			continue;
+		}
+
+		const auto pWeapon = pCharger->GetWeapon(1)->WeaponType;
+
+		if (!pWeapon || !pWeapon->Warhead || !pWeapon->Warhead->ElectricAssault)
+		{
+			pThis->Overpowerers.RemoveItem(idx);
+			continue;
+		}
+
+		const auto pWHExt = WarheadTypeExt::ExtMap.Find(pWeapon->Warhead);
+		overPower += pWHExt->ElectricAssaultLevel;
+	}
+
+	const auto pBuildingTypeExt = BuildingTypeExt::ExtMap.Find(pThis->Type);
+	const int charge = pBuildingTypeExt->Overpower_ChargeWeapon;
+
+	if (charge >= 0)
+	{
+		const int keepOnline = pBuildingTypeExt->Overpower_KeepOnline;
+		pThis->IsOverpowered = overPower >= keepOnline + charge || (pThis->Owner->GetPowerPercentage() == 1.0 && pThis->HasPower && overPower >= charge);
+	}
+	else
+	{
+		pThis->IsOverpowered = false;
+	}
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK_AGAIN(0x45563B, BuildingClass_IsPowerOnline_Overpower, 0x6)
+DEFINE_HOOK(0x4555E4, BuildingClass_IsPowerOnline_Overpower, 0x6)
+{
+	enum { LowPower = 0x4556BE, Continue1 = 0x4555F0, Continue2 = 0x455643 };
+
+	GET(BuildingClass*, pThis, ESI);
+	const auto pBuildingTypeExt = BuildingTypeExt::ExtMap.Find(pThis->Type);
+	const int keepOnline = pBuildingTypeExt->Overpower_KeepOnline;
+
+	if (keepOnline < 0)
+		return LowPower;
+
+	int overPower = 0;
+
+	for (const auto pCharger : pThis->Overpowerers)
+	{
+		const auto pWeapon = pCharger->GetWeapon(1)->WeaponType;
+
+		if (pWeapon && pWeapon->Warhead)
+		{
+			const auto pWHExt = WarheadTypeExt::ExtMap.Find(pWeapon->Warhead);
+			overPower += pWHExt->ElectricAssaultLevel;
+		}
+	}
+
+	return overPower < keepOnline ? LowPower : (R->Origin() == 0x4555E4 ? Continue1 : Continue2);
+}

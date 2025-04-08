@@ -9,6 +9,7 @@
 #include <UnitClass.h>
 #include <Utilities/AresHelper.h>
 #include <Utilities/Macro.h>
+#include <Ext/Techno/Body.h>
 
 #include "Body.h"
 
@@ -17,19 +18,9 @@ DEFINE_REFERENCE(double, Pixel_Per_Lepton, 0xB1D008)
 
 #pragma region FLH_Turrets
 
-void TechnoTypeExt::ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor)
+void TechnoTypeExt::ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor, int turIdx)
 {
-	TechnoTypeExt::ExtMap.Find(pType)->ApplyTurretOffset(mtx, factor);
-}
-
-DEFINE_HOOK(0x6F3C56, TechnoClass_GetFLH_TurretMultiOffset, 0x0)
-{
-	LEA_STACK(Matrix3D*, mtx, STACK_OFFSET(0xD8, -0x90));
-	GET(TechnoTypeClass*, technoType, EDX);
-
-	TechnoTypeExt::ApplyTurretOffset(technoType, mtx);
-
-	return 0x6F3C6D;
+	TechnoTypeExt::ExtMap.Find(pType)->ApplyTurretOffset(mtx, factor, turIdx);
 }
 
 DEFINE_HOOK(0x6F3E6E, TechnoClass_ActionLines_TurretMultiOffset, 0x0)
@@ -54,15 +45,108 @@ DEFINE_HOOK(0x73B780, UnitClass_DrawVXL_TurretMultiOffset, 0x0)
 	return 0x73B790;
 }
 
-
-DEFINE_HOOK(0x73BA4C, UnitClass_DrawVXL_TurretMultiOffset1, 0x0)
+DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 {
-	LEA_STACK(Matrix3D*, mtx, STACK_OFFSET(0x1D0, -0x13C));
-	GET(TechnoTypeClass*, technoType, EBX);
+	enum { SkipGameCode = 0x73BC26 };
 
-	TechnoTypeExt::ApplyTurretOffset(technoType, mtx, Pixel_Per_Lepton);
+	GET_STACK(const bool, haveTurretCache, STACK_OFFSET(0x1C4, -0x1B3));
+	GET_STACK(const bool, haveBarrelVXL, STACK_OFFSET(0x1C4, -0x1B2));
+	GET(const bool, haveBarrelCache, EAX);
+	LEA_STACK(Matrix3D* const, pMtx_buffer1, STACK_OFFSET(0x1C4, -0x130));
+	LEA_STACK(Matrix3D* const, pMtx_turret, STACK_OFFSET(0x1C4, -0xF0));
+	LEA_STACK(Matrix3D* const, pMtx_barrel, STACK_OFFSET(0x1C4, -0x90));
 
-	return 0x73BA68;
+	if (haveTurretCache && (!haveBarrelVXL || haveBarrelCache))
+	{
+		memcpy(pMtx_turret, pMtx_buffer1, sizeof(*pMtx_turret));
+		memcpy(pMtx_barrel, pMtx_buffer1, sizeof(*pMtx_barrel));
+	}
+	else
+	{
+		GET(UnitClass* const, pThis, EBP);
+		GET(UnitTypeClass* const, pType, EBX);
+		LEA_STACK(Matrix3D* const, pMtx_buffer2, STACK_OFFSET(0x1C4, -0xC0));
+		LEA_STACK(Matrix3D* const, pMtx_buffer3, STACK_OFFSET(0x1C4, -0x60));
+		LEA_STACK(Matrix3D* const, pMtx_buffer4, STACK_OFFSET(0x1C4, -0x30));
+
+		// Turret
+		TechnoTypeExt::ApplyTurretOffset(pType, pMtx_buffer1, Pixel_Per_Lepton);
+		pMtx_buffer1->RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - pThis->PrimaryFacing.Current().GetRadian<32>()));
+		memcpy(pMtx_buffer2, pMtx_buffer1, sizeof(*pMtx_buffer2));
+		memcpy(pMtx_buffer4, &Matrix3D::VoxelDefaultMatrix, sizeof(*pMtx_buffer4));
+		memcpy(pMtx_turret, Matrix3D::MatrixMultiply(pMtx_buffer3, pMtx_buffer4, pMtx_buffer1), sizeof(*pMtx_turret));
+
+		// Barrel
+		pMtx_buffer2->Translate(-pMtx_buffer1->Row[0].W, -pMtx_buffer1->Row[1].W, -pMtx_buffer1->Row[2].W);
+		pMtx_buffer2->RotateY(static_cast<float>(-pThis->BarrelFacing.Current().GetRadian<32>()));
+		pMtx_buffer2->Translate(pMtx_buffer1->Row[0].W, pMtx_buffer1->Row[1].W, pMtx_buffer1->Row[2].W);
+		memcpy(pMtx_buffer3, &Matrix3D::VoxelDefaultMatrix, sizeof(*pMtx_buffer3));
+		memcpy(pMtx_barrel, Matrix3D::MatrixMultiply(pMtx_buffer4, pMtx_buffer3, pMtx_buffer2), sizeof(*pMtx_barrel));
+	}
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x73BD79, UnitClass_DrawAsVXL_RewriteDrawSingleTurret, 0x6)
+{
+	enum { SkipGameCode = 0x73BEA4 };
+
+	GET(UnitClass* const, pThis, EBP);
+	GET(UnitTypeClass* const, pType, EBX);
+	GET_STACK(const int, flags, STACK_OFFSET(0x1C4, -0x198));
+	GET_STACK(const int, brightness, STACK_OFFSET(0x1C4, 0x1C));
+	GET_STACK(const int, hvaFrameIdx, STACK_OFFSET(0x1C4, -0x18C));
+	LEA_STACK(Point2D* const, center, STACK_OFFSET(0x1C4, -0x194));
+	LEA_STACK(RectangleStruct* const, rect, STACK_OFFSET(0x1C4, -0x164));
+	LEA_STACK(Matrix3D* const, pMtx_turret, STACK_OFFSET(0x1C4, -0xF0));
+	LEA_STACK(Matrix3D* const, pMtx_barrel, STACK_OFFSET(0x1C4, -0x90));
+
+	bool notDrawBarrelYet = true;
+	const bool canDrawBarrel = pType->BarrelVoxel.VXL && pType->BarrelVoxel.HVA;
+
+	// Barrel behind
+	if (canDrawBarrel) // Adjusted the inspection sequence
+	{
+		const auto dir = pThis->SecondaryFacing.Current().GetFacing<4>();
+
+		if (dir == 0 || dir == 3)
+		{
+			pThis->Draw_A_VXL(&pType->BarrelVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretBarrelCache),
+				rect, center, pMtx_barrel, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+
+			notDrawBarrelYet = false;
+		}
+	}
+
+	// Turret
+	pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
+		rect, center, pMtx_turret, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	const auto exTurCount = pTypeExt->ExtraTurretCount.Get();
+
+	if (exTurCount > 0)
+	{
+		const auto turCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->TurretOffset.Get(), false);
+
+		for (int i = 0; i < exTurCount; ++i)
+		{
+			const auto deltaCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pTypeExt->ExtraTurretOffsets[i], false) - turCrd;
+			auto turScreenCrd2nd = *center + TacticalClass::CoordsToScreen(deltaCrd);
+
+			pThis->Draw_A_VXL(&pType->TurretVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretWeaponCache),
+				rect, &turScreenCrd2nd, pMtx_turret, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+		}
+	}
+
+	// Barrel above
+	if (canDrawBarrel && notDrawBarrelYet) // Adjusted the inspection sequence
+	{
+		pThis->Draw_A_VXL(&pType->BarrelVoxel, hvaFrameIdx, flags, reinterpret_cast<IndexClass<int, int>*>(&pType->VoxelTurretBarrelCache),
+			rect, center, pMtx_barrel, brightness, static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+	}
+
+	return SkipGameCode;
 }
 
 DEFINE_HOOK(0x73C890, UnitClass_DrawSHP_BarrelMultiOffset, 0x0)
@@ -176,6 +260,47 @@ Matrix3D* __stdcall JumpjetLocomotionClass_Draw_Matrix(ILocomotion* iloco, Matri
 			// No more translation because I don't like it
 			ret->RotateX(ars);
 			ret->RotateY(arf);
+		}
+	}
+	else
+	{
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(linked->GetTechnoType());
+
+		if (pTypeExt->JumpjetTilt && !onGround && linked->IsAlive && linked->Health > 0 && !linked->IsAttackedByLocomotor)
+		{
+			if (pThis->CurrentSpeed > 0.0)
+			{
+				constexpr auto maxTilt = static_cast<float>(Math::HalfPi / 2);
+				constexpr auto baseSpeed = 32;
+				constexpr auto baseTilt = Math::HalfPi / 4;
+
+				constexpr auto forwardBaseTilt = baseTilt / baseSpeed;
+				const auto forwardSpeedFactor = pThis->CurrentSpeed * pTypeExt->JumpjetTilt_ForwardSpeedFactor;
+				const auto forwardAccelFactor = pThis->Accel * pTypeExt->JumpjetTilt_ForwardAccelFactor;
+
+				arf += std::min(maxTilt, static_cast<float>((forwardAccelFactor + forwardSpeedFactor) * forwardBaseTilt));
+
+				const auto& locoFace = pThis->LocomotionFacing;
+
+				if (locoFace.IsRotating())
+				{
+					constexpr auto baseTurnRaw = 32768;
+
+					constexpr auto sidewaysBaseTilt = baseTilt / (baseTurnRaw * baseSpeed);
+					const auto sidewaysSpeedFactor = pThis->CurrentSpeed * pTypeExt->JumpjetTilt_SidewaysSpeedFactor;
+					const auto sidewaysRotationFactor = static_cast<short>(locoFace.Difference().Raw) * pTypeExt->JumpjetTilt_SidewaysRotationFactor;
+
+					ars += Math::clamp(static_cast<float>(sidewaysSpeedFactor * sidewaysRotationFactor * sidewaysBaseTilt), -maxTilt, maxTilt);
+				}
+			}
+
+			if (std::abs(ars) >= 0.005 || std::abs(arf) >= 0.005)
+			{
+				if (pIndex) *pIndex = -1;
+
+				ret->RotateX(ars);
+				ret->RotateY(arf);
+			}
 		}
 	}
 
@@ -713,4 +838,30 @@ Matrix3D* __fastcall BounceClass_ShadowMatrix(BounceClass* self, void*, Matrix3D
 	return ret;
 }
 DEFINE_FUNCTION_JUMP(CALL, 0x749CAC, BounceClass_ShadowMatrix);
+#pragma endregion
+
+#pragma region voxel_ramp_matrix
+
+// I don't know how can WW miscalculated
+// In fact, there should be three different degrees of tilt angles
+// But This position is too far ahead, I can't find a good way to solve
+// So I have to do it this way for now
+DEFINE_HOOK_AGAIN(0x75564B, sub_754CB0_InitializeRampMatrix1, 0x7)
+DEFINE_HOOK(0x755469, sub_754CB0_InitializeRampMatrix1, 0x5)
+{
+	GET(const float, phi, EBX);
+	R->EBX(R->EBP());
+	R->EBP(phi);
+	return 0;
+}
+
+DEFINE_HOOK_AGAIN(0x7556CF, sub_754CB0_InitializeRampMatrix2, 0x7)
+DEFINE_HOOK(0x7554CC, sub_754CB0_InitializeRampMatrix2, 0x5)
+{
+	GET(const float, phi, EBX);
+	R->EBX(R->EBP());
+	R->EBP(phi);
+	return 0;
+}
+
 #pragma endregion

@@ -16,17 +16,6 @@ void ScriptExt::Mission_Move(TeamClass* pTeam, int calcThreatMode = 0, bool pick
 	TechnoClass* pFocus = nullptr;
 	auto pTeamData = TeamExt::ExtMap.Find(pTeam);
 
-	if (!pScript)
-		return;
-
-	if (!pTeamData)
-	{
-		pTeam->StepCompleted = true;
-		ScriptExt::Log("AI Scripts - Move: [%s] [%s] (line: %d = %d,%d) Jump to next line: %d = %d,%d -> (Reason: ExtData found)\n", pTeam->Type->ID, pScript->CurrentMission, pScript->Type->ScriptActions[pScript->CurrentMission].Action, pScript->Type->ScriptActions[pScript->CurrentMission].Argument, pScript->Type->ID, pScript->CurrentMission + 1, pScript->Type->ScriptActions[pScript->CurrentMission + 1].Action, pScript->Type->ScriptActions[pScript->CurrentMission + 1].Argument);
-
-		return;
-	}
-
 	// When the new target wasn't found it sleeps some few frames before the new attempt. This can save cycles and cycles of unnecessary executed lines.
 	if (pTeamData->WaitNoTargetCounter > 0)
 	{
@@ -39,19 +28,6 @@ void ScriptExt::Mission_Move(TeamClass* pTeam, int calcThreatMode = 0, bool pick
 
 		if (pTeamData->WaitNoTargetAttempts > 0)
 			pTeamData->WaitNoTargetAttempts--;
-	}
-
-	// This team has no units!
-	if (!pTeam)
-	{
-		if (pTeamData->CloseEnough > 0)
-			pTeamData->CloseEnough = -1;
-
-		// This action finished
-		pTeam->StepCompleted = true;
-		ScriptExt::Log("AI Scripts - Move: [%s] [%s] (line: %d = %d,%d) Jump to next line: %d = %d,%d -> (Reason: No team members alive)\n", pTeam->Type->ID, pScript->Type->ID, pScript->CurrentMission, pScript->Type->ScriptActions[pScript->CurrentMission].Action, pScript->Type->ScriptActions[pScript->CurrentMission].Argument, pScript->CurrentMission + 1, pScript->Type->ScriptActions[pScript->CurrentMission + 1].Action, pScript->Type->ScriptActions[pScript->CurrentMission + 1].Argument);
-
-		return;
 	}
 
 	for (auto pFoot = pTeam->FirstUnit; pFoot; pFoot = pFoot->NextTeamMember)
@@ -210,7 +186,7 @@ void ScriptExt::Mission_Move(TeamClass* pTeam, int calcThreatMode = 0, bool pick
 	}
 }
 
-TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int calcThreatMode = 0, bool pickAllies = false, int attackAITargetType = -1, int idxAITargetTypeItem = -1)
+TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int calcThreatMode = 0, bool pickAllies = false, int attackAITargetType = -1, int idxAITargetTypeItem = -1, bool needAttackableByLeader)
 {
 	TechnoClass* bestObject = nullptr;
 	double bestVal = -1;
@@ -235,6 +211,11 @@ TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int cal
 		auto object = TechnoClass::Array.GetItem(i);
 		auto objectType = object->GetTechnoType();
 		auto pTechnoType = pTechno->GetTechnoType();
+		auto objectTypeBuilding = abstract_cast<BuildingTypeClass*>(objectType);
+		auto objectTypeUnit = abstract_cast<UnitTypeClass*>(objectType);
+		auto objectTypeUnitDeploysIntoType = objectTypeUnit ? objectTypeUnit->DeploysInto : nullptr;
+		auto objectTypeExt = TechnoTypeExt::ExtMap.Find(objectType);
+		bool keepAlive = objectTypeExt->KeepAlive.Get(objectTypeBuilding ? !objectTypeBuilding->Insignificant && !objectTypeBuilding->DontScore : false);
 
 		if (!object || !objectType || !pTechnoType)
 			continue;
@@ -248,31 +229,39 @@ TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int cal
 		if (pTypeBuilding && pTypeBuilding->InvisibleInGame)
 			continue;
 
-		// Stealth ground unit check
-		if (object->CloakState == CloakState::Cloaked && !objectType->Naval)
-			continue;
-
-		// Submarines aren't a valid target
-		if (object->CloakState == CloakState::Cloaked
-			&& objectType->Underwater
-			&& (pTechnoType->NavalTargeting == NavalTargetingType::Underwater_Never
-				|| pTechnoType->NavalTargeting == NavalTargetingType::Naval_None))
+		if (objectType->Naval)
 		{
-			continue;
+			// Submarines aren't a valid target
+			if (object->CloakState == CloakState::Cloaked
+				&& objectType->Underwater
+				&& (pTechnoType->NavalTargeting == NavalTargetingType::Underwater_Never
+					|| pTechnoType->NavalTargeting == NavalTargetingType::Naval_None))
+			{
+				continue;
+			}
+
+			// Land not OK for the Naval unit
+			if (pTechnoType->LandTargeting == LandTargetingType::Land_Not_OK
+				&& (object->GetCell()->LandType != LandType::Water))
+			{
+				continue;
+			}
 		}
 
-		// Land not OK for the Naval unit
-		if (objectType->Naval
-			&& pTechnoType->LandTargeting == LandTargetingType::Land_Not_OK
-			&& object->GetCell()->LandType != LandType::Water)
+		// Stealth check.
+		if (object->CloakState == CloakState::Cloaked)
 		{
-			continue;
+			auto const pCell = object->GetCell();
+
+			if (!pCell->Sensors_InclHouse(pTechno->Owner->ArrayIndex))
+				continue;
 		}
 
 		if (object != pTechno
 			&& IsUnitAvailable(object, true)
 			&& ((pickAllies && pTechno->Owner->IsAlliedWith(object))
-				|| (!pickAllies && !pTechno->Owner->IsAlliedWith(object))))
+				|| (!pickAllies && !pTechno->Owner->IsAlliedWith(object)))
+			&& (!needAttackableByLeader || pTechno->GetFireErrorWithoutRange(object, pTechno->SelectWeapon(object)) != FireError::ILLEGAL))
 		{
 			double value = 0;
 
@@ -345,6 +334,39 @@ TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int cal
 							if (value > bestVal || bestVal < 0)
 								isGoodTarget = true;
 						}
+						else if (calcThreatMode == 4)
+						{
+							// Sorted by "KeepAlivability".
+							// ConYards and MCVs are the highest priority
+							// Factorys of UnitType then
+							// Other factorys then
+							// Other KeepAlives then
+							// Other units then
+							if (objectTypeBuilding && objectTypeBuilding->ConstructionYard ||
+								objectTypeUnitDeploysIntoType && objectTypeUnitDeploysIntoType->ConstructionYard)
+							{
+								value = 1024 * 256 * 4;
+							}
+							else if (objectTypeBuilding && objectTypeBuilding->Factory == AbstractType::Unit ||
+								objectTypeUnitDeploysIntoType && objectTypeUnitDeploysIntoType->Factory == AbstractType::Unit)
+							{
+								value = 1024 * 256 * 3;
+							}
+							else if (objectTypeBuilding && objectTypeBuilding->Factory != AbstractType::None ||
+								objectTypeUnitDeploysIntoType && objectTypeUnitDeploysIntoType->Factory != AbstractType::None)
+							{
+								value = 1024 * 256 * 2;
+							}
+							else if (keepAlive)
+							{
+								value = 1024 * 256 * 1;
+							}
+
+							value -= pTechno->DistanceFrom(object); // Note: distance is in leptons (*256)
+
+							if (value > bestVal || bestVal < 0)
+								isGoodTarget = true;
+						}
 					}
 				}
 
@@ -363,8 +385,7 @@ TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int cal
 void ScriptExt::Mission_Move_List(TeamClass* pTeam, int calcThreatMode, bool pickAllies, int attackAITargetType)
 {
 	auto pTeamData = TeamExt::ExtMap.Find(pTeam);
-	if (pTeamData)
-		pTeamData->IdxSelectedObjectFromAIList = -1;
+	pTeamData->IdxSelectedObjectFromAIList = -1;
 
 	if (attackAITargetType < 0)
 		attackAITargetType = pTeam->CurrentScript->Type->ScriptActions[pTeam->CurrentScript->CurrentMission].Argument;
@@ -382,9 +403,9 @@ void ScriptExt::Mission_Move_List1Random(TeamClass* pTeam, int calcThreatMode, b
 	bool selected = false;
 	int idxSelectedObject = -1;
 	std::vector<int> validIndexes;
-
 	auto pTeamData = TeamExt::ExtMap.Find(pTeam);
-	if (pTeamData && pTeamData->IdxSelectedObjectFromAIList >= 0)
+
+	if (pTeamData->IdxSelectedObjectFromAIList >= 0)
 	{
 		idxSelectedObject = pTeamData->IdxSelectedObjectFromAIList;
 		selected = true;
