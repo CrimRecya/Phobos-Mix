@@ -165,6 +165,8 @@ DEFINE_HOOK(0x4FD538, HouseClass_AIHouseUpdate_CheckAIBaseCenter, 0x7)
 
 	return 0;
 }
+
+DEFINE_JUMP(LJMP, 0x445249, 0x445253);
 /*
 DEFINE_HOOK(0x4FE42F, HouseClass_AIBaseConstructionUpdate_SkipConYards, 0x6)
 {
