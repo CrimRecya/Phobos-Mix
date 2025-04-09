@@ -843,7 +843,16 @@ DEFINE_HOOK(0x4D6D34, FootClass_MissionAreaGuard_Miner, 0x5)
 
 #pragma region MissileSpawnFLH
 
-DEFINE_HOOK(0x6B73EA, SpawnManagerClass_Update_MissileSpawnFLH, 0x5)
+DEFINE_HOOK(0x6B73D2, SpawnManagerClass_Update_MissileSpawnFLH1, 0xA)
+{
+	GET(TechnoClass*, pOwner, ECX);
+
+	auto pPrimary = pOwner->GetWeapon(0)->WeaponType;
+	R->EAX(pPrimary->Spawner ? pPrimary : pOwner->GetWeapon(1)->WeaponType);
+	return 0x6B73DE;
+}
+
+DEFINE_HOOK(0x6B73EA, SpawnManagerClass_Update_MissileSpawnFLH2, 0x5)
 {
 	enum { SkipCurrentBurstReset = 0x6B73FC };
 
