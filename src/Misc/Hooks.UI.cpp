@@ -78,7 +78,7 @@ DEFINE_HOOK(0x641EE0, PreviewClass_ReadPreview, 0x6)
 
 DEFINE_HOOK(0x4A25E0, CreditsClass_GraphicLogic_HarvesterCounter, 0x7)
 {
-	auto const pPlayer = HouseClass::CurrentPlayer();
+	auto const pPlayer = HouseClass::CurrentPlayer;
 	if (pPlayer->Defeated)
 		return 0;
 
@@ -86,14 +86,14 @@ DEFINE_HOOK(0x4A25E0, CreditsClass_GraphicLogic_HarvesterCounter, 0x7)
 
 	if (Phobos::UI::HarvesterCounter_Show && Phobos::Config::ShowHarvesterCounter)
 	{
-		auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->GetItem(pPlayer->SideIndex));
+		auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.GetItem(pPlayer->SideIndex));
 		wchar_t counter[0x20];
 		auto nActive = HouseExt::ActiveHarvesterCount(pPlayer);
 		auto nTotal = HouseExt::TotalHarvesterCount(pPlayer);
 		auto nPercentage = nTotal == 0 ? 1.0 : (double)nActive / (double)nTotal;
 
 		ColorStruct clrToolTip = nPercentage > Phobos::UI::HarvesterCounter_ConditionYellow
-			? Drawing::TooltipColor() : nPercentage > Phobos::UI::HarvesterCounter_ConditionRed
+			? Drawing::TooltipColor : nPercentage > Phobos::UI::HarvesterCounter_ConditionRed
 			? pSideExt->Sidebar_HarvesterCounter_Yellow : pSideExt->Sidebar_HarvesterCounter_Red;
 
 		swprintf_s(counter, L"%ls%d/%d", Phobos::UI::HarvesterLabel, nActive, nTotal);
@@ -109,7 +109,7 @@ DEFINE_HOOK(0x4A25E0, CreditsClass_GraphicLogic_HarvesterCounter, 0x7)
 
 	if (Phobos::UI::PowerDelta_Show && Phobos::Config::ShowPowerDelta && pPlayer->Buildings.Count)
 	{
-		auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->GetItem(pPlayer->SideIndex));
+		auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.GetItem(pPlayer->SideIndex));
 		wchar_t counter[0x20];
 
 		ColorStruct clrToolTip;
@@ -147,9 +147,9 @@ DEFINE_HOOK(0x4A25E0, CreditsClass_GraphicLogic_HarvesterCounter, 0x7)
 
 	if (Phobos::UI::WeedsCounter_Show && Phobos::Config::ShowWeedsCounter)
 	{
-		auto pSideExt = SideExt::ExtMap.Find(SideClass::Array->GetItem(pPlayer->SideIndex));
+		auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.GetItem(pPlayer->SideIndex));
 		wchar_t counter[0x20];
-		ColorStruct clrToolTip = pSideExt->Sidebar_WeedsCounter_Color.Get(Drawing::TooltipColor());
+		ColorStruct clrToolTip = pSideExt->Sidebar_WeedsCounter_Color.Get(Drawing::TooltipColor);
 
 		swprintf_s(counter, L"%d", static_cast<int>(pPlayer->OwnedWeed.GetTotalAmount()));
 
@@ -195,18 +195,29 @@ DEFINE_HOOK(0x6A8463, StripClass_OperatorLessThan_CameoPriority, 0x5)
 	GET_STACK(int, idxRight, STACK_OFFSET(0x1C, 0x10));
 	GET_STACK(AbstractType, rttiLeft, STACK_OFFSET(0x1C, 0x4));
 	GET_STACK(AbstractType, rttiRight, STACK_OFFSET(0x1C, 0xC));
-	auto pLeftTechnoExt = pLeft ? TechnoTypeExt::ExtMap.Find(pLeft) : nullptr;
-	auto pRightTechnoExt = pRight ? TechnoTypeExt::ExtMap.Find(pRight) : nullptr;
-	auto pLeftSWExt = (rttiLeft == AbstractType::Special || rttiLeft == AbstractType::Super || rttiLeft == AbstractType::SuperWeaponType)
-		? SWTypeExt::ExtMap.Find(SuperWeaponTypeClass::Array->GetItem(idxLeft)) : nullptr;
-	auto pRightSWExt = (rttiRight == AbstractType::Special || rttiRight == AbstractType::Super || rttiRight == AbstractType::SuperWeaponType)
-		? SWTypeExt::ExtMap.Find(SuperWeaponTypeClass::Array->GetItem(idxRight)) : nullptr;
+
+	const auto pLeftTechnoExt = TechnoTypeExt::ExtMap.Find(pLeft);
+	const auto pRightTechnoExt = TechnoTypeExt::ExtMap.Find(pRight);
+	const auto pLeftSWExt = (rttiLeft == AbstractType::Special || rttiLeft == AbstractType::Super || rttiLeft == AbstractType::SuperWeaponType)
+		? SWTypeExt::ExtMap.Find(SuperWeaponTypeClass::Array.GetItem(idxLeft)) : nullptr;
+	const auto pRightSWExt = (rttiRight == AbstractType::Special || rttiRight == AbstractType::Super || rttiRight == AbstractType::SuperWeaponType)
+		? SWTypeExt::ExtMap.Find(SuperWeaponTypeClass::Array.GetItem(idxRight)) : nullptr;
 
 	if ((pLeftTechnoExt || pLeftSWExt) && (pRightTechnoExt || pRightSWExt))
 	{
-		auto leftPriority = pLeftTechnoExt ? pLeftTechnoExt->CameoPriority : pLeftSWExt->CameoPriority;
-		auto rightPriority = pRightTechnoExt ? pRightTechnoExt->CameoPriority : pRightSWExt->CameoPriority;
 		enum { rTrue = 0x6A8692, rFalse = 0x6A86A0 };
+
+		const auto ownerBits = 1u << HouseClass::CurrentPlayer->Type->ArrayIndex2;
+		const auto leftBits = pLeftTechnoExt ? pLeftTechnoExt->CameoPriority_Houses : pLeftSWExt->CameoPriority_Houses;
+		const auto rightBits = pRightTechnoExt ? pRightTechnoExt->CameoPriority_Houses : pRightSWExt->CameoPriority_Houses;
+
+		if ((leftBits & ownerBits) && (!(rightBits & ownerBits)))
+			return rTrue;
+		else if ((!(leftBits & ownerBits)) && (rightBits & ownerBits))
+			return rFalse;
+
+		const auto leftPriority = pLeftTechnoExt ? pLeftTechnoExt->CameoPriority : pLeftSWExt->CameoPriority;
+		const auto rightPriority = pRightTechnoExt ? pRightTechnoExt->CameoPriority : pRightSWExt->CameoPriority;
 
 		if (leftPriority > rightPriority)
 			return rTrue;
@@ -216,6 +227,7 @@ DEFINE_HOOK(0x6A8463, StripClass_OperatorLessThan_CameoPriority, 0x5)
 
 	// Restore overridden instructions
 	GET(AbstractType, rtti1, ESI);
+
 	return rtti1 == AbstractType::Special ? 0x6A8477 : 0x6A8468;
 }
 
@@ -260,9 +272,9 @@ __forceinline void ShowBriefing()
 		int theme = ScenarioClass::Instance->ThemeIndex;
 
 		if (theme == -1)
-			ThemeClass::Instance->Stop(true);
+			ThemeClass::Instance.Stop(true);
 		else
-			ThemeClass::Instance->Queue(theme);
+			ThemeClass::Instance.Queue(theme);
 	}
 }
 
@@ -283,14 +295,14 @@ DEFINE_HOOK(0x683E41, ScenarioClass_Start_ShowBriefing, 0x6)
 
 	if (theme == -1)
 	{
-		SideClass* pSide = SideClass::Array->GetItemOrDefault(ScenarioClass::Instance->PlayerSideIndex);
+		SideClass* pSide = SideClass::Array.GetItemOrDefault(ScenarioClass::Instance->PlayerSideIndex);
 
 		if (const auto pSideExt = SideExt::ExtMap.Find(pSide))
 			theme = pSideExt->BriefingTheme;
 	}
 
 	if (theme != -1)
-		ThemeClass::Instance->Queue(theme);
+		ThemeClass::Instance.Queue(theme);
 
 	// Skip over playing scenario theme.
 	return SkipGameCode;
@@ -302,7 +314,7 @@ DEFINE_HOOK(0x48CE85, MainGame_ShowBriefing, 0x5)
 	enum { SkipGameCode = 0x48CE8A };
 
 	// Restore overridden instructions.
-	SessionClass::Instance->Resume();
+	SessionClass::Instance.Resume();
 
 	ShowBriefing();
 
@@ -315,7 +327,7 @@ DEFINE_HOOK(0x55D14F, AuxLoop_ShowBriefing, 0x5)
 	enum { SkipGameCode = 0x55D159 };
 
 	// Restore overridden instructions.
-	SessionClass::Instance->Resume();
+	SessionClass::Instance.Resume();
 
 	ShowBriefing();
 
@@ -382,8 +394,8 @@ bool __fastcall Fake_HouseIsAlliedWith(HouseClass* pThis, void*, HouseClass* Cur
 		|| pThis->IsAlliedWith(CurrentPlayer);
 }
 
-DEFINE_JUMP(CALL, 0x63B136, GET_OFFSET(Fake_HouseIsAlliedWith));
-DEFINE_JUMP(CALL, 0x63B100, GET_OFFSET(Fake_HouseIsAlliedWith));
-DEFINE_JUMP(CALL, 0x63B17F, GET_OFFSET(Fake_HouseIsAlliedWith));
-DEFINE_JUMP(CALL, 0x63B1BA, GET_OFFSET(Fake_HouseIsAlliedWith));
-DEFINE_JUMP(CALL, 0x63B2CE, GET_OFFSET(Fake_HouseIsAlliedWith));
+DEFINE_FUNCTION_JUMP(CALL, 0x63B136, Fake_HouseIsAlliedWith);
+DEFINE_FUNCTION_JUMP(CALL, 0x63B100, Fake_HouseIsAlliedWith);
+DEFINE_FUNCTION_JUMP(CALL, 0x63B17F, Fake_HouseIsAlliedWith);
+DEFINE_FUNCTION_JUMP(CALL, 0x63B1BA, Fake_HouseIsAlliedWith);
+DEFINE_FUNCTION_JUMP(CALL, 0x63B2CE, Fake_HouseIsAlliedWith);

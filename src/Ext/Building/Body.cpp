@@ -1,4 +1,5 @@
 #include "Body.h"
+#include "Ext/House/Body.h"
 
 #include <BitFont.h>
 
@@ -62,9 +63,9 @@ bool BuildingExt::ExtData::HasSuperWeapon(const int index, const bool withUpgrad
 
 void BuildingExt::StoreTiberium(BuildingClass* pThis, float amount, int idxTiberiumType, int idxStorageTiberiumType)
 {
-	auto const pDepositableTiberium = TiberiumClass::Array->GetItem(idxStorageTiberiumType);
+	auto const pDepositableTiberium = TiberiumClass::Array.GetItem(idxStorageTiberiumType);
 	float depositableTiberiumAmount = 0.0f; // Number of 'bails' that will be stored.
-	auto const pTiberium = TiberiumClass::Array->GetItem(idxTiberiumType);
+	auto const pTiberium = TiberiumClass::Array.GetItem(idxTiberiumType);
 
 	if (amount > 0.0)
 	{
@@ -90,7 +91,7 @@ void BuildingExt::ExtData::UpdatePrimaryFactoryAI()
 	if (!pOwner || pOwner->ProducingAircraftTypeIndex < 0)
 		return;
 
-	AircraftTypeClass* pAircraft = AircraftTypeClass::Array->GetItem(pOwner->ProducingAircraftTypeIndex);
+	AircraftTypeClass* pAircraft = AircraftTypeClass::Array.GetItem(pOwner->ProducingAircraftTypeIndex);
 	FactoryClass* currFactory = pOwner->GetFactoryProducing(pAircraft);
 	std::vector<BuildingClass*> airFactoryBuilding;
 	BuildingClass* newBuilding = nullptr;
@@ -339,9 +340,75 @@ bool BuildingExt::ExtData::HandleInfiltrate(HouseClass* pInfiltratorHouse, int m
 		idx = this->TypeExtData->SpyEffect_InfiltratorSuperWeapon;
 		if (idx >= 0)
 			launchTheSWHere(pInfiltratorHouse->Supers.Items[idx], pInfiltratorHouse);
+
+		auto jamTime = this->TypeExtData->SpyEffect_RadarJamDuration;
+
+		if (jamTime > 0)
+		{
+			pVictimHouse->RecheckRadar = true;
+			auto pVictimExt = HouseExt::ExtMap.Find(pVictimHouse);
+			if (pVictimExt->SpyEffect_RadarJamTimer.TimeLeft < jamTime)
+			{
+				pVictimExt->SpyEffect_RadarJamTimer.Stop();
+				pVictimExt->SpyEffect_RadarJamTimer.Start(jamTime);
+			}
+		}
 	}
 
 	return true;
+}
+
+// For unit's weapons factory only
+void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
+{
+	if (const auto pUnit = abstract_cast<UnitClass*>(pThis->GetNthLink()))
+	{
+		if (!pUnit->IsTether && pUnit->GetCurrentSpeed() <= 0)
+		{
+			if (const auto pTeam = pUnit->Team)
+				pTeam->LiberateMember(pUnit);
+
+			pThis->SendCommand(RadioCommand::NotifyUnlink, pUnit);
+			pUnit->QueueMission(Mission::Guard, false);
+			return; // one after another
+		}
+	}
+
+	auto buffer = CoordStruct::Empty;
+	auto pCell = MapClass::Instance.GetCellAt(*pThis->GetExitCoords(&buffer, 0));
+	int i = 0;
+
+	while (true)
+	{
+		for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
+		{
+			if (pObject->WhatAmI() == AbstractType::Unit)
+			{
+				const auto pUnit = static_cast<UnitClass*>(pObject);
+
+				if (pThis->Owner != pUnit->Owner || pUnit->IsTether)
+					continue;
+
+				const auto height = pUnit->GetHeight();
+
+				if (height < 0 || height > Unsorted::CellHeight)
+					continue;
+
+				if (const auto pTeam = pUnit->Team)
+					pTeam->LiberateMember(pUnit);
+
+				pThis->SendCommand(RadioCommand::RequestLink, pUnit);
+				pThis->QueueMission(Mission::Unload, false);
+				return; // one after another
+			}
+		}
+
+		if (++i >= 2)
+			return; // no stuck
+
+		// Continue checking towards the bottom right corner
+		pCell = pCell->GetNeighbourCell(FacingType::East);
+	}
 }
 
 // Get all cells covered by the building, optionally including those covered by OccupyHeight.
@@ -408,6 +475,7 @@ void BuildingExt::ExtData::Serialize(T& Stm)
 		.Process(this->CurrentLaserWeaponIndex)
 		.Process(this->PoweredUpToLevel)
 		.Process(this->EMPulseSW)
+		.Process(this->SecondaryArchiveTarget)
 		;
 }
 
@@ -484,7 +552,7 @@ DEFINE_HOOK(0x454174, BuildingClass_Load_LightSource, 0xA)
 {
 	GET(BuildingClass*, pThis, EDI);
 
-	SwizzleManagerClass::Instance->Swizzle((void**)&pThis->LightSource);
+	SwizzleManagerClass::Instance.Swizzle((void**)&pThis->LightSource);
 
 	return 0x45417E;
 }
@@ -516,4 +584,4 @@ void __fastcall BuildingClass_InfiltratedBy_Wrapper(BuildingClass* pThis, void*,
 	BuildingExt::ExtMap.Find(pThis)->HandleInfiltrate(pInfiltratorHouse, oldBalance);
 }
 
-DEFINE_JUMP(CALL, 0x51A00B, GET_OFFSET(BuildingClass_InfiltratedBy_Wrapper));
+DEFINE_FUNCTION_JUMP(CALL, 0x51A00B, BuildingClass_InfiltratedBy_Wrapper);

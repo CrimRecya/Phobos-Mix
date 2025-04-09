@@ -38,6 +38,7 @@ public:
 		std::optional<int> CurrentLaserWeaponIndex;
 		int PoweredUpToLevel; // Distinct from UpgradeLevel, and set to highest PowersUpToLevel out of applied upgrades regardless of how many are currently applied to this building.
 		SuperClass* EMPulseSW;
+		AbstractClass* SecondaryArchiveTarget;
 
 		ExtData(BuildingClass* OwnerObject) : Extension<BuildingClass>(OwnerObject)
 			, TypeExtData { nullptr }
@@ -52,6 +53,7 @@ public:
 			, CurrentLaserWeaponIndex {}
 			, PoweredUpToLevel { 0 }
 			, EMPulseSW {}
+			, SecondaryArchiveTarget { nullptr }
 		{ }
 
 		void DisplayIncomeString();
@@ -66,6 +68,7 @@ public:
 		virtual void InvalidatePointer(void* ptr, bool bRemoved) override
 		{
 			AnnounceInvalidPointer(CurrentAirFactory, ptr);
+			AnnounceInvalidPointer(SecondaryArchiveTarget, ptr);
 		}
 
 		virtual void LoadFromStream(PhobosStreamReader& Stm) override;
@@ -108,5 +111,6 @@ public:
 	static bool CanGrindTechno(BuildingClass* pBuilding, TechnoClass* pTechno);
 	static bool DoGrindingExtras(BuildingClass* pBuilding, TechnoClass* pTechno, int refund);
 	static bool CanUndeployOnSell(BuildingClass* pThis);
+	static void KickOutStuckUnits(BuildingClass* pThis);
 	static const std::vector<CellStruct> GetFoundationCells(BuildingClass* pThis, CellStruct baseCoords, bool includeOccupyHeight = false);
 };

@@ -1,8 +1,11 @@
 #include "Body.h"
+#include "SWSidebar/SWSidebarClass.h"
 
 #include <EventClass.h>
 #include <HouseClass.h>
 #include <SuperClass.h>
+
+#include <Ext/BuildingType/Body.h>
 
 std::unique_ptr<SidebarExt::ExtData> SidebarExt::Data = nullptr;
 
@@ -23,7 +26,7 @@ void SidebarExt::Remove(SidebarClass* pThis)
 bool __stdcall SidebarExt::AresTabCameo_RemoveCameo(BuildType* pItem)
 {
 	const auto pTechnoType = TechnoTypeClass::GetByTypeAndIndex(pItem->ItemType, pItem->ItemIndex);
-	const auto pCurrent = HouseClass::CurrentPlayer();
+	const auto pCurrent = HouseClass::CurrentPlayer;
 
 	if (pTechnoType)
 	{
@@ -36,7 +39,7 @@ bool __stdcall SidebarExt::AresTabCameo_RemoveCameo(BuildType* pItem)
 	{
 		const auto& supers = pCurrent->Supers;
 
-		if (supers.ValidIndex(pItem->ItemIndex) && supers[pItem->ItemIndex]->IsPresent)
+		if (supers.ValidIndex(pItem->ItemIndex) && supers[pItem->ItemIndex]->IsPresent && !SWSidebarClass::Instance.AddButton(pItem->ItemIndex))
 			return false;
 	}
 
@@ -45,12 +48,20 @@ bool __stdcall SidebarExt::AresTabCameo_RemoveCameo(BuildType* pItem)
 
 	if (pItem->ItemType == AbstractType::BuildingType || pItem->ItemType == AbstractType::Building)
 	{
-		buildCat = static_cast<BuildingTypeClass*>(pTechnoType)->BuildCat;
-		const auto pDisplay = DisplayClass::Instance();
-		pDisplay->SetActiveFoundation(nullptr);
-		pDisplay->CurrentBuilding = nullptr;
-		pDisplay->CurrentBuildingType = nullptr;
-		pDisplay->CurrentBuildingOwnerArrayIndex = -1;
+		// It is not necessary to remove buildings on the mouse in all cases here
+		const auto pBldType = static_cast<BuildingTypeClass*>(pTechnoType);
+		buildCat = pBldType->BuildCat;
+		const auto pDisplay = &DisplayClass::Instance;
+		const auto pCurType = abstract_cast<BuildingTypeClass*>(pDisplay->CurrentBuildingType);
+
+		if (!RulesExt::Global()->ExtendedBuildingPlacing || !pCurType
+			|| BuildingTypeExt::IsSameBuildingType(pBldType, pCurType))
+		{
+			pDisplay->SetActiveFoundation(nullptr);
+			pDisplay->CurrentBuilding = nullptr;
+			pDisplay->CurrentBuildingType = nullptr;
+			pDisplay->CurrentBuildingOwnerArrayIndex = -1;
+		}
 	}
 
 	// AbandonAll contains Abandon, if the factory cannot be found, it will also cannot be found when respont to this event.
@@ -89,10 +100,10 @@ bool __stdcall SidebarExt::AresTabCameo_RemoveCameo(BuildType* pItem)
 	if (pItem->ItemType == AbstractType::BuildingType || pItem->ItemType == AbstractType::Building)
 	{
 		buildCat = static_cast<BuildingTypeClass*>(pTechnoType)->BuildCat;
-		DisplayClass::Instance->SetActiveFoundation(nullptr);
-		DisplayClass::Instance->CurrentBuilding = nullptr;
-		DisplayClass::Instance->CurrentBuildingType = nullptr;
-		DisplayClass::Instance->CurrentBuildingOwnerArrayIndex = -1;
+		DisplayClass::Instance.SetActiveFoundation(nullptr);
+		DisplayClass::Instance.CurrentBuilding = nullptr;
+		DisplayClass::Instance.CurrentBuildingType = nullptr;
+		DisplayClass::Instance.CurrentBuildingOwnerArrayIndex = -1;
 	}
 
 	// Here make correction to the hardcoded BuildCat::DontCare.

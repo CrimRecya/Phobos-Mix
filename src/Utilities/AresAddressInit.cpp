@@ -5,7 +5,10 @@
 
 decltype(AresFunctions::ConvertTypeTo) AresFunctions::ConvertTypeTo = nullptr;
 decltype(AresFunctions::SpawnSurvivors) AresFunctions::SpawnSurvivors = nullptr;
+decltype(AresFunctions::RequirementsMet) AresFunctions::RequirementsMet = nullptr;
+decltype(AresFunctions::IsTargetConstraintsEligible) AresFunctions::IsTargetConstraintsEligible = nullptr;
 std::function<AresSWTypeExtData* (SuperWeaponTypeClass*)> AresFunctions::SWTypeExtMap_Find;
+PhobosMap<ObjectClass*, AlphaShapeClass*>* AresFunctions::AlphaExtMap = nullptr;
 
 void* AresFunctions::_SWTypeExtMap = nullptr;
 decltype(AresFunctions::_SWTypeExtMapFind) AresFunctions::_SWTypeExtMapFind = nullptr;
@@ -22,11 +25,19 @@ void AresFunctions::InitAres3_0()
 		Patch::Apply_RAW(AresHelper::AresBaseAddress + 0x48C69, { 0x30 });
 	}
 	else
+	{
 		NOTE_ARES_FUN(SpawnSurvivors, 0x464C0);
+	}
+
+	NOTE_ARES_FUN(RequirementsMet, 0x021FF0);
+
+	NOTE_ARES_FUN(IsTargetConstraintsEligible, 0x032110);
 
 	NOTE_ARES_FUN(_SWTypeExtMapFind, 0x57C70);
 	NOTE_ARES_FUN(_SWTypeExtMap, 0xC1C54);
 	SWTypeExtMap_Find = [](SuperWeaponTypeClass* swt) { return _SWTypeExtMapFind(_SWTypeExtMap, swt); };
+
+	NOTE_ARES_FUN(AlphaExtMap, 0xC1924);
 
 #ifndef USING_MULTIFINITE_SYRINGE
 	Apply_Ares3_0_Patches();
@@ -42,11 +53,19 @@ void AresFunctions::InitAres3_0p1()
 		Patch::Apply_RAW(AresHelper::AresBaseAddress + 0x498B9, { 0x30 });
 	}
 	else
+	{
 		NOTE_ARES_FUN(SpawnSurvivors, 0x47030);
+	}
+
+	NOTE_ARES_FUN(RequirementsMet, 0x022A70);
+
+	NOTE_ARES_FUN(IsTargetConstraintsEligible, 0x032AF0);
 
 	NOTE_ARES_FUN(_SWTypeExtMapFind, 0x58900);
 	NOTE_ARES_FUN(_SWTypeExtMap, 0xC2C50);
 	SWTypeExtMap_Find = [](SuperWeaponTypeClass* swt) { return _SWTypeExtMapFind(_SWTypeExtMap, swt); };
+
+	NOTE_ARES_FUN(AlphaExtMap, 0xC2988);
 
 #ifndef USING_MULTIFINITE_SYRINGE
 	Apply_Ares3_0p1_Patches();

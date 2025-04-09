@@ -6,6 +6,7 @@
 #include <Utilities/Helpers.Alex.h>
 
 #include <Ext/Sidebar/Body.h>
+#include <Ext/Techno/Body.h>
 
 // In vanilla YR, game destroys building animations directly by calling constructor.
 // Ares changed this to call UnInit() which has a consequence of doing pointer invalidation on the AnimClass pointer.
@@ -32,10 +33,20 @@ DEFINE_HOOK(0x44E9FA, BuildingClass_Detach_RestoreAnims, 0x6)
 ObjectClass* __fastcall CreateInitialPayload(TechnoTypeClass* type, void*, HouseClass* owner)
 {
 	// temporarily reset the mutex since it's not part of the design
-	int mutex_old = std::exchange(Unsorted::IKnowWhatImDoing(), 0);
+	int mutex_old = std::exchange(Unsorted::ScenarioInit, 0);
 	auto instance = type->CreateObject(owner);
-	Unsorted::IKnowWhatImDoing = mutex_old;
+	Unsorted::ScenarioInit = mutex_old;
 	return instance;
+}
+
+void __fastcall LetGo(TemporalClass* pTemporal)
+{
+	pTemporal->LetGo();
+}
+
+void __stdcall ConvertToType(TechnoClass* pThis,TechnoTypeClass* pToType)
+{
+	TechnoExt::ConvertToType(pThis, pToType);
 }
 
 void Apply_Ares3_0_Patches()
@@ -43,16 +54,31 @@ void Apply_Ares3_0_Patches()
 	// Abductor fix:
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x54CDF, AresHelper::AresBaseAddress + 0x54D3C);
 
+	// Amphibious enter fix:
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x17536, AresHelper::AresBaseAddress + 0x1754D);
+
 	// Redirect Ares' getCellSpreadItems to our implementation:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x62267, &Helpers::Alex::getCellSpreadItems);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x528C8, &Helpers::Alex::getCellSpreadItems);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x5273A, &Helpers::Alex::getCellSpreadItems);
+
+	// Redirect Ares's RequirementsMet to our implementation:
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x021B40, GET_OFFSET(TechnoTypeExt::RequirementsMetExtraCheck));
 
 	// Redirect Ares's RemoveCameo to our implementation:
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x02BDD0, GET_OFFSET(SidebarExt::AresTabCameo_RemoveCameo));
 
 	// InitialPayload creation:
 	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x43D5D, &CreateInitialPayload);
+
+	// Replace the TemporalClass::Detach call by LetGo in convert function:
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x436DA, &LetGo);
+
+	// Use new convert
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x39DAE, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x46C6D, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4B397, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4C099, &ConvertToType);
 }
 
 void Apply_Ares3_0p1_Patches()
@@ -62,14 +88,29 @@ void Apply_Ares3_0p1_Patches()
 	// What's done here: Skip Mark_Occupation_Bits cuz pFoot->Remove/Limbo() will do it.
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x5598F, AresHelper::AresBaseAddress + 0x559EC);
 
+	// Amphibious enter fix:
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x17C26, AresHelper::AresBaseAddress + 0x17C3D);
+
 	// Redirect Ares' getCellSpreadItems to our implementation:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x62FB7, &Helpers::Alex::getCellSpreadItems);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x53578, &Helpers::Alex::getCellSpreadItems);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x533EA, &Helpers::Alex::getCellSpreadItems);
+
+	// Redirect Ares's RequirementsMet to our implementation:
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x0225C0, GET_OFFSET(TechnoTypeExt::RequirementsMetExtraCheck));
 
 	// Redirect Ares's RemoveCameo to our implementation:
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x02C910, GET_OFFSET(SidebarExt::AresTabCameo_RemoveCameo));
 
 	// InitialPayload creation:
 	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x4483D, &CreateInitialPayload);
+
+	// Replace the TemporalClass::Detach call by LetGo in convert function:
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x441BA, &LetGo);
+
+	// Use new convert
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x3A82E, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4780D, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4BFF7, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4CCF9, &ConvertToType);
 }

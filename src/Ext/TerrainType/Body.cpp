@@ -60,6 +60,7 @@ void TerrainTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->CrumblingSound)
 		.Process(this->AnimationLength)
 		.Process(this->PaletteFile)
+		.Process(this->IgnoredByMouse)
 		;
 }
 
@@ -93,14 +94,13 @@ void TerrainTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	//Strength is already part of ObjecTypeClass::ReadIni Duh!
 	//this->TerrainStrength.Read(exINI, pSection, "Strength");
 
-	auto const pArtINI = &CCINIClass::INI_Art();
-	auto pArtSection = pThis->ImageFile;
+	this->IgnoredByMouse.Read(exINI, pSection, "IgnoredByMouse");
 
-	this->PaletteFile.Read(pArtINI, pArtSection, "Palette");
+	this->PaletteFile.Read(&CCINIClass::INI_Art, pThis->ImageFile, "Palette");
 	this->Palette = GeneralUtils::BuildPalette(this->PaletteFile);
 
 	if (GeneralUtils::IsValidString(this->PaletteFile) && !this->Palette)
-		Debug::Log("[Developer warning] [%s] has Palette=%s set but no palette file was loaded (missing file or wrong filename). Missing palettes cause issues with lighting recalculations.\n", pArtSection, this->PaletteFile.data());
+		Debug::Log("[Developer warning] [%s] has Palette=%s set but no palette file was loaded (missing file or wrong filename). Missing palettes cause issues with lighting recalculations.\n", pThis->ImageFile, this->PaletteFile.data());
 }
 
 void TerrainTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)
