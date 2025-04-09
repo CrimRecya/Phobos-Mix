@@ -336,9 +336,13 @@ DEFINE_HOOK(0x73847B, UnitClass_ReceiveDamage_Wreckage, 0xA)
 
 	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type);
 
+	Debug::LogAndMessage("Here\n");
 	if (auto pWreckageType = pTypeExt->WreckageType)
 	{
 		TechnoExt::ConvertToType(pThis, pWreckageType);
+		pThis->Health = (int)(pThis->Type->Strength * pTypeExt->WreckageInitialHealthPercent);
+		pThis->IsAlive = true;
+		pThis->Stun();
 	}
 	else
 	{
@@ -346,6 +350,13 @@ DEFINE_HOOK(0x73847B, UnitClass_ReceiveDamage_Wreckage, 0xA)
 	}
 
 	return R->Origin() + 0xA;
+}
+
+DEFINE_HOOK(0x73866E, TEST1, 0x5)
+{
+	GET(UnitClass*, pThis, ESI);
+	Debug::LogAndMessage("%d\n", pThis->IsSinking);
+	return 0;
 }
 
 #pragma endregion
