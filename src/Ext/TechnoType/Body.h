@@ -241,6 +241,10 @@ public:
 
 		Nullable<bool> RecountBurst;
 
+		Valueable<double> Skilled_ReverseSpeed;
+		Valueable<double> Skilled_FaceTargetRange;
+		Valueable<int> Skilled_RetreatDuration;
+
 		ValueableVector<TechnoTypeClass*> BuildLimitGroup_Types;
 		ValueableVector<int> BuildLimitGroup_Nums;
 		Valueable<int> BuildLimitGroup_Factor;
@@ -670,6 +674,10 @@ public:
 			, AttachEffects {}
 
 			, RecountBurst {}
+
+			, Skilled_ReverseSpeed { 0.85 }
+			, Skilled_FaceTargetRange { 16.0 }
+			, Skilled_RetreatDuration { 150 }
 
 			, BuildLimitGroup_Types {}
 			, BuildLimitGroup_Nums {}
