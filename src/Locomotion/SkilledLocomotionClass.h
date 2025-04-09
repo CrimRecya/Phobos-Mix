@@ -351,7 +351,7 @@ public:
 		, TrackNumber { -1 }
 		, TrackIndex { -1 }
 		, IsOnShortTrack { false }
-		, IsTurretLockedDown { 0 }
+		, IsTurretLockedDown { false }
 		, IsRotating { false }
 		, IsDriving { false }
 		, IsRocking { false }
@@ -375,7 +375,7 @@ public:
 	int TrackNumber;
 	int TrackIndex;
 	bool IsOnShortTrack;
-	char IsTurretLockedDown;
+	bool IsTurretLockedDown;
 	bool IsRotating;
 	bool IsDriving;
 	bool IsRocking;
