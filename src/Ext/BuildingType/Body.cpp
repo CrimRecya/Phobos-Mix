@@ -652,6 +652,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 	// 0x1/0x10: Basic ;0x2/0x20: Building ;0x4/0x40: BaseNormal(Adjacent) ;0x8/0x80: Shroud
 	std::unordered_map<int, int> checkedCells;
 	checkedCells.reserve(53);
+	const auto baseLevel = MapClass::Instance.GetCellAt(cell)->Level;
 
 	// Basic
 	auto canExistHere = [&](CellStruct currentCell)
@@ -673,7 +674,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 
 			if (const auto pCell = MapClass::Instance.TryGetCellAt(checkCell))
 			{
-				if (pCell->CanThisExistHere(pType->SpeedType, pType, pHouse))
+				if (std::abs(pCell->Level - baseLevel) <= 2 && pCell->CanThisExistHere(pType->SpeedType, pType, pHouse))
 				{
 					checkedCells[cellIndex] |= 0x1;
 					continue;
