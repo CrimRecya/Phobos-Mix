@@ -369,8 +369,9 @@ This page lists all the individual contributions to the project by their author.
   - Allow voxel projectiles to use `AnimPalette` and `FirersPalette`
   - Customize damaged speed ratio of drive/ship loco
   - Customize overpower logic
-  - Exclusive SuperWeapon Sidebar
   - Fix an issue that units on the slope tilted at an excessive angle
+  - Fixed an issue that teleport units board transport vehicles on the bridge will create an impassable invisible barrier, which may cause the game to freeze or even crash
+  - Exclusive SuperWeapon Sidebar
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**:
    - Customizable `ShowTimer` priority of superweapons
