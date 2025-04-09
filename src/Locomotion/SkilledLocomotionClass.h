@@ -383,5 +383,5 @@ public:
 	bool IsForward;
 	bool IsShifting;
 	ILocomotionPtr Piggybacker;
-	int Standby;
+	int Standby; // No use yet
 };
