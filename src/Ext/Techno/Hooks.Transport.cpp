@@ -308,7 +308,7 @@ static inline void DoEnterNow(UnitClass* pTransport, FootClass* pPassenger)
 	pPassenger->NextObject = nullptr; // Don't swap order casually, very important
 
 	pPassenger->QueueUpToEnter = nullptr; // Added, to prevent passengers from wanting to get on after getting off
-	; // Added, to prevent the vehicles from stacking together when unloading
+	pPassenger->FrozenStill = true; // Added, to prevent the vehicles from stacking together when unloading
 	pPassenger->SetSpeedPercentage(0.0); // Added, to stop the passengers and let OpenTopped work normally
 
 	const auto pPassengerType = pPassenger->GetTechnoType();
