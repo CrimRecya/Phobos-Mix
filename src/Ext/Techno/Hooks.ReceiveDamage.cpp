@@ -7,6 +7,7 @@
 #include <Ext/WeaponType/Body.h>
 #include <Ext/TEvent/Body.h>
 #include <Ext/House/Body.h>
+#include <Ext/Rules/Body.h>
 
 #include <VoxClass.h>
 #include <RadarEventClass.h>
@@ -169,9 +170,29 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 {
 	GET(TechnoClass* const, pThis, ESI);
 	GET(int* const, pDamage, EBX);
+	GET(DamageState, state, EAX);
 
 	if (Phobos::DisplayDamageNumbers && *pDamage)
 		GeneralUtils::DisplayDamageNumberString(*pDamage, DamageDisplayType::Regular, pThis->GetRenderCoords(), TechnoExt::ExtMap.Find(pThis)->DamageNumberOffset);
+
+	if (state == DamageState::NowDead)
+	{
+		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+
+		if (auto pWreckageType = pTypeExt->WreckageType)
+		{
+			auto pWreckage = (TechnoClass*)pWreckageType->CreateObject(pThis->Owner);
+			pWreckage->Health = (int)(pWreckageType->Strength * pTypeExt->WreckageInitialHealthPercent.Get(RulesExt::Global()->WreckageInitialHealthPercent));
+			++Unsorted::ScenarioInit;
+			pWreckage->Unlimbo(pThis->GetCoords(), DirType::North);
+			--Unsorted::ScenarioInit;
+			pWreckage->PrimaryFacing.SetCurrent(pThis->PrimaryFacing.Current());
+			pWreckage->SecondaryFacing.SetCurrent(pThis->SecondaryFacing.Current());
+			pWreckage->Deactivate();
+			pWreckage->Stun();
+			pWreckage->Mark(MarkType::Up);
+		}
+	}
 
 	return 0;
 }
@@ -326,37 +347,3 @@ DEFINE_HOOK(0x701E18, TechnoClass_ReceiveDamage_ReflectDamage, 0x7)
 
 	return 0;
 }
-
-
-#pragma region Wreckage
-
-DEFINE_HOOK(0x73847B, UnitClass_ReceiveDamage_Wreckage, 0xA)
-{
-	GET(UnitClass*, pThis, ESI);
-
-	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type);
-
-	Debug::LogAndMessage("Here\n");
-	if (auto pWreckageType = pTypeExt->WreckageType)
-	{
-		TechnoExt::ConvertToType(pThis, pWreckageType);
-		pThis->Health = (int)(pThis->Type->Strength * pTypeExt->WreckageInitialHealthPercent);
-		pThis->IsAlive = true;
-		pThis->Stun();
-	}
-	else
-	{
-		pThis->UnInit();
-	}
-
-	return R->Origin() + 0xA;
-}
-
-DEFINE_HOOK(0x73866E, TEST1, 0x5)
-{
-	GET(UnitClass*, pThis, ESI);
-	Debug::LogAndMessage("%d\n", pThis->IsSinking);
-	return 0;
-}
-
-#pragma endregion
