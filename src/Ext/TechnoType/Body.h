@@ -430,7 +430,7 @@ public:
 
 		Nullable<double> ProneSpeed;
     	Nullable<double> DamagedSpeed;
-		
+
 		Nullable<AnimTypeClass*> Promote_VeteranAnimation;
 		Nullable<AnimTypeClass*> Promote_EliteAnimation;
 
@@ -884,7 +884,7 @@ public:
 
 			, Promote_VeteranAnimation { }
 			, Promote_EliteAnimation { }
-			
+
 			, WreckageType { nullptr }
 			, WreckageInitialHealthPercent { }
 			, WreckageDeactive { true }

@@ -176,42 +176,41 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 {
 	GET(TechnoClass* const, pThis, ESI);
 	GET(int* const, pDamage, EBX);
-	GET(DamageState, state, EAX);
-	GET(WarheadTypeClass*, pWH, EBP);
-	GET_STACK(HouseClass*, pAttackerHosue, STACK_OFFSET(0xC4, 0x1C));
+	GET(const DamageState, state, EAX);
+	GET(WarheadTypeClass* const, pWH, EBP);
+	GET_STACK(HouseClass* const, pAttackerHosue, STACK_OFFSET(0xC4, 0x1C));
 
 	if (Phobos::DisplayDamageNumbers && *pDamage)
 		GeneralUtils::DisplayDamageNumberString(*pDamage, DamageDisplayType::Regular, pThis->GetRenderCoords(), TechnoExt::ExtMap.Find(pThis)->DamageNumberOffset);
 
 	if ((state == DamageState::NowDead) && !WarheadTypeExt::ExtMap.Find(pWH)->SuppressWreckage)
 	{
-		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
-		auto pWreckageType = pTypeExt->WreckageType;
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
 
-		if ( pWreckageType
-			&& (pThis->GetCell()->LandType != LandType::Water || pTypeExt->WreckageLeaveOnWater)
-			&& (!pThis->IsInAir() || pTypeExt->WreckageLeaveInAir))
+		if (const auto pWreckageType = pTypeExt->WreckageType)
 		{
-			auto pOwner = HouseExt::GetHouseKind(pTypeExt->WreckageOwner, false, pThis->Owner, pAttackerHosue, pThis->Owner);
-
-			if (pOwner)
+			if ((pThis->GetCell()->LandType != LandType::Water || pTypeExt->WreckageLeaveOnWater)
+				&& (!pThis->IsInAir() || pTypeExt->WreckageLeaveInAir))
 			{
-				auto pWreckage = (TechnoClass*)pWreckageType->CreateObject(pOwner);
-				pWreckage->Health = (int)(pWreckageType->Strength * pTypeExt->WreckageInitialHealthPercent.Get(RulesExt::Global()->WreckageInitialHealthPercent));
-				++Unsorted::ScenarioInit;
-				pWreckage->Unlimbo((pWreckage->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None ? pThis->GetCoords() : pThis->Location, DirType::North);
-				--Unsorted::ScenarioInit;
-				pWreckage->PrimaryFacing.SetCurrent(pThis->PrimaryFacing.Current());
-				pWreckage->SecondaryFacing.SetCurrent(pThis->SecondaryFacing.Current());
-
-				if (pTypeExt->WreckageDeactive)
+				if (const auto pOwner = HouseExt::GetHouseKind(pTypeExt->WreckageOwner, false, pThis->Owner, pAttackerHosue, pThis->Owner))
 				{
-					TechnoExt::ExtMap.Find(pWreckage)->IsWreckage = true;
-					pWreckage->Deactivate();
-				}
+					const auto pWreckage = static_cast<TechnoClass*>(pWreckageType->CreateObject(pOwner));
+					pWreckage->Health = static_cast<int>(pWreckageType->Strength * pTypeExt->WreckageInitialHealthPercent.Get(RulesExt::Global()->WreckageInitialHealthPercent));
+					++Unsorted::ScenarioInit;
+					pWreckage->Unlimbo((pWreckage->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None ? pThis->GetCoords() : pThis->Location, DirType::North);
+					--Unsorted::ScenarioInit;
+					pWreckage->PrimaryFacing.SetCurrent(pThis->PrimaryFacing.Current());
+					pWreckage->SecondaryFacing.SetCurrent(pThis->SecondaryFacing.Current());
 
-				if (pTypeExt->WreckageMarkUp)
-					pWreckage->Mark(MarkType::Up);
+					if (pTypeExt->WreckageDeactive)
+					{
+						TechnoExt::ExtMap.Find(pWreckage)->IsWreckage = true;
+						pWreckage->Deactivate();
+					}
+
+					if (pTypeExt->WreckageMarkUp)
+						pWreckage->Mark(MarkType::Up);
+				}
 			}
 		}
 	}

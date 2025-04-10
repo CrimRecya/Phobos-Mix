@@ -1500,7 +1500,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->Promote_VeteranAnimation)
 		.Process(this->Promote_EliteAnimation)
-		
+
 		.Process(this->WreckageType)
 		.Process(this->WreckageInitialHealthPercent)
 		.Process(this->WreckageDeactive)
