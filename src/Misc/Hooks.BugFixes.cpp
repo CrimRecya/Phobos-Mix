@@ -1861,3 +1861,14 @@ DEFINE_HOOK(0x710352, FootClass_ImbueLocomotor_ResetUnloadingHarvester, 0x7)
 
 	return 0;
 }
+
+DEFINE_HOOK(0x73C43F, UnitClass_DrawAsVXL_Shadow_IsLocomotorFix, 0x6)
+{
+	enum { SkipGameCode = 0x73C445 };
+
+	GET(UnitClass*, pThis, EBP);
+	GET(UnitTypeClass*, pType, EAX);
+
+	R->AL(pType->BalloonHover || pThis->IsAttackedByLocomotor);
+	return SkipGameCode;
+}
