@@ -1007,6 +1007,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->KeepTargetOnMove)
 		.Process(this->LastSensorsMapCoords)
 		.Process(this->PlayerAssignedLastTarget)
+		.Process(this->IsWreckage)
 		;
 }
 
