@@ -395,6 +395,8 @@ Vanilla fixes:
 - Fixed an issue that laser, electric bolt and rad beam not support `Inviso=true` projectiles with `FlakScatter=true` to scatter (by CrimRecya)
 - Fixed the bug that `EnterBioReactorSound`, `LeaveBioReactorSound`, `EnterGrinderSound` on technotype does not used (by NetsuNegi)
 - Fixed the bug that harvester dont stop unloading and cannot unload cargos anymore when lifting by `IsLocomotor=yes` warhead (by NetsuNegi)
+- Fixed an issue that units on the slope tilted at an excessive angle (by CrimRecya & NetsuNegi)
+- New Skilled locomotor (by CrimRecya)
 
 - Observer sidebar in skirmish game mode (by CrimRecya)
 - Fixed an issue that the first passenger who call the transport ship no longer board the transport ship when the land units call for boarding (by CrimRecya)

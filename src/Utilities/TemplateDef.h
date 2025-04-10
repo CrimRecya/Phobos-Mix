@@ -1088,6 +1088,7 @@ if(_strcmpi(parser.value(), #name) == 0){ value = __uuidof(name ## LocomotionCla
 			PARSE_IF_IS_PHOBOS_LOCO(Test);
 			PARSE_IF_IS_PHOBOS_LOCO(Skilled);
 #endif
+			PARSE_IF_IS_PHOBOS_LOCO(Skilled);
 
 #undef PARSE_IF_IS_PHOBOS_LOCO
 
