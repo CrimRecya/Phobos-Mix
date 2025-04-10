@@ -190,6 +190,8 @@ public:
 
     	Valueable<int> ElectricAssaultLevel;
 
+		Valueable<bool> SuppressWreckage;
+
 		// Ares tags
 		// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
 		Valueable<bool> AffectsEnemies;
@@ -377,6 +379,8 @@ public:
 			, NoCellSpread_SnapDistance { Leptons(128) }
 
 			, ElectricAssaultLevel { 1 }
+
+			, SuppressWreckage { false }
 
 			, AffectsEnemies { true }
 			, AffectsOwner {}

@@ -171,17 +171,23 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 	GET(TechnoClass* const, pThis, ESI);
 	GET(int* const, pDamage, EBX);
 	GET(DamageState, state, EAX);
+	GET(WarheadTypeClass*, pWH, EBP);
+	GET_STACK(HouseClass*, pAttackerHosue, STACK_OFFSET(0xC4, 0x1C));
 
 	if (Phobos::DisplayDamageNumbers && *pDamage)
 		GeneralUtils::DisplayDamageNumberString(*pDamage, DamageDisplayType::Regular, pThis->GetRenderCoords(), TechnoExt::ExtMap.Find(pThis)->DamageNumberOffset);
 
-	if (state == DamageState::NowDead)
+	if ((state == DamageState::NowDead) && !WarheadTypeExt::ExtMap.Find(pWH)->SuppressWreckage)
 	{
 		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+		auto pWreckageType = pTypeExt->WreckageType;
 
-		if (auto pWreckageType = pTypeExt->WreckageType)
+		if ( pWreckageType
+			&& (pThis->GetCell()->LandType != LandType::Water || pTypeExt->WreckageLeaveOnWater)
+			&& (!pThis->IsInAir() || pTypeExt->WreckageLeaveInAir))
 		{
-			auto pWreckage = (TechnoClass*)pWreckageType->CreateObject(pThis->Owner);
+			auto pOwner = HouseExt::GetHouseKind(pTypeExt->WreckageOwner, false, pThis->Owner, pAttackerHosue, pThis->Owner);
+			auto pWreckage = (TechnoClass*)pWreckageType->CreateObject(pOwner);
 			pWreckage->Health = (int)(pWreckageType->Strength * pTypeExt->WreckageInitialHealthPercent.Get(RulesExt::Global()->WreckageInitialHealthPercent));
 			++Unsorted::ScenarioInit;
 			pWreckage->Unlimbo((pWreckage->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None ? pThis->GetCoords() : pThis->Location, DirType::North);
