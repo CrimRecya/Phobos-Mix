@@ -60,7 +60,6 @@ public:
 		WeaponTypeClass* LastWeaponType;
 		CoordStruct LastWeaponFLH;
 		int CurrentTracingCount;
-		int LastHurtFrame;
 		int ScatteringStopFrame;
 		int MyTargetingFrame;
 		int AttackMoveFollowerTempCount;
@@ -131,7 +130,6 @@ public:
 			, LastWeaponType {}
 			, LastWeaponFLH {}
 			, CurrentTracingCount { 0 }
-			, LastHurtFrame { 0 }
 			, ScatteringStopFrame { 0 }
 			, MyTargetingFrame { ScenarioClass::Instance->Random.RandomRanged(0,15) }
 			, AttackMoveFollowerTempCount { 0 }
