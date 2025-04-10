@@ -441,6 +441,7 @@ public:
 		Valueable<OwnerHouseKind> WreckageOwner;
 		Valueable<bool> WreckageLeaveOnWater;
 		Valueable<bool> WreckageLeaveInAir;
+		Valueable<bool> WreckageSwapLocomotor;
 
 		struct LaserTrailDataEntry
 		{
@@ -892,6 +893,7 @@ public:
 			, WreckageOwner { OwnerHouseKind::Default }
 			, WreckageLeaveOnWater { false }
 			, WreckageLeaveInAir { false }
+			, WreckageSwapLocomotor { false }
 		{ }
 
 		virtual ~ExtData() = default;
