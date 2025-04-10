@@ -109,6 +109,12 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 			pExt->LastHurtFrame = Unsorted::CurrentFrame;
 	}
 
+	if (*args->Damage && pWHExt->ActivateWreckage)
+	{
+		pExt->IsWreckage = false;
+		pThis->Reactivate();
+	}
+
 	// Shield Receive Damage
 	if (!args->IgnoreDefenses)
 	{
@@ -199,7 +205,10 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 				pWreckage->SecondaryFacing.SetCurrent(pThis->SecondaryFacing.Current());
 
 				if (pTypeExt->WreckageDeactive)
+				{
+					TechnoExt::ExtMap.Find(pWreckage)->IsWreckage = true;
 					pWreckage->Deactivate();
+				}
 
 				if (pTypeExt->WreckageMarkUp)
 					pWreckage->Mark(MarkType::Up);

@@ -90,6 +90,8 @@ public:
 		bool AggressiveStance;                  // Aggressive stance that will auto target buildings
 		DWORD PlayerAssignedLastTarget;
 
+		bool IsWreckage;
+
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
 			, Shield {}
@@ -153,6 +155,7 @@ public:
 			, KeepTargetOnMove { false }
 			, LastSensorsMapCoords { CellStruct::Empty }
 			, PlayerAssignedLastTarget { 0xFFFFFFFF }
+			, IsWreckage { false }
 		{ }
 
 		void OnEarlyUpdate();
