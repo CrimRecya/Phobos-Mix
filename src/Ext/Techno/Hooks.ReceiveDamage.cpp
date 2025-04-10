@@ -7,6 +7,7 @@
 #include <Ext/WeaponType/Body.h>
 #include <Ext/TEvent/Body.h>
 #include <Ext/House/Body.h>
+#include <Ext/Rules/Body.h>
 
 #include <VoxClass.h>
 #include <RadarEventClass.h>
@@ -108,6 +109,12 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 			pExt->LastHurtFrame = Unsorted::CurrentFrame;
 	}
 
+	if (*args->Damage && pWHExt->ActivateWreckage)
+	{
+		pExt->IsWreckage = false;
+		pThis->Reactivate();
+	}
+
 	// Shield Receive Damage
 	if (!args->IgnoreDefenses)
 	{
@@ -169,9 +176,45 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 {
 	GET(TechnoClass* const, pThis, ESI);
 	GET(int* const, pDamage, EBX);
+	GET(DamageState, state, EAX);
+	GET(WarheadTypeClass*, pWH, EBP);
+	GET_STACK(HouseClass*, pAttackerHosue, STACK_OFFSET(0xC4, 0x1C));
 
 	if (Phobos::DisplayDamageNumbers && *pDamage)
 		GeneralUtils::DisplayDamageNumberString(*pDamage, DamageDisplayType::Regular, pThis->GetRenderCoords(), TechnoExt::ExtMap.Find(pThis)->DamageNumberOffset);
+
+	if ((state == DamageState::NowDead) && !WarheadTypeExt::ExtMap.Find(pWH)->SuppressWreckage)
+	{
+		auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+		auto pWreckageType = pTypeExt->WreckageType;
+
+		if ( pWreckageType
+			&& (pThis->GetCell()->LandType != LandType::Water || pTypeExt->WreckageLeaveOnWater)
+			&& (!pThis->IsInAir() || pTypeExt->WreckageLeaveInAir))
+		{
+			auto pOwner = HouseExt::GetHouseKind(pTypeExt->WreckageOwner, false, pThis->Owner, pAttackerHosue, pThis->Owner);
+
+			if (pOwner)
+			{
+				auto pWreckage = (TechnoClass*)pWreckageType->CreateObject(pOwner);
+				pWreckage->Health = (int)(pWreckageType->Strength * pTypeExt->WreckageInitialHealthPercent.Get(RulesExt::Global()->WreckageInitialHealthPercent));
+				++Unsorted::ScenarioInit;
+				pWreckage->Unlimbo((pWreckage->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None ? pThis->GetCoords() : pThis->Location, DirType::North);
+				--Unsorted::ScenarioInit;
+				pWreckage->PrimaryFacing.SetCurrent(pThis->PrimaryFacing.Current());
+				pWreckage->SecondaryFacing.SetCurrent(pThis->SecondaryFacing.Current());
+
+				if (pTypeExt->WreckageDeactive)
+				{
+					TechnoExt::ExtMap.Find(pWreckage)->IsWreckage = true;
+					pWreckage->Deactivate();
+				}
+
+				if (pTypeExt->WreckageMarkUp)
+					pWreckage->Mark(MarkType::Up);
+			}
+		}
+	}
 
 	return 0;
 }

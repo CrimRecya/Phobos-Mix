@@ -4,6 +4,7 @@
 #include <Helpers/Macro.h>
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
+#include <Utilities/Enum.h>
 
 #include <New/Type/ShieldTypeClass.h>
 #include <New/Type/LaserTrailTypeClass.h>
@@ -429,9 +430,17 @@ public:
 
 		Nullable<double> ProneSpeed;
     	Nullable<double> DamagedSpeed;
-
+		
 		Nullable<AnimTypeClass*> Promote_VeteranAnimation;
 		Nullable<AnimTypeClass*> Promote_EliteAnimation;
+
+		Valueable<TechnoTypeClass*> WreckageType;
+		Nullable<double> WreckageInitialHealthPercent;
+		Valueable<bool> WreckageDeactive;
+		Valueable<bool> WreckageMarkUp;
+		Valueable<OwnerHouseKind> WreckageOwner;
+		Valueable<bool> WreckageLeaveOnWater;
+		Valueable<bool> WreckageLeaveInAir;
 
 		struct LaserTrailDataEntry
 		{
@@ -875,6 +884,14 @@ public:
 
 			, Promote_VeteranAnimation { }
 			, Promote_EliteAnimation { }
+			
+			, WreckageType { nullptr }
+			, WreckageInitialHealthPercent { }
+			, WreckageDeactive { true }
+			, WreckageMarkUp { true }
+			, WreckageOwner { OwnerHouseKind::Default }
+			, WreckageLeaveOnWater { false }
+			, WreckageLeaveInAir { false }
 		{ }
 
 		virtual ~ExtData() = default;

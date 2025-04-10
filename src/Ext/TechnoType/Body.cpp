@@ -872,6 +872,14 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Promote_VeteranAnimation.Read(exINI, pSection, "Promote.VeteranAnimation");
 	this->Promote_EliteAnimation.Read(exINI, pSection, "Promote.EliteAnimation");
 
+	this->WreckageType.Read(exINI, pSection, "WreckageType");
+	this->WreckageInitialHealthPercent.Read(exINI, pSection, "WreckageInitialHealthPercent");
+	this->WreckageDeactive.Read(exINI, pSection, "WreckageDeactive");
+	this->WreckageMarkUp.Read(exINI, pSection, "WreckageMarkUp");
+	this->WreckageOwner.Read(exINI, pSection, "WreckageOwner");
+	this->WreckageLeaveOnWater.Read(exINI, pSection, "WreckageLeaveOnWater");
+	this->WreckageLeaveInAir.Read(exINI, pSection, "WreckageLeaveInAir");
+
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
 	this->Cloneable.Read(exINI, pSection, "Cloneable");
@@ -1492,6 +1500,14 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->Promote_VeteranAnimation)
 		.Process(this->Promote_EliteAnimation)
+		
+		.Process(this->WreckageType)
+		.Process(this->WreckageInitialHealthPercent)
+		.Process(this->WreckageDeactive)
+		.Process(this->WreckageMarkUp)
+		.Process(this->WreckageOwner)
+		.Process(this->WreckageLeaveOnWater)
+		.Process(this->WreckageLeaveInAir)
 		;
 }
 void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)
