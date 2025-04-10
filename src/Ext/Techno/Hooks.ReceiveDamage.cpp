@@ -189,7 +189,6 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 			pWreckage->PrimaryFacing.SetCurrent(pThis->PrimaryFacing.Current());
 			pWreckage->SecondaryFacing.SetCurrent(pThis->SecondaryFacing.Current());
 			pWreckage->Deactivate();
-			pWreckage->Stun();
 			pWreckage->Mark(MarkType::Up);
 		}
 	}
