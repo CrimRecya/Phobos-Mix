@@ -2012,6 +2012,20 @@ DEFINE_HOOK(0x41D90C, AirstrikeClass_StartNewMission_SpawnAirSupport, 0x7)
 
 #pragma endregion
 
+#pragma region Activate
+
+DEFINE_HOOK(0x70FC85, TechnoClass_Activate_End, 0x5)
+{
+	GET(TechnoClass*, pThis, ECX);
+
+	if (!pThis->Deactivated && TechnoExt::ExtMap.Find(pThis)->IsWreckage)
+		pThis->Deactivate();
+
+	return 0;
+}
+
+#pragma region
+
 // TODO Self-made impl
 
 
@@ -2146,19 +2160,5 @@ DEFINE_HOOK(0x740015, UnitClass_WhatAction_NoManualEject, 0x6)
 }
 
 #pragma endregion
-
-#pragma region Activate
-
-DEFINE_HOOK(0x70FC85, TechnoClass_Activate_End, 0x5)
-{
-	GET(TechnoClass*, pThis, ECX);
-
-	if (!pThis->Deactivated && TechnoExt::ExtMap.Find(pThis)->IsWreckage)
-		pThis->Deactivate();
-
-	return 0;
-}
-
-#pragma region
 
 // TODO Other contributors' impl
