@@ -431,6 +431,8 @@ public:
 
 		Valueable<TechnoTypeClass*> WreckageType;
 		Nullable<double> WreckageInitialHealthPercent;
+		Valueable<bool> WreckageDeactive;
+		Valueable<bool> WreckageMarkUp;
 		
 		Nullable<AnimTypeClass*> Promote_VeteranAnimation;
 		Nullable<AnimTypeClass*> Promote_EliteAnimation;
@@ -879,6 +881,8 @@ public:
 			
 			, WreckageType { nullptr }
 			, WreckageInitialHealthPercent { }
+			, WreckageDeactive { true }
+			, WreckageMarkUp { true }
 		{ }
 
 		virtual ~ExtData() = default;

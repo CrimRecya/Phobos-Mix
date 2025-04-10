@@ -873,6 +873,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->WreckageType.Read(exINI, pSection, "WreckageType");
 	this->WreckageInitialHealthPercent.Read(exINI, pSection, "WreckageInitialHealthPercent");
+	this->WreckageDeactive.Read(exINI, pSection, "WreckageDeactive");
+	this->WreckageMarkUp.Read(exINI, pSection, "WreckageMarkUp");
 
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
@@ -1496,6 +1498,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		
 		.Process(this->WreckageType)
 		.Process(this->WreckageInitialHealthPercent)
+		.Process(this->WreckageDeactive)
+		.Process(this->WreckageMarkUp)
 		;
 }
 void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)

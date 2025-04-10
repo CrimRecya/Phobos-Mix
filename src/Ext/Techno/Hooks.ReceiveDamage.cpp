@@ -184,12 +184,16 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 			auto pWreckage = (TechnoClass*)pWreckageType->CreateObject(pThis->Owner);
 			pWreckage->Health = (int)(pWreckageType->Strength * pTypeExt->WreckageInitialHealthPercent.Get(RulesExt::Global()->WreckageInitialHealthPercent));
 			++Unsorted::ScenarioInit;
-			pWreckage->Unlimbo(pThis->GetCoords(), DirType::North);
+			pWreckage->Unlimbo((pWreckage->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None ? pThis->GetCoords() : pThis->Location, DirType::North);
 			--Unsorted::ScenarioInit;
 			pWreckage->PrimaryFacing.SetCurrent(pThis->PrimaryFacing.Current());
 			pWreckage->SecondaryFacing.SetCurrent(pThis->SecondaryFacing.Current());
-			pWreckage->Deactivate();
-			pWreckage->Mark(MarkType::Up);
+
+			if (pTypeExt->WreckageDeactive)
+				pWreckage->Deactivate();
+
+			if (pTypeExt->WreckageMarkUp)
+				pWreckage->Mark(MarkType::Up);
 		}
 	}
 
