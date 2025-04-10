@@ -187,19 +187,23 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 			&& (!pThis->IsInAir() || pTypeExt->WreckageLeaveInAir))
 		{
 			auto pOwner = HouseExt::GetHouseKind(pTypeExt->WreckageOwner, false, pThis->Owner, pAttackerHosue, pThis->Owner);
-			auto pWreckage = (TechnoClass*)pWreckageType->CreateObject(pOwner);
-			pWreckage->Health = (int)(pWreckageType->Strength * pTypeExt->WreckageInitialHealthPercent.Get(RulesExt::Global()->WreckageInitialHealthPercent));
-			++Unsorted::ScenarioInit;
-			pWreckage->Unlimbo((pWreckage->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None ? pThis->GetCoords() : pThis->Location, DirType::North);
-			--Unsorted::ScenarioInit;
-			pWreckage->PrimaryFacing.SetCurrent(pThis->PrimaryFacing.Current());
-			pWreckage->SecondaryFacing.SetCurrent(pThis->SecondaryFacing.Current());
 
-			if (pTypeExt->WreckageDeactive)
-				pWreckage->Deactivate();
+			if (pOwner)
+			{
+				auto pWreckage = (TechnoClass*)pWreckageType->CreateObject(pOwner);
+				pWreckage->Health = (int)(pWreckageType->Strength * pTypeExt->WreckageInitialHealthPercent.Get(RulesExt::Global()->WreckageInitialHealthPercent));
+				++Unsorted::ScenarioInit;
+				pWreckage->Unlimbo((pWreckage->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None ? pThis->GetCoords() : pThis->Location, DirType::North);
+				--Unsorted::ScenarioInit;
+				pWreckage->PrimaryFacing.SetCurrent(pThis->PrimaryFacing.Current());
+				pWreckage->SecondaryFacing.SetCurrent(pThis->SecondaryFacing.Current());
 
-			if (pTypeExt->WreckageMarkUp)
-				pWreckage->Mark(MarkType::Up);
+				if (pTypeExt->WreckageDeactive)
+					pWreckage->Deactivate();
+
+				if (pTypeExt->WreckageMarkUp)
+					pWreckage->Mark(MarkType::Up);
+			}
 		}
 	}
 
