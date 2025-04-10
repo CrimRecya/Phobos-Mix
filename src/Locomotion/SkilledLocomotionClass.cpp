@@ -18,145 +18,24 @@ bool SkilledLocomotionClass::Process()
 
 	if (slopeIndex != this->CurrentRamp)
 	{
-		// Dynamic slope change
 		this->PreviousRamp = this->CurrentRamp;
 		this->CurrentRamp = slopeIndex;
+		// Dynamic slope change
 		this->SlopeTimer.Start((90 / pLinked->GetTechnoType()->Speed));
 	}
 
-	do
+	if (!this->InMotion())
+		return false;
+
+	if (this->Is_Moving_Now() && !(Unsorted::CurrentFrame % 10))
 	{
-		if (this->TrackNumber == -1 || !this->IsDriving)
+		if (!pLinked->OnBridge && pLinked->GetCell()->LandType == LandType::Water)
 		{
-			const auto pDest = pLinked->Destination;
-
-			if ((!pDest || pDest->WhatAmI() != AbstractType::Cell
-					|| pLinked->GetMapCoords() != static_cast<CellClass*>(pDest)->MapCoords)
-				&& (pLinked->CurrentMission != Mission::Guard || this->IsDriving
-					|| this->TargetCoord == CoordStruct::Empty || pLinked->Location != this->TargetCoord))
-			{
-				if (pLinked->PrimaryFacing.IsRotating())
-				{
-					this->IsRotating = true;
-					break;
-				}
-				else if (this->IsRotating)
-				{
-					this->IsRotating = false;
-					pLinked->UpdatePosition(PCPType::Rotation);
-
-					if (!pLinked->IsAlive || pLinked->InLimbo || pLinked->IsFallingDown)
-						return false;
-				}
-
-				const auto mission = pLinked->GetCurrentMission();
-
-				if (mission == Mission::Guard && !this->Is_Moving()
-					|| (mission == Mission::Unload // Unload bug fix
-						&& (pLinked->GetTechnoType()->Passengers <= 0
-							|| !pLinked->Passengers.GetFirstPassenger())))
-				{
-					break;
-				}
-				else if (!this->Is_Moving() && pLinked->PathDirections[0] == -1)
-				{
-					if (pLinked->IsSinking)
-					{
-						if (this->HeadToCoord != CoordStruct::Empty)
-						{
-							this->HeadToCoord = CoordStruct::Empty;
-							this->IsDriving = false;
-						}
-
-						this->MovementSpeed = 0.0;
-					}
-					else if (const auto pDestination = pLinked->Destination)
-					{
-						this->Move_To(pDestination->GetDestination(pLinked));
-					}
-
-					break;
-				}
-				else if (pLinked->IsInPlayfield && mission != Mission::Enter && this->Is_Moving()
-					&& !pLinked->IsInSameZoneAsCoords(this->TargetCoord))
-				{
-					if (this->HeadToCoord != CoordStruct::Empty)
-					{
-						this->HeadToCoord = CoordStruct::Empty;
-						this->IsDriving = false;
-					}
-
-					if (!pLinked->unknown_abstract_array_588.Count)
-					{
-						pLinked->SetDestination(nullptr, true);
-						break;
-					}
-
-					pLinked->AbortMotion();
-					return pLinked->EnterIdleMode(false, true);
-				}
-
-				bool stop = false;
-				this->PassableCheck(&stop, true, false);
-
-				if (stop || !pLinked->IsAlive)
-					return false;
-
-				this->MovingProcess(false);
-
-				return !pLinked->IsAlive;
-			}
-
-			if (!pLinked->unknown_abstract_array_588.Count)
-			{
-				pLinked->SetDestination(nullptr, true);
-				return false;
-			}
-
-			pLinked->AbortMotion();
-			pLinked->EnterIdleMode(false, true);
-			return false;
+			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pLinked->GetTechnoType());
+			// Customized wake
+			if (const auto pAnimType = pTypeExt->Wake.Get(RulesClass::Instance->Wake))
+				GameCreate<AnimClass>(pAnimType, pLinked->Location);
 		}
-
-		if (this->MovingProcess(false) || !pLinked->IsAlive)
-			return false;
-
-		if (this->TrackNumber == -1 && (this->Is_Moving() || pLinked->PathDirections[0] != -1))
-		{
-			if (pLinked->WhatAmI() == AbstractType::Unit)
-			{
-				if (static_cast<UnitClass*>(pLinked)->Unloading)
-					break;
-
-				if (const auto pDestination = abstract_cast<InfantryClass*>(pLinked->Destination))
-				{
-					const auto coord = pDestination->GetDestination(pLinked);
-
-					if (coord != this->TargetCoord)
-						this->Move_To(coord);
-				}
-			}
-
-			bool stop = false;
-			this->PassableCheck(&stop, true, false);
-
-			if (stop || !pLinked->IsAlive)
-				return false;
-
-			this->MovingProcess(true);
-
-			if (!pLinked->IsAlive)
-				return false;
-		}
-	}
-	while (false);
-
-	if (this->Is_Moving_Now() && !(Unsorted::CurrentFrame % 10) && !pLinked->OnBridge
-		&& pLinked->GetCell()->LandType == LandType::Water)
-	{
-		// Customized wake
-		if (const auto pAnimType = TechnoTypeExt::ExtMap.Find(pLinked->GetTechnoType())->Wake.Get(RulesClass::Instance->Wake))
-			GameCreate<AnimClass>(pAnimType, pLinked->Location);
 	}
 
 	if (this->TargetCoord == CoordStruct::Empty && this->HeadToCoord == CoordStruct::Empty
@@ -230,10 +109,7 @@ void SkilledLocomotionClass::Force_Track(int track, CoordStruct coord)
 			|| pLinked->InLimbo)
 		{
 			if (pLinked->IsAlive)
-			{
-				this->HeadToCoord = CoordStruct::Empty;
-				this->IsDriving = false;
-			}
+				this->StopDriving();
 		}
 		else
 		{
@@ -311,7 +187,7 @@ bool SkilledLocomotionClass::Will_Jump_Tracks()
 	return dirIndex && Unsorted::TrackStruct[dirIndex].TrackIndex2;
 }
 
-// No virtual
+// Non-virtual
 
 bool SkilledLocomotionClass::MovingProcess(bool fix)
 {
@@ -325,26 +201,26 @@ bool SkilledLocomotionClass::MovingProcess(bool fix)
 		return false;
 	}
 
-	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-
-	if (pType->Accelerates)
+	if (!pType->Accelerates)
 	{
-		if (this->TrackNumber < 64
-			&& (pLinked->WhatAmI() != AbstractType::Unit
-				|| !static_cast<UnitClass*>(pLinked)->Type->Passive))
+		pLinked->SetSpeedPercentage(this->MovementSpeed);
+	}
+	else if (this->TrackNumber < 64
+		&& (pLinked->WhatAmI() != AbstractType::Unit || !static_cast<UnitTypeClass*>(pType)->Passive))
+	{
+		do
 		{
 			auto coords = this->TargetCoord;
-			const auto bridgeHeight = MapClass::Instance.GetCellAt(coords)->ContainsBridge() ? CellClass::BridgeHeight : 0;
-			coords.Z = bridgeHeight + MapClass::Instance.GetCellFloorHeight(coords);
+			coords.Z = MapClass::Instance.GetCellFloorHeight(coords);
 
-			const auto delta = pLinked->Location - coords;
-			const auto distance = Game::F2I(delta.Magnitude());
+			if (MapClass::Instance.GetCellAt(coords)->ContainsBridge())
+				coords.Z += CellClass::BridgeHeight;
 
-			bool adjustedSpeed = false;
-			auto speed = pLinked->SpeedPercentage;
 			const auto defaultSpeed = pLinked->GetDefaultSpeed();
+			auto speed = pLinked->SpeedPercentage;
+			bool adjustedSpeed = false;
 
-			if (distance >= pType->SlowdownDistance)
+			if (Game::F2I((pLinked->Location - coords).Magnitude()) >= pType->SlowdownDistance)
 			{
 				if (pLinked->IsSinking)
 				{
@@ -364,68 +240,62 @@ bool SkilledLocomotionClass::MovingProcess(bool fix)
 					speed = 0.3;
 			}
 
-			do
+			if (pLinked->unknown_bool_6B5)
 			{
-				if (pLinked->unknown_bool_6B5 && !pTypeExt->SkipCrushSlowdown)
+				const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+
+				// Customized crush slow down speed
+				if (!pTypeExt->SkipCrushSlowdown)
 				{
-					// Customized crush slow down speed
 					speed = Math::min(pTypeExt->CrushSlowdownMultiplier, this->MovementSpeed);
+					pLinked->SetSpeedPercentage(speed);
+					break;
 				}
-				else if (!adjustedSpeed)
-				{
-					if (pLinked->SpeedPercentage >= this->MovementSpeed)
-					{
-						if (pLinked->SpeedPercentage <= this->MovementSpeed)
-							break;
-
-						speed = pLinked->SpeedPercentage - defaultSpeed * pType->unknown_double_300;
-
-						if (this->MovementSpeed > speed)
-							speed = this->MovementSpeed;
-					}
-					else
-					{
-						speed = pType->AccelerationFactor + pLinked->SpeedPercentage;
-
-						if (this->MovementSpeed < speed)
-							speed = this->MovementSpeed;
-					}
-				}
-
-				pLinked->SetSpeedPercentage(speed);
 			}
-			while (false);
 
-			if (pLinked->WhatAmI() == AbstractType::Unit)
+			if (!adjustedSpeed)
 			{
-				if (auto pFollowerCar = static_cast<UnitClass*>(pLinked)->FollowerCar)
+				if (pLinked->SpeedPercentage >= this->MovementSpeed)
 				{
-					do
-					{
-						pFollowerCar->SetSpeedPercentage(speed);
-						pFollowerCar = pFollowerCar->FollowerCar;
-					}
-					while (pFollowerCar && pFollowerCar != pFollowerCar->FollowerCar);
+					if (pLinked->SpeedPercentage <= this->MovementSpeed)
+						break;
+
+					speed = pLinked->SpeedPercentage - defaultSpeed * pType->unknown_double_300;
+
+					if (this->MovementSpeed > speed)
+						speed = this->MovementSpeed;
 				}
+				else
+				{
+					speed = pType->AccelerationFactor + pLinked->SpeedPercentage;
+
+					if (this->MovementSpeed < speed)
+						speed = this->MovementSpeed;
+				}
+			}
+
+			pLinked->SetSpeedPercentage(speed);
+		}
+		while (false);
+
+		if (pLinked->WhatAmI() == AbstractType::Unit)
+		{
+			if (auto pFollowerCar = static_cast<UnitClass*>(pLinked)->FollowerCar)
+			{
+				do
+				{
+					pFollowerCar->SetSpeedPercentage(pLinked->SpeedPercentage);
+					pFollowerCar = pFollowerCar->FollowerCar;
+				}
+				while (pFollowerCar && pFollowerCar != pFollowerCar->FollowerCar);
 			}
 		}
 	}
-	else
-	{
-		pLinked->SetSpeedPercentage(this->MovementSpeed);
-	}
-
-	auto speedAccum = this->SpeedAccum + (fix ? 0 : pLinked->GetCurrentSpeed());
 
 	if (pLinked->PathDirections[0] == 8 && this->TrackNumber == -1)
 	{
 		pLinked->Mark(MarkType::Up);
-
-		if (this->HeadToCoord != CoordStruct::Empty)
-		{
-			this->HeadToCoord = CoordStruct::Empty;
-			this->IsDriving = false;
-		}
+		this->StopDriving<true>();
 
 		const int tubeIndex = pLinked->GetCell()->TubeIndex;
 
@@ -458,333 +328,14 @@ bool SkilledLocomotionClass::MovingProcess(bool fix)
 		return false;
 	}
 
-	if (speedAccum > 7)
-	{
-		auto pTrackData = &Unsorted::TrackData[this->TrackNumber];
-		int trackStructIndex = this->IsOnShortTrack ? pTrackData->ShortTrackStructIndex : pTrackData->NormalTrackStructIndex;
-		auto pTrackPoints = Unsorted::TrackStruct[trackStructIndex].TrackPoint;
-		const auto pathDir = pLinked->PathDirections[0];
+	auto speedAccum = this->SpeedAccum;
 
-		if (pathDir < -1 || pathDir > 8)
-		{
-			pLinked->PathDirections[0] = -1;
-			return false;
-		}
+	if (!fix)
+		speedAccum += pLinked->GetCurrentSpeed();
 
-		bool dirChanged = pathDir != 8 && pathDir != -1 && static_cast<int>(DirStruct(pTrackData->Face << 8).GetValue<3>()) != pathDir;
+	if (const auto result = this->UpdateSpeedAccum(speedAccum))
+		return static_cast<bool>(result - 1);
 
-		while (true)
-		{
-			const int trackIndex = this->TrackIndex;
-			const auto& trackPoint = pTrackPoints[trackIndex];
-			speedAccum -= 7;
-
-			if (trackPoint.Point == Point2D::Empty && trackIndex)
-				break;
-
-			if (pLinked->IsStandingStill())
-			{
-				pLinked->UnmarkAllOccupationBits(pLinked->Location);
-				pLinked->FrozenStill = false;
-				pLinked->unknown_bool_6B7 = false;
-			}
-
-			CellStruct previousCell;
-
-			if (trackIndex)
-			{
-				const auto& prevTrackPoint = pTrackPoints[trackIndex - 1];
-				auto prevFace = prevTrackPoint.Face;
-				previousCell = CellClass::Coord2Cell(this->GetTrackOffset(prevTrackPoint.Point, prevFace));
-			}
-			else
-			{
-				previousCell = pLinked->GetMapCoords();
-			}
-
-			auto face = trackPoint.Face;
-			const auto newPos = this->GetTrackOffset(trackPoint.Point, face, pLinked->Location.Z);
-
-			if (CellClass::Coord2Cell(newPos) == CellClass::Coord2Cell(pLinked->Location))
-			{
-				const bool wasOnMap = pLinked->IsOnMap;
-				pLinked->IsOnMap = false;
-				pLinked->SetLocation(newPos);
-				pLinked->IsOnMap = wasOnMap;
-			}
-			else
-			{
-				pLinked->Mark(MarkType::Up);
-				pLinked->SetLocation(newPos);
-
-				const auto pOldCell = MapClass::Instance.GetCellAt(previousCell);
-				const auto pNewCell = MapClass::Instance.GetCellAt(newPos);
-
-				if (pNewCell->Level == (pOldCell->Level - 4))
-				{
-					if (pNewCell->ContainsBridge())
-						pLinked->OnBridge = true;
-					else if (pOldCell->ContainsBridge())
-						pLinked->OnBridge = false;
-				}
-				else if (!pNewCell->ContainsBridge())
-				{
-					if (pOldCell->ContainsBridge())
-						pLinked->OnBridge = false;
-				}
-
-				if (pType->IsTrain && !static_cast<UnitClass*>(pLinked)->IsFollowerCar)
-				{
-					auto pObject = (pLinked->OnBridge
-						|| (pLinked->Location.Z >= (CellClass::BridgeHeight + MapClass::Instance.GetCellFloorHeight(pLinked->Location))))
-							? pNewCell->AltObject : pNewCell->FirstObject;
-
-					while (pObject)
-					{
-						const auto pNext = pObject->NextObject;
-
-						if (!pObject->IsCrushable(pLinked))
-						{
-							auto damage = 10000;
-							pObject->ReceiveDamage(&damage, 0, RulesClass::Instance->C4Warhead, nullptr, true, true, nullptr);
-							damage = 20;
-							pLinked->ReceiveDamage(&damage, 0, RulesClass::Instance->C4Warhead, nullptr, true, false, nullptr);
-						}
-
-						pObject = pNext;
-					}
-				}
-
-				if (!pLinked->IsAlive)
-					return false;
-
-				pLinked->Mark(MarkType::Down);
-
-				do
-				{
-					if (pNewCell->OverlayTypeIndex != -1)
-					{
-						if (!this->IsRocking)
-							break;
-
-						if ((pType->Crusher || pLinked->HasAbility(Ability::Crusher))
-							&& OverlayTypeClass::Array.Items[pNewCell->OverlayTypeIndex]->Wall && pType->TiltsWhenCrushes)
-						{
-							// Customized crush tilt speed
-							pLinked->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
-						}
-					}
-					else if (!this->IsRocking)
-					{
-						break;
-					}
-
-					if (pNewCell->GetUnit(false) && pType->MovementZone == MovementZone::CrusherAll)
-					{
-						pLinked->unknown_bool_6B5 = true;
-
-						if (pType->TiltsWhenCrushes)
-							pLinked->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
-					}
-				}
-				while (false);
-			}
-
-			if (!pLinked->IsAlive)
-				return false;
-
-			const bool wasOnMap = pLinked->IsOnMap;
-			pLinked->IsOnMap = false;
-			pLinked->SetHeight(0);
-			pLinked->IsOnMap = wasOnMap;
-			pLinked->PrimaryFacing.SetCurrent(DirStruct((face << 8) + (this->IsForward ? 0 : 32768)));
-
-			if (trackIndex && Unsorted::TrackStruct[trackStructIndex].TrackIndex3 == trackIndex)
-				pLinked->UnmarkAllOccupationBits(pLinked->Location);
-
-			if (pathDir != 8 && pathDir != -1 && dirChanged
-				&& Unsorted::TrackStruct[trackStructIndex].TrackIndex1 == trackIndex
-				&& trackIndex)
-			{
-				const int newTrack = pathDir + 8 * DirStruct(pTrackData->Face << 8).GetValue<3>();
-				const auto pNewTrackData = &Unsorted::TrackData[newTrack];
-
-				if (pNewTrackData->NormalTrackStructIndex
-					&& Unsorted::TrackStruct[pNewTrackData->NormalTrackStructIndex].TrackIndex2)
-				{
-					auto coords = this->HeadToCoord;
-					coords.X += Unsorted::CoordDirections[pathDir].X;
-					coords.Y += Unsorted::CoordDirections[pathDir].Y;
-					const auto pCell = MapClass::Instance.GetCellAt(coords);
-
-					switch (pLinked->IsCellOccupied(pCell, static_cast<FacingType>(pathDir), pLinked->GetCellLevel(), nullptr, true))
-					{
-						case Move::OK:
-						case Move::MovingBlock:
-						{
-							if (pLinked->WhatAmI() == AbstractType::Unit && static_cast<UnitClass*>(pLinked)->Type->Passive)
-								break;
-
-							const auto speedPercent = pLinked->SpeedPercentage;
-							this->IsOnShortTrack = false;
-							this->TrackNumber = newTrack;
-							pTrackData = pNewTrackData;
-							dirChanged = false;
-							trackStructIndex = pNewTrackData->NormalTrackStructIndex;
-							this->TrackIndex = Unsorted::TrackStruct[trackStructIndex].TrackIndex2 - 1;
-							pTrackPoints = Unsorted::TrackStruct[trackStructIndex].TrackPoint;
-
-							if (this->HeadToCoord != CoordStruct::Empty)
-							{
-								this->HeadToCoord = CoordStruct::Empty;
-								this->IsDriving = false;
-							}
-
-							this->IsDriving = true;
-							pLinked->UpdatePosition(PCPType::End);
-							this->IsDriving = false;
-
-							if (!pLinked->IsAlive || pLinked->InLimbo || pLinked->IsFallingDown)
-								return false;
-
-							if (this->HeadToCoord != CoordStruct::Empty)
-							{
-								this->HeadToCoord = CoordStruct::Empty;
-								this->IsDriving = false;
-							}
-
-							if (coords != CoordStruct::Empty)
-							{
-								this->IsDriving = true;
-								this->HeadToCoord = coords;
-
-								if (!reinterpret_cast<bool(__thiscall*)(CellClass*, FootClass*)>(0x481A00)(pCell, pLinked) // CollectCrate
-									|| pLinked->InLimbo)
-								{
-									if (pLinked->IsAlive)
-									{
-										this->HeadToCoord = CoordStruct::Empty;
-										this->IsDriving = false;
-									}
-								}
-								else
-								{
-									this->MarkOccupation(coords, MarkType::Down);
-									pLinked->SetSpeedPercentage(speedPercent);
-									memmove(pLinked->PathDirections, &pLinked->PathDirections[1], 0x5Cu);
-									pLinked->PathDirections[23] = -1;
-								}
-							}
-
-							break;
-						}
-
-						case Move::Cloak:
-						{
-							reinterpret_cast<void(__thiscall*)(CellClass*)>(0x483480)(pCell); // RevealObject
-							break;
-						}
-
-						case Move::ClosedGate:
-						{
-							MapClass::Instance.MakeTraversable(pLinked, CellClass::Coord2Cell(coords));
-							break;
-						}
-
-						case Move::Temp:
-						{
-							const bool onBridge = pCell->ContainsBridge() && (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pCell->Level) > 2);
-							MapClass::Instance.GetCellAt(this->HeadToCoord)->ScatterContent(CoordStruct::Empty, true, true, onBridge);
-
-							break;
-						}
-
-						default:
-						{
-							break;
-						}
-					}
-				}
-			}
-
-			++this->TrackIndex;
-
-			if (speedAccum <= 7)
-				goto END_MOVE_ACCUM;
-		}
-
-		const auto delta = this->HeadToCoord - pLinked->Location;
-		const auto distance = std::abs(delta.X) + std::abs(delta.Y);
-		speedAccum += Game::F2I((1.0 - distance / 11.0) * 7.0);
-
-		pLinked->FrozenStill = true;
-		pLinked->unknown_bool_6B7 = false;
-
-		if (CellClass::Coord2Cell(this->HeadToCoord) == CellClass::Coord2Cell(pLinked->Location))
-		{
-			const bool wasOnMap = pLinked->IsOnMap;
-			pLinked->IsOnMap = false;
-			pLinked->SetLocation(this->HeadToCoord);
-			pLinked->SetHeight(0);
-			pLinked->IsOnMap = wasOnMap;
-		}
-		else
-		{
-			pLinked->Mark(MarkType::Up);
-			pLinked->SetLocation(this->HeadToCoord);
-			pLinked->SetHeight(0);
-			pLinked->Mark(MarkType::Down);
-		}
-
-		// Clear head-to coordinates
-		if (this->HeadToCoord != CoordStruct::Empty)
-		{
-			this->HeadToCoord = CoordStruct::Empty;
-			this->IsDriving = false;
-		}
-
-		// Check if reached destination
-		this->TrackNumber = -1;
-		this->TrackIndex = 0;
-		bool reachedDestination = false;
-
-		if (const auto pDestination = pLinked->Destination)
-		{
-			if (pLinked->GetMapCoords() == CellClass::Coord2Cell(pDestination->GetDestination(pLinked))
-				&& std::abs(pLinked->GetDestination(pLinked).Z - this->TargetCoord.Z) < 2 * Unsorted::CellHeight)
-			{
-				reachedDestination = true;
-				this->TargetCoord = CoordStruct::Empty;
-
-				if (this->HeadToCoord != CoordStruct::Empty)
-					this->HeadToCoord = CoordStruct::Empty;
-
-				this->IsDriving = false;
-			}
-		}
-
-		pLinked->UpdatePosition(PCPType::End);
-
-		if (!pLinked->IsAlive || pLinked->InLimbo || pLinked->IsFallingDown)
-			return true;
-
-		if (reachedDestination)
-		{
-			pLinked->AbortMotion();
-			pLinked->PathDirections[0] = -1;
-
-			if (pLinked->GetCurrentMission() == Mission::Move && pLinked->EnterIdleMode(false, true))
-				return true;
-		}
-
-		if (pLinked->vt_entry_504())
-			return true;
-
-		if (!pLinked->IsAlive)
-			return false;
-	}
-
-END_MOVE_ACCUM:
 	this->SpeedAccum = speedAccum;
 
 	if (this->SpeedAccum <= 0)
@@ -806,7 +357,7 @@ END_MOVE_ACCUM:
 	const auto pTrackCell = MapClass::Instance.GetCellAt(location);
 	location -= pLinked->Location;
 
-	// Fix UpdateLocation bug
+	// Fix UpdatePosition bug
 	if (this->IsShifting)
 	{
 		const auto curDir = pLinked->PrimaryFacing.Current();
@@ -848,20 +399,7 @@ END_MOVE_ACCUM:
 	{
 		pLinked->Mark(MarkType::Up);
 		pLinked->SetLocation(newPos);
-
-		if (pNewCell->Level == (pOldCell->Level - 4))
-		{
-			if (pNewCell->ContainsBridge())
-				pLinked->OnBridge = true;
-			else if (pOldCell->ContainsBridge())
-				pLinked->OnBridge = false;
-		}
-		else if (!pNewCell->ContainsBridge())
-		{
-			if (pOldCell->ContainsBridge())
-				pLinked->OnBridge = false;
-		}
-
+		this->UpdateOnBridge(pNewCell, pOldCell);
 		pLinked->Mark(MarkType::Down);
 	}
 
@@ -876,12 +414,7 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 	if (!this->Is_Moving() && pathDir == -1)
 	{
 		this->IsTurretLockedDown = false;
-
-		if (this->HeadToCoord != CoordStruct::Empty)
-		{
-			this->HeadToCoord = CoordStruct::Empty;
-			this->IsDriving = false;
-		}
+		this->StopDriving<true>();
 
 		if (pLinked->GetCurrentMission() == Mission::Move)
 			*pStop = pLinked->EnterIdleMode(false, true);
@@ -958,23 +491,10 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 				&& (pLinked->Location - this->TargetCoord).Magnitude() < RulesClass::Instance->CloseEnough
 				&& (mission == Mission::Move || mission == Mission::Area_Guard))
 			{
-				if (this->HeadToCoord != CoordStruct::Empty)
-				{
-					this->HeadToCoord = CoordStruct::Empty;
-					this->IsDriving = false;
-				}
+				this->StopDriving<true>();
 
-				if (pLinked->unknown_abstract_array_588.Count)
-				{
-					pLinked->AbortMotion();
-
-					if (pLinked->EnterIdleMode(false, true))
-						return true;
-				}
-				else
-				{
-					pLinked->SetDestination(nullptr, true);
-				}
+				if (this->StopMotion())
+					return true;
 
 				if (!pLinked->IsAlive)
 					return false;
@@ -988,7 +508,8 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 				if (MapClass::Instance.IsWithinUsableArea(faceCell, true))
 				{
 					const auto pCell = MapClass::Instance.GetCellAt(faceCell);
-					const auto move = pLinked->IsCellOccupied(pCell, static_cast<FacingType>(primaryDir), pLinked->GetCellLevel(), nullptr, true);
+					const auto move = pLinked->IsCellOccupied(pCell, static_cast<FacingType>(primaryDir),
+						pLinked->GetCellLevel(), nullptr, true);
 
 					if (move == Move::ClosedGate)
 					{
@@ -997,7 +518,8 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 					else if (move == Move::Temp)
 					{
 						if (const auto pCellTechno = pCell->FindTechnoNearestTo(Point2D::Empty,
-							(pLinked->Location.Z > (MapClass::Instance.GetCellFloorHeight(CellClass::Cell2Coord(faceCell)) + 2 * Unsorted::CellHeight)), nullptr))
+							(pLinked->Location.Z > (MapClass::Instance.GetCellFloorHeight(
+								CellClass::Cell2Coord(faceCell)) + 2 * Unsorted::CellHeight)), nullptr))
 						{
 							if (pLinked->Owner->IsAlliedWith(pCellTechno) && !pType->IsTrain)
 							{
@@ -1006,23 +528,12 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 									&& std::abs(this->TargetCoord.Z - pLinked->Location.Z) < (2 * Unsorted::CellHeight)
 									&& MapClass::Instance.GetCellAt(pLinked->Location)->LandType != LandType::Tunnel)
 								{
-									if (this->HeadToCoord != CoordStruct::Empty)
-									{
-										this->HeadToCoord = CoordStruct::Empty;
-										this->IsDriving = false;
-									}
-
-									if (!pLinked->unknown_abstract_array_588.Count)
-									{
-										pLinked->SetDestination(nullptr, true);
-										return false;
-									}
-
-									pLinked->AbortMotion();
-									return pLinked->EnterIdleMode(false, true);
+									this->StopDriving<true>();
+									return this->StopMotion();
 								}
 
-								const bool onBridge = pCell->ContainsBridge() && (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pCell->Level) > 2);
+								const bool onBridge = pCell->ContainsBridge()
+									&& (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pCell->Level) > 2);
 								pCell->ScatterContent(CoordStruct::Empty, true, true, onBridge);
 							}
 						}
@@ -1033,23 +544,10 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 
 				if (pathWaitTimes <= 0)
 				{
-					if (this->HeadToCoord != CoordStruct::Empty)
-					{
-						this->HeadToCoord = CoordStruct::Empty;
-						this->IsDriving = false;
-					}
+					this->StopDriving<true>();
 
-					if (pLinked->unknown_abstract_array_588.Count)
-					{
-						pLinked->AbortMotion();
-
-						if (pLinked->EnterIdleMode(false, true))
-							return true;
-					}
-					else
-					{
-						pLinked->SetDestination(nullptr, true);
-					}
+					if (this->StopMotion())
+						return true;
 
 					if (!pLinked->IsAlive)
 						return false;
@@ -1081,12 +579,7 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 				}
 			}
 
-			if (this->HeadToCoord != CoordStruct::Empty)
-			{
-				this->HeadToCoord = CoordStruct::Empty;
-				this->IsDriving = false;
-			}
-
+			this->StopDriving<true>();
 			this->TrackNumber = -1;
 			this->IsTurretLockedDown = false;
 			return false;
@@ -1102,7 +595,8 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 		if (MapClass::Instance.IsWithinUsableArea(pathCell, true))
 		{
 			const auto pCell = MapClass::Instance.GetCellAt(pathCell);
-			const auto move = pLinked->IsCellOccupied(pCell, static_cast<FacingType>(nowDir), pLinked->GetCellLevel(), nullptr, true);
+			const auto move = pLinked->IsCellOccupied(pCell, static_cast<FacingType>(nowDir),
+				pLinked->GetCellLevel(), nullptr, true);
 
 			if (move == Move::ClosedGate)
 			{
@@ -1111,7 +605,8 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 			else if (move == Move::Temp)
 			{
 				if (const auto pCellTechno = pCell->FindTechnoNearestTo(Point2D::Empty,
-					(pLinked->Location.Z > (MapClass::Instance.GetCellFloorHeight(CellClass::Cell2Coord(pathCell)) + 2 * Unsorted::CellHeight)), nullptr))
+					(pLinked->Location.Z > (MapClass::Instance.GetCellFloorHeight(
+						CellClass::Cell2Coord(pathCell)) + 2 * Unsorted::CellHeight)), nullptr))
 				{
 					if (pLinked->Owner->IsAlliedWith(pCellTechno) && !pType->IsTrain)
 					{
@@ -1120,23 +615,12 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 							&& std::abs(this->TargetCoord.Z - pLinked->Location.Z) < (2 * Unsorted::CellHeight)
 							&& MapClass::Instance.GetCellAt(pLinked->Location)->LandType != LandType::Tunnel)
 						{
-							if (this->HeadToCoord != CoordStruct::Empty)
-							{
-								this->HeadToCoord = CoordStruct::Empty;
-								this->IsDriving = false;
-							}
-
-							if (!pLinked->unknown_abstract_array_588.Count)
-							{
-								pLinked->SetDestination(nullptr, true);
-								return false;
-							}
-
-							pLinked->AbortMotion();
-							return pLinked->EnterIdleMode(false, true);
+							this->StopDriving<true>();
+							return this->StopMotion();
 						}
 
-						const bool onBridge = pCell->ContainsBridge() && (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pCell->Level) > 2);
+						const bool onBridge = pCell->ContainsBridge()
+							&& (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pCell->Level) > 2);
 						pCell->ScatterContent(CoordStruct::Empty, true, true, onBridge);
 					}
 				}
@@ -1174,18 +658,24 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 	// Reverse movement
 	const int desiredRaw = pathDir << 13;
 
-	if (pLinked->Target && (pLinked->DistanceFrom(pLinked->Target) <= Game::F2I(pTypeExt->Skilled_FaceTargetRange * Unsorted::LeptonsPerCell)))
+	if (pLinked->Target && (pLinked->DistanceFrom(pLinked->Target)
+		<= Game::F2I(pTypeExt->Skilled_FaceTargetRange * Unsorted::LeptonsPerCell)))
 	{
 		const auto tgtDir = pLinked->GetTargetDirection(pLinked->Target);
-		const auto deltaTgtDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(tgtDir.Raw)));
-		const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768) - static_cast<short>(tgtDir.Raw)));
+		const auto deltaTgtDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw)
+			- static_cast<short>(tgtDir.Raw)));
+		const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768)
+			- static_cast<short>(tgtDir.Raw)));
 		this->IsForward = deltaTgtDir <= deltaOppDir;
 	}
-	else if (Unsorted::CurrentFrame - TechnoExt::ExtMap.Find(pLinked)->LastHurtFrame <= pTypeExt->Skilled_RetreatDuration)
+	else if ((Unsorted::CurrentFrame - TechnoExt::ExtMap.Find(pLinked)->LastHurtFrame)
+		<= pTypeExt->Skilled_RetreatDuration)
 	{
 		const auto curDir = pLinked->PrimaryFacing.Current();
-		const auto deltaCurDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(curDir.Raw)));
-		const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768) - static_cast<short>(curDir.Raw)));
+		const auto deltaCurDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw)
+			- static_cast<short>(curDir.Raw)));
+		const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768)
+			- static_cast<short>(curDir.Raw)));
 		this->IsForward = deltaCurDir <= deltaOppDir;
 	}
 	else
@@ -1252,27 +742,15 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 					&& std::abs(this->TargetCoord.Z - pLinked->Location.Z) < (2 * Unsorted::CellHeight)
 					&& MapClass::Instance.GetCellAt(pLinked->Location)->LandType != LandType::Tunnel)
 				{
-					if (this->HeadToCoord != CoordStruct::Empty)
-					{
-						this->HeadToCoord = CoordStruct::Empty;
-						this->IsDriving = false;
-					}
+					this->StopDriving<true>();
 
-					if (pLinked->unknown_abstract_array_588.Count)
-					{
-						pLinked->AbortMotion();
-
-						if (pLinked->EnterIdleMode(false, true))
-							return true;
-					}
-					else
-					{
-						pLinked->SetDestination(nullptr, true);
-					}
+					if (this->StopMotion())
+						return true;
 				}
 				else
 				{
-					const bool onBridge = pNextCell->ContainsBridge() && (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pNextCell->Level) > 2);
+					const bool onBridge = pNextCell->ContainsBridge()
+						&& (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pNextCell->Level) > 2);
 					pNextCell->ScatterContent(CoordStruct::Empty, true, true, onBridge);
 				}
 			}
@@ -1287,27 +765,11 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 				return this->PassableCheck(pStop, false, false);
 			}
 
-			if (this->HeadToCoord != CoordStruct::Empty)
-			{
-				this->HeadToCoord = CoordStruct::Empty;
-				this->IsDriving = false;
-			}
-
-			if (!pLinked->unknown_abstract_array_588.Count)
-			{
-				pLinked->SetDestination(nullptr, true);
-				return false;
-			}
-
-			pLinked->AbortMotion();
-			return pLinked->EnterIdleMode(false, true);
+			this->StopDriving<true>();
+			return this->StopMotion();
 		}
 
-		if (this->HeadToCoord != CoordStruct::Empty)
-		{
-			this->HeadToCoord = CoordStruct::Empty;
-			this->IsDriving = false;
-		}
+		this->StopDriving<true>();
 
 		do
 		{
@@ -1321,9 +783,10 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 
 				if (!pLinked->PathDelayTimer.GetTimeLeft())
 				{
-					const int findMode = static_cast<int>(pLinked->unknown_bool_6B7 && !pLinked->BlockagePathTimer.HasTimeLeft()) + 1;
-					const bool pathFound = reinterpret_cast<bool(__thiscall*)(FootClass*, CellStruct, bool, int)>(0x4D3920)(pLinked,
-						CellClass::Coord2Cell(this->TargetCoord), false, findMode); // UpdatePathfinding
+					const int findMode = static_cast<int>(pLinked->unknown_bool_6B7
+						&& !pLinked->BlockagePathTimer.HasTimeLeft()) + 1;
+					const bool pathFound = reinterpret_cast<bool(__thiscall*)(FootClass*, CellStruct, bool, int)>
+						(0x4D3920)(pLinked, CellClass::Coord2Cell(this->TargetCoord), false, findMode); // UpdatePathfinding
 
 					if (!this->LinkedTo)
 					{
@@ -1388,20 +851,8 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 			return this->PassableCheck(pStop, false, false);
 		}
 
-		if (this->HeadToCoord != CoordStruct::Empty)
-		{
-			this->HeadToCoord = CoordStruct::Empty;
-			this->IsDriving = false;
-		}
-
-		if (!pLinked->unknown_abstract_array_588.Count)
-		{
-			pLinked->SetDestination(nullptr, true);
-			return false;
-		}
-
-		pLinked->AbortMotion();
-		return pLinked->EnterIdleMode(false, true);
+		this->StopDriving<true>();
+		return this->StopMotion();
 	}
 	while (false);
 
@@ -1470,8 +921,8 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 			}
 			else
 			{
-				const bool pathFound = reinterpret_cast<bool(__thiscall*)(FootClass*, CellStruct, bool, int)>(0x4D3920)(pLinked,
-					CellClass::Coord2Cell(this->TargetCoord), pType->IsTrain, 0); // UpdatePathfinding
+				const bool pathFound = reinterpret_cast<bool(__thiscall*)(FootClass*, CellStruct, bool, int)>
+					(0x4D3920)(pLinked, CellClass::Coord2Cell(this->TargetCoord), pType->IsTrain, 0); // UpdatePathfinding
 
 				if (!pathFound)
 				{
@@ -1504,7 +955,9 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 			{
 				const auto pOverlay = OverlayTypeClass::Array.Items[pAdjCell->OverlayTypeIndex];
 
-				if (pOverlay->Crushable || ((pOverlay->Wall || pAdjCell->GetUnit(false)) && pType->MovementZone == MovementZone::CrusherAll))
+				if (pOverlay->Crushable
+					|| ((pOverlay->Wall || pAdjCell->GetUnit(false))
+						&& pType->MovementZone == MovementZone::CrusherAll))
 				{
 					this->IsRocking = true;
 					nextDir = pathDir;
@@ -1584,27 +1037,15 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 						&& std::abs(this->TargetCoord.Z - pLinked->Location.Z) < (2 * Unsorted::CellHeight)
 						&& MapClass::Instance.GetCellAt(pLinked->Location)->LandType != LandType::Tunnel)
 					{
-						if (this->HeadToCoord != CoordStruct::Empty)
-						{
-							this->HeadToCoord = CoordStruct::Empty;
-							this->IsDriving = false;
-						}
+						this->StopDriving<true>();
 
-						if (pLinked->unknown_abstract_array_588.Count)
-						{
-							pLinked->AbortMotion();
-
-							if (pLinked->EnterIdleMode(false, true))
-								return true;
-						}
-						else
-						{
-							pLinked->SetDestination(nullptr, true);
-						}
+						if (this->StopMotion())
+							return true;
 					}
 					else
 					{
-						const bool onBridge = pNextCell->ContainsBridge() && (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pNextCell->Level) > 2);
+						const bool onBridge = pNextCell->ContainsBridge()
+							&& (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pNextCell->Level) > 2);
 						pNextCell->ScatterContent(CoordStruct::Empty, true, true, onBridge);
 					}
 				}
@@ -1619,20 +1060,8 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 					return this->PassableCheck(pStop, false, false);
 				}
 
-				if (this->HeadToCoord != CoordStruct::Empty)
-				{
-					this->HeadToCoord = CoordStruct::Empty;
-					this->IsDriving = false;
-				}
-
-				if (!pLinked->unknown_abstract_array_588.Count)
-				{
-					pLinked->SetDestination(nullptr, true);
-					return false;
-				}
-
-				pLinked->AbortMotion();
-				return pLinked->EnterIdleMode(false, true);
+				this->StopDriving<true>();
+				return this->StopMotion();
 			}
 			else if (nextMoveResult == Move::No)
 			{
@@ -1643,20 +1072,8 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 					return this->PassableCheck(pStop, false, false);
 				}
 
-				if (this->HeadToCoord != CoordStruct::Empty)
-				{
-					this->HeadToCoord = CoordStruct::Empty;
-					this->IsDriving = false;
-				}
-
-				if (!pLinked->unknown_abstract_array_588.Count)
-				{
-					pLinked->SetDestination(nullptr, true);
-					return false;
-				}
-
-				pLinked->AbortMotion();
-				return pLinked->EnterIdleMode(false, true);
+				this->StopDriving<true>();
+				return this->StopMotion();
 			}
 
 			pLinked->PathDirections[0] = -1;
@@ -1682,12 +1099,7 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 	pLinked->CurrentMapCoords = nextCell;
 	pLinked->ShouldScanForTarget = false;
 	this->TrackIndex = 0;
-
-	if (this->HeadToCoord != CoordStruct::Empty)
-	{
-		this->HeadToCoord = CoordStruct::Empty;
-		this->IsDriving = false;
-	}
+	this->StopDriving<true>();
 
 	if (nextPos != CoordStruct::Empty)
 	{
@@ -1702,8 +1114,7 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 		}
 		else if (pLinked->IsAlive)
 		{
-			this->HeadToCoord = CoordStruct::Empty;
-			this->IsDriving = false;
+			this->StopDriving();
 		}
 	}
 
@@ -1726,23 +1137,24 @@ void SkilledLocomotionClass::MarkOccupation(const CoordStruct& to, MarkType mark
 		{
 			if (const auto trackStructIndex = Unsorted::TrackData[TrackNumber].NormalTrackStructIndex)
 			{
-				const auto trackIdx = Unsorted::TrackStruct[trackStructIndex].TrackIndex3;
+				const auto& track = Unsorted::TrackStruct[trackStructIndex];
+				const auto trackIdx = track.TrackIndex3;
 
 				if (trackIdx > -1 && this->TrackIndex < trackIdx)
 				{
 					if (mark == MarkType::Up)
 					{
-						const auto& trackPtr = Unsorted::TrackStruct[trackStructIndex].TrackPoint[trackIdx];
-						auto face = trackPtr.Face; // copy
+						const auto& trackPt = track.TrackPoint[trackIdx];
+						auto face = trackPt.Face; // copy
 						const auto pLinked = this->LinkedTo;
-						pLinked->UnmarkAllOccupationBits(this->GetTrackOffset(trackPtr.Point, face, pLinked->Location.Z));
+						pLinked->UnmarkAllOccupationBits(this->GetTrackOffset(trackPt.Point, face, pLinked->Location.Z));
 					}
 					else if (mark == MarkType::Down || mark == MarkType::ChangeRedraw)
 					{
-						const auto& trackPtr = Unsorted::TrackStruct[trackStructIndex].TrackPoint[trackIdx];
-						auto face = trackPtr.Face; // copy
+						const auto& trackPt = track.TrackPoint[trackIdx];
+						auto face = trackPt.Face; // copy
 						const auto pLinked = this->LinkedTo;
-						pLinked->MarkAllOccupationBits(this->GetTrackOffset(trackPtr.Point, face, pLinked->Location.Z));
+						pLinked->MarkAllOccupationBits(this->GetTrackOffset(trackPt.Point, face, pLinked->Location.Z));
 					}
 				}
 			}
@@ -1791,4 +1203,399 @@ CoordStruct SkilledLocomotionClass::CoordLerp(const CoordStruct& crd1, const Coo
 			Game::F2I(crd2.Y * alpha + crd1.Y * i_alpha),
 			Game::F2I(crd2.Z * alpha + crd1.Z * i_alpha)
 		};
+}
+
+// Auxiliary
+
+inline bool SkilledLocomotionClass::InMotion()
+{
+	const auto pLinked = this->LinkedTo;
+
+	if (this->TrackNumber != -1 && this->IsDriving)
+	{
+		if (this->MovingProcess(false) || !pLinked->IsAlive)
+			return false;
+
+		if (this->TrackNumber != -1 || !this->Is_Moving() && pLinked->PathDirections[0] == -1)
+			return true;
+
+		if (pLinked->WhatAmI() == AbstractType::Unit)
+		{
+			if (static_cast<UnitClass*>(pLinked)->Unloading)
+				return true;
+
+			if (const auto pDestination = abstract_cast<InfantryClass*>(pLinked->Destination))
+			{
+				const auto coord = pDestination->GetDestination(pLinked);
+
+				if (coord != this->TargetCoord)
+					this->Move_To(coord);
+			}
+		}
+
+		return this->TakeMovingAction(true);
+	}
+
+	const auto pDest = pLinked->Destination;
+
+	if ((!pDest || pDest->WhatAmI() != AbstractType::Cell
+			|| pLinked->GetMapCoords() != static_cast<CellClass*>(pDest)->MapCoords)
+		&& (pLinked->CurrentMission != Mission::Guard || this->IsDriving
+			|| this->TargetCoord == CoordStruct::Empty || this->TargetCoord != pLinked->Location))
+	{
+		if (pLinked->PrimaryFacing.IsRotating())
+		{
+			this->IsRotating = true;
+			return true;
+		}
+		else if (this->IsRotating)
+		{
+			this->IsRotating = false;
+			pLinked->UpdatePosition(PCPType::Rotation);
+
+			if (this->LinkCannotMove())
+				return false;
+		}
+
+		const auto mission = pLinked->GetCurrentMission();
+
+		if (mission == Mission::Guard)
+		{
+			if (!this->Is_Moving())
+				return true;
+		}
+		else if (mission == Mission::Unload)
+		{
+			// Unload stuck fix
+			if (pLinked->GetTechnoType()->Passengers <= 0 || !pLinked->Passengers.GetFirstPassenger())
+				return true;
+		}
+
+		if (!this->Is_Moving() && pLinked->PathDirections[0] == -1)
+		{
+			if (pLinked->IsSinking)
+			{
+				this->StopDriving<true>();
+				this->MovementSpeed = 0.0;
+			}
+			else if (const auto pDestination = pLinked->Destination)
+			{
+				this->Move_To(pDestination->GetDestination(pLinked));
+			}
+
+			return true;
+		}
+
+		if (pLinked->IsInPlayfield && mission != Mission::Enter && this->Is_Moving()
+			&& !pLinked->IsInSameZoneAsCoords(this->TargetCoord))
+		{
+			this->StopDriving<true>();
+
+			if (this->StopMotion())
+				return false;
+		}
+
+		return this->TakeMovingAction(false);
+	}
+
+	this->StopMotion();
+	return false;
+}
+
+inline int SkilledLocomotionClass::UpdateSpeedAccum(int& speedAccum)
+{
+	if (speedAccum <= 7)
+		return 0;
+
+	const auto pLinked = this->LinkedTo;
+	auto pTrackData = &Unsorted::TrackData[this->TrackNumber];
+	int trackStructIndex = this->IsOnShortTrack ? pTrackData->ShortTrackStructIndex : pTrackData->NormalTrackStructIndex;
+	auto pTrackPoints = Unsorted::TrackStruct[trackStructIndex].TrackPoint;
+	const auto pathDir = pLinked->PathDirections[0];
+
+	if (pathDir < -1 || pathDir > 8)
+	{
+		pLinked->PathDirections[0] = -1;
+		return 1;
+	}
+
+	bool dirChanged = pathDir != 8 && pathDir != -1
+		&& static_cast<int>(DirStruct(pTrackData->Face << 8).GetValue<3>()) != pathDir;
+
+	while (true)
+	{
+		int trackIndex = this->TrackIndex;
+		const auto& trackPoint = pTrackPoints[trackIndex];
+		speedAccum -= 7;
+
+		if (trackPoint.Point == Point2D::Empty && trackIndex)
+			break;
+
+		if (pLinked->IsStandingStill())
+		{
+			pLinked->UnmarkAllOccupationBits(pLinked->Location);
+			pLinked->FrozenStill = false;
+			pLinked->unknown_bool_6B7 = false;
+		}
+
+		CellStruct previousCell;
+
+		if (trackIndex)
+		{
+			const auto& prevTrackPoint = pTrackPoints[trackIndex - 1];
+			auto prevFace = prevTrackPoint.Face;
+			previousCell = CellClass::Coord2Cell(this->GetTrackOffset(prevTrackPoint.Point, prevFace));
+		}
+		else
+		{
+			previousCell = pLinked->GetMapCoords();
+		}
+
+		auto face = trackPoint.Face;
+		const auto newPos = this->GetTrackOffset(trackPoint.Point, face, pLinked->Location.Z);
+
+		if (CellClass::Coord2Cell(newPos) == CellClass::Coord2Cell(pLinked->Location))
+		{
+			const bool wasOnMap = pLinked->IsOnMap;
+			pLinked->IsOnMap = false;
+			pLinked->SetLocation(newPos);
+			pLinked->IsOnMap = wasOnMap;
+		}
+		else
+		{
+			pLinked->Mark(MarkType::Up);
+			pLinked->SetLocation(newPos);
+
+			const auto pNewCell = MapClass::Instance.GetCellAt(newPos);
+			this->UpdateOnBridge(pNewCell, MapClass::Instance.GetCellAt(previousCell));
+
+			if (pLinked->GetTechnoType()->IsTrain && !static_cast<UnitClass*>(pLinked)->IsFollowerCar)
+			{
+				auto pObject = (pLinked->OnBridge || (pLinked->Location.Z >= (CellClass::BridgeHeight
+						+ MapClass::Instance.GetCellFloorHeight(pLinked->Location))))
+					? pNewCell->AltObject : pNewCell->FirstObject;
+
+				while (pObject)
+				{
+					const auto pNext = pObject->NextObject;
+
+					if (!pObject->IsCrushable(pLinked))
+					{
+						auto damage = 10000;
+						pObject->ReceiveDamage(&damage, 0, RulesClass::Instance->C4Warhead, nullptr, true, true, nullptr);
+						damage = 20;
+						pLinked->ReceiveDamage(&damage, 0, RulesClass::Instance->C4Warhead, nullptr, true, false, nullptr);
+					}
+
+					pObject = pNext;
+				}
+			}
+
+			if (!pLinked->IsAlive)
+				return 1;
+
+			pLinked->Mark(MarkType::Down);
+
+			if (this->IsRocking)
+			{
+				const auto pType = pLinked->GetTechnoType();
+
+				if (pNewCell->OverlayTypeIndex != -1)
+				{
+					if ((pType->Crusher || pLinked->HasAbility(Ability::Crusher))
+						&& OverlayTypeClass::Array.Items[pNewCell->OverlayTypeIndex]->Wall && pType->TiltsWhenCrushes)
+					{
+						// Customized crush tilt speed
+						const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+						pLinked->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
+					}
+				}
+
+				if (pType->MovementZone == MovementZone::CrusherAll && pNewCell->GetUnit(false))
+				{
+					pLinked->unknown_bool_6B5 = true;
+
+					if (pType->TiltsWhenCrushes)
+					{
+						// Customized crush tilt speed
+						const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+						pLinked->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
+					}
+				}
+			}
+		}
+
+		if (!pLinked->IsAlive)
+			return 1;
+
+		const bool wasOnMap = pLinked->IsOnMap;
+		pLinked->IsOnMap = false;
+		pLinked->SetHeight(0);
+		pLinked->IsOnMap = wasOnMap;
+		pLinked->PrimaryFacing.SetCurrent(DirStruct((face << 8) + (this->IsForward ? 0 : 32768)));
+		trackIndex = this->TrackIndex;
+
+		if (trackIndex && Unsorted::TrackStruct[trackStructIndex].TrackIndex3 == trackIndex)
+			pLinked->UnmarkAllOccupationBits(pLinked->Location);
+
+		if (pathDir != 8 && pathDir != -1 && dirChanged
+			&& Unsorted::TrackStruct[trackStructIndex].TrackIndex1 == trackIndex
+			&& trackIndex)
+		{
+			const int newTrack = pathDir + 8 * DirStruct(pTrackData->Face << 8).GetValue<3>();
+			const auto pNewTrackData = &Unsorted::TrackData[newTrack];
+			const auto normalIndex = pNewTrackData->NormalTrackStructIndex;
+
+			if (normalIndex && Unsorted::TrackStruct[normalIndex].TrackIndex2)
+			{
+				auto coords = this->HeadToCoord;
+				coords.X += Unsorted::CoordDirections[pathDir].X;
+				coords.Y += Unsorted::CoordDirections[pathDir].Y;
+				const auto pCell = MapClass::Instance.GetCellAt(coords);
+
+				switch (pLinked->IsCellOccupied(pCell, static_cast<FacingType>(pathDir),
+					pLinked->GetCellLevel(), nullptr, true))
+				{
+					case Move::OK:
+					case Move::MovingBlock:
+					{
+						if (pLinked->WhatAmI() == AbstractType::Unit && !static_cast<UnitClass*>(pLinked)->Type->Passive)
+							break;
+
+						const auto speedPercent = pLinked->SpeedPercentage;
+						this->IsOnShortTrack = false;
+						this->TrackNumber = newTrack;
+						pTrackData = pNewTrackData;
+						dirChanged = false;
+						trackStructIndex = pNewTrackData->NormalTrackStructIndex;
+						this->TrackIndex = Unsorted::TrackStruct[trackStructIndex].TrackIndex2 - 1;
+						pTrackPoints = Unsorted::TrackStruct[trackStructIndex].TrackPoint;
+
+						this->StopDriving<true>();
+						this->IsDriving = true;
+						pLinked->UpdatePosition(PCPType::End);
+						this->IsDriving = false;
+
+						if (this->LinkCannotMove())
+							return 1;
+
+						this->StopDriving<true>();
+
+						if (coords != CoordStruct::Empty)
+						{
+							this->IsDriving = true;
+							this->HeadToCoord = coords;
+
+							if (!reinterpret_cast<bool(__thiscall*)(CellClass*, FootClass*)>(0x481A00)(pCell, pLinked) // CollectCrate
+								|| pLinked->InLimbo)
+							{
+								if (pLinked->IsAlive)
+									this->StopDriving();
+							}
+							else
+							{
+								this->MarkOccupation(coords, MarkType::Down);
+								pLinked->SetSpeedPercentage(speedPercent);
+								memmove(&pLinked->PathDirections[0], &pLinked->PathDirections[1], 0x5Cu);
+								pLinked->PathDirections[23] = -1;
+							}
+						}
+
+						break;
+					}
+
+					case Move::Cloak:
+					{
+						reinterpret_cast<void(__thiscall*)(CellClass*)>(0x483480)(pCell); // RevealObject
+						break;
+					}
+
+					case Move::ClosedGate:
+					{
+						MapClass::Instance.MakeTraversable(pLinked, CellClass::Coord2Cell(coords));
+						break;
+					}
+
+					case Move::Temp:
+					{
+						const bool onBridge = pCell->ContainsBridge()
+							&& (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pCell->Level) > 2);
+						MapClass::Instance.GetCellAt(this->HeadToCoord)->ScatterContent(CoordStruct::Empty,
+							true, true, onBridge);
+
+						break;
+					}
+
+					default:
+					{
+						break;
+					}
+				}
+			}
+		}
+
+		++this->TrackIndex;
+
+		if (speedAccum <= 7)
+			return 0;
+	}
+
+	const auto delta = this->HeadToCoord - pLinked->Location;
+	const auto distance = std::abs(delta.X) + std::abs(delta.Y);
+	speedAccum += Game::F2I((1.0 - distance / 11.0) * 7.0);
+
+	pLinked->FrozenStill = true;
+	pLinked->unknown_bool_6B7 = false;
+
+	if (CellClass::Coord2Cell(this->HeadToCoord) == CellClass::Coord2Cell(pLinked->Location))
+	{
+		const bool wasOnMap = pLinked->IsOnMap;
+		pLinked->IsOnMap = false;
+		pLinked->SetLocation(this->HeadToCoord);
+		pLinked->SetHeight(0);
+		pLinked->IsOnMap = wasOnMap;
+	}
+	else
+	{
+		pLinked->Mark(MarkType::Up);
+		pLinked->SetLocation(this->HeadToCoord);
+		pLinked->SetHeight(0);
+		pLinked->Mark(MarkType::Down);
+	}
+
+	this->StopDriving<true>();
+	this->TrackNumber = -1;
+	this->TrackIndex = 0;
+	bool reachedDestination = false;
+
+	if (const auto pDestination = pLinked->Destination)
+	{
+		if (pLinked->GetMapCoords() == CellClass::Coord2Cell(pDestination->GetDestination(pLinked))
+			&& std::abs(pLinked->GetDestination(pLinked).Z - this->TargetCoord.Z) < 2 * Unsorted::CellHeight)
+		{
+			reachedDestination = true;
+			this->TargetCoord = CoordStruct::Empty;
+			this->StopDriving<true>();
+			this->IsDriving = false;
+		}
+	}
+
+	pLinked->UpdatePosition(PCPType::End);
+
+	if (!this->LinkedTo || this->LinkCannotMove())
+		return 2;
+
+	if (reachedDestination)
+	{
+		pLinked->AbortMotion();
+		pLinked->PathDirections[0] = -1;
+
+		if (pLinked->GetCurrentMission() == Mission::Move && pLinked->EnterIdleMode(false, true))
+			return 2;
+	}
+
+	if (pLinked->vt_entry_504())
+		return 2;
+
+	return pLinked->IsAlive ? 0 : 1;
 }

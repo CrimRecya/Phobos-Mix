@@ -197,8 +197,8 @@ public:
 	}
 //	virtual Move __stdcall Can_Enter_Cell(CellStruct cell) override { return Move::OK; }
 //	virtual bool __stdcall Is_To_Have_Shadow() override { return true; }
-	virtual Matrix3D __stdcall Draw_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4AFF60); } // TODO
-	virtual Matrix3D __stdcall Shadow_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4B0410); } // TODO
+	virtual Matrix3D __stdcall Draw_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4AFF60); } // TODO but lazy
+	virtual Matrix3D __stdcall Shadow_Matrix(VoxelIndexKey* key) override { JMP_STD(0x4B0410); } // TODO but lazy
 //	virtual Point2D __stdcall Draw_Point() override { return this->LocomotionClass::Draw_Point(); } // Point2D*
 //	virtual Point2D __stdcall Shadow_Point() override { return this->LocomotionClass::Shadow_Point(); } // Point2D*
 //	virtual VisualType __stdcall Visual_Character(bool raw) override { return VisualType::Normal; }
@@ -331,15 +331,8 @@ public:
 		return this->Piggybacker != nullptr;
 	}
 
-private:
-	bool MovingProcess(bool fix);
-	bool PassableCheck(bool* pStop, bool force, bool check);
-	void MarkOccupation(const CoordStruct& to, MarkType mark);
-	CoordStruct GetTrackOffset(const Point2D& base, int& face, int z = 0);
-
-	static CoordStruct CoordLerp(const CoordStruct& crd1, const CoordStruct& crd2, float alpha);
-
-public:
+	// Constructors
+	inline SkilledLocomotionClass(noinit_t) : LocomotionClass { noinit_t() } { }
 	inline SkilledLocomotionClass() : LocomotionClass { }
 		, CurrentRamp { 0 }
 		, PreviousRamp { 0 }
@@ -362,9 +355,10 @@ public:
 		, Standby { 0 }
 	{ }
 
-	inline SkilledLocomotionClass(noinit_t) : LocomotionClass { noinit_t() } { }
+	// Destructor
 	inline virtual ~SkilledLocomotionClass() override = default;
 
+	// Properties
 	int CurrentRamp;
 	int PreviousRamp;
 	RateTimer SlopeTimer;
@@ -384,4 +378,76 @@ public:
 	bool IsShifting;
 	ILocomotionPtr Piggybacker;
 	int Standby; // No use yet
+
+private:
+	// Vanilla auxiliary function
+	bool MovingProcess(bool fix); // 0x4B0F20
+	bool PassableCheck(bool* pStop, bool force, bool check); // 0x4B2630
+	void MarkOccupation(const CoordStruct& to, MarkType mark); // 0x4B0AD0
+	CoordStruct GetTrackOffset(const Point2D& base, int& face, int z = 0); // 0x4B4780
+
+	static CoordStruct CoordLerp(const CoordStruct& crd1, const CoordStruct& crd2, float alpha); // 0x75F540
+
+	// Added inline auxiliary function
+	template <bool check = false>
+	inline void StopDriving()
+	{
+		if constexpr (check)
+			if (this->HeadToCoord == CoordStruct::Empty)
+				return;
+
+		this->HeadToCoord = CoordStruct::Empty;
+		this->IsDriving = false;
+	}
+	inline bool StopMotion()
+	{
+		const auto pLinked = this->LinkedTo;
+
+		if (!pLinked->unknown_abstract_array_588.Count)
+		{
+			pLinked->SetDestination(nullptr, true);
+			return false;
+		}
+
+		pLinked->AbortMotion();
+		return pLinked->EnterIdleMode(false, true);
+	}
+	inline bool InMotion(); // Main loco motion process
+	inline bool LinkCannotMove()
+	{
+		const auto pLinked = this->LinkedTo;
+
+		return !pLinked->IsAlive || pLinked->InLimbo || pLinked->IsFallingDown;
+	}
+	inline bool TakeMovingAction(bool fix)
+	{
+		bool stop = false;
+		this->PassableCheck(&stop, true, false);
+
+		if (stop || !this->LinkedTo->IsAlive)
+			return false;
+
+		this->MovingProcess(true);
+		const auto pLinked = this->LinkedTo;
+
+		return pLinked && pLinked->IsAlive;
+	}
+	inline void UpdateOnBridge(CellClass* pNewCell, CellClass* pOldCell)
+	{
+		const auto pLinked = this->LinkedTo;
+
+		if (pNewCell->Level == (pOldCell->Level - 4))
+		{
+			if (pNewCell->ContainsBridge())
+				pLinked->OnBridge = true;
+			else if (pOldCell->ContainsBridge())
+				pLinked->OnBridge = false;
+		}
+		else if (!pNewCell->ContainsBridge())
+		{
+			if (pOldCell->ContainsBridge())
+				pLinked->OnBridge = false;
+		}
+	}
+	inline int UpdateSpeedAccum(int& speedAccum); // Avoid using goto
 };
