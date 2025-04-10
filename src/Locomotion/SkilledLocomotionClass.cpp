@@ -661,7 +661,8 @@ bool SkilledLocomotionClass::PassableCheck(bool* pStop, bool force, bool check)
 	if (pLinked->Target && (pLinked->DistanceFrom(pLinked->Target)
 		<= Game::F2I(pTypeExt->Skilled_FaceTargetRange * Unsorted::LeptonsPerCell)))
 	{
-		const auto tgtDir = pLinked->GetTargetDirection(pLinked->Target);
+		const auto tgtDir = pTypeExt->Skilled_ConfrontEnemies
+			? pLinked->GetTargetDirection(pLinked->Target) : pLinked->PrimaryFacing.Current();
 		const auto deltaTgtDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw)
 			- static_cast<short>(tgtDir.Raw)));
 		const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768)

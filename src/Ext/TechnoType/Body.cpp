@@ -699,6 +699,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->Skilled_ReverseSpeed.Read(exINI, pSection, "Skilled.ReverseSpeed");
 	this->Skilled_FaceTargetRange.Read(exINI, pSection, "Skilled.FaceTargetRange");
+	this->Skilled_ConfrontEnemies.Read(exINI, pSection, "Skilled.ConfrontEnemies");
 	this->Skilled_RetreatDuration.Read(exINI, pSection, "Skilled.RetreatDuration");
 
 	this->BuildLimitGroup_Types.Read(exINI, pSection, "BuildLimitGroup.Types");
@@ -1294,6 +1295,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->Skilled_ReverseSpeed)
 		.Process(this->Skilled_FaceTargetRange)
+		.Process(this->Skilled_ConfrontEnemies)
 		.Process(this->Skilled_RetreatDuration)
 
 		.Process(this->BuildLimitGroup_Types)
