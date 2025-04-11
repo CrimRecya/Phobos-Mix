@@ -358,6 +358,7 @@ New:
 - Promotion animation deglobalization (by Ollerus)
 - Enhanced reveal & gap warhead (by NetsuNegi)
 - Forcing specific weapon by range (by Ollerus)
+- Jumpjet Tilts While Moving (by CrimRecya)
 
 - New trajectory system (by CrimRecya)
 - New Missile trajectory (by CrimRecya)
