@@ -207,7 +207,7 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 
 						auto temp = pFoot->Locomotor;
 						pFoot->Locomotor = pWreckageFoot->Locomotor;
-						pWreckageFoot->Locomotor=temp;
+						pWreckageFoot->Locomotor = temp;
 						pWreckageFoot->Locomotor->Link_To_Object(pWreckageFoot);
 						pFoot->Locomotor->Link_To_Object(pFoot);
 					}
