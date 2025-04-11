@@ -92,6 +92,8 @@ public:
 
 		bool IsWreckage;
 
+		BuildingClass* BuildingOccupying;
+
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
 			, Shield {}
@@ -156,6 +158,7 @@ public:
 			, LastSensorsMapCoords { CellStruct::Empty }
 			, PlayerAssignedLastTarget { 0xFFFFFFFF }
 			, IsWreckage { false }
+			, BuildingOccupying { }
 		{ }
 
 		void OnEarlyUpdate();
