@@ -29,7 +29,7 @@
 #define MERGE_NUMBER 3
 
 // Indicates Merge-related bugfixes only.
-#define MERGE_PATCH 14
+#define MERGE_PATCH 15
 
 // Nightly defines GIT_COMMIT and GIT_BRANCH in GH Actions
 
