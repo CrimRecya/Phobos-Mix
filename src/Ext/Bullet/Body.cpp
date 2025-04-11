@@ -381,6 +381,8 @@ void BulletExt::ExtData::Serialize(T& Stm)
 		.Process(this->DamageNumberOffset)
 		.Process(this->LimboedLauncher)
 		.Process(this->LimboedDir)
+		.Process(this->ShouldDirectional)
+		.Process(this->BulletDirection)
 
 		.Process(this->Trajectory)
 		.Process(this->DispersedTrajectory)

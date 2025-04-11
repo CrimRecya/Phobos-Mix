@@ -34,11 +34,16 @@ namespace BulletAITemp
 
 DEFINE_HOOK(0x4666F7, BulletClass_AI, 0x6)
 {
+	enum { Detonate = 0x467E53 };
+
 	GET(BulletClass*, pThis, EBP);
 
 	auto pBulletExt = BulletExt::ExtMap.Find(pThis);
 	BulletAITemp::ExtData = pBulletExt;
 	BulletAITemp::TypeExtData = pBulletExt->TypeExtData;
+
+	if (!pBulletExt->Trajectory && pBulletExt->ShouldDirectional)
+		pBulletExt->BulletDirection = DirStruct((-1) * Math::atan2(pThis->Velocity.Y, pThis->Velocity.X)).GetValue<16>();
 
 	if (pBulletExt->InterceptedStatus == InterceptedStatus::Intercepted)
 	{
@@ -90,7 +95,12 @@ DEFINE_HOOK(0x4666F7, BulletClass_AI, 0x6)
 
 			trail.Update(drawnCoords);
 		}
+	}
 
+	if (const auto pTraj = pBulletExt->Trajectory.get())
+	{
+		if (pTraj->OnEarlyUpdate() && !pThis->SpawnNextAnim)
+			return Detonate;
 	}
 
 	return 0;

@@ -376,6 +376,7 @@ This page lists all the individual contributions to the project by their author.
   - Fix an issue that teleport units board transport vehicles on the bridge will create an impassable invisible barrier, which may cause the game to freeze or even crash
   - Fix wrong shadow when a vehicle has hover locomotor and is being lifted by `IsLocomotor=yes` warhead
   - Exclusive SuperWeapon Sidebar
+  - Directional armor
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**:
    - Customizable `ShowTimer` priority of superweapons

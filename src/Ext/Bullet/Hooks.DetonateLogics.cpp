@@ -40,23 +40,20 @@ DEFINE_HOOK(0x4692BD, BulletClass_Logics_ApplyMindControl, 0x6)
 	return SkipGameCode;
 }
 
-DEFINE_HOOK(0x469A75, BulletClass_Logics_DamageHouse, 0x7)
+DEFINE_HOOK(0x469A69, BulletClass_Detonate_DamageArea, 0x6)
 {
 	enum { SkipDamageArea = 0x469A88 };
 
 	GET(BulletClass*, pThis, ESI);
-	GET(HouseClass*, pHouse, ECX);
+	GET(TechnoClass*, pTechno, EAX);
 	GET(int, damage, EDX);
 	GET_BASE(CoordStruct*, coord, 0x8);
 
-	if (!pHouse)
-	{
-		pHouse = BulletExt::ExtMap.Find(pThis)->FirerHouse;
-		R->ECX(pHouse);
-	}
-
+	const auto pExt = BulletExt::ExtMap.Find(pThis);
+	const auto pHouse = pTechno ? pTechno->Owner : pExt->FirerHouse;
 	const auto pWH = pThis->WH;
 	const auto pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
+	pWHExt->HitDirection = pExt->BulletDirection;
 
 	if (pWHExt->NoCellSpread && damage)
 	{
@@ -91,9 +88,14 @@ DEFINE_HOOK(0x469A75, BulletClass_Logics_DamageHouse, 0x7)
 			}
 		}
 
+		pWHExt->HitDirection = -1;
+
 		R->EAX(result);
 		return SkipDamageArea;
 	}
+
+	R->EAX(MapClass::Instance.DamageArea(*coord, damage, pTechno, pWH, true, pHouse));
+	pWHExt->HitDirection = -1;
 
 	return 0;
 }

@@ -388,6 +388,7 @@ New:
 - Amphibious access vehicle (by CrimRecya)
 - Observer sidebar in skirmish game mode (by CrimRecya)
 - New Skilled locomotor (by CrimRecya)
+- Directional armor (by NetsuNegi)
 
 Vanilla fixes:
 - Prevent the units with locomotors that cause problems from entering the tank bunker (by TaranDahl)

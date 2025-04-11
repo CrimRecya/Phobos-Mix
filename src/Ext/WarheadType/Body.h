@@ -115,6 +115,9 @@ public:
 		NullableVector<ShieldTypeClass*> Shield_Respawn_Types;
 		NullableVector<ShieldTypeClass*> Shield_SelfHealing_Types;
 
+		Valueable<bool> Directional;
+		Valueable<double> Directional_Multiplier;
+
 		Valueable<int> NotHuman_DeathSequence;
 		ValueableIdxVector<SuperWeaponTypeClass> LaunchSW;
 		Valueable<bool> LaunchSW_RealLaunch;
@@ -210,6 +213,7 @@ public:
 		int RemainingAnimCreationInterval;
 		bool PossibleCellSpreadDetonate;
 		TechnoClass* DamageAreaTarget;
+		int HitDirection;
 
 	private:
 		Valueable<double> Shield_Respawn_Rate_InMinutes;
@@ -311,6 +315,9 @@ public:
 			, SpawnsCrate_Types {}
 			, SpawnsCrate_Weights {}
 
+			, Directional { false }
+			, Directional_Multiplier { 1.0 }
+
 			, NotHuman_DeathSequence { -1 }
 			, LaunchSW {}
 			, LaunchSW_RealLaunch { true }
@@ -399,6 +406,7 @@ public:
 			, RemainingAnimCreationInterval { 0 }
 			, PossibleCellSpreadDetonate { false }
 			, DamageAreaTarget {}
+			, HitDirection { -1 }
 
 			, KillWeapon {}
 			, KillWeapon_OnFirer {}

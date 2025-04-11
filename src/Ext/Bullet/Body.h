@@ -30,6 +30,8 @@ public:
 		int DamageNumberOffset;
 		TechnoClass* LimboedLauncher;
 		DirType LimboedDir;
+		bool ShouldDirectional;
+		int BulletDirection;
 
 		TrajectoryPointer Trajectory;
 		bool DispersedTrajectory;
@@ -46,6 +48,8 @@ public:
 			, DamageNumberOffset { INT32_MIN }
 			, LimboedLauncher { nullptr }
 			, LimboedDir { 0 }
+			, ShouldDirectional { false }
+			, BulletDirection { -1 }
 
 			, Trajectory { nullptr }
 			, DispersedTrajectory { false }
