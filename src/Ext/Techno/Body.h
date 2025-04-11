@@ -197,6 +197,7 @@ public:
 		void StopRotateWithNewROT(int ROT = -1);
 		void UpdateCachedClick();
 		void ApplyMindControlRangeLimit();
+		int ApplyForceWeaponInRange();
 
 		UnitTypeClass* GetUnitTypeExtra() const;
 

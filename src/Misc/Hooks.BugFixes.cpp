@@ -1874,3 +1874,4 @@ DEFINE_HOOK(0x73C43F, UnitClass_DrawAsVXL_Shadow_IsLocomotorFix2, 0x6)
 	R->AL(pType->BalloonHover || pThis->IsAttackedByLocomotor);
 	return SkipGameCode;
 }
+
