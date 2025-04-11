@@ -71,125 +71,17 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 		}
 	}
 
+	TechnoClass* pSelect = nullptr;
+
 	if (!pTechno->InLimbo)
+		pSelect = pTechno;
+	else if (auto pTrans = pTechno->Transporter)
+		for (; pTrans; pSelect = pTrans, pTrans = pTrans->Transporter);
+	else if (const auto pOccupy = pExt->BuildingOccupying)
+		pSelect = pOccupy;
+
+	if (pSelect)
 	{
-		const auto pRules = RulesClass::Instance;
-		auto ratio = pTechno->GetHealthPercentage();
-
-		if (pTechno->IsIronCurtained())
-		{
-			ColorStruct fillColor { 50, 50, 50 };
-			DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 20);
-		}
-		else
-		{
-			int time = Unsorted::CurrentFrame - pExt->LastHurtFrame;
-
-			if (ratio < pRules->ConditionRed)
-			{
-				ColorStruct fillColor { 255, 0, 0 };
-				int trans = 40 - time;
-
-				if (trans < 0)
-				{
-					const int round = time % 60;
-					trans = ((round <= 20) ? 0 : ((round <= 40) ? (round - 20) : (60 - round)));
-				}
-
-				if (trans > 0)
-					DSurface::Composite->FillRectTrans(&drawRect, &fillColor, trans);
-			}
-			else if (ratio < pRules->ConditionYellow)
-			{
-				ColorStruct fillColor { 255, 0, 0 };
-				int trans = 30 - time;
-
-				if (trans < 0)
-				{
-					const int round = time % 160;
-					trans = ((round <= 140) ? 0 : ((round <= 150) ? (round - 140) : (160 - round)));
-				}
-
-				if (trans > 0)
-					DSurface::Composite->FillRectTrans(&drawRect, &fillColor, trans);
-			}
-			else if (time < 20)
-			{
-				ColorStruct fillColor { 255, 0, 0 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, (20 - time));
-			}
-
-			time = Unsorted::CurrentFrame - pTechno->LastFireBulletFrame;
-
-			if (time < 20)
-			{
-				ColorStruct fillColor { 255, 255, 0 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 20 - time);
-			}
-
-			if (pTechno->TemporalTargetingMe)
-			{
-				ColorStruct fillColor { 100, 100, 255 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
-			}
-			else if (pTechno->AirstrikeTintStage)
-			{
-				ColorStruct fillColor { 255, 50, 0 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
-			}
-			else if (pTechno->DrainingMe || pTechno->LocomotorSource)
-			{
-				ColorStruct fillColor { 200, 0, 255 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
-			}
-			else if (pTechno->IsUnderEMP() || pTechno->Deactivated)
-			{
-				ColorStruct fillColor { 128, 128, 128 };
-				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
-			}
-		}
-
-		if (pTechno->BunkerLinkedItem && pTechno->WhatAmI() != AbstractType::Building)
-		{
-			RectangleStruct rect { (position.X + 3), (position.Y + 1), 54, 7 };
-			DSurface::Composite->DrawRect(&rect, 0x781F);
-		}
-
-		RectangleStruct rect { (position.X + 4), (position.Y + 2), 52, 5 };
-		DSurface::Composite->FillRect(&rect, 0);
-
-		++rect.X;
-		++rect.Y;
-		rect.Width = static_cast<int>(50 * ratio + 0.5);
-		rect.Height = 3;
-
-		const int color = (ratio > pRules->ConditionYellow) ? 0x67EC : (ratio > pRules->ConditionRed ? 0xFFEC : 0xF986);
-		DSurface::Composite->FillRect(&rect, color);
-
-		const auto pShield = pExt->Shield.get();
-
-		if (pShield && !pShield->IsBrokenAndNonRespawning())
-		{
-			ratio = (static_cast<double>(pShield->GetHP()) / pShield->GetType()->Strength.Get());
-			rect.Width = static_cast<int>(50 * ratio + 0.5);
-			ColorStruct fillColor { 153, 153, 255 };
-			DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
-		}
-
-		if (pTechno->IsIronCurtained())
-		{
-			const auto& timer = pTechno->IronCurtainTimer;
-			ratio = static_cast<double>(timer.GetTimeLeft()) / timer.TimeLeft;
-			rect.Width = static_cast<int>(50 * ratio + 0.5);
-			ColorStruct fillColor { 200, 50, 50 };
-			DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
-		}
-	}
-	else if (auto pSelect = pTechno->Transporter)
-	{
-		for (auto pTrans = pSelect; pTrans; pTrans = pTrans->Transporter)
-			pSelect = pTrans;
-
 		const auto pSelectExt = TechnoExt::ExtMap.Find(pSelect);
 		const auto pRules = RulesClass::Instance;
 		auto ratio = pTechno->GetHealthPercentage();
@@ -198,6 +90,14 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 		{
 			ColorStruct fillColor { 50, 50, 50 };
 			DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 20);
+
+			int time = Unsorted::CurrentFrame - pSelect->LastFireBulletFrame;
+
+			if (time < 20)
+			{
+				ColorStruct fillColor { 255, 255, 0 };
+				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 20 - time);
+			}
 		}
 		else
 		{
@@ -250,12 +150,17 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 				ColorStruct fillColor { 100, 100, 255 };
 				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
 			}
-			else if (pSelect->LocomotorSource)
+			else if (pSelect->AirstrikeTintStage)
+			{
+				ColorStruct fillColor { 255, 50, 0 };
+				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
+			}
+			else if (pSelect->DrainingMe || pSelect->LocomotorSource || (pSelect->AbstractFlags & AbstractFlags::Foot) && static_cast<FootClass*>(pSelect)->ParasiteEatingMe)
 			{
 				ColorStruct fillColor { 200, 0, 255 };
 				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
 			}
-			else if (pSelect->IsUnderEMP() || pSelect->Deactivated)
+			else if (pSelect->IsUnderEMP() || pSelect->Deactivated || pSelect->IsParalyzed())
 			{
 				ColorStruct fillColor { 128, 128, 128 };
 				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 25);
@@ -266,10 +171,10 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 
 		if (pSelect->BunkerLinkedItem && pSelect->WhatAmI() != AbstractType::Building)
 		{
-			rect.Width = 54;
+			rect.Width = static_cast<int>(54 * pSelect->BunkerLinkedItem->GetHealthPercentage() + 0.5);
 			DSurface::Composite->DrawRect(&rect, 0x781F);
 		}
-		else
+		else if (pSelect != pTechno)
 		{
 			rect.Width = static_cast<int>(54 * pSelect->GetHealthPercentage() + 0.5);
 			DSurface::Composite->DrawRect(&rect, 0xFB20);
@@ -297,16 +202,16 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 			ratio = (static_cast<double>(pShield->GetHP()) / pShield->GetType()->Strength.Get());
 			rect.Width = static_cast<int>(50 * ratio + 0.5);
 			ColorStruct fillColor { 153, 153, 255 };
-			DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
+			DSurface::Composite->FillRectTrans(&rect, &fillColor, 70);
 		}
 
 		if (pSelect->IsIronCurtained())
 		{
-			const auto& timer = pTechno->IronCurtainTimer;
+			const auto& timer = pSelect->IronCurtainTimer;
 			ratio = static_cast<double>(timer.GetTimeLeft()) / timer.TimeLeft;
 			rect.Width = static_cast<int>(50 * ratio + 0.5);
 			ColorStruct fillColor { 200, 50, 50 };
-			DSurface::Composite->FillRectTrans(&rect, &fillColor, 80);
+			DSurface::Composite->FillRectTrans(&rect, &fillColor, 70);
 		}
 	}
 	else
@@ -330,7 +235,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 		else
 		{
 			RectangleStruct rect { (position.X + 3), (position.Y + 1), 54, 7 };
-			DSurface::Composite->DrawRect(&rect, 0x781F);
+			DSurface::Composite->DrawRect(&rect, 0xFFFF);
 
 			++rect.X;
 			++rect.Y;
@@ -349,6 +254,10 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 			const auto pRules = RulesClass::Instance;
 			const int color = (ratio > pRules->ConditionYellow) ? 0x67EC : (ratio > pRules->ConditionRed ? 0xFFEC : 0xF986);
 			DSurface::Composite->FillRect(&rect, color);
+
+			rect.Width = 50;
+			ColorStruct fillColor { 255, 255, 255 };
+			DSurface::Composite->FillRectTrans(&rect, &fillColor, 70);
 		}
 	}
 
