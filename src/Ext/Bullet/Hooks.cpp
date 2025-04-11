@@ -42,7 +42,7 @@ DEFINE_HOOK(0x4666F7, BulletClass_AI, 0x6)
 	BulletAITemp::ExtData = pBulletExt;
 	BulletAITemp::TypeExtData = pBulletExt->TypeExtData;
 
-	if (!pBulletExt->Trajectory && pBulletExt->ShouldDirectional)
+	if (!pBulletExt->Trajectory && pBulletExt->ShouldDirectional && pThis->Velocity.Y != 0.0 && pThis->Velocity.X != 0.0)
 		pBulletExt->BulletDirection = DirStruct((-1) * Math::atan2(pThis->Velocity.Y, pThis->Velocity.X)).GetValue<16>();
 
 	if (pBulletExt->InterceptedStatus == InterceptedStatus::Intercepted)

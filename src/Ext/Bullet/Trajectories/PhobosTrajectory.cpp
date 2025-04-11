@@ -1009,7 +1009,9 @@ DEFINE_HOOK(0x46745C, BulletClass_Update_TrajectoriesVelocityUpdate, 0x7)
 	if (const auto pTraj = pExt->Trajectory.get())
 	{
 		pTraj->OnVelocityUpdate(pSpeed, pPosition);
-		pExt->BulletDirection = DirStruct((-1) * Math::atan2(pTraj->MovingVelocity.Y, pTraj->MovingVelocity.X)).GetValue<16>();
+
+		if (pTraj->MovingVelocity.Y != 0.0 && pTraj->MovingVelocity.X != 0.0)
+			pExt->BulletDirection = DirStruct((-1) * Math::atan2(pTraj->MovingVelocity.Y, pTraj->MovingVelocity.X)).GetValue<16>();
 
 		// Trajectory can use Velocity only for turning Image's direction
 		// The true position in the next frame will be calculate after here
