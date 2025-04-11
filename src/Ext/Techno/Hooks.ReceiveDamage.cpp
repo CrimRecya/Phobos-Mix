@@ -185,7 +185,8 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 
 	if ((state == DamageState::NowDead) && !WarheadTypeExt::ExtMap.Find(pWH)->SuppressWreckage)
 	{
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+		const auto pType = pThis->GetTechnoType();
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 
 		if (const auto pWreckageType = pTypeExt->WreckageType)
 		{
@@ -196,6 +197,21 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 				{
 					const auto pWreckage = static_cast<TechnoClass*>(pWreckageType->CreateObject(pOwner));
 					pWreckage->Health = static_cast<int>(pWreckageType->Strength * pTypeExt->WreckageInitialHealthPercent.Get(RulesExt::Global()->WreckageInitialHealthPercent));
+
+					if (pTypeExt->WreckageSwapLocomotor
+						&& pWreckage->WhatAmI() != AbstractType::Building
+						&& pThis->WhatAmI() != AbstractType::Building)
+					{
+						auto pFoot = (FootClass*)pThis;
+						auto pWreckageFoot = (FootClass*)pWreckage;
+
+						auto temp = pFoot->Locomotor;
+						pFoot->Locomotor = pWreckageFoot->Locomotor;
+						pWreckageFoot->Locomotor = temp;
+						pWreckageFoot->Locomotor->Link_To_Object(pWreckageFoot);
+						pFoot->Locomotor->Link_To_Object(pFoot);
+					}
+
 					++Unsorted::ScenarioInit;
 					pWreckage->Unlimbo((pWreckage->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None ? pThis->GetCoords() : pThis->Location, DirType::North);
 					--Unsorted::ScenarioInit;
