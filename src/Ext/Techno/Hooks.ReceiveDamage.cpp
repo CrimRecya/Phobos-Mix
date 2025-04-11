@@ -185,8 +185,7 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 
 	if ((state == DamageState::NowDead) && !WarheadTypeExt::ExtMap.Find(pWH)->SuppressWreckage)
 	{
-		const auto pType = pThis->GetTechnoType();
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
 
 		if (const auto pWreckageType = pTypeExt->WreckageType)
 		{
@@ -199,13 +198,13 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 					pWreckage->Health = static_cast<int>(pWreckageType->Strength * pTypeExt->WreckageInitialHealthPercent.Get(RulesExt::Global()->WreckageInitialHealthPercent));
 
 					if (pTypeExt->WreckageSwapLocomotor
-						&& pWreckage->WhatAmI() != AbstractType::Building
-						&& pThis->WhatAmI() != AbstractType::Building)
+						&& pWreckage->AbstractFlags & AbstractFlags::Foot
+						&& pThis->AbstractFlags & AbstractFlags::Foot)
 					{
-						auto pFoot = (FootClass*)pThis;
-						auto pWreckageFoot = (FootClass*)pWreckage;
+						const auto pFoot = static_cast<FootClass*>(pThis);
+						const auto pWreckageFoot = static_cast<FootClass*>(pWreckage);
 
-						auto temp = pFoot->Locomotor;
+						const auto temp = pFoot->Locomotor;
 						pFoot->Locomotor = pWreckageFoot->Locomotor;
 						pWreckageFoot->Locomotor = temp;
 						pWreckageFoot->Locomotor->Link_To_Object(pWreckageFoot);

@@ -1546,14 +1546,18 @@ DEFINE_HOOK(0x6FF7F9, SITechnoClass_Fire_LimboLaunch, 0x6)
 DEFINE_HOOK(0x4580B4, BuildingClass_OccupantLeaveAll_UpdateState,0x5)
 {
 	GET(InfantryClass*, pOccupant, EDI);
+
 	TechnoExt::ExtMap.Find(pOccupant)->BuildingOccupying = nullptr;
+
 	return 0;
 }
 
 DEFINE_HOOK(0x6FC5B3, TechnoClass_GetFireError_InLimbo, 0x6)
 {
 	enum { Illegal = 0x6FC86A };
+
 	GET(TechnoClass*, pThis, ESI);
+
 	return !pThis->InLimbo || TechnoExt::ExtMap.Find(pThis)->BuildingOccupying || pThis->InOpenToppedTransport ? 0 : Illegal;
 }
 
