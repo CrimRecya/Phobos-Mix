@@ -95,7 +95,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 
 			if (time < 20)
 			{
-				ColorStruct fillColor { 255, 255, 0 };
+				fillColor = ColorStruct { 255, 255, 0 };
 				DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 20 - time);
 			}
 		}

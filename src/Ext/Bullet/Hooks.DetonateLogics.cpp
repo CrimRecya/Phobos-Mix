@@ -88,16 +88,16 @@ DEFINE_HOOK(0x469A69, BulletClass_Detonate_DamageArea, 0x6)
 			}
 		}
 
-		pWHExt->HitDirection = -1;
-
 		R->EAX(result);
-		return SkipDamageArea;
+	}
+	else
+	{
+		R->EAX(MapClass::Instance.DamageArea(*coord, damage, pTechno, pWH, true, pHouse));
 	}
 
-	R->EAX(MapClass::Instance.DamageArea(*coord, damage, pTechno, pWH, true, pHouse));
 	pWHExt->HitDirection = -1;
 
-	return 0;
+	return SkipDamageArea;
 }
 
 #pragma region DetonateOnAllMapObjects
