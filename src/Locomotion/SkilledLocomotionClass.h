@@ -34,8 +34,8 @@ namespace Unsorted
 
 	// Reference, no write permission
 	DEFINE_ARRAY_REFERENCE(Point2D, [8], CoordDirections, 0x89F6D8)
-	DEFINE_ARRAY_REFERENCE(TrackNumStruct, [72], TrackData, 0x7E7B28)
-	DEFINE_ARRAY_REFERENCE(TrackIdxStruct, [16], TrackStruct, 0x7E7A28)
+	DEFINE_ARRAY_REFERENCE(const TrackNumStruct, [72], TrackData, 0x7E7B28)
+	DEFINE_ARRAY_REFERENCE(const TrackIdxStruct, [16], TrackStruct, 0x7E7A28)
 }
 
 class NOVTABLE TubeClass : public AbstractClass
