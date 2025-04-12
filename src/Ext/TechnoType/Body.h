@@ -48,6 +48,7 @@ public:
 		Nullable<int> Spawner_DelayFrames;
 		Valueable<bool> Spawner_AttackImmediately;
 		Valueable<bool> Spawner_ReturnOnRepairDone;
+		Valueable<bool> Spawner_UseTurretFacing;
 		Nullable<bool> Harvester_Counted;
 		Valueable<bool> Promote_IncludeSpawns;
 		Valueable<bool> ImmuneToCrit;
@@ -505,6 +506,7 @@ public:
 			, Spawner_DelayFrames {}
 			, Spawner_AttackImmediately { false }
 			, Spawner_ReturnOnRepairDone { false }
+			, Spawner_UseTurretFacing { false }
 			, Harvester_Counted {}
 			, Promote_IncludeSpawns { false }
 			, ImmuneToCrit { false }
