@@ -28,11 +28,11 @@ public:
 		std::vector<LaserTrailClass> LaserTrails;
 		std::vector<std::unique_ptr<AttachEffectClass>> AttachedEffects;
 		AttachEffectTechnoProperties AE;
-		bool SubterraneanHarvFreshFromFactory;
-		AbstractClass* SubterraneanHarvRallyDest;
 		TechnoTypeClass* PreviousType; // Type change registered in TechnoClass::AI on current frame and used in FootClass::AI on same frame and reset after.
 		std::vector<EBolt*> ElectricBolts; // EBolts are not serialized so do not serialize this either.
 		int AnimRefCount; // Used to keep track of how many times this techno is referenced in anims f.ex Invoker, ParentBuilding etc., for pointer invalidation.
+		bool SubterraneanHarvFreshFromFactory;
+		AbstractClass* SubterraneanHarvRallyDest;
 		bool ReceiveDamage;
 		bool LastKillWasTeamTarget;
 		CDTimerClass PassengerDeletionTimer;
@@ -100,11 +100,11 @@ public:
 			, LaserTrails {}
 			, AttachedEffects {}
 			, AE {}
-			, SubterraneanHarvFreshFromFactory { false }
-			, SubterraneanHarvRallyDest { nullptr }
 			, PreviousType { nullptr }
 			, ElectricBolts {}
 			, AnimRefCount { 0 }
+			, SubterraneanHarvFreshFromFactory { false }
+			, SubterraneanHarvRallyDest { nullptr }
 			, ReceiveDamage { false }
 			, LastKillWasTeamTarget { false }
 			, PassengerDeletionTimer {}

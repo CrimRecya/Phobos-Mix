@@ -80,12 +80,7 @@ DEFINE_HOOK(0x7389B1, UnitClass_EnterIdleMode_SubterraneanHarvester, 0x6)
 	{
 		pThis->SetArchiveTarget(nullptr);
 		pThis->ClearNavigationList();
-
-		if (pThis->Destination && pExt->SubterraneanHarvRallyDest && pThis->Destination != pExt->SubterraneanHarvRallyDest && pThis->DistanceFrom(pThis->Destination) > Unsorted::LeptonsPerCell)
-			pThis->SetDestination(pExt->SubterraneanHarvRallyDest, false);
-		else
-			pThis->SetDestination(nullptr, false);
-
+		pThis->SetDestination(pExt->SubterraneanHarvRallyDest, false);
 		pExt->SubterraneanHarvFreshFromFactory = false;
 		pExt->SubterraneanHarvRallyDest = nullptr;
 
@@ -96,6 +91,54 @@ DEFINE_HOOK(0x7389B1, UnitClass_EnterIdleMode_SubterraneanHarvester, 0x6)
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x740943, UnitClass_Mission_Guard_PlayerHarvester, 0x6)
+{
+	enum { SkipGameCode = 0x7408C7, ReturnFromFunction = 0x7409EF };
+
+	GET(UnitClass*, pThis, ESI);
+
+	if (pThis->Type->Teleporter || pThis->Type->MovementZone == MovementZone::Subterrannean)
+	{
+		auto const pCell = pThis->GetCell();
+		int cellIndex = 0;
+
+		while (true)
+		{
+			if (auto const pBuilding = pCell->GetNeighbourCell((FacingType)cellIndex)->GetBuilding())
+			{
+				if (pBuilding->Type->Refinery && pBuilding->Owner == pThis->Owner)
+				{
+					pThis->QueueMission(Mission::Harvest, false);
+					return ReturnFromFunction;
+				}
+			}
+
+			if (++cellIndex >= (int)FacingType::Count)
+			{
+				double percentage = pThis->GetStoragePercentage();
+
+				if (pThis->ArchiveTarget && percentage > 0.0)
+				{
+					pThis->QueueMission(Mission::Harvest, false);
+					return ReturnFromFunction;
+				}
+				else if (percentage != 1.0 && percentage >= 0.0)
+				{
+					return SkipGameCode;
+				}
+
+				if (!pThis->Locomotor->Is_Moving())
+					return SkipGameCode;
+
+				pThis->QueueMission(Mission::Harvest, false);
+				return ReturnFromFunction;
+			}
+		}
+	}
+
+	return SkipGameCode;
+}
 
 #pragma region HarvesterScanAfterUnload
 
