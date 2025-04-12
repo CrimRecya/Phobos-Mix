@@ -221,10 +221,7 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 					{
 						const auto pFoot = static_cast<FootClass*>(pThis);
 						const auto pWreckageFoot = static_cast<FootClass*>(pWreckage);
-
-						const auto temp = pFoot->Locomotor;
-						pFoot->Locomotor = pWreckageFoot->Locomotor;
-						pWreckageFoot->Locomotor = temp;
+						std::swap(pFoot->Locomotor, pWreckageFoot->Locomotor);
 						pWreckageFoot->Locomotor->Link_To_Object(pWreckageFoot);
 						pFoot->Locomotor->Link_To_Object(pFoot);
 					}
