@@ -201,12 +201,14 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 
 	if ((state == DamageState::NowDead) && !WarheadTypeExt::ExtMap.Find(pWH)->SuppressWreckage)
 	{
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+		const auto pType = pThis->GetTechnoType();
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 
 		if (const auto pWreckageType = pTypeExt->WreckageType)
 		{
 			if ((pThis->GetCell()->LandType != LandType::Water || pTypeExt->WreckageLeaveOnWater)
-				&& (!pThis->IsInAir() || pTypeExt->WreckageLeaveInAir))
+				&& (!pThis->IsInAir() || pTypeExt->WreckageLeaveInAir)
+				&& (pWreckageType != pType || !TechnoExt::ExtMap.Find(pThis)->IsWreckage))
 			{
 				if (const auto pOwner = HouseExt::GetHouseKind(pTypeExt->WreckageOwner, false, pThis->Owner, pAttackerHosue, pThis->Owner))
 				{
