@@ -988,13 +988,6 @@ DEFINE_HOOK(0x468B72, BulletClass_Unlimbo_Trajectories, 0x5)
 		pExt->Trajectory->OnUnlimbo();
 	}
 
-	if (pThis->Owner && !pThis->Type->Vertical && pThis->SourceCoords != pThis->TargetCoords
-		&& pThis->WH && WarheadTypeExt::ExtMap.Find(pThis->WH)->Directional)
-	{
-		pExt->ShouldDirectional = true;
-		pExt->BulletDirection = DirStruct(Math::atan2(static_cast<double>(pThis->SourceCoords.Y - pThis->TargetCoords.Y), static_cast<double>(pThis->TargetCoords.X - pThis->SourceCoords.X))).GetValue<16>();
-	}
-
 	return 0;
 }
 
@@ -1009,10 +1002,6 @@ DEFINE_HOOK(0x46745C, BulletClass_Update_TrajectoriesVelocityUpdate, 0x7)
 	if (const auto pTraj = pExt->Trajectory.get())
 	{
 		pTraj->OnVelocityUpdate(pSpeed, pPosition);
-
-		if (pTraj->MovingVelocity.Y != 0.0 && pTraj->MovingVelocity.X != 0.0)
-			pExt->BulletDirection = DirStruct((-1) * Math::atan2(pTraj->MovingVelocity.Y, pTraj->MovingVelocity.X)).GetValue<16>();
-
 		// Trajectory can use Velocity only for turning Image's direction
 		// The true position in the next frame will be calculate after here
 		if (pExt->LaserTrails.size())

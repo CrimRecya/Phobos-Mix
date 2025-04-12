@@ -22,18 +22,8 @@ DEFINE_HOOK(0x46920B, BulletClass_Detonate, 0x6)
 	auto const pHouse = pOwner ? pOwner->Owner : nullptr;
 	auto const pDecidedHouse = pHouse ? pHouse : pBulletExt->FirerHouse;
 
-	pWHExt->HitDirection = pBulletExt->BulletDirection;
 	pWHExt->Detonate(pOwner, pDecidedHouse, pBulletExt, *pCoords);
 	pWHExt->InDamageArea = false;
-
-	return 0;
-}
-
-DEFINE_HOOK(0x469AA4, BulletClass_Detonate_ResetHitDirection, 0x5)
-{
-	GET(BulletClass* const, pBullet, ESI);
-
-	WarheadTypeExt::ExtMap.Find(pBullet->WH)->HitDirection = -1;
 
 	return 0;
 }
