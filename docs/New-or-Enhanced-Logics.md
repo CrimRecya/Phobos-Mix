@@ -809,6 +809,7 @@ Currently interceptor weapons with projectiles that do not have `Inviso=true` wi
     - In `Trajectory=Missile`, if the projectile hasn't arrived `Trajectory.Missile.PreAimCoord` yet, the last coordinate of the original target is taken as the center of the searching circle. Otherwise, the coordinate of the distance in front of the projectile is taken as the center of the circle. Set to 0 indicates that this function is not enabled, and it will still attempt to attack the original target's location. If it is set to a negative value, it will directly self explode in place.
     - In `Trajectory=Tracing`, the projectile will search for new target at the current position of the itself.
     - `Trajectory.RetargetInterval` controls how long it takes to search for new target each time it is searched again.
+    - `Trajectory.RetargetHouses` controls the projectile can find new target from which houses.
   - `Trajectory.Synchronize` controls whether the target of the projectile is synchronized with the target of its firer. If not, the projectile will not update the target.
   - `Trajectory.PeacefulVanish` controls whether the projectile disappears directly when it is about to detonate, without producing animation or causing damage. The default value is `Trajectory=Engrave` or `Trajectory.ProximityImpact` not equal to 0 or `Trajectory.DisperseCycle` not equal to 0.
   - `Trajectory.ApplyRangeModifiers` controls whether any applicable weapon range modifiers from the firer are applied to the projectile.
@@ -842,6 +843,7 @@ Trajectory.BulletROT=0                ; integer
 Trajectory.BulletFacing=              ; Bullet facing enumeration (Velocity|Spin|Stable|Target|Destination|FirerBody|FirerTurret)
 Trajectory.RetargetRadius=0           ; floating point value
 Trajectory.RetargetInterval=1         ; integer
+Trajectory.RetargetHouses=enemies     ; List of Affected House Enumeration (none|owner/self|allies/ally|team|enemies/enemy|all)
 Trajectory.Synchronize=false          ; boolean
 Trajectory.PeacefulVanish=            ; boolean
 Trajectory.ApplyRangeModifiers=false  ; boolean
@@ -2446,7 +2448,7 @@ KillWeapon.AffectsHouses=all          ; List of Affected House Enumeration (none
 KillWeapon.OnFirer.AffectsHouses=all  ; List of Affected House Enumeration (none|owner/self|allies/ally|team|enemies/enemy|all)
 KillWeapon.Affects=all                ; List of Affected Target Enumeration (none|land|water|empty|infantry|units|buildings|all)
 KillWeapon.OnFirer.Affects=all        ; List of Affected Target Enumeration (none|land|water|empty|infantry|units|buildings|all)
-     
+
 [SOMETECHNO]                          ; TechnoType
 SuppressKillWeapons=false             ; boolean
 SuppressKillWeapons.Types=            ; List of WeaponTypes
