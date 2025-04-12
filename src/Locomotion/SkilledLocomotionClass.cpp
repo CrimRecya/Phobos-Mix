@@ -1600,3 +1600,26 @@ inline int SkilledLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 
 	return pLinked->IsAlive ? 0 : 1;
 }
+
+// Hooks
+
+DEFINE_HOOK(0x4DA9FB, FootClass_Update_WalkedFrames, 0x6)
+{
+	enum { SkipGameCode = 0x4DAA01 };
+
+	GET(FootClass* const, pThis, ESI);
+
+	CLSID locoCLSID {};
+
+	if (SUCCEEDED(static_cast<LocomotionClass*>(pThis->Locomotor.GetInterfacePtr())->GetClassID(&locoCLSID))
+		 && locoCLSID == __uuidof(SkilledLocomotionClass))
+	{
+		if (!static_cast<SkilledLocomotionClass*>(pThis->Locomotor.GetInterfacePtr())->IsForward)
+		{
+			--pThis->WalkedFramesSoFar;
+			return SkipGameCode;
+		}
+	}
+
+	return 0; // ++pThis->WalkedFramesSoFar;
+}
