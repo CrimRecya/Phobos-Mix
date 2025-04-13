@@ -547,7 +547,7 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 	if (pToType->BombSight)
 		BombListClass::Instance.AddDetector(pThis);
 
-	pThis->BarrelFacing.SetCurrent(DirStruct(0x4000 - pToType->FireAngle));
+	pThis->BarrelFacing.SetCurrent(DirStruct(0x4000 - (pToType->FireAngle << 8)));
 
 	pThis->UpdateSight(0, 0, 0, 0, 0);
 
