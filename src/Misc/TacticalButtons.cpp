@@ -423,15 +423,15 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		const auto absType = pTechno->WhatAmI();
 
 		if (absType == AbstractType::Unit)
-			drawText("%s: %s , UniqueID: %d", "Vehicle", pType->ID, pTechno->UniqueID);
+			drawText("%s: %s , UniqueID: %d , Addr: %X", "Vehicle", pType->ID, pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
 		else if (absType == AbstractType::Infantry)
-			drawText("%s: %s , UniqueID: %d", "Infantry", pType->ID, pTechno->UniqueID);
+			drawText("%s: %s , UniqueID: %d , Addr: %X", "Infantry", pType->ID, pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
 		else if (absType == AbstractType::Aircraft)
-			drawText("%s: %s , UniqueID: %d", "Aircraft", pType->ID, pTechno->UniqueID);
+			drawText("%s: %s , UniqueID: %d , Addr: %X", "Aircraft", pType->ID, pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
 		else if (absType == AbstractType::Building)
-			drawText("%s: %s , UniqueID: %d", "Building", pType->ID, pTechno->UniqueID);
+			drawText("%s: %s , UniqueID: %d , Addr: %X", "Building", pType->ID, pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
 		else
-			drawText("%s: %s , UniqueID: %d", "Unknown", pType->ID, pTechno->UniqueID);
+			drawText("%s: %s , UniqueID: %d , Addr: %X", "Unknown", pType->ID, pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
 
 		const auto pOwner = pTechno->Owner;
 
@@ -719,7 +719,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		DisplayClass::Instance.ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
 		const auto pCell = MapClass::Instance.GetCellAt(cell);
 
-		drawText("Cell: slope %d , UniqueID: %d", pCell->SlopeIndex, pCell->UniqueID);
+		drawText("Cell: slope %d , UniqueID: %d , Addr: %X", pCell->SlopeIndex, pCell->UniqueID, reinterpret_cast<DWORD>(pCell));
 
 		constexpr const char* landTypes[12] = { "Clear", "Road", "Water", "Rock", "Wall", "Tiberium", "Beach", "Rough", "Ice", "Railroad", "Tunnel", "Weeds" };
 		const auto landType = static_cast<int>(pCell->LandType);
