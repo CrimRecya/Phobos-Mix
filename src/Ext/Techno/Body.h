@@ -59,7 +59,7 @@ public:
 		CDTimerClass UnitAutoDeployTimer;
 		WeaponTypeClass* LastWeaponType;
 		CoordStruct LastWeaponFLH;
-		int CurrentTracingCount;
+		std::shared_ptr<PhobosMap<DWORD, std::pair<std::vector<DWORD>, std::pair<double, bool>>>> TrajectoryGroup;
 		int ScatteringStopFrame;
 		int MyTargetingFrame;
 		int AttackMoveFollowerTempCount;
@@ -131,7 +131,7 @@ public:
 			, UnitAutoDeployTimer {}
 			, LastWeaponType {}
 			, LastWeaponFLH {}
-			, CurrentTracingCount { 0 }
+			, TrajectoryGroup {}
 			, ScatteringStopFrame { 0 }
 			, MyTargetingFrame { ScenarioClass::Instance->Random.RandomRanged(0,15) }
 			, AttackMoveFollowerTempCount { 0 }
