@@ -387,7 +387,7 @@ New:
 - Aggressive stance toggle command (auto target unarmed enemy buildings) (by Aephiex)
 - Amphibious access vehicle (by CrimRecya)
 - Observer sidebar in skirmish game mode (by CrimRecya)
-- New Skilled locomotor (by CrimRecya)
+- New AdvancedDrive locomotor (by CrimRecya)
 - Directional armor (by NetsuNegi)
 
 Vanilla fixes:
