@@ -516,6 +516,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawInfo("Enter Target", pTechno, pTechno->QueueUpToEnter);
 		drawInfo("First CurTarget", pTechno, (pTechno->CurrentTargets.Count > 0 ? pTechno->CurrentTargets.GetItem(0) : nullptr));
 		drawInfo("First OldTarget", pTechno, (pTechno->AttackedTargets.Count > 0 ? pTechno->AttackedTargets.GetItem(0) : nullptr));
+		drawInfo("Bunker Linked", pTechno, pTechno->BunkerLinkedItem);
 
 		drawTime("UpdateTimer", pTechno->UpdateTimer);
 
@@ -567,7 +568,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 			drawText("CurrentSpeed = %d , PercentSpeed = %d", static_cast<int>(pFoot->GetCurrentSpeed()), static_cast<int>(pFoot->SpeedPercentage * 100));
 			drawText("OnBridge = %s , NearElevatedBridge = %s", (pFoot->OnBridge ? "Yes" : "No"), (reinterpret_cast<bool(__thiscall*)(FootClass*)>(0x703B10)(pFoot) ? "Yes" : "No"));
-			drawText("CellAfterBridge = %s", (pFoot->vt_entry_2B0() ? "Yes" : "No"));
+			drawText("OnBacklit = %s , IsCrushing = %s", (pFoot->vt_entry_2B0() ? "Yes" : "No"), (pFoot->IsCrushingSomething ? "Yes" : "No"));
 			drawText("Scattering = %s , Aggressive = %s", (pExt->ScatteringStopFrame >= Unsorted::CurrentFrame ? "Yes" : "No"), (pExt->AggressiveStance ? "Yes" : "No"));
 
 			drawInfo("Destination", pFoot, pFoot->Destination);
