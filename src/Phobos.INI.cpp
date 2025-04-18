@@ -49,6 +49,7 @@ bool Phobos::Config::DevelopmentCommands = true;
 bool Phobos::Config::ShowPlanningPath = false;
 bool Phobos::Config::ArtImageSwap = false;
 bool Phobos::Config::ShowPlacementPreview = false;
+bool Phobos::Config::EnableSelectBox = false;
 bool Phobos::Config::DigitalDisplay_Enable = false;
 bool Phobos::Config::MessageDisplayInCenter = false;
 bool Phobos::Config::ShowBuildingStatistics = false;
@@ -94,6 +95,7 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 	Phobos::Config::ShowPlacementPreview = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowPlacementPreview", true);
 	Phobos::Config::RealTimeTimers = CCINIClass::INI_RA2MD.ReadBool("Phobos", "RealTimeTimers", false);
 	Phobos::Config::RealTimeTimers_Adaptive = CCINIClass::INI_RA2MD.ReadBool("Phobos", "RealTimeTimers.Adaptive", false);
+	Phobos::Config::EnableSelectBox = CCINIClass::INI_RA2MD.ReadBool("Phobos", "EnableSelectBox", false);
 	Phobos::Config::DigitalDisplay_Enable = CCINIClass::INI_RA2MD.ReadBool("Phobos", "DigitalDisplay.Enable", false);
 	Phobos::Config::MessageDisplayInCenter = CCINIClass::INI_RA2MD.ReadBool("Phobos", "MessageDisplayInCenter", false);
 	Phobos::Config::ShowBuildingStatistics = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowBuildingStatistics", false);

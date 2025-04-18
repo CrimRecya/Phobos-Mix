@@ -1,7 +1,25 @@
 #include <AircraftTypeClass.h>
 #include <SpawnManagerClass.h>
 #include <TiberiumClass.h>
+#include <TacticalClass.h>
 #include "Body.h"
+
+DEFINE_HOOK_AGAIN(0x6D90FD, TacticalClass_RenderLayers_DrawBefore, 0x9)// BuildingClass
+DEFINE_HOOK(0x6D9070, TacticalClass_RenderLayers_DrawBefore, 0x6)// FootClass
+{
+	GET(TechnoClass*, pTechno, ESI);
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
+
+	if (pTypeExt->HealthBar_Hide)
+		return 0;
+
+	const auto location = TacticalClass::Instance->CoordsToClient(pTechno->GetCoords()).first;
+
+	if (pTechno->IsSelected && Phobos::Config::EnableSelectBox && !pTypeExt->HideSelectBox)
+		TechnoExt::DrawSelectBox(pTechno, &location, &DSurface::ViewBounds, true);
+
+	return 0;
+}
 
 DEFINE_HOOK(0x6F64A9, TechnoClass_DrawHealthBar_Hide, 0x5)
 {
@@ -23,6 +41,9 @@ DEFINE_HOOK(0x6F65D1, TechnoClass_DrawHealthBar_Buildings, 0x6)
 
 	const auto pExt = TechnoExt::ExtMap.Find(pThis);
 
+	if (pThis->IsSelected && Phobos::Config::EnableSelectBox && !pExt->TypeExtData->HideSelectBox)
+		TechnoExt::DrawSelectBox(pThis, pLocation, pBound);
+
 	if (const auto pShieldData = pExt->Shield.get())
 	{
 		if (pShieldData->IsAvailable() && !pShieldData->IsBrokenAndNonRespawning())
@@ -42,6 +63,9 @@ DEFINE_HOOK(0x6F683C, TechnoClass_DrawHealthBar_Units, 0x7)
 	GET_STACK(RectangleStruct*, pBound, STACK_OFFSET(0x4C, 0x8));
 
 	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+
+	if (pThis->IsSelected && Phobos::Config::EnableSelectBox && !pExt->TypeExtData->HideSelectBox)
+		TechnoExt::DrawSelectBox(pThis, pLocation, pBound);
 
 	if (const auto pShieldData = pExt->Shield.get())
 	{
