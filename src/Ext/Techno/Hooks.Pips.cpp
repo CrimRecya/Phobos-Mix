@@ -4,19 +4,19 @@
 #include <TacticalClass.h>
 #include "Body.h"
 
-DEFINE_HOOK_AGAIN(0x6D90FD, TacticalClass_RenderLayers_DrawBefore, 0x9)// BuildingClass
-DEFINE_HOOK(0x6D9070, TacticalClass_RenderLayers_DrawBefore, 0x6)// FootClass
+DEFINE_HOOK_AGAIN(0x6D9134, TacticalClass_RenderLayers_DrawBefore, 0x5)// BuildingClass
+DEFINE_HOOK(0x6D9076, TacticalClass_RenderLayers_DrawBefore, 0x5)// FootClass
 {
 	GET(TechnoClass*, pTechno, ESI);
-	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
+	GET(Point2D*, pLocation, EAX);
 
-	if (pTypeExt->HealthBar_Hide)
-		return 0;
+	if (pTechno->IsSelected && Phobos::Config::EnableSelectBox)
+	{
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
 
-	const auto location = TacticalClass::Instance->CoordsToClient(pTechno->GetCoords()).first;
-
-	if (pTechno->IsSelected && Phobos::Config::EnableSelectBox && !pTypeExt->HideSelectBox)
-		TechnoExt::DrawSelectBox(pTechno, &location, &DSurface::ViewBounds, true);
+		if (!pTypeExt->HealthBar_Hide && !pTypeExt->HideSelectBox)
+			TechnoExt::DrawSelectBox(pTechno, pLocation, &DSurface::ViewBounds, true);
+	}
 
 	return 0;
 }
