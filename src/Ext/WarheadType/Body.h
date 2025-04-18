@@ -158,6 +158,8 @@ public:
 		Valueable<int> SetAmbientBlue;
 		Valueable<bool> ReduceTiberium;
 
+		Valueable<AffectedTarget> Parasite_CullingTarget;
+
 		Valueable<bool> Nonprovocative;
 
 		Nullable<int> CombatLightDetailLevel;
@@ -217,6 +219,8 @@ public:
 		bool PossibleCellSpreadDetonate;
 		TechnoClass* DamageAreaTarget;
 		int HitDirection;
+
+		Valueable<bool> CanKill;
 
 	private:
 		Valueable<double> Shield_Respawn_Rate_InMinutes;
@@ -361,6 +365,8 @@ public:
 			, SetAmbientBlue { -1 }
 			, ReduceTiberium { false }
 
+			, Parasite_CullingTarget { AffectedTarget::Infantry }
+
 			, Nonprovocative { false }
 
 			, CombatLightDetailLevel {}
@@ -411,6 +417,8 @@ public:
 			, PossibleCellSpreadDetonate { false }
 			, DamageAreaTarget {}
 			, HitDirection { -1 }
+
+			, CanKill { true }
 
 			, KillWeapon {}
 			, KillWeapon_OnFirer {}

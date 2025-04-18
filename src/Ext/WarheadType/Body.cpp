@@ -274,6 +274,8 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->SetAmbientBlue.Read(exINI, pSection, "SetAmbientBlue");
 	this->ReduceTiberium.Read(exINI, pSection, "ReduceTiberium");
 
+	this->Parasite_CullingTarget.Read(exINI, pSection, "Parasite.CullingTarget");
+
 	this->Nonprovocative.Read(exINI, pSection, "Nonprovocative");
 
 	this->CombatLightDetailLevel.Read(exINI, pSection, "CombatLightDetailLevel");
@@ -302,6 +304,8 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->NoCellSpread.Read(exINI, pSection, "NoCellSpread");
 	this->NoCellSpread_SnapDistance.Read(exINI, pSection, "NoCellSpread_SnapDistance");
+
+	this->CanKill.Read(exINI, pSection, "CanKill");
 
 	this->KillWeapon.Read(exINI, pSection, "KillWeapon");
 	this->KillWeapon_OnFirer.Read(exINI, pSection, "KillWeapon.OnFirer");
@@ -562,6 +566,8 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->DamageAlliesMultiplier)
 		.Process(this->DamageEnemiesMultiplier)
 
+		.Process(this->Parasite_CullingTarget)
+
 		.Process(this->Nonprovocative)
 
 		.Process(this->CombatLightDetailLevel)
@@ -602,6 +608,8 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Reflected)
 		.Process(this->DamageAreaTarget)
 		.Process(this->HitDirection)
+
+		.Process(this->CanKill)
 		;
 }
 
