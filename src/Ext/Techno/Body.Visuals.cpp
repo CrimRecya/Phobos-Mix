@@ -665,7 +665,7 @@ void TechnoExt::DrawSelectBox(TechnoClass* pThis, const Point2D* pLocation, cons
 
 	drawPoint += pSelectBox->Offset;
 
-	if (drawBefore)
+	if (!drawBefore)
 		drawPoint.Y += pType->PixelSelectionBracketDelta;
 
 	if (whatAmI == AbstractType::Infantry)
