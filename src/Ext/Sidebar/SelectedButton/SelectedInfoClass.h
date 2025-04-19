@@ -89,7 +89,7 @@ public:
 	void DrawInfo();
 
 	static BSurface* SearchMissingCameo(AbstractType absType, SHPStruct* pSHP);
-	static void GetValuesForDisplay(TechnoClass* pThis, ObjectTypeClass* pFakeType, DisplayInfoType infoType, int& value, int& maxValue);
+	static void GetValuesForDisplay(TechnoClass* pThis, ObjectTypeClass* pFakeType, DisplayInfoType infoType, int& value, int& maxValue, int infoIndex);
 	static TechnoStatus GetCurrentStatus(TechnoClass* pThis);
 
 	int GetMaxCameo() const;

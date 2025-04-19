@@ -102,7 +102,8 @@ void SelectedColumnClass::DrawInfo() const
 	{
 		int value = -1, maxValue = 0;
 		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_UpperType.Get() : DisplayInfoType::Shield;
-		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue);
+		const auto infoIndex = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_UpperIndex.Get() : 0;
+		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue, infoIndex);
 
 		const bool valid = value >= 0 && maxValue > 0;
 		const auto ratio = valid ? static_cast<double>(value) / maxValue : 1.0;
@@ -155,7 +156,8 @@ void SelectedColumnClass::DrawInfo() const
 	{
 		int value = -1, maxValue = 0;
 		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_BelowType.Get() : DisplayInfoType::Health;
-		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue);
+		const auto infoIndex = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_BelowIndex.Get() : 0;
+		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue, infoIndex);
 
 		const bool valid = value >= 0 && maxValue > 0;
 		const auto ratio = valid ? static_cast<double>(value) / maxValue : 1.0;
@@ -207,7 +209,8 @@ void SelectedColumnClass::DrawInfo() const
 	{
 		int value = -1, maxValue = 0;
 		const auto infoType = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_CameoType.Get() : DisplayInfoType::Ammo;
-		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue);
+		const auto infoIndex = pDisplayTypeExt ? pDisplayTypeExt->SelectedInfo_CameoIndex.Get() : 0;
+		SelectedInfoClass::GetValuesForDisplay(pThis, pDisplayType, infoType, value, maxValue, infoIndex);
 
 		auto drawRect = RectangleStruct { 10, position.Y + 24, static_cast<int>(180 * ((value <= -1 || maxValue <= 0) ? 1.0 : (static_cast<double>(value) / maxValue)) + 0.5), 15 };
 		ColorStruct drawColor { 255, 255, 255 };

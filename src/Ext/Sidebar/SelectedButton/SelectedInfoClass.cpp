@@ -494,13 +494,13 @@ BSurface* SelectedInfoClass::SearchMissingCameo(AbstractType absType, SHPStruct*
 	return nullptr;
 }
 
-void SelectedInfoClass::GetValuesForDisplay(TechnoClass* pThis, ObjectTypeClass* pFakeType, DisplayInfoType infoType, int& value, int& maxValue)
+void SelectedInfoClass::GetValuesForDisplay(TechnoClass* pThis, ObjectTypeClass* pFakeType, DisplayInfoType infoType, int& value, int& maxValue, int infoIndex)
 {
 	const auto pTrueType = pThis->GetTechnoType();
 
 	if (pTrueType == pFakeType)
 	{
-		TechnoExt::GetValuesForDisplay(pThis, infoType, value, maxValue);
+		TechnoExt::GetValuesForDisplay(pThis, infoType, value, maxValue, infoIndex);
 		return;
 	}
 
@@ -515,7 +515,7 @@ void SelectedInfoClass::GetValuesForDisplay(TechnoClass* pThis, ObjectTypeClass*
 	}
 	else if (pType)
 	{
-		TechnoExt::GetValuesForDisplay(pThis, infoType, value, maxValue);
+		TechnoExt::GetValuesForDisplay(pThis, infoType, value, maxValue, infoIndex);
 		fakeValue = maxValue;
 	}
 

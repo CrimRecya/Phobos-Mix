@@ -294,12 +294,15 @@ public:
 		PhobosPCXFile GreyCameoPCX;
 
 		Valueable<DisplayInfoType> SelectedInfo_UpperType;
+		Valueable<int> SelectedInfo_UpperIndex;
 		Valueable<ColorStruct> SelectedInfo_UpperColor;
 		Valueable<int> SelectedInfo_UpperDivisor;
 		Valueable<DisplayInfoType> SelectedInfo_BelowType;
+		Valueable<int> SelectedInfo_BelowIndex;
 		Valueable<ColorStruct> SelectedInfo_BelowColor;
 		Valueable<int> SelectedInfo_BelowDivisor;
 		Valueable<DisplayInfoType> SelectedInfo_CameoType;
+		Valueable<int> SelectedInfo_CameoIndex;
 		Nullable<SHPStruct*> SelectedInfo_Button;
 		Nullable<CSFText> UIDescription_HoveredInfo;
 
@@ -756,12 +759,15 @@ public:
 			, GreyCameoPCX {}
 
 			, SelectedInfo_UpperType { DisplayInfoType::Shield }
+			, SelectedInfo_UpperIndex { 0 }
 			, SelectedInfo_UpperColor { { 153, 153, 255 } }
 			, SelectedInfo_UpperDivisor {}
 			, SelectedInfo_BelowType { DisplayInfoType::Health }
+			, SelectedInfo_BelowIndex { 0 }
 			, SelectedInfo_BelowColor { { 0, 0, 0 } }
 			, SelectedInfo_BelowDivisor {}
 			, SelectedInfo_CameoType { DisplayInfoType::Ammo }
+			, SelectedInfo_CameoIndex { 0 }
 			, SelectedInfo_Button {}
 			, UIDescription_HoveredInfo {}
 
