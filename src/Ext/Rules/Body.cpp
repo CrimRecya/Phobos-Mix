@@ -385,14 +385,22 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->UnifiedRadarColor_Ally.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Ally");
 	this->UnifiedRadarColor_Enemy.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Enemy");
 	this->UnifiedRadarColor_Neutral.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Neutral");
-	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.SelfColor", "Green", Phobos::readBuffer);
-	this->UnifiedTechnoColor_SelfColorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
-	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.AllyColor", "Gold", Phobos::readBuffer);
-	this->UnifiedTechnoColor_AllyColorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
-	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.EnemyColor", "Red", Phobos::readBuffer);
-	this->UnifiedTechnoColor_EnemyColorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
-	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.NeutralColor", "LightGrey", Phobos::readBuffer);
-	this->UnifiedTechnoColor_NeutralColorIdx = ColorScheme::FindIndex(Phobos::readBuffer);
+	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.Self", NONE_STR, Phobos::readBuffer);
+	auto colorIndex = ColorScheme::FindIndex(Phobos::readBuffer);
+	if (colorIndex >= 0)
+		this->UnifiedTechnoColor_SelfColorIdx = colorIndex;
+	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.Ally", NONE_STR, Phobos::readBuffer);
+	colorIndex = ColorScheme::FindIndex(Phobos::readBuffer);
+	if (colorIndex >= 0)
+		this->UnifiedTechnoColor_AllyColorIdx = colorIndex;
+	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.Enemy", NONE_STR, Phobos::readBuffer);
+	colorIndex = ColorScheme::FindIndex(Phobos::readBuffer);
+	if (colorIndex >= 0)
+		this->UnifiedTechnoColor_EnemyColorIdx = colorIndex;
+	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.Neutral", NONE_STR, Phobos::readBuffer);
+	colorIndex = ColorScheme::FindIndex(Phobos::readBuffer);
+	if (colorIndex >= 0)
+		this->UnifiedTechnoColor_NeutralColorIdx = colorIndex;
 
 	this->ProneSpeed_Crawls.Read(exINI, GameStrings::General, "ProneSpeed.Crawls");
 	this->ProneSpeed_NoCrawls.Read(exINI, GameStrings::General, "ProneSpeed.NoCrawls");
