@@ -1245,7 +1245,7 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 	{
 		if (const auto pFactory = pHouse->Primary_ForBuildings)
 		{
-			if (pFactory->IsDone())
+			if (pFactory->IsDone() && !HouseExt::ExtMap.Find(pHouse)->Common.Type)
 			{
 				if (const auto pBuilding = abstract_cast<BuildingClass*>(pFactory->Object))
 					BuildingTypeExt::AutoPlaceBuilding(pBuilding);
@@ -1254,7 +1254,7 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 
 		if (const auto pFactory = pHouse->Primary_ForDefenses)
 		{
-			if (pFactory->IsDone())
+			if (pFactory->IsDone() && !HouseExt::ExtMap.Find(pHouse)->Combat.Type)
 			{
 				if (const auto pBuilding = abstract_cast<BuildingClass*>(pFactory->Object))
 					BuildingTypeExt::AutoPlaceBuilding(pBuilding);
