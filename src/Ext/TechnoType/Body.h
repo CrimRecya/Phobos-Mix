@@ -422,7 +422,7 @@ public:
 		std::vector<CoordStruct> ExtraTurretOffsets;
 		Valueable<int> BurstPerTurret;
 
-    	Nullable<UnitTypeClass*> Image_ConditionYellow;
+		Nullable<UnitTypeClass*> Image_ConditionYellow;
 		Nullable<UnitTypeClass*> Image_ConditionRed;
 		Nullable<UnitTypeClass*> WaterImage_ConditionYellow;
 		Nullable<UnitTypeClass*> WaterImage_ConditionRed;
@@ -452,7 +452,7 @@ public:
 		Valueable<int> SinkSpeed;
 
 		Nullable<double> ProneSpeed;
-    	Nullable<double> DamagedSpeed;
+		Nullable<double> DamagedSpeed;
 
 		Nullable<AnimTypeClass*> Promote_VeteranAnimation;
 		Nullable<AnimTypeClass*> Promote_EliteAnimation;
@@ -465,6 +465,8 @@ public:
 		Valueable<bool> WreckageLeaveOnWater;
 		Valueable<bool> WreckageLeaveInAir;
 		Valueable<bool> WreckageSwapLocomotor;
+
+		Nullable<AffectedHouse> RadarInvisibleToHouse;
 
 		struct LaserTrailDataEntry
 		{
@@ -946,6 +948,8 @@ public:
 			, WreckageLeaveOnWater { false }
 			, WreckageLeaveInAir { false }
 			, WreckageSwapLocomotor { false }
+
+			, RadarInvisibleToHouse {}
 
 			, Overload_Count {}
 			, Overload_Damage {}

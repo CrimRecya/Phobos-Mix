@@ -903,6 +903,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->WreckageLeaveInAir.Read(exINI, pSection, "WreckageLeaveInAir");
 	this->WreckageSwapLocomotor.Read(exINI, pSection, "WreckageSwapLocomotor");
 
+	this->RadarInvisibleToHouse.Read(exINI, pSection, "RadarInvisibleToHouse");
+
 	this->Overload_Count.Read(exINI, pSection, "Overload.Count");
 	this->Overload_Damage.Read(exINI, pSection, "Overload.Damage");
 	this->Overload_Frames.Read(exINI, pSection, "Overload.Frames");
@@ -1561,6 +1563,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->WreckageLeaveOnWater)
 		.Process(this->WreckageLeaveInAir)
 		.Process(this->WreckageSwapLocomotor)
+
+		.Process(this->RadarInvisibleToHouse)
 
 		.Process(this->Overload_Count)
 		.Process(this->Overload_Damage)
