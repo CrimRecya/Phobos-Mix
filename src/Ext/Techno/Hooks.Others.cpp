@@ -1565,39 +1565,6 @@ DEFINE_HOOK(0x6FC5B3, TechnoClass_GetFireError_InLimbo, 0x6)
 
 #pragma region RadarDrawing
 
-DEFINE_HOOK(0x655DDD, RadarClass_ProcessPoint_RadarInvisible, 0x6)
-{
-	enum { Invisible = 0x655E66, GoOtherChecks = 0x655E19 };
-
-	GET_STACK(const bool, isInShrouded, STACK_OFFSET(0x40, 0x4));
-	GET(TechnoClass* const, pThis, EBP);
-
-	const auto pTechno = abstract_cast<TechnoClass*>(pThis);
-
-	if (!pTechno)
-		return 0;
-
-	const auto pTechnoOwner = pTechno->Owner;
-	const auto pType = pTechno->GetTechnoType();
-
-	if (HouseClass::CurrentPlayer == pTechnoOwner)
-	{
-		if (TechnoTypeExt::ExtMap.Find(pType)->RadarInvisible_ToSelf)
-			return Invisible;
-	}
-	else if (pTechnoOwner->IsAlliedWith(HouseClass::CurrentPlayer)) // TODO: check asymmetric alliance
-	{
-		if (TechnoTypeExt::ExtMap.Find(pType)->RadarInvisible_ToAlly)
-			return Invisible;
-	}
-	else if (pType->RadarInvisible)
-	{
-		return Invisible;
-	}
-
-	return isInShrouded && !pTechnoOwner->IsControlledByCurrentPlayer() ? Invisible : GoOtherChecks;
-}
-
 DEFINE_HOOK(0x47C329, CellClass_GetRadarColor_UnifiedRadarColor, 0x7)
 {
 	REF_STACK(ColorStruct, rgb1, STACK_OFFSET(0x14, -0x8));

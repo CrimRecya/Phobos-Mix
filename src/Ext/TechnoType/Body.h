@@ -430,9 +430,6 @@ public:
 		Nullable<int> InitialSpawnsNumber;
 		ValueableVector<AircraftTypeClass*> Spawns_Queue;
 
-		Valueable<bool> RadarInvisible_ToSelf;
-		Valueable<bool> RadarInvisible_ToAlly;
-
 		Valueable<int> DefaultVisualCharacter;
 		Nullable<int> DefaultVisualCharacterToSelf;
 		Nullable<int> DefaultVisualCharacterToAlly;
@@ -909,9 +906,6 @@ public:
 			, Spawner_RecycleAnim { }
 			, Spawner_RecycleCoord { {0,0,0} }
 			, Spawner_RecycleOnTurret { false }
-
-			, RadarInvisible_ToSelf { false }
-			, RadarInvisible_ToAlly { false }
 
 			, DefaultVisualCharacter { 0 }
 			, DefaultVisualCharacterToSelf { }
