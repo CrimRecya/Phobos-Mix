@@ -2183,3 +2183,63 @@ DEFINE_HOOK(0x740015, UnitClass_WhatAction_NoManualEject, 0x6)
 #pragma endregion
 
 // TODO Other contributors' impl
+
+
+
+
+
+
+
+
+
+
+
+#pragma region DebugLogInGreatestThreat
+
+DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x9)
+{
+	enum { Continue = 0x6F9C89, NextOne = 0x6F9D93 };
+
+	GET(TechnoClass* const, pThis, ESI);
+
+	auto pTechno = TechnoClass::Array.Items[R->EBX<int>()];
+
+	if (!pTechno->IsAlive)
+	{
+		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
+		{
+			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno [%s](0x%X) with dirty vtable in TechnoArray!",
+				pTechno->get_ID(), reinterpret_cast<DWORD>(pTechno));
+		}
+
+		return NextOne; // next
+	}
+
+	R->ECX(pThis->Owner);
+	R->EDI(pTechno);
+	return Continue;//contunye
+}
+
+DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
+{
+	enum { NextOne = 0x6F9377 };
+
+	GET(TechnoClass* const, pTechno, EBP);
+
+	if (!pTechno->IsAlive)
+	{
+		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
+		{
+			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno [%s](0x%X) with dirty vtable in AircraftTracker!",
+				pTechno->get_ID(), reinterpret_cast<DWORD>(pTechno));
+		}
+
+		return NextOne; // next
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
+// TODO Debug hooks
