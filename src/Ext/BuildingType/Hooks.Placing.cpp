@@ -20,14 +20,7 @@ DEFINE_HOOK(0x6D57C1, TacticalClass_DrawLaserFencePlacement_BuildableTerrain, 0x
 	GET(CellClass*, pCell, ESI);
 
 	if (auto const pTerrain = pCell->GetTerrain(false))
-	{
-		auto const pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
-
-		if (pTypeExt->CanBeBuiltOn)
-			return ContinueChecks;
-
-		return DontDraw;
-	}
+		return TerrainTypeExt::ExtMap.Find(pTerrain->Type)->CanBeBuiltOn ? ContinueChecks : DontDraw;
 
 	return ContinueChecks;
 }
@@ -43,12 +36,9 @@ DEFINE_HOOK(0x5684B1, MapClass_PlaceDown_BuildableUponTypes, 0x6)
 	{
 		for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
 		{
-			if (const auto pTechno = abstract_cast<TechnoClass*>(pObject))
+			if (const auto pTechno = real_abstract_cast<TechnoClass*>(pObject))
 			{
-				const auto pType = pTechno->GetTechnoType();
-				const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-
-				if (pTypeExt && pTypeExt->CanBeBuiltOn)
+				if (TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType())->CanBeBuiltOn)
 				{
 					pTechno->KillPassengers(nullptr);
 					pTechno->Stun();
@@ -56,11 +46,9 @@ DEFINE_HOOK(0x5684B1, MapClass_PlaceDown_BuildableUponTypes, 0x6)
 					pTechno->UnInit();
 				}
 			}
-			else if (const auto pTerrain = abstract_cast<TerrainClass*>(pObject))
+			else if (const auto pTerrain = real_abstract_cast<TerrainClass*>(pObject))
 			{
-				const auto pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
-
-				if (pTypeExt && pTypeExt->CanBeBuiltOn)
+				if (TerrainTypeExt::ExtMap.Find(pTerrain->Type)->CanBeBuiltOn)
 				{
 					pCell->RemoveContent(pTerrain, false);
 					TerrainTypeExt::Remove(pTerrain);
@@ -84,11 +72,9 @@ DEFINE_HOOK(0x5FD2B6, OverlayClass_Unlimbo_SkipTerrainCheck, 0x9)
 
 	for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
 	{
-		if (const auto pTerrain = abstract_cast<TerrainClass*>(pObject))
+		if (const auto pTerrain = real_abstract_cast<TerrainClass*>(pObject))
 		{
-			const auto pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
-
-			if (!pTypeExt || !pTypeExt->CanBeBuiltOn)
+			if (!TerrainTypeExt::ExtMap.Find(pTerrain->Type)->CanBeBuiltOn)
 				return NoUnlimbo;
 
 			pCell->RemoveContent(pTerrain, false);
@@ -130,9 +116,7 @@ DEFINE_HOOK(0x4A8FD7, DisplayClass_BuildingProximityCheck_BuildArea, 0x6)
 
 	GET(BuildingClass*, pCellBuilding, ESI);
 
-	auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pCellBuilding->Type);
-
-	if (pTypeExt->NoBuildAreaOnBuildup && pCellBuilding->CurrentMission == Mission::Construction)
+	if (BuildingTypeExt::ExtMap.Find(pCellBuilding->Type)->NoBuildAreaOnBuildup && pCellBuilding->CurrentMission == Mission::Construction)
 		return SkipBuilding;
 
 	auto const& pBuildingsAllowed = BuildingTypeExt::ExtMap.Find(ProximityTemp::BuildType)->Adjacent_Allowed;
@@ -304,9 +288,8 @@ static inline bool CheckCanNotExistHere(FootClass* const pTechno, HouseClass* co
 	}
 
 	const auto pTechnoType = pTechno->GetTechnoType();
-	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechnoType);
 
-	if (pTypeExt && pTypeExt->CanBeBuiltOn)
+	if (TechnoTypeExt::ExtMap.Find(pTechnoType)->CanBeBuiltOn)
 	{
 		if (pTechno->GetMapCoords() == pTechno->CurrentMapCoords)
 			builtOnCanBeBuiltOn = true;
@@ -351,23 +334,28 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 	{
 		for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
 		{
-			const auto absType = pObject->WhatAmI();
-
-			if (absType == AbstractType::Building)
+			switch (pObject->WhatAmI())
 			{
-				const auto pBuilding = static_cast<BuildingClass*>(pObject);
-				const auto pType = pBuilding->Type;
-				const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+				case AbstractType::Building:
+				{
+					if (!TechnoTypeExt::ExtMap.Find(static_cast<BuildingClass*>(pObject)->Type)->CanBeBuiltOn)
+						return CanNotExistHere;
 
-				if (!pTypeExt || !pTypeExt->CanBeBuiltOn)
-					return CanNotExistHere;
-			}
-			else if (const auto pTerrain = abstract_cast<TerrainClass*>(pObject))
-			{
-				const auto pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
+					break;
+				}
 
-				if (!pTypeExt || !pTypeExt->CanBeBuiltOn)
-					return CanNotExistHere;
+				case AbstractType::Terrain:
+				{
+					if (!TerrainTypeExt::ExtMap.Find(static_cast<TerrainClass*>(pObject)->Type)->CanBeBuiltOn)
+						return CanNotExistHere;
+
+					break;
+				}
+
+				default:
+				{
+					break;
+				}
 			}
 		}
 	}
@@ -378,44 +366,54 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 
 		for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
 		{
-			const auto absType = pObject->WhatAmI();
-
-			if (absType == AbstractType::Aircraft)
+			switch (pObject->WhatAmI())
 			{
-				const auto pAircraft = static_cast<AircraftClass*>(pObject);
-				const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pAircraft->Type);
+				case AbstractType::Aircraft:
+				{
+					if (!TechnoTypeExt::ExtMap.Find(static_cast<AircraftClass*>(pObject)->Type)->CanBeBuiltOn)
+						return CanNotExistHere;
 
-				if (pTypeExt && pTypeExt->CanBeBuiltOn)
 					builtOnCanBeBuiltOn = true;
-				else
-					return CanNotExistHere;
-			}
-			else if (absType == AbstractType::Building)
-			{
-				const auto pBuilding = static_cast<BuildingClass*>(pObject);
-				const auto pType = pBuilding->Type;
-				const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+					break;
+				}
 
-				if (pTypeExt && pTypeExt->CanBeBuiltOn)
-					builtOnCanBeBuiltOn = true;
-				else if (pOwner != pBuilding->Owner || !pType->LaserFence)
-					return CanNotExistHere;
-				else if (pBuildingType->LaserFencePost && !IsSameFenceType(pBuildingType, pType))
-					return CanNotExistHere;
-			}
-			else if (absType == AbstractType::Infantry || absType == AbstractType::Unit)
-			{
-				if (CheckCanNotExistHere(static_cast<FootClass*>(pObject), pOwner, expand, skipFlag, builtOnCanBeBuiltOn, landFootOnly))
-					return CanNotExistHere;
-			}
-			else if (const auto pTerrain = abstract_cast<TerrainClass*>(pObject))
-			{
-				const auto pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
+				case AbstractType::Building:
+				{
+					const auto pBuilding = static_cast<BuildingClass*>(pObject);
+					const auto pType = pBuilding->Type;
 
-				if (pTypeExt && pTypeExt->CanBeBuiltOn)
+					if (TechnoTypeExt::ExtMap.Find(pType)->CanBeBuiltOn)
+						builtOnCanBeBuiltOn = true;
+					else if (pOwner != pBuilding->Owner || !pType->LaserFence)
+						return CanNotExistHere;
+					else if (pBuildingType->LaserFencePost && !IsSameFenceType(pBuildingType, pType))
+						return CanNotExistHere;
+
+					break;
+				}
+
+				case AbstractType::Infantry:
+				case AbstractType::Unit:
+				{
+					if (CheckCanNotExistHere(static_cast<FootClass*>(pObject), pOwner, expand, skipFlag, builtOnCanBeBuiltOn, landFootOnly))
+						return CanNotExistHere;
+
+					break;
+				}
+
+				case AbstractType::Terrain:
+				{
+					if (!TerrainTypeExt::ExtMap.Find(static_cast<TerrainClass*>(pObject)->Type)->CanBeBuiltOn)
+						return CanNotExistHere;
+
 					builtOnCanBeBuiltOn = true;
-				else
-					return CanNotExistHere;
+					break;
+				}
+
+				default:
+				{
+					break;
+				}
 			}
 		}
 
@@ -436,15 +434,9 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 
 		for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
 		{
-			const auto absType = pObject->WhatAmI();
-
-			if (absType == AbstractType::Building)
+			if (const auto pBuilding = real_abstract_cast<BuildingClass*>(pObject))
 			{
-				const auto pBuilding = static_cast<BuildingClass*>(pObject);
-				const auto pType = pBuilding->Type;
-				const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-
-				if (!pTypeExt || !pTypeExt->CanBeBuiltOn)
+				if (!TechnoTypeExt::ExtMap.Find(pBuilding->Type)->CanBeBuiltOn)
 					return CanNotExistHere;
 			}
 		}
@@ -456,32 +448,40 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 
 		for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
 		{
-			const auto absType = pObject->WhatAmI();
-
-			if (absType == AbstractType::Aircraft || absType == AbstractType::Building)
+			switch (pObject->WhatAmI())
 			{
-				const auto pTechno = static_cast<TechnoClass*>(pObject);
-				const auto pTechnoType = pTechno->GetTechnoType();
-				const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechnoType);
+				case AbstractType::Aircraft:
+				case AbstractType::Building:
+				{
+					if (!TechnoTypeExt::ExtMap.Find(pObject->GetTechnoType())->CanBeBuiltOn)
+						return CanNotExistHere;
 
-				if (pTypeExt && pTypeExt->CanBeBuiltOn)
 					builtOnCanBeBuiltOn = true;
-				else
-					return CanNotExistHere;
-			}
-			else if (absType == AbstractType::Infantry || absType == AbstractType::Unit)
-			{
-				if (CheckCanNotExistHere(static_cast<FootClass*>(pObject), pOwner, expand, skipFlag, builtOnCanBeBuiltOn, landFootOnly))
-					return CanNotExistHere;
-			}
-			else if (const auto pTerrain = abstract_cast<TerrainClass*>(pObject))
-			{
-				const auto pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
+					break;
+				}
 
-				if (pTypeExt && pTypeExt->CanBeBuiltOn)
+				case AbstractType::Infantry:
+				case AbstractType::Unit:
+				{
+					if (CheckCanNotExistHere(static_cast<FootClass*>(pObject), pOwner, expand, skipFlag, builtOnCanBeBuiltOn, landFootOnly))
+						return CanNotExistHere;
+
+					break;
+				}
+
+				case AbstractType::Terrain:
+				{
+					if (!TerrainTypeExt::ExtMap.Find(static_cast<TerrainClass*>(pObject)->Type)->CanBeBuiltOn)
+						return CanNotExistHere;
+
 					builtOnCanBeBuiltOn = true;
-				else
-					return CanNotExistHere;
+					break;
+				}
+
+				default:
+				{
+					break;
+				}
 			}
 		}
 
@@ -908,7 +908,7 @@ DEFINE_HOOK(0x4FB339, HouseClass_UnitFromFactory_SkipMouseClear, 0x6)
 
 	if (RulesExt::Global()->ExtendedBuildingPlacing)
 	{
-		if (const auto pBuilding = abstract_cast<BuildingClass*>(pTechno))
+		if (const auto pBuilding = real_abstract_cast<BuildingClass*>(pTechno))
 		{
 			if (const auto pCurrentType = abstract_cast<BuildingTypeClass*>(DisplayClass::Instance.CurrentBuildingType))
 			{

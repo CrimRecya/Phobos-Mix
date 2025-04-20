@@ -9,7 +9,7 @@ static inline void EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, 
 {
 	for (auto pObject = (alt ? pCell->AltObject : pCell->FirstObject); pObject; pObject = pObject->NextObject)
 	{
-		const auto pFoot = abstract_cast<FootClass*>(pObject);
+		const auto pFoot = real_abstract_cast<FootClass*>(pObject);
 
 		if (!pFoot || pFoot == pThis || pFoot->IsTether || !pFoot->Owner->IsAlliedWith(pThis))
 			continue;
@@ -38,7 +38,7 @@ static inline void EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, 
 
 static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, const CoordStruct& coords, bool alt)
 {
-	if (const auto pFoot = abstract_cast<FootClass*>(pThis))
+	if (const auto pFoot = real_abstract_cast<FootClass*>(pThis))
 	{
 		if (RulesExt::Global()->ExtendedScatterAction)
 		{
@@ -300,7 +300,7 @@ static inline void ScatterPathCellContent(FootClass* pThis, CellClass* pCell)
 {
 	for (auto pObject = pCell->GetContent(); pObject; pObject = pObject->NextObject)
 	{
-		const auto pFoot = abstract_cast<FootClass*>(pObject);
+		const auto pFoot = real_abstract_cast<FootClass*>(pObject);
 
 		if (!pFoot || pFoot == pThis || pFoot->IsTether || !pFoot->Owner->IsAlliedWith(pThis))
 			continue;

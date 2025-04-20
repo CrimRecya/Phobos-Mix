@@ -1006,7 +1006,7 @@ DEFINE_HOOK(0x4448CE, BuildingClass_KickOutUnit_RallyPointAreaGuard2, 0x6)
 		return 0;
 
 	auto const pFocus = pThis->ArchiveTarget;
-	auto const pUnit = abstract_cast<UnitClass*>(pProduct);
+	auto const pUnit = real_abstract_cast<UnitClass*>(pProduct);
 	bool isHarvester = pUnit ? pUnit->Type->Harvester : false;
 
 	if (isHarvester)
@@ -1077,7 +1077,7 @@ DEFINE_HOOK(0x444424, BuildingClass_KickOutUnit_RallyPointAreaGuard3, 0x5)
 	if (!pProduct->Owner->IsControlledByHuman())
 		return 0;
 
-	auto const pUnit = abstract_cast<UnitClass*>(pProduct);
+	auto const pUnit = real_abstract_cast<UnitClass*>(pProduct);
 	const bool isHarvester = pUnit ? pUnit->Type->Harvester : false;
 
 	if (RulesExt::Global()->RallyPointAreaGuard && !isHarvester)

@@ -243,7 +243,7 @@ void SelectedNotButtonClass::DrawInfo() const
 	{
 		double mult = 1.0;
 
-		if (const auto pFoot = abstract_cast<FootClass*>(pTechno))
+		if (const auto pFoot = real_abstract_cast<FootClass*>(pTechno))
 			mult = pFoot->SpeedMultiplier * TechnoExt::ExtMap.Find(pFoot)->AE.SpeedMultiplier * (pFoot->HasAbility(Ability::Faster) ? RulesClass::Instance->VeteranSpeed : 1.0);
 
 		int frame = 10;

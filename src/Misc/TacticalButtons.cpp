@@ -124,7 +124,7 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 			{
 				std::vector<CellClass*> pathCells;
 
-				if (const auto pFoot = abstract_cast<FootClass*>(pTechno))
+				if (const auto pFoot = real_abstract_cast<FootClass*>(pTechno))
 				{
 					JumpjetLocomotionClass* pJjLoco = nullptr;
 					FlyLocomotionClass* pFlyLoco = nullptr;
@@ -195,7 +195,7 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 						}
 					}
 				}
-				else if (const auto pBuilding = abstract_cast<BuildingClass*>(pTechno))
+				else if (const auto pBuilding = real_abstract_cast<BuildingClass*>(pTechno))
 				{
 					if (pBuilding->Type->ConstructionYard)
 					{
@@ -289,7 +289,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			DSurface::Composite->DrawLine(&point1, &point2, color);
 		};
 
-		if (const auto pFoot = abstract_cast<FootClass*>(pTechno))
+		if (const auto pFoot = real_abstract_cast<FootClass*>(pTechno))
 		{
 			const auto mtxBase = pFoot->Locomotor ? pFoot->Locomotor->Draw_Matrix(nullptr) : Matrix3D::GetIdentity();
 			const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
@@ -381,12 +381,12 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			auto mapCoords = CellStruct::Empty;
 			auto ID = "N/A";
 
-			if (auto const pObject = abstract_cast<ObjectClass*>(pTarget))
+			if (auto const pObject = real_abstract_cast<ObjectClass*>(pTarget))
 			{
 				mapCoords = pObject->GetMapCoords();
 				ID = pObject->GetType()->get_ID();
 			}
-			else if (auto const pCell = abstract_cast<CellClass*>(pTarget))
+			else if (auto const pCell = real_abstract_cast<CellClass*>(pTarget))
 			{
 				mapCoords = pCell->MapCoords;
 				ID = "Cell";
@@ -477,12 +477,12 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			auto mapCoords = CellStruct::Empty;
 			auto ID = "Unknown";
 
-			if (auto const pObject = abstract_cast<ObjectClass*>(pTarget))
+			if (auto const pObject = real_abstract_cast<ObjectClass*>(pTarget))
 			{
 				mapCoords = pObject->GetMapCoords();
 				ID = pObject->GetType()->get_ID();
 			}
-			else if (auto const pCell = abstract_cast<CellClass*>(pTarget))
+			else if (auto const pCell = real_abstract_cast<CellClass*>(pTarget))
 			{
 				mapCoords = pCell->MapCoords;
 				ID = "Cell";
