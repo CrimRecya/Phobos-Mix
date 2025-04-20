@@ -360,7 +360,7 @@ New:
 - [Removed dependency on `blowfish.dll`](Miscellanous.md#blowfish-dependency) (by ZivDero)
 - [Warhead that can not kill](New-or-Enhanced-Logics.md#warhead-that-cannot-kill) (by FS-21)
 - [Customize parasite culling targets](Fixed-or-Improved-Logics.md#customizing-parasite-culling-targets) (by NetsuNegi)
-- Select box logic (by NetsuNegi)
+- [Overload characteristic dehardcoded](New-or-Enhanced-Logics.md#overload-characteristic-dehardcoded) (by Otamaa)
 
 - New trajectory system (by CrimRecya)
 - New Missile trajectory (by CrimRecya)
@@ -392,6 +392,7 @@ New:
 - Observer sidebar in skirmish game mode (by CrimRecya)
 - New AdvancedDrive locomotor (by CrimRecya)
 - Directional armor (by NetsuNegi)
+- Select box logic (by NetsuNegi)
 
 Vanilla fixes:
 - Prevent the units with locomotors that cause problems from entering the tank bunker (by TaranDahl)

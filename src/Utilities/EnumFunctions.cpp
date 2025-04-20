@@ -13,6 +13,9 @@ bool EnumFunctions::CanTargetHouse(AffectedHouse flags, HouseClass* ownerHouse, 
 
 bool EnumFunctions::IsCellEligible(CellClass* const pCell, AffectedTarget allowed, bool explicitEmptyCells, bool considerBridgesLand)
 {
+	if (allowed == AffectedTarget::All)
+		return true;
+
 	if (explicitEmptyCells)
 	{
 		auto pTechno = pCell->GetContent() ? abstract_cast<TechnoClass*>(pCell->GetContent()) : nullptr;
@@ -34,6 +37,9 @@ bool EnumFunctions::IsCellEligible(CellClass* const pCell, AffectedTarget allowe
 
 bool EnumFunctions::IsTechnoEligible(TechnoClass* const pTechno, AffectedTarget allowed, bool considerAircraftSeparately)
 {
+	if (allowed == AffectedTarget::All)
+		return true;
+
 	if (allowed & AffectedTarget::AllContents)
 	{
 		if (pTechno)
