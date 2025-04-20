@@ -621,7 +621,7 @@ static inline void PlayConstructionYardAnim(BuildingClass* const pFactory)
 
 static inline bool CheckBuildingFoundation(BuildingTypeClass* const pBuildingType, const CellStruct topLeftCell, HouseClass* const pHouse, bool& noOccupy)
 {
-	for (auto pFoundation = pBuildingType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+	for (auto pFoundation = pBuildingType->GetFoundationData(true); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
 	{
 		if (const auto pCell = MapClass::Instance.TryGetCellAt(topLeftCell + *pFoundation))
 		{
@@ -1271,7 +1271,30 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 		if (!pType)
 			return;
 
-		if (reinterpret_cast<bool(__thiscall*)(HouseClass*, TechnoTypeClass*)>(0x50B370)(pHouse, pType)) // ShouldDisableCameo
+		auto currentCanBuild = [&pHouse, &pType]() -> const bool
+		{
+			auto const bitsOwners = pType->GetOwners();
+
+			for(auto const& pConYard : pHouse->ConYards)
+			{
+				if (pConYard->InLimbo || !pConYard->HasPower)
+					continue;
+
+				if (pConYard->CurrentMission == Mission::Selling || pConYard->QueuedMission == Mission::Selling)
+					continue;
+
+				auto const pType = pConYard->Type;
+
+				if (pType->Factory != AbstractType::Building || !pType->InOwners(bitsOwners))
+					continue;
+
+				return true;
+			}
+
+			return false;
+		};
+
+		if (currentCanBuild())
 		{
 			ClearPlacingBuildingData(pType->BuildCat != BuildCat::Combat ? &pHouseExt->Common : &pHouseExt->Combat);
 
