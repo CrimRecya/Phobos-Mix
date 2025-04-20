@@ -138,6 +138,7 @@ This page lists all the individual contributions to the project by their author.
   - Grant new superweapons in superweapons
   - Map Events 604 & 605 for checking if a specific Techno enters in a cell
   - Warhead that can not kill
+  - `Pips.HideIfNoStrength` and `SelfHealing.EnabledBy` additions for shields
 - **Starkku**:
   - Misc. minor bugfixes & improvements
   - AI script actions:
@@ -379,6 +380,7 @@ This page lists all the individual contributions to the project by their author.
   - Fix wrong shadow when a vehicle has hover locomotor and is being lifted by `IsLocomotor=yes` warhead
   - Fix the bug that a unit can overlap with `Teleport` units after it's been damaged by a fallen unit lifted by `IsLocomotor=yes` warheads
   - Customize parasite culling targets
+  - Customize harvester dump amount
   - Select box logic
   - Exclusive SuperWeapon Sidebar
   - Directional armor
