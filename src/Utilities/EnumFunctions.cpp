@@ -2,6 +2,8 @@
 
 bool EnumFunctions::CanTargetHouse(AffectedHouse flags, HouseClass* ownerHouse, HouseClass* targetHouse)
 {
+	if (flags == AffectedHouse::All)
+		return true;
 	if (ownerHouse == targetHouse)
 		return (flags & AffectedHouse::Owner) != AffectedHouse::None;
 	if (ownerHouse->IsAlliedWith(targetHouse))
