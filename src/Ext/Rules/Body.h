@@ -316,9 +316,6 @@ public:
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
-		Valueable<bool> Airstrike_TargetCell;
-		Valueable<bool> Airstrike_SecondaryFirst;
-
 		Valueable<bool> ExtraTargeting_OnLoseTarget;
 		Valueable<bool> ExtraTargeting_OnStopCommand;
 		Valueable<bool> ExtraTargeting_OnNoTargetAssigned;
@@ -615,9 +612,6 @@ public:
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
-
-			, Airstrike_TargetCell { true }
-			, Airstrike_SecondaryFirst { true }
 
 			, ExtraTargeting_OnLoseTarget { false }
 			, ExtraTargeting_OnStopCommand { false }

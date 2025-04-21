@@ -361,9 +361,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->BuildingTypeSelectable.Read(exINI, GameStrings::General, "BuildingTypeSelectable");
 
-	this->Airstrike_TargetCell.Read(exINI, GameStrings::General, "Airstrike.TargetCell");
-	this->Airstrike_SecondaryFirst.Read(exINI, GameStrings::General, "Airstrike.SecondaryFirst");
-
 	this->ExtraTargeting_OnLoseTarget.Read(exINI, GameStrings::General, "ExtraTargeting.OnLoseTarget");
 	this->ExtraTargeting_OnStopCommand.Read(exINI, GameStrings::General, "ExtraTargeting.OnStopCommand");
 	this->ExtraTargeting_OnNoTargetAssigned.Read(exINI, GameStrings::General, "ExtraTargeting.OnNoTargetAssigned");
@@ -726,8 +723,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->CombatLightDetailLevel)
 		.Process(this->LightFlashAlphaImageDetailLevel)
 		.Process(this->BuildingTypeSelectable)
-		.Process(this->Airstrike_TargetCell)
-		.Process(this->Airstrike_SecondaryFirst)
 		.Process(this->ExtraTargeting_OnLoseTarget)
 		.Process(this->ExtraTargeting_OnStopCommand)
 		.Process(this->ExtraTargeting_OnNoTargetAssigned)
