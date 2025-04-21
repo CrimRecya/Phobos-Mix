@@ -88,7 +88,7 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 
 			if (pRules->CombatAlert_IgnoreBuilding)
 			{
-				if (const auto pBuilding = real_abstract_cast<BuildingClass*>(pThis))
+				if (const auto pBuilding = abstract_cast<BuildingClass*, true>(pThis))
 				{
 					if (!pTypeExt->CombatAlert_NotBuilding.Get(pBuilding->Type->IsVehicle()))
 						return;

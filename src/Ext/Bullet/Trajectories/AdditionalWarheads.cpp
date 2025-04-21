@@ -300,7 +300,7 @@ bool PhobosTrajectory::CheckThroughAndSubjectInCell(CellClass* pCell, HouseClass
 
 	for (auto pObject = pCell->GetContent(); pObject; pObject = pObject->NextObject)
 	{
-		const auto pTechno = real_abstract_cast<TechnoClass*>(pObject);
+		const auto pTechno = abstract_cast<TechnoClass*, true>(pObject);
 		// Non technos and not target friendly forces will be excluded
 		if (!pTechno || (pOwner && pOwner->IsAlliedWith(pTechno->Owner) && pTechno != pBullet->Target))
 			continue;
@@ -405,7 +405,7 @@ void PhobosTrajectory::PrepareForDetonateAt()
 	{
 		for (auto pObject = pRecCell->GetContent(); pObject; pObject = pObject->NextObject)
 		{
-			const auto pTechno = real_abstract_cast<TechnoClass*>(pObject);
+			const auto pTechno = abstract_cast<TechnoClass*, true>(pObject);
 
 			if (!pTechno || PhobosTrajectory::CheckTechnoIsInvalid(pTechno))
 				continue;

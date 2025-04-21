@@ -550,7 +550,7 @@ TechnoStatus SelectedInfoClass::GetCurrentStatus(TechnoClass* pThis)
 
 	if (pDisguise)
 	{
-		if (const auto pFoot = real_abstract_cast<FootClass*>(pThis))
+		if (const auto pFoot = abstract_cast<FootClass*, true>(pThis))
 		{
 			if (pFoot->LocomotorSource)
 				return TechnoStatus::Locomotor;
@@ -562,7 +562,7 @@ TechnoStatus SelectedInfoClass::GetCurrentStatus(TechnoClass* pThis)
 		return TechnoStatus::Guard;
 	}
 
-	if (const auto pBuilding = real_abstract_cast<BuildingClass*>(pThis))
+	if (const auto pBuilding = abstract_cast<BuildingClass*, true>(pThis))
 	{
 		if (!pOwner->IsControlledByHuman())
 		{
@@ -593,7 +593,7 @@ TechnoStatus SelectedInfoClass::GetCurrentStatus(TechnoClass* pThis)
 			}
 		}
 	}
-	else if (const auto pFoot = real_abstract_cast<FootClass*>(pThis))
+	else if (const auto pFoot = abstract_cast<FootClass*, true>(pThis))
 	{
 		if (pFoot->LocomotorSource)
 			return TechnoStatus::Locomotor;
