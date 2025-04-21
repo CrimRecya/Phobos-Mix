@@ -94,6 +94,8 @@ public:
 
 		BuildingClass* BuildingOccupying;
 
+		AirstrikeClass* AirstrikeTargetingMe;
+
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
 			, Shield {}
@@ -159,6 +161,7 @@ public:
 			, PlayerAssignedLastTarget { 0xFFFFFFFF }
 			, IsWreckage { false }
 			, BuildingOccupying { }
+			, AirstrikeTargetingMe { nullptr }
 		{ }
 
 		void OnEarlyUpdate();

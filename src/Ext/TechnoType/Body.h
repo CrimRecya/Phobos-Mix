@@ -420,6 +420,8 @@ public:
 
 		Valueable<int> Power;
 
+		Nullable<bool> AllowAirstrike;
+
 		Valueable<int> ExtraTurretCount;
 		std::vector<CoordStruct> ExtraTurretOffsets;
 		Valueable<int> BurstPerTurret;
@@ -898,7 +900,9 @@ public:
 			, ExtraTurretOffsets { }
 			, BurstPerTurret { 0 }
 
-      		, Image_ConditionYellow { }
+			, AllowAirstrike { }
+
+	  		, Image_ConditionYellow { }
 			, Image_ConditionRed { }
 			, WaterImage_ConditionYellow { }
 			, WaterImage_ConditionRed { }

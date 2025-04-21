@@ -196,10 +196,12 @@ public:
 		Valueable<AffectedTarget> KillWeapon_Affects;
 		Valueable<AffectedTarget> KillWeapon_OnFirer_Affects;
 
-    	Valueable<int> ElectricAssaultLevel;
+		Valueable<int> ElectricAssaultLevel;
 
 		Valueable<bool> SuppressWreckage;
 		Valueable<bool> ActivateWreckage;
+
+		Valueable<AffectedTarget> AirstrikeTargets;
 
 		// Ares tags
 		// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
@@ -400,6 +402,8 @@ public:
 
 			, SuppressWreckage { false }
 			, ActivateWreckage { false }
+
+			, AirstrikeTargets { AffectedTarget::Building }
 
 			, AffectsEnemies { true }
 			, AffectsOwner {}

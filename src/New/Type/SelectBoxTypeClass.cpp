@@ -16,13 +16,13 @@ void SelectBoxTypeClass::LoadFromINI(CCINIClass* pINI)
 
 	this->Shape.Read(exINI, pSection, "Shape");
 	this->Palette.LoadFromINI(pINI, pSection, "Palette");
-	this->Frame.Read(exINI, pSection, "Frame");
+	this->Frames.Read(exINI, pSection, "Frames");
 	this->Grounded.Read(exINI, pSection, "Grounded");
 	this->Offset.Read(exINI, pSection, "Offset");
 	this->Translucency.Read(exINI, pSection, "Translucency");
-	this->Show.Read(exINI, pSection, "Show");
-	this->ShowObserver.Read(exINI, pSection, "ShowObserver");
-	this->OverTechno.Read(exINI, pSection, "OverTechno");
+	this->VisibleToHouses.Read(exINI, pSection, "VisibleToHouses");
+	this->VisibleToHouses_Observer.Read(exINI, pSection, "VisibleToHouses.Observer");
+	this->DrawAboveTechno.Read(exINI, pSection, "DrawAboveTechno");
 }
 
 template <typename T>
@@ -31,13 +31,13 @@ void SelectBoxTypeClass::Serialize(T& Stm)
 	Stm
 		.Process(this->Shape)
 		.Process(this->Palette)
-		.Process(this->Frame)
+		.Process(this->Frames)
 		.Process(this->Grounded)
 		.Process(this->Offset)
 		.Process(this->Translucency)
-		.Process(this->Show)
-		.Process(this->ShowObserver)
-		.Process(this->OverTechno)
+		.Process(this->VisibleToHouses)
+		.Process(this->VisibleToHouses_Observer)
+		.Process(this->DrawAboveTechno)
 		;
 }
 

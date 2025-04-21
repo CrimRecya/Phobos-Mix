@@ -319,6 +319,8 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->SuppressWreckage.Read(exINI, pSection, "SuppressWreckage");
 	this->ActivateWreckage.Read(exINI, pSection, "ActivateWreckage");
 
+	this->AirstrikeTargets.Read(exINI, pSection, "AirstrikeTargets");
+
 	// Convert.From & Convert.To
 	TypeConvertGroup::Parse(this->Convert_Pairs, exINI, pSection, AffectedHouse::All);
 
@@ -591,10 +593,12 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->KillWeapon_Affects)
 		.Process(this->KillWeapon_OnFirer_Affects)
 
-    	.Process(this->ElectricAssaultLevel)
+		.Process(this->ElectricAssaultLevel)
 
 		.Process(this->SuppressWreckage)
 		.Process(this->ActivateWreckage)
+
+		.Process(this->AirstrikeTargets)
 
 		// Ares tags
 		.Process(this->AffectsEnemies)

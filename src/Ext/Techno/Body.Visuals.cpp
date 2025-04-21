@@ -629,15 +629,15 @@ void TechnoExt::DrawSelectBox(TechnoClass* pThis, const Point2D* pLocation, cons
 	else if (whatAmI != BuildingClass::AbsID)
 		pSelectBox = RulesExt::Global()->DefaultUnitSelectBox.Get();
 
-	if (!pSelectBox)
+	if (!pSelectBox || pSelectBox->DrawAboveTechno == drawBefore)
 		return;
 
 	const auto pShape = pSelectBox->Shape.Get();
 
-	if (!pShape || pSelectBox->OverTechno == drawBefore)
+	if (!pShape)
 		return;
 
-	const bool canSee = HouseClass::IsCurrentPlayerObserver() ? pSelectBox->ShowObserver : EnumFunctions::CanTargetHouse(pSelectBox->Show, pThis->Owner, HouseClass::CurrentPlayer);
+	const bool canSee = HouseClass::IsCurrentPlayerObserver() ? pSelectBox->VisibleToHouses_Observer : EnumFunctions::CanTargetHouse(pSelectBox->VisibleToHouses, pThis->Owner, HouseClass::CurrentPlayer);
 
 	if (!canSee)
 		return;
@@ -645,7 +645,7 @@ void TechnoExt::DrawSelectBox(TechnoClass* pThis, const Point2D* pLocation, cons
 	const auto pPalette = pSelectBox->Palette.GetOrDefaultConvert(FileSystem::PALETTE_PAL);
 
 	const double healthPercentage = pThis->GetHealthPercentage();
-	const Vector3D<int> frames = pSelectBox->Frame.Get(whatAmI == AbstractType::Infantry ? CoordStruct { 1,1,1 } : CoordStruct { 0,0,0 });
+	const Vector3D<int> frames = pSelectBox->Frames.Get(whatAmI == AbstractType::Infantry ? CoordStruct { 1,1,1 } : CoordStruct { 0,0,0 });
 	const int frame = healthPercentage > RulesClass::Instance->ConditionYellow ? frames.X : healthPercentage > RulesClass::Instance->ConditionRed ? frames.Y : frames.Z;
 
 	Point2D drawPoint = *pLocation;
@@ -665,7 +665,7 @@ void TechnoExt::DrawSelectBox(TechnoClass* pThis, const Point2D* pLocation, cons
 
 	drawPoint += pSelectBox->Offset;
 
-	if (!drawBefore)
+	if (pSelectBox->DrawAboveTechno)
 		drawPoint.Y += pType->PixelSelectionBracketDelta;
 
 	if (whatAmI == AbstractType::Infantry)
