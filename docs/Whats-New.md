@@ -365,6 +365,7 @@ New:
 - [Customize harvester dump amount](Fixed-or-Improved-Logics.md#customize-harvester-dump-amount) (by NetsuNegi)
 - Select box logic (by NetsuNegi)
 - Customize airstrike targets (by NetsuNegi)
+- Aggressive attack move mission (by CrimRecya)
 
 - New trajectory system (by CrimRecya)
 - New Missile trajectory (by CrimRecya)

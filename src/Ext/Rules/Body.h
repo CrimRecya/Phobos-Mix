@@ -292,6 +292,9 @@ public:
 		// Nullable<Vector3D<float>> VoxelShadowLightSource;
 		Valueable<bool> UseFixedVoxelLighting;
 
+		Valueable<bool> AttackMove_Aggressive;
+		Valueable<bool> AttackMove_UpdateTarget;
+
 		Valueable<int> MindControl_ThreatDelay;
 
 		Valueable<bool> RecountBurst;
@@ -594,6 +597,8 @@ public:
 			, EndDistributionModeSound { -1 }
 			, AddDistributionModeCommandSound { -1 }
 			, UseFixedVoxelLighting { false }
+			, AttackMove_Aggressive { false }
+			, AttackMove_UpdateTarget { false }
 			, MindControl_ThreatDelay { 0 }
 			, RecountBurst { false }
 			, NoRearm_UnderEMP { false }

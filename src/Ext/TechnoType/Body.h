@@ -902,7 +902,7 @@ public:
 
 			, AllowAirstrike { }
 
-	  		, Image_ConditionYellow { }
+			, Image_ConditionYellow { }
 			, Image_ConditionRed { }
 			, WaterImage_ConditionYellow { }
 			, WaterImage_ConditionRed { }

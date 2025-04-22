@@ -458,6 +458,7 @@ This page lists all the individual contributions to the project by their author.
   - Jumpjet Tilts While Moving
   - Fix an issue that game crashes (EIP:7FB178) when infantry are about to enter an occupiable building that has been removed and is not real dead
   - Fix an issue that game crashes when spawnee has been removed and is not real dead
+  - Aggressive attack move mission
   - New trajectory system
   - New Missile trajectory
   - New Engrave trajectory
@@ -473,7 +474,6 @@ This page lists all the individual contributions to the project by their author.
   - Grey cameo preview and cameo overlays
   - Optimize aircrafts stop action and allow they using area guard and attack moving
   - Exclusive Sidebar for Superweapons
-  - Aggressive attack move mission
   - Manually empty and reload ammo
   - Allow merging AOE damage to buildings into one
   - Distribution click action mode
