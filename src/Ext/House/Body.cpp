@@ -775,6 +775,23 @@ void HouseExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	}
 }
 
+int HouseExt::ExtData::GetForceEnemyIndex()
+{
+	auto const pHouse = this->OwnerObject();
+	if (!pHouse)
+		return -1;
+
+	return this->ForceEnemyIndex;
+}
+
+void HouseExt::ExtData::SetForceEnemyIndex(int EnemyIndex)
+{
+	if (EnemyIndex < 0 && EnemyIndex != -2)
+		this->ForceEnemyIndex = -1;
+	else
+		this->ForceEnemyIndex = EnemyIndex;
+}
+
 // =============================
 // load / save
 
@@ -813,6 +830,7 @@ void HouseExt::ExtData::Serialize(T& Stm)
 		.Process(this->SuspendedEMPulseSWs)
 		.Process(this->SuperExts)
 		.Process(this->SpyEffect_RadarJamTimer)
+		.Process(this->ForceEnemyIndex)
 		;
 }
 

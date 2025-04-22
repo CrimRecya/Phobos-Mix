@@ -80,6 +80,8 @@ public:
 
 		CDTimerClass SpyEffect_RadarJamTimer;
 
+		int ForceEnemyIndex;
+
 		ExtData(HouseClass* OwnerObject) : Extension<HouseClass>(OwnerObject)
 			, PowerPlantEnhancers {}
 			, OwnedLimboDeliveredBuildings {}
@@ -112,6 +114,7 @@ public:
 			, SuspendedEMPulseSWs {}
 			, SuperExts(SuperWeaponTypeClass::Array.Count)
 			, SpyEffect_RadarJamTimer {}
+			, ForceEnemyIndex(-1)
 		{ }
 
 		bool OwnsLimboDeliveredBuilding(BuildingClass* pBuilding);
@@ -121,6 +124,9 @@ public:
 		void UpdateNonMFBFactoryCounts(AbstractType rtti, bool remove, bool isNaval);
 		int GetFactoryCountWithoutNonMFB(AbstractType rtti, bool isNaval);
 		float GetRestrictedFactoryPlantMult(TechnoTypeClass* pTechnoType) const;
+
+		int GetForceEnemyIndex();
+		void SetForceEnemyIndex(int EnemyIndex);
 
 		virtual ~ExtData() = default;
 
