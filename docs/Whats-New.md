@@ -366,6 +366,7 @@ New:
 - Select box logic (by NetsuNegi)
 - Customize airstrike targets (by NetsuNegi)
 - Aggressive attack move mission (by CrimRecya)
+- Amphibious access vehicle (by CrimRecya)
 
 - New trajectory system (by CrimRecya)
 - New Missile trajectory (by CrimRecya)
