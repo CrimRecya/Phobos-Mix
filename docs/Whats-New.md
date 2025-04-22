@@ -378,7 +378,6 @@ New:
 - Building placing and deploying logic enhancement (by CrimRecya)
 - Techno base normal and new placing grids (by CrimRecya)
 - Grey cameo preview and cameo overlays (by CrimRecya)
-- Aggressive attack move mission (by CrimRecya)
 - Manually empty and reload ammo (by CrimRecya)
 - Exclusive SuperWeapon Sidebar (by NetsuNegi & CrimRecya)
 - Allow merging AOE damage to buildings into one (by CrimRecya)

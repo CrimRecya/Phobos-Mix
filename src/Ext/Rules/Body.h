@@ -148,8 +148,6 @@ public:
 		Valueable<bool> AIBiasSpawnCell;
 		Valueable<bool> AIForbidConYard;
 		Valueable<int> CleanUpAirBarrier;
-		Valueable<bool> AttackMove_Aggressive;
-		Valueable<bool> AttackMove_UpdateTarget;
 		Valueable<bool> ExtendedScatterAction;
 		Valueable<bool> MergeBuildingDamage;
 
@@ -467,8 +465,6 @@ public:
 			, SelectedAircraftMissingPCX {}
 			, SelectedBuildingMissingPCX {}
 			, CleanUpAirBarrier { 0 }
-			, AttackMove_Aggressive { false }
-			, AttackMove_UpdateTarget { false }
 			, ExtendedScatterAction { false }
 			, MergeBuildingDamage { false }
 

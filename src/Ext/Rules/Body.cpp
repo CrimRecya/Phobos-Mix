@@ -195,8 +195,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->AIBiasSpawnCell.Read(exINI, GameStrings::AI, "AIBiasSpawnCell");
 	this->AIForbidConYard.Read(exINI, GameStrings::AI, "AIForbidConYard");
 	this->CleanUpAirBarrier.Read(exINI, GameStrings::General, "CleanUpAirBarrier");
-	this->AttackMove_Aggressive.Read(exINI, GameStrings::General, "AttackMove.Aggressive");
-	this->AttackMove_UpdateTarget.Read(exINI, GameStrings::General, "AttackMove.UpdateTarget");
 	this->ExtendedScatterAction.Read(exINI, GameStrings::General, "ExtendedScatterAction");
 	this->MergeBuildingDamage.Read(exINI, GameStrings::CombatDamage, "MergeBuildingDamage");
 
@@ -585,8 +583,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AIBiasSpawnCell)
 		.Process(this->AIForbidConYard)
 		.Process(this->CleanUpAirBarrier)
-		.Process(this->AttackMove_Aggressive)
-		.Process(this->AttackMove_UpdateTarget)
 		.Process(this->ExtendedScatterAction)
 		.Process(this->MergeBuildingDamage)
 		.Process(this->AllowParallelAIQueues)
