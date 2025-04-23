@@ -717,9 +717,6 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 	if (vxl_index_key.Is_Valid_Key())
 		vxl_index_key.TurretWeapon.Facing = pThis->SecondaryFacing.Current().GetFacing<32>();
 
-	uTypeExt->ApplyTurretOffset(&mtx, Pixel_Per_Lepton);
-	mtx.RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - pThis->PrimaryFacing.Current().GetRadian<32>()));
-
 	auto GetBarrelVoxel = [pType](int idx)->VoxelStruct*
 		{
 			if (pType->TurretCount == 0 || pType->IsGattling || idx < 0)
@@ -738,45 +735,44 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 		};
 	auto bar = GetBarrelVoxel(pThis->CurrentTurretNumber);
 	auto haveBar = bar && bar->VXL && bar->HVA && !bar->VXL->Initialized;
-
 	auto* cache = &pType->VoxelShadowCache;
 
 	if (!pType->UseTurretShadow)
 		cache = (haveBar || tur != &pType->TurretVoxel) ? nullptr : reinterpret_cast<decltype(cache)>(&pType->VoxelTurretBarrelCache);
 
-	auto drawTurretShadow = [&](Point2D* const shadowLocation)
+	auto drawTurretShadow = [&](int turIdx)
 		{
+			auto mtx_turret = mtx;
+			uTypeExt->ApplyTurretOffset(&mtx_turret, Pixel_Per_Lepton, turIdx);
+			const auto turingRadian = static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - pThis->PrimaryFacing.Current().GetRadian<32>());
+			mtx_turret.RotateZ(turingRadian);
+
 			auto inRecoil = pType->TurretRecoil && pThis->TurretRecoil.State != RecoilData::RecoilState::Inactive;
+
 			if (inRecoil)
-				mtx.TranslateX(-pThis->TurretRecoil.TravelSoFar);
+				mtx_turret.TranslateX(-pThis->TurretRecoil.TravelSoFar);
 
-			pThis->DrawVoxelShadow(tur, 0, (inRecoil ? VoxelIndexKey(-1) : vxl_index_key), (inRecoil ? nullptr : cache),
-				bnd, shadowLocation, &mtx, (!inRecoil && cache != nullptr), surface, shadow_point);
+			pThis->DrawVoxelShadow(tur, 0, ((inRecoil || turIdx >= 0) ? VoxelIndexKey(-1) : vxl_index_key), ((inRecoil || turIdx >= 0) ? nullptr : cache),
+				bnd, &shadowCenter, &mtx_turret, (!inRecoil && turIdx < 0 && cache != nullptr), surface, shadow_point);
 
-			if (haveBar)// you are utterly fucked, for now
+			if (haveBar)
 			{
 				if (pType->TurretRecoil && pThis->BarrelRecoil.State != RecoilData::RecoilState::Inactive)
-					mtx.TranslateX(-pThis->BarrelRecoil.TravelSoFar);
+					mtx_turret.TranslateX(-pThis->BarrelRecoil.TravelSoFar);
 
-				mtx.ScaleX(static_cast<float>(Math::cos(-pThis->BarrelFacing.Current().GetRadian<32>())));
-				pThis->DrawVoxelShadow(bar, 0, VoxelIndexKey(-1), nullptr, bnd, shadowLocation, &mtx, false, surface, shadow_point);
+				mtx_turret.ScaleX(static_cast<float>(Math::cos(-pThis->BarrelFacing.Current().GetRadian<32>())));
+				pThis->DrawVoxelShadow(bar, 0, VoxelIndexKey(-1), nullptr, bnd, &shadowCenter, &mtx_turret, false, surface, shadow_point);
 			}
 		};
-	drawTurretShadow(&shadowCenter);
+	drawTurretShadow(-1);
 
 	const auto exTurCount = uTypeExt->ExtraTurretCount.Get();
 
-	if (exTurCount > 0)
-	{
-		const auto turCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, uTypeExt->TurretOffset.Get(), false);
+	if (exTurCount <= 0)
+		return SkipDrawing;
 
-		for (int i = 0; i < exTurCount; ++i)
-		{
-			const auto deltaCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, uTypeExt->ExtraTurretOffsets[i], false) - turCrd;
-			auto turretCenter = shadowCenter + TacticalClass::CoordsToScreen(deltaCrd);
-			drawTurretShadow(&turretCenter);
-		}
-	}
+	for (int i = 0; i < exTurCount; ++i)
+		drawTurretShadow(i);
 
 	return SkipDrawing;
 }
