@@ -60,6 +60,8 @@ public:
 		WeaponTypeClass* LastWeaponType;
 		CoordStruct LastWeaponFLH;
 		std::shared_ptr<PhobosMap<DWORD, std::pair<std::vector<DWORD>, std::pair<double, bool>>>> TrajectoryGroup;
+		std::vector<RecoilData> ExtraTurretRecoil;
+		std::vector<RecoilData> ExtraBarrelRecoil;
 		int ScatteringStopFrame;
 		int MyTargetingFrame;
 		int AttackMoveFollowerTempCount;
@@ -134,6 +136,8 @@ public:
 			, LastWeaponType {}
 			, LastWeaponFLH {}
 			, TrajectoryGroup {}
+			, ExtraTurretRecoil {}
+			, ExtraBarrelRecoil {}
 			, ScatteringStopFrame { 0 }
 			, MyTargetingFrame { ScenarioClass::Instance->Random.RandomRanged(0,15) }
 			, AttackMoveFollowerTempCount { 0 }
@@ -191,6 +195,9 @@ public:
 		void InitializeLaserTrails();
 		void InitializeAttachEffects();
 		void UpdateSelfOwnedAttachEffects();
+		void RecordRecoilData();
+		void UpdateRecoilData();
+		void InitializeRecoilData();
 		bool HasAttachedEffects(std::vector<AttachEffectTypeClass*> attachEffectTypes, bool requireAll, bool ignoreSameSource, TechnoClass* pInvoker, AbstractClass* pSource, std::vector<int> const* minCounts, std::vector<int> const* maxCounts) const;
 		int GetAttachedEffectCumulativeCount(AttachEffectTypeClass* pAttachEffectType, bool ignoreSameSource = false, TechnoClass* pInvoker = nullptr, AbstractClass* pSource = nullptr) const;
 		void InitializeDisplayInfo();

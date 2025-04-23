@@ -41,6 +41,7 @@ void TechnoExt::ExtData::OnEarlyUpdate()
 	this->ApplyMindControlRangeLimit();
 	this->UpdateRecountBurst();
 	this->UpdateRearmInEMPState();
+	this->UpdateRecoilData();
 	this->UpdateCachedClick();
 
 	if (this->AttackMoveFollowerTempCount)
@@ -482,6 +483,9 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 				vec.push_back(this);
 		}
 	}
+
+	// Reset recoil data
+	this->InitializeRecoilData();
 
 	// Recreate Laser Trails
 	if (this->LaserTrails.size())
@@ -1052,6 +1056,57 @@ void TechnoExt::UpdateSharedAmmo(TechnoClass* pThis)
 			}
 		}
 	}
+}
+
+void TechnoExt::ExtData::RecordRecoilData()
+{
+	const auto pThis = this->OwnerObject();
+	const auto pTypeExt = this->TypeExtData;
+
+	if (auto turretIndex = pTypeExt->BurstPerTurret
+		? ((pThis->CurrentBurstIndex / pTypeExt->BurstPerTurret) % (pTypeExt->ExtraTurretCount + 1))
+		: 0)
+	{
+		turretIndex -= 1;
+		this->ExtraTurretRecoil[turretIndex].TravelSoFar = 0.0;
+		this->ExtraTurretRecoil[turretIndex].Fire();
+	}
+	else
+	{
+		pThis->TurretRecoil.TravelSoFar = 0.0;
+		pThis->TurretRecoil.Fire();
+	}
+
+	if (auto barrelIndex = (pTypeExt->ExtraTurretCount || pTypeExt->ExtraBarrelCount)
+		? (pThis->CurrentBurstIndex % ((pTypeExt->ExtraBarrelCount + 1) * (pTypeExt->ExtraTurretCount + 1)))
+		: 0)
+	{
+		barrelIndex -= 1;
+		this->ExtraBarrelRecoil[barrelIndex].TravelSoFar = 0.0;
+		this->ExtraBarrelRecoil[barrelIndex].Fire();
+	}
+	else
+	{
+		pThis->BarrelRecoil.TravelSoFar = 0.0;
+		pThis->BarrelRecoil.Fire();
+	}
+}
+
+void TechnoExt::ExtData::UpdateRecoilData()
+{
+	if (!this->TypeExtData->OwnerObject()->TurretRecoil)
+		return;
+
+	const auto pThis = this->OwnerObject();
+
+	pThis->TurretRecoil.Update();
+	pThis->BarrelRecoil.Update();
+
+	for (auto& data : this->ExtraTurretRecoil)
+		data.Update();
+
+	for (auto& data : this->ExtraBarrelRecoil)
+		data.Update();
 }
 
 void TechnoExt::ExtData::UpdateTemporal()

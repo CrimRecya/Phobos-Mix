@@ -73,10 +73,11 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 	LEA_STACK(RectangleStruct* const, rect, STACK_OFFSET(0x1C4, -0x164));
 
 	const auto mtx = Matrix3D::VoxelDefaultMatrix * draw_matrix;
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
 	const auto pDrawTypeExt = TechnoTypeExt::ExtMap.Find(pDrawType);
 	const bool notChargeTurret = pThis->Type->TurretCount <= 0 || pThis->Type->IsGattling;
 
-	auto GetTurretVoxel = [pDrawType, notChargeTurret, currentTurretNumber]() -> VoxelStruct*
+	auto getTurretVoxel = [pDrawType, notChargeTurret, currentTurretNumber]() -> VoxelStruct*
 		{
 			if (notChargeTurret)
 				return &pDrawType->TurretVoxel;
@@ -87,9 +88,9 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 			auto* aresTypeExt = reinterpret_cast<DummyTypeExtHere*>(pDrawType->align_2FC);
 			return &aresTypeExt->ChargerTurrets[currentTurretNumber - 18];
 		};
-	const auto pTurretVoxel = GetTurretVoxel();
+	const auto pTurretVoxel = getTurretVoxel();
 
-	auto GetBarrelVoxel = [pDrawType, notChargeTurret, currentTurretNumber]() -> VoxelStruct*
+	auto getBarrelVoxel = [pDrawType, notChargeTurret, currentTurretNumber]() -> VoxelStruct*
 		{
 			if (notChargeTurret)
 				return &pDrawType->BarrelVoxel;
@@ -100,7 +101,7 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 			auto* aresTypeExt = reinterpret_cast<DummyTypeExtHere*>(pDrawType->align_2FC);
 			return &aresTypeExt->ChargerBarrels[currentTurretNumber - 18];
 		};
-	const auto pBarrelVoxel = haveBar ? GetBarrelVoxel() : nullptr;
+	const auto pBarrelVoxel = haveBar ? getBarrelVoxel() : nullptr;
 
 	const bool turretRecoil = pDrawType->TurretRecoil;
 	const bool shouldRedraw = !haveTurretCache || haveBar && !haveBarrelCache || turretRecoil;
@@ -110,49 +111,67 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 	const auto brlCache = turretRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
 	const auto turretDir = pThis->SecondaryFacing.Current().GetFacing<4>();
 
-	auto drawCommonTurret = [&](int turIdx)
+	auto drawTurret = [=, &mtx](int turIdx)
 		{
-			const auto turretInRecoil = turretRecoil && pThis->TurretRecoil.State != RecoilData::RecoilState::Inactive;
+			const auto pTurData = turretRecoil ? ((turIdx >= 0) ? &pExt->ExtraTurretRecoil[turIdx] : &pThis->TurretRecoil) : nullptr;
+			const auto turretInRecoil = pTurData && pTurData->State != RecoilData::RecoilState::Inactive;
 
-			auto getTurretMatrix = [&mtx, pThis, pDrawTypeExt, turIdx, turretInRecoil]() -> Matrix3D
+			auto getTurretMatrix = [=, &mtx]() -> Matrix3D
 				{
 					auto mtx_turret = mtx;
 					pDrawTypeExt->ApplyTurretOffset(&mtx_turret, Pixel_Per_Lepton, turIdx);
 					mtx_turret.RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - pThis->PrimaryFacing.Current().GetRadian<32>()));
 
 					if (turretInRecoil)
-						mtx_turret.TranslateX(-pThis->TurretRecoil.TravelSoFar);
+						mtx_turret.TranslateX(-pTurData->TravelSoFar);
 
 					return mtx_turret;
 				};
 			auto mtx_turret = shouldRedraw ? getTurretMatrix() : mtx;
 
-			auto drawBarrel = [&]()
-			{
-				const auto barrelInRecoil = turretRecoil && pThis->BarrelRecoil.State != RecoilData::RecoilState::Inactive;
+			auto drawBarrel = [=, &mtx_turret, &mtx](int brlIdx)
+				{
+					const auto idx = brlIdx + ((turIdx + 1) * (pDrawTypeExt->ExtraBarrelCount + 1));
+					const auto pBrlData = turretRecoil ? ((idx >= 0) ? &pExt->ExtraBarrelRecoil[idx] : &pThis->BarrelRecoil) : nullptr;
+					const auto barrelInRecoil = pBrlData && pBrlData->State != RecoilData::RecoilState::Inactive;
 
-				auto getBarrelMatrix = [&mtx, &mtx_turret, pThis, barrelInRecoil]() -> Matrix3D
+					auto getBarrelMatrix = [=, &mtx_turret, &mtx]() -> Matrix3D
+						{
+							auto mtx_barrel = mtx_turret;
+							mtx_barrel.Translate(-mtx.Row[0].W, -mtx.Row[1].W, -mtx.Row[2].W);
+							mtx_barrel.RotateY(static_cast<float>(-pThis->BarrelFacing.Current().GetRadian<32>()));
+							const auto offset = ((brlIdx >= 0) ? pDrawTypeExt->ExtraBarrelOffsets[brlIdx] : pDrawTypeExt->BarrelOffset.Get());
+							mtx_barrel.TranslateY(static_cast<float>(Pixel_Per_Lepton * offset));
+
+							if (barrelInRecoil)
+								mtx_barrel.TranslateX(-pBrlData->TravelSoFar);
+
+							mtx_barrel.Translate(mtx.Row[0].W, mtx.Row[1].W, mtx.Row[2].W);
+							return mtx_barrel;
+						};
+					auto mtx_barrel = shouldRedraw ? getBarrelMatrix() : mtx;
+
+					pThis->Draw_A_VXL(pBarrelVoxel, hvaFrameIdx, brlKey, brlCache, rect, center, &mtx_barrel, brightness,
+						static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+				};
+
+			auto drawBarrels = [&drawBarrel, pDrawTypeExt]()
+				{
+					drawBarrel(-1);
+
+					const auto exBrlCount = pDrawTypeExt->ExtraBarrelCount.Get();
+
+					if (exBrlCount > 0)
 					{
-						auto mtx_barrel = mtx_turret;
-						mtx_barrel.Translate(-mtx.Row[0].W, -mtx.Row[1].W, -mtx.Row[2].W);
-						mtx_barrel.RotateY(static_cast<float>(-pThis->BarrelFacing.Current().GetRadian<32>()));
-
-						if (barrelInRecoil)
-							mtx_barrel.TranslateX(-pThis->BarrelRecoil.TravelSoFar);
-
-						mtx_barrel.Translate(mtx.Row[0].W, mtx.Row[1].W, mtx.Row[2].W);
-						return mtx_barrel;
-					};
-				auto mtx_barrel = shouldRedraw && haveBar ? getBarrelMatrix() : mtx;
-
-				pThis->Draw_A_VXL(pBarrelVoxel, hvaFrameIdx, brlKey, brlCache, rect, center, &mtx_barrel, brightness,
-					static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
-			};
+						for (int i = 0; i < exBrlCount; ++i)
+							drawBarrel(i);
+					}
+				};
 
 			if (turretDir == 0 || turretDir == 3)
 			{
 				if (haveBar)
-					drawBarrel();
+					drawBarrels();
 
 				pThis->Draw_A_VXL(pTurretVoxel, hvaFrameIdx, turKey, turCache, rect, center, &mtx_turret, brightness,
 					static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
@@ -163,18 +182,23 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 					static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
 
 				if (haveBar)
-					drawBarrel();
+					drawBarrels();
 			}
 		};
-	drawCommonTurret(-1);
 
-	const auto exTurCount = pDrawTypeExt->ExtraTurretCount.Get();
+	auto drawTurrets = [&drawTurret, pDrawTypeExt]()
+		{
+			drawTurret(-1);
 
-	if (exTurCount > 0)
-	{
-		for (int i = 0; i < exTurCount; ++i)
-			drawCommonTurret(i);
-	}
+			const auto exTurCount = pDrawTypeExt->ExtraTurretCount.Get();
+
+			if (exTurCount > 0)
+			{
+				for (int i = 0; i < exTurCount; ++i)
+					drawTurret(i);
+			}
+		};
+	drawTurrets();
 
 	return SkipGameCode;
 }
@@ -603,7 +627,7 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 	if (main_vxl == &pDrawType->TurretVoxel || (!pDrawType->UseTurretShadow && !pDrawTypeExt->TurretShadow.Get(RulesExt::Global()->DrawTurretShadow)))
 		return SkipDrawing;
 
-	auto GetTurretVoxel = [pDrawType](int idx) ->VoxelStruct*
+	auto getTurretVoxel = [pDrawType](int idx) ->VoxelStruct*
 		{
 			if (pDrawType->TurretCount == 0 || pDrawType->IsGattling || idx < 0)
 				return &pDrawType->TurretVoxel;
@@ -619,15 +643,15 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 
 			return nullptr;
 		};
-	auto tur = GetTurretVoxel(pThis->CurrentTurretNumber);
+	const auto pTurretVoxel = getTurretVoxel(pThis->CurrentTurretNumber);
 
-	if (!(tur && tur->VXL && tur->HVA))
+	if (!(pTurretVoxel && pTurretVoxel->VXL && pTurretVoxel->HVA))
 		return SkipDrawing;
 
 	if (vxl_index_key.Is_Valid_Key())
 		vxl_index_key.TurretWeapon.Facing = pThis->SecondaryFacing.Current().GetFacing<32>();
 
-	auto GetBarrelVoxel = [pDrawType](int idx)->VoxelStruct*
+	auto getBarrelVoxel = [pDrawType](int idx)->VoxelStruct*
 		{
 			if (pDrawType->TurretCount == 0 || pDrawType->IsGattling || idx < 0)
 				return &pDrawType->BarrelVoxel;
@@ -643,12 +667,14 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 
 			return nullptr;
 		};
-	auto bar = GetBarrelVoxel(pThis->CurrentTurretNumber);
-	auto haveBar = bar && bar->VXL && bar->HVA && !bar->VXL->Initialized;
-	auto* cache = &pDrawType->VoxelShadowCache;
+	const auto pBarrelVoxel = getBarrelVoxel(pThis->CurrentTurretNumber);
+
+	const auto haveBar = pBarrelVoxel && pBarrelVoxel->VXL && pBarrelVoxel->HVA && !pBarrelVoxel->VXL->Initialized;
+	auto pCache = &pDrawType->VoxelShadowCache;
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
 
 	if (!pDrawType->UseTurretShadow)
-		cache = (haveBar || tur != &pDrawType->TurretVoxel) ? nullptr : reinterpret_cast<decltype(cache)>(&pDrawType->VoxelTurretBarrelCache);
+		pCache = (haveBar || pTurretVoxel != &pDrawType->TurretVoxel) ? nullptr : reinterpret_cast<decltype(pCache)>(&pDrawType->VoxelTurretBarrelCache);
 
 	auto drawTurretShadow = [&](int turIdx)
 		{
@@ -656,35 +682,67 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 			pDrawTypeExt->ApplyTurretOffset(&mtx_turret, Pixel_Per_Lepton, turIdx);
 			mtx_turret.RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - pThis->PrimaryFacing.Current().GetRadian<32>()));
 
-			auto inRecoil = pDrawType->TurretRecoil && pThis->TurretRecoil.State != RecoilData::RecoilState::Inactive;
+			const auto pTurData = pDrawType->TurretRecoil ? ((turIdx >= 0) ? &pExt->ExtraTurretRecoil[turIdx] : &pThis->TurretRecoil) : nullptr;
+			const auto turretInRecoil = pTurData && pTurData->State != RecoilData::RecoilState::Inactive;
+			const auto shouldRedraw = turretInRecoil || turIdx >= 0;
 
-			if (inRecoil)
-				mtx_turret.TranslateX(-pThis->TurretRecoil.TravelSoFar);
+			if (turretInRecoil)
+				mtx_turret.TranslateX(-pTurData->TravelSoFar);
 
-			pThis->DrawVoxelShadow(tur, 0, ((inRecoil || turIdx >= 0) ? VoxelIndexKey(-1) : vxl_index_key), ((inRecoil || turIdx >= 0) ? nullptr : cache),
-				bnd, &shadowCenter, &mtx_turret, (!inRecoil && turIdx < 0 && cache != nullptr), surface, shadow_point);
+			pThis->DrawVoxelShadow(pTurretVoxel, 0, (shouldRedraw ? VoxelIndexKey(-1) : vxl_index_key), (shouldRedraw ? nullptr : pCache),
+				bnd, &shadowCenter, &mtx_turret, (!shouldRedraw && pCache != nullptr), surface, shadow_point);
 
-			if (haveBar)
-			{
-				mtx_turret.Translate(-mtx.Row[0].W, -mtx.Row[1].W, -mtx.Row[2].W);
-				mtx_turret.RotateY(static_cast<float>(-pThis->BarrelFacing.Current().GetRadian<32>()));
+			if (!haveBar)
+				return;
 
-				if (pDrawType->TurretRecoil && pThis->BarrelRecoil.State != RecoilData::RecoilState::Inactive)
-					mtx_turret.TranslateX(-pThis->BarrelRecoil.TravelSoFar);
+			auto drawBarrelShadow = [=, &mtx_turret, &mtx, &shadowCenter](int brlIdx)
+				{
+					const auto idx = brlIdx + ((turIdx + 1) * (pDrawTypeExt->ExtraBarrelCount + 1));
+					const auto pBrlData = pDrawType->TurretRecoil ? ((idx >= 0) ? &pExt->ExtraBarrelRecoil[idx] : &pThis->BarrelRecoil) : nullptr;
+					const auto barrelInRecoil = pBrlData && pBrlData->State != RecoilData::RecoilState::Inactive;
 
-				mtx_turret.Translate(mtx.Row[0].W, mtx.Row[1].W, mtx.Row[2].W);
-				pThis->DrawVoxelShadow(bar, 0, VoxelIndexKey(-1), nullptr, bnd, &shadowCenter, &mtx_turret, false, surface, shadow_point);
-			}
+					auto mtx_barrel = mtx_turret;
+					mtx_barrel.Translate(-mtx.Row[0].W, -mtx.Row[1].W, -mtx.Row[2].W);
+					mtx_barrel.RotateY(static_cast<float>(-pThis->BarrelFacing.Current().GetRadian<32>()));
+					const auto offset = ((brlIdx >= 0) ? pDrawTypeExt->ExtraBarrelOffsets[brlIdx] : pDrawTypeExt->BarrelOffset.Get());
+					mtx_barrel.TranslateY(static_cast<float>(Pixel_Per_Lepton * offset));
+
+					if (barrelInRecoil)
+						mtx_barrel.TranslateX(-pBrlData->TravelSoFar);
+
+					mtx_barrel.Translate(mtx.Row[0].W, mtx.Row[1].W, mtx.Row[2].W);
+					pThis->DrawVoxelShadow(pBarrelVoxel, 0, VoxelIndexKey(-1), nullptr, bnd, &shadowCenter, &mtx_barrel, false, surface, shadow_point);
+				};
+
+			auto drawBarrelsShadow = [&drawBarrelShadow, pDrawTypeExt]()
+				{
+					drawBarrelShadow(-1);
+
+					const auto exBrlCount = pDrawTypeExt->ExtraBarrelCount.Get();
+
+					if (exBrlCount > 0)
+					{
+						for (int i = 0; i < exBrlCount; ++i)
+							drawBarrelShadow(i);
+					}
+				};
+			drawBarrelsShadow();
 		};
 	drawTurretShadow(-1);
 
-	const auto exTurCount = pDrawTypeExt->ExtraTurretCount.Get();
+	auto drawTurretsShadow = [&drawTurretShadow, pDrawTypeExt]()
+		{
+			drawTurretShadow(-1);
 
-	if (exTurCount > 0)
-	{
-		for (int i = 0; i < exTurCount; ++i)
-			drawTurretShadow(i);
-	}
+			const auto exTurCount = pDrawTypeExt->ExtraTurretCount.Get();
+
+			if (exTurCount > 0)
+			{
+				for (int i = 0; i < exTurCount; ++i)
+					drawTurretShadow(i);
+			}
+		};
+	drawTurretsShadow();
 
 	return SkipDrawing;
 }

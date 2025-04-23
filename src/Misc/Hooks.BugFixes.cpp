@@ -1391,6 +1391,8 @@ DEFINE_HOOK(0x6FC617, TechnoClass_GetFireError_Spawner, 0x8)
 DEFINE_JUMP(LJMP, 0x715326, 0x715333); // TechnoTypeClass::LoadFromINI
 // Then EDI is BarrelAnimData now, not incorrect TurretAnimData
 
+DEFINE_JUMP(LJMP, 0x6FA4D1, 0x6FA4FB); // Skip vanilla update
+
 #pragma endregion
 
 #pragma region TeamCloseRangeFix

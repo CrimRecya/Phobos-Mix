@@ -192,6 +192,7 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	pExt->InitializeLaserTrails();
 	pExt->InitializeDisplayInfo();
 	pExt->InitAggressiveStance();
+	pExt->InitializeRecoilData();
 
 	if (RulesExt::Global()->CheckExtraBaseNormal && pExt->TypeExtData->ExtraBaseNormal)
 		ScenarioExt::Global()->BaseNormalTechnos.push_back(pExt);

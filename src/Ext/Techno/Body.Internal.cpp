@@ -157,6 +157,57 @@ void TechnoExt::ExtData::InitializeDisplayInfo()
 	pThis->RearmTimer.StartTime = Math::min(-2, -pThis->RearmTimer.TimeLeft);
 }
 
+void TechnoExt::ExtData::InitializeRecoilData()
+{
+	const auto pTypeExt = this->TypeExtData;
+	const auto pType = pTypeExt->OwnerObject();
+
+	if (!pType->TurretRecoil)
+		return;
+
+	if (pTypeExt->ExtraTurretCount)
+	{
+		if (static_cast<int>(this->ExtraTurretRecoil.size()) < pTypeExt->ExtraTurretCount)
+			this->ExtraTurretRecoil.resize(pTypeExt->ExtraTurretCount);
+
+		const auto& refData = pType->TurretAnimData;
+
+		for (auto& data : this->ExtraTurretRecoil)
+		{
+			data.Turret.Travel = refData.Travel;
+			data.Turret.CompressFrames = refData.CompressFrames;
+			data.Turret.RecoverFrames = refData.RecoverFrames;
+			data.Turret.HoldFrames = refData.HoldFrames;
+			data.TravelPerFrame = 0.0;
+			data.TravelSoFar = 0.0;
+			data.State = RecoilData::RecoilState::Inactive;
+			data.TravelFramesLeft = 0;
+		}
+	}
+
+	if (pTypeExt->ExtraTurretCount || pTypeExt->ExtraBarrelCount)
+	{
+		const auto dataCount = (pTypeExt->ExtraBarrelCount + 1) * (pTypeExt->ExtraTurretCount + 1) - 1;
+
+		if (static_cast<int>(this->ExtraBarrelRecoil.size()) < dataCount)
+			this->ExtraBarrelRecoil.resize(dataCount);
+
+		const auto& refData = pType->BarrelAnimData;
+
+		for (auto& data : this->ExtraBarrelRecoil)
+		{
+			data.Turret.Travel = refData.Travel;
+			data.Turret.CompressFrames = refData.CompressFrames;
+			data.Turret.RecoverFrames = refData.RecoverFrames;
+			data.Turret.HoldFrames = refData.HoldFrames;
+			data.TravelPerFrame = 0.0;
+			data.TravelSoFar = 0.0;
+			data.State = RecoilData::RecoilState::Inactive;
+			data.TravelFramesLeft = 0;
+		}
+	}
+}
+
 void TechnoExt::ExtData::InitializeAttachEffects()
 {
 	if (auto pTypeExt = this->TypeExtData)
