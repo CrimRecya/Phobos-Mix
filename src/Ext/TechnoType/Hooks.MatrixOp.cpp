@@ -112,36 +112,50 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 	if (!reinterpret_cast<bool(__thiscall*)(UnitClass*)>(0x70DC60)(pThis) // HasMultipleTurrets
 		|| pThis->Type->IsGattling)
 	{
-		bool notDrawBarrelYet = true;
-		const bool canDrawBarrel = pDrawType->BarrelVoxel.VXL && pDrawType->BarrelVoxel.HVA;
-		// When in recoiling, bypass cache and draw without saving
-		const bool inRecoil = pDrawType->TurretRecoil
-			&& (pThis->BarrelRecoil.State != RecoilData::RecoilState::Inactive
-				|| pThis->TurretRecoil.State != RecoilData::RecoilState::Inactive);
-
-		// Barrel behind
-		if (canDrawBarrel) // Adjusted the inspection sequence
-		{
-			const auto dir = pThis->SecondaryFacing.Current().GetFacing<4>();
-
-			if (dir == 0 || dir == 3)
+		auto drawCommonTurret = [&](Point2D* const turretLocation)
 			{
-				const auto brlKey = inRecoil ? -1 : flags;
-				const auto brlCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
+				bool notDrawBarrelYet = true;
+				const bool canDrawBarrel = pDrawType->BarrelVoxel.VXL && pDrawType->BarrelVoxel.HVA;
+				// When in recoiling, bypass cache and draw without saving
+				const bool inRecoil = pDrawType->TurretRecoil
+					&& (pThis->BarrelRecoil.State != RecoilData::RecoilState::Inactive
+						|| pThis->TurretRecoil.State != RecoilData::RecoilState::Inactive);
 
-				pThis->Draw_A_VXL(&pDrawType->BarrelVoxel, hvaFrameIdx, brlKey, brlCache, rect, center, pMtx_barrel, brightness,
+				// Barrel behind
+				if (canDrawBarrel) // Adjusted the inspection sequence
+				{
+					const auto dir = pThis->SecondaryFacing.Current().GetFacing<4>();
+
+					if (dir == 0 || dir == 3)
+					{
+						const auto brlKey = inRecoil ? -1 : flags;
+						const auto brlCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
+
+						pThis->Draw_A_VXL(&pDrawType->BarrelVoxel, hvaFrameIdx, brlKey, brlCache, rect, turretLocation, pMtx_barrel, brightness,
+							static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+
+						notDrawBarrelYet = false;
+					}
+				}
+
+				// Turret
+				const auto turKey = inRecoil ? -1 : flags;
+				const auto turCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretWeaponCache);
+
+				pThis->Draw_A_VXL(&pDrawType->TurretVoxel, hvaFrameIdx, turKey, turCache, rect, turretLocation, pMtx_turret, brightness,
 					static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
 
-				notDrawBarrelYet = false;
-			}
-		}
+				// Barrel above
+				if (canDrawBarrel && notDrawBarrelYet) // Adjusted the inspection sequence
+				{
+					const auto brlKey = inRecoil ? -1 : flags;
+					const auto brlCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
 
-		// Turret
-		const auto turKey = inRecoil ? -1 : flags;
-		const auto turCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretWeaponCache);
-
-		pThis->Draw_A_VXL(&pDrawType->TurretVoxel, hvaFrameIdx, turKey, turCache, rect, center, pMtx_turret, brightness,
-			static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+					pThis->Draw_A_VXL(&pDrawType->BarrelVoxel, hvaFrameIdx, brlKey, brlCache, rect, turretLocation, pMtx_barrel, brightness,
+						static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+				}
+			};
+		drawCommonTurret(center);
 
 		const auto pDrawTypeExt = TechnoTypeExt::ExtMap.Find(pDrawType);
 		const auto exTurCount = pDrawTypeExt->ExtraTurretCount.Get();
@@ -153,95 +167,102 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 			for (int i = 0; i < exTurCount; ++i)
 			{
 				const auto deltaCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pDrawTypeExt->ExtraTurretOffsets[i], false) - turCrd;
-				auto turScreenCrd2nd = *center + TacticalClass::CoordsToScreen(deltaCrd);
-
-				pThis->Draw_A_VXL(&pDrawType->TurretVoxel, hvaFrameIdx, turKey, turCache, rect, &turScreenCrd2nd, pMtx_turret, brightness,
-					static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+				auto turretCenter = *center + TacticalClass::CoordsToScreen(deltaCrd);
+				drawCommonTurret(&turretCenter);
 			}
-		}
-
-		// Barrel above
-		if (canDrawBarrel && notDrawBarrelYet) // Adjusted the inspection sequence
-		{
-			const auto brlKey = inRecoil ? -1 : flags;
-			const auto brlCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
-
-			pThis->Draw_A_VXL(&pDrawType->BarrelVoxel, hvaFrameIdx, brlKey, brlCache, rect, center, pMtx_barrel, brightness,
-				static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
 		}
 	}
 	else
 	{
 		GET_STACK(const int, currentTurretNumber, STACK_OFFSET(0x1C4, -0x1A8));
 
-		bool notDrawBarrelYet = true;
-		// When in recoiling, bypass cache and draw without saving
-		const bool inRecoil = pDrawType->TurretRecoil
-			&& (pThis->BarrelRecoil.State != RecoilData::RecoilState::Inactive
-				|| pThis->TurretRecoil.State != RecoilData::RecoilState::Inactive);
-
-		// Barrel behind
-		if (haveBarrelVXL) // Adjusted the inspection sequence
-		{
-			const auto dir = pThis->SecondaryFacing.Current().GetFacing<4>();
-
-			if (dir == 0 || dir == 3)
+		auto drawChargeTurret = [&](Point2D* const turretLocation)
 			{
-				const auto brlKey = inRecoil ? -1 : flags;
-				const auto brlCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
+				bool notDrawBarrelYet = true;
+				// When in recoiling, bypass cache and draw without saving
+				const bool inRecoil = pDrawType->TurretRecoil
+					&& (pThis->BarrelRecoil.State != RecoilData::RecoilState::Inactive
+						|| pThis->TurretRecoil.State != RecoilData::RecoilState::Inactive);
 
-				auto GetBarrelVoxel = [pDrawType](int idx)->VoxelStruct*
+				// Barrel behind
+				if (haveBarrelVXL) // Adjusted the inspection sequence
+				{
+					const auto dir = pThis->SecondaryFacing.Current().GetFacing<4>();
+
+					if (dir == 0 || dir == 3)
+					{
+						const auto brlKey = inRecoil ? -1 : flags;
+						const auto brlCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
+
+						auto GetBarrelVoxel = [pDrawType](int idx)->VoxelStruct*
+							{
+								if (idx < 18 || !AresHelper::CanUseAres)
+									return &pDrawType->ChargerBarrels[idx];
+
+								auto* aresTypeExt = reinterpret_cast<DummyTypeExtHere*>(pDrawType->align_2FC);
+								return &aresTypeExt->ChargerBarrels[idx - 18];
+							};
+						const auto pBarrelVoxel = GetBarrelVoxel(currentTurretNumber);
+
+						pThis->Draw_A_VXL(pBarrelVoxel, hvaFrameIdx, brlKey, brlCache, rect, turretLocation, pMtx_barrel, brightness,
+							static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+
+						notDrawBarrelYet = false;
+					}
+				}
+
+				// Turret
+				const auto turKey = inRecoil ? -1 : flags;
+				const auto turCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretWeaponCache);
+
+				auto GetTurretVoxel = [pDrawType](int idx) ->VoxelStruct*
 					{
 						if (idx < 18 || !AresHelper::CanUseAres)
-							return &pDrawType->ChargerBarrels[idx];
+							return &pDrawType->ChargerTurrets[idx];
 
 						auto* aresTypeExt = reinterpret_cast<DummyTypeExtHere*>(pDrawType->align_2FC);
-						return &aresTypeExt->ChargerBarrels[idx - 18];
+						return &aresTypeExt->ChargerTurrets[idx - 18];
 					};
-				const auto pBarrelVoxel = GetBarrelVoxel(currentTurretNumber);
+				const auto pTurretVoxel = GetTurretVoxel(currentTurretNumber);
 
-				pThis->Draw_A_VXL(pBarrelVoxel, hvaFrameIdx, brlKey, brlCache, rect, center, pMtx_barrel, brightness,
+				pThis->Draw_A_VXL(pTurretVoxel, hvaFrameIdx, turKey, turCache, rect, turretLocation, pMtx_turret, brightness,
 					static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
 
-				notDrawBarrelYet = false;
-			}
-		}
-
-		// Turret
-		const auto turKey = inRecoil ? -1 : flags;
-		const auto turCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretWeaponCache);
-
-		auto GetTurretVoxel = [pDrawType](int idx) ->VoxelStruct*
-			{
-				if (idx < 18 || !AresHelper::CanUseAres)
-					return &pDrawType->ChargerTurrets[idx];
-
-				auto* aresTypeExt = reinterpret_cast<DummyTypeExtHere*>(pDrawType->align_2FC);
-				return &aresTypeExt->ChargerTurrets[idx - 18];
-			};
-		const auto pTurretVoxel = GetTurretVoxel(currentTurretNumber);
-
-		pThis->Draw_A_VXL(pTurretVoxel, hvaFrameIdx, turKey, turCache, rect, center, pMtx_turret, brightness,
-			static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
-
-		// Barrel above
-		if (haveBarrelVXL && notDrawBarrelYet) // Adjusted the inspection sequence
-		{
-			const auto brlKey = inRecoil ? -1 : flags;
-			const auto brlCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
-
-			auto GetBarrelVoxel = [pDrawType](int idx)->VoxelStruct*
+				// Barrel above
+				if (haveBarrelVXL && notDrawBarrelYet) // Adjusted the inspection sequence
 				{
-					if (idx < 18 || !AresHelper::CanUseAres)
-						return &pDrawType->ChargerBarrels[idx];
+					const auto brlKey = inRecoil ? -1 : flags;
+					const auto brlCache = inRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
 
-					auto* aresTypeExt = reinterpret_cast<DummyTypeExtHere*>(pDrawType->align_2FC);
-					return &aresTypeExt->ChargerBarrels[idx - 18];
-				};
-			const auto pBarrelVoxel = GetBarrelVoxel(currentTurretNumber);
+					auto GetBarrelVoxel = [pDrawType](int idx)->VoxelStruct*
+						{
+							if (idx < 18 || !AresHelper::CanUseAres)
+								return &pDrawType->ChargerBarrels[idx];
 
-			pThis->Draw_A_VXL(pBarrelVoxel, hvaFrameIdx, brlKey, brlCache, rect, center, pMtx_barrel, brightness,
-				static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+							auto* aresTypeExt = reinterpret_cast<DummyTypeExtHere*>(pDrawType->align_2FC);
+							return &aresTypeExt->ChargerBarrels[idx - 18];
+						};
+					const auto pBarrelVoxel = GetBarrelVoxel(currentTurretNumber);
+
+					pThis->Draw_A_VXL(pBarrelVoxel, hvaFrameIdx, brlKey, brlCache, rect, turretLocation, pMtx_barrel, brightness,
+						static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+				}
+			};
+		drawChargeTurret(center);
+
+		const auto pDrawTypeExt = TechnoTypeExt::ExtMap.Find(pDrawType);
+		const auto exTurCount = pDrawTypeExt->ExtraTurretCount.Get();
+
+		if (exTurCount > 0)
+		{
+			const auto turCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pDrawTypeExt->TurretOffset.Get(), false);
+
+			for (int i = 0; i < exTurCount; ++i)
+			{
+				const auto deltaCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, pDrawTypeExt->ExtraTurretOffsets[i], false) - turCrd;
+				auto turretCenter = *center + TacticalClass::CoordsToScreen(deltaCrd);
+				drawChargeTurret(&turretCenter);
+			}
 		}
 	}
 
@@ -529,9 +550,12 @@ DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5A4C, TunnelLocomotionClass_ShadowMatrix);
 
 DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 {
-	GET(UnitClass*, pThis, EBP);
 	enum { SkipDrawing = 0x73C5C9 };
+
+	GET(UnitClass*, pThis, EBP);
+
 	auto const loco = pThis->Locomotor.GetInterfacePtr();
+
 	if (pThis->CloakState != CloakState::Uncloaked || pThis->Type->NoShadow || !loco->Is_To_Have_Shadow())
 		return SkipDrawing;
 
@@ -594,14 +618,14 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 			}
 			return &pType->MainVoxel;
 		};
-
 	auto const main_vxl = GetMainVoxel();
 
 	auto shadow_point = loco->Shadow_Point();
-	auto why = *pt + shadow_point;
+	auto shadowCenter = *pt + shadow_point;
 
 	float arf = pThis->AngleRotatedForwards;
 	float ars = pThis->AngleRotatedSideways;
+
 	// lazy, don't want to hook inside Shadow_Matrix
 	if (std::abs(ars) >= 0.005 || std::abs(arf) >= 0.005)
 	{
@@ -647,37 +671,23 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 		shadow_point.Y += 1;
 
 	if (!pType->UseTurretShadow)
-	if (uTypeExt->ShadowIndices.empty())
 	{
-		if (pType->ShadowIndex >= 0 && pType->ShadowIndex < main_vxl->HVA->LayerCount)
-			pThis->DrawVoxelShadow(
-				main_vxl,
-				pType->ShadowIndex,
-				vxl_index_key,
-				&pType->VoxelShadowCache,
-				bnd,
-				&why,
-				&mtx,
-				true,
-				surface,
-				shadow_point
-			);
-	}
-	else
-	{
-		for (auto& [index, _] : uTypeExt->ShadowIndices)
-			pThis->DrawVoxelShadow(
-				main_vxl,
-				index,
-				index == pType->ShadowIndex ? vxl_index_key : VoxelIndexKey(-1),
-				&pType->VoxelShadowCache,
-				bnd,
-				&why,
-				&mtx,
-				index == pType->ShadowIndex,
-				surface,
-				shadow_point
-			);
+		if (uTypeExt->ShadowIndices.empty())
+		{
+			if (pType->ShadowIndex >= 0 && pType->ShadowIndex < main_vxl->HVA->LayerCount)
+			{
+				pThis->DrawVoxelShadow(main_vxl, pType->ShadowIndex, vxl_index_key,
+					&pType->VoxelShadowCache, bnd, &shadowCenter, &mtx, true, surface, shadow_point);
+			}
+		}
+		else
+		{
+			for (auto& [index, _] : uTypeExt->ShadowIndices)
+			{
+				pThis->DrawVoxelShadow( main_vxl, index, index == pType->ShadowIndex ? vxl_index_key : VoxelIndexKey(-1),
+					&pType->VoxelShadowCache, bnd, &shadowCenter, &mtx, index == pType->ShadowIndex, surface, shadow_point);
+			}
+		}
 	}
 
 	if (main_vxl == &pType->TurretVoxel || (!pType->UseTurretShadow && !uTypeExt->TurretShadow.Get(RulesExt::Global()->DrawTurretShadow)))
@@ -699,6 +709,16 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 
 			return nullptr;
 		};
+	auto tur = GetTurretVoxel(pThis->CurrentTurretNumber);
+
+	if (!(tur && tur->VXL && tur->HVA))
+		return SkipDrawing;
+
+	if (vxl_index_key.Is_Valid_Key())
+		vxl_index_key.TurretWeapon.Facing = pThis->SecondaryFacing.Current().GetFacing<32>();
+
+	uTypeExt->ApplyTurretOffset(&mtx, Pixel_Per_Lepton);
+	mtx.RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - pThis->PrimaryFacing.Current().GetRadian<32>()));
 
 	auto GetBarrelVoxel = [pType](int idx)->VoxelStruct*
 		{
@@ -716,67 +736,46 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 
 			return nullptr;
 		};
-
-	uTypeExt->ApplyTurretOffset(&mtx, Pixel_Per_Lepton);
-	mtx.RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - pThis->PrimaryFacing.Current().GetRadian<32>()));
-
-	auto inRecoil = pType->TurretRecoil && pThis->TurretRecoil.State != RecoilData::RecoilState::Inactive;
-	if (inRecoil)
-		mtx.TranslateX(-pThis->TurretRecoil.TravelSoFar);
-
-	auto tur = GetTurretVoxel(pThis->CurrentTurretNumber);
-	if (!(tur && tur->VXL && tur->HVA))
-		return SkipDrawing;
-
 	auto bar = GetBarrelVoxel(pThis->CurrentTurretNumber);
 	auto haveBar = bar && bar->VXL && bar->HVA && !bar->VXL->Initialized;
-	if (vxl_index_key.Is_Valid_Key())
-		vxl_index_key.TurretWeapon.Facing = pThis->SecondaryFacing.Current().GetFacing<32>();
 
 	auto* cache = &pType->VoxelShadowCache;
+
 	if (!pType->UseTurretShadow)
+		cache = (haveBar || tur != &pType->TurretVoxel) ? nullptr : reinterpret_cast<decltype(cache)>(&pType->VoxelTurretBarrelCache);
+
+	auto drawTurretShadow = [&](Point2D* const shadowLocation)
+		{
+			auto inRecoil = pType->TurretRecoil && pThis->TurretRecoil.State != RecoilData::RecoilState::Inactive;
+			if (inRecoil)
+				mtx.TranslateX(-pThis->TurretRecoil.TravelSoFar);
+
+			pThis->DrawVoxelShadow(tur, 0, (inRecoil ? VoxelIndexKey(-1) : vxl_index_key), (inRecoil ? nullptr : cache),
+				bnd, shadowLocation, &mtx, (!inRecoil && cache != nullptr), surface, shadow_point);
+
+			if (haveBar)// you are utterly fucked, for now
+			{
+				if (pType->TurretRecoil && pThis->BarrelRecoil.State != RecoilData::RecoilState::Inactive)
+					mtx.TranslateX(-pThis->BarrelRecoil.TravelSoFar);
+
+				mtx.ScaleX(static_cast<float>(Math::cos(-pThis->BarrelFacing.Current().GetRadian<32>())));
+				pThis->DrawVoxelShadow(bar, 0, VoxelIndexKey(-1), nullptr, bnd, shadowLocation, &mtx, false, surface, shadow_point);
+			}
+		};
+	drawTurretShadow(&shadowCenter);
+
+	const auto exTurCount = uTypeExt->ExtraTurretCount.Get();
+
+	if (exTurCount > 0)
 	{
-		if (haveBar)
-			cache = nullptr;
-		else
-			cache = tur != &pType->TurretVoxel ?
-			nullptr // man what can I say, you are fucked, for now
-			: reinterpret_cast<decltype(cache)>(&pType->VoxelTurretBarrelCache) // excuse me
-			;
-	}
+		const auto turCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, uTypeExt->TurretOffset.Get(), false);
 
-	pThis->DrawVoxelShadow(
-		tur,
-		0,
-		(inRecoil ? VoxelIndexKey(-1) : vxl_index_key),
-		(inRecoil ? nullptr : cache),
-		bnd,
-		&why,
-		&mtx,
-		(!inRecoil && cache != nullptr),
-		surface,
-		shadow_point
-	);
-
-	if (haveBar)// you are utterly fucked, for now
-	{
-		if (pType->TurretRecoil && pThis->BarrelRecoil.State != RecoilData::RecoilState::Inactive)
-			mtx.TranslateX(-pThis->BarrelRecoil.TravelSoFar);
-
-		mtx.ScaleX(static_cast<float>(Math::cos(-pThis->BarrelFacing.Current().GetRadian<32>())));
-
-		pThis->DrawVoxelShadow(
-			bar,
-			0,
-			VoxelIndexKey(-1),
-			nullptr,
-			bnd,
-			&why,
-			&mtx,
-			false,
-			surface,
-			shadow_point
-		);
+		for (int i = 0; i < exTurCount; ++i)
+		{
+			const auto deltaCrd = TechnoExt::GetFLHAbsoluteCoords(pThis, uTypeExt->ExtraTurretOffsets[i], false) - turCrd;
+			auto turretCenter = shadowCenter + TacticalClass::CoordsToScreen(deltaCrd);
+			drawTurretShadow(&turretCenter);
+		}
 	}
 
 	return SkipDrawing;
