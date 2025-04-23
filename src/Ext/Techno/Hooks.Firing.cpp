@@ -712,9 +712,18 @@ DEFINE_HOOK(0x6FF0DD, TechnoClass_FireAt_TurretRecoil, 0x6)
 {
 	enum { SkipGameCode = 0x6FF15B };
 
+	GET(TechnoClass* const, pThis, ESI);
 	GET_STACK(WeaponTypeClass* const, pWeapon, STACK_OFFSET(0xB0, -0x70));
 
-	return WeaponTypeExt::ExtMap.Find(pWeapon)->TurretRecoil_Suppress ? SkipGameCode : 0;
+	if (!WeaponTypeExt::ExtMap.Find(pWeapon)->TurretRecoil_Suppress)
+	{
+		pThis->TurretRecoil.TravelSoFar = 0.0;
+		pThis->TurretRecoil.Fire();
+		pThis->BarrelRecoil.TravelSoFar = 0.0;
+		pThis->BarrelRecoil.Fire();
+	}
+
+	return SkipGameCode;
 }
 
 DEFINE_HOOK(0x6FF905, TechnoClass_FireAt_FireOnce, 0x6)
