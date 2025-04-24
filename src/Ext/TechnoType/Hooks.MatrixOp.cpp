@@ -113,7 +113,7 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 
 	auto drawTurret = [=, &mtx](int turIdx)
 		{
-			const auto pTurData = turretRecoil ? ((turIdx >= 0) ? &pExt->ExtraTurretRecoil[turIdx] : &pThis->TurretRecoil) : nullptr;
+			const auto pTurData = turretRecoil ? ((turIdx < 0) ? &pThis->TurretRecoil : &pExt->ExtraTurretRecoil[turIdx]) : nullptr;
 			const auto turretInRecoil = pTurData && pTurData->State != RecoilData::RecoilState::Inactive;
 
 			auto getTurretMatrix = [=, &mtx]() -> Matrix3D
@@ -132,7 +132,7 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 			auto drawBarrel = [=, &mtx_turret, &mtx](int brlIdx)
 				{
 					const auto idx = brlIdx + ((turIdx + 1) * (pDrawTypeExt->ExtraBarrelCount + 1));
-					const auto pBrlData = turretRecoil ? ((idx >= 0) ? &pExt->ExtraBarrelRecoil[idx] : &pThis->BarrelRecoil) : nullptr;
+					const auto pBrlData = turretRecoil ? ((idx < 0) ? &pThis->BarrelRecoil : &pExt->ExtraBarrelRecoil[idx]) : nullptr;
 					const auto barrelInRecoil = pBrlData && pBrlData->State != RecoilData::RecoilState::Inactive;
 
 					auto getBarrelMatrix = [=, &mtx_turret, &mtx]() -> Matrix3D
@@ -140,7 +140,7 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 							auto mtx_barrel = mtx_turret;
 							mtx_barrel.Translate(-mtx.Row[0].W, -mtx.Row[1].W, -mtx.Row[2].W);
 							mtx_barrel.RotateY(static_cast<float>(-pThis->BarrelFacing.Current().GetRadian<32>()));
-							const auto offset = ((brlIdx >= 0) ? pDrawTypeExt->ExtraBarrelOffsets[brlIdx] : pDrawTypeExt->BarrelOffset.Get());
+							const auto offset = ((brlIdx < 0) ? pDrawTypeExt->BarrelOffset.Get() : pDrawTypeExt->ExtraBarrelOffsets[brlIdx]);
 							mtx_barrel.TranslateY(static_cast<float>(Pixel_Per_Lepton * offset));
 
 							if (barrelInRecoil)
@@ -155,16 +155,34 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 						static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
 				};
 
-			auto drawBarrels = [&drawBarrel, pDrawTypeExt]()
+			auto drawBarrels = [&drawBarrel, pDrawTypeExt, turretDir]()
 				{
-					drawBarrel(-1);
-
 					const auto exBrlCount = pDrawTypeExt->ExtraBarrelCount.Get();
 
 					if (exBrlCount > 0)
 					{
+						std::vector<int> barrels;
+						barrels.emplace_back(-1);
+
 						for (int i = 0; i < exBrlCount; ++i)
+							barrels.emplace_back(i);
+
+						const auto barrelsSize = barrels.size();
+						const bool faceRight = turretDir == 0 || turretDir == 1;
+						std::sort(&barrels[0], &barrels[barrelsSize],[pDrawTypeExt, faceRight](const auto& idxA, const auto& idxB)
+						{
+							const auto offsetA = idxA < 0 ? pDrawTypeExt->BarrelOffset.Get() : pDrawTypeExt->ExtraBarrelOffsets[idxA];
+							const auto offsetB = idxB < 0 ? pDrawTypeExt->BarrelOffset.Get() : pDrawTypeExt->ExtraBarrelOffsets[idxB];
+
+							return faceRight ? (offsetA <= offsetB) : (offsetA > offsetB);
+						});
+
+						for (const auto& i : barrels)
 							drawBarrel(i);
+					}
+					else
+					{
+						drawBarrel(-1);
 					}
 				};
 
@@ -188,14 +206,46 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 
 	auto drawTurrets = [&drawTurret, pDrawTypeExt]()
 		{
-			drawTurret(-1);
-
 			const auto exTurCount = pDrawTypeExt->ExtraTurretCount.Get();
 
 			if (exTurCount > 0)
 			{
+				std::vector<int> turrets;
+				turrets.emplace_back(-1);
+
 				for (int i = 0; i < exTurCount; ++i)
+					turrets.emplace_back(i);
+
+				const auto turretsSize = turrets.size();
+				std::sort(&turrets[0], &turrets[turretsSize],[pDrawTypeExt](const auto& idxA, const auto& idxB)
+				{
+					const auto pOffsetA = idxA < 0 ? static_cast<CoordStruct*>(pDrawTypeExt->TurretOffset.GetEx()) : &pDrawTypeExt->ExtraTurretOffsets[idxA];
+					const auto pOffsetB = idxB < 0 ? static_cast<CoordStruct*>(pDrawTypeExt->TurretOffset.GetEx()) : &pDrawTypeExt->ExtraTurretOffsets[idxB];
+
+					if (pOffsetA->Z < pOffsetB->Z)
+						return true;
+
+					if (pOffsetA->Z > pOffsetB->Z)
+						return false;
+
+					const auto pointA = TacticalClass::Instance->CoordsToClient(*pOffsetA).first;
+					const auto pointB = TacticalClass::Instance->CoordsToClient(*pOffsetB).first;
+
+					if (pointA.Y < pointB.Y)
+						return true;
+
+					if (pointA.Y > pointB.Y)
+						return false;
+
+					return pointA.X <= pointB.X;
+				});
+
+				for (const auto& i : turrets)
 					drawTurret(i);
+			}
+			else
+			{
+				drawTurret(-1);
 			}
 		};
 	drawTurrets();
