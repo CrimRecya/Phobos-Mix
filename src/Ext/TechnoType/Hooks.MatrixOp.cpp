@@ -174,7 +174,7 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 							const auto offsetA = idxA < 0 ? pDrawTypeExt->BarrelOffset.Get() : pDrawTypeExt->ExtraBarrelOffsets[idxA];
 							const auto offsetB = idxB < 0 ? pDrawTypeExt->BarrelOffset.Get() : pDrawTypeExt->ExtraBarrelOffsets[idxB];
 
-							return faceRight ? (offsetA <= offsetB) : (offsetA > offsetB);
+							return faceRight ? (offsetA > offsetB) : (offsetA <= offsetB);
 						});
 
 						for (const auto& i : barrels)
@@ -204,7 +204,7 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 			}
 		};
 
-	auto drawTurrets = [&drawTurret, pDrawTypeExt]()
+	auto drawTurrets = [&drawTurret, pThis, pDrawTypeExt]()
 		{
 			const auto exTurCount = pDrawTypeExt->ExtraTurretCount.Get();
 
@@ -217,7 +217,7 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 					turrets.emplace_back(i);
 
 				const auto turretsSize = turrets.size();
-				std::sort(&turrets[0], &turrets[turretsSize],[pDrawTypeExt](const auto& idxA, const auto& idxB)
+				std::sort(&turrets[0], &turrets[turretsSize],[pThis, pDrawTypeExt](const auto& idxA, const auto& idxB)
 				{
 					const auto pOffsetA = idxA < 0 ? static_cast<CoordStruct*>(pDrawTypeExt->TurretOffset.GetEx()) : &pDrawTypeExt->ExtraTurretOffsets[idxA];
 					const auto pOffsetB = idxB < 0 ? static_cast<CoordStruct*>(pDrawTypeExt->TurretOffset.GetEx()) : &pDrawTypeExt->ExtraTurretOffsets[idxB];
@@ -228,8 +228,8 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 					if (pOffsetA->Z > pOffsetB->Z)
 						return false;
 
-					const auto pointA = TacticalClass::Instance->CoordsToClient(*pOffsetA).first;
-					const auto pointB = TacticalClass::Instance->CoordsToClient(*pOffsetB).first;
+					const auto pointA = TacticalClass::Instance->CoordsToClient(TechnoExt::GetFLHAbsoluteCoords(pThis, *pOffsetA)).first;
+					const auto pointB = TacticalClass::Instance->CoordsToClient(TechnoExt::GetFLHAbsoluteCoords(pThis, *pOffsetB)).first;
 
 					if (pointA.Y < pointB.Y)
 						return true;
@@ -778,7 +778,6 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 				};
 			drawBarrelsShadow();
 		};
-	drawTurretShadow(-1);
 
 	auto drawTurretsShadow = [&drawTurretShadow, pDrawTypeExt]()
 		{
