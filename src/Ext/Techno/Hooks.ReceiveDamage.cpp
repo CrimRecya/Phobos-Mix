@@ -254,6 +254,7 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 						std::swap(pFoot->Locomotor, pWreckageFoot->Locomotor);
 						pWreckageFoot->Locomotor->Link_To_Object(pWreckageFoot);
 						pFoot->Locomotor->Link_To_Object(pFoot);
+						pWreckageFoot->Locomotor->Stop_Moving();
 					}
 
 					++Unsorted::ScenarioInit;
