@@ -290,7 +290,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		};
 
 		const auto thisPoint = TacticalClass::Instance->CoordsToClient(pTechno->GetCoords()).first;
-		const auto offset = Unsorted::CurrentFrame % 15;
+		const auto offset = (0x7FFFFFFF - Unsorted::CurrentFrame) % 15;
 		bool pattern[16] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 };
 		auto drawDashLine = [&thisPoint, &pattern, &offset](AbstractClass* pDest, int color)
 		{
