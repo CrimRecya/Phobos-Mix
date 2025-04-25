@@ -352,6 +352,9 @@ public:
 
 		Valueable<double> WreckageInitialHealthPercent;
 
+		Valueable<int> AttachmentTopLayerMinHeight;
+		Valueable<int> AttachmentUndergroundLayerMaxHeight;
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, HarvesterDumpAmount { 0.0f }
@@ -643,6 +646,9 @@ public:
       		, DamagedSpeed { 0.75 }
 
 			, WreckageInitialHealthPercent { 0.1 }
+
+			, AttachmentTopLayerMinHeight { 500 }
+			, AttachmentUndergroundLayerMaxHeight { -256 }
 		{ }
 
 		virtual ~ExtData() = default;
