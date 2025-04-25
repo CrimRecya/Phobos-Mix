@@ -717,6 +717,7 @@ DEFINE_HOOK(0x736FB6, UnitClass_FiringAI_ForbidAttachmentRotation, 0x6)
 		: ContinueCheck;
 }
 
+// TODO UpdateRotation
 DEFINE_HOOK(0x736A2F, UnitClass_RotationAI_ForbidAttachmentRotation, 0x7)
 {
 	enum { SkipBodyRotation = 0x736A8E, ContinueCheck = 0x0 };
@@ -793,6 +794,7 @@ DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5D28, TechnoClass_SortY_Wrapper) // UnitClass
 DEFINE_JUMP(LJMP, 0x568831, 0x568841); // Skip locomotion layer check in MapClass::PickUp
 DEFINE_JUMP(LJMP, 0x4D37A2, 0x4D37AE); // Skip locomotion layer check in FootClass::Mark
 
+// TODO ShouldIgnoreByMouse
 DEFINE_HOOK(0x6DA3FF, TacticalClass_SelectAt_TransparentToMouse_TacticalSelectable, 0x6)
 {
 	enum { SkipTechno = 0x6DA440, ContinueCheck = 0x0 };
@@ -806,6 +808,7 @@ DEFINE_HOOK(0x6DA3FF, TacticalClass_SelectAt_TransparentToMouse_TacticalSelectab
 	return ContinueCheck;
 }
 
+// TODO ShouldIgnoreByMouse
 DEFINE_HOOK(0x6DA4FB, TacticalClass_SelectAt_TransparentToMouse_OccupierPtr, 0x6)
 {
 	GET(CellClass*, pCell, EAX);
