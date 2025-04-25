@@ -385,7 +385,7 @@ DirStruct TechnoTypeExt::ExtData::GetBodyDesiredDir(DirStruct currentDir, DirStr
 	return (std::abs(rightDifference) < std::abs(leftDifference)) ? rightDir : leftDir;
 }
 
-int __fastcall TechnoTypeExt::RequirementsMetExtraCheck(void* pAresHouseExt, void* _, TechnoTypeClass* pType)
+int __fastcall TechnoTypeExt::RequirementsMetExtraCheck(void* pAresHouseExt, discard_t _, TechnoTypeClass* pType)
 {
 	// Only with Ares will call this function, so skip sanity check.
 	const auto result = AresFunctions::RequirementsMet(pAresHouseExt, pType);
@@ -974,8 +974,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	// Ares 3.0
 	this->KeepAlive.Read(exINI, pSection, "KeepAlive");
-
-	char tempBuffer[32];
 
 	if (this->OwnerObject()->Gunner)
 	{

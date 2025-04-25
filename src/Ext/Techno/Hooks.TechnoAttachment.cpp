@@ -9,7 +9,6 @@
 
 #include <Utilities/Macro.h>
 
-
 DEFINE_HOOK(0x707CB3, TechnoClass_KillCargo_HandleAttachments, 0x6)
 {
 	GET(TechnoClass*, pThis, EBX);
@@ -281,6 +280,8 @@ DEFINE_FUNCTION_JUMP(CALL, 0x47C738, CellTechno_NoVirtual);
 DEFINE_FUNCTION_JUMP(CALL, 0x4495F2, CellTechno_NoVirtualOrRelatives);
 DEFINE_FUNCTION_JUMP(CALL, 0x44964E, CellTechno_NoVirtualOrRelatives);
 
+// EnhancedScatter
+/*
 DEFINE_HOOK(0x4495F7, BuildingClass_ClearFactoryBib_SkipCreatedUnitAttachments, 0x0)
 {
 	enum { BibClear = 0x44969B, NotClear = 0x4495FF };
@@ -298,6 +299,7 @@ DEFINE_HOOK(0x4495F7, BuildingClass_ClearFactoryBib_SkipCreatedUnitAttachments, 
 
 	return NotClear;
 }
+*/
 
 // original code doesn't account for multiple possible technos on the cell
 DEFINE_HOOK(0x73A5EA, UnitClass_PerCellProcess_EntryLoopTechnos, 0x0)
@@ -516,12 +518,13 @@ void ParentClickedAction(TechnoClass* pThis, ObjectClass* pTarget, CellStruct* p
 	}
 }
 
+// TODO DistributionMode
 DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 {
 	REF_STACK(int, idxPath, STACK_OFFSET(0x18, -0x8));
 	REF_STACK(unsigned char, idxWP, STACK_OFFSET(0x18, -0xC));
 
-	for (auto const& pObject : ObjectClass::CurrentObjects())
+	for (auto const& pObject : ObjectClass::CurrentObjects)
 	{
 		if (auto pTechno = abstract_cast<TechnoClass*>(pObject))
 			ParentClickedWaypoint(pTechno, idxPath, idxWP);
@@ -537,7 +540,7 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 	if (action == Action::Move || action == Action::PatrolWaypoint || action == Action::NoMove)
 		pSecondCell = pCell;
 
-	for (auto const& pObject : ObjectClass::CurrentObjects())
+	for (auto const& pObject : ObjectClass::CurrentObjects)
 	{
 		if (auto pTechno = abstract_cast<TechnoClass*>(pObject))
 			ParentClickedAction(pTechno, pTarget, pCell, pSecondCell);
@@ -701,7 +704,7 @@ DEFINE_HOOK(0x51D0DD, InfantryClass_Scatter_CheckAttachments, 0x6)
 		: Continue;
 }
 
-
+// TODO FacingFireError
 DEFINE_HOOK(0x736FB6, UnitClass_FiringAI_ForbidAttachmentRotation, 0x6)
 {
 	enum { SkipBodyRotation = 0x737063, ContinueCheck = 0x0 };

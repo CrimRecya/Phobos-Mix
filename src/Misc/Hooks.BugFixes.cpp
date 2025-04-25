@@ -1397,7 +1397,7 @@ DEFINE_JUMP(LJMP, 0x6FA4D1, 0x6FA4FB); // Skip vanilla update
 
 #pragma region TeamCloseRangeFix
 
-int __fastcall Check2DDistanceInsteadOf3D(ObjectClass* pSource, void* _, AbstractClass* pTarget)
+int __fastcall Check2DDistanceInsteadOf3D(ObjectClass* pSource, discard_t _, AbstractClass* pTarget)
 {
 	// At present, it seems that aircraft use their own mapcoords and the team destination's mapcoords to check.
     // During the previous test, it was found that if the aircraft uses this and needs to return to the airport

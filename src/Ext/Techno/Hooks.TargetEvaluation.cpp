@@ -26,7 +26,7 @@ DEFINE_HOOK(0x7098B9, TechnoClass_TargetSomethingNearby_AutoFire, 0x6)
 	return 0;
 }
 
-FireError __fastcall TechnoClass_TargetSomethingNearby_CanFire_Wrapper(TechnoClass* pThis, void* _, AbstractClass* pTarget, int weaponIndex, bool ignoreRange)
+FireError __fastcall TechnoClass_TargetSomethingNearby_CanFire_Wrapper(TechnoClass* pThis, discard_t _, AbstractClass* pTarget, int weaponIndex, bool ignoreRange)
 {
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 	bool disableWeapons = pExt->AE.DisableWeapons;
@@ -139,7 +139,7 @@ WeaponStruct* __fastcall TechnoClass_EvaluateCellGetWeaponWrapper(TechnoClass* p
 	return pThis->GetWeapon(CellEvalTemp::weaponIndex);
 }
 
-int __fastcall TechnoClass_EvaluateCellGetWeaponRangeWrapper(TechnoClass* pThis, void* _, int weaponIndex)
+int __fastcall TechnoClass_EvaluateCellGetWeaponRangeWrapper(TechnoClass* pThis, discard_t _, int weaponIndex)
 {
 	return pThis->GetWeaponRange(CellEvalTemp::weaponIndex);
 }

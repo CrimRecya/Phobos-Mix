@@ -1037,7 +1037,7 @@ public:
 		TechnoClass* pInvoker = nullptr, HouseClass* pInvokerHouse = nullptr, AnimTypeClass* pSpawnAnimType = nullptr, int spawnHeight = -1,
 		bool alwaysOnGround = false, bool checkPathfinding = false, bool parachuteIfInAir = false, Mission mission = Mission::Guard, Mission* missionAI = nullptr);
 
-	static int __fastcall RequirementsMetExtraCheck(void* pAresHouseExt, void* _, TechnoTypeClass* pType);
+	static int __fastcall RequirementsMetExtraCheck(void* pAresHouseExt, discard_t _, TechnoTypeClass* pType);
 	static CanBuildResult CheckAlwaysExistCameo(TechnoTypeClass* pType, CanBuildResult canBuild);
 
 	// Ares 0.A

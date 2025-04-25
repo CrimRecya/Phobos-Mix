@@ -130,7 +130,7 @@ public:
 	}
 
 	static // Reversed from Tactical::MakeSelection
-	void __fastcall Tactical_MakeFilteredSelection(TacticalClass* pThis, void*_, callback_type fpCheckCallback)
+	void __fastcall Tactical_MakeFilteredSelection(TacticalClass* pThis, discard_t _, callback_type fpCheckCallback)
 	{
 		if (pThis->Band.Left || pThis->Band.Top)
 		{
