@@ -4,9 +4,11 @@
 #include <WarheadTypeClass.h>
 #include <TacticalClass.h>
 
+#include <Commands/DistributionMode.h>
 #include <Ext/TechnoType/Body.h>
 #include <Ext/Cell/Body.h>
 
+#include <Utilities/Helpers.Alex.h>
 #include <Utilities/Macro.h>
 
 DEFINE_HOOK(0x707CB3, TechnoClass_KillCargo_HandleAttachments, 0x6)
@@ -481,9 +483,9 @@ void ParentClickedWaypoint(TechnoClass* pThis, int idxPath, signed char idxWP)
 		pThis->unknown_bool_430 = false;
 
 	// Children handling
-	if (auto const& pExt = TechnoExt::ExtMap.Find(pThis))
+	if (const auto& pExt = TechnoExt::ExtMap.Find(pThis))
 	{
-		for (auto const& pAttachment : pExt->ChildAttachments)
+		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
 			if (pAttachment->Child && pAttachment->GetType()->InheritCommands)
 				ParentClickedWaypoint(pAttachment->Child, idxPath, idxWP);
@@ -491,42 +493,62 @@ void ParentClickedWaypoint(TechnoClass* pThis, int idxPath, signed char idxWP)
 	}
 }
 
-void ParentClickedAction(TechnoClass* pThis, ObjectClass* pTarget, CellStruct* pCell, CellStruct* pSecondCell)
+void ParentClickedTargetAction(TechnoClass* pThis, Action action, ObjectClass* pTarget)
 {
-	// Rewrite of the original code
-	if (pTarget)
-	{
-		Action whatAction = pThis->MouseOverObject(pTarget, false);
-		pThis->ObjectClickedAction(whatAction, pTarget, false);
-	}
-	else
-	{
-		Action whatAction = pThis->MouseOverCell(pCell, false, false);
-		pThis->CellClickedAction(whatAction, pCell, pSecondCell, false);
-	}
-
+	pThis->ObjectClickedAction(action, pTarget, false);
 	Unsorted::MoveFeedback = false;
 
 	// Children handling
-	if (auto const& pExt = TechnoExt::ExtMap.Find(pThis))
+	if (const auto& pExt = TechnoExt::ExtMap.Find(pThis))
 	{
-		for (auto const& pAttachment : pExt->ChildAttachments)
+		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
 			if (pAttachment->Child && pAttachment->GetType()->InheritCommands)
-				ParentClickedAction(pAttachment->Child, pTarget, pCell, pSecondCell);
+				ParentClickedTargetAction(pAttachment->Child, action, pTarget);
 		}
 	}
 }
 
-// TODO DistributionMode
+void ParentClickedCellAction(TechnoClass* pThis, Action action, CellStruct* pCell, CellStruct* pSecondCell)
+{
+	pThis->CellClickedAction(action, pCell, pSecondCell, false);
+	Unsorted::MoveFeedback = false;
+
+	// Children handling
+	if (const auto& pExt = TechnoExt::ExtMap.Find(pThis))
+	{
+		for (const auto& pAttachment : pExt->ChildAttachments)
+		{
+			if (pAttachment->Child && pAttachment->GetType()->InheritCommands)
+				ParentClickedCellAction(pAttachment->Child, action, pCell, pSecondCell);
+		}
+	}
+}
+
+void ParentAreaGuardAction(TechnoClass* pThis)
+{
+	pThis->ClickedMission(Mission::Area_Guard, reinterpret_cast<ObjectClass*>(pThis->GetCellAgain()), nullptr, nullptr);
+	Unsorted::MoveFeedback = false;
+
+	// Children handling
+	if (const auto& pExt = TechnoExt::ExtMap.Find(pThis))
+	{
+		for (const auto& pAttachment : pExt->ChildAttachments)
+		{
+			if (pAttachment->Child && pAttachment->GetType()->InheritCommands)
+				ParentAreaGuardAction(pAttachment->Child);
+		}
+	}
+}
+
 DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 {
 	REF_STACK(int, idxPath, STACK_OFFSET(0x18, -0x8));
 	REF_STACK(unsigned char, idxWP, STACK_OFFSET(0x18, -0xC));
 
-	for (auto const& pObject : ObjectClass::CurrentObjects)
+	for (const auto& pObject : ObjectClass::CurrentObjects)
 	{
-		if (auto pTechno = abstract_cast<TechnoClass*>(pObject))
+		if (const auto pTechno = abstract_cast<TechnoClass*>(pObject))
 			ParentClickedWaypoint(pTechno, idxPath, idxWP);
 	}
 
@@ -534,16 +556,161 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 	LEA_STACK(CellStruct* const, pCell, STACK_OFFSET(0x18, +0x8));
 	GET_STACK(Action const, action, STACK_OFFSET(0x18, +0xC));
 
-	CellStruct invalidCell { -1, -1 };
-	CellStruct* pSecondCell = &invalidCell;
-
-	if (action == Action::Move || action == Action::PatrolWaypoint || action == Action::NoMove)
-		pSecondCell = pCell;
-
-	for (auto const& pObject : ObjectClass::CurrentObjects)
+	if (pTarget)
 	{
-		if (auto pTechno = abstract_cast<TechnoClass*>(pObject))
-			ParentClickedAction(pTechno, pTarget, pCell, pSecondCell);
+		const auto count = ObjectClass::CurrentObjects.Count;
+
+		if (count > 0)
+		{
+			const auto mode1 = Phobos::Config::DistributionSpreadMode;
+			const auto mode2 = Phobos::Config::DistributionFilterMode;
+
+			// Distribution mode main
+			if (DistributionModeHoldDownCommandClass::Enabled
+				&& mode1
+				&& count > 1
+				&& action != Action::NoMove
+				&& !PlanningNodeClass::PlanningModeActive
+				&& (pTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None
+				&& !pTarget->IsInAir())
+			{
+				VocClass::PlayGlobal(RulesExt::Global()->AddDistributionModeCommandSound, 0x2000, 1.0);
+				const auto pSpecial = HouseClass::FindSpecial();
+				const auto pCivilian = HouseClass::FindCivilianSide();
+				const auto pNeutral = HouseClass::FindNeutral();
+
+				const auto pTargetHouse = static_cast<TechnoClass*>(pTarget)->Owner;
+				const bool targetIsNeutral = pTargetHouse == pSpecial || pTargetHouse == pCivilian || pTargetHouse == pNeutral;
+
+				const auto range = (2 << mode1);
+				const auto center = pTarget->GetCoords();
+				const auto pItems = Helpers::Alex::getCellSpreadItems(center, range);
+
+				std::vector<std::pair<TechnoClass*, int>> record;
+				const auto maxSize = pItems.size();
+				record.reserve(maxSize);
+
+				int current = 1;
+
+				for (const auto& pItem : pItems)
+				{
+					if (pItem->IsDisguisedAs(HouseClass::CurrentPlayer))
+						continue;
+
+					if (pItem->CloakState == CloakState::Cloaked && !pItem->GetCell()->Sensors_InclHouse(HouseClass::CurrentPlayer->ArrayIndex))
+						continue;
+
+					auto coords = pItem->GetCoords();
+
+					if (!MapClass::Instance.IsWithinUsableArea(coords))
+						continue;
+
+					coords.Z = MapClass::Instance.GetCellFloorHeight(coords);
+
+					if (MapClass::Instance.GetCellAt(coords)->ContainsBridge())
+						coords.Z += CellClass::BridgeHeight;
+
+					if (!MapClass::Instance.IsLocationShrouded(coords))
+						record.emplace_back(pItem, 0);
+				}
+
+				const auto recordSize = record.size();
+				std::sort(&record[0], &record[recordSize],[&center](const auto& pairA, const auto& pairB)
+				{
+					const auto coordsA = pairA.first->GetCoords();
+					const auto distanceA = Point2D{coordsA.X, coordsA.Y}.DistanceFromSquared(Point2D{center.X, center.Y});
+
+					const auto coordsB = pairB.first->GetCoords();
+					const auto distanceB = Point2D{coordsB.X, coordsB.Y}.DistanceFromSquared(Point2D{center.X, center.Y});
+
+					return distanceA < distanceB;
+				});
+
+				for (const auto& pSelect : ObjectClass::CurrentObjects)
+				{
+					const auto pTechno = abstract_cast<TechnoClass*>(pSelect);
+
+					if (!pTechno)
+						continue;
+
+					size_t canTargetIndex = maxSize;
+					size_t newTargetIndex = maxSize;
+
+					for (size_t i = 0; i < recordSize; ++i)
+					{
+						const auto& [pItem, num] = record[i];
+
+						if (pSelect->MouseOverObject(pItem) != action)
+							continue;
+
+						if (!targetIsNeutral && (pItem->Owner == pSpecial || pItem->Owner == pCivilian || pItem->Owner == pNeutral))
+							continue;
+
+						if (mode2 < 2 || (pItem->WhatAmI() == pTarget->WhatAmI()
+							&& (mode2 < 3 || TechnoTypeExt::GetSelectionGroupID(pItem->GetTechnoType())
+								== TechnoTypeExt::GetSelectionGroupID(pTarget->GetTechnoType()))))
+						{
+							canTargetIndex = i;
+
+							if (num < current)
+							{
+								newTargetIndex = i;
+								break;
+							}
+						}
+					}
+
+					if (newTargetIndex == maxSize && canTargetIndex != maxSize)
+					{
+						++current;
+						newTargetIndex = canTargetIndex;
+					}
+
+					if (newTargetIndex != maxSize)
+					{
+						auto& [pNewTarget, recordCount] = record[newTargetIndex];
+
+						++recordCount;
+						ParentClickedTargetAction(static_cast<TechnoClass*>(pSelect), action, pNewTarget);
+					}
+					else
+					{
+						const auto currentAction = pSelect->MouseOverObject(pTarget);
+
+						if (mode2 && currentAction == Action::NoMove && (pSelect->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
+							ParentAreaGuardAction(static_cast<TechnoClass*>(pSelect));
+						else
+							ParentClickedTargetAction(static_cast<TechnoClass*>(pSelect), currentAction, pTarget);
+					}
+				}
+			}
+			else // Vanilla
+			{
+				for (const auto& pSelect : ObjectClass::CurrentObjects)
+				{
+					const auto currentAction = pSelect->MouseOverObject(pTarget);
+
+					if (mode2 && action != Action::NoMove && currentAction == Action::NoMove && (pSelect->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
+						ParentAreaGuardAction(static_cast<TechnoClass*>(pSelect));
+					else
+						ParentClickedTargetAction(static_cast<TechnoClass*>(pSelect), currentAction, pTarget);
+				}
+			}
+		}
+	}
+	else
+	{
+		auto invalidCell = CellStruct { -1, -1 };
+		auto pSecondCell = &invalidCell;
+
+		if (action == Action::Move || action == Action::PatrolWaypoint || action == Action::NoMove)
+			pSecondCell = pCell;
+
+		for (const auto& pObject : ObjectClass::CurrentObjects)
+		{
+			if (const auto pTechno = abstract_cast<TechnoClass*>(pObject))
+				ParentClickedCellAction(pTechno, pTechno->MouseOverCell(pCell, false, false), pCell, pSecondCell);
+		}
 	}
 
 	Unsorted::MoveFeedback = true;
@@ -704,30 +871,25 @@ DEFINE_HOOK(0x51D0DD, InfantryClass_Scatter_CheckAttachments, 0x6)
 		: Continue;
 }
 
-// TODO FacingFireError
+// UpdateFiring
+/*
 DEFINE_HOOK(0x736FB6, UnitClass_FiringAI_ForbidAttachmentRotation, 0x6)
 {
 	enum { SkipBodyRotation = 0x737063, ContinueCheck = 0x0 };
 
 	GET(UnitClass*, pThis, ESI);
-	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
 
-	return pExt->ParentAttachment
-		? SkipBodyRotation
-		: ContinueCheck;
+	return TechnoExt::ExtMap.Find(pThis)->ParentAttachment ? SkipBodyRotation : ContinueCheck;
 }
+*/
 
-// TODO UpdateRotation
 DEFINE_HOOK(0x736A2F, UnitClass_RotationAI_ForbidAttachmentRotation, 0x7)
 {
 	enum { SkipBodyRotation = 0x736A8E, ContinueCheck = 0x0 };
 
 	GET(UnitClass*, pThis, ESI);
-	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
 
-	return pExt->ParentAttachment
-		? SkipBodyRotation
-		: ContinueCheck;
+	return TechnoExt::HasAttachmentLoco(pThis) && TechnoExt::ExtMap.Find(pThis)->ParentAttachment ? SkipBodyRotation : ContinueCheck;
 }
 
 Action __fastcall UnitClass_MouseOverCell_Wrapper(UnitClass* pThis, discard_t, CellStruct const* pCell, bool checkFog, bool ignoreForce)
@@ -794,7 +956,6 @@ DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5D28, TechnoClass_SortY_Wrapper) // UnitClass
 DEFINE_JUMP(LJMP, 0x568831, 0x568841); // Skip locomotion layer check in MapClass::PickUp
 DEFINE_JUMP(LJMP, 0x4D37A2, 0x4D37AE); // Skip locomotion layer check in FootClass::Mark
 
-// TODO ShouldIgnoreByMouse
 DEFINE_HOOK(0x6DA3FF, TacticalClass_SelectAt_TransparentToMouse_TacticalSelectable, 0x6)
 {
 	enum { SkipTechno = 0x6DA440, ContinueCheck = 0x0 };
@@ -802,18 +963,21 @@ DEFINE_HOOK(0x6DA3FF, TacticalClass_SelectAt_TransparentToMouse_TacticalSelectab
 	GET(TechnoClass*, pTechno, EAX);
 
 	auto const pExt = TechnoExt::ExtMap.Find(pTechno);
+
 	if (pExt && pExt->ParentAttachment && pExt->ParentAttachment->GetType()->TransparentToMouse)
 		return SkipTechno;
 
 	return ContinueCheck;
 }
 
-// TODO ShouldIgnoreByMouse
+// ShouldIgnoreByMouse
+/*
 DEFINE_HOOK(0x6DA4FB, TacticalClass_SelectAt_TransparentToMouse_OccupierPtr, 0x6)
 {
 	GET(CellClass*, pCell, EAX);
 
 	ObjectClass* pFoundObject = nullptr;
+
 	for (ObjectClass* pOccupier = pCell->FirstObject; pOccupier; pOccupier = pOccupier->NextObject)
 	{
 		// find first non-transparent to mouse techno and return it
@@ -831,6 +995,7 @@ DEFINE_HOOK(0x6DA4FB, TacticalClass_SelectAt_TransparentToMouse_OccupierPtr, 0x6
 	R->EAX<ObjectClass*>(pFoundObject);
 	return 0x6DA501;
 }
+*/
 
 // this is probably not the best way to implement sight since we may be hijacking
 // into some undesirable side effects, cause this is intended for air units that
