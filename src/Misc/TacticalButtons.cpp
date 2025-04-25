@@ -289,8 +289,44 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			DSurface::Composite->DrawLine(&point1, &point2, color);
 		};
 
+		const auto thisPoint = TacticalClass::Instance->CoordsToClient(pTechno->GetCoords()).first;
+		const auto offset = Unsorted::CurrentFrame % 15;
+		bool pattern[16] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 };
+		auto drawDashLine = [&thisPoint, &pattern, &offset](AbstractClass* pDest, int color)
+		{
+			if (pDest)
+			{
+				auto footPoint = thisPoint;
+				auto destPoint = TacticalClass::Instance->CoordsToClient(pDest->GetCoords()).first;
+
+				if (reinterpret_cast<bool(__fastcall*)(Point2D*, Point2D*, RectangleStruct*)>(0x7BC2B0)(&footPoint, &destPoint, &DSurface::ViewBounds))
+					DSurface::Composite->DrawDashedLine_(&footPoint, &destPoint, color, pattern, offset, false);
+
+				--footPoint.Y;
+				--destPoint.Y;
+
+				if (reinterpret_cast<bool(__fastcall*)(Point2D*, Point2D*, RectangleStruct*)>(0x7BC2B0)(&footPoint, &destPoint, &DSurface::ViewBounds))
+					DSurface::Composite->DrawDashedLine_(&footPoint, &destPoint, color, pattern, offset, false);
+
+				--footPoint.Y;
+				--destPoint.Y;
+
+				if (reinterpret_cast<bool(__fastcall*)(Point2D*, Point2D*, RectangleStruct*)>(0x7BC2B0)(&footPoint, &destPoint, &DSurface::ViewBounds))
+					DSurface::Composite->DrawDashedLine_(&footPoint, &destPoint, color, pattern, offset, false);
+			}
+		};
+
 		if (const auto pFoot = abstract_cast<FootClass*, true>(pTechno))
 		{
+			drawDashLine(pFoot->Target, COLOR_RED);
+			drawDashLine(pFoot->ArchiveTarget, COLOR_PURPLE);
+			drawDashLine(pFoot->GetNthLink(), COLOR_WHITE);
+			drawDashLine(pFoot->QueueUpToEnter, COLOR_BLUE);
+			drawDashLine(pFoot->unknown_5A0, COLOR_YELLOW);
+			drawDashLine(pFoot->Destination, COLOR_GREEN);
+			drawDashLine(pFoot->MegaTarget, COLOR_CYAN);
+			drawDashLine(pFoot->MegaDestination, COLOR_CYAN);
+
 			const auto mtxBase = pFoot->Locomotor ? pFoot->Locomotor->Draw_Matrix(nullptr) : Matrix3D::GetIdentity();
 			const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
 
@@ -335,6 +371,11 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		}
 		else
 		{
+			drawDashLine(pFoot->Target, COLOR_RED);
+			drawDashLine(pFoot->ArchiveTarget, COLOR_PURPLE);
+			drawDashLine(pFoot->GetNthLink(), COLOR_WHITE);
+			drawDashLine(pFoot->QueueUpToEnter, COLOR_BLUE);
+
 			const auto mtxBase = Matrix3D::GetIdentity();
 			const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
 
