@@ -834,9 +834,7 @@ DEFINE_HOOK(0x4D6D34, FootClass_MissionAreaGuard_Miner, 0x5)
 
 	GET(FootClass*, pThis, ESI);
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
-
-	return (pThis->Owner->IsControlledByHuman() && pTypeExt && pTypeExt->Harvester_CanGuardArea) ? GuardArea : 0;
+	return (pThis->Owner->IsControlledByHuman() && TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->Harvester_CanGuardArea) ? GuardArea : 0;
 }
 
 #pragma endregion
@@ -951,12 +949,7 @@ DEFINE_HOOK(0x700B28, TechnoClass_MouseOverCell_JustHasRallyPoint, 0x6)
 	GET(TechnoClass* const, pThis, ESI);
 
 	if (pThis->WhatAmI() == AbstractType::Building)
-	{
-		auto const pType = static_cast<BuildingClass*>(pThis)->Type;
-		auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
-
-		return pTypeExt->JustHasRallyPoint ? JustRally : 0;
-	}
+		return BuildingTypeExt::ExtMap.Find(static_cast<BuildingClass*>(pThis)->Type)->JustHasRallyPoint ? JustRally : 0;
 
 	return 0;
 }

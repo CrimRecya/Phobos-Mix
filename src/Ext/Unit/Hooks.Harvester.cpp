@@ -169,16 +169,15 @@ DEFINE_HOOK(0x73E730, UnitClass_MissionHarvest_HarvesterScanAfterUnload, 0x5)
 	if (pFocus && TechnoTypeExt::ExtMap.Find(pThis->Type)->HarvesterScanAfterUnload.Get(RulesExt::Global()->HarvesterScanAfterUnload))
 	{
 		auto cellBuffer = CellStruct::Empty;
-		const auto pCellStru = pThis->ScanForTiberium(&cellBuffer, RulesClass::Instance->TiberiumLongScan / 256, 0);
+		const auto pCellStru = pThis->ScanForTiberium(&cellBuffer, RulesClass::Instance->TiberiumLongScan / Unsorted::LeptonsPerCell, 0);
 
 		if (*pCellStru != CellStruct::Empty)
 		{
 			const auto pCell = MapClass::Instance.TryGetCellAt(*pCellStru);
 			const auto distFromTiberium = pCell ? pThis->DistanceFrom(pCell) : -1;
-			const auto distFromFocus = pThis->DistanceFrom(pFocus);
 
 			// Check if pCell is better than focus.
-			if (distFromTiberium > 0 && distFromTiberium < distFromFocus)
+			if (distFromTiberium >= 0 && distFromTiberium < pThis->DistanceFrom(pFocus))
 				R->EAX(pCell);
 		}
 	}
