@@ -1,5 +1,7 @@
 #include "Body.h"
 
+#include <Ext/BuildingType/Body.h>
+
 // Cursor & target acquisition stuff not directly tied to other features can go here.
 
 #pragma region TargetAcquisition
@@ -206,12 +208,25 @@ DEFINE_HOOK(0x6F85AB, TechnoClass_CanAutoTargetObject_AggressiveAttackMove, 0x6)
 	if (!pThis->Owner->IsControlledByHuman())
 		return CanTarget;
 
-	if (!pThis->MegaMissionIsAttackMove())
-		return ContinueCheck;
+	GET(TechnoClass*, pTarget, ESI);
 
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	if (pTarget->WhatAmI() == AbstractType::Building)
+	{
+		// Fallback to unmodded behavior if the building is an exempt of aggressive stance.
+		if (BuildingTypeExt::ExtMap.Find(static_cast<BuildingClass*>(pTarget)->Type)->AggressiveStance_Exempt)
+			return ContinueCheck;
 
-	return pExt->TypeExtData->AttackMove_Aggressive.Get(RulesExt::Global()->AttackMove_Aggressive) ? CanTarget : ContinueCheck;
+		if (TechnoExt::ExtMap.Find(pThis)->GetAggressiveStance())
+			return CanTarget;
+	}
+
+	if (pThis->MegaMissionIsAttackMove())
+	{
+		if (TechnoExt::ExtMap.Find(pThis)->TypeExtData->AttackMove_Aggressive.Get(RulesExt::Global()->AttackMove_Aggressive))
+			return CanTarget;
+	}
+
+	return ContinueCheck;
 }
 
 #pragma endregion

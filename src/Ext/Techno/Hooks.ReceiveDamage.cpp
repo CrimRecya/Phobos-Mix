@@ -7,6 +7,11 @@
 #include <Ext/WeaponType/Body.h>
 #include <Ext/TEvent/Body.h>
 #include <Ext/House/Body.h>
+#include <Ext/Rules/Body.h>
+
+#include <VoxClass.h>
+#include <RadarEventClass.h>
+#include <TacticalClass.h>
 
 namespace ReceiveDamageTemp
 {
@@ -42,6 +47,22 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 		else
 			multiplier = pWHExt->DamageOwnerMultiplier.Get(pRules->DamageOwnerMultiplier);
 
+		if (pTypeExt->DirectionalArmor.Get(RulesExt::Global()->DirectionalArmor) && pThis->WhatAmI() == AbstractType::Unit
+			&& pWHExt->HitDirection >= 0 && args->DistanceToEpicenter <= 64)
+		{
+			const int tarFacing = pThis->PrimaryFacing.Current().GetValue<16>();
+			const int angle = std::abs(pWHExt->HitDirection - tarFacing);
+			const int frontField = static_cast<int>(16384 * pTypeExt->DirectionalArmor_FrontField.Get(RulesExt::Global()->DirectionalArmor_FrontField));
+			const int backField = static_cast<int>(16384 * pTypeExt->DirectionalArmor_BackField.Get(RulesExt::Global()->DirectionalArmor_BackField));
+
+			if (angle >= (32768 - frontField) && angle <= (32768 + frontField))
+				multiplier *= pTypeExt->DirectionalArmor_FrontMultiplier.Get(RulesExt::Global()->DirectionalArmor_FrontMultiplier) * pWHExt->Directional_Multiplier;
+			else if ((angle < backField && angle >= 0) || (angle > (49152 + backField) && angle <= 65536))
+				multiplier *= pTypeExt->DirectionalArmor_BackMultiplier.Get(RulesExt::Global()->DirectionalArmor_BackMultiplier) * pWHExt->Directional_Multiplier;
+			else
+				multiplier *= pTypeExt->DirectionalArmor_SideMultiplier.Get(RulesExt::Global()->DirectionalArmor_SideMultiplier) * pWHExt->Directional_Multiplier;
+		}
+
 		if (multiplier != 1.0)
 		{
 			const auto sgnDamage = *args->Damage > 0 ? 1 : -1;
@@ -51,7 +72,7 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 	}
 
 	// Raise Combat Alert
-	if (pRules->CombatAlert && *args->Damage > 1)
+	if (*args->Damage && (MapClass::GetTotalDamage(*args->Damage, args->WH, pType->Armor, args->DistanceToEpicenter) > 0))
 	{
 		auto raiseCombatAlert = [&]()
 		{
@@ -65,10 +86,14 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 			else if (!pTypeExt->CombatAlert.Get(pRules->CombatAlert_Default.Get(!pType->Insignificant && !pType->Spawned)) || !pThis->IsInPlayfield)
 				return;
 
-			const auto pBuilding = abstract_cast<BuildingClass*>(pThis);
-
-			if (pRules->CombatAlert_IgnoreBuilding && pBuilding && !pTypeExt->CombatAlert_NotBuilding.Get(pBuilding->Type->IsVehicle()))
-				return;
+			if (pRules->CombatAlert_IgnoreBuilding)
+			{
+				if (const auto pBuilding = abstract_cast<BuildingClass*, true>(pThis))
+				{
+					if (!pTypeExt->CombatAlert_NotBuilding.Get(pBuilding->Type->IsVehicle()))
+						return;
+				}
+			}
 
 			const auto coordInMap = pThis->GetCoords();
 
@@ -98,7 +123,18 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 			if (index != -1)
 				VoxClass::PlayIndex(index);
 		};
-		raiseCombatAlert();
+
+		if (pRules->CombatAlert)
+			raiseCombatAlert();
+
+		if (pWHExt->CanTargetHouse(pSourceHouse, pThis))
+			pExt->LastHurtFrame = Unsorted::CurrentFrame;
+	}
+
+	if (*args->Damage && pWHExt->ActivateWreckage)
+	{
+		pExt->IsWreckage = false;
+		pThis->Reactivate();
 	}
 
 	// Shield Receive Damage
@@ -186,9 +222,59 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 {
 	GET(TechnoClass* const, pThis, ESI);
 	GET(int* const, pDamage, EBX);
+	GET(const DamageState, state, EAX);
+	GET(WarheadTypeClass* const, pWH, EBP);
+	GET_STACK(HouseClass* const, pAttackerHosue, STACK_OFFSET(0xC4, 0x1C));
 
 	if (Phobos::DisplayDamageNumbers && *pDamage)
 		GeneralUtils::DisplayDamageNumberString(*pDamage, DamageDisplayType::Regular, pThis->GetRenderCoords(), TechnoExt::ExtMap.Find(pThis)->DamageNumberOffset);
+
+	if ((state == DamageState::NowDead) && !WarheadTypeExt::ExtMap.Find(pWH)->SuppressWreckage)
+	{
+		const auto pType = pThis->GetTechnoType();
+		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+
+		if (const auto pWreckageType = pTypeExt->WreckageType)
+		{
+			if ((pThis->GetCell()->LandType != LandType::Water || pTypeExt->WreckageLeaveOnWater)
+				&& (!pThis->IsInAir() || pTypeExt->WreckageLeaveInAir)
+				&& (pWreckageType != pType || !TechnoExt::ExtMap.Find(pThis)->IsWreckage))
+			{
+				if (const auto pOwner = HouseExt::GetHouseKind(pTypeExt->WreckageOwner, false, pThis->Owner, pAttackerHosue, pThis->Owner))
+				{
+					const auto pWreckage = static_cast<TechnoClass*>(pWreckageType->CreateObject(pOwner));
+					pWreckage->Health = static_cast<int>(pWreckageType->Strength * pTypeExt->WreckageInitialHealthPercent.Get(RulesExt::Global()->WreckageInitialHealthPercent));
+
+					if (pTypeExt->WreckageSwapLocomotor
+						&& pWreckage->AbstractFlags & AbstractFlags::Foot
+						&& pThis->AbstractFlags & AbstractFlags::Foot)
+					{
+						const auto pFoot = static_cast<FootClass*>(pThis);
+						const auto pWreckageFoot = static_cast<FootClass*>(pWreckage);
+						std::swap(pFoot->Locomotor, pWreckageFoot->Locomotor);
+						pWreckageFoot->Locomotor->Link_To_Object(pWreckageFoot);
+						pFoot->Locomotor->Link_To_Object(pFoot);
+						pWreckageFoot->Locomotor->Stop_Moving();
+					}
+
+					++Unsorted::ScenarioInit;
+					pWreckage->Unlimbo((pWreckage->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None ? pThis->GetCoords() : pThis->Location, DirType::North);
+					--Unsorted::ScenarioInit;
+					pWreckage->PrimaryFacing.SetCurrent(pThis->PrimaryFacing.Current());
+					pWreckage->SecondaryFacing.SetCurrent(pThis->SecondaryFacing.Current());
+
+					if (pTypeExt->WreckageDeactive)
+					{
+						TechnoExt::ExtMap.Find(pWreckage)->IsWreckage = true;
+						pWreckage->Deactivate();
+					}
+
+					if (pTypeExt->WreckageMarkUp)
+						pWreckage->Mark(MarkType::Up);
+				}
+			}
+		}
+	}
 
 	return 0;
 }

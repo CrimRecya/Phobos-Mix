@@ -192,6 +192,55 @@ DEFINE_HOOK(0x6B7282, SpawnManagerClass_AI_PromoteSpawns, 0x5)
 	return 0;
 }
 
+#pragma endregion
+
+#pragma region CheckRepairDone
+
+static inline bool ShouldResetSpawnManagerTarget(SpawnManagerClass* pThis)
+{
+	if (!pThis->Target)
+		return true;
+
+	if (TechnoTypeExt::ExtMap.Find(pThis->Owner->GetTechnoType())->Spawner_ReturnOnRepairDone)
+	{
+		auto pTarget = abstract_cast<TechnoClass*>(pThis->Target);
+
+		if (pTarget && pTarget->GetHealthPercentage() >= RulesClass::Instance->unknown_double_16F8)
+			return true;
+	}
+
+	return false;
+}
+
+DEFINE_HOOK(0x6B7702, SpawnManagerClass_AI_CheckRepairDone1, 0x5)
+{
+	enum { KeepTarget = 0x6B770D, ResetTarget = 0x6B7663 };
+
+	GET(SpawnManagerClass*, pThis, ESI);
+
+	R->EAX(pThis->Target);
+	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
+}
+
+DEFINE_HOOK(0x6B7752, SpawnManagerClass_AI_CheckRepairDone2, 0x5)
+{
+	enum { KeepTarget = 0x6B7759, ResetTarget = 0x6B7793 };
+
+	GET(SpawnManagerClass*, pThis, ESI);
+
+	R->EAX(pThis->Target);
+	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
+}
+
+DEFINE_HOOK(0x6B79BF, SpawnManagerClass_AI_CheckRepairDone3, 0x5)
+{
+	enum { ResetTarget = 0x6B79C4, KeepTarget = 0x6B79D3 };
+	GET(SpawnManagerClass*, pThis, ESI);
+	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
+}
+
+#pragma endregion
+
 DEFINE_HOOK(0x6B77B4, SpawnManagerClass_Update_RecycleSpawned, 0x7)
 {
 	enum { Recycle = 0x6B77FF, NoRecycle = 0x6B7838 };
@@ -246,17 +295,23 @@ DEFINE_HOOK(0x6B77B4, SpawnManagerClass_Update_RecycleSpawned, 0x7)
 DEFINE_HOOK(0x4D962B, FootClass_SetDestination_RecycleFLH, 0x5)
 {
 	GET(FootClass* const, pThis, EBP);
-	GET(CoordStruct*, pDestCrd, EAX);
+	GET(CoordStruct* const, pDestCrd, EAX);
 
-	auto pCarrier = pThis->SpawnOwner;
+	const auto pCarrier = pThis->SpawnOwner;
+	const auto pDestination = pThis->Destination;
 
 	if (pCarrier && pCarrier == pThis->Destination) // This is a spawner returning to its carrier.
 	{
-		auto pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
+		auto const pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
 		auto const& FLH = pCarrierTypeExt->Spawner_RecycleCoord;
 
 		if (FLH != CoordStruct::Empty)
 			*pDestCrd += TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret) - pCarrier->GetCoords();
+	}
+	else if (RulesExt::Global()->FollowTargetSelf)
+	{
+		if (const auto pFoot = abstract_cast<FootClass*>(pDestination))
+			*pDestCrd = pFoot->GetCoords();
 	}
 
 	return 0;
@@ -416,11 +471,16 @@ DEFINE_HOOK(0x728FF2, TunnelLocomotionClass_Process_SubterraneanHeight3, 0x6)
 	REF_STACK(int, height, 0x14);
 
 	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType());
-	int subtHeight = pTypeExt->SubterraneanHeight.Get(RulesExt::Global()->SubterraneanHeight);
-	height -= heightOffset;
+	const int digInSpeed = pTypeExt->DigInSpeed;
 
-	if (height < subtHeight)
-		height = subtHeight;
+	if (digInSpeed > 0)
+		heightOffset = (int)(digInSpeed * TechnoExt::GetCurrentSpeedMultiplier((FootClass*)pLinkedTo));
+
+	height -= heightOffset;
+	const int subHeight = pTypeExt->SubterraneanHeight.Get(RulesExt::Global()->SubterraneanHeight);
+
+	if (height < subHeight)
+		height = subHeight;
 
 	return SkipGameCode;
 }
@@ -436,6 +496,59 @@ DEFINE_HOOK(0x7295E2, TunnelLocomotionClass_ProcessStateDigging_SubterraneanHeig
 	height = pTypeExt->SubterraneanHeight.Get(RulesExt::Global()->SubterraneanHeight);
 
 	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x7292BF, TunnelLocomotionClass_ProcessPreDigIn_DigStartROT, 0x6)
+{
+	GET(TunnelLocomotionClass* const, pThis, ESI);
+	GET(int, time, EAX);
+
+	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->LinkedTo->GetTechnoType()))
+	{
+		const int rot = pTypeExt->DigStartROT;
+
+		if (rot > 0)
+			time = (int)(64 / (double)rot);
+	}
+
+	R->EAX(time);
+	return 0;
+}
+
+DEFINE_HOOK(0x729A65, TunnelLocomotionClass_ProcessPreDigOut_DigEndROT, 0x6)
+{
+	GET(TunnelLocomotionClass* const, pThis, ESI);
+	GET(int, time, EAX);
+
+	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->LinkedTo->GetTechnoType()))
+	{
+		const int rot = pTypeExt->DigEndROT;
+
+		if (rot > 0)
+			time = (int)(64 / (double)rot);
+	}
+
+	R->EAX(time);
+	return 0;
+}
+
+DEFINE_HOOK(0x729969, TunnelLocomotionClass_ProcessPreDigOut_DigOutSpeed, 0x6)
+{
+	GET(TunnelLocomotionClass* const, pThis, ESI);
+	GET(int, speed, EAX);
+
+	auto const pTechno = pThis->LinkedTo;
+
+	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType()))
+	{
+		const int digOutSpeed = pTypeExt->DigOutSpeed;
+
+		if (digOutSpeed > 0)
+			speed = (int)(digOutSpeed * TechnoExt::GetCurrentSpeedMultiplier(pTechno));
+	}
+
+	R->EAX(speed);
+	return 0;
 }
 
 #pragma endregion
@@ -671,19 +784,6 @@ DEFINE_HOOK(0x51BAFB, InfantryClass_ChronoSparkleDelay, 0x5)
 	return 0x51BB00;
 }
 
-DEFINE_HOOK_AGAIN(0x5F4718, ObjectClass_Select, 0x7)
-DEFINE_HOOK(0x5F46AE, ObjectClass_Select, 0x7)
-{
-	GET(ObjectClass*, pThis, ESI);
-
-	pThis->IsSelected = true;
-
-	if (Phobos::Config::ShowFlashOnSelecting && RulesExt::Global()->SelectionFlashDuration > 0 && pThis->GetOwningHouse()->IsControlledByCurrentPlayer())
-		pThis->Flash(RulesExt::Global()->SelectionFlashDuration);
-
-	return 0;
-}
-
 DEFINE_HOOK(0x51B20E, InfantryClass_AssignTarget_FireOnce, 0x6)
 {
 	enum { SkipGameCode = 0x51B255 };
@@ -764,4 +864,36 @@ DEFINE_HOOK(0x70FB73, FootClass_IsBunkerableNow_Dehardcode, 0x6)
 	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 	return pTypeExt->BunkerableAnyway ? CanEnter : 0;
 }
+
 #pragma endregion
+
+// issue #112 Make FireOnce=yes work on other TechnoTypes
+// Author: Starkku
+DEFINE_HOOK(0x4C7512, EventClass_Execute_StopCommand, 0x6)
+{
+	GET(TechnoClass* const, pThis, ESI);
+
+	auto const pUnit = abstract_cast<UnitClass*>(pThis);
+
+	if (pUnit)
+	{
+		// Reset target for deploy weapons.
+		if (pUnit->CurrentMission == Mission::Unload && pUnit->Type->DeployFire && !pUnit->Type->IsSimpleDeployer)
+		{
+			pUnit->SetTarget(nullptr);
+			pThis->QueueMission(Mission::Guard, true);
+		}
+
+		auto const pType = pUnit->Type;
+
+		// Reset subterranean harvester rally point info.
+		if ((pType->Harvester || pType->Weeder) && pType->MovementZone == MovementZone::Subterrannean)
+		{
+			auto const pExt = TechnoExt::ExtMap.Find(pUnit);
+			pExt->SubterraneanHarvFreshFromFactory = false;
+			pExt->SubterraneanHarvRallyDest = nullptr;
+		}
+	}
+
+	return 0;
+}

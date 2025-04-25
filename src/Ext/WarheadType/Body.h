@@ -43,6 +43,8 @@ public:
 		Valueable<bool> Conventional_IgnoreUnits;
 		Valueable<bool> RemoveDisguise;
 		Valueable<bool> RemoveMindControl;
+		Valueable<bool> RemoveMindControl_OnVictim;
+		Valueable<bool> RemoveMindControl_OnController;
 		Nullable<bool> RemoveParasite;
 		Valueable<bool> DecloakDamagedTargets;
 		Valueable<bool> ShakeIsLocal;
@@ -113,6 +115,9 @@ public:
 		NullableVector<ShieldTypeClass*> Shield_Respawn_Types;
 		NullableVector<ShieldTypeClass*> Shield_SelfHealing_Types;
 
+		Valueable<bool> Directional;
+		Valueable<double> Directional_Multiplier;
+
 		Valueable<int> NotHuman_DeathSequence;
 		ValueableIdxVector<SuperWeaponTypeClass> LaunchSW;
 		Valueable<bool> LaunchSW_RealLaunch;
@@ -140,6 +145,19 @@ public:
 		Valueable<bool> InflictLocomotor;
 		Valueable<bool> RemoveInflictedLocomotor;
 
+		Valueable<bool> AffectsOnFloor;
+		Valueable<bool> AffectsInAir;
+		Valueable<bool> AffectsUnderground;
+		Valueable<bool> PlayAnimUnderground;
+		Valueable<bool> PlayAnimAboveSurface;
+		Valueable<bool> CellSpread_Cylinder;
+		Valueable<bool> LightChanging;
+		Valueable<int> SetAmbientLight;
+		Valueable<int> SetAmbientRed;
+		Valueable<int> SetAmbientGreen;
+		Valueable<int> SetAmbientBlue;
+		Valueable<bool> ReduceTiberium;
+
 		Valueable<AffectedTarget> Parasite_CullingTarget;
 
 		Valueable<bool> Nonprovocative;
@@ -148,6 +166,8 @@ public:
 		Valueable<double> CombatLightChance;
 		Valueable<bool> CLIsBlack;
 		Nullable<bool> Particle_AlphaImageIsLightFlash;
+
+		Nullable<bool> MergeBuildingDamage;
 
 		Nullable<double> DamageOwnerMultiplier;
 		Nullable<double> DamageAlliesMultiplier;
@@ -166,6 +186,9 @@ public:
 
 		Nullable<bool> CombatAlert_Suppress;
 
+		Valueable<bool> NoCellSpread;
+		Valueable<Leptons> NoCellSpread_SnapDistance;
+
 		Valueable<WeaponTypeClass*> KillWeapon;
 		Valueable<WeaponTypeClass*> KillWeapon_OnFirer;
 		Valueable<AffectedHouse> KillWeapon_AffectsHouses;
@@ -173,7 +196,10 @@ public:
 		Valueable<AffectedTarget> KillWeapon_Affects;
 		Valueable<AffectedTarget> KillWeapon_OnFirer_Affects;
 
-    	Valueable<int> ElectricAssaultLevel;
+		Valueable<int> ElectricAssaultLevel;
+
+		Valueable<bool> SuppressWreckage;
+		Valueable<bool> ActivateWreckage;
 
 		Valueable<AffectedTarget> AirstrikeTargets;
 
@@ -194,6 +220,7 @@ public:
 		int RemainingAnimCreationInterval;
 		bool PossibleCellSpreadDetonate;
 		TechnoClass* DamageAreaTarget;
+		int HitDirection;
 
 		Valueable<bool> CanKill;
 
@@ -225,6 +252,8 @@ public:
 			, Conventional_IgnoreUnits { false }
 			, RemoveDisguise { false }
 			, RemoveMindControl { false }
+			, RemoveMindControl_OnVictim { true }
+			, RemoveMindControl_OnController { false }
 			, RemoveParasite {}
 			, DecloakDamagedTargets { true }
 			, ShakeIsLocal { false }
@@ -295,6 +324,9 @@ public:
 			, SpawnsCrate_Types {}
 			, SpawnsCrate_Weights {}
 
+			, Directional { false }
+			, Directional_Multiplier { 1.0 }
+
 			, NotHuman_DeathSequence { -1 }
 			, LaunchSW {}
 			, LaunchSW_RealLaunch { true }
@@ -322,6 +354,19 @@ public:
 			, InflictLocomotor { false }
 			, RemoveInflictedLocomotor { false }
 
+			, AffectsOnFloor { true }
+			, AffectsInAir { true }
+			, AffectsUnderground { false }
+			, PlayAnimUnderground { true }
+			, PlayAnimAboveSurface { false }
+			, CellSpread_Cylinder { false }
+			, LightChanging { false }
+			, SetAmbientLight { -1 }
+			, SetAmbientRed { -1 }
+			, SetAmbientGreen { -1 }
+			, SetAmbientBlue { -1 }
+			, ReduceTiberium { false }
+
 			, Parasite_CullingTarget { AffectedTarget::Infantry }
 
 			, Nonprovocative { false }
@@ -330,6 +375,8 @@ public:
 			, CombatLightChance { 1.0 }
 			, CLIsBlack { false }
 			, Particle_AlphaImageIsLightFlash {}
+
+			, MergeBuildingDamage {}
 
 			, DamageOwnerMultiplier {}
 			, DamageAlliesMultiplier {}
@@ -348,7 +395,13 @@ public:
 
 			, CombatAlert_Suppress {}
 
+			, NoCellSpread { false }
+			, NoCellSpread_SnapDistance { Leptons(128) }
+
 			, ElectricAssaultLevel { 1 }
+
+			, SuppressWreckage { false }
+			, ActivateWreckage { false }
 
 			, AirstrikeTargets { AffectedTarget::Building }
 
@@ -367,6 +420,7 @@ public:
 			, RemainingAnimCreationInterval { 0 }
 			, PossibleCellSpreadDetonate { false }
 			, DamageAreaTarget {}
+			, HitDirection { -1 }
 
 			, CanKill { true }
 
@@ -405,7 +459,7 @@ public:
 	private:
 		void DetonateOnOneUnit(HouseClass* pHouse, TechnoClass* pTarget, TechnoClass* pOwner = nullptr, bool bulletWasIntercepted = false);
 		void ApplyRemoveDisguise(HouseClass* pHouse, TechnoClass* pTarget);
-		void ApplyRemoveMindControl(TechnoClass* pTarget);
+		void ApplyRemoveMindControl(TechnoClass* pTarget, bool OnVictim, bool OnController);
 		void ApplyCrit(HouseClass* pHouse, TechnoClass* pTarget, TechnoClass* Owner, TechnoExt::ExtData* pTargetExt);
 		void ApplyShieldModifiers(TechnoClass* pTarget, TechnoExt::ExtData* pTargetExt);
 		void ApplyAttachEffects(TechnoClass* pTarget, HouseClass* pInvokerHouse, TechnoClass* pInvoker);
