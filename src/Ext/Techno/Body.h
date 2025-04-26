@@ -100,7 +100,7 @@ public:
 		AirstrikeClass* AirstrikeTargetingMe;
 
 		AttachmentClass* ParentAttachment;
-		ValueableVector<std::unique_ptr<AttachmentClass>> ChildAttachments;
+		std::vector<std::unique_ptr<AttachmentClass>> ChildAttachments;
 
 		// Ares
 		std::optional<bool> AltOccupation; // if the unit marks cell occupation flags, this is set to whether it uses the "high" occupation members
