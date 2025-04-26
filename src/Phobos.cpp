@@ -240,12 +240,8 @@ DEFINE_HOOK(0x4F4583, GScreenClass_DrawText, 0x6)
 	if (!HideWarning)
 #endif // !STR_GIT_COMMIT
 	{
-		RectangleStruct wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0, 2, 0);
-		RectangleStruct rect { (DSurface::Composite->GetWidth() - wanted.Width - 10), 0, (wanted.Width + 10), (wanted.Height + 10) };
-		Point2D location { rect.X + 5,5 };
-		ColorStruct color { 0, 0, 0 };
-		DSurface::Composite->FillRectTrans(&rect, &color, 40);
-		DSurface::Composite->DrawRect(&rect, 0x061C);
+		RectangleStruct wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0);
+		Point2D location { DSurface::Composite->GetWidth() - wanted.Width - 5, 5 };
 		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x061C);
 	}
 	return 0;
