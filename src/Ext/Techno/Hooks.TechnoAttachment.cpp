@@ -319,7 +319,7 @@ DEFINE_HOOK(0x73A5EA, UnitClass_PerCellProcess_EntryLoopTechnos, 0x0)
 
 	for (ObjectClass* pObject = pFirst; pObject; pObject = pObject->NextObject)
 	{
-		auto pEntryTarget = abstract_cast<TechnoClass*>(pObject);
+		auto pEntryTarget = abstract_cast<TechnoClass*, true>(pObject);
 
 		if (pEntryTarget
 			&& pEntryTarget != pThis
@@ -350,7 +350,7 @@ DEFINE_HOOK(0x51A0DA, InfantryClass_PerCellProcess_EntryLoopTechnos, 0x0)
 
 	for (ObjectClass* pObject = pFirst; pObject; pObject = pObject->NextObject)
 	{
-		auto pEntryTarget = abstract_cast<TechnoClass*>(pObject);
+		auto pEntryTarget = abstract_cast<TechnoClass*, true>(pObject);
 
 		// TODO additional priority checks (original code gets technos in certain order) because may backfire
 
@@ -640,7 +640,7 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 					{
 						const auto& [pItem, num] = record[i];
 
-						if (pSelect->MouseOverObject(pItem) != action)
+						if (pTechno->MouseOverObject(pItem) != action)
 							continue;
 
 						if (!targetIsNeutral && (pItem->Owner == pSpecial || pItem->Owner == pCivilian || pItem->Owner == pNeutral))
@@ -671,16 +671,16 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 						auto& [pNewTarget, recordCount] = record[newTargetIndex];
 
 						++recordCount;
-						ParentClickedTargetAction(static_cast<TechnoClass*>(pSelect), action, pNewTarget);
+						ParentClickedTargetAction(pTechno, action, pNewTarget);
 					}
 					else
 					{
 						const auto currentAction = pSelect->MouseOverObject(pTarget);
 
-						if (mode2 && currentAction == Action::NoMove && (pSelect->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
-							ParentAreaGuardAction(static_cast<TechnoClass*>(pSelect));
+						if (mode2 && currentAction == Action::NoMove)
+							ParentAreaGuardAction(pTechno);
 						else
-							ParentClickedTargetAction(static_cast<TechnoClass*>(pSelect), currentAction, pTarget);
+							ParentClickedTargetAction(pTechno, currentAction, pTarget);
 					}
 				}
 			}
@@ -688,12 +688,17 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 			{
 				for (const auto& pSelect : ObjectClass::CurrentObjects)
 				{
-					const auto currentAction = pSelect->MouseOverObject(pTarget);
+					const auto pTechno = abstract_cast<TechnoClass*>(pSelect);
 
-					if (mode2 && action != Action::NoMove && currentAction == Action::NoMove && (pSelect->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
-						ParentAreaGuardAction(static_cast<TechnoClass*>(pSelect));
+					if (!pTechno)
+						continue;
+
+					const auto currentAction = pTechno->MouseOverObject(pTarget);
+
+					if (mode2 && action != Action::NoMove && currentAction == Action::NoMove)
+						ParentAreaGuardAction(pTechno);
 					else
-						ParentClickedTargetAction(static_cast<TechnoClass*>(pSelect), currentAction, pTarget);
+						ParentClickedTargetAction(pTechno, currentAction, pTarget);
 				}
 			}
 		}

@@ -113,8 +113,8 @@ void AttachmentClass::AI()
 		this->Child->PrimaryFacing.SetCurrent(childDir);
 		// TODO handle secondary facing in case the turret is idle
 
-		FootClass* pParentAsFoot = abstract_cast<FootClass*>(this->Parent);
-		FootClass* pChildAsFoot = abstract_cast<FootClass*>(this->Child);
+		FootClass* pParentAsFoot = abstract_cast<FootClass*, true>(this->Parent);
+		FootClass* pChildAsFoot = abstract_cast<FootClass*, true>(this->Child);
 		if (pParentAsFoot && pChildAsFoot)
 		{
 			pChildAsFoot->TubeIndex = pParentAsFoot->TubeIndex;
@@ -217,7 +217,7 @@ bool AttachmentClass::AttachChild(TechnoClass* pChild)
 	if (pChild->WhatAmI() != AbstractType::Unit)
 		return false;
 
-	if (auto const pChildAsFoot = abstract_cast<FootClass*>(pChild))
+	if (auto const pChildAsFoot = abstract_cast<FootClass*, true>(pChild))
 	{
 		if (IPersistPtr pLocoPersist = pChildAsFoot->Locomotor)
 		{
@@ -265,7 +265,7 @@ bool AttachmentClass::DetachChild()
 			this->Child->SetOwningHouse(this->Parent->GetOriginalOwner(), false);
 
 		// remove the attachment locomotor manually just to be safe
-		if (auto const pChildAsFoot = abstract_cast<FootClass*>(this->Child))
+		if (auto const pChildAsFoot = abstract_cast<FootClass*, true>(this->Child))
 			LocomotionClass::End_Piggyback(pChildAsFoot->Locomotor);
 
 		auto pChildExt = TechnoExt::ExtMap.Find(this->Child);
