@@ -308,7 +308,9 @@ void TechnoTypeExt::ExtData::SetTurretLimitedDir(FootClass* pThis, DirStruct des
 	auto bodyRaw = static_cast<short>(bodyDir.Raw);
 	auto desiredDifference = static_cast<short>(desiredRaw - bodyRaw);
 	// Beyond the rotation range of the turret, the body rotates first
-	if ((desiredDifference < -restrictRaw || desiredDifference > restrictRaw) && !pThis->Destination && !pThis->Locomotor->Is_Moving())
+	if ((desiredDifference < -restrictRaw || desiredDifference > restrictRaw)
+		&& !pThis->Destination && !pThis->Locomotor->Is_Moving()
+		&& (!TechnoExt::ExtMap.Find(pThis)->ParentAttachment || !TechnoExt::HasAttachmentLoco(pThis)))
 	{
 		pBody->SetDesired(this->Turret_BodyOrientation ? this->GetBodyDesiredDir(currentDir, desiredDir) : desiredDir);
 		// Once rotation begins, data needs to be updated to avoid delays
