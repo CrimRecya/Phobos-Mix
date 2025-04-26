@@ -360,7 +360,6 @@ public:
 		Nullable<Leptons> AIGuardStationaryStray;
 
 		Valueable<bool> Engineer_CanAutoFire;
-		Valueable<bool> Harvester_CanGuardArea;
 
 		Valueable<int> DigStartROT;
 		Valueable<int> DigInSpeed;
@@ -506,7 +505,7 @@ public:
 		NullableIdx<VocClass> Overload_DeathSound;
 		Nullable<ParticleSystemTypeClass*> Overload_ParticleSys;
 		Valueable<int> Overload_ParticleSysCount;
-		
+
 		Valueable<bool> Harvester_CanGuardArea;
 
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
@@ -842,7 +841,6 @@ public:
 			, AIGuardStationaryStray {}
 
 			, Engineer_CanAutoFire { false }
-			, Harvester_CanGuardArea { false }
 
 			, DigStartROT { -1 }
 			, DigInSpeed { -1 }
@@ -969,7 +967,7 @@ public:
 			, Overload_DeathSound {}
 			, Overload_ParticleSys {}
 			, Overload_ParticleSysCount { 5 }
-			
+
 			, Harvester_CanGuardArea { false }
 		{ }
 

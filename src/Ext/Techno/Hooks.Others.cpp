@@ -828,15 +828,6 @@ DEFINE_HOOK(0x707F08, TechnoClass_GetGuardRange_AreaGuardRange, 0x5)
 	return SkipGameCode;
 }
 
-DEFINE_HOOK(0x4D6D34, FootClass_MissionAreaGuard_Miner, 0x5)
-{
-	enum { GuardArea = 0x4D6D69 };
-
-	GET(FootClass*, pThis, ESI);
-
-	return (pThis->Owner->IsControlledByHuman() && TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->Harvester_CanGuardArea) ? GuardArea : 0;
-}
-
 #pragma endregion
 
 #pragma region MissileSpawnFLH

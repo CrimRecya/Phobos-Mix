@@ -804,7 +804,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->AIGuardStationaryStray.Read(exINI, pSection, "AIGuardStationaryStray");
 
 	this->Engineer_CanAutoFire.Read(exINI, pSection, "Engineer.CanAutoFire");
-	this->Harvester_CanGuardArea.Read(exINI, pSection, "Harvester.CanGuardArea");
 
 	this->DigStartROT.Read(exINI, pSection, "DigStartROT");
 	this->DigInSpeed.Read(exINI, pSection, "DigInSpeed");
@@ -1477,7 +1476,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AIGuardStationaryStray)
 
 		.Process(this->Engineer_CanAutoFire)
-		.Process(this->Harvester_CanGuardArea)
 
 		.Process(this->DigStartROT)
 		.Process(this->DigInSpeed)
@@ -1604,7 +1602,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Overload_DeathSound)
 		.Process(this->Overload_ParticleSys)
 		.Process(this->Overload_ParticleSysCount)
-		
+
 		.Process(this->Harvester_CanGuardArea)
 		;
 }
