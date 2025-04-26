@@ -821,7 +821,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->MissileSpawnUseOtherFLHs.Read(exINI, pSection, "MissileSpawnUseOtherFLHs");
 
 	this->HarvesterQuickUnloader.Read(exINI, pSection, "HarvesterQuickUnloader");
-	this->HarvesterScanAfterUnload.Read(exINI, pSection, "HarvesterScanAfterUnload");
 
 	this->DistributeTargetingFrame.Read(exINI, pSection, "DistributeTargetingFrame");
 
@@ -1494,7 +1493,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->MissileSpawnUseOtherFLHs)
 
 		.Process(this->HarvesterQuickUnloader)
-		.Process(this->HarvesterScanAfterUnload)
 
 		.Process(this->DistributeTargetingFrame)
 

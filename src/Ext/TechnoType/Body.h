@@ -377,7 +377,6 @@ public:
 		Valueable<bool> MissileSpawnUseOtherFLHs;
 
 		Valueable<bool> HarvesterQuickUnloader;
-		Nullable<bool> HarvesterScanAfterUnload;
 
 		Nullable<bool> DistributeTargetingFrame;
 
@@ -859,7 +858,6 @@ public:
 			, MissileSpawnUseOtherFLHs { false }
 
 			, HarvesterQuickUnloader { false }
-			, HarvesterScanAfterUnload {}
 
 			, DistributeTargetingFrame {}
 
