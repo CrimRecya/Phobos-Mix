@@ -291,7 +291,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->DestroyOwnerlessWalls.Read(exINI, GameStrings::General, "DestroyOwnerlessWalls");
 	this->AIAngerOnAlly.Read(exINI, GameStrings::General, "AIAngerOnAlly");
 	this->FollowTargetSelf.Read(exINI, GameStrings::General, "FollowTargetSelf");
-	this->HarvesterScanAfterUnload.Read(exINI, GameStrings::General, "HarvesterScanAfterUnload");
 	this->DistributeTargetingFrame.Read(exINI, GameStrings::General, "DistributeTargetingFrame");
 	this->DistributeTargetingFrame_AIOnly.Read(exINI, GameStrings::General, "DistributeTargetingFrame.AIOnly");
 	this->AttackMove_IgnoreWeaponCheck.Read(exINI, GameStrings::General, "AttackMove.IgnoreWeaponCheck");
@@ -407,6 +406,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
   	this->DamagedSpeed.Read(exINI, GameStrings::General, "DamagedSpeed");
 
 	this->WreckageInitialHealthPercent.Read(exINI, GameStrings::General, "WreckageInitialHealthPercent");
+
+	this->HarvesterScanAfterUnload.Read(exINI, GameStrings::General, "HarvesterScanAfterUnload");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -670,7 +671,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->DestroyOwnerlessWalls)
 		.Process(this->AIAngerOnAlly)
 		.Process(this->FollowTargetSelf)
-		.Process(this->HarvesterScanAfterUnload)
 		.Process(this->DistributeTargetingFrame)
 		.Process(this->DistributeTargetingFrame_AIOnly)
 		.Process(this->AttackMove_IgnoreWeaponCheck)
@@ -750,6 +750,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->ProneSpeed_NoCrawls)
     	.Process(this->DamagedSpeed)
 		.Process(this->WreckageInitialHealthPercent)
+		.Process(this->HarvesterScanAfterUnload)
 		;
 }
 

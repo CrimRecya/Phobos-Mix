@@ -158,35 +158,6 @@ DEFINE_HOOK(0x740943, UnitClass_Mission_Guard_PlayerHarvester, 0x6)
 	return SkipGameCode;
 }
 
-#pragma region HarvesterScanAfterUnload
-
-DEFINE_HOOK(0x73E730, UnitClass_MissionHarvest_HarvesterScanAfterUnload, 0x5)
-{
-	GET(UnitClass* const, pThis, EBP);
-	GET(AbstractClass* const, pFocus, EAX);
-
-	// Focus is set when the harvester is fully loaded and go home.
-	if (pFocus && TechnoTypeExt::ExtMap.Find(pThis->Type)->HarvesterScanAfterUnload.Get(RulesExt::Global()->HarvesterScanAfterUnload))
-	{
-		auto cellBuffer = CellStruct::Empty;
-		const auto pCellStru = pThis->ScanForTiberium(&cellBuffer, RulesClass::Instance->TiberiumLongScan / Unsorted::LeptonsPerCell, 0);
-
-		if (*pCellStru != CellStruct::Empty)
-		{
-			const auto pCell = MapClass::Instance.TryGetCellAt(*pCellStru);
-			const auto distFromTiberium = pCell ? pThis->DistanceFrom(pCell) : -1;
-
-			// Check if pCell is better than focus.
-			if (distFromTiberium >= 0 && distFromTiberium < pThis->DistanceFrom(pFocus))
-				R->EAX(pCell);
-		}
-	}
-
-	return 0;
-}
-
-#pragma endregion
-
 #pragma region HarvesterQuickUnloader
 
 void __fastcall ArrivingRefineryNearBy(UnitClass* pThis, BuildingClass* pDock)
@@ -488,3 +459,32 @@ DEFINE_HOOK(0x4D6D34, FootClass_MissionAreaGuard_Miner, 0x5)
 
 	return (pThis->Owner->IsControlledByHuman() && TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->Harvester_CanGuardArea) ? GuardArea : 0;
 }
+
+#pragma region HarvesterScanAfterUnload
+
+DEFINE_HOOK(0x73E730, UnitClass_MissionHarvest_HarvesterScanAfterUnload, 0x5)
+{
+	GET(UnitClass* const, pThis, EBP);
+	GET(AbstractClass* const, pFocus, EAX);
+
+	// Focus is set when the harvester is fully loaded and go home.
+	if (pFocus && TechnoTypeExt::ExtMap.Find(pThis->Type)->HarvesterScanAfterUnload.Get(RulesExt::Global()->HarvesterScanAfterUnload))
+	{
+		auto cellBuffer = CellStruct::Empty;
+		const auto pCellStru = pThis->ScanForTiberium(&cellBuffer, RulesClass::Instance->TiberiumLongScan / Unsorted::LeptonsPerCell, 0);
+
+		if (*pCellStru != CellStruct::Empty)
+		{
+			const auto pCell = MapClass::Instance.TryGetCellAt(*pCellStru);
+			const auto distFromTiberium = pCell ? pThis->DistanceFrom(pCell) : -1;
+
+			// Check if pCell is better than focus.
+			if (distFromTiberium >= 0 && distFromTiberium < pThis->DistanceFrom(pFocus))
+				R->EAX(pCell);
+		}
+	}
+
+	return 0;
+}
+
+#pragma endregion

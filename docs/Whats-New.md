@@ -371,6 +371,7 @@ New:
 - Aggressive attack move mission (by CrimRecya)
 - Amphibious access vehicle (by CrimRecya)
 - Allow miners do area guard (by TaranDahl)
+- Make harvesters do addtional scan after unload (by TaranDahl)
 
 - New trajectory system (by CrimRecya)
 - New Missile trajectory (by CrimRecya)
