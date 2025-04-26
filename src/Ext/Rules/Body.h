@@ -248,7 +248,6 @@ public:
 		Valueable<bool> DestroyOwnerlessWalls;
 		Valueable<bool> AIAngerOnAlly;
 		Valueable<bool> FollowTargetSelf;
-		Valueable<bool> HarvesterScanAfterUnload;
 		Valueable<bool> DistributeTargetingFrame;
 		Valueable<bool> DistributeTargetingFrame_AIOnly;
 		Valueable<bool> AttackMove_IgnoreWeaponCheck;
@@ -354,6 +353,8 @@ public:
 
 		Valueable<int> AttachmentTopLayerMinHeight;
 		Valueable<int> AttachmentUndergroundLayerMaxHeight;
+
+		Valueable<bool> HarvesterScanAfterUnload;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -558,7 +559,6 @@ public:
 			, DestroyOwnerlessWalls { false }
 			, AIAngerOnAlly { true }
 			, FollowTargetSelf { false }
-			, HarvesterScanAfterUnload { false }
 			, DistributeTargetingFrame { false }
 			, DistributeTargetingFrame_AIOnly { true }
 			, AttackMove_IgnoreWeaponCheck { false }
@@ -643,12 +643,14 @@ public:
 			, ProneSpeed_Crawls { 0.67 }
 			, ProneSpeed_NoCrawls { 1.5 }
 
-      		, DamagedSpeed { 0.75 }
+			, DamagedSpeed { 0.75 }
 
 			, WreckageInitialHealthPercent { 0.1 }
 
 			, AttachmentTopLayerMinHeight { 500 }
 			, AttachmentUndergroundLayerMaxHeight { -256 }
+
+			, HarvesterScanAfterUnload { false }
 		{ }
 
 		virtual ~ExtData() = default;

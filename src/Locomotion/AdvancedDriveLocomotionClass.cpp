@@ -1700,7 +1700,7 @@ DEFINE_HOOK(0x4DA9FB, FootClass_Update_WalkedFrames, 0x6)
 	CLSID locoCLSID {};
 
 	if (SUCCEEDED(static_cast<LocomotionClass*>(pThis->Locomotor.GetInterfacePtr())->GetClassID(&locoCLSID))
-		 && locoCLSID == __uuidof(AdvancedDriveLocomotionClass))
+		&& locoCLSID == __uuidof(AdvancedDriveLocomotionClass))
 	{
 		if (!static_cast<AdvancedDriveLocomotionClass*>(pThis->Locomotor.GetInterfacePtr())->IsForward)
 		{

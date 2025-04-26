@@ -844,7 +844,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->AIGuardStationaryStray.Read(exINI, pSection, "AIGuardStationaryStray");
 
 	this->Engineer_CanAutoFire.Read(exINI, pSection, "Engineer.CanAutoFire");
-	this->Harvester_CanGuardArea.Read(exINI, pSection, "Harvester.CanGuardArea");
 
 	this->DigStartROT.Read(exINI, pSection, "DigStartROT");
 	this->DigInSpeed.Read(exINI, pSection, "DigInSpeed");
@@ -862,7 +861,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->MissileSpawnUseOtherFLHs.Read(exINI, pSection, "MissileSpawnUseOtherFLHs");
 
 	this->HarvesterQuickUnloader.Read(exINI, pSection, "HarvesterQuickUnloader");
-	this->HarvesterScanAfterUnload.Read(exINI, pSection, "HarvesterScanAfterUnload");
 
 	this->DistributeTargetingFrame.Read(exINI, pSection, "DistributeTargetingFrame");
 
@@ -952,6 +950,9 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Overload_DeathSound.Read(exINI, pSection, "Overload.DeathSound");
 	this->Overload_ParticleSys.Read(exINI, pSection, "Overload.ParticleSys");
 	this->Overload_ParticleSysCount.Read(exINI, pSection, "Overload.ParticleSysCount");
+
+	this->Harvester_CanGuardArea.Read(exINI, pSection, "Harvester.CanGuardArea");
+	this->HarvesterScanAfterUnload.Read(exINI, pSection, "HarvesterScanAfterUnload");
 
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
@@ -1513,7 +1514,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AIGuardStationaryStray)
 
 		.Process(this->Engineer_CanAutoFire)
-		.Process(this->Harvester_CanGuardArea)
 
 		.Process(this->DigStartROT)
 		.Process(this->DigInSpeed)
@@ -1531,7 +1531,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->MissileSpawnUseOtherFLHs)
 
 		.Process(this->HarvesterQuickUnloader)
-		.Process(this->HarvesterScanAfterUnload)
 
 		.Process(this->DistributeTargetingFrame)
 
@@ -1644,6 +1643,9 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AttachmentTopLayerMinHeight)
 		.Process(this->AttachmentUndergroundLayerMaxHeight)
 		.Process(this->AttachmentData)
+
+		.Process(this->Harvester_CanGuardArea)
+		.Process(this->HarvesterScanAfterUnload)
 		;
 }
 void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)

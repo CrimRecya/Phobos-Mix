@@ -361,7 +361,6 @@ public:
 		Nullable<Leptons> AIGuardStationaryStray;
 
 		Valueable<bool> Engineer_CanAutoFire;
-		Valueable<bool> Harvester_CanGuardArea;
 
 		Valueable<int> DigStartROT;
 		Valueable<int> DigInSpeed;
@@ -379,7 +378,6 @@ public:
 		Valueable<bool> MissileSpawnUseOtherFLHs;
 
 		Valueable<bool> HarvesterQuickUnloader;
-		Nullable<bool> HarvesterScanAfterUnload;
 
 		Nullable<bool> DistributeTargetingFrame;
 
@@ -528,6 +526,9 @@ public:
 		NullableIdx<VocClass> Overload_DeathSound;
 		Nullable<ParticleSystemTypeClass*> Overload_ParticleSys;
 		Valueable<int> Overload_ParticleSysCount;
+
+		Valueable<bool> Harvester_CanGuardArea;
+		Nullable<bool> HarvesterScanAfterUnload;
 
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
@@ -862,7 +863,6 @@ public:
 			, AIGuardStationaryStray {}
 
 			, Engineer_CanAutoFire { false }
-			, Harvester_CanGuardArea { false }
 
 			, DigStartROT { -1 }
 			, DigInSpeed { -1 }
@@ -880,7 +880,6 @@ public:
 			, MissileSpawnUseOtherFLHs { false }
 
 			, HarvesterQuickUnloader { false }
-			, HarvesterScanAfterUnload {}
 
 			, DistributeTargetingFrame {}
 
@@ -993,6 +992,9 @@ public:
 			, AttachmentTopLayerMinHeight { RulesExt::Global()->AttachmentTopLayerMinHeight }
 			, AttachmentUndergroundLayerMaxHeight { RulesExt::Global()->AttachmentUndergroundLayerMaxHeight }
 			, AttachmentData {}
+
+			, Harvester_CanGuardArea { false }
+			, HarvesterScanAfterUnload {}
 		{ }
 
 		virtual ~ExtData() = default;
