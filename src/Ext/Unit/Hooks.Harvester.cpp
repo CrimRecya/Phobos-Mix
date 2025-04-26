@@ -479,3 +479,12 @@ DEFINE_HOOK(0x441226, BuildingClass_Unlimbo_RecheckRefinery, 0x6)
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x4D6D34, FootClass_MissionAreaGuard_Miner, 0x5)
+{
+	enum { GuardArea = 0x4D6D69 };
+
+	GET(FootClass*, pThis, ESI);
+
+	return (pThis->Owner->IsControlledByHuman() && TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->Harvester_CanGuardArea) ? GuardArea : 0;
+}
