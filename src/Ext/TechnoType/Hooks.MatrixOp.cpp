@@ -105,16 +105,16 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 
 	const bool turretRecoil = pDrawType->TurretRecoil;
 	const bool shouldRedraw = !haveTurretCache || haveBar && !haveBarrelCache || turretRecoil;
-	const auto turKey = turretRecoil ? -1 : flags;
-	const auto turCache = turretRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretWeaponCache);
-	const auto brlKey = turretRecoil ? -1 : flags;
-	const auto brlCache = turretRecoil ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
 	const auto turretDir = pThis->SecondaryFacing.Current().GetFacing<4>();
 
 	auto drawTurret = [=, &mtx](int turIdx)
 		{
 			const auto pTurData = turretRecoil ? ((turIdx < 0) ? &pThis->TurretRecoil : &pExt->ExtraTurretRecoil[turIdx]) : nullptr;
 			const auto turretInRecoil = pTurData && pTurData->State != RecoilData::RecoilState::Inactive;
+
+			const auto turShouldRedraw = shouldRedraw || turIdx >= 0;
+			const auto turKey = turShouldRedraw ? -1 : flags;
+			const auto turCache = turShouldRedraw ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretWeaponCache);
 
 			auto getTurretMatrix = [=, &mtx]() -> Matrix3D
 				{
@@ -127,13 +127,17 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 
 					return mtx_turret;
 				};
-			auto mtx_turret = shouldRedraw ? getTurretMatrix() : mtx;
+			auto mtx_turret = turShouldRedraw ? getTurretMatrix() : mtx;
 
 			auto drawBarrel = [=, &mtx_turret, &mtx](int brlIdx)
 				{
 					const auto idx = brlIdx + ((turIdx + 1) * (pDrawTypeExt->ExtraBarrelCount + 1));
 					const auto pBrlData = turretRecoil ? ((idx < 0) ? &pThis->BarrelRecoil : &pExt->ExtraBarrelRecoil[idx]) : nullptr;
 					const auto barrelInRecoil = pBrlData && pBrlData->State != RecoilData::RecoilState::Inactive;
+
+					const auto brlShouldRedraw = shouldRedraw || brlIdx >= 0;
+					const auto brlKey = brlShouldRedraw ? -1 : flags;
+					const auto brlCache = brlShouldRedraw ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
 
 					auto getBarrelMatrix = [=, &mtx_turret, &mtx]() -> Matrix3D
 						{
@@ -149,7 +153,7 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 							mtx_barrel.Translate(mtx.Row[0].W, mtx.Row[1].W, mtx.Row[2].W);
 							return mtx_barrel;
 						};
-					auto mtx_barrel = shouldRedraw ? getBarrelMatrix() : mtx;
+					auto mtx_barrel = brlShouldRedraw ? getBarrelMatrix() : mtx;
 
 					pThis->Draw_A_VXL(pBarrelVoxel, hvaFrameIdx, brlKey, brlCache, rect, center, &mtx_barrel, brightness,
 						static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
