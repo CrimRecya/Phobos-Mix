@@ -103,16 +103,17 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 		};
 	const auto pBarrelVoxel = haveBar ? getBarrelVoxel() : nullptr;
 
-	const bool turretRecoil = pDrawType->TurretRecoil;
-	const bool shouldRedraw = !haveTurretCache || haveBar && !haveBarrelCache || turretRecoil;
 	const auto turretDir = pThis->SecondaryFacing.Current().GetFacing<4>();
+	const bool turretRecoil = pDrawType->TurretRecoil;
+	const bool barrelOverTechno = pDrawTypeExt->BarrelOverTurret.Get(turretDir != 0 && turretDir != 3);
+	const bool shouldRedraw = !haveTurretCache || haveBar && !haveBarrelCache || turretRecoil;
 
 	auto drawTurret = [=, &mtx](int turIdx)
 		{
 			const auto pTurData = turretRecoil ? ((turIdx < 0) ? &pThis->TurretRecoil : &pExt->ExtraTurretRecoil[turIdx]) : nullptr;
 			const auto turretInRecoil = pTurData && pTurData->State != RecoilData::RecoilState::Inactive;
 
-			const auto turShouldRedraw = shouldRedraw || turIdx >= 0;
+			const bool turShouldRedraw = shouldRedraw || turIdx >= 0;
 			const auto turKey = turShouldRedraw ? -1 : flags;
 			const auto turCache = turShouldRedraw ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretWeaponCache);
 
@@ -135,7 +136,7 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 					const auto pBrlData = turretRecoil ? ((idx < 0) ? &pThis->BarrelRecoil : &pExt->ExtraBarrelRecoil[idx]) : nullptr;
 					const auto barrelInRecoil = pBrlData && pBrlData->State != RecoilData::RecoilState::Inactive;
 
-					const auto brlShouldRedraw = shouldRedraw || brlIdx >= 0;
+					const bool brlShouldRedraw = shouldRedraw || brlIdx >= 0;
 					const auto brlKey = brlShouldRedraw ? -1 : flags;
 					const auto brlCache = brlShouldRedraw ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
 
@@ -190,21 +191,21 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteCalculateTurretMatrix, 0x6)
 					}
 				};
 
-			if (turretDir == 0 || turretDir == 3)
+			if (barrelOverTechno)
 			{
-				if (haveBar)
-					drawBarrels();
-
 				pThis->Draw_A_VXL(pTurretVoxel, hvaFrameIdx, turKey, turCache, rect, center, &mtx_turret, brightness,
 					static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
+
+				if (haveBar)
+					drawBarrels();
 			}
 			else
 			{
-				pThis->Draw_A_VXL(pTurretVoxel, hvaFrameIdx, turKey, turCache, rect, center, &mtx_turret, brightness,
-					static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
-
 				if (haveBar)
 					drawBarrels();
+
+				pThis->Draw_A_VXL(pTurretVoxel, hvaFrameIdx, turKey, turCache, rect, center, &mtx_turret, brightness,
+					static_cast<DWORD>(static_cast<BlitterFlags>(BlitterFlags::Alpha | BlitterFlags::Flat)), 0);
 			}
 		};
 

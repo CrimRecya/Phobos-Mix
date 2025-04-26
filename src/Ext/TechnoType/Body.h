@@ -422,6 +422,7 @@ public:
 
 		Nullable<bool> AllowAirstrike;
 
+		Nullable<bool> BarrelOverTurret;
 		Valueable<int> BarrelOffset;
 		Valueable<int> ExtraBarrelCount;
 		std::vector<int> ExtraBarrelOffsets;
@@ -899,6 +900,7 @@ public:
 
 			, Power { }
 
+			, BarrelOverTurret { }
 			, BarrelOffset { 0 }
 			, ExtraBarrelCount { 0 }
 			, ExtraBarrelOffsets { }
