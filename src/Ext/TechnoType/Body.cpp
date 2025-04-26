@@ -1080,6 +1080,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->DefaultVisualCharacterToEnemy.Read(exArtINI, pArtSection, "DefaultVisualCharacterToEnemy");
 
 	// Extra barrel offsets
+	this->BarrelOverTurret.Read(exArtINI, pArtSection, "BarrelOverTurret");
 	this->BarrelOffset.Read(exArtINI, pArtSection, "BarrelOffset");
 	this->ExtraBarrelCount.Read(exArtINI, pArtSection, "ExtraBarrelCount");
 
@@ -1570,6 +1571,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->Power)
 
+		.Process(this->BarrelOverTurret)
 		.Process(this->BarrelOffset)
 		.Process(this->ExtraBarrelCount)
 		.Process(this->ExtraBarrelOffsets)
