@@ -477,6 +477,14 @@ void BuildingTypeExt::DrawAdjacentLines()
 	auto rect = DSurface::Temp->GetRect();
 	rect.Height -= 32;
 
+	const auto offset = Unsorted::CurrentFrame % 15;
+	bool pattern[16] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 };
+	auto drawDashLine = [&pattern, &offset](Point2D* pPointA, Point2D* pPointB)
+	{
+		if (reinterpret_cast<bool(__fastcall*)(Point2D*, Point2D*, RectangleStruct*)>(0x7BC2B0)(pPointA, pPointB, &DSurface::ViewBounds))
+			DSurface::Composite->DrawDashedLine_(pPointA, pPointB, COLOR_WHITE, pattern, offset, false);
+	};
+
 	if (const auto pCell = MapClass::Instance.TryGetCellAt(min))
 	{
 		auto point = TacticalClass::Instance->CoordsToClient(CellClass::Cell2Coord(pCell->MapCoords, (1 + pCell->GetFloorHeight(Point2D::Empty)))).first;
@@ -485,11 +493,11 @@ void BuildingTypeExt::DrawAdjacentLines()
 
 		point.Y -= 14;
 		nextPoint.X += 29;
-		DSurface::Temp->DrawLineEx(&rect, &point, &nextPoint, COLOR_WHITE);
+		drawDashLine(&point, &nextPoint);
 
 		point.X -= 1;
 		nextPoint.X -= 59;
-		DSurface::Temp->DrawLineEx(&rect, &point, &nextPoint, COLOR_WHITE);
+		drawDashLine(&nextPoint, &point);
 	}
 
 	if (const auto pCell = MapClass::Instance.TryGetCellAt(CellStruct{ min.X, max.Y }))
@@ -500,11 +508,11 @@ void BuildingTypeExt::DrawAdjacentLines()
 
 		point.X -= 29;
 		nextPoint.Y += 14;
-		DSurface::Temp->DrawLineEx(&rect, &point, &nextPoint, COLOR_WHITE);
+		drawDashLine(&nextPoint, &point);
 
 		point.Y -= 1;
 		nextPoint.Y -= 29;
-		DSurface::Temp->DrawLineEx(&rect, &point, &nextPoint, COLOR_WHITE);
+		drawDashLine(&point, &nextPoint);
 	}
 
 	if (const auto pCell = MapClass::Instance.TryGetCellAt(max))
@@ -514,11 +522,11 @@ void BuildingTypeExt::DrawAdjacentLines()
 
 		point.Y += 14;
 		nextPoint.X += 29;
-		DSurface::Temp->DrawLineEx(&rect, &point, &nextPoint, COLOR_WHITE);
+		drawDashLine(&nextPoint, &point);
 
 		point.X -= 1;
 		nextPoint.X -= 59;
-		DSurface::Temp->DrawLineEx(&rect, &point, &nextPoint, COLOR_WHITE);
+		drawDashLine(&point, &nextPoint);
 	}
 
 	if (const auto pCell = MapClass::Instance.TryGetCellAt(CellStruct{ max.X, min.Y }))
@@ -528,11 +536,11 @@ void BuildingTypeExt::DrawAdjacentLines()
 
 		point.X += 29;
 		nextPoint.Y += 14;
-		DSurface::Temp->DrawLineEx(&rect, &point, &nextPoint, COLOR_WHITE);
+		drawDashLine(&point, &nextPoint);
 
 		point.Y -= 1;
 		nextPoint.Y -= 29;
-		DSurface::Temp->DrawLineEx(&rect, &point, &nextPoint, COLOR_WHITE);
+		drawDashLine(&nextPoint, &point);
 	}
 }
 

@@ -30,9 +30,9 @@ bool Phobos::Optimizations::DisableRadDamageOnBuildings = true;
 bool Phobos::Optimizations::DisableSyncLogging = false;
 
 #ifdef STR_GIT_COMMIT
-const wchar_t* Phobos::VersionDescription = L" Phobos nightly build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"(" STR_GIT_COMMIT L"). DO NOT SHIP IN MODS!";
+const wchar_t* Phobos::VersionDescription = L"Phobos nightly build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"(" STR_GIT_COMMIT L"). DO NOT SHIP IN MODS!";
 #elif !defined(IS_RELEASE_VER)
-const wchar_t* Phobos::VersionDescription = L" Phobos special merge build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L". Please test the build before shipping.";
+const wchar_t* Phobos::VersionDescription = L"Phobos special merge build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L". Please test the build before shipping.";
 #else
 //const wchar_t* Phobos::VersionDescription = L"Phobos release build v" FILE_VERSION_STR L".";
 #endif
