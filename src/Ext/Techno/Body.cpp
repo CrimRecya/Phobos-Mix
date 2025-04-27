@@ -19,8 +19,6 @@
 
 #include <Utilities/AresFunctions.h>
 
-#include <math.h>
-
 TechnoExt::ExtContainer TechnoExt::ExtMap;
 UnitClass* TechnoExt::Deployer = nullptr;
 
@@ -1148,8 +1146,8 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->IsWreckage)
 		.Process(this->BuildingOccupying)
 		.Process(this->AirstrikeTargetingMe)
-		.Process(this->ParentAttachment)
-		.Process(this->ChildAttachments)
+//		.Process(this->ParentAttachment)
+//		.Process(this->ChildAttachments)
 		.Process(this->AltOccupation)
 		;
 }

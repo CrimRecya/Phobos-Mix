@@ -3,10 +3,6 @@
 
 #include "UnitClass.h"
 
-#include <Utilities/GeneralUtils.h>
-#include <Utilities/Macro.h>
-
-#include <Ext/TechnoType/Body.h>
 #include <Ext/Techno/Body.h>
 
 DEFINE_HOOK(0x740A93, UnitClass_Mission_Move_DisallowMoving, 0x6)
