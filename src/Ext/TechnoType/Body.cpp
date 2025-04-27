@@ -1044,7 +1044,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->DefaultVisualCharacterToAlly.Read(exArtINI, pArtSection, "DefaultVisualCharacterToAlly");
 	this->DefaultVisualCharacterToEnemy.Read(exArtINI, pArtSection, "DefaultVisualCharacterToEnemy");
 
-	// Extra barrel offsets
+	// Extra barrel/turret offsets
 	this->BarrelOverTurret.Read(exArtINI, pArtSection, "BarrelOverTurret");
 	this->BarrelOffset.Read(exArtINI, pArtSection, "BarrelOffset");
 	this->ExtraBarrelCount.Read(exArtINI, pArtSection, "ExtraBarrelCount");
@@ -1064,7 +1064,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		this->ExtraBarrelCount = 0;
 	}
 
-	// Extra turret offsets
 	this->ExtraTurretCount.Read(exArtINI, pArtSection, "ExtraTurretCount");
 
 	if (this->ExtraTurretCount > 0)
@@ -1606,6 +1605,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->HarvesterScanAfterUnload)
 		;
 }
+
 void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)
 {
 	Extension<TechnoTypeClass>::LoadFromStream(Stm);

@@ -877,16 +877,6 @@ DEFINE_HOOK(0x736C0E, UnitClass_UpdateRotating_End, 0x5)
 	RotatingContext::pThis->Type = RotatingContext::pType;
 	return 0;
 }
-
-DEFINE_HOOK(0x73B780, UnitClass_DrawAsVXL_TypeFix, 0x6)
-{
-	GET(ObjectTypeClass*, pType, EBX);
-
-	if (pType->WhatAmI() == AbstractType::UnitType)
-		R->EAX(pType);
-
-	return 0;
-}
 /*
 // SHP still needs more improvment.
 namespace DrawAsSHPContext

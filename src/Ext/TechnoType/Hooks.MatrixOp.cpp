@@ -35,14 +35,16 @@ DEFINE_HOOK(0x6F3E6E, TechnoClass_ActionLines_TurretMultiOffset, 0x0)
 
 DEFINE_HOOK(0x73B780, UnitClass_DrawVXL_TurretMultiOffset, 0x0)
 {
-	GET(TechnoTypeClass*, technoType, EAX);
+	enum { CleanFlag = 0x73B78A, SkipFlag = 0x73B790 };
 
-	auto const pTypeData = TechnoTypeExt::ExtMap.Find(technoType);
+	GET(UnitTypeClass*, pType, EBX);
 
-	if (*pTypeData->TurretOffset.GetEx() == CoordStruct { 0, 0, 0 })
-		return 0x73B78A;
+	auto const pDrawTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 
-	return 0x73B790;
+	return (*pDrawTypeExt->TurretOffset.GetEx() == CoordStruct::Empty
+		&& pDrawTypeExt->ExtraTurretCount <= 0
+		&& pDrawTypeExt->ExtraBarrelCount <= 0)
+		? CleanFlag : SkipFlag;
 }
 
 struct DummyTypeExtHere
