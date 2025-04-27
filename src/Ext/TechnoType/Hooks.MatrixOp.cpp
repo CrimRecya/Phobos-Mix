@@ -113,7 +113,6 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteTurretDrawing, 0x6)
 
 	// When in recoiling or have no cache, need to recalculate drawing matrix
 	const bool shouldRedraw = !haveTurretCache || haveBar && !haveBarrelCache;
-	const bool turretRecoil = pDrawType->TurretRecoil;
 
 	// The orientation of the turret can affect the layer order of the barrel and turret
 	const auto turretDir = pThis->SecondaryFacing.Current().GetFacing<4>();
@@ -121,14 +120,24 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteTurretDrawing, 0x6)
 
 	auto drawTurret = [=, &mtx](int turIdx)
 		{
-			const auto pTurData = turretRecoil ? ((turIdx < 0) ? &pThis->TurretRecoil : &pExt->ExtraTurretRecoil[turIdx]) : nullptr;
-			const auto turretInRecoil = pTurData && pTurData->State != RecoilData::RecoilState::Inactive;
+			const auto pTurData = pDrawType->TurretRecoil ? ((turIdx < 0) ? &pThis->TurretRecoil : &pExt->ExtraTurretRecoil[turIdx]) : nullptr;
+			const bool turretInRecoil = pTurData && pTurData->State != RecoilData::RecoilState::Inactive;
 
 			// When in recoiling or is not main turret, need to bypass cache and draw without saving
-			const bool turShouldRedraw = turretRecoil || turIdx >= 0;
+			const bool turShouldRedraw = turretInRecoil || turIdx >= 0;
 			const auto turKey = turShouldRedraw ? -1 : flags;
 			const auto turCache = turShouldRedraw ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretWeaponCache);
 
+			auto shouldCalculateMatrix = [=]()
+				{
+					if (!haveBar)
+						return false;
+
+					if (pThis->BarrelRecoil.State != RecoilData::RecoilState::Inactive)
+						return true;
+
+					return pDrawTypeExt->ExtraBarrelCount.Get() > 0;
+				};
 			auto getTurretMatrix = [=, &mtx]() -> Matrix3D
 				{
 					auto mtx_turret = mtx;
@@ -140,16 +149,16 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteTurretDrawing, 0x6)
 
 					return mtx_turret;
 				};
-			auto mtx_turret = (shouldRedraw || turShouldRedraw) ? getTurretMatrix() : mtx;
+			auto mtx_turret = (shouldRedraw || turShouldRedraw || shouldCalculateMatrix()) ? getTurretMatrix() : mtx;
 
 			auto drawBarrel = [=, &mtx_turret, &mtx](int brlIdx)
 				{
-					const auto idx = brlIdx + ((turIdx + 1) * (pDrawTypeExt->ExtraBarrelCount + 1));
-					const auto pBrlData = turretRecoil ? ((idx < 0) ? &pThis->BarrelRecoil : &pExt->ExtraBarrelRecoil[idx]) : nullptr;
-					const auto barrelInRecoil = pBrlData && pBrlData->State != RecoilData::RecoilState::Inactive;
+					const auto idx = brlIdx + ((turIdx + 1) * (pDrawTypeExt->ExtraBarrelCount.Get() + 1));
+					const auto pBrlData = pDrawType->TurretRecoil ? ((idx < 0) ? &pThis->BarrelRecoil : &pExt->ExtraBarrelRecoil[idx]) : nullptr;
+					const bool barrelInRecoil = pBrlData && pBrlData->State != RecoilData::RecoilState::Inactive;
 
 					// When in recoiling or is not main barrel, need to bypass cache and draw without saving
-					const bool brlShouldRedraw = turretRecoil || brlIdx >= 0;
+					const bool brlShouldRedraw = turretInRecoil || barrelInRecoil || idx >= 0;
 					const auto brlKey = brlShouldRedraw ? -1 : flags;
 					const auto brlCache = brlShouldRedraw ? nullptr : reinterpret_cast<IndexClass<int, int>*>(&pDrawType->VoxelTurretBarrelCache);
 
