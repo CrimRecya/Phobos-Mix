@@ -39,9 +39,10 @@ AttachmentClass::~AttachmentClass()
 		pChildExt->ParentAttachment = nullptr;
 	}
 
-	auto position = std::find(Array.begin(), Array.end(), this);
-	if (position != Array.end())
-		Array.erase(position);
+	auto position = std::find(AttachmentClass::Array.begin(), AttachmentClass::Array.end(), this);
+
+	if (position != AttachmentClass::Array.end())
+		AttachmentClass::Array.erase(position);
 }
 
 void AttachmentClass::Initialize()

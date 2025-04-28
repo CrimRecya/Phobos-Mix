@@ -19,7 +19,6 @@ public:
 	TechnoClass* Child;
 	CDTimerClass RespawnTimer;
 
-
 	AttachmentClass(TechnoTypeExt::ExtData::AttachmentDataEntry* data,
 		TechnoClass* pParent, TechnoClass* pChild = nullptr) :
 		Data { data },
@@ -27,7 +26,7 @@ public:
 		Child { pChild },
 		RespawnTimer { }
 	{
-		Array.push_back(this);
+		AttachmentClass::Array.emplace_back(this);
 	}
 
 	AttachmentClass() :
@@ -36,7 +35,7 @@ public:
 		Child { },
 		RespawnTimer { }
 	{
-		Array.push_back(this);
+		AttachmentClass::Array.emplace_back(this);
 	}
 
 	~AttachmentClass();
