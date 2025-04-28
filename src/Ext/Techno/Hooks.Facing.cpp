@@ -71,7 +71,10 @@ DEFINE_HOOK(0x736AEA, UnitClass_UpdateRotation_ApplyUnitIdleAction, 0x6)
 		pThis->unknown_bool_6AF = true;
 
 		if (!pExt->UnitIdleActionTimer.IsTicking() && !pExt->UnitIdleActionGapTimer.IsTicking() && !pExt->UnitIdleIsSelected)
+		{
+			pExt->UpdateIdleDir();
 			return SkipGameCode;
+		}
 	}
 
 	const auto pTypeExt = pExt->TypeExtData;
@@ -80,21 +83,27 @@ DEFINE_HOOK(0x736AEA, UnitClass_UpdateRotation_ApplyUnitIdleAction, 0x6)
 	// Busy in attacking or driver dead?
 	if (pThis->Target || (Unsorted::CurrentFrame - pThis->LastFireBulletFrame) < (RulesClass::Instance->GuardAreaTargetingDelay + 5) || (currentMission == Mission::Harmless && pThis->Owner == HouseClass::FindSpecial()))
 	{
-		if (pTypeExt->Turret_IdleRotate.Get(RulesExt::Global()->Turret_IdleRotate))
-			pExt->StopIdleAction();
-
+		pExt->CheckIdleAction();
+		pExt->UpdateIdleDir();
 		return SkipGameCode;
 	}
 
 	const auto pWeaponStruct = pThis->GetTurretWeapon();
+	auto shouldRotateInIdle = [pThis, pExt]()
+		{
+			if (!pThis->BunkerLinkedItem && pThis->Type->Speed && (!pThis->Type->IsSimpleDeployer || !pThis->Deployed))
+				return true;
+
+			pExt->UpdateIdleDir();
+			return false;
+		};
 
 	// Turret locked?
 	if (pWeaponStruct && pWeaponStruct->WeaponType && pWeaponStruct->TurretLocked)
 	{
-		if (pTypeExt->Turret_IdleRotate.Get(RulesExt::Global()->Turret_IdleRotate))
-			pExt->StopIdleAction();
+		pExt->CheckIdleAction();
 
-		if (!pThis->BunkerLinkedItem && pThis->Type->Speed && (!pThis->Type->IsSimpleDeployer || !pThis->Deployed))
+		if (shouldRotateInIdle())
 			pTypeExt->SetTurretLimitedDir(pThis, pThis->PrimaryFacing.Current());
 
 		return SkipGameCode;
@@ -115,10 +124,9 @@ DEFINE_HOOK(0x736AEA, UnitClass_UpdateRotation_ApplyUnitIdleAction, 0x6)
 
 	if (pDestination && !pJumpjetLoco)
 	{
-		if (pTypeExt->Turret_IdleRotate.Get(RulesExt::Global()->Turret_IdleRotate))
-			pExt->StopIdleAction();
+		pExt->CheckIdleAction();
 
-		if (!pThis->BunkerLinkedItem && pThis->Type->Speed && (!pThis->Type->IsSimpleDeployer || !pThis->Deployed))
+		if (shouldRotateInIdle())
 			pTypeExt->SetTurretLimitedDir(pThis, pThis->GetTargetDirection(pDestination));
 
 		return SkipGameCode;
@@ -136,7 +144,7 @@ DEFINE_HOOK(0x736AEA, UnitClass_UpdateRotation_ApplyUnitIdleAction, 0x6)
 		pExt->StopIdleAction();
 	}
 
-	if (!pThis->BunkerLinkedItem && pThis->Type->Speed && (!pThis->Type->IsSimpleDeployer || !pThis->Deployed))
+	if (shouldRotateInIdle())
 		pTypeExt->SetTurretLimitedDir(pThis, pThis->PrimaryFacing.Current());
 
 	return SkipGameCode;
