@@ -366,19 +366,20 @@ New:
 - [RadarInvisible for non-enemy house](Fixed-or-Improved-Logics.md#radarinvisible-for-non-enemy-house) (By TaranDahl)
 - New `Pips.HideIfNoStrength` and `SelfHealing.EnabledBy` additions for shields (by FS-21)
 - [Customize harvester dump amount](Fixed-or-Improved-Logics.md#customize-harvester-dump-amount) (by NetsuNegi)
-- Select box logic (by NetsuNegi)
-- Customize airstrike targets (by NetsuNegi)
-- Aggressive attack move mission (by CrimRecya)
-- Amphibious access vehicle (by CrimRecya)
-- Allow miners do area guard (by TaranDahl)
-- Make harvesters do addtional scan after unload (by TaranDahl)
+- [Select box logic](User-Interface.md#select-box) (by NetsuNegi)
+- [Customize airstrike targets](Fixed-or-Improved-Logics.md#airstrike-target-eligibility) (by NetsuNegi)
+- [Aggressive attack move mission](New-or-Enhanced-Logics.md#aggressive-attack-move-mission) (by CrimRecya)
+- [Amphibious access vehicle](New-or-Enhanced-Logics.md#amphibious-access-vehicle) (by CrimRecya)
+- [Allow miners do area guard](Fixed-or-Improved-Logics.md#allow-miners-do-area-guard) (by TaranDahl)
+- [Make harvesters do addtional scan after unload](Fixed-or-Improved-Logics.md#make-harvesters-do-addtional-scan-after-unload) (by TaranDahl)
+- [Passenger-based insignias](Fixed-or-Improved-Logics.md#customizable-veterancy-insignias) (by Ollerus)
+- [Use `InsigniaType` to set the properties of insignia in a batch](Miscellanous.md#insignia-type) (by Ollerus)
 
 - New trajectory system (by CrimRecya)
 - New Missile trajectory (by CrimRecya)
 - New Engrave trajectory (by CrimRecya)
 - New Tracing trajectory (by CrimRecya)
 - Several new Infotypes, no display in specific status and a new single frame display method (by CrimRecya)
-- Display factories, superweapons, iron curtain and temporal progress on specific technos (by CrimRecya)
 - Customized Vehicle Turret Rotation (by CrimRecya)
 - Jumpjet Climbing Logic Enhancement (by CrimRecya)
 - Building placing and deploying logic enhancement (by CrimRecya)
@@ -388,7 +389,6 @@ New:
 - Exclusive SuperWeapon Sidebar (by NetsuNegi & CrimRecya)
 - Allow merging AOE damage to buildings into one (by CrimRecya)
 - Distribution click action mode (by CrimRecya)
-- Jumpjet Tilts While Moving (by CrimRecya)
 - Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll (by CrimRecya)
 - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller. (by TaranDahl)
 - CellSpread in cylinder shape (by TaranDahl)
@@ -398,18 +398,13 @@ New:
 - Infantry firing while moving (by TaranDahl)
 - Grant new superweapons in superweapons (by FS-21).
 - Aggressive stance toggle command (auto target unarmed enemy buildings) (by Aephiex)
-- Amphibious access vehicle (by CrimRecya)
 - Observer sidebar in skirmish game mode (by CrimRecya)
 - New AdvancedDrive locomotor (by CrimRecya)
 - Directional armor (by NetsuNegi)
-- Select box logic (by NetsuNegi)
 
 Vanilla fixes:
 - Fixed sidebar not updating queued unit numbers when adding or removing units when the production is on hold (by CrimRecya)
 - Prevent the units with locomotors that cause problems from entering the tank bunker (by TaranDahl)
-- Fixed an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface (by NetsuNegi)
-- Fixed `MovementZone=Subterannean` harvesters being unable to find docks if in area enclosed by water, cliffs etc.
-- Units are now unable to kick out from a factory that is in construction process, and will not always stuck in the factory (by CrimRecya & TaranDahl)
 - Buildings with foundation bigger than 1x1 can now recycle spawned correctly (by TaranDahl)
 - Fixed an issue that `MovementZone=AmphibiousDestroyer` and `MovementZone=AmphibiousCrusher` technos being unable to enter on water structures (by CrimRecya)
 - Fixed an issue that laser, electric bolt and rad beam not support `Inviso=true` projectiles with `FlakScatter=true` to scatter (by CrimRecya)
@@ -421,16 +416,13 @@ Vanilla fixes:
 - Fixed an issue that teleport units board transport vehicles on the bridge will create an impassable invisible barrier, which may cause the game to freeze or even crash (by NetsuNegi)
 - Fixed an issue that moving MCV with Teleport locomotion will cause reconnection error (by CrimRecya)
 - Fixed wrong shadow when a vehicle has hover locomotor and is being lifted by `IsLocomotor=yes` warhead (by NetsuNegi)
-- Fixed an issue that game crashes (EIP:7FB178) when infantry are about to enter an occupiable building that has been removed and is not real dead (by CrimRecya)
-- Fixed an issue that game crashes when spawnee has been removed and is not real dead (by CrimRecya)
 - Separated the AirstrikeClass pointer between the attacker/aircraft and the target to avoid erroneous overwriting issues (by NetsuNegi)
 - Fixed the bug that buildings will always be tinted as airstrike owner (by NetsuNegi)
 - Fixed the issue where computer players did not search for new enemies after defeating them or forming alliances with them (by FlyStar)
+- Fixed the bug that infantry ignored `Passengers` and `SizeLimit` when entering buildings (by NetsuNegi)
 
 Phobos fixes:
-- Fixed an issue that MCV will self-destruct when using trigger 107 to teleport (by CrimRecya)
-- Fixed the bug that 'AllowAirstrike=no' cannot completely prevent air strikes from being launched against it (by NetsuNegi)
-- Fixed an issue that spawned `Strafe` aircraft on aircraft carriers may not be able to return normally if aircraft carriers moved a short distance when the aircraft is landing (by CrimRecya)
+- Fixed the bug that `AllowAirstrike=no` cannot completely prevent air strikes from being launched against it (by NetsuNegi)
 
 Fixes / interactions with other extensions:
 - Allowed `AuxBuilding` and Ares' `SW.Aux/NegBuildings` to count building upgrades (by Ollerus)
@@ -713,6 +705,9 @@ Vanilla fixes:
 - Fixed an issue where the shadow of jumpjet remained on the ground when it was above the elevated bridge (by CrimRecya)
 - Fixed an issue where AI would select unreachable buildings and get stuck when looking for buildings like tank bunkers, bio reactors, etc. (by TaranDahl)
 - Fixed the bug that a unit can overlap with `Teleport` units after it's been damaged by a fallen unit lifted by `IsLocomotor=yes` warheads (by NetsuNegi)
+- Fixed an issue that harvesters with amphibious movement zone can not automatically return to refineries with `WaterBound` on water surface (by NetsuNegi)
+- Fixed an issue that game crashes (EIP:7FB178) when infantry are about to enter an occupiable building that has been removed and is not real dead (by CrimRecya)
+- Fixed an issue that game crashes when spawnee has been removed and is not real dead (by CrimRecya)
 
 Phobos fixes:
 - Fixed a few errors of calling for superweapon launch by `LaunchSW` or building infiltration (by Trsdy)
