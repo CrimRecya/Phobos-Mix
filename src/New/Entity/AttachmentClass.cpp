@@ -116,10 +116,9 @@ void AttachmentClass::AI()
 
 		FootClass* pParentAsFoot = abstract_cast<FootClass*, true>(this->Parent);
 		FootClass* pChildAsFoot = abstract_cast<FootClass*, true>(this->Child);
+
 		if (pParentAsFoot && pChildAsFoot)
-		{
 			pChildAsFoot->TubeIndex = pParentAsFoot->TubeIndex;
-		}
 
 		if (pType->InheritStateEffects)
 		{
