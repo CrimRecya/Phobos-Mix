@@ -217,8 +217,7 @@ void MissileTrajectory::OpenFire()
 			// When the distance is short, the initial moving distance will be reduced
 			if (pType->ReduceCoord && this->OriginalDistance < (Unsorted::LeptonsPerCell * 10))
 				this->PreAimDistance *= this->OriginalDistance / (Unsorted::LeptonsPerCell * 10);
-			// The calculation for each frame will be completed before the speed update, make up for the first frame here
-			this->PreAimDistance += pType->LaunchSpeed;
+
 			this->InitializeBulletNotCurve();
 		}
 
@@ -417,9 +416,6 @@ bool MissileTrajectory::CurveVelocityChange()
 bool MissileTrajectory::NotCurveVelocityChange()
 {
 	const auto pType = this->Type;
-
-	if (this->PreAimDistance > 0)
-		this->PreAimDistance -= this->MovingSpeed;
 	// Calculate steering
 	if (this->StandardVelocityChange())
 		return true;
@@ -436,6 +432,9 @@ bool MissileTrajectory::NotCurveVelocityChange()
 		if (this->MovingSpeed < pType->Speed)
 			this->MovingSpeed = pType->Speed;
 	}
+
+	if (this->PreAimDistance > 0)
+		this->PreAimDistance -= this->MovingSpeed;
 	// Calculate velocity vector
 	return this->CalculateBulletVelocity(this->MovingSpeed);
 }
@@ -452,7 +451,7 @@ bool MissileTrajectory::StandardVelocityChange()
 	}
 	else if (this->PreAimDistance > 0)
 	{
-		targetLocation = PhobosTrajectory::Vector2Coord(this->MovingVelocity) * 2;
+		targetLocation = PhobosTrajectory::Vector2Coord(this->MovingVelocity);
 	}
 	else
 	{
