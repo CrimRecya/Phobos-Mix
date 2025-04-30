@@ -348,7 +348,7 @@ public:
 		Valueable<double> ProneSpeed_Crawls;
 		Valueable<double> ProneSpeed_NoCrawls;
 
-    	Valueable<double> DamagedSpeed;
+		Valueable<double> DamagedSpeed;
 
 		Valueable<double> WreckageInitialHealthPercent;
 

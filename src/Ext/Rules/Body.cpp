@@ -752,7 +752,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->UnifiedTechnoColor_NeutralColorIdx)
 		.Process(this->ProneSpeed_Crawls)
 		.Process(this->ProneSpeed_NoCrawls)
-    	.Process(this->DamagedSpeed)
+		.Process(this->DamagedSpeed)
 		.Process(this->WreckageInitialHealthPercent)
 		.Process(this->HarvesterScanAfterUnload)
 		;
