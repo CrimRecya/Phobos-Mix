@@ -904,14 +904,14 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 	if (isValidCellToPlace(cell))
 		return cell;
 
-    for (int n = 1; n <= 16; ++n) // r = 16
+	for (int n = 1; n <= 16; ++n) // r = 16
 	{
-        int x, y;
+		int x, y;
 
-        // Right side -> downward
-        x = cell.X + n;
+		// Right side -> downward
+		x = cell.X + n;
 
-        for (y = cell.Y - n; y <= cell.Y + n - 1; ++y)
+		for (y = cell.Y - n; y <= cell.Y + n - 1; ++y)
 		{
 			const CellStruct currentCell { static_cast<short>(x), static_cast<short>(y) };
 
@@ -919,10 +919,10 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 				return currentCell;
 		}
 
-        // Down side -> leftward
-        y = cell.Y + n;
+		// Down side -> leftward
+		y = cell.Y + n;
 
-        for (x = cell.X + n; x >= cell.X - n + 1; --x)
+		for (x = cell.X + n; x >= cell.X - n + 1; --x)
 		{
 			const CellStruct currentCell { static_cast<short>(x), static_cast<short>(y) };
 
@@ -930,10 +930,10 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 				return currentCell;
 		}
 
-        // Left side -> upward
-        x = cell.X - n;
+		// Left side -> upward
+		x = cell.X - n;
 
-        for (y = cell.Y + n; y >= cell.Y - n + 1; --y)
+		for (y = cell.Y + n; y >= cell.Y - n + 1; --y)
 		{
 			const CellStruct currentCell { static_cast<short>(x), static_cast<short>(y) };
 
@@ -941,17 +941,17 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 				return currentCell;
 		}
 
-        // Up side -> rightward
-        y = cell.Y - n;
+		// Up side -> rightward
+		y = cell.Y - n;
 
-        for (x = cell.X - n; x <= cell.X + n - 1; ++x)
+		for (x = cell.X - n; x <= cell.X + n - 1; ++x)
 		{
 			const CellStruct currentCell { static_cast<short>(x), static_cast<short>(y) };
 
 			if (isValidCellToPlace(currentCell))
 				return currentCell;
 		}
-    }
+	}
 
 	return CellStruct::Empty;
 }
