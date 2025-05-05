@@ -421,6 +421,70 @@ DEFINE_HOOK(0x4DDD66, FootClass_IsLandZoneClear_ReplaceHardcode, 0x6) // To avoi
 	return SkipGameCode;
 }
 
+DEFINE_HOOK(0x4CF190, FlyLocomotionClass_FlightUpdate_SetPrimaryFacing, 0x6) // Make aircraft not to fly directly to the airport before starting to land
+{
+	enum { SkipGameCode = 0x4CF29A };
+
+	GET(IFlyControl* const, iFly, EAX);
+
+	if (!iFly || !iFly->Is_Locked())
+	{
+		GET(FootClass** const, pFootPtr, ESI);
+		GET(const int, distance, EBX);
+
+		const auto pFoot = *pFootPtr;
+		const auto pAircraft = abstract_cast<AircraftClass*, true>(pFoot);
+
+		// Rewrite vanilla implement
+		if (!RulesExt::Global()->ExtendedAircraftMissions || !pAircraft)
+		{
+			REF_STACK(const CoordStruct, destination, STACK_OFFSET(0x48, 0x8));
+
+			const auto footCoords = pFoot->GetCoords();
+			const auto desired = DirStruct(Math::atan2(footCoords.Y - destination.Y, destination.X - footCoords.X));
+
+			if (!iFly || !iFly->Is_Strafe() || distance > 768
+				|| std::abs(static_cast<short>(static_cast<short>(desired.Raw) - static_cast<short>(pFoot->PrimaryFacing.Current().Raw))) >= 8192)
+			{
+				pFoot->PrimaryFacing.SetDesired(desired);
+			}
+		}
+		else
+		{
+			REF_STACK(CoordStruct, destination, STACK_OFFSET(0x48, 0x8)); // Also need to used by SecondaryFacing
+
+			const auto footCoords = pAircraft->GetCoords();
+			const auto landingDir = DirStruct(AircraftExt::GetLandingDir(pAircraft));
+
+			// Landing from the rear
+			if (pAircraft->Destination && (pAircraft->DockNowHeadingTo == pAircraft->Destination || pAircraft->SpawnOwner == pAircraft->Destination))
+			{
+				const auto pType = pAircraft->Type;
+				const auto currentDir = DirStruct(Math::atan2(footCoords.Y - destination.Y, destination.X - footCoords.X));
+				const auto difference = static_cast<short>(static_cast<short>(currentDir.Raw) - static_cast<short>(landingDir.Raw));
+				const auto landingFace = landingDir.GetFacing<8>(4);
+				auto cellOffset = Unsorted::AdjacentCoord[landingFace];
+
+				// When the direction is opposite, moving to the side first, then automatically shorten based on the current distance (724 -> 512√2)
+				if (std::abs(difference) >= 12288)
+					cellOffset = (cellOffset + Unsorted::AdjacentCoord[((difference > 0) ? (landingFace + 2) : (landingFace - 2)) & 7]) * (16 / pType->ROT);
+				else
+					cellOffset *= Math::min((32 / pType->ROT), ((landingFace & 1) ? (distance / 724) : (distance / 512)));
+
+				destination.X += cellOffset.X;
+				destination.Y += cellOffset.Y;
+			}
+
+			if (footCoords.Y != destination.Y && footCoords.X != destination.X)
+				pAircraft->PrimaryFacing.SetDesired(DirStruct(Math::atan2(footCoords.Y - destination.Y, destination.X - footCoords.X)));
+			else
+				pAircraft->PrimaryFacing.SetDesired(landingDir);
+		}
+	}
+
+	return SkipGameCode;
+}
+
 DEFINE_HOOK(0x4CF3D0, FlyLocomotionClass_FlightUpdate_SetFlightLevel, 0x7) // Make aircraft not have to fly directly above the airport before starting to descend
 {
 	if (!RulesExt::Global()->ExtendedAircraftMissions)
