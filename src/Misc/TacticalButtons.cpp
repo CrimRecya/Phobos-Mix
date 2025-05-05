@@ -371,10 +371,10 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		}
 		else
 		{
-			drawDashLine(pFoot->Target, COLOR_RED);
-			drawDashLine(pFoot->ArchiveTarget, COLOR_PURPLE);
-			drawDashLine(pFoot->GetNthLink(), COLOR_WHITE);
-			drawDashLine(pFoot->QueueUpToEnter, COLOR_BLUE);
+			drawDashLine(pTechno->Target, COLOR_RED);
+			drawDashLine(pTechno->ArchiveTarget, COLOR_PURPLE);
+			drawDashLine(pTechno->GetNthLink(), COLOR_WHITE);
+			drawDashLine(pTechno->QueueUpToEnter, COLOR_BLUE);
 
 			const auto mtxBase = Matrix3D::GetIdentity();
 			const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
