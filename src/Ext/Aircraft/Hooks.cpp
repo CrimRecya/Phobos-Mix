@@ -421,14 +421,58 @@ DEFINE_HOOK(0x4DDD66, FootClass_IsLandZoneClear_ReplaceHardcode, 0x6) // To avoi
 	return SkipGameCode;
 }
 
-DEFINE_HOOK(0x4CF408, FlyLocomotionClass_FlightUpdate_SetFlightLevel, 0x6) // Make aircraft not have to fly directly above the airport before starting to descend
+DEFINE_HOOK(0x4CF3D0, FlyLocomotionClass_FlightUpdate_SetFlightLevel, 0x7) // Make aircraft not have to fly directly above the airport before starting to descend
 {
-	enum { SkipGameCode = 0x4CF40E };
+	if (!RulesExt::Global()->ExtendedAircraftMissions)
+		return 0;
 
-	GET(FlyLocomotionClass* const, pThis, EBP);
-	GET(TechnoTypeClass* const, pType, EAX);
+	GET(FootClass** const, pFootPtr, ESI);
 
-	R->ECX(RulesExt::Global()->ExtendedAircraftMissions && pThis->LinkedTo->CurrentMission == Mission::Enter || pType->IsDropship);
+	const auto pAircraft = abstract_cast<AircraftClass*, true>(*pFootPtr);
+
+	if (!pAircraft)
+		return 0;
+
+	const auto pType = pAircraft->Type;
+
+	// Ares hook
+	if (pType->HunterSeeker)
+		return 0;
+
+	enum { SkipGameCode = 0x4CF4D2 };
+
+	GET_STACK(FlyLocomotionClass* const, pThis, STACK_OFFSET(0x48, -0x28));
+	GET(const int, distance, EBX);
+
+	// Restore skipped code
+	R->EBP(pThis);
+
+	// Same as vanilla
+	if (pThis->IsElevating && distance < 768)
+	{
+		// Fast descent
+		const auto floorHeight = MapClass::Instance.GetCellFloorHeight(pThis->MovingDestination);
+		pThis->FlightLevel = pThis->MovingDestination.Z - floorHeight;
+		return SkipGameCode;
+	}
+
+	const auto flightLevel = pType->GetFlightLevel();
+
+	// Check returning actions
+	if (distance < pType->SlowdownDistance && pAircraft->Destination
+		&& (pAircraft->DockNowHeadingTo == pAircraft->Destination || pAircraft->SpawnOwner == pAircraft->Destination))
+	{
+		// Slow descent
+		const auto floorHeight = MapClass::Instance.GetCellFloorHeight(pThis->MovingDestination);
+		const auto destinationHeight = pThis->MovingDestination.Z - floorHeight + 1;
+		pThis->FlightLevel = static_cast<int>((flightLevel - destinationHeight) * (static_cast<double>(distance) / pType->SlowdownDistance)) + destinationHeight;
+	}
+	else
+	{
+		// Horizontal flight
+		pThis->FlightLevel = flightLevel;
+	}
+
 	return SkipGameCode;
 }
 
