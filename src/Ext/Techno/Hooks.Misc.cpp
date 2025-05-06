@@ -300,10 +300,10 @@ DEFINE_HOOK(0x4D962B, FootClass_SetDestination_RecycleFLH, 0x5)
 	const auto pCarrier = pThis->SpawnOwner;
 	const auto pDestination = pThis->Destination;
 
-	if (pCarrier && pCarrier == pThis->Destination) // This is a spawner returning to its carrier.
+	if (pCarrier && pCarrier == pDestination) // This is a spawner returning to its carrier.
 	{
-		auto const pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
-		auto const& FLH = pCarrierTypeExt->Spawner_RecycleCoord;
+		const auto pCarrierTypeExt = TechnoTypeExt::ExtMap.Find(pCarrier->GetTechnoType());
+		const auto& FLH = pCarrierTypeExt->Spawner_RecycleCoord;
 
 		if (FLH != CoordStruct::Empty)
 			*pDestCrd += TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret) - pCarrier->GetCoords();
@@ -311,7 +311,7 @@ DEFINE_HOOK(0x4D962B, FootClass_SetDestination_RecycleFLH, 0x5)
 	else if (RulesExt::Global()->FollowTargetSelf)
 	{
 		if (const auto pFoot = abstract_cast<FootClass*>(pDestination))
-			*pDestCrd = pFoot->GetCoords();
+			*pDestCrd = pFoot->GetCell()->GetCoords();
 	}
 
 	return 0;
