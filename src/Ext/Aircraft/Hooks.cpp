@@ -283,21 +283,27 @@ DEFINE_HOOK(0x414C0B, AircraftClass_ChronoSparkleDelay, 0x5)
 
 DEFINE_HOOK(0x4CF31C, FlyLocomotionClass_FlightUpdate_LandingDir, 0x9)
 {
-	enum { SkipGameCode = 0x4CF351 };
+	enum { SkipGameCode = 0x4CF3D0, SetSecondaryFacing = 0x4CF351 };
 
-	GET(FootClass**, pLinkedToPtr, ESI);
+	GET(FootClass** const, pFootPtr, ESI);
+	GET_STACK(IFlyControl* const, iFly, STACK_OFFSET(0x48, -0x38));
 	REF_STACK(unsigned int, dir, STACK_OFFSET(0x48, 0x8));
 
-	auto const pLinkedTo = *pLinkedToPtr;
+	const auto pFoot = *pFootPtr;
 	dir = 0;
 
-	if (pLinkedTo->CurrentMission == Mission::Enter || pLinkedTo->GetMapCoords() == CellClass::Coord2Cell(pLinkedTo->Locomotor->Destination()))
-	{
-		if (auto const pAircraft = abstract_cast<AircraftClass*>(pLinkedTo))
-			dir = DirStruct(AircraftExt::GetLandingDir(pAircraft)).Raw;
-	}
+	if (!iFly)
+		return SetSecondaryFacing;
 
-	return SkipGameCode;
+	if (iFly->Is_Locked())
+		return SkipGameCode;
+
+	if (const auto pAircraft = abstract_cast<AircraftClass*, true>(pFoot))
+		dir = DirStruct(AircraftExt::GetLandingDir(pAircraft)).Raw;
+	else
+		dir = (iFly->Landing_Direction() << 13);
+
+	return SetSecondaryFacing;
 }
 
 namespace SeparateAircraftTemp
@@ -314,11 +320,10 @@ DEFINE_HOOK(0x446F57, BuildingClass_GrandOpening_PoseDir_SetContext, 0x6)
 	return 0;
 }
 
-DirType _fastcall AircraftClass_PoseDir_Wrapper(AircraftClass* pThis)
+DirType __fastcall AircraftClass_PoseDir_Wrapper(AircraftClass* pThis)
 {
 	return AircraftExt::GetLandingDir(pThis, SeparateAircraftTemp::pBuilding);
 }
-
 DEFINE_FUNCTION_JUMP(CALL, 0x446F67, AircraftClass_PoseDir_Wrapper); // BuildingClass_GrandOpening
 
 DEFINE_HOOK(0x443FC7, BuildingClass_ExitObject_PoseDir1, 0x8)
@@ -337,7 +342,10 @@ DEFINE_HOOK(0x44402E, BuildingClass_ExitObject_PoseDir2, 0x5)
 	GET(AircraftClass*, pAircraft, EBP);
 
 	auto dir = DirStruct(AircraftExt::GetLandingDir(pAircraft, pThis));
-	// pAircraft->PrimaryFacing.SetCurrent(dir);
+
+	if (RulesExt::Global()->ExtendedAircraftMissions)
+		pAircraft->PrimaryFacing.SetCurrent(dir);
+
 	pAircraft->SecondaryFacing.SetCurrent(dir);
 
 	return 0;
