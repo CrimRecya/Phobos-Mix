@@ -406,7 +406,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->ProneSpeed_Crawls.Read(exINI, GameStrings::General, "ProneSpeed.Crawls");
 	this->ProneSpeed_NoCrawls.Read(exINI, GameStrings::General, "ProneSpeed.NoCrawls");
 
-  	this->DamagedSpeed.Read(exINI, GameStrings::General, "DamagedSpeed");
+	this->DamagedSpeed.Read(exINI, GameStrings::General, "DamagedSpeed");
 
 	this->WreckageInitialHealthPercent.Read(exINI, GameStrings::General, "WreckageInitialHealthPercent");
 

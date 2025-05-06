@@ -314,7 +314,7 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->KillWeapon_Affects.Read(exINI, pSection, "KillWeapon.Affects");
 	this->KillWeapon_OnFirer_Affects.Read(exINI, pSection, "KillWeapon.OnFirer.Affects");
 
-  	this->ElectricAssaultLevel.Read(exINI, pSection, "ElectricAssaultLevel");
+	this->ElectricAssaultLevel.Read(exINI, pSection, "ElectricAssaultLevel");
 
 	this->SuppressWreckage.Read(exINI, pSection, "SuppressWreckage");
 	this->ActivateWreckage.Read(exINI, pSection, "ActivateWreckage");
