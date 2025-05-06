@@ -2061,14 +2061,25 @@ DEFINE_HOOK(0x70FC85, TechnoClass_Activate_End, 0x5)
 
 #pragma region FallingDownDamage
 
+DEFINE_HOOK(0x5F416A, ObjectClass_DropAsBomb_ResetFallRateRate, 0x7)
+{
+	GET(ObjectClass*, pThis, ESI);
+
+	// Reset value, otherwise it'll keep accelerating.
+	pThis->FallRate = 0;
+	return 0;
+}
+
 DEFINE_HOOK(0x5F4032, ObjectClass_FallingDown_ToDead, 0x6)
 {
 	GET(ObjectClass*, pThis, ESI);
 
-	if (const auto pTechno = abstract_cast<TechnoClass*>(pThis))
+	pThis->FallRate = 0;
+
+	if (const auto pTechno = abstract_cast<TechnoClass*, true>(pThis))
 	{
-		const auto pCell = pTechno->GetCell();
 		const auto pType = pTechno->GetTechnoType();
+		const auto pCell = pTechno->GetCell();
 
 		if (!pCell->IsClearToMove(pType->SpeedType, true, true, -1, pType->MovementZone, pCell->GetLevel(), pCell->ContainsBridge()))
 			return 0;
@@ -2076,7 +2087,7 @@ DEFINE_HOOK(0x5F4032, ObjectClass_FallingDown_ToDead, 0x6)
 		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 		double ratio = 0.0;
 
-		if (pCell->Tile_Is_Water() && !pTechno->OnBridge)
+		if (pCell->LandType == LandType::Water && !pTechno->OnBridge)
 			ratio = pTypeExt->FallingDownDamage_Water.Get(pTypeExt->FallingDownDamage.Get());
 		else
 			ratio = pTypeExt->FallingDownDamage.Get();
@@ -2084,7 +2095,7 @@ DEFINE_HOOK(0x5F4032, ObjectClass_FallingDown_ToDead, 0x6)
 		int damage = 0;
 
 		if (ratio < 0.0)
-			damage = static_cast<int>(pThis->Health * abs(ratio));
+			damage = static_cast<int>(pThis->Health * std::abs(ratio));
 		else if (ratio >= 0.0 && ratio <= 1.0)
 			damage = static_cast<int>(pType->Strength * ratio);
 		else
@@ -2095,25 +2106,30 @@ DEFINE_HOOK(0x5F4032, ObjectClass_FallingDown_ToDead, 0x6)
 		if (pThis->Health > 0 && pThis->IsAlive)
 		{
 			pThis->IsABomb = false;
+			const auto abs = pThis->WhatAmI();
 
-			if (pThis->WhatAmI() == AbstractType::Infantry)
+			if (abs == AbstractType::Infantry)
 			{
 				const auto pInf = static_cast<InfantryClass*>(pTechno);
+				const auto sequenceAnim = pInf->SequenceAnim;
+				pInf->ShouldDeploy = false;
 
-				if (pCell->Tile_Is_Water())
+				if (pCell->LandType == LandType::Water && !pInf->OnBridge)
 				{
-					if (pInf->SequenceAnim != Sequence::Swim)
+					if (sequenceAnim != Sequence::Swim)
 						pInf->PlayAnim(Sequence::Swim, true, false);
 				}
-				else if (pInf->SequenceAnim != Sequence::Guard)
+				else if (sequenceAnim != Sequence::Guard)
 				{
-					pInf->PlayAnim(Sequence::Guard, true, false);
+					pInf->PlayAnim(Sequence::Ready, true, false);
 				}
+
+				pInf->Scatter(pInf->GetCoords(), true, false);
 			}
-		}
-		else
-		{
-			pTechno->UpdatePosition(PCPType::During);
+			else if (abs == AbstractType::Unit)
+			{
+				static_cast<UnitClass*>(pTechno)->UpdatePosition(PCPType::During);
+			}
 		}
 
 		return 0x5F405B;
