@@ -10,7 +10,6 @@
 
 #include <Ext/Bullet/Body.h>
 #include <Ext/Techno/Body.h>
-#include <Ext/WarheadType/Body.h>
 
 TrajectoryTypePointer::TrajectoryTypePointer(TrajectoryFlag flag)
 {
