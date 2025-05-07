@@ -14,6 +14,7 @@
 #include <New/Type/DigitalDisplayTypeClass.h>
 #include <New/Type/SelectBoxTypeClass.h>
 #include <New/Type/Affiliated/DroppodTypeClass.h>
+#include <New/Type/Affiliated/TiberiumEaterTypeClass.h>
 #include <New/Type/AttachmentTypeClass.h>
 
 class Matrix3D;
@@ -67,6 +68,7 @@ public:
 		Valueable<ShieldTypeClass*> ShieldType;
 		std::unique_ptr<PassengerDeletionTypeClass> PassengerDeletionType;
 		std::unique_ptr<DroppodTypeClass> DroppodType;
+		std::unique_ptr<TiberiumEaterTypeClass> TiberiumEaterType;
 
 		Nullable<float> HarvesterDumpAmount;
 
@@ -398,9 +400,6 @@ public:
 
 		Nullable<bool> KeepAlive;
 
-		Valueable<double> FallingDownDamage;
-		Nullable<double> FallingDownDamage_Water;
-
 		Nullable<AnimTypeClass*> Wake;
 		Nullable<AnimTypeClass*> Wake_Grapple;
 		Nullable<AnimTypeClass*> Wake_Sinking;
@@ -532,6 +531,9 @@ public:
 
 		Valueable<bool> Harvester_CanGuardArea;
 		Nullable<bool> HarvesterScanAfterUnload;
+
+		Valueable<double> FallingDownDamage;
+		Nullable<double> FallingDownDamage_Water;
 
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
@@ -748,6 +750,7 @@ public:
 			, SpawnHeight {}
 			, LandingDir {}
 			, DroppodType {}
+			, TiberiumEaterType {}
 
 			, Convert_HumanToComputer { }
 			, Convert_ComputerToHuman { }
@@ -903,9 +906,6 @@ public:
 
 			, KeepAlive {}
 
-			, FallingDownDamage { 1.0 }
-			, FallingDownDamage_Water {}
-
 			, Wake { }
 			, Wake_Grapple { }
 			, Wake_Sinking { }
@@ -1001,6 +1001,9 @@ public:
 
 			, Harvester_CanGuardArea { false }
 			, HarvesterScanAfterUnload {}
+
+			, FallingDownDamage { 1.0 }
+			, FallingDownDamage_Water {}
 		{ }
 
 		virtual ~ExtData() = default;

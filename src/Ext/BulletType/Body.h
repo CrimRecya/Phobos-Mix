@@ -44,6 +44,7 @@ public:
 		Valueable<bool> AAOnly;
 		Valueable<bool> Arcing_AllowElevationInaccuracy;
 		Valueable<WeaponTypeClass*> ReturnWeapon;
+		Valueable<bool> ReturnWeapon_ApplyFirepowerMult;
 
 		Valueable<bool> SubjectToGround;
 
@@ -105,6 +106,7 @@ public:
 			, AAOnly { false }
 			, Arcing_AllowElevationInaccuracy { true }
 			, ReturnWeapon {}
+			, ReturnWeapon_ApplyFirepowerMult { false }
 			, SubjectToSolid { false }
 			, SubjectToGround { false }
 			, AU { false }

@@ -89,6 +89,7 @@ public:
 		bool IsBeingChronoSphered;             // Set to true on units currently being ChronoSphered, does not apply to Ares-ChronoSphere'd buildings or Chrono reinforcements.
 		bool KeepTargetOnMove;
 		CellStruct LastSensorsMapCoords;
+		CDTimerClass TiberiumEater_Timer;
 
 		bool AggressiveStance;                  // Aggressive stance that will auto target buildings
 		DWORD PlayerAssignedLastTarget;
@@ -172,6 +173,7 @@ public:
 			, PlayerAssignedLastTarget { 0xFFFFFFFF }
 			, IsWreckage { false }
 			, BuildingOccupying { }
+			, TiberiumEater_Timer {}
 			, AirstrikeTargetingMe { nullptr }
 			, ParentAttachment {}
 			, ChildAttachments {}
@@ -184,6 +186,7 @@ public:
 		bool CheckDeathConditions(bool isInLimbo = false);
 		void DepletedAmmoActions();
 		void EatPassengers();
+		void UpdateTiberiumEater();
 		void UpdateShield();
 		void UpdateOnTunnelEnter();
 		void UpdateOnTunnelExit();
