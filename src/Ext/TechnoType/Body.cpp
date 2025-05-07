@@ -851,9 +851,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->JumpjetSpeedType.Read(exINI, pSection, "JumpjetSpeedType");
 
-	this->FallingDownDamage.Read(exINI, pSection, "FallingDownDamage");
-	this->FallingDownDamage_Water.Read(exINI, pSection, "FallingDownDamage.Water");
-
 	this->Wake.Read(exINI, pSection, "Wake");
 	this->Wake_Grapple.Read(exINI, pSection, "Wake.Grapple");
 	this->Wake_Sinking.Read(exINI, pSection, "Wake.Sinking");
@@ -1597,9 +1594,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->JumpjetSpeedType)
 
 		.Process(this->KeepAlive)
-
-		.Process(this->FallingDownDamage)
-		.Process(this->FallingDownDamage_Water)
 
 		.Process(this->Wake)
 		.Process(this->Wake_Grapple)

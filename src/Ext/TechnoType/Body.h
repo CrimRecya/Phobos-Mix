@@ -399,9 +399,6 @@ public:
 
 		Nullable<bool> KeepAlive;
 
-		Valueable<double> FallingDownDamage;
-		Nullable<double> FallingDownDamage_Water;
-
 		Nullable<AnimTypeClass*> Wake;
 		Nullable<AnimTypeClass*> Wake_Grapple;
 		Nullable<AnimTypeClass*> Wake_Sinking;
@@ -886,9 +883,6 @@ public:
 			, JumpjetSpeedType { 3 }
 
 			, KeepAlive {}
-
-			, FallingDownDamage { 1.0 }
-			, FallingDownDamage_Water {}
 
 			, Wake { }
 			, Wake_Grapple { }
