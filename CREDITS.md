@@ -358,6 +358,7 @@ This page lists all the individual contributions to the project by their author.
   - `Edit/Clear Hate-Value` Trigger Action
   - `Set Force Enemy` Trigger Action
   - Fix the issue where computer players did not search for new enemies after defeating them or forming alliances with them
+  - Customize the damage taken when falling from a bridge
 - **NetsuNegi**:
   - Forbidding parallel AI queues by type
   - Jumpjet crash speed fix when crashing onto building
@@ -390,6 +391,7 @@ This page lists all the individual contributions to the project by their author.
   - Fix the bug that buildings will always be tinted as airstrike owner
   - Fix the bug that `AllowAirstrike=no` cannot completely prevent air strikes from being launched against it
   - Fix the bug that infantry ignored `Passengers` and `SizeLimit` when entering buildings
+  - Tiberium eater logic
   - Exclusive SuperWeapon Sidebar
   - Directional armor
 - **Apollo** - Translucent SHP drawing patches

@@ -14,6 +14,7 @@
 #include <New/Type/DigitalDisplayTypeClass.h>
 #include <New/Type/SelectBoxTypeClass.h>
 #include <New/Type/Affiliated/DroppodTypeClass.h>
+#include <New/Type/Affiliated/TiberiumEaterTypeClass.h>
 
 class Matrix3D;
 class ParticleSystemTypeClass;
@@ -66,6 +67,7 @@ public:
 		Valueable<ShieldTypeClass*> ShieldType;
 		std::unique_ptr<PassengerDeletionTypeClass> PassengerDeletionType;
 		std::unique_ptr<DroppodTypeClass> DroppodType;
+		std::unique_ptr<TiberiumEaterTypeClass> TiberiumEaterType;
 
 		Nullable<float> HarvesterDumpAmount;
 
@@ -511,6 +513,9 @@ public:
 		Valueable<bool> Harvester_CanGuardArea;
 		Nullable<bool> HarvesterScanAfterUnload;
 
+		Valueable<double> FallingDownDamage;
+		Nullable<double> FallingDownDamage_Water;
+
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
 			, UIDescription {}
@@ -726,6 +731,7 @@ public:
 			, SpawnHeight {}
 			, LandingDir {}
 			, DroppodType {}
+			, TiberiumEaterType {}
 
 			, Convert_HumanToComputer { }
 			, Convert_ComputerToHuman { }
@@ -975,6 +981,9 @@ public:
 
 			, Harvester_CanGuardArea { false }
 			, HarvesterScanAfterUnload {}
+
+			, FallingDownDamage { 1.0 }
+			, FallingDownDamage_Water {}
 		{ }
 
 		virtual ~ExtData() = default;

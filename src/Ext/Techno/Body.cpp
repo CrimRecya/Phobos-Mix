@@ -1013,6 +1013,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->PlayerAssignedLastTarget)
 		.Process(this->IsWreckage)
 		.Process(this->BuildingOccupying)
+		.Process(this->TiberiumEater_Timer)
 		.Process(this->AirstrikeTargetingMe)
 		;
 }
