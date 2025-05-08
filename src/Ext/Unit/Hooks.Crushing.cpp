@@ -17,19 +17,11 @@ DEFINE_HOOK(0x73B05B, UnitClass_PerCellProcess_TiltWhenCrushes, 0x6)
 	if (!pTypeExt->TiltsWhenCrushes_Overlays.Get(pThis->Type->TiltsWhenCrushes))
 		return SkipGameCode;
 
-	CLSID locoCLSID {};
+	if (AdvancedDriveLocomotionClass::IsReversing(pThis))
+		pThis->RockingForwardsPerFrame -= static_cast<float>(pTypeExt->CrushOverlayExtraForwardTilt);
+	else
+		pThis->RockingForwardsPerFrame += static_cast<float>(pTypeExt->CrushOverlayExtraForwardTilt);
 
-	if (SUCCEEDED(static_cast<LocomotionClass*>(pThis->Locomotor.GetInterfacePtr())->GetClassID(&locoCLSID))
-		&& locoCLSID == __uuidof(AdvancedDriveLocomotionClass))
-	{
-		if (!static_cast<AdvancedDriveLocomotionClass*>(pThis->Locomotor.GetInterfacePtr())->IsForward)
-		{
-			pThis->RockingForwardsPerFrame -= static_cast<float>(pTypeExt->CrushOverlayExtraForwardTilt);
-			return SkipGameCode;
-		}
-	}
-
-	pThis->RockingForwardsPerFrame += static_cast<float>(pTypeExt->CrushOverlayExtraForwardTilt);
 	return SkipGameCode;
 }
 
@@ -44,19 +36,11 @@ DEFINE_HOOK(0x741941, UnitClass_OverrunSquare_TiltWhenCrushes, 0x6)
 	if (!pTypeExt->TiltsWhenCrushes_Vehicles.Get(pThis->Type->TiltsWhenCrushes))
 		return SkipGameCode;
 
-	CLSID locoCLSID {};
+	if (AdvancedDriveLocomotionClass::IsReversing(pThis))
+		pThis->RockingForwardsPerFrame = static_cast<float>(-pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
+	else
+		pThis->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
 
-	if (SUCCEEDED(static_cast<LocomotionClass*>(pThis->Locomotor.GetInterfacePtr())->GetClassID(&locoCLSID))
-		&& locoCLSID == __uuidof(AdvancedDriveLocomotionClass))
-	{
-		if (!static_cast<AdvancedDriveLocomotionClass*>(pThis->Locomotor.GetInterfacePtr())->IsForward)
-		{
-			pThis->RockingForwardsPerFrame = static_cast<float>(-pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
-			return SkipGameCode;
-		}
-	}
-
-	pThis->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
 	return SkipGameCode;
 }
 
