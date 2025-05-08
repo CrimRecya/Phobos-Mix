@@ -1856,9 +1856,9 @@ DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting, 0x7)
 	return SkipGameCode;
 }
 
-static inline bool ExtraTargeting(TechnoClass* pThis)
+static inline bool ExtraTargeting_OnLoseTarget(TechnoClass* pThis)
 {
-	if (!RulesExt::Global()->ExtraTargeting_OnLoseTarget) return false;
+	if (!RulesExt::Global()->ExtraTargeting_OnLoseTarget || pThis->Spawned) return false;
 	auto coord = pThis->GetCoords();
 	return pThis->TargetAndEstimateDamage(coord, ThreatType::Range);
 }
@@ -1867,20 +1867,20 @@ DEFINE_HOOK(0x4D4E72, FootClass_MissionAttack_ExtraTargeting, 0x6)
 {
 	enum { ApproachTarget = 0x4D4E64 };
 	GET(FootClass*, pThis, ESI);
-	return ExtraTargeting(pThis) ? ApproachTarget : 0;
+	return ExtraTargeting_OnLoseTarget(pThis) ? ApproachTarget : 0;
 }
 
 DEFINE_HOOK(0x44AF90, BuildingClass_MissionAttack_ExtraTargeting, 0x5)
 {
 	enum { AttackTarget = 0x44AFED };
 	GET(BuildingClass*, pThis, ESI);
-	return ExtraTargeting(pThis) ? AttackTarget : 0;
+	return ExtraTargeting_OnLoseTarget(pThis) ? AttackTarget : 0;
 }
 
 DEFINE_HOOK(0x417FE0, AircraftClass_MissionAttack_ExtraTargeting, 0x6)
 {
 	GET(AircraftClass*, pThis, ECX);
-	if (!pThis->Target) ExtraTargeting(pThis);
+	if (!pThis->Target) ExtraTargeting_OnLoseTarget(pThis);
 	return 0;
 }
 
@@ -1962,14 +1962,14 @@ DEFINE_HOOK(0x6FA697, TechnoClass_Update_AutoTargetMissionCheck, 0x6)
 {
 	enum { CanTargeting = 0x6FA6AC };
 	GET(TechnoClass* const, pThis, ESI);
-	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned ? CanTargeting : 0;
+	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && !pThis->Spawned ? CanTargeting : 0;
 }
 
 DEFINE_HOOK(0x7093E9, TechnoClass_CanPassiveAquireNow_MissionCheck, 0x7)
 {
 	enum { CanTargeting = 0x7093F8 };
 	GET(TechnoClass* const, pThis, ESI);
-	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
+	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && !pThis->Spawned && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
 }
 
 DEFINE_HOOK(0x70CE85, TechnoClass_ThreatCoefficient_CanAttackMeThreatBonus, 0x5)
@@ -1989,7 +1989,7 @@ DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
 {
 	enum { CanTargeting = 0x709926 };
 	GET(TechnoClass* const, pThis, ESI);
-	return RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
+	return RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && !pThis->Spawned && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
 }
 
 #pragma endregion
