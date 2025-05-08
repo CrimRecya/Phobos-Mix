@@ -785,6 +785,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->UniqueTechno.Read(exINI, pSection, "UniqueTechno");
 
 	this->CanManualReload.Read(exINI, pSection, "CanManualReload");
+	this->CanManualReload_WhenFull.Read(exINI, pSection, "CanManualReload.WhenFull");
 	this->CanManualReload_ResetROF.Read(exINI, pSection, "CanManualReload.ResetROF");
 	this->CanManualReload_DetonateWarhead.Read(exINI, pSection, "CanManualReload.DetonateWarhead");
 	this->CanManualReload_DetonateConsume.Read(exINI, pSection, "CanManualReload.DetonateConsume");
@@ -1527,6 +1528,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->UniqueTechno)
 
 		.Process(this->CanManualReload)
+		.Process(this->CanManualReload_WhenFull)
 		.Process(this->CanManualReload_ResetROF)
 		.Process(this->CanManualReload_DetonateWarhead)
 		.Process(this->CanManualReload_DetonateConsume)
