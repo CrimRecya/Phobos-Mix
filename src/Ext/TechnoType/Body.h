@@ -511,6 +511,10 @@ public:
 		Valueable<bool> Harvester_CanGuardArea;
 		Nullable<bool> HarvesterScanAfterUnload;
 
+		Nullable<bool> ExtendedAircraftActions_SmoothMoving;
+		Nullable<bool> ExtendedAircraftActions_EarlyDescend;
+		Nullable<bool> ExtendedAircraftActions_RearApproach;
+
 		Valueable<double> FallingDownDamage;
 		Nullable<double> FallingDownDamage_Water;
 
@@ -977,6 +981,10 @@ public:
 
 			, Harvester_CanGuardArea { false }
 			, HarvesterScanAfterUnload {}
+
+			, ExtendedAircraftActions_SmoothMoving {}
+			, ExtendedAircraftActions_EarlyDescend {}
+			, ExtendedAircraftActions_RearApproach {}
 
 			, FallingDownDamage { 1.0 }
 			, FallingDownDamage_Water {}
