@@ -1983,6 +1983,7 @@ DEFINE_HOOK(0x47EAF7, CellClass_RemoveContent_BeforeUnmarkOccupationBits, 0x7)
 
 #pragma region BalloonHoverPathingFix
 
+DEFINE_HOOK_AGAIN(0x64D575, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal1, 0x6)
 DEFINE_HOOK(0x64D592, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal1, 0x6)
 {
 	enum { SkipTargetCrdRecal = 0x64D598 };
@@ -1990,14 +1991,7 @@ DEFINE_HOOK(0x64D592, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal1, 0x
 	return pTechno->GetTechnoType()->BalloonHover && RulesExt::Global()->BalloonHoverPathingFix ? SkipTargetCrdRecal : 0;
 }
 
-DEFINE_HOOK(0x64D575, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal2, 0x6)
-{
-	enum { SkipTargetCrdRecal = 0x64D598 };
-	GET(TechnoClass*, pTechno, EBP);
-	return pTechno->GetTechnoType()->BalloonHover && RulesExt::Global()->BalloonHoverPathingFix ? SkipTargetCrdRecal : 0;
-}
-
-DEFINE_HOOK(0x64D5C5, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal3, 0x6)
+DEFINE_HOOK(0x64D5C5, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal2, 0x6)
 {
 	enum { SkipTargetCrdRecal = 0x64D659 };
 	GET(TechnoClass*, pTechno, EBP);
