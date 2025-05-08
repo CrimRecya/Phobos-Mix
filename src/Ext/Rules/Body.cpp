@@ -412,6 +412,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->HarvesterScanAfterUnload.Read(exINI, GameStrings::General, "HarvesterScanAfterUnload");
 
+	this->BalloonHoverPathingFix.Read(exINI, GameStrings::General, "BalloonHoverPathingFix");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -755,6 +757,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->DamagedSpeed)
 		.Process(this->WreckageInitialHealthPercent)
 		.Process(this->HarvesterScanAfterUnload)
+		.Process(this->BalloonHoverPathingFix)
 		;
 }
 
