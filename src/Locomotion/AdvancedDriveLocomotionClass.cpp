@@ -1492,7 +1492,9 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 						{
 							// Customized crush tilt speed
 							const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-							pLinked->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
+							pLinked->RockingForwardsPerFrame = this->IsForward
+								? static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05))
+								: static_cast<float>(-pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
 						}
 					}
 				}
@@ -1505,7 +1507,9 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 					{
 						// Customized crush tilt speed
 						const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-						pLinked->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
+						pLinked->RockingForwardsPerFrame = this->IsForward
+							? static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05))
+							: static_cast<float>(-pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
 					}
 				}
 			}

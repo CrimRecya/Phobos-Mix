@@ -332,6 +332,7 @@ public:
 		Valueable<bool> UniqueTechno;
 
 		Valueable<bool> CanManualReload;
+		Valueable<bool> CanManualReload_WhenFull;
 		Valueable<bool> CanManualReload_ResetROF;
 		Valueable<WarheadTypeClass*> CanManualReload_DetonateWarhead;
 		Valueable<int> CanManualReload_DetonateConsume;
@@ -531,6 +532,10 @@ public:
 
 		Valueable<bool> Harvester_CanGuardArea;
 		Nullable<bool> HarvesterScanAfterUnload;
+
+		Nullable<bool> ExtendedAircraftActions_SmoothMoving;
+		Nullable<bool> ExtendedAircraftActions_EarlyDescend;
+		Nullable<bool> ExtendedAircraftActions_RearApproach;
 
 		Valueable<double> FallingDownDamage;
 		Nullable<double> FallingDownDamage_Water;
@@ -838,6 +843,7 @@ public:
 			, UniqueTechno { false }
 
 			, CanManualReload { false }
+			, CanManualReload_WhenFull { false }
 			, CanManualReload_ResetROF { true }
 			, CanManualReload_DetonateWarhead {}
 			, CanManualReload_DetonateConsume { 0 }
@@ -1001,6 +1007,10 @@ public:
 
 			, Harvester_CanGuardArea { false }
 			, HarvesterScanAfterUnload {}
+
+			, ExtendedAircraftActions_SmoothMoving {}
+			, ExtendedAircraftActions_EarlyDescend {}
+			, ExtendedAircraftActions_RearApproach {}
 
 			, FallingDownDamage { 1.0 }
 			, FallingDownDamage_Water {}

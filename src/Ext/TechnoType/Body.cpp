@@ -825,6 +825,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->UniqueTechno.Read(exINI, pSection, "UniqueTechno");
 
 	this->CanManualReload.Read(exINI, pSection, "CanManualReload");
+	this->CanManualReload_WhenFull.Read(exINI, pSection, "CanManualReload.WhenFull");
 	this->CanManualReload_ResetROF.Read(exINI, pSection, "CanManualReload.ResetROF");
 	this->CanManualReload_DetonateWarhead.Read(exINI, pSection, "CanManualReload.DetonateWarhead");
 	this->CanManualReload_DetonateConsume.Read(exINI, pSection, "CanManualReload.DetonateConsume");
@@ -963,11 +964,15 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Overload_ParticleSys.Read(exINI, pSection, "Overload.ParticleSys");
 	this->Overload_ParticleSysCount.Read(exINI, pSection, "Overload.ParticleSysCount");
 
-	this->FallingDownDamage.Read(exINI, pSection, "FallingDownDamage");
-	this->FallingDownDamage_Water.Read(exINI, pSection, "FallingDownDamage.Water");
-
 	this->Harvester_CanGuardArea.Read(exINI, pSection, "Harvester.CanGuardArea");
 	this->HarvesterScanAfterUnload.Read(exINI, pSection, "HarvesterScanAfterUnload");
+
+	this->ExtendedAircraftActions_SmoothMoving.Read(exINI, pSection, "ExtendedAircraftActions.SmoothMoving");
+	this->ExtendedAircraftActions_EarlyDescend.Read(exINI, pSection, "ExtendedAircraftActions.EarlyDescend");
+	this->ExtendedAircraftActions_RearApproach.Read(exINI, pSection, "ExtendedAircraftActions.RearApproach");
+
+	this->FallingDownDamage.Read(exINI, pSection, "FallingDownDamage");
+	this->FallingDownDamage_Water.Read(exINI, pSection, "FallingDownDamage.Water");
 
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
@@ -1565,6 +1570,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->UniqueTechno)
 
 		.Process(this->CanManualReload)
+		.Process(this->CanManualReload_WhenFull)
 		.Process(this->CanManualReload_ResetROF)
 		.Process(this->CanManualReload_DetonateWarhead)
 		.Process(this->CanManualReload_DetonateConsume)
@@ -1728,6 +1734,10 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->Harvester_CanGuardArea)
 		.Process(this->HarvesterScanAfterUnload)
+
+		.Process(this->ExtendedAircraftActions_SmoothMoving)
+		.Process(this->ExtendedAircraftActions_EarlyDescend)
+		.Process(this->ExtendedAircraftActions_RearApproach)
 
 		.Process(this->FallingDownDamage)
 		.Process(this->FallingDownDamage_Water)
