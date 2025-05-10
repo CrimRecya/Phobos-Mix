@@ -649,7 +649,8 @@ public:
 			, WreckageInitialHealthPercent { 0.1 }
 
 			, HarvesterScanAfterUnload { false }
-			, BalloonHoverPathingFix { false }
+			
+			, BalloonHoverPathingFix { true }
 		{ }
 
 		virtual ~ExtData() = default;
