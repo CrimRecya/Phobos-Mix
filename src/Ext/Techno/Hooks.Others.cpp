@@ -1332,6 +1332,7 @@ DEFINE_HOOK(0x4DF410, FootClass_UpdateAttackMove_TargetAcquired, 0x6)
 				pJumpjetLoco->DestinationCoords.Y = crd.Y;
 				pJumpjetLoco->CurrentSpeed = 0;
 				pJumpjetLoco->MaxSpeed = 0;
+				pJumpjetLoco->State = JumpjetLocomotionClass::State::Hovering;
 				pThis->AbortMotion();
 			}
 			else
