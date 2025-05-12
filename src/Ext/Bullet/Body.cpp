@@ -358,10 +358,10 @@ void BulletExt::SimulatedFiringUnlimbo(BulletClass* pBullet, HouseClass* pHouse,
 		// WW calculates the launch angle (and limits it) before calculating the velocity
 		// Here, some magic numbers are used to directly simulate its calculation
 		const auto speedMult = (lobber ? 0.45 : (distanceCoords.Z > 0 ? 0.68 : 1.0)); // Simulated 0x48A9D0
-		const auto speed = static_cast<int>(speedMult * sqrt(horizontalDistance * gravity * 1.2)); // 0x48AB90
+		const auto speed = speedMult * sqrt(horizontalDistance * gravity * 1.2); // 0x48AB90
 
 		// Simulate firing Arcing bullet
-		if (horizontalDistance < 1e-10 || !speed)
+		if (horizontalDistance < 1e-10 || speed < 1e-10)
 		{
 			// No solution
 			velocity.Z = speed;
