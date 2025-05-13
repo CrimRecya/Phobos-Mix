@@ -545,8 +545,35 @@ In `uimd.ini`:
 DisableEmptySpawnPositions=false  ; boolean
 ```
 
-## Sidebar / Battle UI
+## Miscellanous
 
+### Skip saving game on starting a new campaign
+
+When starting a new campaign, the game automatically saves the game. Now you can decide whether you want that to happen or not.
+
+In `RA2MD.INI`:
+```ini
+[Phobos]
+SaveGameOnScenarioStart=true ; boolean
+```
+
+### Change the scrolling action of the sidebar
+
+- Allow players to decide for themselves:
+  - Whether can use mouse wheel to scroll sidebar strip when the mouse is not on it by `ScrollSidebarStripInTactical` .
+  - Whether can use mouse wheel to scroll sidebar strip when pressing Ctrl by `ScrollSidebarStripWhenHoldCtrl`, Alt by `ScrollSidebarStripWhenHoldAlt`, or Shift by `ScrollSidebarStripWhenHoldShift`.
+
+In `RA2MD.ini`:
+
+```ini
+[Phobos]
+ScrollSidebarStripInTactical=true     ; boolean
+ScrollSidebarStripWhenHoldAlt=true    ; boolean
+ScrollSidebarStripWhenHoldCtrl=true   ; boolean
+ScrollSidebarStripWhenHoldShift=true  ; boolean
+```
+
+## Sidebar / Battle UI
 
 ### Building Production Queue
 
@@ -889,32 +916,4 @@ SuperWeaponSidebar.BottomPCX=         ; filename - including the .pcx extension
 SuperWeaponSidebar.Allow=             ; boolean
 SuperWeaponSidebar.PriorityHouses=    ; list of house types
 SuperWeaponSidebar.RequiredHouses=    ; list of house types
-```
-
-## Miscellanous
-
-### Skip saving game on starting a new campaign
-
-When starting a new campaign, the game automatically saves the game. Now you can decide whether you want that to happen or not.
-
-In `RA2MD.INI`:
-```ini
-[Phobos]
-SaveGameOnScenarioStart=true ; boolean
-```
-
-### Change the scrolling action of the sidebar
-
-- Allow players to decide for themselves:
-  - Whether can use mouse wheel to scroll sidebar strip when the mouse is not on it by `ScrollSidebarStripInTactical` .
-  - Whether can use mouse wheel to scroll sidebar strip when pressing Ctrl by `ScrollSidebarStripWhenHoldCtrl`, Alt by `ScrollSidebarStripWhenHoldAlt`, or Shift by `ScrollSidebarStripWhenHoldShift`.
-
-In `RA2MD.ini`:
-
-```ini
-[Phobos]
-ScrollSidebarStripInTactical=true     ; boolean
-ScrollSidebarStripWhenHoldAlt=true    ; boolean
-ScrollSidebarStripWhenHoldCtrl=true   ; boolean
-ScrollSidebarStripWhenHoldShift=true  ; boolean
 ```
