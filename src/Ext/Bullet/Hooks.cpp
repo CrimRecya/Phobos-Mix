@@ -463,19 +463,19 @@ DEFINE_JUMP(LJMP, 0x468D08, 0x468D2F);
 
 DEFINE_HOOK(0x6FF008, TechnoClass_Fire_BeforeMoveTo, 0x8)
 {
-	GET(BulletClass*, pBullet, EBX);
-	const auto projectile = pBullet->Type;
+	GET(BulletClass* const, pBullet, EBX);
 
-	if (projectile->Arcing && !BulletTypeExt::ExtMap.Find(projectile)->Arcing_AllowElevationInaccuracy)
+	const auto pBulletType = pBullet->Type;
+
+	if (pBulletType->Arcing && !BulletTypeExt::ExtMap.Find(pBulletType)->Arcing_AllowElevationInaccuracy)
 	{
-		LEA_STACK(BulletVelocity*, velocity, STACK_OFFSET(0xB0, -0x60));
-		LEA_STACK(CoordStruct*, crdSrc, STACK_OFFSET(0xB0, -0x6C));
+		REF_STACK(BulletVelocity, velocity, STACK_OFFSET(0xB0, -0x60));
+		REF_STACK(const CoordStruct, crdSrc, STACK_OFFSET(0xB0, -0x6C));
+		REF_STACK(const CoordStruct, crdOffset, STACK_OFFSET(0xB0, -0x1C));
+		REF_STACK(const CoordStruct, fireCoords, STACK_OFFSET(0xB0, -0x6C));
 
-		GET_STACK(CoordStruct, crdOffset, STACK_OFFSET(0xB0, -0x1C));
-		GET_STACK(CoordStruct, fireCoords, STACK_OFFSET(0xB0, -0x6C));
 		const auto crdTgt = crdOffset + fireCoords;
-
-		BulletExt::ApplyArcingFix(pBullet, *crdSrc, crdTgt, *velocity);
+		BulletExt::ApplyArcingFix(pBullet, crdSrc, crdTgt, velocity);
 	}
 
 	return 0;
@@ -483,16 +483,17 @@ DEFINE_HOOK(0x6FF008, TechnoClass_Fire_BeforeMoveTo, 0x8)
 
 DEFINE_HOOK(0x44D46E, BuildingClass_Mission_Missile_BeforeMoveTo, 0x8)
 {
-	GET(BulletClass*, pBullet, EDI);
-	const auto projectile = pBullet->Type;
+	GET(BulletClass* const, pBullet, EDI);
 
-	if (projectile->Arcing && !BulletTypeExt::ExtMap.Find(projectile)->Arcing_AllowElevationInaccuracy)
+	const auto pBulletType = pBullet->Type;
+
+	if (pBulletType->Arcing && !BulletTypeExt::ExtMap.Find(pBulletType)->Arcing_AllowElevationInaccuracy)
 	{
-		LEA_STACK(BulletVelocity*, velocity, STACK_OFFSET(0xE8, -0xD0));
-		LEA_STACK(CoordStruct*, crdSrc, STACK_OFFSET(0xE8, -0x8C));
-		GET_STACK(CoordStruct, crdTgt, STACK_OFFSET(0xE8, -0x4C));
+		REF_STACK(BulletVelocity, velocity, STACK_OFFSET(0xE8, -0xD0));
+		REF_STACK(const CoordStruct, crdSrc, STACK_OFFSET(0xE8, -0x8C));
+		REF_STACK(const CoordStruct, crdTgt, STACK_OFFSET(0xE8, -0x4C));
 
-		BulletExt::ApplyArcingFix(pBullet, *crdSrc, crdTgt, *velocity);
+		BulletExt::ApplyArcingFix(pBullet, crdSrc, crdTgt, velocity);
 	}
 
 	return 0;
