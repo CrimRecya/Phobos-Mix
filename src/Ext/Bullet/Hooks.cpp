@@ -108,10 +108,9 @@ DEFINE_HOOK(0x466897, BulletClass_AI_Trailer, 0x6)
 	enum { SkipGameCode = 0x4668BD };
 
 	GET(BulletClass*, pThis, EBP);
-	GET_STACK(CoordStruct, coords, STACK_OFFSET(0x1A8, -0x184));
+	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x1A8, -0x184));
 
 	auto const pTrailerAnim = GameCreate<AnimClass>(pThis->Type->Trailer, coords, 1, 1);
-
 	auto const pTrailerAnimExt = AnimExt::ExtMap.Find(pTrailerAnim);
 	auto const pOwner = pThis->Owner ? pThis->Owner->Owner : BulletAITemp::ExtData->FirerHouse;
 	AnimExt::SetAnimOwnerHouseKind(pTrailerAnim, pOwner, nullptr, false, true);
@@ -283,11 +282,11 @@ DEFINE_HOOK(0x46902C, BulletClass_Explode_Cluster, 0x6)
 	enum { SkipGameCode = 0x469091 };
 
 	GET(BulletClass*, pThis, ESI);
-	GET_STACK(CoordStruct, origCoords, STACK_OFFSET(0x3C, -0x30));
+	REF_STACK(const CoordStruct, origCoords, STACK_OFFSET(0x3C, -0x30));
 
 	auto const pTypeExt = BulletTypeExt::ExtMap.Find(pThis->Type);
-	int min = pTypeExt->ClusterScatter_Min.Get();
-	int max = pTypeExt->ClusterScatter_Max.Get();
+	const int min = pTypeExt->ClusterScatter_Min.Get();
+	const int max = pTypeExt->ClusterScatter_Max.Get();
 	auto coords = origCoords;
 
 	for (int i = 0; i < pThis->Type->Cluster; i++)
