@@ -655,7 +655,8 @@ public:
 			, AttachmentUndergroundLayerMaxHeight { -256 }
 
 			, HarvesterScanAfterUnload { false }
-			, BalloonHoverPathingFix { false }
+			
+			, BalloonHoverPathingFix { true }
 		{ }
 
 		virtual ~ExtData() = default;
