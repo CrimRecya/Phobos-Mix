@@ -1844,7 +1844,7 @@ DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting, 0x7)
 
 static inline bool ExtraTargeting_OnLoseTarget(TechnoClass* pThis)
 {
-	if (!RulesExt::Global()->ExtraTargeting_OnLoseTarget || pThis->Spawned) return false;
+	if (!RulesExt::Global()->ExtraTargeting_OnLoseTarget || pThis->Spawned || pThis->SpawnOwner) return false;
 	auto coord = pThis->GetCoords();
 	return pThis->TargetAndEstimateDamage(coord, ThreatType::Range);
 }
@@ -1948,14 +1948,14 @@ DEFINE_HOOK(0x6FA697, TechnoClass_Update_AutoTargetMissionCheck, 0x6)
 {
 	enum { CanTargeting = 0x6FA6AC };
 	GET(TechnoClass* const, pThis, ESI);
-	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && !pThis->Spawned ? CanTargeting : 0;
+	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && !pThis->Spawned && !pThis->SpawnOwner ? CanTargeting : 0;
 }
 
 DEFINE_HOOK(0x7093E9, TechnoClass_CanPassiveAquireNow_MissionCheck, 0x7)
 {
 	enum { CanTargeting = 0x7093F8 };
 	GET(TechnoClass* const, pThis, ESI);
-	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && !pThis->Spawned && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
+	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && !pThis->Spawned && !pThis->SpawnOwner && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
 }
 
 DEFINE_HOOK(0x70CE85, TechnoClass_ThreatCoefficient_CanAttackMeThreatBonus, 0x5)
