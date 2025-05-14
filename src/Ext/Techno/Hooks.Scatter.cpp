@@ -94,7 +94,7 @@ DEFINE_HOOK(0x4495DF, BuildingClass_CheckWeaponFactoryOutsideBusy_ScatterEntranc
 
 	GET(BuildingClass* const, pThis, ESI);
 	GET(CellClass* const, pCell, EAX);
-	GET_STACK(const CoordStruct, coords, STACK_OFFSET(0x30, -0xC));
+	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x30, -0xC));
 
 	const auto pTechno = pCell->FindTechnoNearestTo(Point2D::Empty, false, pThis);
 
