@@ -223,8 +223,9 @@ public:
 
 	struct GroupData
 	{
-		std::vector<BulletClass*> Bullets {};
+		std::vector<DWORD> Bullets {};
 		double Angle { 0.0 };
+		bool ShouldUpdate { true };
 
 		GroupData() = default;
 
@@ -236,7 +237,7 @@ public:
 		bool Serialize(T& stm);
 	};
 
-	std::shared_ptr<PhobosMap<BulletTypeClass*, PhobosTrajectory::GroupData>> TrajectoryGroup; // For capacity count
+	std::shared_ptr<PhobosMap<DWORD, PhobosTrajectory::GroupData>> TrajectoryGroup; // For capacity count
 	int GroupIndex; // Index in trajectory group
 
 	int PassDetonateDamage; // Current damage caused by the pass warhead
@@ -355,6 +356,7 @@ public:
 	void DetonateOnObstacle();
 	bool CheckSynchronize();
 	bool CheckTolerantTime();
+	void UpdateGroupIndex();
 
 	std::vector<CellClass*> GetCellsInProximityRadius();
 	bool CheckThroughAndSubjectInCell(CellClass* pCell, HouseClass* pOwner);

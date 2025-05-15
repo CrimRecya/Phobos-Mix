@@ -362,9 +362,9 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 			const auto pFirerExt = TechnoExt::ExtMap.Find(pThis);
 
 			if (!pFirerExt->TrajectoryGroup)
-				pFirerExt->TrajectoryGroup = std::make_shared<PhobosMap<BulletTypeClass*, PhobosTrajectory::GroupData>>();
+				pFirerExt->TrajectoryGroup = std::make_shared<PhobosMap<DWORD, PhobosTrajectory::GroupData>>();
 
-			if (pTrajType->CreateCapacity <= static_cast<int>((*pFirerExt->TrajectoryGroup)[pBulletType].Bullets.size()))
+			if (pTrajType->CreateCapacity <= static_cast<int>((*pFirerExt->TrajectoryGroup)[pBulletType->UniqueID].Bullets.size()))
 				return TemporarilyCannotFire;
 		}
 	}

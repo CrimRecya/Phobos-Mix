@@ -20,26 +20,10 @@ BulletExt::ExtData::~ExtData()
 		{
 			if (const auto pMap = pTraj->TrajectoryGroup)
 			{
-				auto& vec = (*pMap)[this->TypeExtData->OwnerObject()].Bullets;
-				bool removed = false;
-
-				for (auto it = vec.begin(); it != vec.end(); )
-				{
-					const auto pGroupBullet = *it;
-
-					if (removed)
-					{
-						BulletExt::ExtMap.Find(pGroupBullet)->Trajectory->GroupIndex--;
-					}
-					else if (pGroupBullet == this->OwnerObject())
-					{
-						it = vec.erase(it);
-						removed = true;
-						continue;
-					}
-
-					++it;
-				}
+				auto& groupData = (*pMap)[this->TypeExtData->OwnerObject()->UniqueID];
+				auto& vec = groupData.Bullets;
+				vec.erase(std::remove(vec.begin(), vec.end(), this->OwnerObject()->UniqueID), vec.end());
+				groupData.ShouldUpdate = true;
 			}
 		}
 	}
