@@ -267,7 +267,7 @@ bool TracingTrajectory::ChangeVelocity()
 			}
 			else
 			{
-				auto& groupData = (*this->TrajectoryGroup)[pBullet->Type->UniqueID];
+				auto& groupData = (*this->TrajectoryGroup)[pBullet->Type];
 				// Valid group
 				if (const auto size = static_cast<int>(groupData.Bullets.size()))
 				{

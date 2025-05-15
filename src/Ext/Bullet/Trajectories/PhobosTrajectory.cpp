@@ -241,10 +241,10 @@ void PhobosTrajectory::OnUnlimbo()
 			const auto pFirerExt = TechnoExt::ExtMap.Find(pFirer);
 
 			if (!pFirerExt->TrajectoryGroup)
-				pFirerExt->TrajectoryGroup = std::make_shared<PhobosMap<DWORD, PhobosTrajectory::GroupData>>();
+				pFirerExt->TrajectoryGroup = std::make_shared<PhobosMap<BulletTypeClass*, PhobosTrajectory::GroupData>>();
 			// Get shared container
 			this->TrajectoryGroup = pFirerExt->TrajectoryGroup;
-			auto& group = (*this->TrajectoryGroup)[pBullet->Type->UniqueID].Bullets;
+			auto& group = (*this->TrajectoryGroup)[pBullet->Type].Bullets;
 			const auto size = static_cast<int>(group.size());
 			// Check trajectory capacity
 			if (size >= pType->CreateCapacity)
@@ -257,7 +257,7 @@ void PhobosTrajectory::OnUnlimbo()
 			{
 				// Increase trajectory count
 				this->GroupIndex = size;
-				group.push_back(pBullet->UniqueID);
+				group.push_back(pBullet);
 			}
 		}
 	}
@@ -285,9 +285,6 @@ bool PhobosTrajectory::OnEarlyUpdate()
 	// Check the remaining existence time
 	if (this->DurationTimer.Completed())
 		return true;
-	// Update group index for members by themselves
-	if (this->TrajectoryGroup)
-		this->UpdateGroupIndex();
 	// Check if the firer's target can be synchronized
 	if (this->CheckSynchronize())
 		return true;
@@ -798,37 +795,6 @@ bool PhobosTrajectory::CheckTolerantTime()
 	return false;
 }
 
-// Update trajectory capacity group index
-void PhobosTrajectory::UpdateGroupIndex()
-{
-	const auto pBullet = this->Bullet;
-	auto& groupData = (*this->TrajectoryGroup)[pBullet->Type->UniqueID];
-	// Should update group index
-	if (groupData.ShouldUpdate)
-	{
-		if (const auto size = static_cast<int>(groupData.Bullets.size()))
-		{
-			for (int i = 0; i < size; ++i)
-			{
-				if (groupData.Bullets[i] == pBullet->UniqueID)
-				{
-					this->GroupIndex = i;
-					break;
-				}
-			}
-			// If is the last member, reset flag to false
-			if (this->GroupIndex == size - 1)
-				groupData.ShouldUpdate = false;
-		}
-		else
-		{
-			groupData.ShouldUpdate = false;
-		}
-	}
-
-	return;
-}
-
 // =============================
 // load / save
 
@@ -1037,7 +1003,6 @@ bool PhobosTrajectory::GroupData::Serialize(T& stm)
 	return stm
 		.Process(this->Bullets)
 		.Process(this->Angle)
-		.Process(this->ShouldUpdate)
 		.Success();
 }
 
