@@ -11,6 +11,7 @@
 #include <AircraftTrackerClass.h>
 #include <InfantryClass.h>
 #include <UnitClass.h>
+#include <JumpjetLocomotionClass.h>
 
 #include <Ext/Techno/Body.h>
 #include <New/Entity/AttachmentClass.h>
@@ -26,26 +27,78 @@ bool AttachmentLocomotionClass::Is_Moving()
 	return pParentLoco && pParentLoco->Is_Moving();
 }
 
+namespace JumpjetTiltReference
+{
+	constexpr auto BaseSpeed = 32;
+	constexpr auto BaseTilt = Math::HalfPi / 4;
+	constexpr auto BaseTurnRaw = 32768;
+	constexpr auto MaxTilt = static_cast<float>(Math::HalfPi);
+	constexpr auto ForwardBaseTilt = BaseTilt / BaseSpeed;
+	constexpr auto SidewaysBaseTilt = BaseTilt / (BaseTurnRaw * BaseSpeed);
+}
+
 Matrix3D AttachmentLocomotionClass::Draw_Matrix(VoxelIndexKey* key)
 {
 	if (auto const pParentFoot = abstract_cast<FootClass*>(this->GetAttachmentParent()))
 	{
-		Matrix3D mtx = pParentFoot->Locomotor->Draw_Matrix(key);
+		const auto pChild = this->LinkedTo;
+		const auto pParentLoco = pParentFoot->Locomotor;
+		Matrix3D mtx = pParentLoco->Draw_Matrix(key);
 
 		// adjust for the real facing which is the source of truth for hor. rotation
-		double childRotation = this->LinkedTo->PrimaryFacing.Current().GetRadian<32>();
+		const auto childFace = pChild->PrimaryFacing.Current();
+		double childRotation = childFace.GetRadian<32>();
 		double parentRotation = pParentFoot->PrimaryFacing.Current().GetRadian<32>();
 		float adjustmentAngle = (float)(childRotation - parentRotation);
 
 		mtx.RotateZ(adjustmentAngle);
 
+		if (const auto pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(pParentLoco))
+		{
+			if (!TechnoTypeExt::ExtMap.Find(pParentFoot->GetTechnoType())->JumpjetTilt
+				&& std::abs(pParentFoot->AngleRotatedSideways) < 0.005
+				&& std::abs(pParentFoot->AngleRotatedForwards) < 0.005)
+			{
+				const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pChild->GetTechnoType());
+
+				if (pTypeExt->JumpjetTilt)
+				{
+					const auto forwardSpeedFactor = pJjLoco->CurrentSpeed * pTypeExt->JumpjetTilt_ForwardSpeedFactor;
+					const auto forwardAccelFactor = pJjLoco->Accel * pTypeExt->JumpjetTilt_ForwardAccelFactor;
+
+					const float arf = std::min(JumpjetTiltReference::MaxTilt, static_cast<float>((forwardAccelFactor + forwardSpeedFactor)
+						* JumpjetTiltReference::ForwardBaseTilt));
+
+					float ars = 0.0f;
+					const auto& locoFace = pJjLoco->LocomotionFacing;
+
+					if (locoFace.IsRotating())
+					{
+						const auto sidewaysSpeedFactor = pJjLoco->CurrentSpeed * pTypeExt->JumpjetTilt_SidewaysSpeedFactor;
+						const auto sidewaysRotationFactor = static_cast<short>(locoFace.Difference().Raw)
+							* pTypeExt->JumpjetTilt_SidewaysRotationFactor;
+
+						ars += Math::clamp(static_cast<float>(sidewaysSpeedFactor * sidewaysRotationFactor
+							* JumpjetTiltReference::SidewaysBaseTilt), -JumpjetTiltReference::MaxTilt, JumpjetTiltReference::MaxTilt);
+					}
+
+					if (std::abs(ars) >= 0.005 || std::abs(arf) >= 0.005)
+					{
+						if (key) key->Invalidate();
+						mtx.RotateX(ars);
+						mtx.RotateY(arf);
+					}
+				}
+			}
+		}
+
 		if (key && key->Is_Valid_Key())
-			key->MainVoxel.FrameIndex = this->LinkedTo->PrimaryFacing.Current().GetFacing<32>();
+			key->MainVoxel.FrameIndex = childFace.GetFacing<32>();
 
 		return mtx;
 	}
 
-	return LocomotionClass::Draw_Matrix(key);
+	return this->LocomotionClass::Draw_Matrix(key);
 }
 
 // Shadow drawing works acceptable as is. It draws separate units as normal.
@@ -53,6 +106,70 @@ Matrix3D AttachmentLocomotionClass::Draw_Matrix(VoxelIndexKey* key)
 // and draw them as a single one, but this needs calculating the extension
 // of the parent slope plane to calculate the correct offset for Shadow_Point,
 // complicated trigonometry that would be a waste of time at this point.
+
+Matrix3D AttachmentLocomotionClass::Shadow_Matrix(VoxelIndexKey* key)
+{
+	if (auto const pParentFoot = abstract_cast<FootClass*>(this->GetAttachmentParent()))
+	{
+		const auto pChild = this->LinkedTo;
+		const auto pParentLoco = pParentFoot->Locomotor;
+		Matrix3D mtx = pParentLoco->Shadow_Matrix(key);
+
+		// adjust for the real facing which is the source of truth for hor. rotation
+		const auto childFace = pChild->PrimaryFacing.Current();
+		double childRotation = childFace.GetRadian<32>();
+		double parentRotation = pParentFoot->PrimaryFacing.Current().GetRadian<32>();
+		float adjustmentAngle = (float)(childRotation - parentRotation);
+
+		mtx.RotateZ(adjustmentAngle);
+
+		if (const auto pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(pParentLoco))
+		{
+			if (!TechnoTypeExt::ExtMap.Find(pParentFoot->GetTechnoType())->JumpjetTilt
+				&& std::abs(pParentFoot->AngleRotatedSideways) < 0.005
+				&& std::abs(pParentFoot->AngleRotatedForwards) < 0.005)
+			{
+				const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pChild->GetTechnoType());
+
+				if (pTypeExt->JumpjetTilt)
+				{
+					const auto forwardSpeedFactor = pJjLoco->CurrentSpeed * pTypeExt->JumpjetTilt_ForwardSpeedFactor;
+					const auto forwardAccelFactor = pJjLoco->Accel * pTypeExt->JumpjetTilt_ForwardAccelFactor;
+
+					const float arf = std::min(JumpjetTiltReference::MaxTilt, static_cast<float>((forwardAccelFactor + forwardSpeedFactor)
+						* JumpjetTiltReference::ForwardBaseTilt));
+
+					float ars = 0.0f;
+					const auto& locoFace = pJjLoco->LocomotionFacing;
+
+					if (locoFace.IsRotating())
+					{
+						const auto sidewaysSpeedFactor = pJjLoco->CurrentSpeed * pTypeExt->JumpjetTilt_SidewaysSpeedFactor;
+						const auto sidewaysRotationFactor = static_cast<short>(locoFace.Difference().Raw)
+							* pTypeExt->JumpjetTilt_SidewaysRotationFactor;
+
+						ars += Math::clamp(static_cast<float>(sidewaysSpeedFactor * sidewaysRotationFactor
+							* JumpjetTiltReference::SidewaysBaseTilt), -JumpjetTiltReference::MaxTilt, JumpjetTiltReference::MaxTilt);
+					}
+
+					if (std::abs(ars) >= 0.005 || std::abs(arf) >= 0.005)
+					{
+						if (key) key->Invalidate();
+						mtx.RotateX(ars);
+						mtx.RotateY(arf);
+					}
+				}
+			}
+		}
+
+		if (key && key->Is_Valid_Key())
+			key->MainVoxel.FrameIndex = childFace.GetFacing<32>();
+
+		return mtx;
+	}
+
+	return this->LocomotionClass::Shadow_Matrix(key);
+}
 
 // If you want to work on this - Shadow_Matrix should be fine to copy from Draw_Matrix,
 // (even the key shenanigans can be left the same), butShadow_Point would need to be
@@ -63,7 +180,7 @@ Point2D AttachmentLocomotionClass::Draw_Point()
 	ILocomotionPtr pParentLoco = this->GetAttachmentParentLoco();
 	return pParentLoco
 		? pParentLoco->Draw_Point()
-		: LocomotionClass::Draw_Point();
+		: this->LocomotionClass::Draw_Point();
 }
 
 VisualType AttachmentLocomotionClass::Visual_Character(bool raw)
@@ -71,7 +188,7 @@ VisualType AttachmentLocomotionClass::Visual_Character(bool raw)
 	ILocomotionPtr pParentLoco = this->GetAttachmentParentLoco();
 	return pParentLoco
 		? pParentLoco->Visual_Character(raw)
-		: LocomotionClass::Visual_Character(raw);
+		: this->LocomotionClass::Visual_Character(raw);
 }
 
 int AttachmentLocomotionClass::Z_Adjust()
@@ -79,7 +196,7 @@ int AttachmentLocomotionClass::Z_Adjust()
 	ILocomotionPtr pParentLoco = this->GetAttachmentParentLoco();
 	return pParentLoco
 		? pParentLoco->Z_Adjust()
-		: LocomotionClass::Z_Adjust();
+		: this->LocomotionClass::Z_Adjust();
 }
 
 ZGradient AttachmentLocomotionClass::Z_Gradient()
@@ -87,7 +204,7 @@ ZGradient AttachmentLocomotionClass::Z_Gradient()
 	ILocomotionPtr pParentLoco = this->GetAttachmentParentLoco();
 	return pParentLoco
 		? pParentLoco->Z_Gradient()
-		: LocomotionClass::Z_Gradient();
+		: this->LocomotionClass::Z_Gradient();
 }
 
 bool AttachmentLocomotionClass::Process()
@@ -148,7 +265,7 @@ bool AttachmentLocomotionClass::Process()
 		this->LinkedTo->OnBridge = this->ShouldBeOnBridge();
 	}
 
-	return LocomotionClass::Process();
+	return this->LocomotionClass::Process();
 }
 
 // I am not sure this does anything and could probably be removed
@@ -164,7 +281,7 @@ bool AttachmentLocomotionClass::Is_Ion_Sensitive()
 	ILocomotionPtr pParentLoco = this->GetAttachmentParentLoco();
 	return pParentLoco
 		&& pParentLoco->Is_Ion_Sensitive()
-		|| LocomotionClass::Is_Ion_Sensitive();
+		|| this->LocomotionClass::Is_Ion_Sensitive();
 }
 
 Layer AttachmentLocomotionClass::In_Which_Layer()
@@ -190,7 +307,7 @@ int AttachmentLocomotionClass::Apparent_Speed()
 	ILocomotionPtr pParentLoco = this->GetAttachmentParentLoco();
 	return pParentLoco
 		? pParentLoco->Apparent_Speed()
-		: LocomotionClass::Apparent_Speed();
+		: this->LocomotionClass::Apparent_Speed();
 }
 
 FireError AttachmentLocomotionClass::Can_Fire()
@@ -198,7 +315,7 @@ FireError AttachmentLocomotionClass::Can_Fire()
 	ILocomotionPtr pParentLoco = this->GetAttachmentParentLoco();
 	return pParentLoco
 		? pParentLoco->Can_Fire()
-		: LocomotionClass::Can_Fire();
+		: this->LocomotionClass::Can_Fire();
 }
 
 int AttachmentLocomotionClass::Get_Status()
@@ -206,7 +323,7 @@ int AttachmentLocomotionClass::Get_Status()
 	ILocomotionPtr pParentLoco = this->GetAttachmentParentLoco();
 	return pParentLoco
 		? pParentLoco->Get_Status()
-		: LocomotionClass::Get_Status();
+		: this->LocomotionClass::Get_Status();
 }
 
 bool AttachmentLocomotionClass::Is_Surfacing()
@@ -214,7 +331,7 @@ bool AttachmentLocomotionClass::Is_Surfacing()
 	ILocomotionPtr pParentLoco = this->GetAttachmentParentLoco();
 	return pParentLoco
 		&& pParentLoco->Is_Surfacing()
-		|| LocomotionClass::Is_Surfacing();
+		|| this->LocomotionClass::Is_Surfacing();
 }
 
 bool AttachmentLocomotionClass::Is_Really_Moving_Now()
