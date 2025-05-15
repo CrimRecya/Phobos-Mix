@@ -9,6 +9,8 @@
 #include <Ext/WeaponType/Body.h>
 #include <Utilities/EnumFunctions.h>
 
+int WarheadTypeExt::HitDirection = -1;
+
 #pragma region Detonation
 
 DEFINE_HOOK(0x46920B, BulletClass_Detonate, 0x6)

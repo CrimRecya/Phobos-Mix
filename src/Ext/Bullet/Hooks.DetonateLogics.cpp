@@ -65,7 +65,7 @@ DEFINE_HOOK(0x469A69, BulletClass_Detonate_DamageArea, 0x6)
 				if ((flag != TrajectoryFlag::Engrave && flag != TrajectoryFlag::Tracing)
 					&& (pTraj->MovingVelocity.X != 0.0 || pTraj->MovingVelocity.Y != 0.0))
 				{
-					pWHExt->HitDirection = DirStruct((-1) * Math::atan2(pTraj->MovingVelocity.Y, pTraj->MovingVelocity.X)).GetValue<16>();
+					WarheadTypeExt::HitDirection = DirStruct((-1) * Math::atan2(pTraj->MovingVelocity.Y, pTraj->MovingVelocity.X)).GetValue<16>();
 					break;
 				}
 			}
@@ -75,18 +75,18 @@ DEFINE_HOOK(0x469A69, BulletClass_Detonate_DamageArea, 0x6)
 
 				if (delta.X != 0 || delta.Y != 0)
 				{
-					pWHExt->HitDirection = DirStruct(Math::atan2(static_cast<double>(delta.Y), static_cast<double>(delta.X))).GetValue<16>();
+					WarheadTypeExt::HitDirection = DirStruct(Math::atan2(static_cast<double>(delta.Y), static_cast<double>(delta.X))).GetValue<16>();
 					break;
 				}
 			}
 			else if (pThis->Velocity.X != 0.0 || pThis->Velocity.Y != 0.0)
 			{
-				pWHExt->HitDirection = DirStruct((-1) * Math::atan2(pThis->Velocity.Y, pThis->Velocity.X)).GetValue<16>();
+				WarheadTypeExt::HitDirection = DirStruct((-1) * Math::atan2(pThis->Velocity.Y, pThis->Velocity.X)).GetValue<16>();
 				break;
 			}
 		}
 
-		pWHExt->HitDirection = -1;
+		WarheadTypeExt::HitDirection = -1;
 	}
 	while (false);
 
@@ -130,7 +130,7 @@ DEFINE_HOOK(0x469A69, BulletClass_Detonate_DamageArea, 0x6)
 		R->EAX(MapClass::Instance.DamageArea(*coord, damage, pTechno, pWH, true, pHouse));
 	}
 
-	pWHExt->HitDirection = -1;
+	WarheadTypeExt::HitDirection = -1;
 
 	return SkipDamageArea;
 }
