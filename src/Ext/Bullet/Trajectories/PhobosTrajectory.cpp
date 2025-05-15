@@ -229,8 +229,9 @@ void PhobosTrajectory::OnUnlimbo()
 		const auto burst = pFirer->CurrentBurstIndex;
 		this->CurrentBurst = (burst & 1) ? (-burst - 1) : burst;
 		this->FirepowerMult = pFirer->FirepowerMultiplier * TechnoExt::ExtMap.Find(pFirer)->AE.FirepowerMultiplier;
+		const auto flag = this->Flag();
 		// Obtain the launch location
-		if (pType->RecordSourceCoord.Get(pType->DisperseWeapons.size() || this->Flag() == TrajectoryFlag::Engrave))
+		if (pType->RecordSourceCoord.Get(pType->DisperseWeapons.size() || flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing))
 			this->GetTechnoFLHCoord();
 		else
 			this->NotMainWeapon = true;
@@ -240,10 +241,10 @@ void PhobosTrajectory::OnUnlimbo()
 			const auto pFirerExt = TechnoExt::ExtMap.Find(pFirer);
 
 			if (!pFirerExt->TrajectoryGroup)
-				pFirerExt->TrajectoryGroup = std::make_shared<PhobosMap<DWORD, std::pair<std::vector<DWORD>, std::pair<double, bool>>>>();
+				pFirerExt->TrajectoryGroup = std::make_shared<PhobosMap<DWORD, PhobosTrajectory::GroupData>>();
 			// Get shared container
 			this->TrajectoryGroup = pFirerExt->TrajectoryGroup;
-			auto& group = (*this->TrajectoryGroup)[pBullet->Type->UniqueID].first;
+			auto& group = (*this->TrajectoryGroup)[pBullet->Type->UniqueID].Bullets;
 			const auto size = static_cast<int>(group.size());
 			// Check trajectory capacity
 			if (size >= pType->CreateCapacity)
@@ -755,7 +756,7 @@ bool PhobosTrajectory::CheckSynchronize()
 	const auto pBullet = this->Bullet;
 	const auto pType = this->GetType();
 	// Find the outermost transporter
-	const auto pFirer = GetSurfaceFirer(pBullet->Owner);
+	const auto pFirer = this->GetSurfaceFirer(pBullet->Owner);
 	// Synchronize to the target of the firer
 	if (pType->Synchronize && pFirer)
 	{
@@ -803,13 +804,13 @@ void PhobosTrajectory::UpdateGroupIndex()
 	const auto pBullet = this->Bullet;
 	auto& groupData = (*this->TrajectoryGroup)[pBullet->Type->UniqueID];
 	// Should update group index
-	if (groupData.second.second)
+	if (groupData.ShouldUpdate)
 	{
-		if (const auto size = static_cast<int>(groupData.first.size()))
+		if (const auto size = static_cast<int>(groupData.Bullets.size()))
 		{
 			for (int i = 0; i < size; ++i)
 			{
-				if (groupData.first[i] == pBullet->UniqueID)
+				if (groupData.Bullets[i] == pBullet->UniqueID)
 				{
 					this->GroupIndex = i;
 					break;
@@ -817,11 +818,11 @@ void PhobosTrajectory::UpdateGroupIndex()
 			}
 			// If is the last member, reset flag to false
 			if (this->GroupIndex == size - 1)
-				groupData.second.second = false;
+				groupData.ShouldUpdate = false;
 		}
 		else
 		{
-			groupData.second.second = false;
+			groupData.ShouldUpdate = false;
 		}
 	}
 
@@ -1018,6 +1019,26 @@ void PhobosTrajectory::Serialize(T& Stm)
 		.Process(this->DisperseCycle)
 		.Process(this->DisperseTimer)
 		;
+}
+
+bool PhobosTrajectory::GroupData::Load(PhobosStreamReader& stm, bool registerForChange)
+{
+	return this->Serialize(stm);
+}
+
+bool PhobosTrajectory::GroupData::Save(PhobosStreamWriter& stm) const
+{
+	return const_cast<PhobosTrajectory::GroupData*>(this)->Serialize(stm);
+}
+
+template <typename T>
+bool PhobosTrajectory::GroupData::Serialize(T& stm)
+{
+	return stm
+		.Process(this->Bullets)
+		.Process(this->Angle)
+		.Process(this->ShouldUpdate)
+		.Success();
 }
 
 // =============================

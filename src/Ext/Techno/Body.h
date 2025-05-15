@@ -6,6 +6,7 @@
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 #include <Utilities/Macro.h>
+#include <Ext/Bullet/Trajectories/PhobosTrajectory.h>
 #include <New/Entity/ShieldClass.h>
 #include <New/Entity/LaserTrailClass.h>
 #include <New/Entity/AttachEffectClass.h>
@@ -60,7 +61,7 @@ public:
 		CDTimerClass UnitAutoDeployTimer;
 		WeaponTypeClass* LastWeaponType;
 		CoordStruct LastWeaponFLH;
-		std::shared_ptr<PhobosMap<DWORD, std::pair<std::vector<DWORD>, std::pair<double, bool>>>> TrajectoryGroup;
+		std::shared_ptr<PhobosMap<DWORD, PhobosTrajectory::GroupData>> TrajectoryGroup;
 		std::vector<RecoilData> ExtraTurretRecoil;
 		std::vector<RecoilData> ExtraBarrelRecoil;
 		int ScatteringStopFrame;
