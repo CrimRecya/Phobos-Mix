@@ -12,24 +12,6 @@
 
 std::vector<AttachmentClass*> AttachmentClass::Array;
 
-AttachmentTypeClass* AttachmentClass::GetType()
-{
-	return AttachmentTypeClass::Array[this->Data->Type].get();
-}
-
-TechnoTypeClass* AttachmentClass::GetChildType()
-{
-	return this->Data->TechnoType.isset()
-		? TechnoTypeClass::Array.GetItem(this->Data->TechnoType)
-		: nullptr;
-}
-
-CoordStruct AttachmentClass::GetChildLocation()
-{
-	auto& flh = this->Data->FLH.Get();
-	return TechnoExt::GetFLHAbsoluteCoords(this->Parent, flh, this->Data->IsOnTurret);
-}
-
 AttachmentClass::~AttachmentClass()
 {
 	// clean up non-owning references

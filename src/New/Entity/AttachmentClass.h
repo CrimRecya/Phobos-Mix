@@ -40,9 +40,18 @@ public:
 
 	~AttachmentClass();
 
-	AttachmentTypeClass* GetType();
-	TechnoTypeClass* GetChildType();
-	CoordStruct GetChildLocation();
+	AttachmentTypeClass* GetType()
+	{
+		return AttachmentTypeClass::Array[this->Data->Type].get();
+	}
+	TechnoTypeClass* GetChildType()
+	{
+		return this->Data->TechnoType.isset() ? TechnoTypeClass::Array.GetItem(this->Data->TechnoType) : nullptr;
+	}
+	CoordStruct GetChildLocation()
+	{
+		return TechnoExt::GetFLHAbsoluteCoords(this->Parent, this->Data->FLH.Get(), this->Data->IsOnTurret);
+	}
 
 	void Initialize();
 	void CreateChild();

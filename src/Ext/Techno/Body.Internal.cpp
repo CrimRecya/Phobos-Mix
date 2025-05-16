@@ -67,12 +67,12 @@ Matrix3D TechnoExt::TransformFLHForTurret(TechnoClass* pThis, Matrix3D mtx, bool
 	return mtx;
 }
 
-Matrix3D TechnoExt::GetFLHMatrix(TechnoClass* pThis, CoordStruct pCoord, bool isOnTurret, double factor, bool isShadow, int turIdx)
+Matrix3D TechnoExt::GetFLHMatrix(TechnoClass* pThis, const CoordStruct& flh, bool isOnTurret, double factor, bool isShadow, int turIdx)
 {
 	Matrix3D transform = TechnoExt::GetTransform(pThis, nullptr, isShadow);
 	Matrix3D mtx = TechnoExt::TransformFLHForTurret(pThis, transform, isOnTurret, factor, turIdx);
 
-	CoordStruct scaledCoord = pCoord * factor;
+	CoordStruct scaledCoord = flh * factor;
 	// apply FLH offset
 	mtx.Translate((float)scaledCoord.X, (float)scaledCoord.Y, (float)scaledCoord.Z);
 
@@ -80,9 +80,9 @@ Matrix3D TechnoExt::GetFLHMatrix(TechnoClass* pThis, CoordStruct pCoord, bool is
 }
 
 // reversed from 6F3D60
-CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct pCoord, bool isOnTurret, int turIdx)
+CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, const CoordStruct& flh, bool isOnTurret, int turIdx)
 {
-	auto result = TechnoExt::GetFLHMatrix(pThis, pCoord, isOnTurret, 1.0, false, turIdx).GetTranslation();
+	auto result = TechnoExt::GetFLHMatrix(pThis, flh, isOnTurret, 1.0, false, turIdx).GetTranslation();
 
 	// apply as an offset to global object coords
 	// Resulting coords are mirrored along X axis, so we mirror it back
