@@ -962,16 +962,15 @@ bool TechnoExt::DetachFromParent(TechnoClass* pThis)
 	return pExt->ParentAttachment->DetachChild();
 }
 
-void TechnoExt::InitializeAttachments(TechnoClass* pThis)
+void TechnoExt::ExtData::InitializeAttachments()
 {
-	auto const pExt = TechnoExt::ExtMap.Find(pThis);
-	auto const pType = pThis->GetTechnoType();
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	auto& datas = this->TypeExtData->AttachmentData;
+	const auto pThis = this->OwnerObject();
 
-	for (auto& entry : pTypeExt->AttachmentData)
+	for (auto& entry : datas)
 	{
-		pExt->ChildAttachments.push_back(std::make_unique<AttachmentClass>(&entry, pThis, nullptr));
-		pExt->ChildAttachments.back()->Initialize();
+		this->ChildAttachments.emplace_back(std::make_unique<AttachmentClass>(&entry, pThis, nullptr));
+		this->ChildAttachments.back()->Initialize();
 	}
 }
 

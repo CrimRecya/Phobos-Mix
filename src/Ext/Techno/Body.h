@@ -208,6 +208,7 @@ public:
 		void UpdateRearmInTemporal();
 		void InitializeLaserTrails();
 		void InitializeAttachEffects();
+		void InitializeAttachments();
 		void UpdateSelfOwnedAttachEffects();
 		void RecordRecoilData();
 		void UpdateRecoilData();
@@ -306,7 +307,6 @@ public:
 	static bool AttachTo(TechnoClass* pThis, TechnoClass* pParent);
 	static bool DetachFromParent(TechnoClass* pThis);
 
-	static void InitializeAttachments(TechnoClass* pThis);
 	static void DestroyAttachments(TechnoClass* pThis, TechnoClass* pSource);
 	static void HandleDestructionAsChild(TechnoClass* pThis);
 	static void UnlimboAttachments(TechnoClass* pThis);

@@ -180,8 +180,6 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 {
 	GET(TechnoClass*, pThis, ESI);
 
-	TechnoExt::InitializeAttachments(pThis);
-
 	auto const pType = pThis->GetTechnoType();
 
 	if (!pType)
@@ -196,6 +194,7 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	pExt->InitializeDisplayInfo();
 	pExt->InitAggressiveStance();
 	pExt->InitializeRecoilData();
+	pExt->InitializeAttachments();
 
 	if (RulesExt::Global()->CheckExtraBaseNormal && pExt->TypeExtData->ExtraBaseNormal)
 		ScenarioExt::Global()->BaseNormalTechnos.push_back(pExt);
