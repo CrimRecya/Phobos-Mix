@@ -56,6 +56,7 @@ void TechnoExt::ExtData::OnEarlyUpdate()
 			this->AutoTargetedWallCell = nullptr;
 		}
 	}
+	this->UpdateTrackingLasers();
 }
 
 void TechnoExt::ExtData::ApplyInterceptor()
