@@ -40,14 +40,9 @@ public:
 
 	~AttachmentClass();
 
-	AttachmentTypeClass* GetType() const
-	{
-		return AttachmentTypeClass::Array[this->Data->Type].get();
-	}
-	TechnoTypeClass* GetChildType() const
-	{
-		return this->Data->TechnoType.isset() ? TechnoTypeClass::Array.GetItem(this->Data->TechnoType) : nullptr;
-	}
+	AttachmentTypeClass* GetType() const;
+	TechnoTypeClass* GetChildType() const;
+	CoordStruct GetChildLocation() const;
 
 	void Initialize();
 	void CreateChild();

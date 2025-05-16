@@ -12,6 +12,21 @@
 
 std::vector<AttachmentClass*> AttachmentClass::Array;
 
+AttachmentTypeClass* AttachmentClass::GetType() const
+{
+	return AttachmentTypeClass::Array[this->Data->Type].get();
+}
+
+TechnoTypeClass* AttachmentClass::GetChildType() const
+{
+	return this->Data->TechnoType.isset() ? TechnoTypeClass::Array.GetItem(this->Data->TechnoType) : nullptr;
+}
+
+CoordStruct AttachmentClass::GetChildLocation() const
+{
+	return TechnoExt::GetFLHAbsoluteCoords(this->Parent, this->Data->FLH.Get(), this->Data->IsOnTurret);
+}
+
 AttachmentClass::~AttachmentClass()
 {
 	// clean up non-owning references
@@ -86,7 +101,7 @@ void AttachmentClass::AI()
 		else if (!this->Child->InLimbo && this->Parent->InLimbo)
 			this->Limbo();
 
-		this->Child->SetLocation(TechnoExt::GetFLHAbsoluteCoords(this->Parent, this->Data->FLH.Get(), this->Data->IsOnTurret));
+		this->Child->SetLocation(this->GetChildLocation());
 
 		DirStruct childDir = this->Data->IsOnTurret
 			? this->Parent->SecondaryFacing.Current() : this->Parent->PrimaryFacing.Current();
@@ -171,16 +186,13 @@ void AttachmentClass::Unlimbo()
 {
 	if (this->Child)
 	{
-		CoordStruct childCoord = TechnoExt::GetFLHAbsoluteCoords(
-			this->Parent, this->Data->FLH, this->Data->IsOnTurret);
-
 		DirStruct childDir = this->Data->IsOnTurret
 			? this->Parent->SecondaryFacing.Current() : this->Parent->PrimaryFacing.Current();
 
 		childDir.Raw += DirStruct(this->Data->RotationAdjust).Raw; // overflow = free modulo for rotation
 
 		++Unsorted::ScenarioInit;
-		this->Child->Unlimbo(childCoord, childDir.GetDir());
+		this->Child->Unlimbo(this->GetChildLocation(), childDir.GetDir());
 		--Unsorted::ScenarioInit;
 	}
 }
