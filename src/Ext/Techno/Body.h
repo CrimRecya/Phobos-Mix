@@ -10,6 +10,7 @@
 #include <New/Entity/ShieldClass.h>
 #include <New/Entity/LaserTrailClass.h>
 #include <New/Entity/AttachEffectClass.h>
+#include <New/Entity/AttachmentClass.h>
 
 class BulletClass;
 
@@ -100,6 +101,12 @@ public:
 
 		AirstrikeClass* AirstrikeTargetingMe;
 
+		AttachmentClass* ParentAttachment;
+		std::vector<std::unique_ptr<AttachmentClass>> ChildAttachments;
+
+		// Ares
+		std::optional<bool> AltOccupation; // if the unit marks cell occupation flags, this is set to whether it uses the "high" occupation members
+
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
 			, Shield {}
@@ -169,6 +176,9 @@ public:
 			, BuildingOccupying { }
 			, TiberiumEater_Timer {}
 			, AirstrikeTargetingMe { nullptr }
+			, ParentAttachment { nullptr }
+			, ChildAttachments {}
+			, AltOccupation {}
 		{ }
 
 		void OnEarlyUpdate();
@@ -198,6 +208,7 @@ public:
 		void UpdateRearmInTemporal();
 		void InitializeLaserTrails();
 		void InitializeAttachEffects();
+		void InitializeAttachments();
 		void UpdateSelfOwnedAttachEffects();
 		void RecordRecoilData();
 		void UpdateRecoilData();
@@ -285,13 +296,34 @@ public:
 	static bool HasAvailableDock(TechnoClass* pThis);
 	static bool HasRadioLinkWithDock(TechnoClass* pThis);
 
-	static CoordStruct GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct flh, bool turretFLH = false, int turIdx = -1);
+	static Matrix3D GetTransform(TechnoClass* pThis, VoxelIndexKey* pKey = nullptr, bool isShadow = false);
+	static Matrix3D GetFLHMatrix(TechnoClass* pThis, const CoordStruct& flh, bool isOnTurret, double factor = 1.0, bool isShadow = false, int turIdx = -1);
+	static Matrix3D TransformFLHForTurret(TechnoClass* pThis, Matrix3D mtx, bool isOnTurret, double factor = 1.0, int turIdx = -1);
+	static CoordStruct GetFLHAbsoluteCoords(TechnoClass* pThis, const CoordStruct& flh, bool isOnTurret = false, int turIdx = -1);
 
 	static CoordStruct GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FLHFound);
 	static CoordStruct GetSimpleFLH(InfantryClass* pThis, int weaponIndex, bool& FLHFound);
 
+	static bool AttachTo(TechnoClass* pThis, TechnoClass* pParent);
+	static bool DetachFromParent(TechnoClass* pThis);
+
+	static void DestroyAttachments(TechnoClass* pThis, TechnoClass* pSource);
+	static void HandleDestructionAsChild(TechnoClass* pThis);
+	static void UnlimboAttachments(TechnoClass* pThis);
+	static void LimboAttachments(TechnoClass* pThis);
+	static void TransferAttachments(TechnoClass* pThis, TechnoClass* pThat);
+
+	static bool IsAttached(TechnoClass* pThis);
+	static bool HasAttachmentLoco(FootClass* pThis); // FIXME shouldn't be here
+	static bool DoesntOccupyCellAsChild(TechnoClass* pThis);
+	static bool IsChildOf(TechnoClass* pThis, TechnoClass* pParent, bool deep = true);
+	static bool AreRelatives(TechnoClass* pThis, TechnoClass* pThat);
+	static TechnoClass* GetTopLevelParent(TechnoClass* pThis);
+
 	static void ChangeOwnerMissionFix(FootClass* pThis);
 	static void KillSelf(TechnoClass* pThis, AutoDeathBehavior deathOption, AnimTypeClass* pVanishAnimation, bool isInLimbo = false);
+	static void Kill(TechnoClass* pThis, ObjectClass* pAttacker, HouseClass* pAttackingHouse);
+	static void Kill(TechnoClass* pThis, TechnoClass* pAttacker);
 	static void ObjectKilledBy(TechnoClass* pThis, TechnoClass* pKiller);
 	static void UpdateSharedAmmo(TechnoClass* pThis);
 	static double GetCurrentSpeedMultiplier(FootClass* pThis);

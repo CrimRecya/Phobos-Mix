@@ -235,7 +235,9 @@ using PhobosTypeRegistry = TypeRegistry <
 	AttachEffectTypeClass,
 	AttachEffectClass,
 	NewSWType,
-	SelectBoxTypeClass
+	SelectBoxTypeClass,
+	AttachmentClass,
+	AttachmentTypeClass
 	// other classes
 > ;
 
@@ -275,7 +277,7 @@ DEFINE_HOOK(0x67E826, LoadGame_Phobos, 0x6)
 
 std::unordered_map<void*, std::weak_ptr<void>> SavegameGlobal::GlobalSharedRegistry;
 
-DEFINE_HOOK(0x67F7C8, LoadGame_ClearShared, 0x5)
+DEFINE_HOOK(0x67F7C8, LoadGame_Phobos_End, 0x5)
 {
 	SavegameGlobal::ClearSharedRegistry();
 	return 0;

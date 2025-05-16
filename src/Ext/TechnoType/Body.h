@@ -1,7 +1,7 @@
 #pragma once
 #include <TechnoTypeClass.h>
 
-#include <Helpers/Macro.h>
+#include <Utilities/Macro.h>
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 #include <Utilities/Enum.h>
@@ -15,6 +15,8 @@
 #include <New/Type/SelectBoxTypeClass.h>
 #include <New/Type/Affiliated/DroppodTypeClass.h>
 #include <New/Type/Affiliated/TiberiumEaterTypeClass.h>
+#include <New/Type/Affiliated/CreateUnitTypeClass.h>
+#include <New/Type/AttachmentTypeClass.h>
 
 class Matrix3D;
 class ParticleSystemTypeClass;
@@ -474,6 +476,28 @@ public:
 		Valueable<bool> WreckageSwapLocomotor;
 
 		Nullable<AffectedHouse> RadarInvisibleToHouse;
+
+		Valueable<int> AttachmentTopLayerMinHeight;
+		Valueable<int> AttachmentUndergroundLayerMaxHeight;
+
+		struct AttachmentDataEntry
+		{
+			Valueable<size_t> DataIndex;
+			ValueableIdx<AttachmentTypeClass> Type;
+			NullableIdx<TechnoTypeClass> TechnoType;
+			Valueable<CoordStruct> FLH;
+			Valueable<bool> IsOnTurret;
+			Valueable<DirType> RotationAdjust;
+
+			bool Load(PhobosStreamReader& stm, bool registerForChange);
+			bool Save(PhobosStreamWriter& stm) const;
+
+		private:
+			template <typename T>
+			bool Serialize(T& stm);
+		};
+
+		ValueableVector<AttachmentDataEntry> AttachmentData;
 
 		struct LaserTrailDataEntry
 		{
@@ -981,6 +1005,10 @@ public:
 			, Overload_ParticleSys {}
 			, Overload_ParticleSysCount { 5 }
 
+			, AttachmentTopLayerMinHeight { RulesExt::Global()->AttachmentTopLayerMinHeight }
+			, AttachmentUndergroundLayerMaxHeight { RulesExt::Global()->AttachmentUndergroundLayerMaxHeight }
+			, AttachmentData {}
+
 			, Harvester_CanGuardArea { false }
 			, HarvesterScanAfterUnload {}
 
@@ -1032,11 +1060,10 @@ public:
 	static void ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor = 1.0, int turIdx = -1);
 	static TechnoTypeClass* GetTechnoType(ObjectTypeClass* pType);
 
-	static TechnoClass* CreateUnit(TechnoTypeClass* pType, CoordStruct location, DirType facing, DirType* secondaryFacing, HouseClass* pOwner,
-		TechnoClass* pInvoker = nullptr, HouseClass* pInvokerHouse = nullptr, AnimTypeClass* pSpawnAnimType = nullptr, int spawnHeight = -1,
-		bool alwaysOnGround = false, bool checkPathfinding = false, bool parachuteIfInAir = false, Mission mission = Mission::Guard, Mission* missionAI = nullptr);
+	static TechnoClass* CreateUnit(CreateUnitTypeClass* pCreateUnit, DirType facing, DirType* secondaryFacing,
+	CoordStruct location, HouseClass* pOwner, TechnoClass* pInvoker, HouseClass* pInvokerHouse);
 
-	static int __fastcall RequirementsMetExtraCheck(void* pAresHouseExt, void* _, TechnoTypeClass* pType);
+	static int __fastcall RequirementsMetExtraCheck(void* pAresHouseExt, discard_t _, TechnoTypeClass* pType);
 	static CanBuildResult CheckAlwaysExistCameo(TechnoTypeClass* pType, CanBuildResult canBuild);
 
 	// Ares 0.A

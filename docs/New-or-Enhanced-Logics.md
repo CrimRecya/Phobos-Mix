@@ -174,6 +174,59 @@ SuppressReflectDamage.Types=                       ; List of AttachEffectTypes
 SuppressReflectDamage.Groups=                      ; comma-separated list of strings (group IDs)
 ```
 
+### Attachments
+
+![Unit Attachment](your image here)
+*Attachments used in [mod name](link)*
+
+```{warning}
+This feature is not final and is under development.
+```
+
+- Technos now can be attached one to another in a tree like way. The attached units won't process any locomotion code and act like a part of a parent unit in a configurable.
+  - Currently the attached techno may only be a vehicle.
+  - When attached, the special `Attachment` (`{C5D54B98-8C98-4275-8CE4-EF75CB0CBE3E}`) locomotor is automatically casted on a unit. You may also specify it in the child unit types manually if the unit is not intended to move without a parent (f. ex. a turret).
+
+In `rulesmd.ini`:
+```ini
+[AttachmentTypes]
+0=MNT                                     ; (example)
+
+[MNT]
+RespawnAtCreation=true                    ; boolean
+RespawnDelay=-1                           ; integer, non-negative values enable the respawn timer
+InheritOwner=true                         ; boolean, whether the child inherits owner of the parent while it's attached
+InheritStateEffects=true                  ; boolean (state effects = chaos, iron curtain etc.)
+InheritCommands=true                      ; boolean
+InheritCommands.StopCommand=true          ; boolean
+InheritCommands.DeployCommand=true        ; boolean
+LowSelectionPriority=true                 ; boolean, whether the child is low priority while attached
+TransparentToMouse=false                  ; boolean, can't click on attached techno if set
+YSortPosition=default                     ; Attachment YSort position enumeration - default|underparent|overparent
+InheritDestruction=true                   ; boolean
+InheritHeightStatus=true                  ; boolean, whether the layer and InAir/OnGround/IsSurfaced inherited from parent
+OccupiesCell=true                         ; boolean
+DestructionWeapon.Child=                  ; WeaponType, detonated on child when parent is destroyed
+DestructionWeapon.Parent=                 ; WeaponType, detonated on parent when child is destroyed
+ParentDestructionMission=                 ; MissionType, queued to child when parent is destroyed
+ParentDetachmentMission=                  ; MissionType, queued to child when it's detached from parent
+
+[SOMETECHNO]                              ; TechnoType
+; used when this techno is attached
+AttachmentTopLayerMinHeight=              ; integer
+AttachmentUndergroundLayerMaxHeight=      ; integer
+; used for attaching other technos
+AttachmentX.Type=MNT                      ; AttachmentType (example)
+AttachmentX.TechnoType=                   ; TechnoType that can be attached, currently only units are supported
+AttachmentX.FLH=0,0,0                     ; integer - Forward, Lateral, Height
+AttachmentX.IsOnTurret=false              ; boolean
+AttachmentX.RotationAdjust=0              ; rotation in DirType, from -255 to 255
+
+[General]
+AttachmentTopLayerMinHeight=500           ; integer
+AttachmentUndergroundLayerMaxHeight=-256  ; integer
+```
+
 ### Custom Radiation Types
 
 ![image](_static/images/radtype-01.png)
@@ -455,7 +508,7 @@ Shield.InheritStateOnReplace=false          ; boolean
 ![image](_static/images/animToUnit.gif)
 
 - Animations can now create (or "convert" to) any unit (vehicles, aircraft and infantry) when they end via `CreateUnit`. This offers more settings than `MakeInfantry` does for infantry.
-  - `CreateUnit.Owner` determines which house will own the created unit. This only works as expected if the animation has owner set.
+  - `CreateUnit.Owner` determines which house will own the created unit. This only works as expected if the animation has owner set. If there is no owner or the owner house has been defeated, the created unit will be owned by first house from Civilian side unless `CreateUnit.RequireOwner` is set to true in which case no unit will be created.
     - Vehicle [destroy animations](Fixed-or-Improved-Logics.md#destroy-animations), animations from Warhead `AnimList/SplashList` and map trigger action `41 Play Anim At` will have the owner set correctly.
     - `CreateUnit.RemapAnim`, if set to true, will cause the animation to be drawn in unit palette and remappable to owner's team color.
   - `CreateUnit.Mission` determines the initial mission of the created unit. This can be overridden for AI players by setting `CreateUnit.AIMission`.
@@ -473,6 +526,7 @@ In `artmd.ini`:
 [SOMEANIM]                             ; AnimationType
 CreateUnit=                            ; TechnoType
 CreateUnit.Owner=Victim                ; Owner house kind, Invoker/Killer/Victim/Civilian/Special/Neutral/Random
+CreateUnit.RequireOwner=false          ; boolean
 CreateUnit.RemapAnim=false             ; boolean
 CreateUnit.Mission=Guard               ; MissionType
 CreateUnit.AIMission=                  ; MissionType

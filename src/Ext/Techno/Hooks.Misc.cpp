@@ -805,7 +805,7 @@ DEFINE_HOOK(0x51B20E, InfantryClass_AssignTarget_FireOnce, 0x6)
 }
 
 // Update attached anim layers after parent unit changes layer.
-void __fastcall DisplayClass_Submit_Wrapper(DisplayClass* pThis, void* _, ObjectClass* pObject)
+void __fastcall DisplayClass_Submit_Wrapper(DisplayClass* pThis, discard_t _, ObjectClass* pObject)
 {
 	pThis->Submit(pObject);
 

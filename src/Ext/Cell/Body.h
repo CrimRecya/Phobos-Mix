@@ -1,4 +1,5 @@
 #pragma once
+
 #include <CellClass.h>
 
 #include <Utilities/Container.h>
@@ -36,15 +37,34 @@ public:
 		std::vector<RadSiteClass*> RadSites {};
 		std::vector<RadLevel> RadLevels { };
 
+		UnitClass* IncomingUnit;
+		UnitClass* IncomingUnitAlt;
+
 		ExtData(CellClass* OwnerObject) : Extension<CellClass>(OwnerObject)
+			, IncomingUnit()
+			, IncomingUnitAlt()
 		{ }
 
 		virtual ~ExtData() = default;
 
-		virtual void InvalidatePointer(void* ptr, bool removed) override;
+		virtual void InvalidatePointer(void* ptr, bool bRemoved) override
+		{
+			if (ptr == static_cast<void*>(this->IncomingUnit))
+			{
+				this->OwnerObject()->OccupationFlags &= ~0x20;
+				this->IncomingUnit = nullptr;
+			}
+
+			if (ptr == static_cast<void*>(this->IncomingUnitAlt))
+			{
+				this->OwnerObject()->AltOccupationFlags &= ~0x20;
+				this->IncomingUnitAlt = nullptr;
+			}
+		}
 
 		virtual void LoadFromStream(PhobosStreamReader& Stm) override;
 		virtual void SaveToStream(PhobosStreamWriter& Stm) override;
+		virtual void Initialize() override;
 
 	private:
 		template <typename T>
@@ -57,7 +77,18 @@ public:
 		ExtContainer();
 		~ExtContainer();
 
-		virtual bool InvalidateExtDataIgnorable(void* const ptr) const override;
+		virtual bool InvalidateExtDataIgnorable(void* const ptr) const override
+		{
+			auto const abs = static_cast<AbstractClass*>(ptr)->WhatAmI();
+
+			switch (abs)
+			{
+			case AbstractType::Unit:
+				return false;
+			default:
+				return true;
+			}
+		}
 	};
 
 	static ExtContainer ExtMap;
