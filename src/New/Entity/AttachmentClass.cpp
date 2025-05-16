@@ -222,12 +222,9 @@ bool AttachmentClass::AttachChild(TechnoClass* pChild)
 		if (IPersistPtr pLocoPersist = pChildAsFoot->Locomotor)
 		{
 			CLSID locoCLSID { };
-			if (SUCCEEDED(pLocoPersist->GetClassID(&locoCLSID))
-				&& locoCLSID != __uuidof(AttachmentLocomotionClass))
-			{
-				LocomotionClass::ChangeLocomotorTo(pChildAsFoot,
-					__uuidof(AttachmentLocomotionClass));
-			}
+
+			if (SUCCEEDED(pLocoPersist->GetClassID(&locoCLSID)) && locoCLSID != __uuidof(AttachmentLocomotionClass))
+				LocomotionClass::ChangeLocomotorTo(pChildAsFoot, __uuidof(AttachmentLocomotionClass));
 		}
 	}
 

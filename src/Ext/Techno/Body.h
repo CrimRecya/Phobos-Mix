@@ -176,7 +176,7 @@ public:
 			, BuildingOccupying { }
 			, TiberiumEater_Timer {}
 			, AirstrikeTargetingMe { nullptr }
-			, ParentAttachment {}
+			, ParentAttachment { nullptr }
 			, ChildAttachments {}
 			, AltOccupation {}
 		{ }
