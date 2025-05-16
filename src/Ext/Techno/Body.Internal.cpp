@@ -36,7 +36,7 @@ void TechnoExt::ObjectKilledBy(TechnoClass* pVictim, TechnoClass* pKiller)
 }
 
 // reversed from 6F3D60
-CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct pCoord, bool isOnTurret, int turIdx)
+CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, const CoordStruct& flh, bool isOnTurret, int turIdx)
 {
 	auto const pType = pThis->GetTechnoType();
 	auto const pFoot = abstract_cast<FootClass*, true>(pThis);
@@ -61,7 +61,7 @@ CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct pCoo
 	}
 
 	// Step 4: apply FLH offset
-	mtx.Translate((float)pCoord.X, (float)pCoord.Y, (float)pCoord.Z);
+	mtx.Translate((float)flh.X, (float)flh.Y, (float)flh.Z);
 
 	auto result = mtx.GetTranslation();
 
