@@ -352,6 +352,9 @@ public:
 
 		Valueable<double> WreckageInitialHealthPercent;
 
+		Valueable<int> AttachmentTopLayerMinHeight;
+		Valueable<int> AttachmentUndergroundLayerMaxHeight;
+
 		Valueable<bool> HarvesterScanAfterUnload;
 
 		Valueable<bool> BalloonHoverPathingFix;
@@ -647,6 +650,9 @@ public:
 			, DamagedSpeed { 0.75 }
 
 			, WreckageInitialHealthPercent { 0.1 }
+
+			, AttachmentTopLayerMinHeight { 500 }
+			, AttachmentUndergroundLayerMaxHeight { -256 }
 
 			, HarvesterScanAfterUnload { false }
 			

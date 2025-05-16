@@ -317,7 +317,9 @@ void TechnoTypeExt::ExtData::SetTurretLimitedDir(FootClass* pThis, DirStruct des
 	auto bodyRaw = static_cast<short>(bodyDir.Raw);
 	auto desiredDifference = static_cast<short>(desiredRaw - bodyRaw);
 	// Beyond the rotation range of the turret, the body rotates first
-	if ((desiredDifference < -restrictRaw || desiredDifference > restrictRaw) && !pThis->Destination && !pThis->Locomotor->Is_Moving())
+	if ((desiredDifference < -restrictRaw || desiredDifference > restrictRaw)
+		&& !pThis->Destination && !pThis->Locomotor->Is_Moving()
+		&& (!TechnoExt::ExtMap.Find(pThis)->ParentAttachment || !TechnoExt::HasAttachmentLoco(pThis)))
 	{
 		pBody->SetDesired(this->Turret_BodyOrientation ? this->GetBodyDesiredDir(currentDir, desiredDir) : desiredDir);
 		// Once rotation begins, data needs to be updated to avoid delays
@@ -394,7 +396,7 @@ DirStruct TechnoTypeExt::ExtData::GetBodyDesiredDir(DirStruct currentDir, DirStr
 	return (std::abs(rightDifference) < std::abs(leftDifference)) ? rightDir : leftDir;
 }
 
-int __fastcall TechnoTypeExt::RequirementsMetExtraCheck(void* pAresHouseExt, void* _, TechnoTypeClass* pType)
+int __fastcall TechnoTypeExt::RequirementsMetExtraCheck(void* pAresHouseExt, discard_t _, TechnoTypeClass* pType)
 {
 	// Only with Ares will call this function, so skip sanity check.
 	const auto result = AresFunctions::RequirementsMet(pAresHouseExt, pType);
@@ -508,6 +510,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	if (!pINI->GetSection(pSection))
 		return;
 
+	char tempBuffer[32];
 	INI_EX exINI(pINI);
 
 	this->HealthBar_Hide.Read(exINI, pSection, "HealthBar.Hide");
@@ -625,6 +628,52 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->AggressiveStance_Togglable.Read(exINI, pSection, "AggressiveStance.Togglable");
 	this->VoiceEnterAggressiveStance.Read(exINI, pSection, "VoiceEnterAggressiveStance");
 	this->VoiceExitAggressiveStance.Read(exINI, pSection, "VoiceExitAggressiveStance");
+
+	this->AttachmentTopLayerMinHeight.Read(exINI, pSection, "AttachmentTopLayerMinHeight");
+	this->AttachmentUndergroundLayerMaxHeight.Read(exINI, pSection, "AttachmentUndergroundLayerMaxHeight");
+
+	// The following loop iterates over size + 1 INI entries so that the
+	// vector contents can be properly overriden via scenario rules - Kerbiter
+	for (size_t i = 0; i <= this->AttachmentData.size(); ++i)
+	{
+		NullableIdx<AttachmentTypeClass> type;
+		_snprintf_s(tempBuffer, sizeof(tempBuffer), "Attachment%d.Type", i);
+		type.Read(exINI, pSection, tempBuffer);
+
+		if (!type.isset())
+			continue;
+
+		NullableIdx<TechnoTypeClass> technoType;
+		_snprintf_s(tempBuffer, sizeof(tempBuffer), "Attachment%d.TechnoType", i);
+		technoType.Read(exINI, pSection, tempBuffer);
+
+		Valueable<CoordStruct> flh;
+		_snprintf_s(tempBuffer, sizeof(tempBuffer), "Attachment%d.FLH", i);
+		flh.Read(exINI, pSection, tempBuffer);
+
+		Valueable<bool> isOnTurret;
+		_snprintf_s(tempBuffer, sizeof(tempBuffer), "Attachment%d.IsOnTurret", i);
+		isOnTurret.Read(exINI, pSection, tempBuffer);
+
+		Valueable<DirType> rotationAdjust;
+		_snprintf_s(tempBuffer, sizeof(tempBuffer), "Attachment%d.RotationAdjust", i);
+		rotationAdjust.Read(exINI, pSection, tempBuffer);
+
+		AttachmentDataEntry const entry
+		{
+			Valueable<size_t>(i),
+			ValueableIdx<AttachmentTypeClass>(type),
+			technoType,
+			flh,
+			isOnTurret,
+			rotationAdjust
+		};
+
+		if (i == AttachmentData.size())
+			this->AttachmentData.push_back(entry);
+		else
+			this->AttachmentData[i] = entry;
+	}
 
 	this->NoSecondaryWeaponFallback.Read(exINI, pSection, "NoSecondaryWeaponFallback");
 	this->NoSecondaryWeaponFallback_AllowAA.Read(exINI, pSection, "NoSecondaryWeaponFallback.AllowAA");
@@ -966,8 +1015,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	// Ares 3.0
 	this->KeepAlive.Read(exINI, pSection, "KeepAlive");
-
-	char tempBuffer[32];
 
 	if (this->OwnerObject()->Gunner)
 	{
@@ -1329,8 +1376,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->OreGathering_Anims)
 		.Process(this->OreGathering_Tiberiums)
 		.Process(this->OreGathering_FramesPerDir)
-		.Process(this->LaserTrailData)
 		.Process(this->DestroyAnim_Random)
+		.Process(this->LaserTrailData)
 		.Process(this->NotHuman_RandomDeathSequence)
 		.Process(this->DefaultDisguise)
 		.Process(this->UseDisguiseMovementSpeed)
@@ -1700,6 +1747,10 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Overload_ParticleSys)
 		.Process(this->Overload_ParticleSysCount)
 
+		.Process(this->AttachmentTopLayerMinHeight)
+		.Process(this->AttachmentUndergroundLayerMaxHeight)
+		.Process(this->AttachmentData)
+
 		.Process(this->Harvester_CanGuardArea)
 		.Process(this->HarvesterScanAfterUnload)
 
@@ -1723,6 +1774,33 @@ void TechnoTypeExt::ExtData::SaveToStream(PhobosStreamWriter& Stm)
 	Extension<TechnoTypeClass>::SaveToStream(Stm);
 	this->Serialize(Stm);
 }
+
+#pragma region Data entry save/load
+
+bool TechnoTypeExt::ExtData::AttachmentDataEntry::Load(PhobosStreamReader& stm, bool registerForChange)
+{
+	return this->Serialize(stm);
+}
+
+bool TechnoTypeExt::ExtData::AttachmentDataEntry::Save(PhobosStreamWriter& stm) const
+{
+	return const_cast<AttachmentDataEntry*>(this)->Serialize(stm);
+}
+
+template <typename T>
+bool TechnoTypeExt::ExtData::AttachmentDataEntry::Serialize(T& stm)
+{
+	return stm
+		.Process(this->DataIndex)
+		.Process(this->Type)
+		.Process(this->TechnoType)
+		.Process(this->FLH)
+		.Process(this->IsOnTurret)
+		.Process(this->RotationAdjust)
+		.Success();
+}
+
+#pragma endregion
 
 // =============================
 // container

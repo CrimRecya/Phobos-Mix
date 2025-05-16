@@ -11,6 +11,7 @@
 #include <New/Type/AttachEffectTypeClass.h>
 #include <New/Type/InsigniaTypeClass.h>
 #include <New/Type/SelectBoxTypeClass.h>
+#include <New/Type/AttachmentTypeClass.h>
 #include <Utilities/Patch.h>
 
 std::unique_ptr<RulesExt::ExtData> RulesExt::Data = nullptr;
@@ -38,6 +39,7 @@ void RulesExt::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	ShieldTypeClass::LoadFromINIList(pINI);
 	LaserTrailTypeClass::LoadFromINIList(&CCINIClass::INI_Art);
 	AttachEffectTypeClass::LoadFromINIList(pINI);
+	AttachmentTypeClass::LoadFromINIList(pINI);
 	InsigniaTypeClass::LoadFromINIList(pINI);
 
 	Data->LoadBeforeTypeData(pThis, pINI);
@@ -410,6 +412,9 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->WreckageInitialHealthPercent.Read(exINI, GameStrings::General, "WreckageInitialHealthPercent");
 
+	this->AttachmentTopLayerMinHeight.Read(exINI, GameStrings::General, "AttachmentTopLayerMinHeight");
+	this->AttachmentUndergroundLayerMaxHeight.Read(exINI, GameStrings::General, "AttachmentUndergroundLayerMaxHeight");
+
 	this->HarvesterScanAfterUnload.Read(exINI, GameStrings::General, "HarvesterScanAfterUnload");
 
 	this->BalloonHoverPathingFix.Read(exINI, GameStrings::General, "BalloonHoverPathingFix");
@@ -756,6 +761,8 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->ProneSpeed_NoCrawls)
 		.Process(this->DamagedSpeed)
 		.Process(this->WreckageInitialHealthPercent)
+		.Process(this->AttachmentTopLayerMinHeight)
+		.Process(this->AttachmentUndergroundLayerMaxHeight)
 		.Process(this->HarvesterScanAfterUnload)
 		.Process(this->BalloonHoverPathingFix)
 		;

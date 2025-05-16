@@ -24,7 +24,8 @@ DEFINE_HOOK(0x7369D6, UnitClass_UpdateRotation_StopUnitIdleAction, 0xA)
 
 		if (pWeapon && (!pWeapon->OmniFire || (pWeaponTypeExt && pWeaponTypeExt->OmniFire_TurnToTarget)))
 		{
-			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type);
+			const auto pExt = TechnoExt::ExtMap.Find(pThis);
+			const auto pTypeExt = pExt->TypeExtData;
 
 			if (pWeaponStruct->TurretLocked)
 			{
@@ -34,7 +35,8 @@ DEFINE_HOOK(0x7369D6, UnitClass_UpdateRotation_StopUnitIdleAction, 0xA)
 			{
 				const auto targetDir = pThis->GetTargetDirection(pThis->Target);
 
-				if (pTypeExt->Turret_BodyOrientation && !pThis->Destination && !pThis->Locomotor->Is_Moving())
+				if (pTypeExt->Turret_BodyOrientation && !pThis->Destination && !pThis->Locomotor->Is_Moving()
+					&& (!pExt->ParentAttachment || !TechnoExt::HasAttachmentLoco(pThis)))
 				{
 					const auto curDir = pThis->PrimaryFacing.Current();
 					const auto tgtDir = pTypeExt->GetBodyDesiredDir(curDir, targetDir);

@@ -6,6 +6,8 @@
 
 CellExt::ExtContainer CellExt::ExtMap;
 
+void CellExt::ExtData::Initialize() { }
+
 // =============================
 // load / save
 
@@ -15,6 +17,8 @@ void CellExt::ExtData::Serialize(T& Stm)
 	Stm
 		.Process(this->RadSites)
 		.Process(this->RadLevels)
+		.Process(this->IncomingUnit)
+		.Process(this->IncomingUnitAlt)
 		;
 }
 
@@ -29,9 +33,6 @@ void CellExt::ExtData::SaveToStream(PhobosStreamWriter& Stm)
 	Extension<CellClass>::SaveToStream(Stm);
 	this->Serialize(Stm);
 }
-
-void CellExt::ExtData::InvalidatePointer(void* ptr, bool removed)
-{ }
 
 bool CellExt::RadLevel::Load(PhobosStreamReader& stm, bool registerForChange)
 {
@@ -57,11 +58,6 @@ bool CellExt::RadLevel::Serialize(T& stm)
 
 CellExt::ExtContainer::ExtContainer() : Container("CellClass") { }
 CellExt::ExtContainer::~ExtContainer() = default;
-
-bool CellExt::ExtContainer::InvalidateExtDataIgnorable(void* const ptr) const
-{
-	return true;
-}
 
 // =============================
 // container hooks
@@ -95,7 +91,7 @@ DEFINE_HOOK(0x4839F0, CellClass_SaveLoad_Prefix, 0x7)
 	return 0;
 }
 
-DEFINE_HOOK(0x483C00, CellClass_Load_Suffix, 5)
+DEFINE_HOOK(0x483C00, CellClass_Load_Suffix, 0x5)
 {
 	CellExt::ExtMap.LoadStatic();
 	return 0;

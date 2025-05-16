@@ -194,6 +194,7 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	pExt->InitializeDisplayInfo();
 	pExt->InitAggressiveStance();
 	pExt->InitializeRecoilData();
+	pExt->InitializeAttachments();
 
 	if (RulesExt::Global()->CheckExtraBaseNormal && pExt->TypeExtData->ExtraBaseNormal)
 		ScenarioExt::Global()->BaseNormalTechnos.push_back(pExt);
@@ -441,7 +442,7 @@ DEFINE_HOOK(0x6FE352, TechnoClass_FirepowerMultiplier, 0x8)       // TechnoClass
 
 #pragma region Disguise
 
-bool __fastcall IsAlly_Wrapper(HouseClass* pTechnoOwner, void* _, HouseClass* pCurrentPlayer)
+bool __fastcall IsAlly_Wrapper(HouseClass* pTechnoOwner, discard_t _, HouseClass* pCurrentPlayer)
 {
 	return pCurrentPlayer->IsObserver() || pTechnoOwner->IsAlliedWith(pCurrentPlayer) || (RulesExt::Global()->DisguiseBlinkingVisibility & AffectedHouse::Enemies) != AffectedHouse::None;
 }

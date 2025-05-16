@@ -248,7 +248,7 @@ DEFINE_HOOK(0x418B8A, AircraftClass_Mission_Attack_Delay5, 0x6)
 
 #pragma endregion
 
-void __fastcall AircraftClass_SetTarget_Wrapper(AircraftClass* pThis, void* _, AbstractClass* pTarget)
+void __fastcall AircraftClass_SetTarget_Wrapper(AircraftClass* pThis, discard_t _, AbstractClass* pTarget)
 {
 	pThis->TechnoClass::SetTarget(pTarget);
 	TechnoExt::ExtMap.Find(pThis)->CurrentAircraftWeaponIndex = -1;
@@ -697,7 +697,7 @@ DEFINE_HOOK(0x414D4D, AircraftClass_Update_ClearTargetIfNoAmmo, 0x6)
 // (StopEventFix's DEFINE_HOOK(0x4C75DA, EventClass_RespondToEvent_Stop, 0x6) in Hooks.BugFixes.cpp)
 
 // GreatestThreat: for all the mission that should let the aircraft auto select a target
-AbstractClass* __fastcall AircraftClass_GreatestThreat(AircraftClass* pThis, void* _, ThreatType threatType, CoordStruct* pSelectCoords, bool onlyTargetHouseEnemy)
+AbstractClass* __fastcall AircraftClass_GreatestThreat(AircraftClass* pThis, discard_t _, ThreatType threatType, CoordStruct* pSelectCoords, bool onlyTargetHouseEnemy)
 {
 	if (RulesExt::Global()->ExtendedAircraftMissions && !pThis->Team && pThis->Ammo && !pThis->Airstrike && !pThis->Spawned)
 	{
