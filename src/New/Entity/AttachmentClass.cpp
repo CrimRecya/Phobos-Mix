@@ -14,7 +14,7 @@ std::vector<AttachmentClass*> AttachmentClass::Array;
 
 AttachmentTypeClass* AttachmentClass::GetType() const
 {
-	return AttachmentTypeClass::Array[this->Data->Type].get();
+	return this->Type;
 }
 
 TechnoTypeClass* AttachmentClass::GetChildType() const
@@ -49,6 +49,23 @@ void AttachmentClass::Initialize()
 
 	if (this->GetType()->RespawnAtCreation)
 		this->CreateChild();
+}
+
+void AttachmentClass::LinkDataAfterLoad()
+{
+	if (!this->Data) // techno load before technotype, so this can not be loaded at first, reload here
+	{
+		auto& datas = TechnoExt::ExtMap.Find(this->Parent)->TypeExtData->AttachmentData;
+
+		for (auto& entry : datas)
+		{
+			if (entry.DataIndex == this->DataIndex)
+			{
+				this->Data = &entry;
+				break;
+			}
+		}
+	}
 }
 
 void AttachmentClass::CreateChild()
@@ -283,6 +300,8 @@ bool AttachmentClass::Serialize(T& stm)
 {
 	return stm
 		.Process(this->Data)
+		.Process(this->DataIndex)
+		.Process(this->Type)
 		.Process(this->Parent)
 		.Process(this->Child)
 		.Process(this->RespawnTimer)

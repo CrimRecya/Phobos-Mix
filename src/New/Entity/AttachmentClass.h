@@ -15,13 +15,17 @@ public:
 	static std::vector<AttachmentClass*> Array;
 
 	TechnoTypeExt::ExtData::AttachmentDataEntry* Data;
+	size_t DataIndex; // For save/load fix
+	AttachmentTypeClass* Type; // Quick get type
 	TechnoClass* Parent;
 	TechnoClass* Child;
 	CDTimerClass RespawnTimer;
 
-	AttachmentClass(TechnoTypeExt::ExtData::AttachmentDataEntry* data,
+	AttachmentClass(TechnoTypeExt::ExtData::AttachmentDataEntry* pData,
 		TechnoClass* pParent, TechnoClass* pChild = nullptr) :
-		Data { data },
+		Data { pData },
+		DataIndex { pData->DataIndex },
+		Type { AttachmentTypeClass::Array[pData->Type].get() },
 		Parent { pParent },
 		Child { pChild },
 		RespawnTimer { }
@@ -31,6 +35,8 @@ public:
 
 	AttachmentClass() :
 		Data { },
+		DataIndex { },
+		Type { },
 		Parent { },
 		Child { },
 		RespawnTimer { }
@@ -45,6 +51,8 @@ public:
 	CoordStruct GetChildLocation() const;
 
 	void Initialize();
+	void LinkDataAfterLoad();
+
 	void CreateChild();
 	void AI();
 	void Destroy(TechnoClass* pSource);

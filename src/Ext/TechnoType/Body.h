@@ -481,6 +481,7 @@ public:
 
 		struct AttachmentDataEntry
 		{
+			Valueable<size_t> DataIndex;
 			ValueableIdx<AttachmentTypeClass> Type;
 			NullableIdx<TechnoTypeClass> TechnoType;
 			Valueable<CoordStruct> FLH;

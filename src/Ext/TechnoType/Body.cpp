@@ -651,7 +651,16 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		_snprintf_s(tempBuffer, sizeof(tempBuffer), "Attachment%d.RotationAdjust", i);
 		rotationAdjust.Read(exINI, pSection, tempBuffer);
 
-		AttachmentDataEntry const entry { ValueableIdx<AttachmentTypeClass>(type), technoType, flh, isOnTurret, rotationAdjust };
+		AttachmentDataEntry const entry
+		{
+			Valueable<size_t>(i),
+			ValueableIdx<AttachmentTypeClass>(type),
+			technoType,
+			flh,
+			isOnTurret,
+			rotationAdjust
+		};
+
 		if (i == AttachmentData.size())
 			this->AttachmentData.push_back(entry);
 		else
@@ -1774,6 +1783,7 @@ template <typename T>
 bool TechnoTypeExt::ExtData::AttachmentDataEntry::Serialize(T& stm)
 {
 	return stm
+		.Process(this->DataIndex)
 		.Process(this->Type)
 		.Process(this->TechnoType)
 		.Process(this->FLH)
