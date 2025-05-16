@@ -51,23 +51,6 @@ void AttachmentClass::Initialize()
 		this->CreateChild();
 }
 
-void AttachmentClass::LinkDataAfterLoad()
-{
-	if (!this->Data) // techno load before technotype, so this can not be loaded at first, reload here
-	{
-		auto& datas = TechnoExt::ExtMap.Find(this->Parent)->TypeExtData->AttachmentData;
-
-		for (auto& entry : datas)
-		{
-			if (entry.DataIndex == this->DataIndex)
-			{
-				this->Data = &entry;
-				break;
-			}
-		}
-	}
-}
-
 void AttachmentClass::CreateChild()
 {
 	if (auto const pChildType = this->GetChildType())
@@ -89,6 +72,20 @@ void AttachmentClass::CreateChild()
 
 void AttachmentClass::AI()
 {
+	if (!this->Data) // techno load before technotype, so this can not be loaded at first, reload here
+	{
+		auto& datas = TechnoExt::ExtMap.Find(this->Parent)->TypeExtData->AttachmentData;
+
+		for (auto& entry : datas)
+		{
+			if (entry.DataIndex == this->DataIndex)
+			{
+				this->Data = &entry;
+				break;
+			}
+		}
+	}
+
 	AttachmentTypeClass* pType = this->GetType();
 
 	if (!this->Child)

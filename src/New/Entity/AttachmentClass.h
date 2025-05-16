@@ -51,8 +51,6 @@ public:
 	CoordStruct GetChildLocation() const;
 
 	void Initialize();
-	void LinkDataAfterLoad();
-
 	void CreateChild();
 	void AI();
 	void Destroy(TechnoClass* pSource);
