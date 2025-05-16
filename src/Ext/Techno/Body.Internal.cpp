@@ -72,9 +72,8 @@ Matrix3D TechnoExt::GetFLHMatrix(TechnoClass* pThis, const CoordStruct& flh, boo
 	Matrix3D transform = TechnoExt::GetTransform(pThis, nullptr, isShadow);
 	Matrix3D mtx = TechnoExt::TransformFLHForTurret(pThis, transform, isOnTurret, factor, turIdx);
 
-	CoordStruct scaledCoord = flh * factor;
 	// apply FLH offset
-	mtx.Translate((float)scaledCoord.X, (float)scaledCoord.Y, (float)scaledCoord.Z);
+	mtx.Translate((float)(flh.X * factor), (float)(flh.Y * factor), (float)(flh.Z * factor));
 
 	return mtx;
 }

@@ -86,7 +86,7 @@ void AttachmentClass::AI()
 		else if (!this->Child->InLimbo && this->Parent->InLimbo)
 			this->Limbo();
 
-		this->Child->SetLocation(this->GetChildLocation());
+		this->Child->SetLocation(TechnoExt::GetFLHAbsoluteCoords(this->Parent, this->Data->FLH.Get(), this->Data->IsOnTurret));
 
 		DirStruct childDir = this->Data->IsOnTurret
 			? this->Parent->SecondaryFacing.Current() : this->Parent->PrimaryFacing.Current();
