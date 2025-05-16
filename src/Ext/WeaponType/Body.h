@@ -74,6 +74,7 @@ public:
 		Valueable<double> Beam_Amplitude;
 		Valueable<bool> Beam_IsHouseColor;
 		Valueable<int> LaserThickness;
+		Valueable<bool> Laser_IsTracking;
 
 		ExtData(WeaponTypeClass* OwnerObject) : Extension<WeaponTypeClass>(OwnerObject)
 			, DiskLaser_Radius { DiskLaserClass::Radius }
@@ -127,6 +128,7 @@ public:
 			, Beam_Amplitude { 40.0 }
 			, Beam_IsHouseColor { false }
 			, LaserThickness { 3 }
+			, Laser_IsTracking { false }
 		{ }
 
 		int GetBurstDelay(int burstIndex) const;

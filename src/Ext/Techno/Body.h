@@ -71,6 +71,13 @@ public:
 
 		AirstrikeClass* AirstrikeTargetingMe;
 
+		DynamicVectorClass<LaserDrawClass*> MyTrackingLasers;
+		DynamicVectorClass<int> MyTrackingLasers_WeaponIdx;
+		DynamicVectorClass<int> MyTrackingLasers_BurstIdx;
+		DynamicVectorClass<WeaponTypeClass*> MyTrackingLasers_CreatorWeapon;
+		AbstractClass* MyTrackingLasersTarget;
+		DynamicVectorClass<LaserDrawClass*> TrackingLasersTargetingMe;
+
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
 			, Shield {}
@@ -115,6 +122,12 @@ public:
 			, LastSensorsMapCoords { CellStruct::Empty }
 			, TiberiumEater_Timer {}
 			, AirstrikeTargetingMe { nullptr }
+			, MyTrackingLasers { }
+			, MyTrackingLasers_WeaponIdx { }
+			, MyTrackingLasers_BurstIdx { }
+			, MyTrackingLasers_CreatorWeapon { }
+			, MyTrackingLasersTarget { }
+			, TrackingLasersTargetingMe { }
 		{ }
 
 		void OnEarlyUpdate();
@@ -142,6 +155,7 @@ public:
 		void UpdateRecountBurst();
 		void UpdateRearmInEMPState();
 		void UpdateRearmInTemporal();
+		void UpdateTrackingLasers();
 		void InitializeLaserTrails();
 		void InitializeAttachEffects();
 		void UpdateSelfOwnedAttachEffects();
@@ -153,7 +167,7 @@ public:
 		UnitTypeClass* GetUnitTypeExtra() const;
 
 		virtual ~ExtData() override;
-		virtual void InvalidatePointer(void* ptr, bool bRemoved) override { }
+		virtual void InvalidatePointer(void* ptr, bool bRemoved) override;
 		virtual void LoadFromStream(PhobosStreamReader& Stm) override;
 		virtual void SaveToStream(PhobosStreamWriter& Stm) override;
 

@@ -37,6 +37,7 @@ void TechnoExt::ExtData::OnEarlyUpdate()
 	this->ApplyMindControlRangeLimit();
 	this->UpdateRecountBurst();
 	this->UpdateRearmInEMPState();
+	this->UpdateTrackingLasers();
 }
 
 void TechnoExt::ExtData::ApplyInterceptor()
