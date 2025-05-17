@@ -10,6 +10,7 @@
 #include <JumpjetLocomotionClass.h>
 
 #include <Ext/House/Body.h>
+#include <Ext/WarheadType/Body.h>
 #include <Ext/Scenario/Body.h>
 #include <Utilities/TemplateDef.h>
 
@@ -396,12 +397,23 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		}
 	}
 
-	ColorStruct fillColor { 0, 0, 0 };
 	RectangleStruct drawRect { 0, 0, 360, DSurface::Composite->GetHeight() - 32 };
-	DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 30);
+	{
+		ColorStruct fillColor { 0, 0, 0 };
+		DSurface::Composite->FillRectTrans(&drawRect, &fillColor, 30);
+	}
 	Point2D textLocation { 15, 5 };
+	bool loc = false;
 
-	auto drawText = [&drawRect, &textLocation](const char* pFormat, ...)
+	auto updateLine = [&loc, &textLocation]()
+	{
+		loc = !loc;
+
+		if (!loc)
+			textLocation.Y += 12;
+	};
+
+	auto drawText = [&loc, &updateLine, &drawRect, &textLocation](const char* pFormat, ...)
 	{
 		char buffer[0x60] = {0};
 		va_list args;
@@ -411,8 +423,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		wchar_t wBuffer[0x60] = {0};
 		CRT::mbstowcs(wBuffer, buffer, strlen(buffer));
 		constexpr TextPrintType printType = TextPrintType::FullShadow | TextPrintType::Point8;
+		textLocation.X = loc ? 195 : 15;
 		DSurface::Composite->DrawTextA(wBuffer, &drawRect, &textLocation, COLOR_WHITE, 0, printType);
-		textLocation.Y += 12;
+		updateLine();
 	};
 
 	auto drawInfo = [&drawText](const char* pInfoName, AbstractClass* pCurrent, AbstractClass* pTarget)
@@ -433,8 +446,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				ID = "Cell";
 			}
 
-			const auto distance = (pCurrent->DistanceFrom(pTarget) / Unsorted::LeptonsPerCell);
-			drawText("%s: %s , At( %d , %d ) , %d apart", pInfoName, ID, mapCoords.X, mapCoords.Y, distance);
+			drawText("%s: %s (%d,%d)[%dl]", pInfoName, ID, mapCoords.X, mapCoords.Y, pCurrent->DistanceFrom(pTarget));
 		}
 		else
 		{
@@ -444,7 +456,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 	auto drawTask = [&drawText](const char* pInfoName, Mission mission)
 	{
-		drawText("%s = %d ( %s )", pInfoName, mission, MissionControlClass::FindName(mission));
+		drawText("%s = (%02d)[%s]", pInfoName, mission, MissionControlClass::FindName(mission));
 	};
 
 	auto drawTime = [&drawText](const char* pInfoName, CDTimerClass& timer)
@@ -453,7 +465,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		const auto timeCurrent = timeCeiling - timer.GetTimeLeft();
 		const auto timePercentage = (timeCeiling > 0) ? (timeCurrent * 100 / timeCeiling) : 0;
 
-		drawText("%s = %d / %d ( %d )", pInfoName, timeCurrent, timeCeiling, timePercentage);
+		drawText("%s: (%d/%d)[%03d]", pInfoName, timeCurrent, timeCeiling, timePercentage);
 	};
 
 	drawText("Current Frame: %d", Unsorted::CurrentFrame);
@@ -464,127 +476,195 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		const auto absType = pTechno->WhatAmI();
 
 		if (absType == AbstractType::Unit)
-			drawText("%s: %s , UniqueID: %d , Addr: %X", "Vehicle", pType->ID, pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
+			drawText("%s: %s", "Vehicle", pType->ID);
 		else if (absType == AbstractType::Infantry)
-			drawText("%s: %s , UniqueID: %d , Addr: %X", "Infantry", pType->ID, pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
+			drawText("%s: %s", "Infantry", pType->ID);
 		else if (absType == AbstractType::Aircraft)
-			drawText("%s: %s , UniqueID: %d , Addr: %X", "Aircraft", pType->ID, pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
+			drawText("%s: %s", "Aircraft", pType->ID);
 		else if (absType == AbstractType::Building)
-			drawText("%s: %s , UniqueID: %d , Addr: %X", "Building", pType->ID, pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
+			drawText("%s: %s", "Building", pType->ID);
 		else
-			drawText("%s: %s , UniqueID: %d , Addr: %X", "Unknown", pType->ID, pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
+			drawText("%s: %s", "Unknown", pType->ID);
+
+		drawText("UniqueID: %d , Addr: %X", pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
 
 		const auto pOwner = pTechno->Owner;
+		{
+			const auto pOriginalOwner = pTechno->GetOriginalOwner();
 
-		drawText("Owner = %s ( %s )", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+			drawText("CurrentOwner = %s(%s)", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+			drawText("OriginalOwner = %s(%s)", (pOriginalOwner ? pOriginalOwner->get_ID() : "N/A"), (pOriginalOwner ? pOriginalOwner->PlainName : "N/A"));
+		}
 
-		const auto cell = pTechno->GetMapCoords();
-		const auto coords = pTechno->GetCoords();
+		{
+			const auto cell = pTechno->GetMapCoords();
+			const auto coords = pTechno->GetCoords();
 
-		drawText("Location = [ %d , %d , %d ]( %d , %d , %d )", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pTechno->GetCellLevel());
+			drawText("Location = (%d,%d,%d)[%d,%d,%d]", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pTechno->GetCellLevel());
+			updateLine();
+		}
 
-		constexpr const char* facingTypes[8] = { "North", "NorthEast", "East", "SouthEast", "South", "SouthWest", "West", "NorthWest" };
 		const auto facing1 = pTechno->PrimaryFacing.Current();
 		const auto primaryFacing = facing1.GetValue<3>();
 
 		{
+			constexpr const char* facingTypes[8] = { "North", "NorthEast", "East", "SouthEast", "South", "SouthWest", "West", "NorthWest" };
 			const auto facing11 = pTechno->PrimaryFacing.StartFacing;
 			const auto facing12 = pTechno->PrimaryFacing.DesiredFacing;
 
-			drawText("PriFacing = [ %d ( %d )]( %s )", facing1.Raw, facing1.GetValue<5>(), facingTypes[primaryFacing]);
-			drawText("PriF = [ %d ]( %s ) , PriT = [ %d ]( %s )", facing11.Raw, facingTypes[facing11.GetValue<3>()], facing12.Raw, facingTypes[facing12.GetValue<3>()]);
+			drawText("PriFacing = (%d[%d])[%s]", facing1.Raw, facing1.GetValue<5>(), facingTypes[primaryFacing]);
+			updateLine();
+
+			drawText("PriLastFacing = (%d)[%s]", facing11.Raw, facingTypes[facing11.GetValue<3>()]);
+			drawText("PriNextFacing = (%d)[%s]", facing12.Raw, facingTypes[facing12.GetValue<3>()]);
 
 			const auto facing2 = pTechno->SecondaryFacing.Current();
 			const auto facing21 = pTechno->SecondaryFacing.StartFacing;
 			const auto facing22 = pTechno->SecondaryFacing.DesiredFacing;
 
-			drawText("SecFacing = [ %d ( %d )]( %s )", facing2.Raw, facing2.GetValue<5>(), facingTypes[facing2.GetValue<3>()]);
-			drawText("SecF = [ %d ]( %s ) , SecT = [ %d ]( %s )", facing21.Raw, facingTypes[facing21.GetValue<3>()], facing22.Raw, facingTypes[facing22.GetValue<3>()]);
+			drawText("SecFacing = (%d[%d])[%s]", facing2.Raw, facing2.GetValue<5>(), facingTypes[facing2.GetValue<3>()]);
+			updateLine();
+
+			drawText("SecLastFacing = (%d)[%s]", facing21.Raw, facingTypes[facing21.GetValue<3>()]);
+			drawText("SecNextFacing = (%d)[%s]", facing22.Raw, facingTypes[facing22.GetValue<3>()]);
 		}
 
 		const auto pExt = TechnoExt::ExtMap.Find(pTechno);
 
-		drawText("Ammo = ( %d / %d )( %s ) , Tether = ( %s , %s )", pTechno->Ammo, pType->Ammo, (pType->ManualReload ? "No" : "Yes"), (pTechno->IsTether ? "Yes" : "No"), (pTechno->IsAlternativeTether ? "Yes" : "No"));
-		drawText("Health = ( %d / %d ) , Shield = ( %d / %d )", pTechno->Health, pType->Strength, (pExt->Shield ? pExt->Shield->GetHP() : -1), (pExt->CurrentShieldType ? pExt->CurrentShieldType->Strength : -1));
+		drawText("Ammo = (%d/%d)", pTechno->Ammo, pType->Ammo);
+		drawText("Tether = (%s,%s)", (pTechno->IsTether ? "Yes" : "No"), (pTechno->IsAlternativeTether ? "Yes" : "No"));
 
-		drawTime("ReloadTimer", pTechno->ReloadTimer);
-		drawTime("RearmTimer", pTechno->RearmTimer);
+		drawText("Health = (%d/%d)", pTechno->Health, pType->Strength);
+		drawText("Shield = (%d/%d)", (pExt->Shield ? pExt->Shield->GetHP() : -1), (pExt->CurrentShieldType ? pExt->CurrentShieldType->Strength : -1));
 
-		drawText("TurretRecoil = %.3f , BarrelRecoil = %.3f", pTechno->TurretRecoil.TravelSoFar, pTechno->BarrelRecoil.TravelSoFar);
-		drawText("%d Passengers , First Passenger = %s", pTechno->Passengers.NumPassengers, (pTechno->Passengers.NumPassengers > 0 ? pTechno->Passengers.FirstPassenger->GetTechnoType()->ID : "N/A"));
+		drawTime("Reload", pTechno->ReloadTimer);
+		drawTime("Rearm", pTechno->RearmTimer);
 
-		if (const auto pTarget = pTechno->Target)
-		{
-			auto mapCoords = CellStruct::Empty;
-			auto ID = "Unknown";
+		drawTime("Update", pTechno->UpdateTimer);
+		drawInfo("Bunker Linked", pTechno, pTechno->BunkerLinkedItem);
 
-			if (auto const pObject = abstract_cast<ObjectClass*, true>(pTarget))
-			{
-				mapCoords = pObject->GetMapCoords();
-				ID = pObject->GetType()->get_ID();
-			}
-			else if (auto const pCell = abstract_cast<CellClass*, true>(pTarget))
-			{
-				mapCoords = pCell->MapCoords;
-				ID = "Cell";
-			}
+		drawInfo("Target", pTechno, pTechno->Target);
+		drawText("TargetInRange = %s", (pTechno->IsCloseEnough(pTechno->Target, pTechno->SelectWeapon(pTechno->Target)) ? "Yes" : "No"));
 
-			const auto distance = (pTechno->DistanceFrom(pTarget) / Unsorted::LeptonsPerCell);
-			drawText("Target: %s , At( %d , %d ) , %d apart , In range : %s", ID, mapCoords.X, mapCoords.Y, distance, (pTechno->IsCloseEnough(pTarget, pTechno->SelectWeapon(pTarget)) ? "Yes" : "No"));
-		}
-		else
-		{
-			drawText("Target: N/A");
-		}
+		drawInfo("First CurTarget", pTechno, (pTechno->CurrentTargets.Count > 0 ? pTechno->CurrentTargets.GetItem(0) : nullptr));
+		drawInfo("First OldTarget", pTechno, (pTechno->AttackedTargets.Count > 0 ? pTechno->AttackedTargets.GetItem(0) : nullptr));
 
 		drawInfo("Last Target", pTechno, pTechno->LastTarget);
-		drawInfo("Nth Link", pTechno, pTechno->GetNthLink());
-
-		{
-			int linkCount = 0;
-
-			for (int i = 0; i < pTechno->RadioLinks.Capacity; ++i)
-			{
-				if (pTechno->RadioLinks.Items[i])
-					++linkCount;
-			}
-
-			drawText("Links = %d , Valid = %d", pTechno->RadioLinks.Capacity, linkCount);
-		}
+		drawInfo("Enter Target", pTechno, pTechno->QueueUpToEnter);
 
 		drawInfo("Archive Target", pTechno, pTechno->ArchiveTarget);
 		drawInfo("Transporter", pTechno, pTechno->Transporter);
-		drawInfo("Enter Target", pTechno, pTechno->QueueUpToEnter);
-		drawInfo("First CurTarget", pTechno, (pTechno->CurrentTargets.Count > 0 ? pTechno->CurrentTargets.GetItem(0) : nullptr));
-		drawInfo("First OldTarget", pTechno, (pTechno->AttackedTargets.Count > 0 ? pTechno->AttackedTargets.GetItem(0) : nullptr));
-		drawInfo("Bunker Linked", pTechno, pTechno->BunkerLinkedItem);
 
-		drawTime("UpdateTimer", pTechno->UpdateTimer);
+		{
+			const bool bySize = pExt->TypeExtData->Passengers_BySize;
+			const int count = pTechno->Passengers.NumPassengers;
+			const int capacity = pType->Passengers;
+			ObjectClass* pPassenger = pTechno->Passengers.GetFirstPassenger();
+			int currentSize = 0;
+			drawText("Passengers = (%d/%d)[%d]", (bySize ? pTechno->Passengers.GetTotalSize() : count), capacity, count);
 
-		drawText("Status = %d , StartFrame = %d", pTechno->MissionStatus, pTechno->CurrentMissionStartTime);
+			if (capacity > 1)
+				updateLine();
+
+			for (int i = 0; i < capacity; ++i)
+			{
+				if (currentSize > i)
+				{
+					drawText("Passenger(%d)[%s]", i, "---");
+					continue;
+				}
+
+				if (pPassenger)
+				{
+					if (const auto pPassengerType = pPassenger->GetTechnoType())
+					{
+						drawText("Passenger(%d)[%s]", i, pPassengerType->ID);
+						currentSize += bySize ? pPassengerType->Size : 1;
+						continue;
+					}
+
+					pPassenger = pPassenger->NextObject;
+				}
+
+				drawText("Passenger(%d)[%s]", i, "N/A");
+			}
+
+			if (loc)
+				updateLine();
+		}
+
+		{
+			const int capacity = pTechno->RadioLinks.Capacity;
+			int count = 0;
+
+			for (int i = 0; i < capacity; ++i)
+			{
+				if (pTechno->RadioLinks.Items[i])
+					++count;
+			}
+
+			drawText("RadioLinks = (%d/%d)", count, capacity);
+
+			if (capacity > 1)
+				updateLine();
+
+			for (int i = 0; i < capacity; ++i)
+			{
+				if (const auto pLink = pTechno->RadioLinks.Items[i])
+					drawText("RadioLink(%d)[%s]", i, pLink->GetType()->ID);
+				else
+					drawText("RadioLink(%d)[%s]", i, "N/A");
+			}
+
+			if (loc)
+				updateLine();
+		}
+
+		drawText("TurretRecoil = %.3f", pTechno->TurretRecoil.TravelSoFar);
+		drawText("BarrelRecoil = %.3f", pTechno->BarrelRecoil.TravelSoFar);
+
 		drawTask("CurrentMission", pTechno->CurrentMission);
+		drawText("Status = %d , Start = %d", pTechno->MissionStatus, pTechno->CurrentMissionStartTime);
+
 		drawTask("SuspendMission", pTechno->SuspendedMission);
 		drawTask("TheNextMission", pTechno->QueuedMission);
 
-		if (pTechno->AbstractFlags & AbstractFlags::Foot)
+		if (const auto pFoot = abstract_cast<FootClass*, true>(pTechno))
 		{
-			const auto pFoot = static_cast<FootClass*>(pTechno);
-
 			drawTask("TheMegaMission", pFoot->MegaMission);
-			drawText("FootCell = ( %d , %d ) , LastCell = ( %d , %d )", pFoot->CurrentMapCoords.X, pFoot->CurrentMapCoords.Y, pFoot->LastMapCoords.X, pFoot->LastMapCoords.Y);
+			drawInfo("Parasite", pFoot, pFoot->ParasiteEatingMe);
+
+			drawInfo("Destination", pFoot, pFoot->Destination);
+			drawInfo("Last Destination", pFoot, pFoot->LastDestination);
+
+			drawInfo("Mega Destination", pFoot, pFoot->MegaDestination);
+			drawInfo("Mega Target", pFoot, pFoot->MegaTarget);
+
+			drawInfo("Follow Target", pFoot, pFoot->unknown_5A0);
+			drawInfo("Patrol Target", pFoot, reinterpret_cast<AbstractClass*>(pFoot->unknown_5DC));
+
+			drawInfo("First ArrayItem", pFoot, (pFoot->unknown_abstract_array_588.Count > 0 ? pFoot->unknown_abstract_array_588.GetItem(0) : nullptr));
+			drawInfo("First NavQueue", pFoot, (pFoot->NavQueue.Count > 0 ? pFoot->NavQueue.GetItem(0) : nullptr));
+
+			drawText("FootCell = (%d,%d)", pFoot->CurrentMapCoords.X, pFoot->CurrentMapCoords.Y);
+			drawText("LastCell = (%d,%d)", pFoot->LastMapCoords.X, pFoot->LastMapCoords.Y);
 
 			{
 				const auto destination = pFoot->Locomotor->Destination();
 				const auto headToCoord = pFoot->Locomotor->Head_To_Coord();
 
-				drawText("LocoDest = ( %d , %d , %d ) , LocoHead = ( %d , %d , %d )", destination.X, destination.Y, destination.Z, headToCoord.X, headToCoord.Y, headToCoord.Z);
+				drawText("LocoDest = (%d,%d,%d)", destination.X, destination.Y, destination.Z);
+				drawText("LocoHead = (%d,%d,%d)", headToCoord.X, headToCoord.Y, headToCoord.Z);
 			}
 
-			constexpr const char* moveTypes[8] = { "Clear", "Cloak", "Move", "Gate", "A-Block", "E-Block", "Temp", "Unable" };
-			const auto facingType = static_cast<FacingType>(primaryFacing);
-			const auto moveType = static_cast<int>(pFoot->IsCellOccupied(MapClass::Instance.GetCellAt(pFoot->CurrentMapCoords)->GetNeighbourCell(facingType), facingType, pFoot->GetCellLevel(), nullptr, true));
+			{
+				constexpr const char* moveTypes[8] = { "Clear", "Cloak", "Move", "Gate", "A-Block", "E-Block", "Temp", "Unable" };
+				const auto facingType = static_cast<FacingType>(primaryFacing);
+				const auto moveType = static_cast<int>(pFoot->IsCellOccupied(MapClass::Instance.GetCellAt(pFoot->CurrentMapCoords)->GetNeighbourCell(facingType), facingType, pFoot->GetCellLevel(), nullptr, true));
 
-			drawText("PlanningPathIdx = %d , FaceMoveType = ( %s )", pFoot->PlanningPathIdx, (moveType >= 0 && moveType < 8) ? moveTypes[moveType] : "N/A");
+				drawText("PlanningPathIdx = %d", pFoot->PlanningPathIdx);
+				drawText("FaceMoveType = (%s)", (moveType >= 0 && moveType < 8) ? moveTypes[moveType] : "N/A");
+			}
 
 			const auto& pD = pFoot->PathDirections;
 
@@ -593,34 +673,33 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			else if (pD[1] == -1)
 				drawText("PathDir = %d", pD[0]);
 			else if (pD[2] == -1)
-				drawText("PathDir = %d , %d", pD[0], pD[1]);
+				drawText("PathDir = %d-%d", pD[0], pD[1]);
 			else if (pD[3] == -1)
-				drawText("PathDir = %d , %d , %d", pD[0], pD[1], pD[2]);
+				drawText("PathDir = %d-%d-%d", pD[0], pD[1], pD[2]);
 			else if (pD[4] == -1)
-				drawText("PathDir = %d , %d , %d , %d", pD[0], pD[1], pD[2], pD[3]);
+				drawText("PathDir = %d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3]);
 			else if (pD[5] == -1)
-				drawText("PathDir = %d , %d , %d , %d , %d", pD[0], pD[1], pD[2], pD[3], pD[4]);
+				drawText("PathDir = %d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4]);
 			else if (pD[6] == -1)
-				drawText("PathDir = %d , %d , %d , %d , %d , %d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5]);
+				drawText("PathDir = %d-%d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5]);
 			else if (pD[7] == -1)
-				drawText("PathDir = %d , %d , %d , %d , %d , %d , %d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5], pD[6]);
+				drawText("PathDir = %d-%d-%d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5], pD[6]);
 			else
-				drawText("PathDir = %d , %d , %d , %d , %d , %d , %d , %d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5], pD[6], pD[7]);
+				drawText("PathDir = %d-%d-%d-%d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5], pD[6], pD[7]);
 
-			drawText("CurrentSpeed = %d , PercentSpeed = %d", static_cast<int>(pFoot->GetCurrentSpeed()), static_cast<int>(pFoot->SpeedPercentage * 100));
-			drawText("OnBridge = %s , NearElevatedBridge = %s", (pFoot->OnBridge ? "Yes" : "No"), (reinterpret_cast<bool(__thiscall*)(FootClass*)>(0x703B10)(pFoot) ? "Yes" : "No"));
-			drawText("OnBacklit = %s , IsCrushing = %s", (pFoot->vt_entry_2B0() ? "Yes" : "No"), (pFoot->IsCrushingSomething ? "Yes" : "No"));
-			drawText("Scattering = %s , Aggressive = %s", (pExt->ScatteringStopFrame >= Unsorted::CurrentFrame ? "Yes" : "No"), (pExt->AggressiveStance ? "Yes" : "No"));
+			updateLine();
 
-			drawInfo("Destination", pFoot, pFoot->Destination);
-			drawInfo("Last Destination", pFoot, pFoot->LastDestination);
-			drawInfo("Follow Target", pFoot, pFoot->unknown_5A0);
-			drawInfo("Patrol Target", pFoot, reinterpret_cast<AbstractClass*>(pFoot->unknown_5DC));
-			drawInfo("Mega Target", pFoot, pFoot->MegaTarget);
-			drawInfo("Mega Destination", pFoot, pFoot->MegaDestination);
-			drawInfo("Parasite", pFoot, pFoot->ParasiteEatingMe);
-			drawInfo("First ArrayItem", pFoot, (pFoot->unknown_abstract_array_588.Count > 0 ? pFoot->unknown_abstract_array_588.GetItem(0) : nullptr));
-			drawInfo("First Nav-Queue", pFoot, (pFoot->NavQueue.Count > 0 ? pFoot->NavQueue.GetItem(0) : nullptr));
+			drawText("CurrentSpeed = %d", static_cast<int>(pFoot->GetCurrentSpeed()));
+			drawText("PercentSpeed = %d", static_cast<int>(pFoot->SpeedPercentage * 100));
+
+			drawText("OnBridge = %s", (pFoot->OnBridge ? "Yes" : "No"));
+			drawText("NearElevatedBridge = %s", (reinterpret_cast<bool(__thiscall*)(FootClass*)>(0x703B10)(pFoot) ? "Yes" : "No"));
+
+			drawText("OnBacklit = %s", (pFoot->vt_entry_2B0() ? "Yes" : "No"));
+			drawText("IsCrushing = %s", (pFoot->IsCrushingSomething ? "Yes" : "No"));
+
+			drawText("Scattering = %s", (pExt->ScatteringStopFrame >= Unsorted::CurrentFrame ? "Yes" : "No"));
+			drawText("Aggressive = %s", (pExt->AggressiveStance ? "Yes" : "No"));
 
 			if (pFoot->BelongsToATeam())
 			{
@@ -635,30 +714,40 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 					if (pTeamType && (pTriggerType->Team1 == pTeamType || pTriggerType->Team2 == pTeamType))
 					{
 						found = true;
-						drawText("Trigger = %s , weights [ Cur , Min , Max ]:", pTriggerType->ID);
-						drawText("[ %.2f , %.2f , %.2f ]", pTriggerType->Weight_Current, pTriggerType->Weight_Minimum, pTriggerType->Weight_Maximum);
+						drawText("Trigger = %s , weights[Cur,Min,Max]:", pTriggerType->ID);
+						updateLine();
+						drawText("[%.2f,%.2f,%.2f]", pTriggerType->Weight_Current, pTriggerType->Weight_Minimum, pTriggerType->Weight_Maximum);
+						updateLine();
 						break;
 					}
 				}
 
 				if (!found)
 				{
-					drawText("Trigger = %s , weights [ Cur , Min , Max ]:", "N/A");
-					drawText("[ %.2f , %.2f , %.2f ]", -1.0, -1.0, -1.0);
+					drawText("Trigger = %s , weights[Cur,Min,Max]:", "N/A");
+					updateLine();
+					drawText("[%.2f,%.2f,%.2f]", -1.0, -1.0, -1.0);
+					updateLine();
 				}
 
 				const auto pScriptType = pTeam->CurrentScript->Type;
 				const auto mission = pTeam->CurrentScript->CurrentMission;
 
 				drawText("Team = %s , Task = %s , Script = %s", pTeamType->ID, pTeamType->TaskForce->ID, pScriptType->get_ID());
+				updateLine();
 				drawText("[ Line = Action , Argument ] : [ %d = %d , %d ]", mission, (mission >= 0 ? pScriptType->ScriptActions[mission].Action : -1), (mission >= 0 ? pScriptType->ScriptActions[mission].Argument : -1));
+				updateLine();
 			}
 			else
 			{
-				drawText("Trigger = %s , weights [ Cur , Min , Max ]:", "N/A");
-				drawText("[ %.2f , %.2f , %.2f ]", -1.0, -1.0, -1.0);
+				drawText("Trigger = %s , weights[Cur,Min,Max]:", "N/A");
+				updateLine();
+				drawText("[%.2f,%.2f,%.2f]", -1.0, -1.0, -1.0);
+				updateLine();
 				drawText("Team = %s , Task = %s , Script = %s", "N/A", "N/A", "N/A");
+				updateLine();
 				drawText("[ Line = Action , Argument ] : [ %d = %d , %d ]", -1, -1, -1);
+				updateLine();
 			}
 
 			if (absType == AbstractType::Unit)
@@ -680,14 +769,100 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				drawInfo("Dock Building", pAircraft, pAircraft->DockNowHeadingTo);
 			}
 		}
-		else if (absType == AbstractType::Building)
+		else if (const auto pBuilding = abstract_cast<BuildingClass*, true>(pTechno))
 		{
-			const auto pBuilding = static_cast<BuildingClass*>(pTechno);
 			const auto pBuildingType = pBuilding->Type;
 			const auto pBuildingTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType);
 
-			drawText("%d Occupants , First Occupant = %s", pBuilding->Occupants.Count, (pBuilding->Occupants.Count > 0 ? pBuilding->Occupants.GetItem(0)->Type->ID : "N/A"));
-			drawText("%d Overpowerers , First Overpowerer = %s", pBuilding->Overpowerers.Count, (pBuilding->Overpowerers.Count > 0 ? pBuilding->Overpowerers.GetItem(0)->Type->ID : "N/A"));
+			{
+				const int capacity = pBuildingType->MaxNumberOccupants;
+				const int count = pBuilding->Occupants.Count;
+
+				drawText("Occupants = (%d/%d)", count, capacity);
+
+				if (capacity > 1)
+					updateLine();
+
+				for (int i = 0; i < capacity; ++i)
+				{
+					if (i < count)
+						drawText("Occupant(%d)[%s]", i, pBuilding->Occupants.GetItem(i)->Type->ID);
+					else
+						drawText("Occupant(%d)[%s]", i, "N/A");
+				}
+
+				if (loc)
+					updateLine();
+			}
+
+			drawText("%d Overpowers , First Overpowerer = %s", pBuilding->Overpowerers.Count, (pBuilding->Overpowerers.Count > 0 ? pBuilding->Overpowerers.GetItem(0)->Type->ID : "N/A"));
+
+			{
+				const int capacity = pBuildingType->Overpowerable ? (pBuildingTypeExt->Overpower_ChargeWeapon + (pOwner->Is_Powered() ? 0 : pBuildingTypeExt->Overpower_KeepOnline)) : 0;
+				const int overpower = pBuilding->Overpowerers.Count;
+				int currentOverpower = 0;
+				int currentCharger = 0;
+				int count = 0;
+
+				for (int i = 0; i < overpower; ++i)
+				{
+					const auto pCharger = pBuilding->Overpowerers.GetItem(i);
+
+					if (pCharger->Target == pBuilding)
+					{
+						if (const auto pWeapon = pBuilding->Overpowerers.GetItem(i)->GetWeapon(1)->WeaponType)
+						{
+							if (const auto pWH = pWeapon->Warhead)
+							{
+								if (pWH->ElectricAssault)
+									count += WarheadTypeExt::ExtMap.Find(pWH)->ElectricAssaultLevel;
+							}
+						}
+					}
+				}
+
+				drawText("Overpowers = (%d/%d)[%d]", count, capacity, overpower);
+
+				if (capacity > 1)
+					updateLine();
+
+				for (int i = 0; i < capacity; ++i)
+				{
+					if (currentOverpower > i)
+					{
+						drawText("Overpower(%d)[%s]", i, "---");
+						continue;
+					}
+
+					if (currentCharger < overpower)
+					{
+						const auto pCharger = pBuilding->Overpowerers.GetItem(currentCharger);
+
+						if (pCharger->Target == pBuilding)
+						{
+							if (const auto pWeapon = pBuilding->Overpowerers.GetItem(i)->GetWeapon(1)->WeaponType)
+							{
+								if (const auto pWH = pWeapon->Warhead)
+								{
+									if (pWH->ElectricAssault)
+									{
+										drawText("Overpower(%d)[%s]", i, pCharger->Type->ID);
+										currentOverpower += WarheadTypeExt::ExtMap.Find(pWH)->ElectricAssaultLevel;
+										continue;
+									}
+								}
+							}
+						}
+
+						++currentCharger;
+					}
+
+					drawText("Overpower(%d)[%s]", i, "N/A");
+				}
+
+				if (loc)
+					updateLine();
+			}
 
 			FactoryClass* pFactory = nullptr;
 			TechnoClass* pProduct = nullptr;
@@ -707,15 +882,17 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			}
 
 			if (pFactory && pProduct)
-				drawText("Product: %s ( %d )", pProduct->GetTechnoType()->ID, (pFactory->GetProgress() * 100 / 54));
+				drawText("Product: (%s)[%d]", pProduct->GetTechnoType()->ID, (pFactory->GetProgress() * 100 / 54));
 			else
-				drawText("Product: %s ( %d )", "N/A", 0);
+				drawText("Product: (%s)[%d]", "N/A", 0);
 
 			drawTime("RetryProduction", pBuilding->FactoryRetryTimer);
+
 			drawTime("CashProduction", pBuilding->CashProductionTimer);
 			drawTime("BuildingGate", pBuilding->GateTimer);
 
-			drawText("BaseNodes: %d , Center = ( %d , %d )", pOwner->Base.BaseNodes.Count, pOwner->Base.Center.X, pOwner->Base.Center.Y);
+			drawText("BaseNodes: %d", pOwner->Base.BaseNodes.Count);
+			drawText("BaseCenter = (%d,%d)", pOwner->Base.Center.X, pOwner->Base.Center.Y);
 
 			SuperClass* pSuper = nullptr;
 
@@ -729,7 +906,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			if (pSuper)
 				drawTime(pSuper->Type->ID, pSuper->RechargeTimer);
 			else
-				drawText("SuperWeapon: 0 / -1 ( 0.0 )");
+				drawText("SuperWeapon: (0/-1)[000]");
+
+			updateLine();
 
 			// Upgrade Status
 			if (const auto upgrades = pBuildingType->Upgrades)
@@ -738,13 +917,17 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const auto pType2 = pBuilding->Upgrades[1];
 				const auto pType3 = pBuilding->Upgrades[2];
 
-				drawText("Upgrades ( %d / %d ):", pBuilding->UpgradeLevel, upgrades);
-				drawText("Slot 1 = %s , Slot 2 = %s , Slot 3 = %s", (pType1 ? pType1->get_ID() : "N/A"), (pType2 ? pType2->get_ID() : "N/A"), (pType3 ? pType3->get_ID() : "N/A"));
+				drawText("Upgrades = (%d/%d)", pBuilding->UpgradeLevel, upgrades);
+				drawText("Slot-1 = %s", (pType1 ? pType1->ID : "N/A"));
+				drawText("Slot-2 = %s", (pType2 ? pType2->ID : "N/A"));
+				drawText("Slot-3 = %s", (pType3 ? pType3->ID : "N/A"));
 			}
 			else
 			{
-				drawText("Upgrades ( %d / %d ):", -1, -1);
-				drawText("Slot 1 = %s , Slot 2 = %s , Slot 3 = %s", "N/A", "N/A", "N/A");
+				drawText("Upgrades = (%d/%d)", -1, -1);
+				drawText("Slot-1 = %s", "N/A");
+				drawText("Slot-2 = %s", "N/A");
+				drawText("Slot-3 = %s", "N/A");
 			}
 		}
 	}
@@ -761,56 +944,84 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		DisplayClass::Instance.ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
 		const auto pCell = MapClass::Instance.GetCellAt(cell);
 
-		drawText("Cell: slope %d , UniqueID: %d , Addr: %X", pCell->SlopeIndex, pCell->UniqueID, reinterpret_cast<DWORD>(pCell));
+		drawText("Cell: %d", MapClass::Instance.GetCellIndex(pCell->MapCoords));
+		drawText("UniqueID: %d , Addr: %X", pCell->UniqueID, reinterpret_cast<DWORD>(pCell));
 
-		constexpr const char* landTypes[12] = { "Clear", "Road", "Water", "Rock", "Wall", "Tiberium", "Beach", "Rough", "Ice", "Railroad", "Tunnel", "Weeds" };
-		const auto landType = static_cast<int>(pCell->LandType);
+		{
+			constexpr const char* landTypes[12] = { "Clear", "Road", "Water", "Rock", "Wall", "Tiberium", "Beach", "Rough", "Ice", "Railroad", "Tunnel", "Weeds" };
+			const auto landType = static_cast<int>(pCell->LandType);
 
-		drawText("LandType = ( %s )", (landType >= 0 && landType < 12) ? landTypes[landType] : "Unknown");
+			drawText("LandType = ( %s )", (landType >= 0 && landType < 12) ? landTypes[landType] : "Unknown");
+			drawText("Slope = ( %d )", pCell->SlopeIndex);
+		}
 
-		drawText("Location = [ %d , %d , %d ]( %d , %d , %d )", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pCell->GetLevel());
+		drawText("Location = (%d,%d,%d)[%d,%d,%d]", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pCell->GetLevel());
+		updateLine();
 
-		drawText("CellFlags:");
-		drawText("  CenterRevealed - %s", (pCell->Flags & CellFlags::CenterRevealed ? "Yes" : "No"));
-		drawText("  EdgeRevealed - %s", (pCell->Flags & CellFlags::EdgeRevealed ? "Yes" : "No"));
-		drawText("  IsWaypoint - %s", (pCell->Flags & CellFlags::IsWaypoint ? "Yes" : "No"));
-		drawText("  BridgeOwner - %s", (pCell->Flags & CellFlags::BridgeOwner ? "Yes" : "No"));
-		drawText("  BridgeHead - %s", (pCell->Flags & CellFlags::BridgeHead ? "Yes" : "No"));
-		drawText("  Unknown_200 - %s", (pCell->Flags & CellFlags::Unknown_200 ? "Yes" : "No"));
-		drawText("  BridgeBody - %s", (pCell->Flags & CellFlags::BridgeBody ? "Yes" : "No"));
-		drawText("  BridgeDir - %s", (pCell->Flags & CellFlags::BridgeDir ? "Yes" : "No"));
-		drawText("  PixelFX - %s", (pCell->Flags & CellFlags::PixelFX ? "Yes" : "No"));
-		drawText("  DrawDarkenIfInAir - %s", (pCell->Flags & CellFlags::DrawDarkenIfInAir ? "Yes" : "No"));
+		{
+			const auto nCF = static_cast<DWORD>(pCell->Flags);
 
-		const auto nOF = pCell->OccupationFlags;
-		const auto nAF = pCell->AltOccupationFlags;
+			drawText("CellFlags: %d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
+				((nCF >> 22) & 0x1), ((nCF >> 21) & 0x1), ((nCF >> 20) & 0x1), ((nCF >> 19) & 0x1), ((nCF >> 18) & 0x1), ((nCF >> 17) & 0x1), ((nCF >> 16) & 0x1),
+				((nCF >> 15) & 0x1), ((nCF >> 14) & 0x1), ((nCF >> 13) & 0x1), ((nCF >> 12) & 0x1), ((nCF >> 11) & 0x1), ((nCF >> 10) & 0x1), ((nCF >> 9) & 0x1), ((nCF >> 8) & 0x1),
+				((nCF >> 7) & 0x1), ((nCF >> 6) & 0x1), ((nCF >> 5) & 0x1), ((nCF >> 4) & 0x1), ((nCF >> 3) & 0x1), ((nCF >> 2) & 0x1), ((nCF >> 1) & 0x1), (nCF & 0x1));
 
-		drawText("TheOccupationFlags: %d%d%d%d%d%d%d%d", ((nOF >> 7) & 0x1), ((nOF >> 6) & 0x1), ((nOF >> 5) & 0x1), ((nOF >> 4) & 0x1), ((nOF >> 3) & 0x1), ((nOF >> 2) & 0x1), ((nOF >> 1) & 0x1), (nOF & 0x1));
-		drawText("AltOccupationFlags: %d%d%d%d%d%d%d%d", ((nAF >> 7) & 0x1), ((nAF >> 6) & 0x1), ((nAF >> 5) & 0x1), ((nAF >> 4) & 0x1), ((nAF >> 3) & 0x1), ((nAF >> 2) & 0x1), ((nAF >> 1) & 0x1), (nAF & 0x1));
+			updateLine();
+		}
 
-		drawInfo("TheFirstObject", pCell, pCell->FirstObject);
-		drawInfo("AltFirstObject", pCell, pCell->AltObject);
-		drawInfo("CurrentJumpjet", pCell, pCell->Jumpjet);
+		{
+			const auto nOF = pCell->OccupationFlags;
+			const auto nAF = pCell->AltOccupationFlags;
+
+			drawText("TheOccupationFlags: %d%d%d%d%d%d%d%d", ((nOF >> 7) & 0x1), ((nOF >> 6) & 0x1), ((nOF >> 5) & 0x1), ((nOF >> 4) & 0x1), ((nOF >> 3) & 0x1), ((nOF >> 2) & 0x1), ((nOF >> 1) & 0x1), (nOF & 0x1));
+			drawText("AltOccupationFlags: %d%d%d%d%d%d%d%d", ((nAF >> 7) & 0x1), ((nAF >> 6) & 0x1), ((nAF >> 5) & 0x1), ((nAF >> 4) & 0x1), ((nAF >> 3) & 0x1), ((nAF >> 2) & 0x1), ((nAF >> 1) & 0x1), (nAF & 0x1));
+		}
 
 		drawText("TubeIndex = %d", pCell->TubeIndex);
-		drawText("Rad Level = %.2f", pCell->RadLevel);
+		drawText("RadLevel = %.2f", pCell->RadLevel);
 
-		drawText(" ");
+		{
+			const auto pOwner = HouseClass::Array.GetItemOrDefault(pCell->WallOwnerIndex);
 
-		drawText("Mouse: ( %d , %d )", mouseXY1.X, mouseXY1.Y);
+			drawText("WallOwner = %s(%s)", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+			drawInfo("CurrentJumpjet", pCell, pCell->Jumpjet);
+		}
+
+		{
+			int count = 0;
+			int index = 0;
+
+			for (auto pCellObj = pCell->FirstObject; pCellObj; pCellObj = pCellObj->NextObject)
+				++count;
+
+			drawText("TheObjects = (Ground)[%d]", count);
+			updateLine();
+
+			for (auto pCellObj = pCell->FirstObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
+				drawText("TheObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
+		}
+
+		{
+			int count = 0;
+			int index = 0;
+
+			for (auto pCellObj = pCell->AltObject; pCellObj; pCellObj = pCellObj->NextObject)
+				++count;
+
+			drawText("AltObjects = (Bridge)[%d]", count);
+			updateLine();
+
+			for (auto pCellObj = pCell->AltObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
+				drawText("AltObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
+		}
+
+		updateLine();
+		updateLine();
 
 		const auto pMouse = &MouseClass::Instance;
 
-		drawText("Display: LeftDrag ( %s ) , LeftDown ( %s )", pMouse->DraggingRectangle ? "Yes" : "No", pMouse->unknown_bool_11D0 ? "Yes" : "No");
-		drawText("Display: LeftDownLocation ( %d , %d )", pMouse->unknown_11D4.X, pMouse->unknown_11D4.Y);
-
-		drawText("Radar: RadarScopeRect ( %d , %d , %d , %d )", pMouse->unknown_rect_14DC.X, pMouse->unknown_rect_14DC.Y, pMouse->unknown_rect_14DC.Width, pMouse->unknown_rect_14DC.Height);
-
-		drawText("Power: Wait ( %d ) , Floating ( %s )", pMouse->unknown_151C, pMouse->unknown_bool_1538 ? "Yes" : "No");
-		drawText("Power: Green ( %d ) , Yellow ( %d ) , Red ( %d )", pMouse->unknown_152C, pMouse->unknown_1530, pMouse->unknown_1534);
-
-		drawText("Scroll: RightDrag ( %s ) , AnyDown ( %s )", pMouse->unknown_byte_5548 ? "Yes" : "No", pMouse->unknown_byte_554A ? "Yes" : "No");
-		drawText("Scroll: RightDownLocation ( %d , %d )", pMouse->unknown_int_5550, pMouse->unknown_int_5554);
+		drawText("Mouse: (%d,%d)", mouseXY1.X, mouseXY1.Y);
+		drawText("RadarScope: (%d,%d,%d,%d)", pMouse->unknown_rect_14DC.X, pMouse->unknown_rect_14DC.Y, pMouse->unknown_rect_14DC.Width, pMouse->unknown_rect_14DC.Height);
 	}
 }
 
