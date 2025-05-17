@@ -477,17 +477,17 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		const auto absType = pTechno->WhatAmI();
 
 		if (absType == AbstractType::Unit)
-			drawText("%s: %s", "Vehicle", pType->ID);
+			drawText("%s: %s , UniqueID: %d", "Vehicle", pType->ID, pTechno->UniqueID);
 		else if (absType == AbstractType::Infantry)
-			drawText("%s: %s", "Infantry", pType->ID);
+			drawText("%s: %s , UniqueID: %d", "Infantry", pType->ID, pTechno->UniqueID);
 		else if (absType == AbstractType::Aircraft)
-			drawText("%s: %s", "Aircraft", pType->ID);
+			drawText("%s: %s , UniqueID: %d", "Aircraft", pType->ID, pTechno->UniqueID);
 		else if (absType == AbstractType::Building)
-			drawText("%s: %s", "Building", pType->ID);
+			drawText("%s: %s , UniqueID: %d", "Building", pType->ID, pTechno->UniqueID);
 		else
-			drawText("%s: %s", "Unknown", pType->ID);
+			drawText("%s: %s , UniqueID: %d", "Unknown", pType->ID, pTechno->UniqueID);
 
-		drawText("UniqueID: %d , Addr: %X", pTechno->UniqueID, reinterpret_cast<DWORD>(pTechno));
+		drawText("Addr: 0x%X", reinterpret_cast<DWORD>(pTechno));
 
 		const auto pOwner = pTechno->Owner;
 		{
@@ -513,21 +513,21 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			const auto facing11 = pTechno->PrimaryFacing.StartFacing;
 			const auto facing12 = pTechno->PrimaryFacing.DesiredFacing;
 
-			drawText("PriFacing: (%d[%d])[%s]", facing1.Raw, facing1.GetValue<5>(), facingTypes[primaryFacing]);
+			drawText("PrimaryFacing: (%d[%d])[%s]", facing1.Raw, facing1.GetValue<5>(), facingTypes[primaryFacing]);
 			updateLine();
 
-			drawText("PriLastFacing: (%d)[%s]", facing11.Raw, facingTypes[facing11.GetValue<3>()]);
-			drawText("PriNextFacing: (%d)[%s]", facing12.Raw, facingTypes[facing12.GetValue<3>()]);
+			drawText("PriLast: (%d)[%s]", facing11.Raw, facingTypes[facing11.GetValue<3>()]);
+			drawText("PriNext: (%d)[%s]", facing12.Raw, facingTypes[facing12.GetValue<3>()]);
 
 			const auto facing2 = pTechno->SecondaryFacing.Current();
 			const auto facing21 = pTechno->SecondaryFacing.StartFacing;
 			const auto facing22 = pTechno->SecondaryFacing.DesiredFacing;
 
-			drawText("SecFacing: (%d[%d])[%s]", facing2.Raw, facing2.GetValue<5>(), facingTypes[facing2.GetValue<3>()]);
+			drawText("SecondaryFacing: (%d[%d])[%s]", facing2.Raw, facing2.GetValue<5>(), facingTypes[facing2.GetValue<3>()]);
 			updateLine();
 
-			drawText("SecLastFacing: (%d)[%s]", facing21.Raw, facingTypes[facing21.GetValue<3>()]);
-			drawText("SecNextFacing: (%d)[%s]", facing22.Raw, facingTypes[facing22.GetValue<3>()]);
+			drawText("SecLast: (%d)[%s]", facing21.Raw, facingTypes[facing21.GetValue<3>()]);
+			drawText("SecNext: (%d)[%s]", facing22.Raw, facingTypes[facing22.GetValue<3>()]);
 		}
 
 		const auto pExt = TechnoExt::ExtMap.Find(pTechno);
@@ -937,8 +937,8 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		DisplayClass::Instance.ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
 		const auto pCell = MapClass::Instance.GetCellAt(cell);
 
-		drawText("Cell: %d", MapClass::Instance.GetCellIndex(pCell->MapCoords));
-		drawText("UniqueID: %d , Addr: %X", pCell->UniqueID, reinterpret_cast<DWORD>(pCell));
+		drawText("Cell: %d , UniqueID: %d", MapClass::Instance.GetCellIndex(pCell->MapCoords), pCell->UniqueID);
+		drawText("Addr: 0x%X", reinterpret_cast<DWORD>(pCell));
 
 		{
 			constexpr const char* landTypes[12] = { "Clear", "Road", "Water", "Rock", "Wall", "Tiberium", "Beach", "Rough", "Ice", "Railroad", "Tunnel", "Weeds" };
@@ -992,6 +992,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 			for (auto pCellObj = pCell->FirstObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
 				drawText("TheObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
+
+			if (loc)
+				updateLine();
 		}
 
 		{
@@ -1006,6 +1009,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 			for (auto pCellObj = pCell->AltObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
 				drawText("AltObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
+
+			if (loc)
+				updateLine();
 		}
 
 		updateLine();
