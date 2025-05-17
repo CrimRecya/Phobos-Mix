@@ -579,7 +579,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 					if (const auto pPassengerType = pPassenger->GetTechnoType())
 					{
 						drawText("Passenger(%d)[%s]", i, pPassengerType->ID);
-						currentSize += bySize ? pPassengerType->Size : 1;
+						currentSize += bySize ? static_cast<int>(pPassengerType->Size) : 1;
 						continue;
 					}
 
