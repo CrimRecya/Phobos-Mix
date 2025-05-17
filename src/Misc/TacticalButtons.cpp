@@ -446,7 +446,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				ID = "Cell";
 			}
 
-			drawText("%s: %s (%d,%d)[%dl]", pInfoName, ID, mapCoords.X, mapCoords.Y, pCurrent->DistanceFrom(pTarget));
+			drawText("%s: %s (%03d,%03d)[%dC]", pInfoName, ID, mapCoords.X, mapCoords.Y, (pCurrent->DistanceFrom(pTarget) / Unsorted::LeptonsPerCell));
 		}
 		else
 		{
@@ -469,39 +469,40 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 	};
 
 	drawText("Current Frame: %d", Unsorted::CurrentFrame);
-	updateLine();
 
 	if (pTechno)
 	{
+		drawText("Address: 0x%X", reinterpret_cast<DWORD>(pTechno));
+
 		const auto pType = pTechno->GetTechnoType();
 		const auto absType = pTechno->WhatAmI();
 
 		if (absType == AbstractType::Unit)
-			drawText("%s: %s , UniqueID: %d", "Vehicle", pType->ID, pTechno->UniqueID);
+			drawText("%s: %s", "Vehicle", pType->ID);
 		else if (absType == AbstractType::Infantry)
-			drawText("%s: %s , UniqueID: %d", "Infantry", pType->ID, pTechno->UniqueID);
+			drawText("%s: %s", "Infantry", pType->ID);
 		else if (absType == AbstractType::Aircraft)
-			drawText("%s: %s , UniqueID: %d", "Aircraft", pType->ID, pTechno->UniqueID);
+			drawText("%s: %s", "Aircraft", pType->ID);
 		else if (absType == AbstractType::Building)
-			drawText("%s: %s , UniqueID: %d", "Building", pType->ID, pTechno->UniqueID);
+			drawText("%s: %s", "Building", pType->ID);
 		else
-			drawText("%s: %s , UniqueID: %d", "Unknown", pType->ID, pTechno->UniqueID);
+			drawText("%s: %s", "Unknown", pType->ID);
 
-		drawText("Addr: 0x%X", reinterpret_cast<DWORD>(pTechno));
+		drawText("UniqueID: %d", pTechno->UniqueID);
 
 		const auto pOwner = pTechno->Owner;
 		{
-			const auto pOriginalOwner = pTechno->GetOriginalOwner();
+			const auto pOrigin = pTechno->GetOriginalOwner();
 
-			drawText("Owner: %s(%s)", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
-			drawText("Origin: %s(%s)", (pOriginalOwner ? pOriginalOwner->get_ID() : "N/A"), (pOriginalOwner ? pOriginalOwner->PlainName : "N/A"));
+			drawText("Owner: %s(Player<%d>)", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->ArrayIndex : -1));
+			drawText("Origin: %s(Player<%d>)", (pOrigin ? pOrigin->get_ID() : "N/A"), (pOrigin ? pOrigin->ArrayIndex : -1));
 		}
 
 		{
 			const auto cell = pTechno->GetMapCoords();
 			const auto coords = pTechno->GetCoords();
 
-			drawText("Location: (%d,%d,%d)[%d,%d,%d]", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pTechno->GetCellLevel());
+			drawText("Location: (%05d,%05d,%05d)[%03d,%03d,%02d]", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pTechno->GetCellLevel());
 			updateLine();
 		}
 
@@ -513,21 +514,21 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			const auto facing11 = pTechno->PrimaryFacing.StartFacing;
 			const auto facing12 = pTechno->PrimaryFacing.DesiredFacing;
 
-			drawText("PrimaryFacing: (%d[%d])[%s]", facing1.Raw, facing1.GetValue<5>(), facingTypes[primaryFacing]);
+			drawText("PrimaryFacing: (%05d[%02d])[%s]", facing1.Raw, facing1.GetValue<5>(), facingTypes[primaryFacing]);
 			updateLine();
 
-			drawText("PriLast: (%d)[%s]", facing11.Raw, facingTypes[facing11.GetValue<3>()]);
-			drawText("PriNext: (%d)[%s]", facing12.Raw, facingTypes[facing12.GetValue<3>()]);
+			drawText("PriStartFacing: (%05d)", facing11.Raw);
+			drawText("PriDesiredFacing: (%05d)", facing12.Raw);
 
 			const auto facing2 = pTechno->SecondaryFacing.Current();
 			const auto facing21 = pTechno->SecondaryFacing.StartFacing;
 			const auto facing22 = pTechno->SecondaryFacing.DesiredFacing;
 
-			drawText("SecondaryFacing: (%d[%d])[%s]", facing2.Raw, facing2.GetValue<5>(), facingTypes[facing2.GetValue<3>()]);
+			drawText("SecondaryFacing: (%05d[%02d])[%s]", facing2.Raw, facing2.GetValue<5>(), facingTypes[facing2.GetValue<3>()]);
 			updateLine();
 
-			drawText("SecLast: (%d)[%s]", facing21.Raw, facingTypes[facing21.GetValue<3>()]);
-			drawText("SecNext: (%d)[%s]", facing22.Raw, facingTypes[facing22.GetValue<3>()]);
+			drawText("SecStartFacing: (%05d)", facing21.Raw);
+			drawText("SecDesiredFacing: (%05d)", facing22.Raw);
 		}
 
 		const auto pExt = TechnoExt::ExtMap.Find(pTechno);
@@ -648,15 +649,15 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawInfo("First ArrayItem", pFoot, (pFoot->unknown_abstract_array_588.Count > 0 ? pFoot->unknown_abstract_array_588.GetItem(0) : nullptr));
 			drawInfo("First NavQueue", pFoot, (pFoot->NavQueue.Count > 0 ? pFoot->NavQueue.GetItem(0) : nullptr));
 
-			drawText("FootCell: (%d,%d)", pFoot->CurrentMapCoords.X, pFoot->CurrentMapCoords.Y);
-			drawText("LastCell: (%d,%d)", pFoot->LastMapCoords.X, pFoot->LastMapCoords.Y);
+			drawText("FootCell: (%03d,%03d)", pFoot->CurrentMapCoords.X, pFoot->CurrentMapCoords.Y);
+			drawText("LastCell: (%03d,%03d)", pFoot->LastMapCoords.X, pFoot->LastMapCoords.Y);
 
 			{
 				const auto destination = pFoot->Locomotor->Destination();
 				const auto headToCoord = pFoot->Locomotor->Head_To_Coord();
 
-				drawText("LocoDest: (%d,%d,%d)", destination.X, destination.Y, destination.Z);
-				drawText("LocoHead: (%d,%d,%d)", headToCoord.X, headToCoord.Y, headToCoord.Z);
+				drawText("LocoDest: (%05d,%05d,%05d)", destination.X, destination.Y, destination.Z);
+				drawText("LocoHead: (%05d,%05d,%05d)", headToCoord.X, headToCoord.Y, headToCoord.Z);
 			}
 
 			{
@@ -723,8 +724,11 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const auto pScriptType = pTeam->CurrentScript->Type;
 				const auto mission = pTeam->CurrentScript->CurrentMission;
 
-				drawText("Trigger: %s , Team: %s", (pTriggerType ? pTriggerType->ID : "N/A"), pTeamType->ID);
-				drawText("Task: %s , Script: %s", pTeamType->TaskForce->ID, pScriptType->get_ID());
+				drawText("Trigger: %s", (pTriggerType ? pTriggerType->ID : "N/A"));
+				drawText("Team: %s", pTeamType->ID);
+
+				drawText("Task: %s", pTeamType->TaskForce->ID);
+				drawText("Script: %s", pScriptType->get_ID());
 
 				drawText("Weights [Cur,Min,Max] -");
 
@@ -733,18 +737,21 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				else
 					drawText("[%.2f,%.2f,%.2f]", -1.0, -1.0, -1.0);
 
-				drawText("Script [Line=Action,Argument] -");
+				drawText("Script [Line=Act,Arg] -");
 				drawText("[%d=%d,%d]", mission, (mission >= 0 ? pScriptType->ScriptActions[mission].Action : -1), (mission >= 0 ? pScriptType->ScriptActions[mission].Argument : -1));
 			}
 			else
 			{
-				drawText("Trigger: %s , Team: %s", "N/A", "N/A");
-				drawText("Task: %s , Script: %s", "N/A", "N/A");
+				drawText("Trigger: %s", "N/A");
+				drawText("Team: %s", "N/A");
+
+				drawText("Task:", "N/A");
+				drawText("Script: %s", "N/A");
 
 				drawText("Weights [Cur,Min,Max] -");
 				drawText("[%.2f,%.2f,%.2f]", -1.0, -1.0, -1.0);
 
-				drawText("Script [Line=Action,Argument] -");
+				drawText("Script [Line=Act,Arg] -");
 				drawText("[%d=%d,%d]", -1, -1, -1);
 			}
 
@@ -883,7 +890,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawTime("BuildingGate", pBuilding->GateTimer);
 
 			drawText("BaseNodes: %d", pOwner->Base.BaseNodes.Count);
-			drawText("BaseCenter = (%d,%d)", pOwner->Base.Center.X, pOwner->Base.Center.Y);
+			drawText("BaseCenter = (%03d,%03d)", pOwner->Base.Center.X, pOwner->Base.Center.Y);
 
 			{
 				SuperClass* pSuper = nullptr;
@@ -937,8 +944,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		DisplayClass::Instance.ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
 		const auto pCell = MapClass::Instance.GetCellAt(cell);
 
-		drawText("Cell: %d , UniqueID: %d", MapClass::Instance.GetCellIndex(pCell->MapCoords), pCell->UniqueID);
-		drawText("Addr: 0x%X", reinterpret_cast<DWORD>(pCell));
+		drawText("Address: 0x%X", reinterpret_cast<DWORD>(pCell));
+		drawText("Cell: %d", MapClass::Instance.GetCellIndex(pCell->MapCoords));
+		drawText("UniqueID: %d", pCell->UniqueID);
 
 		{
 			constexpr const char* landTypes[12] = { "Clear", "Road", "Water", "Rock", "Wall", "Tiberium", "Beach", "Rough", "Ice", "Railroad", "Tunnel", "Weeds" };
@@ -948,7 +956,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawText("Slope = ( %d )", pCell->SlopeIndex);
 		}
 
-		drawText("Location = (%d,%d,%d)[%d,%d,%d]", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pCell->GetLevel());
+		drawText("Location = (%05d,%05d,%05d)[%03d,%03d,%02d]", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pCell->GetLevel());
 		updateLine();
 
 		{
@@ -1019,8 +1027,8 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 		const auto pMouse = &MouseClass::Instance;
 
-		drawText("Mouse: (%d,%d)", mouseXY1.X, mouseXY1.Y);
-		drawText("RadarScope: (%d,%d,%d,%d)", pMouse->unknown_rect_14DC.X, pMouse->unknown_rect_14DC.Y, pMouse->unknown_rect_14DC.Width, pMouse->unknown_rect_14DC.Height);
+		drawText("Mouse: (%04d,%04d)", mouseXY1.X, mouseXY1.Y);
+		drawText("RadarScope: (%03d,%03d,%02d,%02d)", pMouse->unknown_rect_14DC.X, pMouse->unknown_rect_14DC.Y, pMouse->unknown_rect_14DC.Width, pMouse->unknown_rect_14DC.Height);
 	}
 }
 
