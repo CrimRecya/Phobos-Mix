@@ -1,4 +1,5 @@
 #include "Body.h"
+#include "Ext/House/Body.h"
 
 #include <BitFont.h>
 
@@ -343,6 +344,19 @@ bool BuildingExt::ExtData::HandleInfiltrate(HouseClass* pInfiltratorHouse, int m
 		idx = this->TypeExtData->SpyEffect_InfiltratorSuperWeapon;
 		if (idx >= 0)
 			launchTheSWHere(pInfiltratorHouse->Supers.Items[idx], pInfiltratorHouse);
+
+		auto jamTime = this->TypeExtData->SpyEffect_RadarJamDuration;
+
+		if (jamTime > 0)
+		{
+			pVictimHouse->RecheckRadar = true;
+			auto pVictimExt = HouseExt::ExtMap.Find(pVictimHouse);
+			if (pVictimExt->SpyEffect_RadarJamTimer.TimeLeft < jamTime)
+			{
+				pVictimExt->SpyEffect_RadarJamTimer.Stop();
+				pVictimExt->SpyEffect_RadarJamTimer.Start(jamTime);
+			}
+		}
 	}
 
 	return true;
@@ -465,6 +479,7 @@ void BuildingExt::ExtData::Serialize(T& Stm)
 		.Process(this->CurrentLaserWeaponIndex)
 		.Process(this->PoweredUpToLevel)
 		.Process(this->EMPulseSW)
+		.Process(this->SecondaryArchiveTarget)
 		;
 }
 

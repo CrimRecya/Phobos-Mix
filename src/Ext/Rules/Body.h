@@ -67,6 +67,8 @@ public:
 		Valueable<bool> PlacementPreview;
 		TranslucencyLevel PlacementPreview_Translucency;
 
+		Valueable<bool> SuperWeaponSidebar_AllowByDefault;
+
 		Nullable<double> ConditionYellow_Terrain;
 		Nullable<double> Shield_ConditionYellow;
 		Nullable<double> Shield_ConditionRed;
@@ -94,13 +96,60 @@ public:
 		Valueable<double> HeightShadowScaling_MinScale;
 		double AirShadowBaseScale_log;
 
+		Valueable<bool> ExpandTurretRotation;
+		Valueable<bool> Turret_IdleRotate;
+		Valueable<bool> Turret_PointToMouse;
+		Valueable<bool> Turret_BodyFoundation;
+		Valueable<int> Turret_IdleRestartMin;
+		Valueable<int> Turret_IdleRestartMax;
+		Valueable<int> Turret_IdleIntervalMin;
+		Valueable<int> Turret_IdleIntervalMax;
+		Valueable<bool> FactoryProgressDisplay;
+		Valueable<bool> MainSWProgressDisplay;
+		Valueable<bool> InvulnerableDisplay;
+		Valueable<bool> TemporalLifeDisplay;
+		Valueable<Point2D> FactoryProgressDisplay_Offset;
+		Valueable<Point2D> MainSWProgressDisplay_Offset;
+		Valueable<Point2D> InvulnerableDisplay_Others_Offset;
+		Valueable<Point2D> InvulnerableDisplay_Buildings_Offset;
+		Valueable<Point2D> TemporalLifeDisplay_Others_Offset;
+		Valueable<Point2D> TemporalLifeDisplay_Buildings_Offset;
+		Valueable<int> FactoryProgressDisplay_Pips;
+		Valueable<int> MainSWProgressDisplay_Pips;
+		Valueable<Point2D> InvulnerableDisplay_Others_Pips;
+		Valueable<Point2D> InvulnerableDisplay_Buildings_Pips;
+		Valueable<int> TemporalLifeDisplay_Others_Pips;
+		Valueable<int> TemporalLifeDisplay_Buildings_Pips;
+		Valueable<SHPStruct*> ProgressDisplay_Others_PipsShape;
+		Valueable<SHPStruct*> ProgressDisplay_Buildings_PipsShape;
 		Valueable<bool> ExtendedAircraftMissions;
 		Valueable<bool> AmphibiousEnter;
 		Valueable<bool> AmphibiousUnload;
 		Valueable<bool> NoQueueUpToEnter;
 		Valueable<bool> NoQueueUpToUnload;
+		Valueable<bool> CheckExtraBaseNormal;
+		Valueable<bool> Cameo_AlwaysExist;
+		Valueable<SHPStruct*> Cameo_OverlayShapes;
+		ValueableVector<int> Cameo_OverlayFrames;
+		CustomPalette Cameo_OverlayPalette;
+		Valueable<bool> ExtendedBuildingPlacing;
+		Valueable<bool> AutoBuilding;
 
 		Valueable<bool> BuildingProductionQueue;
+		Valueable<bool> PlacementGrid_Expand;
+		Valueable<Vector3D<int>> PlacementGrid_LandFrames;
+		Valueable<Vector3D<int>> PlacementGrid_WaterFrames;
+		PhobosPCXFile SelectedInfantryMissingPCX;
+		PhobosPCXFile SelectedVehicleMissingPCX;
+		PhobosPCXFile SelectedAircraftMissingPCX;
+		PhobosPCXFile SelectedBuildingMissingPCX;
+		Valueable<bool> AIAutoDeployMCV;
+		Valueable<bool> AISetBaseCenter;
+		Valueable<bool> AIBiasSpawnCell;
+		Valueable<bool> AIForbidConYard;
+		Valueable<int> CleanUpAirBarrier;
+		Valueable<bool> ExtendedScatterAction;
+		Valueable<bool> MergeBuildingDamage;
 
 		Valueable<bool> AllowParallelAIQueues;
 		Valueable<bool> ForbidParallelAIQueues_Aircraft;
@@ -166,9 +215,58 @@ public:
 		Valueable<AnimTypeClass*> Promote_VeteranAnimation;
 		Valueable<AnimTypeClass*> Promote_EliteAnimation;
 
+		Valueable<bool> CylinderRangefinding;
+		Valueable<bool> StopPlanningOnEnter;
+		Valueable<bool> StrafingTargetScatter;
+		Nullable<int> AINormalTargetingDelay;
+		Nullable<int> PlayerNormalTargetingDelay;
+		Nullable<int> AIGuardAreaTargetingDelay;
+		Nullable<int> PlayerGuardAreaTargetingDelay;
+		Valueable<bool> PlayerAttackIronCurtain;
+		Valueable<bool> AIAttackIronCurtain;
+		Valueable<bool> PlayerAutoRepair;
+		Valueable<bool> PlayerReturnFire_Smarter;
+		NullableIdx<VoxClass> EVA_WeCaptureABuilding;
+		NullableIdx<VoxClass> EVA_OurBuildingIsCaptured;
+		Valueable<bool> PlayerGuardModePursuit;
+		Valueable<double> PlayerGuardModeGuardRangeMultiplier;
+		Valueable<Leptons> PlayerGuardModeGuardRangeAddend;
+		Valueable<Leptons> PlayerGuardModeGuardRangeMax;
+		Valueable<Leptons> PlayerGuardStationaryStray;
+		Valueable<bool> AIGuardModePursuit;
+		Valueable<double> AIGuardModeGuardRangeMultiplier;
+		Valueable<Leptons> AIGuardModeGuardRangeAddend;
+		Valueable<Leptons> AIGuardModeGuardRangeMax;
+		Valueable<Leptons> AIGuardStationaryStray;
+		Valueable<bool> UseGlobalDeathWeaponDamage;
+		Valueable<bool> NonVehExplodeOnDestroy;
+		Valueable<bool> FireDeathWeaponOnCrushed;
+		Valueable<bool> CrushBuildingOnAnyCell;
+		Valueable<bool> RallyPointOnTechno;
+		Valueable<bool> RallyPointForceMove;
+		Valueable<bool> RallyPointAreaGuard;
+		Valueable<bool> PlayerDestroyWalls;
+		Valueable<bool> DestroyOwnerlessWalls;
+		Valueable<bool> AIAngerOnAlly;
+		Valueable<bool> FollowTargetSelf;
+		Valueable<bool> DistributeTargetingFrame;
+		Valueable<bool> DistributeTargetingFrame_AIOnly;
+		Valueable<bool> AttackMove_IgnoreWeaponCheck;
+		Nullable<bool> AttackMove_StopWhenTargetAcquired;
+
+		Valueable<bool> JumpjetClimbPredictHeight;
+		Valueable<bool> JumpjetClimbWithoutCutOut;
+
 		Valueable<double> DamageOwnerMultiplier;
 		Valueable<double> DamageAlliesMultiplier;
 		Valueable<double> DamageEnemiesMultiplier;
+
+		Valueable<bool> DirectionalArmor;
+		Valueable<float> DirectionalArmor_FrontMultiplier;
+		Valueable<float> DirectionalArmor_SideMultiplier;
+		Valueable<float> DirectionalArmor_BackMultiplier;
+		Valueable<float> DirectionalArmor_FrontField;
+		Valueable<float> DirectionalArmor_BackField;
 
 		Valueable<double> AircraftLevelLightMultiplier;
 		Valueable<double> JumpjetLevelLightMultiplier;
@@ -183,6 +281,10 @@ public:
 		Valueable<bool> CombatAlert_UseFeedbackVoice;
 		Valueable<bool> CombatAlert_UseAttackVoice;
 		Valueable<bool> CombatAlert_UseEVA;
+
+		ValueableIdx<VocClass> StartDistributionModeSound;
+		ValueableIdx<VocClass> EndDistributionModeSound;
+		ValueableIdx<VocClass> AddDistributionModeCommandSound;
 
 		Nullable<Vector3D<float>> VoxelLightSource;
 		// Nullable<Vector3D<float>> VoxelShadowLightSource;
@@ -206,6 +308,8 @@ public:
 		Valueable<bool> AIAllToHunt;
 		Valueable<bool> RepairBaseNodes;
 
+		Valueable<bool> EnableAggressiveStance;
+
 		Valueable<bool> WarheadParticleAlphaImageIsLightFlash;
 		Valueable<int> CombatLightDetailLevel;
 		Valueable<int> LightFlashAlphaImageDetailLevel;
@@ -213,12 +317,47 @@ public:
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
+		Valueable<bool> ExtraTargeting_OnLoseTarget;
+		Valueable<bool> ExtraTargeting_OnStopCommand;
+		Valueable<bool> ExtraTargeting_OnNoTargetAssigned;
+		Valueable<double> CanAttackMeThreatBonus;
+
+		Valueable<bool> AllyShareControl;
+
+		Valueable<bool> InTransportInfantryAmmoFix;
+
+		Valueable<bool> UpdateInLimbo_Occupier;
+		Valueable<bool> UpdateInLimbo_NormalPassenger;
+		Valueable<bool> UpdateInLimbo_LimboLaunch;
+
+		Valueable<bool> InvisoLatencyFix;
+
+		Valueable<bool> UnifiedRadarColor;
+		Valueable<ColorStruct> UnifiedRadarColor_Land;
+		Valueable<ColorStruct> UnifiedRadarColor_Water;
+		Valueable<ColorStruct> UnifiedRadarColor_Cliff;
+		Valueable<ColorStruct> UnifiedRadarColor_Self;
+		Valueable<ColorStruct> UnifiedRadarColor_Ally;
+		Valueable<ColorStruct> UnifiedRadarColor_Enemy;
+		Valueable<ColorStruct> UnifiedRadarColor_Neutral;
+		int UnifiedTechnoColor_SelfColorIdx;
+		int UnifiedTechnoColor_AllyColorIdx;
+		int UnifiedTechnoColor_EnemyColorIdx;
+		int UnifiedTechnoColor_NeutralColorIdx;
+
 		Valueable<double> ProneSpeed_Crawls;
 		Valueable<double> ProneSpeed_NoCrawls;
 
 		Valueable<double> DamagedSpeed;
 
+		Valueable<double> WreckageInitialHealthPercent;
+
+		Valueable<int> AttachmentTopLayerMinHeight;
+		Valueable<int> AttachmentUndergroundLayerMaxHeight;
+
 		Valueable<bool> HarvesterScanAfterUnload;
+
+		Valueable<bool> BalloonHoverPathingFix;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -254,6 +393,8 @@ public:
 			, PlacementPreview { false }
 			, PlacementPreview_Translucency { 75 }
 
+			, SuperWeaponSidebar_AllowByDefault { false }
+
 			, Shield_ConditionYellow { }
 			, Shield_ConditionRed { }
 			, Pips_Shield_Background { }
@@ -279,13 +420,60 @@ public:
 			, HeightShadowScaling_MinScale { 0.0 }
 			, AirShadowBaseScale_log { 0.693376137 }
 
+			, ExpandTurretRotation { false }
+			, Turret_IdleRotate { false }
+			, Turret_PointToMouse { false }
+			, Turret_BodyFoundation { false }
+			, Turret_IdleRestartMin { 150 }
+			, Turret_IdleRestartMax { 300 }
+			, Turret_IdleIntervalMin { 150 }
+			, Turret_IdleIntervalMax { 450 }
+			, FactoryProgressDisplay { false }
+			, MainSWProgressDisplay { false }
+			, InvulnerableDisplay { false }
+			, TemporalLifeDisplay { false }
+			, FactoryProgressDisplay_Offset { { 0, 0 } }
+			, MainSWProgressDisplay_Offset { { 0, 0 } }
+			, InvulnerableDisplay_Others_Offset { { 0, 0 } }
+			, InvulnerableDisplay_Buildings_Offset { { 0, 0 } }
+			, TemporalLifeDisplay_Others_Offset { { 0, 0 } }
+			, TemporalLifeDisplay_Buildings_Offset { { 0, 0 } }
+			, FactoryProgressDisplay_Pips { 3 }
+			, MainSWProgressDisplay_Pips { 5 }
+			, InvulnerableDisplay_Others_Pips { { 17, 18 } }
+			, InvulnerableDisplay_Buildings_Pips { { 5, 4 } }
+			, TemporalLifeDisplay_Others_Pips { 17 }
+			, TemporalLifeDisplay_Buildings_Pips { 5 }
+			, ProgressDisplay_Others_PipsShape { FileSystem::PIPS_SHP }
+			, ProgressDisplay_Buildings_PipsShape { FileSystem::PIPS_SHP }
 			, ExtendedAircraftMissions { false }
 			, AmphibiousEnter { false }
 			, AmphibiousUnload { false }
 			, NoQueueUpToEnter { false }
 			, NoQueueUpToUnload { false }
+			, CheckExtraBaseNormal { false }
+			, Cameo_AlwaysExist { false }
+			, Cameo_OverlayShapes { FileSystem::PIPS_SHP }
+			, Cameo_OverlayFrames {}
+			, Cameo_OverlayPalette {}
+			, ExtendedBuildingPlacing { false }
+			, AutoBuilding { false }
 
 			, BuildingProductionQueue { false }
+			, PlacementGrid_Expand { false }
+			, PlacementGrid_LandFrames { { 1, 0, 0 } }
+			, PlacementGrid_WaterFrames { { 1, 0, 0 } }
+			, AIAutoDeployMCV { true }
+			, AISetBaseCenter { true }
+			, AIBiasSpawnCell { false }
+			, AIForbidConYard { false }
+			, SelectedInfantryMissingPCX {}
+			, SelectedVehicleMissingPCX {}
+			, SelectedAircraftMissingPCX {}
+			, SelectedBuildingMissingPCX {}
+			, CleanUpAirBarrier { 0 }
+			, ExtendedScatterAction { false }
+			, MergeBuildingDamage { false }
 
 			, AllowParallelAIQueues { true }
 			, ForbidParallelAIQueues_Aircraft { false }
@@ -341,9 +529,58 @@ public:
 			, ShowDesignatorRange { true }
 			, DropPodTrailer { }
 			, PodImage { }
+			, CylinderRangefinding { false }
+			, StopPlanningOnEnter { true }
+			, StrafingTargetScatter { true }
+			, AINormalTargetingDelay {}
+			, PlayerNormalTargetingDelay {}
+			, AIGuardAreaTargetingDelay {}
+			, PlayerGuardAreaTargetingDelay {}
+			, PlayerAttackIronCurtain { true }
+			, AIAttackIronCurtain { false }
+			, PlayerAutoRepair { false }
+			, PlayerReturnFire_Smarter { false }
+			, EVA_WeCaptureABuilding {}
+			, EVA_OurBuildingIsCaptured {}
+			, PlayerGuardModePursuit { true }
+			, PlayerGuardModeGuardRangeMultiplier { 2.0 }
+			, PlayerGuardModeGuardRangeAddend { Leptons(0) }
+			, PlayerGuardModeGuardRangeMax { Leptons(4096) }
+			, PlayerGuardStationaryStray { Leptons(-256) }
+			, AIGuardModePursuit { true }
+			, AIGuardModeGuardRangeMultiplier { 2.0 }
+			, AIGuardModeGuardRangeAddend { Leptons(0) }
+			, AIGuardModeGuardRangeMax { Leptons(4096) }
+			, AIGuardStationaryStray { Leptons(-256) }
+			, UseGlobalDeathWeaponDamage { false }
+			, NonVehExplodeOnDestroy { false }
+			, FireDeathWeaponOnCrushed { false }
+			, CrushBuildingOnAnyCell { false }
+			, RallyPointOnTechno { false }
+			, RallyPointForceMove { false }
+			, RallyPointAreaGuard { false }
+			, PlayerDestroyWalls { false }
+			, DestroyOwnerlessWalls { false }
+			, AIAngerOnAlly { true }
+			, FollowTargetSelf { false }
+			, DistributeTargetingFrame { false }
+			, DistributeTargetingFrame_AIOnly { true }
+			, AttackMove_IgnoreWeaponCheck { false }
+			, AttackMove_StopWhenTargetAcquired {}
+
+			, JumpjetClimbPredictHeight { false }
+			, JumpjetClimbWithoutCutOut { false }
 			, DamageOwnerMultiplier { 1.0 }
 			, DamageAlliesMultiplier { 1.0 }
 			, DamageEnemiesMultiplier { 1.0 }
+
+			, DirectionalArmor { false }
+			, DirectionalArmor_FrontMultiplier { 1.0 }
+			, DirectionalArmor_SideMultiplier { 1.0 }
+			, DirectionalArmor_BackMultiplier { 1.0 }
+			, DirectionalArmor_FrontField { 0.5 }
+			, DirectionalArmor_BackField { 0.5 }
+
 			, AircraftLevelLightMultiplier { 1.0 }
 			, JumpjetLevelLightMultiplier { 0.0 }
 			, VoxelLightSource { }
@@ -359,6 +596,9 @@ public:
 			, CombatAlert_UseFeedbackVoice { true }
 			, CombatAlert_UseAttackVoice { true }
 			, CombatAlert_UseEVA { true }
+			, StartDistributionModeSound { -1 }
+			, EndDistributionModeSound { -1 }
+			, AddDistributionModeCommandSound { -1 }
 			, UseFixedVoxelLighting { false }
 			, AttackMove_Aggressive { false }
 			, AttackMove_UpdateTarget { false }
@@ -374,17 +614,49 @@ public:
 			, AIFireSaleDelay { 0 }
 			, AIAllToHunt { true }
 			, RepairBaseNodes { false }
+			, EnableAggressiveStance { false }
 			, WarheadParticleAlphaImageIsLightFlash { false }
 			, CombatLightDetailLevel { 0 }
 			, LightFlashAlphaImageDetailLevel { 0 }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
+
+			, ExtraTargeting_OnLoseTarget { false }
+			, ExtraTargeting_OnStopCommand { false }
+			, ExtraTargeting_OnNoTargetAssigned { false }
+			, CanAttackMeThreatBonus { 0.0 }
+			, AllyShareControl { false }
+			, InTransportInfantryAmmoFix { false }
+			, UpdateInLimbo_Occupier { false }
+			, UpdateInLimbo_NormalPassenger { false }
+			, UpdateInLimbo_LimboLaunch { false }
+			, InvisoLatencyFix { false }
+			, UnifiedRadarColor { false }
+			, UnifiedRadarColor_Land { ColorStruct(255,127,0) }
+			, UnifiedRadarColor_Water { ColorStruct(95,127,207) }
+			, UnifiedRadarColor_Cliff { ColorStruct(63,63,63) }
+			, UnifiedRadarColor_Self { ColorStruct(0,255,0) }
+			, UnifiedRadarColor_Ally { ColorStruct(255,255,0) }
+			, UnifiedRadarColor_Enemy { ColorStruct(255,0,0) }
+			, UnifiedRadarColor_Neutral { ColorStruct(255,255,255) }
+			, UnifiedTechnoColor_SelfColorIdx { -1 }
+			, UnifiedTechnoColor_AllyColorIdx { -1 }
+			, UnifiedTechnoColor_EnemyColorIdx { -1 }
+			, UnifiedTechnoColor_NeutralColorIdx { -1 }
+
 			, ProneSpeed_Crawls { 0.67 }
 			, ProneSpeed_NoCrawls { 1.5 }
 
 			, DamagedSpeed { 0.75 }
 
+			, WreckageInitialHealthPercent { 0.1 }
+
+			, AttachmentTopLayerMinHeight { 500 }
+			, AttachmentUndergroundLayerMaxHeight { -256 }
+
 			, HarvesterScanAfterUnload { false }
+			
+			, BalloonHoverPathingFix { true }
 		{ }
 
 		virtual ~ExtData() = default;

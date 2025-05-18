@@ -17,6 +17,10 @@
 #include <Ext/Side/Body.h>
 #include <Ext/Surface/Body.h>
 #include <Ext/House/Body.h>
+#include <Ext/Scenario/Body.h>
+#include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
+#include <Ext/Sidebar/UniqueButton/UniqueTechnoColumnClass.h>
+#include <Ext/Sidebar/SelectedButton/SelectedInfoClass.h>
 
 #include <sstream>
 #include <iomanip>
@@ -32,6 +36,13 @@ inline const wchar_t* PhobosToolTip::GetUIDescription(TechnoTypeExt::ExtData* pD
 {
 	return Phobos::Config::ToolTipDescriptions && !pData->UIDescription.Get().empty()
 		? pData->UIDescription.Get().Text
+		: nullptr;
+}
+
+inline const wchar_t* PhobosToolTip::GetUnbuildableUIDescription(TechnoTypeExt::ExtData* pData) const
+{
+	return Phobos::Config::ToolTipDescriptions && !pData->UIDescription_Unbuildable.Get().empty()
+		? pData->UIDescription_Unbuildable.Get().Text
 		: nullptr;
 }
 
@@ -158,6 +169,12 @@ void PhobosToolTip::HelpText_Techno(TechnoTypeClass* pType)
 	if (auto pDesc = this->GetUIDescription(pData))
 		oss << L"\n" << pDesc;
 
+	if (pData->IsGreyCameoForCurrentPlayer)
+	{
+		if (auto pExDesc = this->GetUnbuildableUIDescription(pData))
+			oss << L"\n" << pExDesc;
+	}
+
 	this->TextBuffer = oss.str();
 }
 
@@ -228,6 +245,59 @@ DEFINE_HOOK(0x6A9316, SidebarClass_StripClass_HelpText, 0x6)
 	PhobosToolTip::Instance.HelpText(pThis->Cameos[0]); // pStrip->Cameos[nID] in fact
 	R->EAX(L"X");
 	return 0x6A93DE;
+}
+
+DEFINE_HOOK(0x4AE51E, DisplayClass_GetToolTip_HelpText, 0x6)
+{
+	enum { ApplyToolTip = 0x4AE69D };
+
+	if (SWSidebarClass::IsEnabled())
+	{
+		if (const auto button = SWSidebarClass::Instance.CurrentButton)
+		{
+			PhobosToolTip::Instance.IsCameo = true;
+
+			if (PhobosToolTip::Instance.IsEnabled())
+			{
+				PhobosToolTip::Instance.HelpText_Super(button->SuperIndex);
+				R->EAX(PhobosToolTip::Instance.GetBuffer());
+			}
+			else
+			{
+				const auto pSuper = HouseClass::CurrentPlayer->Supers[button->SuperIndex];
+				R->EAX(pSuper->Type->UIName);
+			}
+
+			return ApplyToolTip;
+		}
+		else if (SWSidebarClass::Instance.CurrentColumn
+			|| SWSidebarClass::Instance.ToggleButton && SWSidebarClass::Instance.ToggleButton->IsHovering)
+		{
+			R->EAX(0);
+			return ApplyToolTip;
+		}
+	}
+
+	const auto uniqueIndex = UniqueTechnoColumnClass::Instance.Hovering;
+
+	if (uniqueIndex >= 0)
+	{
+		auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
+
+		if (uniqueIndex < static_cast<int>(vec.size()))
+		{
+			R->EAX(vec[uniqueIndex]->TypeExtData->OwnerObject()->UIName);
+			return ApplyToolTip;
+		}
+	}
+
+	if (SelectedInfoClass::Instance.IsHovering)
+	{
+		R->EAX(0);
+		return ApplyToolTip;
+	}
+
+	return 0;
 }
 
 // TODO: reimplement CCToolTip::Draw2 completely
@@ -337,7 +407,10 @@ DEFINE_HOOK(0x478FDC, CCToolTip_Draw2_FillRect, 0x5)
 
 	const bool isCameo = PhobosToolTip::Instance.IsCameo;
 
-	if (isCameo && Phobos::UI::AnchoredToolTips && PhobosToolTip::Instance.IsEnabled() && Phobos::Config::ToolTipDescriptions)
+	if (isCameo && Phobos::UI::AnchoredToolTips
+		&& PhobosToolTip::Instance.IsEnabled()
+		&& Phobos::Config::ToolTipDescriptions
+		&& !SWSidebarClass::Instance.CurrentButton)
 	{
 		LEA_STACK(LTRBStruct*, a2, STACK_OFFSET(0x44, -0x20));
 		auto x = DSurface::SidebarBounds.X - pRect->Width - 2;

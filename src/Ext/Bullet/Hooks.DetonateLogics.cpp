@@ -40,15 +40,99 @@ DEFINE_HOOK(0x4692BD, BulletClass_Logics_ApplyMindControl, 0x6)
 	return SkipGameCode;
 }
 
-DEFINE_HOOK(0x469A75, BulletClass_Logics_DamageHouse, 0x7)
+DEFINE_HOOK(0x469A69, BulletClass_Detonate_DamageArea, 0x6)
 {
+	enum { SkipDamageArea = 0x469A88 };
+
 	GET(BulletClass*, pThis, ESI);
-	GET(HouseClass*, pHouse, ECX);
+	GET(TechnoClass*, pTechno, EAX);
+	GET(int, damage, EDX);
+	GET_BASE(CoordStruct*, coord, 0x8);
 
-	if (!pHouse)
-		R->ECX(BulletExt::ExtMap.Find(pThis)->FirerHouse);
+	const auto pExt = BulletExt::ExtMap.Find(pThis);
+	const auto pHouse = pTechno ? pTechno->Owner : pExt->FirerHouse;
+	const auto pWH = pThis->WH;
+	const auto pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	return 0;
+	do
+	{
+		if (pWHExt->Directional)
+		{
+			if (const auto pTraj = pExt->Trajectory.get())
+			{
+				const auto flag = pTraj->Flag();
+
+				if ((flag != TrajectoryFlag::Engrave && flag != TrajectoryFlag::Tracing)
+					&& (pTraj->MovingVelocity.X != 0.0 || pTraj->MovingVelocity.Y != 0.0))
+				{
+					WarheadTypeExt::HitDirection = DirStruct((-1) * Math::atan2(pTraj->MovingVelocity.Y, pTraj->MovingVelocity.X)).GetValue<16>();
+					break;
+				}
+			}
+			else if (pThis->Type->Inviso)
+			{
+				const auto delta = Point2D { pThis->SourceCoords.X - pThis->TargetCoords.X, pThis->SourceCoords.Y - pThis->TargetCoords.Y };
+
+				if (delta.X != 0 || delta.Y != 0)
+				{
+					WarheadTypeExt::HitDirection = DirStruct(Math::atan2(static_cast<double>(delta.Y), static_cast<double>(delta.X))).GetValue<16>();
+					break;
+				}
+			}
+			else if (pThis->Velocity.X != 0.0 || pThis->Velocity.Y != 0.0)
+			{
+				WarheadTypeExt::HitDirection = DirStruct((-1) * Math::atan2(pThis->Velocity.Y, pThis->Velocity.X)).GetValue<16>();
+				break;
+			}
+		}
+
+		WarheadTypeExt::HitDirection = -1;
+	}
+	while (false);
+
+	if (pWHExt->NoCellSpread && damage)
+	{
+		DamageAreaResult result = DamageAreaResult::Missed;
+
+		if (const auto pObject = abstract_cast<ObjectClass*>(pThis->Target))
+		{
+			auto dist = coord->DistanceFrom(pObject->GetCoords());
+			const auto isBuilding = pObject->WhatAmI() == AbstractType::Building;
+
+			if (isBuilding)
+			{
+				const auto pBuildingType = static_cast<BuildingClass*>(pObject)->Type;
+				dist -= ((pBuildingType->GetFoundationHeight(false) + pBuildingType->GetFoundationWidth()) << 6);
+			}
+
+			if (dist <= pWHExt->NoCellSpread_SnapDistance.Get())
+			{
+				if (!(pObject->AbstractFlags & AbstractFlags::Techno))
+				{
+					result = DamageAreaResult::Hit;
+					pObject->ReceiveDamage(&damage, 0, pWH, pThis->Owner, false, false, pHouse);
+				}
+				else if (pObject->IsAlive && pObject->Health > 0 && pObject->IsOnMap && !pObject->InLimbo
+					&& (!isBuilding || !static_cast<BuildingClass*>(pObject)->Type->InvisibleInGame)
+					&& !(pObject == pThis->Owner && pObject->GetTechnoType()->DamageSelf && pWH != RulesClass::Instance->CrushWarhead))
+				{
+					result = (pObject->IsIronCurtained() && !static_cast<TechnoClass*>(pObject)->ForceShielded)
+						? DamageAreaResult::Nullified : DamageAreaResult::Hit;
+					pObject->ReceiveDamage(&damage, 0, pWH, pThis->Owner, false, false, pHouse);
+				}
+			}
+		}
+
+		R->EAX(result);
+	}
+	else
+	{
+		R->EAX(MapClass::Instance.DamageArea(*coord, damage, pTechno, pWH, true, pHouse));
+	}
+
+	WarheadTypeExt::HitDirection = -1;
+
+	return SkipDamageArea;
 }
 
 #pragma region DetonateOnAllMapObjects
@@ -213,6 +297,15 @@ DEFINE_HOOK(0x469C46, BulletClass_Logics_DamageAnimSelected, 0x8)
 		GET(BulletClass*, pThis, ESI);
 		LEA_STACK(CoordStruct*, coords, STACK_OFFSET(0xA4, -0x40));
 		auto const pWHExt = WarheadTypeExt::ExtMap.Find(pThis->WH);
+		int cellHeight = MapClass::Instance.GetCellFloorHeight(*coords);
+		auto newCrds = pWHExt->PlayAnimAboveSurface ? CoordStruct { coords->X, coords->Y, Math::max(cellHeight, coords->Z) } : *coords;
+
+		if (cellHeight > newCrds.Z && !pWHExt->PlayAnimUnderground)
+		{
+			R->EAX(createdAnim);
+			return SkipGameCode;
+		}
+
 		const bool splashed = pWHExt->Splashed;
 		int creationInterval = splashed ? pWHExt->SplashList_CreationInterval : pWHExt->AnimList_CreationInterval;
 		int* remainingInterval = &pWHExt->RemainingAnimCreationInterval;
@@ -261,7 +354,7 @@ DEFINE_HOOK(0x469C46, BulletClass_Logics_DamageAnimSelected, 0x8)
 				if (!pType)
 					continue;
 
-				auto animCoords = *coords;
+				auto animCoords = newCrds;
 
 				if (allowScatter)
 				{
@@ -341,6 +434,57 @@ DEFINE_HOOK(0x469AA4, BulletClass_Logics_Extras, 0x5)
 			else
 				WarheadTypeExt::ExtMap.Find(pWH)->DamageAreaWithTarget(*coords, damage, pThis->Owner, pWH, true, pOwner, abstract_cast<TechnoClass*>(pThis->Target));
 		}
+
+		// Unlimbo the launcher
+		if (!pThis->WH->Parasite && pWeaponExt->UnlimboDetonate)
+		{
+			auto const pExt = BulletExt::ExtMap.Find(pThis);
+
+			if (auto const pFirer = pExt->LimboedLauncher)
+			{
+				bool unlimboResult = false;
+
+				if (pWeaponExt->UnlimboDetonate_Force)
+				{
+					++Unsorted::ScenarioInit;
+					unlimboResult = pFirer->Unlimbo(*coords, pExt->LimboedDir);
+					--Unsorted::ScenarioInit;
+				}
+				else
+				{
+					auto const pFirerType = pFirer->GetTechnoType();
+					auto const isBridge = MapClass::Instance.GetCellAt(*coords)->ContainsBridge();
+					auto const nearByCell = MapClass::Instance.NearByLocation(CellClass::Coord2Cell(*coords),
+						pFirerType->SpeedType, -1, pFirerType->MovementZone, isBridge, 1, 1, false,
+						false, false, isBridge, CellStruct::Empty, false, false);
+
+					if (nearByCell != CellStruct::Empty)
+						unlimboResult = pFirer->Unlimbo(CellClass::Cell2Coord(nearByCell), pExt->LimboedDir);
+				}
+
+				if (unlimboResult)
+				{
+					if (pFirer->ShouldBeReselectOnUnlimbo && pFirer->Owner->IsControlledByCurrentPlayer())
+					{
+						pFirer->ShouldBeReselectOnUnlimbo = false;
+						pFirer->Select();
+					}
+
+					if (auto const pTeam = pFirer->OldTeam)
+					{
+						if (auto const pFoot = abstract_cast<FootClass*>(pFirer))
+							pTeam->AddMember(pFoot, 0);
+					}
+
+					pFirer->UpdateSight(0, 0, 0, 0, 0);
+				}
+				else
+				{
+					pFirer->Health = 0;
+					pFirer->UnInit();
+				}
+			}
+		}
 	}
 
 	// Return to sender
@@ -366,6 +510,68 @@ DEFINE_HOOK(0x469AA4, BulletClass_Logics_Extras, 0x5)
 
 	WarheadTypeExt::ExtMap.Find(pThis->WH)->InDamageArea = true;
 
+	return 0;
+}
+
+// In vanilla, only ground is allowed, and Ares added air and top.
+// But it seems that underground and surface is also working fine?
+DEFINE_HOOK(0x469453, BulletClass_Logics_TemporalUnderGround, 0x6)
+{
+	enum { NotOK = 0x469AA4, OK = 0x469475 };
+
+	GET(FootClass*, pTarget, EAX);
+
+	Layer layer = pTarget->InWhichLayer();
+
+	if (layer != Layer::None)
+		return OK;
+
+	return NotOK;
+}
+
+// TODO : auto target related impl.
+DEFINE_HOOK(0x4899DA, MapClass_DamageArea_DamageUnderGround, 0x7)
+{
+	GET_STACK(bool, isNullified, STACK_OFFSET(0xE0, -0xC9));
+	GET_STACK(int, damage, STACK_OFFSET(0xE0, -0xBC));
+	GET_STACK(CoordStruct*, pCrd, STACK_OFFSET(0xE0, -0xB8));
+	GET_BASE(WarheadTypeClass*, pWH, 0xC);
+	GET_BASE(TechnoClass*, pSrcTechno, 0x8);
+	GET_BASE(HouseClass*, pSrcHouse, 0x14);
+	GET_STACK(bool, hitted, STACK_OFFSET(0xE0, -0xC1)); // bHitted = true
+
+	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
+
+	if (isNullified || !pWHExt || !pWHExt->AffectsUnderground)
+		return 0;
+
+	bool cylinder = pWHExt->CellSpread_Cylinder;
+	float spread = pWH->CellSpread;
+
+	for (auto const& pTechno : TechnoClass::Array)
+	{
+		if (pTechno->InWhichLayer() == Layer::Underground && // Layer.
+			pTechno->IsAlive && !pTechno->IsIronCurtained() &&
+			!pTechno->IsOnMap && // Underground is not on map.
+			!pTechno->InLimbo)
+		{
+			double dist = 0.0;
+			auto technoCoords = pTechno->GetCoords();
+
+			if (cylinder)
+				dist = CoordStruct { technoCoords.X - pCrd->X, technoCoords.Y - pCrd->Y, 0 }.Magnitude();
+			else
+				dist = technoCoords.DistanceFrom(*pCrd);
+
+			if (dist <= spread * 256)
+			{
+				pTechno->ReceiveDamage(&damage, (int)dist, pWH, pSrcTechno, false, false, pSrcHouse);
+				hitted = true;
+			}
+		}
+	}
+
+	R->Stack8(STACK_OFFSET(0xE0, -0xC1), true);
 	return 0;
 }
 

@@ -48,12 +48,15 @@ public:
 		ValueableVector<int> ChargeTurret_Delays;
 		Valueable<bool> OmniFire_TurnToTarget;
 		Valueable<bool> FireOnce_ResetSequence;
+		Valueable<bool> TurretRecoil_Suppress;
 		ValueableVector<WarheadTypeClass*> ExtraWarheads;
 		ValueableVector<int> ExtraWarheads_DamageOverrides;
 		ValueableVector<double> ExtraWarheads_DetonationChances;
 		ValueableVector<bool> ExtraWarheads_FullDetonation;
 		Nullable<WarheadTypeClass*> AmbientDamage_Warhead;
 		Valueable<bool> AmbientDamage_IgnoreTarget;
+		AEAttachInfoTypeClass AttachEffects;
+		Valueable<bool> AttachEffect_Enable;
 		ValueableVector<AttachEffectTypeClass*> AttachEffect_RequiredTypes;
 		ValueableVector<AttachEffectTypeClass*> AttachEffect_DisallowedTypes;
 		std::vector<std::string> AttachEffect_RequiredGroups;
@@ -67,6 +70,14 @@ public:
 		Valueable<Leptons> KeepRange;
 		Valueable<bool> KeepRange_AllowAI;
 		Valueable<bool> KeepRange_AllowPlayer;
+		Nullable<bool> CylinderRangefinding;
+		Nullable<bool> AttackIronCurtain;
+		Valueable<bool> Burst_NoDelay;
+		Valueable<bool> UnlimboDetonate;
+		Valueable<bool> UnlimboDetonate_Force;
+		Valueable<bool> ResetGattlingValue;
+		Valueable<bool> AddtionalDamage_GattlingValue;
+		Valueable<double> AddtionalDamage_GattlingValue_Mult;
 		Valueable<bool> KickOutPassengers;
 
 		Nullable<ColorStruct> Beam_Color;
@@ -103,12 +114,15 @@ public:
 			, ChargeTurret_Delays {}
 			, OmniFire_TurnToTarget { false }
 			, FireOnce_ResetSequence { true }
+			, TurretRecoil_Suppress { false }
 			, ExtraWarheads {}
 			, ExtraWarheads_DamageOverrides {}
 			, ExtraWarheads_DetonationChances {}
 			, ExtraWarheads_FullDetonation {}
 			, AmbientDamage_Warhead {}
 			, AmbientDamage_IgnoreTarget { false }
+			, AttachEffects {}
+			, AttachEffect_Enable { false }
 			, AttachEffect_RequiredTypes {}
 			, AttachEffect_DisallowedTypes {}
 			, AttachEffect_RequiredGroups {}
@@ -122,6 +136,14 @@ public:
 			, KeepRange { Leptons(0) }
 			, KeepRange_AllowAI { false }
 			, KeepRange_AllowPlayer { false }
+			, CylinderRangefinding {}
+			, AttackIronCurtain {}
+			, Burst_NoDelay { false }
+			, UnlimboDetonate { false }
+			, UnlimboDetonate_Force { false }
+			, ResetGattlingValue { false }
+			, AddtionalDamage_GattlingValue { false }
+			, AddtionalDamage_GattlingValue_Mult { 1.0 }
 			, KickOutPassengers { true }
 			, Beam_Color {}
 			, Beam_Duration { 15 }

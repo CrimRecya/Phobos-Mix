@@ -186,7 +186,7 @@ void ScriptExt::Mission_Move(TeamClass* pTeam, int calcThreatMode = 0, bool pick
 	}
 }
 
-TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int calcThreatMode = 0, bool pickAllies = false, int attackAITargetType = -1, int idxAITargetTypeItem = -1)
+TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int calcThreatMode = 0, bool pickAllies = false, int attackAITargetType = -1, int idxAITargetTypeItem = -1, bool needAttackableByLeader)
 {
 	TechnoClass* bestObject = nullptr;
 	double bestVal = -1;
@@ -211,6 +211,11 @@ TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int cal
 		auto object = TechnoClass::Array.GetItem(i);
 		auto objectType = object->GetTechnoType();
 		auto pTechnoType = pTechno->GetTechnoType();
+		auto objectTypeBuilding = abstract_cast<BuildingTypeClass*>(objectType);
+		auto objectTypeUnit = abstract_cast<UnitTypeClass*>(objectType);
+		auto objectTypeUnitDeploysIntoType = objectTypeUnit ? objectTypeUnit->DeploysInto : nullptr;
+		auto objectTypeExt = TechnoTypeExt::ExtMap.Find(objectType);
+		bool keepAlive = objectTypeExt->KeepAlive.Get(objectTypeBuilding ? !objectTypeBuilding->Insignificant && !objectTypeBuilding->DontScore : false);
 
 		if (!object || !objectType || !pTechnoType)
 			continue;
@@ -255,7 +260,8 @@ TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int cal
 		if (object != pTechno
 			&& IsUnitAvailable(object, true)
 			&& ((pickAllies && pTechno->Owner->IsAlliedWith(object))
-				|| (!pickAllies && !pTechno->Owner->IsAlliedWith(object))))
+				|| (!pickAllies && !pTechno->Owner->IsAlliedWith(object)))
+			&& (!needAttackableByLeader || pTechno->GetFireErrorWithoutRange(object, pTechno->SelectWeapon(object)) != FireError::ILLEGAL))
 		{
 			double value = 0;
 
@@ -324,6 +330,39 @@ TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int cal
 							// Is this object very FAR? then MORE THREAT against pTechno.
 							// More CLOSER? LESS THREAT for pTechno.
 							value = pTechno->DistanceFrom(object); // Note: distance is in leptons (*256)
+
+							if (value > bestVal || bestVal < 0)
+								isGoodTarget = true;
+						}
+						else if (calcThreatMode == 4)
+						{
+							// Sorted by "KeepAlivability".
+							// ConYards and MCVs are the highest priority
+							// Factorys of UnitType then
+							// Other factorys then
+							// Other KeepAlives then
+							// Other units then
+							if (objectTypeBuilding && objectTypeBuilding->ConstructionYard ||
+								objectTypeUnitDeploysIntoType && objectTypeUnitDeploysIntoType->ConstructionYard)
+							{
+								value = 1024 * 256 * 4;
+							}
+							else if (objectTypeBuilding && objectTypeBuilding->Factory == AbstractType::Unit ||
+								objectTypeUnitDeploysIntoType && objectTypeUnitDeploysIntoType->Factory == AbstractType::Unit)
+							{
+								value = 1024 * 256 * 3;
+							}
+							else if (objectTypeBuilding && objectTypeBuilding->Factory != AbstractType::None ||
+								objectTypeUnitDeploysIntoType && objectTypeUnitDeploysIntoType->Factory != AbstractType::None)
+							{
+								value = 1024 * 256 * 2;
+							}
+							else if (keepAlive)
+							{
+								value = 1024 * 256 * 1;
+							}
+
+							value -= pTechno->DistanceFrom(object); // Note: distance is in leptons (*256)
 
 							if (value > bestVal || bestVal < 0)
 								isGoodTarget = true;
