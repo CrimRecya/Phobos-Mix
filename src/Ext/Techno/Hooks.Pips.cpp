@@ -131,9 +131,7 @@ DEFINE_HOOK(0x6F5EE3, TechnoClass_DrawExtras_DrawAboveHealth, 0x9)
 			TechnoExt::DrawTemporalProgress(pThis, pBounds, basePosition, true, false);
 			TechnoExt::DrawIronCurtainProgress(pThis, pBounds, basePosition, true, false);
 
-			const auto pOwner = pThis->Owner;
-
-			if (pOwner != HouseClass::FindSpecial() && pOwner != HouseClass::FindNeutral() && pOwner != HouseClass::FindCivilianSide())
+			if (!pThis->Owner->IsNeutral())
 			{
 				TechnoExt::DrawSuperProgress(pBuilding, pBounds, basePosition);
 				TechnoExt::DrawFactoryProgress(pBuilding, pBounds, basePosition);

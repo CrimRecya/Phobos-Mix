@@ -147,12 +147,9 @@ DEFINE_HOOK(0x4AE818, DisplayClass_sub_4AE750_AutoDistribution, 0xA)
 			&& (pTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None && !pTarget->IsInAir())
 		{
 			VocClass::PlayGlobal(RulesExt::Global()->AddDistributionModeCommandSound, 0x2000, 1.0);
-			const auto pSpecial = HouseClass::FindSpecial();
-			const auto pCivilian = HouseClass::FindCivilianSide();
-			const auto pNeutral = HouseClass::FindNeutral();
 
 			const auto pTargetHouse = static_cast<TechnoClass*>(pTarget)->Owner;
-			const bool targetIsNeutral = pTargetHouse == pSpecial || pTargetHouse == pCivilian || pTargetHouse == pNeutral;
+			const bool targetIsNeutral = pTargetHouse->IsNeutral();
 
 			const auto range = (2 << mode1);
 			const auto center = pTarget->GetCoords();
@@ -204,7 +201,7 @@ DEFINE_HOOK(0x4AE818, DisplayClass_sub_4AE750_AutoDistribution, 0xA)
        				const auto& [pItem, num] = record[i];
 
 					if (pSelect->MouseOverObject(pItem) == mouseAction
-						&& (targetIsNeutral || (pItem->Owner != pSpecial && pItem->Owner != pCivilian && pItem->Owner != pNeutral))
+						&& (targetIsNeutral || !pItem->Owner->IsNeutral())
 						&& (mode2 < 2 || (pItem->WhatAmI() == pTarget->WhatAmI()
 							&& (mode2 < 3 || TechnoTypeExt::GetSelectionGroupID(pItem->GetTechnoType()) == TechnoTypeExt::GetSelectionGroupID(pTarget->GetTechnoType())))))
 					{

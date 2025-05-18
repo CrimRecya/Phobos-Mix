@@ -575,12 +575,9 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 				&& !pTarget->IsInAir())
 			{
 				VocClass::PlayGlobal(RulesExt::Global()->AddDistributionModeCommandSound, 0x2000, 1.0);
-				const auto pSpecial = HouseClass::FindSpecial();
-				const auto pCivilian = HouseClass::FindCivilianSide();
-				const auto pNeutral = HouseClass::FindNeutral();
 
 				const auto pTargetHouse = static_cast<TechnoClass*>(pTarget)->Owner;
-				const bool targetIsNeutral = pTargetHouse == pSpecial || pTargetHouse == pCivilian || pTargetHouse == pNeutral;
+				const bool targetIsNeutral = pTargetHouse->IsNeutral();
 
 				const auto range = (2 << mode1);
 				const auto center = pTarget->GetCoords();
@@ -643,7 +640,7 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 						if (pTechno->MouseOverObject(pItem) != action)
 							continue;
 
-						if (!targetIsNeutral && (pItem->Owner == pSpecial || pItem->Owner == pCivilian || pItem->Owner == pNeutral))
+						if (!targetIsNeutral && !pItem->Owner->IsNeutral())
 							continue;
 
 						if (mode2 < 2 || (pItem->WhatAmI() == pTarget->WhatAmI()

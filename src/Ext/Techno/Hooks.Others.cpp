@@ -562,9 +562,7 @@ DEFINE_HOOK(0x6F8D32, TechnoClass_ScanToAttackWall_DestroyOwnerlessWalls, 0x9)
 	{
 		if (pOwner->IsAlliedWith(pThis->Owner)
 			&& (!RulesExt::Global()->DestroyOwnerlessWalls
-			|| (pOwner != HouseClass::FindSpecial()
-			&& pOwner != HouseClass::FindCivilianSide()
-			&& pOwner != HouseClass::FindNeutral())))
+			|| !pOwner->IsNeutral()))
 		{
 			return NotOkToFire;
 		}
