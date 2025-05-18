@@ -101,6 +101,13 @@ public:
 
 		AirstrikeClass* AirstrikeTargetingMe;
 
+		DynamicVectorClass<LaserDrawClass*> MyTrackingLasers;
+		DynamicVectorClass<int> MyTrackingLasers_WeaponIdx;
+		DynamicVectorClass<int> MyTrackingLasers_BurstIdx;
+		DynamicVectorClass<WeaponTypeClass*> MyTrackingLasers_CreatorWeapon;
+		AbstractClass* MyTrackingLasersTarget;
+		DynamicVectorClass<LaserDrawClass*> TrackingLasersTargetingMe;
+
 		AttachmentClass* ParentAttachment;
 		std::vector<std::unique_ptr<AttachmentClass>> ChildAttachments;
 
@@ -176,6 +183,12 @@ public:
 			, BuildingOccupying { }
 			, TiberiumEater_Timer {}
 			, AirstrikeTargetingMe { nullptr }
+			, MyTrackingLasers { }
+			, MyTrackingLasers_WeaponIdx { }
+			, MyTrackingLasers_BurstIdx { }
+			, MyTrackingLasers_CreatorWeapon { }
+			, MyTrackingLasersTarget { }
+			, TrackingLasersTargetingMe { }
 			, ParentAttachment { nullptr }
 			, ChildAttachments {}
 			, AltOccupation {}
@@ -206,6 +219,7 @@ public:
 		void UpdateRecountBurst();
 		void UpdateRearmInEMPState();
 		void UpdateRearmInTemporal();
+		void UpdateTrackingLasers();
 		void InitializeLaserTrails();
 		void InitializeAttachEffects();
 		void InitializeAttachments();

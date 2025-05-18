@@ -42,6 +42,7 @@ void TechnoExt::ExtData::OnEarlyUpdate()
 	this->ApplyMindControlRangeLimit();
 	this->UpdateRecountBurst();
 	this->UpdateRearmInEMPState();
+	this->UpdateTrackingLasers();
 	this->UpdateRecoilData();
 	this->UpdateCachedClick();
 

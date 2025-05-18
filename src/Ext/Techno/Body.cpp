@@ -944,6 +944,56 @@ UnitTypeClass* TechnoExt::ExtData::GetUnitTypeExtra() const
 	return nullptr;
 }
 
+void TechnoExt::ExtData::UpdateTrackingLasers()
+{
+	auto pThis = this->OwnerObject();
+
+	if (pThis->Target && pThis->Target == this->MyTrackingLasersTarget)
+	{
+		for (int idx = 0; idx != this->MyTrackingLasers.Count; ++idx)
+		{
+			auto pLaser = this->MyTrackingLasers[idx];
+			// Refresh the laser state to keep it alive.
+			pLaser->Progress.Value = 0;
+			// Change the start point.
+			auto burstIdx = pThis->CurrentBurstIndex;
+			pThis->CurrentBurstIndex = this->MyTrackingLasers_BurstIdx[idx];
+			pLaser->Source = pThis->GetFLH(this->MyTrackingLasers_WeaponIdx[idx], CoordStruct { 0,0,0 });
+			pThis->CurrentBurstIndex = burstIdx;
+		}
+	}
+	else
+	{
+		// Stop tracking and delete all lasers if target changed.
+		if (auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(this->MyTrackingLasersTarget)))
+		{
+			for (int i = 0; i != this->MyTrackingLasers.Count; ++i)
+			{
+				for (int j = 0; j != pTargetExt->TrackingLasersTargetingMe.Count; ++j)
+				{
+					if (this->MyTrackingLasers[i] == pTargetExt->TrackingLasersTargetingMe[j])
+					{
+						pTargetExt->TrackingLasersTargetingMe.RemoveItem(j);
+						break;
+					}
+				}
+			}
+		}
+
+		this->MyTrackingLasers.Clear();
+		this->MyTrackingLasers_WeaponIdx.Clear();
+		this->MyTrackingLasers_BurstIdx.Clear();
+		this->MyTrackingLasers_CreatorWeapon.Clear();
+		this->MyTrackingLasersTarget = nullptr;
+	}
+
+	for (auto pLaser : this->TrackingLasersTargetingMe)
+	{
+		// Change the end point.
+		pLaser->Target = pThis->GetTargetCoords();
+	}
+}
+
 // Attaches this techno in a first available attachment "slot".
 // Returns true if the attachment is successful.
 bool TechnoExt::AttachTo(TechnoClass* pThis, TechnoClass* pParent)
@@ -1149,6 +1199,12 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->BuildingOccupying)
 		.Process(this->TiberiumEater_Timer)
 		.Process(this->AirstrikeTargetingMe)
+		.Process(this->MyTrackingLasers)
+		.Process(this->MyTrackingLasers_WeaponIdx)
+		.Process(this->MyTrackingLasers_BurstIdx)
+		.Process(this->MyTrackingLasers_CreatorWeapon)
+		.Process(this->MyTrackingLasersTarget)
+		.Process(this->TrackingLasersTargetingMe)
 		.Process(this->ParentAttachment)
 		.Process(this->ChildAttachments)
 		.Process(this->AltOccupation)
@@ -1157,6 +1213,8 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 
 void TechnoExt::ExtData::InvalidatePointer(void* ptr, bool bRemoved)
 {
+	AnnounceInvalidPointer(this->MyTrackingLasersTarget, ptr);
+  
 	for (auto const& pAttachment : ChildAttachments)
 		pAttachment->InvalidatePointer(ptr);
 
