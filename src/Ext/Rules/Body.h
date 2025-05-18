@@ -358,6 +358,8 @@ public:
 		Valueable<bool> HarvesterScanAfterUnload;
 
 		Valueable<bool> BalloonHoverPathingFix;
+		
+		Valueable<bool> AnimCraterReduceTiberium;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -657,6 +659,8 @@ public:
 			, HarvesterScanAfterUnload { false }
 			
 			, BalloonHoverPathingFix { true }
+
+			, AnimCraterReduceTiberium { true }
 		{ }
 
 		virtual ~ExtData() = default;
