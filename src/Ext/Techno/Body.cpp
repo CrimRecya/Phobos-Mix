@@ -946,17 +946,17 @@ UnitTypeClass* TechnoExt::ExtData::GetUnitTypeExtra() const
 
 void TechnoExt::ExtData::UpdateTrackingLasers()
 {
-	auto pThis = this->OwnerObject();
+	const auto pThis = this->OwnerObject();
 
 	if (pThis->Target && pThis->Target == this->MyTrackingLasersTarget)
 	{
 		for (int idx = 0; idx != this->MyTrackingLasers.Count; ++idx)
 		{
-			auto pLaser = this->MyTrackingLasers[idx];
+			const auto pLaser = this->MyTrackingLasers[idx];
 			// Refresh the laser state to keep it alive.
 			pLaser->Progress.Value = 0;
 			// Change the start point.
-			auto burstIdx = pThis->CurrentBurstIndex;
+			const int burstIdx = pThis->CurrentBurstIndex;
 			pThis->CurrentBurstIndex = this->MyTrackingLasers_BurstIdx[idx];
 			pLaser->Source = pThis->GetFLH(this->MyTrackingLasers_WeaponIdx[idx], CoordStruct { 0,0,0 });
 			pThis->CurrentBurstIndex = burstIdx;
@@ -965,7 +965,7 @@ void TechnoExt::ExtData::UpdateTrackingLasers()
 	else
 	{
 		// Stop tracking and delete all lasers if target changed.
-		if (auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(this->MyTrackingLasersTarget)))
+		if (const auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(this->MyTrackingLasersTarget)))
 		{
 			for (int i = 0; i != this->MyTrackingLasers.Count; ++i)
 			{
@@ -987,10 +987,12 @@ void TechnoExt::ExtData::UpdateTrackingLasers()
 		this->MyTrackingLasersTarget = nullptr;
 	}
 
-	for (auto pLaser : this->TrackingLasersTargetingMe)
+	const auto targetCoords = pThis->GetTargetCoords();
+
+	for (const auto pLaser : this->TrackingLasersTargetingMe)
 	{
 		// Change the end point.
-		pLaser->Target = pThis->GetTargetCoords();
+		pLaser->Target = targetCoords;
 	}
 }
 
@@ -1214,7 +1216,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 void TechnoExt::ExtData::InvalidatePointer(void* ptr, bool bRemoved)
 {
 	AnnounceInvalidPointer(this->MyTrackingLasersTarget, ptr);
-  
+
 	for (auto const& pAttachment : ChildAttachments)
 		pAttachment->InvalidatePointer(ptr);
 

@@ -275,6 +275,7 @@ public:
 			case AbstractType::Infantry:
 			case AbstractType::Unit:
 			case AbstractType::Terrain:
+			case AbstractType::Bullet:
 				return false;
 			default:
 				return true;

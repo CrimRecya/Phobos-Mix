@@ -279,18 +279,8 @@ DEFINE_HOOK(0x6FD210, TechnoClass_LaserZap_SetContext, 0x7)
 	return 0;
 }
 
-// Allow drawing single color lasers with thickness.
-DEFINE_HOOK(0x6FD446, TechnoClass_LaserZap_IsSingleColor, 0x7)
+static void __fastcall AttachTrackingLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLaser, ObjectClass* pTarget, int nWpIdx)
 {
-	GET(WeaponTypeClass* const, pWeapon, ECX);
-	GET(LaserDrawClass* const, pLaser, EAX);
-	GET_STACK(ObjectClass*, pTarget, STACK_OFFSET(0x48, 0x4));
-	GET_STACK(int, nWpIdx, STACK_OFFSET(0x48, 0x8));
-	GET_STACK(CoordStruct*, pCrd, STACK_OFFSET(0x48, 0x10));
-
-	// Fixes drawing thick lasers for non-PrismSupport building-fired lasers.
-	pLaser->IsSupported = pLaser->Thickness > 3;
-
 	if (auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon))
 	{
 		if (!pLaser->IsHouseColor && pWeaponExt->Laser_IsSingleColor)
@@ -298,14 +288,14 @@ DEFINE_HOOK(0x6FD446, TechnoClass_LaserZap_IsSingleColor, 0x7)
 
 		if (pWeaponExt->Laser_IsTracking)
 		{
-			auto pThis = LaserZapContext::pThis;
-			auto flh = pThis->GetFLH(nWpIdx, CoordStruct { 0,0,0 }) - TechnoExt::GetFLHAbsoluteCoords(pThis, CoordStruct { 0,0,0 }, pThis->HasTurret());
-			auto pExt = TechnoExt::ExtMap.Find(pThis);
-			auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pTarget));
+			auto const pThis = LaserZapContext::pThis;
+			auto const flh = pThis->GetFLH(nWpIdx, CoordStruct { 0,0,0 }) - TechnoExt::GetFLHAbsoluteCoords(pThis, CoordStruct { 0,0,0 }, pThis->HasTurret());
+			auto const pExt = TechnoExt::ExtMap.Find(pThis);
+			auto const pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pTarget));
 
 			// This laser must be fired from techno, not bullet.
 			// if (*pCrd != CoordStruct { 0,0,0 })
-			//	goto EndOfLaserTracking;
+			//	return;;
 
 			// Target changed. Stop tracking current lasers.
 			if (pExt->MyTrackingLasersTarget && pExt->MyTrackingLasersTarget != pTarget)
@@ -341,7 +331,7 @@ DEFINE_HOOK(0x6FD446, TechnoClass_LaserZap_IsSingleColor, 0x7)
 						// R->EAX(nullptr);
 						// GameDelete(pLaser);
 						pLaser->Duration = 0;
-						goto EndOfLaserTracking;
+						return;
 					}
 					else
 					{
@@ -353,7 +343,7 @@ DEFINE_HOOK(0x6FD446, TechnoClass_LaserZap_IsSingleColor, 0x7)
 								if (pExt->MyTrackingLasers[idx] == pOldTargetExt->TrackingLasersTargetingMe[j])
 								{
 									pOldTargetExt->TrackingLasersTargetingMe.RemoveItem(j);
-									break;									
+									break;
 								}
 							}
 						}
@@ -380,13 +370,26 @@ DEFINE_HOOK(0x6FD446, TechnoClass_LaserZap_IsSingleColor, 0x7)
 
 			// Only track the target if it is a techno.
 			if (!pTargetExt)
-				goto EndOfLaserTracking;
+				return;
 
 			pTargetExt->TrackingLasersTargetingMe.AddItem(pLaser);
 		}
 	}
+}
 
-EndOfLaserTracking:
+// Allow drawing single color lasers with thickness.
+DEFINE_HOOK(0x6FD446, TechnoClass_LaserZap_IsSingleColor, 0x7)
+{
+	GET(WeaponTypeClass* const, pWeapon, ECX);
+	GET(LaserDrawClass* const, pLaser, EAX);
+	GET_STACK(ObjectClass* const, pTarget, STACK_OFFSET(0x48, 0x4));
+	GET_STACK(const int, nWpIdx, STACK_OFFSET(0x48, 0x8));
+//	GET_STACK(CoordStruct*, pCrd, STACK_OFFSET(0x48, 0x10));
+
+	// Fixes drawing thick lasers for non-PrismSupport building-fired lasers.
+	pLaser->IsSupported = pLaser->Thickness > 3;
+	AttachTrackingLaser(pWeapon, pLaser, pTarget, nWpIdx);
+
 	return 0;
 }
 
