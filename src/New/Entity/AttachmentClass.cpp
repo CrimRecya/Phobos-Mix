@@ -12,19 +12,53 @@
 
 std::vector<AttachmentClass*> AttachmentClass::Array;
 
-AttachmentTypeClass* AttachmentClass::GetType() const
+void AttachmentClass::TransformChildFace(const DirStruct& dir, int time)
 {
-	return this->Type;
+	this->StartDir = this->GetChildFace();
+	this->DesiredDir = dir;
+	this->TransDirTimer.Start(time);
 }
 
-TechnoTypeClass* AttachmentClass::GetChildType() const
+DirStruct AttachmentClass::GetChildFace() const
 {
-	return this->Data->TechnoType.isset() ? TechnoTypeClass::Array.GetItem(this->Data->TechnoType) : nullptr;
+	if (this->TransDirTimer.TimeLeft && this->TransDirTimer.HasTimeLeft())
+	{
+		const short diff = static_cast<short>(static_cast<short>(this->DesiredDir.Raw) - static_cast<short>(this->StartDir.Raw));
+		return DirStruct { (this->DesiredDir.Raw - diff * this->TransDirTimer.GetTimeLeft() / this->TransDirTimer.TimeLeft) };
+	}
+
+	return this->DesiredDir;
+}
+
+DirStruct AttachmentClass::GetChildDirection() const
+{
+	const auto pParent = this->Parent;
+	DirStruct childDir = this->GetType()->IsOnTurret ? pParent->SecondaryFacing.Current() : pParent->PrimaryFacing.Current();
+
+	return DirStruct { (childDir.Raw + this->GetChildFace().Raw) };
+}
+
+void AttachmentClass::TransformChildFLH(const CoordStruct& flh, int time)
+{
+	this->StartFLH = this->GetChildFLH();
+	this->DesiredFLH = flh;
+	this->TransFLHTimer.Start(time);
+}
+
+CoordStruct AttachmentClass::GetChildFLH() const
+{
+	if (this->TransFLHTimer.TimeLeft && this->TransFLHTimer.HasTimeLeft())
+	{
+		const double ratio = static_cast<double>(this->TransFLHTimer.GetTimeLeft()) / this->TransFLHTimer.TimeLeft;
+		return (this->DesiredFLH - (this->DesiredFLH - this->StartFLH) * ratio);
+	}
+
+	return this->DesiredFLH;
 }
 
 CoordStruct AttachmentClass::GetChildLocation() const
 {
-	return TechnoExt::GetFLHAbsoluteCoords(this->Parent, this->Data->FLH.Get(), this->Data->IsOnTurret);
+	return TechnoExt::GetFLHAbsoluteCoords(this->Parent, this->GetChildFLH(), this->GetType()->IsOnTurret);
 }
 
 AttachmentClass::~AttachmentClass()
@@ -72,20 +106,6 @@ void AttachmentClass::CreateChild()
 
 void AttachmentClass::AI()
 {
-	if (!this->Data) // techno load before technotype, so this can not be loaded at first, reload here
-	{
-		auto& datas = TechnoExt::ExtMap.Find(this->Parent)->TypeExtData->AttachmentData;
-
-		for (auto& entry : datas)
-		{
-			if (entry.DataIndex == this->DataIndex)
-			{
-				this->Data = &entry;
-				break;
-			}
-		}
-	}
-
 	AttachmentTypeClass* pType = this->GetType();
 
 	if (!this->Child)
@@ -116,13 +136,7 @@ void AttachmentClass::AI()
 			this->Limbo();
 
 		this->Child->SetLocation(this->GetChildLocation());
-
-		DirStruct childDir = this->Data->IsOnTurret
-			? this->Parent->SecondaryFacing.Current() : this->Parent->PrimaryFacing.Current();
-
-		childDir.Raw += DirStruct(this->Data->RotationAdjust).Raw; // overflow = free modulo for rotation
-
-		this->Child->PrimaryFacing.SetCurrent(childDir);
+		this->Child->PrimaryFacing.SetCurrent(this->GetChildDirection());
 		// TODO handle secondary facing in case the turret is idle
 
 		FootClass* pParentAsFoot = abstract_cast<FootClass*, true>(this->Parent);
@@ -169,13 +183,13 @@ void AttachmentClass::Destroy(TechnoClass* pSource)
 
 		auto pType = this->GetType();
 
-		if (pType->DestructionWeapon_Child.isset())
-			TechnoExt::FireWeaponAtSelf(this->Child, pType->DestructionWeapon_Child);
+		if (const auto pWeapon = pType->DestructionWeapon_Child.Get())
+			TechnoExt::FireWeaponAtSelf(this->Child, pWeapon);
 
 		if (pType->InheritDestruction && this->Child)
 			TechnoExt::Kill(this->Child, pSource);
-		else if (!this->Child->InLimbo && pType->ParentDestructionMission.isset())
-			this->Child->QueueMission(pType->ParentDestructionMission.Get(), false);
+		else if (!this->Child->InLimbo && pType->ParentDestructionMission != Mission::None)
+			this->Child->QueueMission(pType->ParentDestructionMission, false);
 
 		this->Child = nullptr;
 	}
@@ -189,8 +203,9 @@ void AttachmentClass::ChildDestroyed()
 			pChildExt->ParentAttachment = nullptr;
 
 		AttachmentTypeClass* pType = this->GetType();
-		if (pType->DestructionWeapon_Parent.isset())
-			TechnoExt::FireWeaponAtSelf(this->Parent, pType->DestructionWeapon_Parent);
+
+		if (const auto pWeapon = pType->DestructionWeapon_Parent.Get())
+			TechnoExt::FireWeaponAtSelf(this->Parent, pWeapon);
 
 		this->Child = nullptr;
 	}
@@ -200,13 +215,8 @@ void AttachmentClass::Unlimbo()
 {
 	if (this->Child)
 	{
-		DirStruct childDir = this->Data->IsOnTurret
-			? this->Parent->SecondaryFacing.Current() : this->Parent->PrimaryFacing.Current();
-
-		childDir.Raw += DirStruct(this->Data->RotationAdjust).Raw; // overflow = free modulo for rotation
-
 		++Unsorted::ScenarioInit;
-		this->Child->Unlimbo(this->GetChildLocation(), childDir.GetDir());
+		this->Child->Unlimbo(this->GetChildLocation(), this->GetChildDirection().GetDir());
 		--Unsorted::ScenarioInit;
 	}
 }
@@ -262,8 +272,8 @@ bool AttachmentClass::DetachChild()
 	{
 		AttachmentTypeClass* pType = this->GetType();
 
-		if (!this->Child->InLimbo && pType->ParentDetachmentMission.isset())
-			this->Child->QueueMission(pType->ParentDetachmentMission.Get(), false);
+		if (!this->Child->InLimbo && pType->ParentDetachmentMission != Mission::None)
+			this->Child->QueueMission(pType->ParentDetachmentMission, false);
 
 		// FIXME this won't work probably
 		if (pType->InheritOwner)
@@ -296,12 +306,16 @@ template <typename T>
 bool AttachmentClass::Serialize(T& stm)
 {
 	return stm
-		.Process(this->Data)
-		.Process(this->DataIndex)
 		.Process(this->Type)
 		.Process(this->Parent)
 		.Process(this->Child)
 		.Process(this->RespawnTimer)
+		.Process(this->StartFLH)
+		.Process(this->DesiredFLH)
+		.Process(this->TransFLHTimer)
+		.Process(this->StartDir)
+		.Process(this->DesiredDir)
+		.Process(this->TransDirTimer)
 		.Success();
 }
 
@@ -316,3 +330,107 @@ bool AttachmentClass::Save(PhobosStreamWriter& stm) const
 }
 
 #pragma endregion
+
+void AttachmentTransformGroup::Trasform(AttachmentClass* pAttachment, const std::vector<AttachmentTransformGroup>& trasformPairs, HouseClass* pOwner)
+{
+	for (const auto& [types, affectedHouses, flhTime, flh, rotationTime, rotation] : trasformPairs)
+	{
+		if (pOwner && !EnumFunctions::CanTargetHouse(affectedHouses, pOwner, pAttachment->Parent->Owner))
+			continue;
+
+		for (const auto& type : types)
+		{
+			if (type != pAttachment->Type)
+				continue;
+
+			if (flhTime >= 0)
+				pAttachment->TransformChildFLH(flh, flhTime);
+
+			if (rotationTime >= 0)
+				pAttachment->TransformChildFace(DirStruct(rotation), rotationTime);
+
+			return;
+		}
+	}
+
+	return;
+}
+
+bool AttachmentTransformGroup::Load(PhobosStreamReader& stm, bool registerForChange)
+{
+	return this->Serialize(stm);
+}
+
+bool AttachmentTransformGroup::Save(PhobosStreamWriter& stm) const
+{
+	return const_cast<AttachmentTransformGroup*>(this)->Serialize(stm);
+}
+
+void AttachmentTransformGroup::Parse(std::vector<AttachmentTransformGroup>& list, INI_EX& exINI, const char* pSection, AffectedHouse defaultAffectHouse)
+{
+	for (size_t i = 0; ; ++i)
+	{
+		char tempBuffer[48];
+		ValueableVector<AttachmentTypeClass*> types;
+		Nullable<AffectedHouse> affectedHouses;
+		Valueable<int> flhTime;
+		Valueable<CoordStruct> flh;
+		Valueable<int> rotationTime;
+		Valueable<DirType> rotation;
+		_snprintf_s(tempBuffer, sizeof(tempBuffer), "AttachmentTransform%d.Types", i);
+		types.Read(exINI, pSection, tempBuffer);
+		_snprintf_s(tempBuffer, sizeof(tempBuffer), "AttachmentTransform%d.AffectedHouses", i);
+		affectedHouses.Read(exINI, pSection, tempBuffer);
+		_snprintf_s(tempBuffer, sizeof(tempBuffer), "AttachmentTransform%d.FLHTime", i);
+		flhTime.Read(exINI, pSection, tempBuffer);
+		_snprintf_s(tempBuffer, sizeof(tempBuffer), "AttachmentTransform%d.FLH", i);
+		flh.Read(exINI, pSection, tempBuffer);
+		_snprintf_s(tempBuffer, sizeof(tempBuffer), "AttachmentTransform%d.RotationTime", i);
+		rotationTime.Read(exINI, pSection, tempBuffer);
+		_snprintf_s(tempBuffer, sizeof(tempBuffer), "AttachmentTransform%d.Rotation", i);
+		rotation.Read(exINI, pSection, tempBuffer);
+
+		if (types.empty() || flhTime < 0 && rotationTime < 0)
+			break;
+
+		if (!affectedHouses.isset())
+			affectedHouses = defaultAffectHouse;
+
+		list.emplace_back(types, affectedHouses, flhTime, flh, rotationTime, rotation);
+	}
+	ValueableVector<AttachmentTypeClass*> types;
+	Nullable<AffectedHouse> affectedHouses;
+	Valueable<int> flhTime;
+	Valueable<CoordStruct> flh;
+	Valueable<int> rotationTime;
+	Valueable<DirType> rotation;
+	types.Read(exINI, pSection, "AttachmentTransform.Types");
+	affectedHouses.Read(exINI, pSection, "AttachmentTransform.AffectedHouses");
+	flhTime.Read(exINI, pSection, "AttachmentTransform.FLHTime");
+	flh.Read(exINI, pSection, "AttachmentTransform.FLH");
+	rotationTime.Read(exINI, pSection, "AttachmentTransform.RotationTime");
+	rotation.Read(exINI, pSection, "AttachmentTransform.Rotation");
+	if (!types.empty() && (flhTime >= 0 || rotationTime >= 0))
+	{
+		if (!affectedHouses.isset())
+			affectedHouses = defaultAffectHouse;
+
+		if (list.size())
+			list[0] = { types, affectedHouses, flhTime, flh, rotationTime, rotation };
+		else
+			list.emplace_back(types, affectedHouses, flhTime, flh, rotationTime, rotation);
+	}
+}
+
+template <typename T>
+bool AttachmentTransformGroup::Serialize(T& stm)
+{
+	return stm
+		.Process(this->Types)
+		.Process(this->AffectedHouses)
+		.Process(this->FLHTime)
+		.Process(this->FLH)
+		.Process(this->RotationTime)
+		.Process(this->Rotation)
+		.Success();
+}

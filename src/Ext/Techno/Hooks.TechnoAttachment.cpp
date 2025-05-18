@@ -755,8 +755,7 @@ DEFINE_HOOK(0x6FFE00, TechnoClass_ClickedEvent_Context_Set, 0x5)
 DEFINE_HOOK_AGAIN(0x6FFEB1, TechnoClass_ClickedEvent_HandleChildren, 0x6)
 DEFINE_HOOK(0x6FFE4F, TechnoClass_ClickedEvent_HandleChildren, 0x6)
 {
-	if ((TechnoAttachmentTemp::stopPressed || TechnoAttachmentTemp::deployPressed)
-		&& TechnoAttachmentTemp::pParent)
+	if ((TechnoAttachmentTemp::stopPressed || TechnoAttachmentTemp::deployPressed) && TechnoAttachmentTemp::pParent)
 	{
 		if (auto const& pExt = TechnoExt::ExtMap.Find(TechnoAttachmentTemp::pParent))
 		{

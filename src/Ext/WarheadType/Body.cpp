@@ -298,6 +298,9 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->AirstrikeTargets.Read(exINI, pSection, "AirstrikeTargets");
 
+	// AttachmentTransform.Types
+	AttachmentTransformGroup::Parse(this->Attachment_Transform, exINI, pSection, AffectedHouse::All);
+
 	// Convert.From & Convert.To
 	TypeConvertGroup::Parse(this->Convert_Pairs, exINI, pSection, AffectedHouse::All);
 
@@ -345,6 +348,7 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		|| this->Shield_AttachTypes.size() > 0
 		|| this->Shield_RemoveTypes.size() > 0
 		|| this->Shield_RemoveAll
+		|| this->Attachment_Transform.size() > 0
 		|| this->Convert_Pairs.size() > 0
 		|| this->InflictLocomotor
 		|| this->RemoveInflictedLocomotor
@@ -525,6 +529,8 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->SetAmbientGreen)
 		.Process(this->SetAmbientBlue)
 		.Process(this->ReduceTiberium)
+
+		.Process(this->Attachment_Transform)
 
 		.Process(this->Convert_Pairs)
 

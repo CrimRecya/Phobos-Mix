@@ -259,6 +259,9 @@ void WarheadTypeExt::ExtData::DetonateOnOneUnit(HouseClass* pHouse, TechnoClass*
 	if (this->Crit_CurrentChance > 0.0 && (!this->Crit_SuppressWhenIntercepted || !bulletWasIntercepted))
 		this->ApplyCrit(pHouse, pTarget, pOwner);
 
+	if (this->Attachment_Transform.size() > 0)
+		this->ApplyAttachmentTransform(pHouse, pTarget);
+
 	if (this->Convert_Pairs.size() > 0)
 		this->ApplyConvert(pHouse, pTarget);
 
@@ -604,6 +607,17 @@ void WarheadTypeExt::ExtData::InterceptBullets(TechnoClass* pOwner, WeaponTypeCl
 				pBulletExt->InterceptBullet(pOwner, pWeapon);
 		}
 	}
+}
+
+void WarheadTypeExt::ExtData::ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget)
+{
+	const auto pTargetExt = TechnoExt::ExtMap.Find(pTarget);
+
+	if (const auto pAttachment = pTargetExt->ParentAttachment)
+		AttachmentTransformGroup::Trasform(pAttachment, this->Attachment_Transform, pHouse);
+
+	for (const auto& pAttachment : pTargetExt->ChildAttachments)
+		AttachmentTransformGroup::Trasform(pAttachment.get(), this->Attachment_Transform, pHouse);
 }
 
 void WarheadTypeExt::ExtData::ApplyConvert(HouseClass* pHouse, TechnoClass* pTarget)

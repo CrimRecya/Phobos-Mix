@@ -13,6 +13,10 @@ void AttachmentTypeClass::LoadFromINI(CCINIClass* pINI)
 
 	INI_EX exINI(pINI);
 
+	this->TechnoType.Read(exINI, section, "TechnoType");
+	this->FLH.Read(exINI, section, "FLH");
+	this->IsOnTurret.Read(exINI, section, "IsOnTurret");
+	this->RotationAdjust.Read(exINI, section, "RotationAdjust");
 	this->RespawnAtCreation.Read(exINI, section, "RespawnAtCreation");
 	this->RespawnDelay.Read(exINI, section, "RespawnDelay");
 	this->InheritCommands.Read(exINI, section, "InheritCommands");
@@ -36,6 +40,10 @@ template <typename T>
 void AttachmentTypeClass::Serialize(T& Stm)
 {
 	Stm
+		.Process(this->TechnoType)
+		.Process(this->FLH)
+		.Process(this->IsOnTurret)
+		.Process(this->RotationAdjust)
 		.Process(this->RespawnAtCreation)
 		.Process(this->RespawnDelay)
 		.Process(this->InheritCommands)

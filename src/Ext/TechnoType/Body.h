@@ -477,27 +477,9 @@ public:
 
 		Nullable<AffectedHouse> RadarInvisibleToHouse;
 
+		ValueableVector<AttachmentTypeClass*> AttachmentTypes;
 		Valueable<int> AttachmentTopLayerMinHeight;
 		Valueable<int> AttachmentUndergroundLayerMaxHeight;
-
-		struct AttachmentDataEntry
-		{
-			Valueable<size_t> DataIndex;
-			ValueableIdx<AttachmentTypeClass> Type;
-			NullableIdx<TechnoTypeClass> TechnoType;
-			Valueable<CoordStruct> FLH;
-			Valueable<bool> IsOnTurret;
-			Valueable<DirType> RotationAdjust;
-
-			bool Load(PhobosStreamReader& stm, bool registerForChange);
-			bool Save(PhobosStreamWriter& stm) const;
-
-		private:
-			template <typename T>
-			bool Serialize(T& stm);
-		};
-
-		ValueableVector<AttachmentDataEntry> AttachmentData;
 
 		struct LaserTrailDataEntry
 		{
@@ -1005,9 +987,9 @@ public:
 			, Overload_ParticleSys {}
 			, Overload_ParticleSysCount { 5 }
 
+			, AttachmentTypes {}
 			, AttachmentTopLayerMinHeight { RulesExt::Global()->AttachmentTopLayerMinHeight }
 			, AttachmentUndergroundLayerMaxHeight { RulesExt::Global()->AttachmentUndergroundLayerMaxHeight }
-			, AttachmentData {}
 
 			, Harvester_CanGuardArea { false }
 			, HarvesterScanAfterUnload {}
