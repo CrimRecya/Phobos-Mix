@@ -1215,6 +1215,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 
 void TechnoExt::ExtData::InvalidatePointer(void* ptr, bool bRemoved)
 {
+	AnnounceInvalidPointer(this->AirstrikeTargetingMe, ptr);
 	AnnounceInvalidPointer(this->MyTrackingLasersTarget, ptr);
 
 	for (auto const& pAttachment : ChildAttachments)

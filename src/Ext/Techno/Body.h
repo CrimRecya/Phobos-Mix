@@ -270,6 +270,7 @@ public:
 
 			switch (abs)
 			{
+			case AbstractType::Airstrike:
 			case AbstractType::Aircraft:
 			case AbstractType::Building:
 			case AbstractType::Infantry:
