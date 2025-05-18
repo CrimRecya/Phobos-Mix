@@ -211,16 +211,14 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 	if (!Phobos::DisplayDamageNumbers)
 		return 0;
 
+	GET(TechnoClass* const, pThis, ESI);
 	GET(int* const, pDamage, EBX);
 	GET(const DamageState, state, EAX);
 	GET(WarheadTypeClass* const, pWH, EBP);
 	GET_STACK(HouseClass* const, pAttackerHosue, STACK_OFFSET(0xC4, 0x1C));
 
 	if (*pDamage)
-	{
-		GET(TechnoClass* const, pThis, ESI);
 		GeneralUtils::DisplayDamageNumberString(*pDamage, DamageDisplayType::Regular, pThis->GetRenderCoords(), TechnoExt::ExtMap.Find(pThis)->DamageNumberOffset);
-	}
 
 	if ((state == DamageState::NowDead) && !WarheadTypeExt::ExtMap.Find(pWH)->SuppressWreckage)
 	{

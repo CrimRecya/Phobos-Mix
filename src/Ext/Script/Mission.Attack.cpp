@@ -584,7 +584,7 @@ bool ScriptExt::EvaluateObjectWithMask(TechnoClass* pTechno, int mask, int attac
 	{
 		const auto& lists = RulesExt::Global()->AITargetTypesLists;
 
-		if (lists.size() > attackAITargetType)
+		if (lists.size() > static_cast<size_t>(attackAITargetType))
 		{
 			for (const auto& item : lists[attackAITargetType])
 			{
