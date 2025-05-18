@@ -503,3 +503,10 @@ DEFINE_HOOK(0x5F4B7A, ObjectClass_DrawIfVisible_OnScreenCheck, 0x5)
 
 	return NoDraw;
 }
+
+DEFINE_HOOK(0x4250E1, AnimClass_Middle_CraterReduceTiberium, 0x6)
+{
+	enum { SkipReduceTiberium = 0x4250EC };
+	GET(AnimTypeClass*, pType, EDX);
+	return AnimTypeExt::ExtMap.Find(pType)->Crater_ReduceTiberium.Get(RulesExt::Global()->AnimCraterReduceTiberium) ? 0 : SkipReduceTiberium;
+}

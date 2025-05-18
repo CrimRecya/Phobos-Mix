@@ -418,6 +418,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->HarvesterScanAfterUnload.Read(exINI, GameStrings::General, "HarvesterScanAfterUnload");
 
 	this->BalloonHoverPathingFix.Read(exINI, GameStrings::General, "BalloonHoverPathingFix");
+	
+	this->AnimCraterReduceTiberium.Read(exINI, GameStrings::General, "AnimCraterReduceTiberium");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -765,6 +767,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AttachmentUndergroundLayerMaxHeight)
 		.Process(this->HarvesterScanAfterUnload)
 		.Process(this->BalloonHoverPathingFix)
+		.Process(this->AnimCraterReduceTiberium)
 		;
 }
 
