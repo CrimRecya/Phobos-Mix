@@ -223,13 +223,13 @@ public:
 	static bool EvaluateObjectWithMask(TechnoClass* pTechno, int mask, int attackAITargetType, int idxAITargetTypeItem, TechnoClass* pTeamLeader);
 	static void Mission_Attack_List(TeamClass* pTeam, bool repeatAction, int calcThreatMode, int attackAITargetType);
 	static void Mission_Attack_List1Random(TeamClass* pTeam, bool repeatAction, int calcThreatMode, int attackAITargetType);
-	static void CheckUnitTargetingCapabilities(TechnoClass* pTechno, bool& hasAntiGround, bool& hasAntiAir, bool agentMode);
+	static bool CheckUnitTargetingCapability(TechnoClass* pTechno, bool targetInAir, bool agentMode);
 	static bool IsUnitArmed(TechnoClass* pTechno);
-	static bool IsUnitMindControlledFriendly(HouseClass* pHouse, TechnoClass* pTechno);
+	static bool IsMindControlledByEnemy(HouseClass* pHouse, TechnoClass* pTechno);
 
 	// Mission.Move.cpp
 	static void Mission_Move(TeamClass* pTeam, int calcThreatMode, bool pickAllies, int attackAITargetType, int idxAITargetTypeItem);
-	static TechnoClass* FindBestObject(TechnoClass* pTechno, int method, int calcThreatMode, bool pickAllies, int attackAITargetType, int idxAITargetTypeItem, bool needAttackableByLeader = false);
+	static TechnoClass* FindBestObject(TechnoClass* pTechno, int method, int calcThreatMode, bool pickAllies, int attackAITargetType, int idxAITargetTypeItem, bool needAttackableByLeader);
 	static void Mission_Move_List(TeamClass* pTeam, int calcThreatMode, bool pickAllies, int attackAITargetType);
 	static void Mission_Move_List1Random(TeamClass* pTeam, int calcThreatMode, bool pickAllies, int attackAITargetType, int idxAITargetTypeItem);
 
