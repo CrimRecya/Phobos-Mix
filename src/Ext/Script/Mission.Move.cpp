@@ -4,7 +4,7 @@
 
 // Contains ScriptExt::Mission_Move and its helper functions.
 
-void ScriptExt::Mission_Move(TeamClass* pTeam, int calcThreatMode = 0, bool pickAllies = false, int attackAITargetType = -1, int idxAITargetTypeItem = -1)
+void ScriptExt::Mission_Move(TeamClass* pTeam, int calcThreatMode, bool pickAllies, int attackAITargetType, int idxAITargetTypeItem)
 {
 	bool noWaitLoop = false;
 	bool bAircraftsWithoutAmmo = false;
@@ -224,7 +224,7 @@ void ScriptExt::Mission_Move(TeamClass* pTeam, int calcThreatMode = 0, bool pick
 	}
 }
 
-TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int calcThreatMode = 0, bool pickAllies = false, int attackAITargetType = -1, int idxAITargetTypeItem = -1, bool needAttackableByLeader = false)
+TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int calcThreatMode, bool pickAllies, int attackAITargetType, int idxAITargetTypeItem, bool needAttackableByLeader)
 {
 	TechnoClass* pBestObject = nullptr;
 	double bestVal = -1;
@@ -447,7 +447,7 @@ void ScriptExt::Mission_Move_List(TeamClass* pTeam, int calcThreatMode, bool pic
 	}
 }
 
-void ScriptExt::Mission_Move_List1Random(TeamClass* pTeam, int calcThreatMode, bool pickAllies, int attackAITargetType, int idxAITargetTypeItem = -1)
+void ScriptExt::Mission_Move_List1Random(TeamClass* pTeam, int calcThreatMode, bool pickAllies, int attackAITargetType, int idxAITargetTypeItem)
 {
 	bool selected = false;
 	int idxSelectedObject = -1;
