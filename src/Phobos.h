@@ -104,6 +104,7 @@ public:
 		static bool HideLightFlashEffects;
 		static bool ShowFlashOnSelecting;
 		static bool UnitPowerDrain;
+		static bool EnableLaserTrails;
 		static bool SelectedDisplay_Enable;
 		static bool SelectedDisplay_Expand;
 		static int SelectedDisplay_MaxCameo;

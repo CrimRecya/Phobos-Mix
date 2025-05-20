@@ -68,6 +68,7 @@ bool Phobos::Config::ShowWeedsCounter = false;
 bool Phobos::Config::HideLightFlashEffects = true;
 bool Phobos::Config::ShowFlashOnSelecting = false;
 bool Phobos::Config::UnitPowerDrain = false;
+bool Phobos::Config::EnableLaserTrails = true;
 bool Phobos::Config::SelectedDisplay_Enable = false;
 bool Phobos::Config::SelectedDisplay_Expand = false;
 int Phobos::Config::SelectedDisplay_MaxCameo = 10;
@@ -107,6 +108,7 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 	Phobos::Config::ShowWeedsCounter = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowWeedsCounter", true);
 	Phobos::Config::HideLightFlashEffects = CCINIClass::INI_RA2MD.ReadBool("Phobos", "HideLightFlashEffects", false);
 	Phobos::Config::ShowFlashOnSelecting = CCINIClass::INI_RA2MD.ReadBool("Phobos", "ShowFlashOnSelecting", false);
+	Phobos::Config::EnableLaserTrails = CCINIClass::INI_RA2MD.ReadBool("Phobos", "EnableLaserTrails", true);
 	Phobos::Config::DistributionSpreadMode = CCINIClass::INI_RA2MD.ReadInteger("Phobos", "DefaultDistributionSpreadMode", 2);
 	Phobos::Config::DistributionSpreadMode = std::clamp(Phobos::Config::DistributionSpreadMode, 0, 3);
 	Phobos::Config::DistributionFilterMode = CCINIClass::INI_RA2MD.ReadInteger("Phobos", "DefaultDistributionFilterMode", 2);
