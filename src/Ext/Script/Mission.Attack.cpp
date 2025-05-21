@@ -1392,14 +1392,7 @@ bool ScriptExt::EvaluateObjectWithMask(TechnoClass* pTechno, int mask, int attac
 		if (!pTechno->Owner->IsNeutral()
 			&& pTechno->GetCell()->LandType != LandType::Water)
 		{
-			if (const auto pBuildingType = abstract_cast<BuildingTypeClass*, true>(pTechnoType))
-			{
-				if (!pBuildingType->IsBaseDefense
-					&& !pBuildingType->IsVehicle())
-				{
-					return true;
-				}
-			}
+			return true;
 		}
 
 		break;
