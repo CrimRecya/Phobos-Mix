@@ -417,6 +417,9 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->HarvesterScanAfterUnload.Read(exINI, GameStrings::General, "HarvesterScanAfterUnload");
 
+	this->TunnelSimpleDistTooFar.Read(exINI, GameStrings::General, "TunnelSimpleDistTooFar");
+	this->TunnelPathingDistTooFar.Read(exINI, GameStrings::General, "TunnelPathingDistTooFar");
+  
 	this->BalloonHoverPathingFix.Read(exINI, GameStrings::General, "BalloonHoverPathingFix");
 	
 	this->AnimCraterReduceTiberium.Read(exINI, GameStrings::General, "AnimCraterReduceTiberium");
@@ -766,6 +769,8 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AttachmentTopLayerMinHeight)
 		.Process(this->AttachmentUndergroundLayerMaxHeight)
 		.Process(this->HarvesterScanAfterUnload)
+		.Process(this->TunnelSimpleDistTooFar)
+		.Process(this->TunnelPathingDistTooFar)
 		.Process(this->BalloonHoverPathingFix)
 		.Process(this->AnimCraterReduceTiberium)
 		;
