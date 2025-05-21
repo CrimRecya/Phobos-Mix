@@ -1063,3 +1063,17 @@ DEFINE_HOOK(0x5F4032, ObjectClass_FallingDown_ToDead, 0x6)
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x74608F, UnitClass_AStarAttempt_SimpleTooFar, 0x5)
+{
+	enum { GoUnderground=0x7460F4,GoSurface=0x746094 };
+	GET(int, simpleDist, EAX);
+	return simpleDist >= RulesExt::Global()->TunnelSimpleDistTooFar ? GoUnderground : GoSurface;
+}
+
+DEFINE_HOOK(0x7460EC, UnitClass_AStarAttempt_PathingTooFar, 0x5)
+{
+	GET(int, pathingDist, EAX);
+	R->DL(pathingDist > RulesExt::Global()->TunnelPathingDistTooFar);
+	return 0;
+}
