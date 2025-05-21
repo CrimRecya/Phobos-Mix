@@ -4,6 +4,7 @@
 #include <SpawnManagerClass.h>
 #include <FactoryClass.h>
 #include <SuperClass.h>
+#include <TacticalClass.h>
 #include <DriveLocomotionClass.h>
 #include <ShipLocomotionClass.h>
 #include <JumpjetLocomotionClass.h>
@@ -1234,6 +1235,8 @@ void TechnoExt::DrawExtraImage(TechnoClass* pThis, const Point2D& location, cons
 
 void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleStruct* pBounds, DirStruct dir, bool transparent, int tilt)
 {
+	const int select = TacticalClass::Instance->SelectableCount;
+	TacticalClass::Instance->SelectableCount = 500;
 	const bool lightning = LightningStorm::Active;
 	LightningStorm::Active = false;
 	const auto psy = PsyDom::Status;
@@ -1375,10 +1378,13 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	LightningStorm::Active = lightning;
 	PsyDom::Status = psy;
 	NukeFlash::Status = nuke;
+	TacticalClass::Instance->SelectableCount = select;
 }
 
 void TechnoExt::DrawExtraImage(InfantryClass* pThis, Point2D* pLocation, RectangleStruct* pBounds, DirStruct dir, bool transparent, Sequence action)
 {
+	const int select = TacticalClass::Instance->SelectableCount;
+	TacticalClass::Instance->SelectableCount = 500;
 	const bool lightning = LightningStorm::Active;
 	LightningStorm::Active = false;
 	const auto psy = PsyDom::Status;
@@ -1466,4 +1472,5 @@ void TechnoExt::DrawExtraImage(InfantryClass* pThis, Point2D* pLocation, Rectang
 	LightningStorm::Active = lightning;
 	PsyDom::Status = psy;
 	NukeFlash::Status = nuke;
+	TacticalClass::Instance->SelectableCount = select;
 }
