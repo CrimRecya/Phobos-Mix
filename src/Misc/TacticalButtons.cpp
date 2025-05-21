@@ -446,7 +446,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				ID = "Cell";
 			}
 
-			drawText("%s: %s (%03d,%03d)[%dC]", pInfoName, ID, mapCoords.X, mapCoords.Y, (pCurrent->DistanceFrom(pTarget) / Unsorted::LeptonsPerCell));
+			drawText("%s: %s(%03d,%03d)[%dC]", pInfoName, ID, mapCoords.X, mapCoords.Y, (pCurrent->DistanceFrom(pTarget) / Unsorted::LeptonsPerCell));
 		}
 		else
 		{
@@ -456,7 +456,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 	auto drawTask = [&drawText](const char* pInfoName, Mission mission)
 	{
-		drawText("%s = (%02d)[%s]", pInfoName, mission, MissionControlClass::FindName(mission));
+		drawText("%s: (%02d)[%s]", pInfoName, mission, MissionControlClass::FindName(mission));
 	};
 
 	auto drawTime = [&drawText](const char* pInfoName, CDTimerClass& timer)
@@ -469,9 +469,108 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 	};
 
 	drawText("Current Frame: %d", Unsorted::CurrentFrame);
+	{
+		const auto mouseXY1 = WWMouseClass::Instance->XY1;
+		auto point = mouseXY1 - Point2D { DSurface::ViewBounds.X, DSurface::ViewBounds.Y };
+		auto cell = CellStruct::Empty;
+		auto coords = CoordStruct::Empty;
+		ObjectClass* pObj = nullptr;
+		BYTE fogged = 0;
+		BYTE shrouded = 0;
+
+		DisplayClass::Instance.ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
+		const auto pCell = MapClass::Instance.GetCellAt(cell);
+
+		drawText("Address: 0x%X", reinterpret_cast<DWORD>(pCell));
+		drawText("Cell: %d", MapClass::Instance.GetCellIndex(pCell->MapCoords));
+		drawText("UniqueID: %d", pCell->UniqueID);
+
+		{
+			constexpr const char* landTypes[12] = { "Clear", "Road", "Water", "Rock", "Wall", "Tiberium", "Beach", "Rough", "Ice", "Railroad", "Tunnel", "Weeds" };
+			const auto landType = static_cast<int>(pCell->LandType);
+
+			drawText("LandType: ( %s )", (landType >= 0 && landType < 12) ? landTypes[landType] : "Unknown");
+			drawText("Slope: ( %d )", pCell->SlopeIndex);
+		}
+
+		drawText("Location: (%05d,%05d,%05d)[%03d,%03d,%02d]", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pCell->GetLevel());
+		updateLine();
+
+		{
+			const auto nCF = static_cast<DWORD>(pCell->Flags);
+
+			drawText("CellFlags: %d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
+				((nCF >> 22) & 0x1), ((nCF >> 21) & 0x1), ((nCF >> 20) & 0x1), ((nCF >> 19) & 0x1), ((nCF >> 18) & 0x1), ((nCF >> 17) & 0x1), ((nCF >> 16) & 0x1),
+				((nCF >> 15) & 0x1), ((nCF >> 14) & 0x1), ((nCF >> 13) & 0x1), ((nCF >> 12) & 0x1), ((nCF >> 11) & 0x1), ((nCF >> 10) & 0x1), ((nCF >> 9) & 0x1), ((nCF >> 8) & 0x1),
+				((nCF >> 7) & 0x1), ((nCF >> 6) & 0x1), ((nCF >> 5) & 0x1), ((nCF >> 4) & 0x1), ((nCF >> 3) & 0x1), ((nCF >> 2) & 0x1), ((nCF >> 1) & 0x1), (nCF & 0x1));
+
+			updateLine();
+		}
+
+		{
+			const auto nOF = pCell->OccupationFlags;
+			const auto nAF = pCell->AltOccupationFlags;
+
+			drawText("TheOccupationFlags: %d%d%d%d%d%d%d%d", ((nOF >> 7) & 0x1), ((nOF >> 6) & 0x1), ((nOF >> 5) & 0x1), ((nOF >> 4) & 0x1), ((nOF >> 3) & 0x1), ((nOF >> 2) & 0x1), ((nOF >> 1) & 0x1), (nOF & 0x1));
+			drawText("AltOccupationFlags: %d%d%d%d%d%d%d%d", ((nAF >> 7) & 0x1), ((nAF >> 6) & 0x1), ((nAF >> 5) & 0x1), ((nAF >> 4) & 0x1), ((nAF >> 3) & 0x1), ((nAF >> 2) & 0x1), ((nAF >> 1) & 0x1), (nAF & 0x1));
+		}
+
+		drawText("TubeIndex: %d", pCell->TubeIndex);
+		drawText("RadLevel: %.2f", pCell->RadLevel);
+
+		{
+			const auto pOwner = HouseClass::Array.GetItemOrDefault(pCell->WallOwnerIndex);
+
+			drawText("WallOwner: %s(%s)", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+			drawInfo("CurrentJumpjet", pCell, pCell->Jumpjet);
+		}
+
+		{
+			int count = 0;
+			int index = 0;
+
+			for (auto pCellObj = pCell->FirstObject; pCellObj; pCellObj = pCellObj->NextObject)
+				++count;
+
+			drawText("TheObjects: (Ground)[%d]", count);
+			updateLine();
+
+			for (auto pCellObj = pCell->FirstObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
+				drawText("TheObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
+
+			if (loc)
+				updateLine();
+		}
+
+		{
+			int count = 0;
+			int index = 0;
+
+			for (auto pCellObj = pCell->AltObject; pCellObj; pCellObj = pCellObj->NextObject)
+				++count;
+
+			drawText("AltObjects: (Bridge)[%d]", count);
+			updateLine();
+
+			for (auto pCellObj = pCell->AltObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
+				drawText("AltObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
+
+			if (loc)
+				updateLine();
+		}
+
+		updateLine();
+		updateLine();
+
+		const auto pMouse = &MouseClass::Instance;
+
+		drawText("Mouse: (%04d,%04d)", mouseXY1.X, mouseXY1.Y);
+		drawText("RadarScope: (%03d,%03d,%02d,%02d)", pMouse->unknown_rect_14DC.X, pMouse->unknown_rect_14DC.Y, pMouse->unknown_rect_14DC.Width, pMouse->unknown_rect_14DC.Height);
+	}
 
 	if (pTechno)
 	{
+		drawText("Current Select Techno:");
 		drawText("Address: 0x%X", reinterpret_cast<DWORD>(pTechno));
 
 		const auto pType = pTechno->GetTechnoType();
@@ -783,7 +882,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const int capacity = pBuildingType->MaxNumberOccupants;
 				const int count = pBuilding->Occupants.Count;
 
-				drawText("Occupants = (%d/%d)", count, capacity);
+				drawText("Occupants: (%d/%d)", count, capacity);
 
 				if (capacity > 1)
 					updateLine();
@@ -828,7 +927,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 					}
 				}
 
-				drawText("Overpowers = (%d/%d)[%d]", count, capacity, overpower);
+				drawText("Overpowers: (%d/%d)[%d]", count, capacity, overpower);
 
 				if (capacity > 1)
 					updateLine();
@@ -890,7 +989,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawTime("BuildingGate", pBuilding->GateTimer);
 
 			drawText("BaseNodes: %d", pOwner->Base.BaseNodes.Count);
-			drawText("BaseCenter = (%03d,%03d)", pOwner->Base.Center.X, pOwner->Base.Center.Y);
+			drawText("BaseCenter: (%03d,%03d)", pOwner->Base.Center.X, pOwner->Base.Center.Y);
 
 			{
 				SuperClass* pSuper = nullptr;
@@ -917,118 +1016,19 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const auto pType2 = pBuilding->Upgrades[1];
 				const auto pType3 = pBuilding->Upgrades[2];
 
-				drawText("Upgrades = (%d/%d)", pBuilding->UpgradeLevel, upgrades);
-				drawText("Slot-1 = %s", (pType1 ? pType1->ID : "N/A"));
-				drawText("Slot-2 = %s", (pType2 ? pType2->ID : "N/A"));
-				drawText("Slot-3 = %s", (pType3 ? pType3->ID : "N/A"));
+				drawText("Upgrades: (%d/%d)", pBuilding->UpgradeLevel, upgrades);
+				drawText("Slot-1: %s", (pType1 ? pType1->ID : "N/A"));
+				drawText("Slot-2: %s", (pType2 ? pType2->ID : "N/A"));
+				drawText("Slot-3: %s", (pType3 ? pType3->ID : "N/A"));
 			}
 			else
 			{
-				drawText("Upgrades = (%d/%d)", -1, -1);
-				drawText("Slot-1 = %s", "N/A");
-				drawText("Slot-2 = %s", "N/A");
-				drawText("Slot-3 = %s", "N/A");
+				drawText("Upgrades: (%d/%d)", -1, -1);
+				drawText("Slot-1: %s", "N/A");
+				drawText("Slot-2: %s", "N/A");
+				drawText("Slot-3: %s", "N/A");
 			}
 		}
-	}
-	else
-	{
-		const auto mouseXY1 = WWMouseClass::Instance->XY1;
-		auto point = mouseXY1 - Point2D { DSurface::ViewBounds.X, DSurface::ViewBounds.Y };
-		auto cell = CellStruct::Empty;
-		auto coords = CoordStruct::Empty;
-		ObjectClass* pObj = nullptr;
-		BYTE fogged = 0;
-		BYTE shrouded = 0;
-
-		DisplayClass::Instance.ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
-		const auto pCell = MapClass::Instance.GetCellAt(cell);
-
-		drawText("Address: 0x%X", reinterpret_cast<DWORD>(pCell));
-		drawText("Cell: %d", MapClass::Instance.GetCellIndex(pCell->MapCoords));
-		drawText("UniqueID: %d", pCell->UniqueID);
-
-		{
-			constexpr const char* landTypes[12] = { "Clear", "Road", "Water", "Rock", "Wall", "Tiberium", "Beach", "Rough", "Ice", "Railroad", "Tunnel", "Weeds" };
-			const auto landType = static_cast<int>(pCell->LandType);
-
-			drawText("LandType = ( %s )", (landType >= 0 && landType < 12) ? landTypes[landType] : "Unknown");
-			drawText("Slope = ( %d )", pCell->SlopeIndex);
-		}
-
-		drawText("Location = (%05d,%05d,%05d)[%03d,%03d,%02d]", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pCell->GetLevel());
-		updateLine();
-
-		{
-			const auto nCF = static_cast<DWORD>(pCell->Flags);
-
-			drawText("CellFlags: %d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
-				((nCF >> 22) & 0x1), ((nCF >> 21) & 0x1), ((nCF >> 20) & 0x1), ((nCF >> 19) & 0x1), ((nCF >> 18) & 0x1), ((nCF >> 17) & 0x1), ((nCF >> 16) & 0x1),
-				((nCF >> 15) & 0x1), ((nCF >> 14) & 0x1), ((nCF >> 13) & 0x1), ((nCF >> 12) & 0x1), ((nCF >> 11) & 0x1), ((nCF >> 10) & 0x1), ((nCF >> 9) & 0x1), ((nCF >> 8) & 0x1),
-				((nCF >> 7) & 0x1), ((nCF >> 6) & 0x1), ((nCF >> 5) & 0x1), ((nCF >> 4) & 0x1), ((nCF >> 3) & 0x1), ((nCF >> 2) & 0x1), ((nCF >> 1) & 0x1), (nCF & 0x1));
-
-			updateLine();
-		}
-
-		{
-			const auto nOF = pCell->OccupationFlags;
-			const auto nAF = pCell->AltOccupationFlags;
-
-			drawText("TheOccupationFlags: %d%d%d%d%d%d%d%d", ((nOF >> 7) & 0x1), ((nOF >> 6) & 0x1), ((nOF >> 5) & 0x1), ((nOF >> 4) & 0x1), ((nOF >> 3) & 0x1), ((nOF >> 2) & 0x1), ((nOF >> 1) & 0x1), (nOF & 0x1));
-			drawText("AltOccupationFlags: %d%d%d%d%d%d%d%d", ((nAF >> 7) & 0x1), ((nAF >> 6) & 0x1), ((nAF >> 5) & 0x1), ((nAF >> 4) & 0x1), ((nAF >> 3) & 0x1), ((nAF >> 2) & 0x1), ((nAF >> 1) & 0x1), (nAF & 0x1));
-		}
-
-		drawText("TubeIndex = %d", pCell->TubeIndex);
-		drawText("RadLevel = %.2f", pCell->RadLevel);
-
-		{
-			const auto pOwner = HouseClass::Array.GetItemOrDefault(pCell->WallOwnerIndex);
-
-			drawText("WallOwner = %s(%s)", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
-			drawInfo("CurrentJumpjet", pCell, pCell->Jumpjet);
-		}
-
-		{
-			int count = 0;
-			int index = 0;
-
-			for (auto pCellObj = pCell->FirstObject; pCellObj; pCellObj = pCellObj->NextObject)
-				++count;
-
-			drawText("TheObjects = (Ground)[%d]", count);
-			updateLine();
-
-			for (auto pCellObj = pCell->FirstObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
-				drawText("TheObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
-
-			if (loc)
-				updateLine();
-		}
-
-		{
-			int count = 0;
-			int index = 0;
-
-			for (auto pCellObj = pCell->AltObject; pCellObj; pCellObj = pCellObj->NextObject)
-				++count;
-
-			drawText("AltObjects = (Bridge)[%d]", count);
-			updateLine();
-
-			for (auto pCellObj = pCell->AltObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
-				drawText("AltObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
-
-			if (loc)
-				updateLine();
-		}
-
-		updateLine();
-		updateLine();
-
-		const auto pMouse = &MouseClass::Instance;
-
-		drawText("Mouse: (%04d,%04d)", mouseXY1.X, mouseXY1.Y);
-		drawText("RadarScope: (%03d,%03d,%02d,%02d)", pMouse->unknown_rect_14DC.X, pMouse->unknown_rect_14DC.Y, pMouse->unknown_rect_14DC.Width, pMouse->unknown_rect_14DC.Height);
 	}
 }
 
