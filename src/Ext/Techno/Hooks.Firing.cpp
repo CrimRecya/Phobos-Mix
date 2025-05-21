@@ -768,13 +768,11 @@ DEFINE_HOOK(0x6FF660, TechnoClass_FireAt_Interceptor, 0x6)
 {
 	GET(TechnoClass* const, pSource, ESI);
 
-	auto const pSourceTypeExt = TechnoTypeExt::ExtMap.Find(pSource->GetTechnoType());
-
-	if (pSourceTypeExt->InterceptorType)
+	if (TechnoTypeExt::ExtMap.Find(pSource->GetTechnoType())->InterceptorType)
 	{
 		GET_BASE(AbstractClass* const, pTarget, 0x8);
 
-		if (auto const pTargetObject = specific_cast<BulletClass* const>(pTarget))
+		if (auto const pTargetObject = abstract_cast<BulletClass*>(pTarget))
 		{
 			GET_STACK(BulletClass* const, pBullet, STACK_OFFSET(0xB0, -0x74));
 
@@ -792,23 +790,24 @@ DEFINE_HOOK(0x6FF660, TechnoClass_FireAt_Interceptor, 0x6)
 DEFINE_HOOK_AGAIN(0x6FF660, TechnoClass_FireAt_ToggleLaserWeaponIndex, 0x6)
 DEFINE_HOOK(0x6FF4CC, TechnoClass_FireAt_ToggleLaserWeaponIndex, 0x6)
 {
-	GET(TechnoClass* const, pThis, ESI);
+	GET(WeaponTypeClass* const, pWeapon, EBX);
 
-	if (pThis->WhatAmI() == AbstractType::Building)
+	if (pWeapon->IsLaser)
 	{
-		GET(WeaponTypeClass* const, pWeapon, EBX);
-
-		if (!pWeapon->IsLaser)
-			return 0;
+		GET(TechnoClass* const, pThis, ESI);
 
 		if (auto const pExt = BuildingExt::ExtMap.Find(abstract_cast<BuildingClass*, true>(pThis)))
 		{
-			GET_BASE(int, weaponIndex, 0xC);
-
 			if (!pExt->CurrentLaserWeaponIndex.has_value())
+			{
+				GET_BASE(int, weaponIndex, 0xC);
+
 				pExt->CurrentLaserWeaponIndex = weaponIndex;
+			}
 			else
+			{
 				pExt->CurrentLaserWeaponIndex.reset();
+			}
 		}
 	}
 
