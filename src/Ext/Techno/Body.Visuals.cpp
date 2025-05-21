@@ -4,6 +4,10 @@
 #include <SpawnManagerClass.h>
 #include <FactoryClass.h>
 #include <SuperClass.h>
+#include <DriveLocomotionClass.h>
+#include <ShipLocomotionClass.h>
+#include <JumpjetLocomotionClass.h>
+
 #include <Ext/SWType/Body.h>
 #include <Ext/House/Body.h>
 #include <Utilities/EnumFunctions.h>
@@ -1141,4 +1145,325 @@ void TechnoExt::GetValuesForDisplay(TechnoClass* pThis, DisplayInfoType infoType
 		break;
 	}
 	}
+}
+
+void TechnoExt::DrawExtraImage(TechnoClass* pThis, CellClass* pCell, DirStruct dir, int height)
+{
+	if (height < 0)
+		return;
+
+	auto coords = pCell->GetCoords();
+	coords.Z += height;
+	const auto pair = TacticalClass::Instance->CoordsToClient(coords);
+
+	if (!pair.second)
+		return;
+
+	const bool inAir = height > Unsorted::CellHeight;
+	const auto slope = inAir ? 0 : pCell->SlopeIndex;
+	const auto action = (!inAir && pCell->LandType == LandType::Water) ? Sequence::Swim : Sequence::Ready;
+	TechnoExt::DrawExtraImage(pThis, pair.first, DSurface::ViewBounds, dir, true, action, slope);
+}
+
+void TechnoExt::DrawExtraImage(TechnoClass* pThis, const Point2D& location, const RectangleStruct& bounds, DirStruct dir, bool transparent, Sequence action, int tilt)
+{
+	if (bounds.Width <= 0 || bounds.Height <= 0)
+		return;
+
+	const auto& viewBounds = DSurface::ViewBounds;
+
+	if (viewBounds.Width <= 0 || viewBounds.Height <= 0)
+		return;
+
+	auto renderBounds = viewBounds;
+
+	if (viewBounds.X < bounds.X)
+	{
+		renderBounds.X = bounds.X;
+		renderBounds.Width += viewBounds.X - bounds.X;
+	}
+
+	const int right = bounds.X + bounds.Width;
+	if (renderBounds.X + renderBounds.Width > right)
+		renderBounds.Width = right - renderBounds.X;
+
+	if (renderBounds.Width <= 0)
+		return;
+
+	if (viewBounds.Y < bounds.Y)
+	{
+		renderBounds.Y = bounds.Y;
+		renderBounds.Height += viewBounds.Y - bounds.Y;
+	}
+
+	const int down = bounds.Y + bounds.Height;
+	if (renderBounds.Y + renderBounds.Height > down)
+		renderBounds.Height = down - renderBounds.Y;
+
+	if (renderBounds.Height <= 0)
+		return;
+
+	auto renderLocation = location;
+
+	if (bounds.X > DSurface::ViewBounds.X)
+		renderLocation.X += DSurface::ViewBounds.X - renderBounds.X;
+
+	if (bounds.Y > DSurface::ViewBounds.Y)
+		renderLocation.Y += DSurface::ViewBounds.Y - renderBounds.Y;
+
+	switch (pThis->WhatAmI())
+	{
+	case AbstractType::Unit:
+
+		TechnoExt::DrawExtraImage(static_cast<UnitClass*>(pThis), &renderLocation, &renderBounds, dir, transparent, tilt);
+		break;
+
+	case AbstractType::Infantry:
+
+		TechnoExt::DrawExtraImage(static_cast<InfantryClass*>(pThis), &renderLocation, &renderBounds, dir, transparent, action);
+		break;
+
+	// Using similar methods for buildings should be possible
+
+	// Using similar methods for airplanes should pay attention to the use of SetHeight() in DrawIt()
+
+	default:
+		break;
+	}
+}
+
+void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleStruct* pBounds, DirStruct dir, bool transparent, int tilt)
+{
+	const bool lightning = LightningStorm::Active;
+	LightningStorm::Active = false;
+	const auto psy = PsyDom::Status;
+	PsyDom::Status = PsychicDominatorStatus::Inactive;
+	const auto nuke = NukeFlash::Status;
+	NukeFlash::Status = NukeFlashStatus::Inactive;
+
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+
+	const bool warp = pThis->BeingWarpedOut;
+	pThis->BeingWarpedOut = transparent;
+
+	const bool berzerk = pThis->Berzerk;
+	pThis->Berzerk = false;
+	const auto airstrike = pExt->AirstrikeTargetingMe;
+	pExt->AirstrikeTargetingMe = nullptr;
+	const int iron = pThis->IronCurtainTimer.TimeLeft;
+	pThis->IronCurtainTimer.TimeLeft = 0;
+	const int flash = pThis->Flashing.DurationRemaining;
+	pThis->Flashing.DurationRemaining = 0;
+	const bool disguised = pThis->Disguised;
+	pThis->Disguised = false;
+	const auto disguise = pThis->DisguiseCreationFrame;
+	pThis->DisguiseCreationFrame = Unsorted::CurrentFrame + 1;
+	const bool warping = pThis->WarpingOut;
+	pThis->WarpingOut = false;
+	const auto temporal = pThis->TemporalTargetingMe;
+	pThis->TemporalTargetingMe = nullptr;
+	const auto cloak = pThis->CloakState;
+	pThis->CloakState = CloakState::Uncloaked;
+	const float arf = pThis->AngleRotatedForwards;
+	pThis->AngleRotatedForwards = 0.0f;
+	const float ars = pThis->AngleRotatedSideways;
+	pThis->AngleRotatedSideways = 0.0f;
+
+	const bool deployed = pThis->Deployed;
+	pThis->Deployed = false;
+	const bool unloading = pThis->Unloading;
+	pThis->Unloading = false;
+
+	const auto coords = pThis->Location;
+	pThis->Location = CoordStruct { INT_MAX, INT_MAX, INT_MAX };
+	const char tube = pThis->TubeIndex;
+	pThis->TubeIndex = -1;
+
+	if (tilt < 0 || tilt > 20) tilt = 0;
+	const auto slope = MapClass::InvalidCell.SlopeIndex;
+	MapClass::InvalidCell.SlopeIndex = static_cast<BYTE>(tilt);
+	struct LocomotionRampTemp { int CurrentRamp; int Rate; };
+	struct LocomotionFaceTemp { DirStruct DesiredFacing; DirStruct ROT; };
+	const auto iLoco = pThis->Locomotor.GetInterfacePtr();
+	const auto pDrLoco = locomotion_cast<DriveLocomotionClass*>(iLoco);
+	const auto pShLoco = locomotion_cast<ShipLocomotionClass*>(iLoco);
+	const auto pAdLoco = locomotion_cast<AdvancedDriveLocomotionClass*>(iLoco);
+	const auto pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(iLoco);
+	const auto rampTemp = (pDrLoco ? LocomotionRampTemp(pDrLoco->PreviousRamp, pDrLoco->SlopeTimer.Rate)
+		: (pShLoco ? LocomotionRampTemp(pShLoco->PreviousRamp, pShLoco->SlopeTimer.Rate)
+		: (pAdLoco ? LocomotionRampTemp(pAdLoco->CurrentRamp, pAdLoco->SlopeTimer.Rate) : LocomotionRampTemp())));
+	const auto faceTemp = pJjLoco ? LocomotionFaceTemp(pJjLoco->LocomotionFacing.DesiredFacing, pJjLoco->LocomotionFacing.ROT) : LocomotionFaceTemp();
+	if (pDrLoco)
+	{
+		pDrLoco->PreviousRamp = tilt;
+		pDrLoco->SlopeTimer.Rate = 0;
+	}
+	else if (pShLoco)
+	{
+		pShLoco->PreviousRamp = tilt;
+		pShLoco->SlopeTimer.Rate = 0;
+	}
+	else if (pAdLoco)
+	{
+		pAdLoco->CurrentRamp = tilt;
+		pAdLoco->SlopeTimer.Rate = 0;
+	}
+	else if (pJjLoco)
+	{
+		pJjLoco->LocomotionFacing.DesiredFacing = dir;
+		pJjLoco->LocomotionFacing.ROT = DirStruct(0);
+	}
+
+	const auto bodyDes = pThis->PrimaryFacing.DesiredFacing;
+	const auto bodyROT = pThis->PrimaryFacing.ROT;
+	const auto turretDes = pThis->SecondaryFacing.DesiredFacing;
+	const auto turretROT = pThis->SecondaryFacing.ROT;
+	pThis->PrimaryFacing.DesiredFacing = dir;
+	pThis->PrimaryFacing.ROT = DirStruct(0);
+	pThis->SecondaryFacing.DesiredFacing = dir;
+	pThis->SecondaryFacing.ROT = DirStruct(0);
+
+	pThis->DrawIt(pLocation, pBounds);
+
+	pThis->PrimaryFacing.DesiredFacing = bodyDes;
+	pThis->PrimaryFacing.ROT = bodyROT;
+	pThis->SecondaryFacing.DesiredFacing = turretDes;
+	pThis->SecondaryFacing.ROT = turretROT;
+
+	if (pDrLoco)
+	{
+		pDrLoco->PreviousRamp = rampTemp.CurrentRamp;
+		pDrLoco->SlopeTimer.Rate = rampTemp.Rate;
+	}
+	else if (pShLoco)
+	{
+		pShLoco->PreviousRamp = rampTemp.CurrentRamp;
+		pShLoco->SlopeTimer.Rate = rampTemp.Rate;
+	}
+	else if (pAdLoco)
+	{
+		pAdLoco->CurrentRamp = rampTemp.CurrentRamp;
+		pAdLoco->SlopeTimer.Rate = rampTemp.Rate;
+	}
+	else if (pJjLoco)
+	{
+		pJjLoco->LocomotionFacing.DesiredFacing = faceTemp.DesiredFacing;
+		pJjLoco->LocomotionFacing.ROT = faceTemp.ROT;
+	}
+	MapClass::InvalidCell.SlopeIndex = slope;
+
+	pThis->Location = coords;
+	pThis->TubeIndex = tube;
+
+	pThis->Deployed = deployed;
+	pThis->Unloading = unloading;
+
+	pThis->Berzerk = berzerk;
+	pExt->AirstrikeTargetingMe = airstrike;
+	pThis->IronCurtainTimer.TimeLeft = iron;
+	pThis->Flashing.DurationRemaining = flash;
+	pThis->Disguised = disguised;
+	pThis->DisguiseCreationFrame = disguise;
+	pThis->WarpingOut = warping;
+	pThis->TemporalTargetingMe = temporal;
+	pThis->CloakState = cloak;
+	pThis->AngleRotatedForwards = arf;
+	pThis->AngleRotatedSideways = ars;
+
+	pThis->BeingWarpedOut = warp;
+
+	LightningStorm::Active = lightning;
+	PsyDom::Status = psy;
+	NukeFlash::Status = nuke;
+}
+
+void TechnoExt::DrawExtraImage(InfantryClass* pThis, Point2D* pLocation, RectangleStruct* pBounds, DirStruct dir, bool transparent, Sequence action)
+{
+	const bool lightning = LightningStorm::Active;
+	LightningStorm::Active = false;
+	const auto psy = PsyDom::Status;
+	PsyDom::Status = PsychicDominatorStatus::Inactive;
+	const auto nuke = NukeFlash::Status;
+	NukeFlash::Status = NukeFlashStatus::Inactive;
+
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+
+	const bool warp = pThis->BeingWarpedOut;
+	pThis->BeingWarpedOut = transparent;
+
+	const bool berzerk = pThis->Berzerk;
+	pThis->Berzerk = false;
+	const auto airstrike = pExt->AirstrikeTargetingMe;
+	pExt->AirstrikeTargetingMe = nullptr;
+	const int iron = pThis->IronCurtainTimer.TimeLeft;
+	pThis->IronCurtainTimer.TimeLeft = 0;
+	const int flash = pThis->Flashing.DurationRemaining;
+	pThis->Flashing.DurationRemaining = 0;
+	const bool disguised = pThis->Disguised;
+	pThis->Disguised = false;
+	const auto disguise = pThis->DisguiseCreationFrame;
+	pThis->DisguiseCreationFrame = Unsorted::CurrentFrame + 1;
+	const bool warping = pThis->WarpingOut;
+	pThis->WarpingOut = false;
+	const auto temporal = pThis->TemporalTargetingMe;
+	pThis->TemporalTargetingMe = nullptr;
+	const auto cloak = pThis->CloakState;
+	pThis->CloakState = CloakState::Uncloaked;
+
+	const auto coords = pThis->Location;
+	pThis->Location = CoordStruct { INT_MAX, INT_MAX, INT_MAX };
+	const char tube = pThis->TubeIndex;
+	pThis->TubeIndex = -1;
+
+	const int anim = pThis->Animation.Value;
+	const auto sequence = pThis->SequenceAnim;
+	pThis->Animation.Value = 0;
+	pThis->SequenceAnim = action;
+
+	struct LocomotionFaceTemp { DirStruct DesiredFacing; DirStruct ROT; };
+	const auto pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor);
+	const auto faceTemp = pJjLoco ? LocomotionFaceTemp(pJjLoco->LocomotionFacing.DesiredFacing, pJjLoco->LocomotionFacing.ROT) : LocomotionFaceTemp();
+	if (pJjLoco)
+	{
+		pJjLoco->LocomotionFacing.DesiredFacing = dir;
+		pJjLoco->LocomotionFacing.ROT = DirStruct(0);
+	}
+
+	const auto bodyDes = pThis->PrimaryFacing.DesiredFacing;
+	const auto bodyROT = pThis->PrimaryFacing.ROT;
+	pThis->PrimaryFacing.DesiredFacing = dir;
+	pThis->PrimaryFacing.ROT = DirStruct(0);
+
+	pThis->DrawIt(pLocation, pBounds);
+
+	pThis->PrimaryFacing.DesiredFacing = bodyDes;
+	pThis->PrimaryFacing.ROT = bodyROT;
+
+	if (pJjLoco)
+	{
+		pJjLoco->LocomotionFacing.DesiredFacing = faceTemp.DesiredFacing;
+		pJjLoco->LocomotionFacing.ROT = faceTemp.ROT;
+	}
+
+	pThis->Animation.Value = anim;
+	pThis->SequenceAnim = sequence;
+
+	pThis->Location = coords;
+	pThis->TubeIndex = tube;
+
+	pThis->Berzerk = berzerk;
+	pExt->AirstrikeTargetingMe = airstrike;
+	pThis->IronCurtainTimer.TimeLeft = iron;
+	pThis->Flashing.DurationRemaining = flash;
+	pThis->Disguised = disguised;
+	pThis->DisguiseCreationFrame = disguise;
+	pThis->WarpingOut = warping;
+	pThis->TemporalTargetingMe = temporal;
+	pThis->CloakState = cloak;
+
+	pThis->BeingWarpedOut = warp;
+
+	LightningStorm::Active = lightning;
+	PsyDom::Status = psy;
+	NukeFlash::Status = nuke;
 }

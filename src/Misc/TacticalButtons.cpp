@@ -319,6 +319,27 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 		if (const auto pFoot = abstract_cast<FootClass*, true>(pTechno))
 		{
+			const auto& pD = pFoot->PathDirections;
+			auto face = pD[0];
+
+			if (face > -1 && face < 8)
+			{
+				auto pCell = MapClass::Instance.GetCellAt(pFoot->CurrentMapCoords)->GetNeighbourCell(static_cast<FacingType>(face));
+
+				for (int i = 1; i < 24; ++i)
+				{
+					const auto thisFace = pD[i];
+
+					if (thisFace <= -1 || thisFace >= 8)
+						break;
+
+					face = thisFace;
+					pCell = pCell->GetNeighbourCell(static_cast<FacingType>(face));
+				}
+
+				TechnoExt::DrawExtraImage(pFoot, pCell, DirStruct(face << 13));
+			}
+
 			drawDashLine(pFoot->Target, COLOR_RED);
 			drawDashLine(pFoot->ArchiveTarget, COLOR_PURPLE);
 			drawDashLine(pFoot->GetNthLink(), COLOR_WHITE);
