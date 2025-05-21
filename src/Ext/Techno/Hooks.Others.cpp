@@ -2007,6 +2007,24 @@ DEFINE_HOOK(0x70FC85, TechnoClass_Activate_End, 0x5)
 
 #pragma region
 
+#pragma region TunnelDist
+
+DEFINE_HOOK(0x74608F, UnitClass_AStarAttempt_SimpleTooFar, 0x5)
+{
+	enum { GoUnderground = 0x7460F4, GoSurface = 0x746094 };
+	GET(const int, simpleDist, EAX);
+	return simpleDist >= RulesExt::Global()->TunnelSimpleDistTooFar ? GoUnderground : GoSurface;
+}
+
+DEFINE_HOOK(0x7460EC, UnitClass_AStarAttempt_PathingTooFar, 0x5)
+{
+	GET(const int, pathingDist, EAX);
+	R->DL(pathingDist > RulesExt::Global()->TunnelPathingDistTooFar);
+	return 0;
+}
+
+#pragma region
+
 // TODO Self-made impl
 
 
