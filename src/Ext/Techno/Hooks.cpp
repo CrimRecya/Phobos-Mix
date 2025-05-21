@@ -8,6 +8,7 @@
 #include <Ext/Anim/Body.h>
 #include <Ext/BuildingType/Body.h>
 #include <Ext/House/Body.h>
+#include <Ext/Scenario/Body.h>
 #include <Ext/WarheadType/Body.h>
 #include <Ext/WeaponType/Body.h>
 #include <Ext/TechnoType/Body.h>
@@ -190,6 +191,16 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	pExt->CurrentShieldType = pExt->TypeExtData->ShieldType;
 	pExt->InitializeAttachEffects();
 	pExt->InitializeLaserTrails();
+	pExt->InitializeDisplayInfo();
+	pExt->InitAggressiveStance();
+	pExt->InitializeRecoilData();
+	pExt->InitializeAttachments();
+
+	if (RulesExt::Global()->CheckExtraBaseNormal && pExt->TypeExtData->ExtraBaseNormal)
+		ScenarioExt::Global()->BaseNormalTechnos.push_back(pExt);
+
+	if (pExt->TypeExtData->UniqueTechno && pThis->Owner->IsControlledByCurrentPlayer())
+		ScenarioExt::Global()->OwnedUniqueTechnos.push_back(pExt);
 
 	if (pExt->TypeExtData->Harvester_Counted)
 		HouseExt::ExtMap.Find(pThis->Owner)->OwnedCountedHarvesters.push_back(pThis);
@@ -203,8 +214,9 @@ DEFINE_HOOK(0x6F421C, TechnoClass_Init_DefaultDisguise, 0x6)
 
 	auto const pExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
 
+	const auto absType = pThis->WhatAmI();
 	// mirage is not here yet
-	if (pThis->WhatAmI() == AbstractType::Infantry && pExt->DefaultDisguise)
+	if ((absType == AbstractType::Infantry || absType == AbstractType::Unit) && pExt->DefaultDisguise)
 	{
 		pThis->Disguise = pExt->DefaultDisguise;
 		pThis->DisguisedAsHouse = pThis->Owner;
@@ -430,7 +442,7 @@ DEFINE_HOOK(0x6FE352, TechnoClass_FirepowerMultiplier, 0x8)       // TechnoClass
 
 #pragma region Disguise
 
-bool __fastcall IsAlly_Wrapper(HouseClass* pTechnoOwner, void* _, HouseClass* pCurrentPlayer)
+bool __fastcall IsAlly_Wrapper(HouseClass* pTechnoOwner, discard_t _, HouseClass* pCurrentPlayer)
 {
 	return pCurrentPlayer->IsObserver() || pTechnoOwner->IsAlliedWith(pCurrentPlayer) || (RulesExt::Global()->DisguiseBlinkingVisibility & AffectedHouse::Enemies) != AffectedHouse::None;
 }
@@ -567,14 +579,12 @@ DEFINE_JUMP(VTABLE, 0x7EB1AC, 0x4DEAE0); // Redirect InfantryClass::IronCurtain 
 DEFINE_HOOK(0x700C58, TechnoClass_CanPlayerMove_NoManualMove, 0x6)
 {
 	GET(TechnoClass*, pThis, ESI);
-
 	return TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->NoManualMove ? 0x700C62 : 0;
 }
 
 DEFINE_HOOK(0x4437B3, BuildingClass_CellClickedAction_NoManualMove, 0x6)
 {
 	GET(BuildingTypeClass*, pType, EDX);
-
 	return TechnoTypeExt::ExtMap.Find(pType)->NoManualMove ? 0x44384E : 0;
 }
 
@@ -608,6 +618,79 @@ DEFINE_HOOK(0x70EFE0, TechnoClass_GetMaxSpeed, 0x6)
 	R->EAX(maxSpeed);
 	return SkipGameCode;
 }
+
+#pragma region DestroyAnimGeneralize
+
+namespace PlayDestroyAnimGeneralize
+{
+	TechnoTypeClass* pType;
+}
+
+DEFINE_HOOK(0x738687, UnitClass_PlayDestroyAnim_SetContext, 0x6)
+{
+	enum { SkipGameCode = 0x73868D };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	PlayDestroyAnimGeneralize::pType = pThis->GetTechnoType();
+	R->EAX(PlayDestroyAnimGeneralize::pType);
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK_AGAIN(0x738822, UnitClass_PlayDestroyAnim_Generalize1, 0x6);
+DEFINE_HOOK_AGAIN(0x7387C4, UnitClass_PlayDestroyAnim_Generalize1, 0x6);
+DEFINE_HOOK(0x7386AC, UnitClass_PlayDestroyAnim_Generalize1, 0x6)
+{
+	R->ECX(PlayDestroyAnimGeneralize::pType);
+	return R->Origin() + 6;
+}
+
+DEFINE_HOOK_AGAIN(0x738801, UnitClass_PlayDestroyAnim_Generalize2, 0x6);
+DEFINE_HOOK(0x7386DA, UnitClass_PlayDestroyAnim_Generalize2, 0x6)
+{
+	R->EAX(PlayDestroyAnimGeneralize::pType);
+	return R->Origin() + 6;
+}
+
+DEFINE_HOOK(0x746D61, UnitClass_Destroy_ToggleAnim, 0x7)
+{
+	enum { SkipGameCode = 0x746D68 };
+
+	GET(TechnoClass*, pThis, ECX);
+
+	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+
+	if (pTypeExt->ExplodeOnDestroy.Get(pThis->WhatAmI() == AbstractType::Unit || RulesExt::Global()->NonVehExplodeOnDestroy))
+		static_cast<UnitClass*>(pThis)->Explode();
+
+	R->ESI(pThis);
+	return SkipGameCode;
+}
+
+DEFINE_JUMP(VTABLE, 0x7EB1C8, 0x746D60); // Redirect InfantryClass::Explode(TechnoClass::Explode) to UnitClass::Explode
+DEFINE_JUMP(VTABLE, 0x7E402C, 0x746D60); // Redirect BuildingClass::Explode(TechnoClass::Explode) to UnitClass::Explode
+DEFINE_JUMP(VTABLE, 0x7E2414, 0x746D60); // Redirect AircraftClass::Explode(TechnoClass::Explode) to UnitClass::Explode
+
+DEFINE_HOOK(0x7418D4, UnitClass_CrushCell_FireDeathWeapon, 0x6)
+{
+	GET(ObjectClass*, pThis, ESI);
+
+	if ((pThis->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
+	{
+		auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+
+		if (pTypeExt && pTypeExt->FireDeathWeaponOnCrushed.Get(RulesExt::Global()->FireDeathWeaponOnCrushed))
+		{
+			auto const pTechno = static_cast<TechnoClass*>(pThis);
+			pTechno->FireDeathWeapon(0);
+		}
+	}
+
+	return 0;
+}
+
+#pragma endregion
 
 DEFINE_HOOK(0x73B4DA, UnitClass_DrawVXL_WaterType_Extra, 0x6)
 {
@@ -682,6 +765,23 @@ DEFINE_HOOK(0x4C7462, EventClass_Execute_KeepTargetOnMove, 0x5)
 	return 0;
 }
 
+#pragma endregion
+
+DEFINE_HOOK(0x70D703, TechnoClass_FireDeathWeapon_UseGlobalDeathWeaponDamage, 0xA)
+{
+	enum { ReplaceDamage = 0x70D724 };
+
+	if (RulesExt::Global()->UseGlobalDeathWeaponDamage)
+	{
+		auto const pDeathWeapon = RulesClass::Instance->DeathWeapon;
+		R->EDI(pDeathWeapon);
+		R->EAX(pDeathWeapon ? pDeathWeapon->Damage : 0);
+		return ReplaceDamage;
+	}
+
+	return 0;
+}
+
 #pragma region BuildingTypeSelectable
 
 namespace BuildingTypeSelectable
@@ -721,6 +821,103 @@ DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable,
 	return SkipGameCode;
 }
 
+#pragma endregion
+
+#pragma region UnitDisguise
+
+DEFINE_HOOK(0x7466D8, UnitClass_DisguiseAs_DisguiseUnit, 0xA)
+{
+	enum { ret = 0x746712 };
+
+	GET(UnitClass*, pThis, EDI);
+	GET(UnitClass*, pTarget, ESI);
+
+	pThis->TechnoClass::DisguiseAs(pTarget);
+
+	if (pTarget->IsDisguised())
+	{
+		pThis->Disguise = pTarget->GetDisguise(true);
+		pThis->DisguisedAsHouse = pTarget->GetDisguiseHouse(true);
+	}
+	else
+	{
+		pThis->Disguise = pTarget->Type;
+		pThis->DisguisedAsHouse = pTarget->GetOwningHouse();
+	}
+
+	// Use the same FireAngle
+	if (pThis->Disguise && pThis->Disguise->WhatAmI() == AbstractType::UnitType)
+		pThis->BarrelFacing.SetCurrent(pTarget->BarrelFacing.Current());
+
+	return ret;
+}
+
+namespace RotatingContext
+{
+	UnitClass* pThis = nullptr;
+	UnitTypeClass* pType = nullptr;
+}
+
+DEFINE_HOOK(0x736990, UnitClass_UpdateRotating_Start, 0x6)
+{
+	GET(UnitClass*, pThis, ECX);
+
+	RotatingContext::pThis = pThis;
+	RotatingContext::pType = pThis->Type;
+
+	if (pThis->IsDisguised())
+	{
+		auto pDisguisedType = pThis->GetDisguise(true);
+
+		if (pDisguisedType->WhatAmI() == AbstractType::UnitType)
+			pThis->Type = (UnitTypeClass*)pDisguisedType;
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x736C0E, UnitClass_UpdateRotating_End, 0x5)
+{
+	RotatingContext::pThis->Type = RotatingContext::pType;
+	return 0;
+}
+/*
+// SHP still needs more improvment.
+namespace DrawAsSHPContext
+{
+	UnitClass* pThis;
+	UnitTypeClass* OriginalType;
+}
+
+DEFINE_HOOK(0x73C5F0, UnitClass_DrawAsSHP_Start, 0x6)
+{
+	GET(UnitClass*, pThis, ECX);
+
+	DrawAsSHPContext::pThis = pThis;
+	DrawAsSHPContext::OriginalType = pThis->Type;
+
+	if (!pThis->IsClearlyVisibleTo(HouseClass::CurrentPlayer))
+	{
+		if (auto pDisguiseUnitType = abstract_cast<UnitTypeClass*>(pThis->GetDisguise(true)))
+			pThis->Type = pDisguiseUnitType;
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK_AGAIN(0x73CE68, UnitClass_DrawAsSHP_End, 0x6);
+DEFINE_HOOK_AGAIN(0x73CEB7, UnitClass_DrawAsSHP_End, 0x6);
+DEFINE_HOOK(0x73CE04, UnitClass_DrawAsSHP_End, 0x6)
+{
+	DrawAsSHPContext::pThis->Type = DrawAsSHPContext::OriginalType;
+	return 0;
+}
+
+DEFINE_HOOK(0x73C61C, UnitClass_DrawAsSHP_Disguise, 0x5)
+{
+	return 0x73C62B;
+}
+*/
 #pragma endregion
 
 DEFINE_HOOK(0x521D94, InfantryClass_CurrentSpeed_ProneSpeed, 0x6)

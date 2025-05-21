@@ -17,7 +17,10 @@ DEFINE_HOOK(0x73B05B, UnitClass_PerCellProcess_TiltWhenCrushes, 0x6)
 	if (!pTypeExt->TiltsWhenCrushes_Overlays.Get(pThis->Type->TiltsWhenCrushes))
 		return SkipGameCode;
 
-	pThis->RockingForwardsPerFrame += static_cast<float>(pTypeExt->CrushOverlayExtraForwardTilt);
+	if (AdvancedDriveLocomotionClass::IsReversing(pThis))
+		pThis->RockingForwardsPerFrame -= static_cast<float>(pTypeExt->CrushOverlayExtraForwardTilt);
+	else
+		pThis->RockingForwardsPerFrame += static_cast<float>(pTypeExt->CrushOverlayExtraForwardTilt);
 
 	return SkipGameCode;
 }
@@ -33,7 +36,10 @@ DEFINE_HOOK(0x741941, UnitClass_OverrunSquare_TiltWhenCrushes, 0x6)
 	if (!pTypeExt->TiltsWhenCrushes_Vehicles.Get(pThis->Type->TiltsWhenCrushes))
 		return SkipGameCode;
 
-	pThis->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.050000001));
+	if (AdvancedDriveLocomotionClass::IsReversing(pThis))
+		pThis->RockingForwardsPerFrame = static_cast<float>(-pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
+	else
+		pThis->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
 
 	return SkipGameCode;
 }
@@ -65,7 +71,7 @@ DEFINE_HOOK(0x4B19F7, DriveLocomotionClass_WhileMoving_CrushTilt, 0xD)
 
 	auto const pLinkedTo = pThis->LinkedTo;
 	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType());
-	pLinkedTo->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.050000001));
+	pLinkedTo->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
 
 	return R->Origin() == 0x4B19F7 ? SkipGameCode1 : SkipGameCode2;
 }
@@ -98,4 +104,26 @@ DEFINE_HOOK(0x6A108D, ShipLocomotionClass_WhileMoving_CrushTilt, 0xD)
 	pLinkedTo->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.02));
 
 	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x4B1146, DriveLocomotionClass_WhileMoving_SkipCrushSlowDown, 0x6)
+{
+	enum { Skip = 0x4B1182, NotSkip = 0 };
+
+	GET(UnitClass*, pTechno, ECX);
+
+	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
+
+	return (pTypeExt && pTypeExt->SkipCrushSlowdown) ? Skip : NotSkip;
+}
+
+DEFINE_HOOK(0x6A0809, ShipLocomotionClass_WhileMoving_SkipCrushSlowDown, 0x6)
+{
+	enum { Skip = 0x6A0845, NotSkip = 0 };
+
+	GET(UnitClass*, pTechno, ECX);
+
+	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
+
+	return (pTypeExt && pTypeExt->SkipCrushSlowdown) ? Skip : NotSkip;
 }

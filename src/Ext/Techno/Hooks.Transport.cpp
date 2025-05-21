@@ -194,13 +194,22 @@ DEFINE_HOOK(0x6F72D2, TechnoClass_IsCloseEnoughToTarget_OpenTopped_RangeBonus, 0
 
 DEFINE_HOOK(0x71A82C, TemporalClass_AI_Opentopped_WarpDistance, 0xC)
 {
+	enum { SkipGameCode = 0x71A838 };
+
 	GET(TemporalClass* const, pThis, ESI);
 
-	if (auto pTransport = pThis->Owner->Transporter)
+	auto const pTechno = pThis->Owner;
+
+	if (auto const pTransport = pTechno->Transporter)
 	{
 		auto pExt = TechnoTypeExt::ExtMap.Find(pTransport->GetTechnoType());
 		R->EDX(pExt->OpenTopped_WarpDistance.Get(RulesClass::Instance->OpenToppedWarpDistance));
-		return 0x71A838;
+		return SkipGameCode;
+	}
+	else if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType()))
+	{
+		R->EDX(pTypeExt->KeepWarping_Distance.Get(RulesClass::Instance->OpenToppedWarpDistance));
+		return SkipGameCode;
 	}
 
 	return 0;
@@ -292,6 +301,9 @@ static inline void DoEnterNow(UnitClass* pTransport, FootClass* pPassenger)
 	// Vanilla only for infantry, but why
 	if (const auto pTag = pTransport->AttachedTag)
 		pTag->RaiseEvent(TriggerEvent::EnteredBy, pPassenger, CellStruct::Empty);
+
+	if (RulesExt::Global()->ExtendedScatterAction)
+		pPassenger->NavQueue.Clear();
 
 	// Vanilla did not handle SpawnManager and SlaveManager, so I don't care about these here either
 	pPassenger->SetArchiveTarget(nullptr);

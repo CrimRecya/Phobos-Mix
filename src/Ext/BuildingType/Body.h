@@ -3,6 +3,7 @@
 #include <SuperClass.h>
 #include <SuperWeaponTypeClass.h>
 
+#include <Ext/TechnoType/Body.h>
 #include <Helpers/Macro.h>
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
@@ -57,13 +58,30 @@ public:
 		Valueable<bool> SpyEffect_Custom;
 		ValueableIdx<SuperWeaponTypeClass> SpyEffect_VictimSuperWeapon;
 		ValueableIdx<SuperWeaponTypeClass> SpyEffect_InfiltratorSuperWeapon;
+		Valueable<int> SpyEffect_RadarJamDuration;
 
 		Nullable<bool> ConsideredVehicle;
 		Valueable<bool> ZShapePointMove_OnBuildup;
 		Valueable<int> SellBuildupLength;
 		Valueable<bool> IsDestroyableObstacle;
 
+		Valueable<bool> JustHasRallyPoint;
+		Nullable<CoordStruct> JumpjetExitCoord;
+		Nullable<int> RallySpeedType;
+		Nullable<int> RallyMovementZone;
+
+		Nullable<bool> Cameo_ShouldCount;
+		Nullable<bool> AutoBuilding;
+		Valueable<int> AutoBuilding_Gap;
+		Valueable<bool> LimboBuild;
+		Valueable<int> LimboBuildID;
+		Valueable<BuildingTypeClass*> LaserFencePost_Fence;
+		Valueable<BuildingTypeClass*> PlaceBuilding_OnLand;
+		Valueable<BuildingTypeClass*> PlaceBuilding_OnWater;
+
 		Valueable<bool> IsAnimDelayedBurst;
+
+		Valueable<bool> AggressiveStance_Exempt;
 
 		std::vector<std::optional<DirType>> AircraftDockingDirs;
 
@@ -78,8 +96,15 @@ public:
 		Valueable<bool> NoBuildAreaOnBuildup;
 		ValueableVector<BuildingTypeClass*> Adjacent_Allowed;
 		ValueableVector<BuildingTypeClass*> Adjacent_Disallowed;
+		ValueableVector<TechnoTypeClass*> Adjacent_AllowedExtra;
+		ValueableVector<TechnoTypeClass*> Adjacent_DisallowedExtra;
 
 		Nullable<Point2D> BarracksExitCell;
+
+		Valueable<bool> HasSecondaryRallyPoint;
+		Valueable<bool> Refinery_UseNormalActiveAnim;
+
+		Valueable<bool> CloningFacility;
 
 		Valueable<int> Overpower_KeepOnline;
 		Valueable<int> Overpower_ChargeWeapon;
@@ -117,13 +142,27 @@ public:
 			, SpyEffect_Custom { false }
 			, SpyEffect_VictimSuperWeapon {}
 			, SpyEffect_InfiltratorSuperWeapon {}
+			, SpyEffect_RadarJamDuration { 0 }
 			, ConsideredVehicle {}
 			, ZShapePointMove_OnBuildup { false }
 			, SellBuildupLength { 23 }
+			, JustHasRallyPoint { false }
+			, JumpjetExitCoord { }
+			, RallySpeedType { }
+			, RallyMovementZone { }
+			, Cameo_ShouldCount {}
+			, AutoBuilding {}
+			, AutoBuilding_Gap { 1 }
+			, LimboBuild { false }
+			, LimboBuildID { -1 }
+			, LaserFencePost_Fence {}
+			, PlaceBuilding_OnLand {}
+			, PlaceBuilding_OnWater {}
 			, AircraftDockingDirs {}
 			, FactoryPlant_AllowTypes {}
 			, FactoryPlant_DisallowTypes {}
 			, IsAnimDelayedBurst { true }
+			, AggressiveStance_Exempt { false }
 			, IsDestroyableObstacle { false }
 			, Units_RepairRate {}
 			, Units_RepairStep {}
@@ -132,7 +171,12 @@ public:
 			, NoBuildAreaOnBuildup { false }
 			, Adjacent_Allowed {}
 			, Adjacent_Disallowed {}
+			, Adjacent_AllowedExtra {}
+			, Adjacent_DisallowedExtra {}
 			, BarracksExitCell {}
+			, HasSecondaryRallyPoint { false }
+			, Refinery_UseNormalActiveAnim { false }
+			, CloningFacility { false }
 			, Overpower_KeepOnline { 2 }
 			, Overpower_ChargeWeapon { 1 }
 		{ }
@@ -173,6 +217,15 @@ public:
 
 	static int GetEnhancedPower(BuildingClass* pBuilding, HouseClass* pHouse);
 	static bool CanUpgrade(BuildingClass* pBuilding, BuildingTypeClass* pUpgradeType, HouseClass* pUpgradeOwner);
-	static int CountOwnedNowWithDeployOrUpgrade(BuildingTypeClass* pBuilding, HouseClass* pHouse);
 	static int GetUpgradesAmount(BuildingTypeClass* pBuilding, HouseClass* pHouse);
+	static void DrawAdjacentLines();
+	static bool CheckOccupierCanLeave(HouseClass* pBuildingHouse, HouseClass* pOccupierHouse);
+	static bool CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, CellStruct topLeftCell, HouseClass* pHouse, TechnoClass* pExceptTechno = nullptr);
+	static bool IsSameBuildingType(BuildingTypeClass* pType1, BuildingTypeClass* pType2);
+	static CellStruct SimulatePlacingAction(BuildingTypeClass* pType, CellStruct rallyCell, HouseClass* pHouse);
+	static CellStruct NearbyPlacingLocation(BuildingTypeClass* pType, CellStruct cell, HouseClass* pHouse, int buildGap = 1, bool checkAdjacent = false, bool checkShroud = false);
+	static bool AutoPlaceBuilding(BuildingClass* pBuilding);
+	static bool BuildLimboBuilding(BuildingClass* pBuilding);
+	static void CreateLimboBuilding(BuildingClass* pBuilding, BuildingTypeClass* pType, HouseClass* pOwner, int ID);
+	static bool DeleteLimboBuilding(BuildingClass* pBuilding, int ID);
 };

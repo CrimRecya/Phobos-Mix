@@ -21,6 +21,7 @@ wchar_t Phobos::wideBuffer[Phobos::readLength];
 
 const char* Phobos::AppIconPath = nullptr;
 
+bool Phobos::ShowCurrentInfo = false;
 bool Phobos::DisplayDamageNumbers = false;
 bool Phobos::IsLoadingSaveGame = false;
 
@@ -29,9 +30,9 @@ bool Phobos::Optimizations::DisableRadDamageOnBuildings = true;
 bool Phobos::Optimizations::DisableSyncLogging = false;
 
 #ifdef STR_GIT_COMMIT
-const wchar_t* Phobos::VersionDescription = L"Phobos nightly build (" STR_GIT_COMMIT L" @ " STR_GIT_BRANCH L"). DO NOT SHIP IN MODS!";
+const wchar_t* Phobos::VersionDescription = L"Phobos nightly build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"(" STR_GIT_COMMIT L"). DO NOT SHIP IN MODS!";
 #elif !defined(IS_RELEASE_VER)
-const wchar_t* Phobos::VersionDescription = L"Phobos development build #" _STR(BUILD_NUMBER) L". Please test the build before shipping.";
+const wchar_t* Phobos::VersionDescription = L"Phobos sp build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH);
 #else
 //const wchar_t* Phobos::VersionDescription = L"Phobos release build v" FILE_VERSION_STR L".";
 #endif
@@ -60,7 +61,7 @@ void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
 			Phobos::AppIconPath = ppArgs[++i];
 		}
 #ifndef IS_RELEASE_VER
-		if (_stricmp(pArg, "-b=" _STR(BUILD_NUMBER)) == 0)
+		if (_stricmp(pArg, "-m.b=" _STR(BUILD_NUMBER) "+" _STR(MERGE_NUMBER) "_" _STR(MERGE_PATCH)) == 0)
 		{
 			HideWarning = true;
 		}
@@ -239,19 +240,9 @@ DEFINE_HOOK(0x4F4583, GScreenClass_DrawText, 0x6)
 	if (!HideWarning)
 #endif // !STR_GIT_COMMIT
 	{
-		auto wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, { 0,0 }, 0, 2, 0);
-
-		RectangleStruct rect = {
-			DSurface::Composite->GetWidth() - wanted.Width - 10,
-			0,
-			wanted.Width + 10,
-			wanted.Height + 10
-		};
-
-		Point2D location { rect.X + 5,5 };
-
-		DSurface::Composite->FillRect(&rect, COLOR_BLACK);
-		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, COLOR_RED);
+		RectangleStruct wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0);
+		Point2D location { DSurface::Composite->GetWidth() - wanted.Width - 5, 5 };
+		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x061C);
 	}
 	return 0;
 }

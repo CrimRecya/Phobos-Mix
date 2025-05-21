@@ -364,7 +364,7 @@ bool TActionExt::RunSuperWeaponAt(TActionClass* pThis, int X, int Y)
 		if (pExecuteHouse)
 		{
 			auto const pSuper = pExecuteHouse->Supers.Items[swIdx];
-	
+
 			CDTimerClass old_timer = pSuper->RechargeTimer;
 			pSuper->SetReadiness(true);
 			pSuper->Launch(targetLocation, false);

@@ -12,6 +12,23 @@
 
 BulletExt::ExtContainer BulletExt::ExtMap;
 
+BulletExt::ExtData::~ExtData()
+{
+	if (const auto pTraj = this->Trajectory.get())
+	{
+		if (pTraj->GroupIndex != -1)
+		{
+			if (const auto pMap = pTraj->TrajectoryGroup)
+			{
+				auto& groupData = (*pMap)[this->TypeExtData->OwnerObject()->UniqueID];
+				auto& vec = groupData.Bullets;
+				vec.erase(std::remove(vec.begin(), vec.end(), this->OwnerObject()->UniqueID), vec.end());
+				groupData.ShouldUpdate = true;
+			}
+		}
+	}
+}
+
 void BulletExt::ExtData::InterceptBullet(TechnoClass* pSource, WeaponTypeClass* pWeapon)
 {
 	if (!pSource || !pWeapon)
@@ -173,12 +190,13 @@ inline void BulletExt::SimulatedFiringAnim(BulletClass* pBullet, HouseClass* pHo
 	if (animCounts <= 0)
 		return;
 
+	const auto pTraj = BulletExt::ExtMap.Find(pBullet)->Trajectory.get();
+	const auto velocityRadian = pTraj ? Math::atan2(pTraj->MovingVelocity.Y , pTraj->MovingVelocity.X) : Math::atan2(pBullet->Velocity.Y , pBullet->Velocity.X);
 	const auto pFirer = pBullet->Owner;
 	const auto pAnimType = pWeapon->Anim[(animCounts % 8 == 0) // Have direction
-		? (static_cast<int>((Math::atan2(pBullet->Velocity.Y , pBullet->Velocity.X) / Math::TwoPi + 1.5) * animCounts - (animCounts / 8) + 0.5) % animCounts) // Calculate direction
+		? (static_cast<int>((velocityRadian / Math::TwoPi + 1.5) * animCounts - (animCounts / 8) + 0.5) % animCounts) // Calculate direction
 		: ScenarioClass::Instance->Random.RandomRanged(0 , animCounts - 1)]; // Simple random;
 /*
-	const auto velocityRadian = Math::atan2(pBullet->Velocity.Y , pBullet->Velocity.X);
 	const auto ratioOfRotateAngle = velocityRadian / Math::TwoPi;
 	const auto correctRatioOfRotateAngle = ratioOfRotateAngle + 1.5; // Correct the Y-axis in reverse and ensure that the ratio is a positive number
 	const auto animIndex = correctRatioOfRotateAngle * animCounts;
@@ -431,8 +449,11 @@ void BulletExt::ExtData::Serialize(T& Stm)
 		.Process(this->LaserTrails)
 		.Process(this->SnappedToTarget)
 		.Process(this->DamageNumberOffset)
+		.Process(this->LimboedLauncher)
+		.Process(this->LimboedDir)
 
-		.Process(this->Trajectory) // Keep this shit at last
+		.Process(this->Trajectory)
+		.Process(this->DispersedTrajectory)
 		;
 }
 
