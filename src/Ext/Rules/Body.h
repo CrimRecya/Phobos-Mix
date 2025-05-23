@@ -363,6 +363,8 @@ public:
 		Valueable<bool> BalloonHoverPathingFix;
 		
 		Valueable<bool> AnimCraterReduceTiberium;
+		
+		Valueable<AffectedHouse> BerzerkTargeting;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -667,6 +669,8 @@ public:
 			, BalloonHoverPathingFix { true }
 
 			, AnimCraterReduceTiberium { true }
+			
+			, BerzerkTargeting { AffectedHouse::All }
 		{ }
 
 		virtual ~ExtData() = default;
