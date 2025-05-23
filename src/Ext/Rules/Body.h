@@ -363,6 +363,8 @@ public:
 		Valueable<bool> BalloonHoverPathingFix;
 		
 		Valueable<bool> AnimCraterReduceTiberium;
+		
+		Valueable<int> DefeatedBehavior;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -667,6 +669,8 @@ public:
 			, BalloonHoverPathingFix { true }
 
 			, AnimCraterReduceTiberium { true }
+			
+			, DefeatedBehavior { 0 }
 		{ }
 
 		virtual ~ExtData() = default;

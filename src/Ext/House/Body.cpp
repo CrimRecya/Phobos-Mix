@@ -1261,4 +1261,93 @@ bool HouseExt::ReachedBuildLimit(const HouseClass* pHouse, const TechnoTypeClass
 
 	return false;
 }
+
+void HouseExt::ReorganizeAllTo(HouseClass* pFromHouse, HouseClass* pToHouse)
+{
+	for (auto pTechno : TechnoClass::Array)
+	{
+		if (pTechno->OriginallyOwnedByHouse == pFromHouse)
+			pTechno->OriginallyOwnedByHouse = pToHouse;
+
+		if (pTechno->Owner == pFromHouse)
+			pTechno->SetOwningHouse(pToHouse, true);
+	}
+}
+
+void __fastcall HouseExt::DecideTechnosFate(HouseClass* pThis)
+{
+	auto behavior = RulesExt::Global()->DefeatedBehavior;
+
+	if (!behavior) // Vanilla behavior
+	{
+		pThis->DestroyAll();
+	}
+	else if (behavior > 0) // Reorganized to ally
+	{
+		bool includeHuman = false;
+		DynamicVectorClass<HouseClass*> allies;
+		for (auto pHouse : HouseClass::Array) // Find a house to give. Human player first.
+		{
+			if (pHouse->Type->MultiplayPassive)
+				continue;
+
+			if (!pThis->IsAlliedWith(pHouse))
+				continue;
+
+			if (includeHuman)
+			{
+				if (pHouse->IsControlledByHuman())
+					allies.AddItem(pHouse);
+			}
+			else
+			{
+				if (pHouse->IsControlledByHuman())
+				{
+					includeHuman = true;
+					allies.Clear();
+				}
+				allies.AddItem(pHouse);
+			}
+		}
+		if (allies.Count)
+		{
+			HouseExt::ReorganizeAllTo(pThis, allies[ScenarioClass::Instance->Random.RandomRanged(0, allies.Count)]);
+		}
+		else
+			pThis->DestroyAll();
+	}
+	else // Surrender to enemy
+	{
+		bool includeHuman = false;
+		DynamicVectorClass<HouseClass*> enemies;
+		for (auto pHouse : HouseClass::Array) // Find a house to give. Human player first.
+		{
+			if (pHouse->Type->MultiplayPassive)
+				continue;
+
+			if (pThis->IsAlliedWith(pHouse))
+				continue;
+
+			if (includeHuman)
+			{
+				if (pHouse->IsControlledByHuman())
+					enemies.AddItem(pHouse);
+			}
+			else
+			{
+				if (pHouse->IsControlledByHuman())
+				{
+					includeHuman = true;
+					enemies.Clear();
+				}
+				enemies.AddItem(pHouse);
+			}
+		}
+		if (enemies.Count)
+			HouseExt::ReorganizeAllTo(pThis, enemies[ScenarioClass::Instance->Random.RandomRanged(0, enemies.Count)]);
+		else
+			pThis->DestroyAll();
+	}
+}
+
 #pragma endregion
