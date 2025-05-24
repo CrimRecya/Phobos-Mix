@@ -359,12 +359,14 @@ public:
 
 		Valueable<int> TunnelSimpleDistTooFar;
 		Valueable<int> TunnelPathingDistTooFar;
-    
+
 		Valueable<bool> BalloonHoverPathingFix;
-		
+
 		Valueable<bool> AnimCraterReduceTiberium;
-		
+
 		Valueable<AffectedHouse> ReorganizeToWhenDefeated;
+
+		Valueable<AffectedHouse> BerzerkTargeting;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -665,12 +667,14 @@ public:
 
 			, TunnelSimpleDistTooFar { 12 }
 			, TunnelPathingDistTooFar { 15 }
-			
+
 			, BalloonHoverPathingFix { true }
 
 			, AnimCraterReduceTiberium { true }
-			
+
 			, ReorganizeToWhenDefeated { AffectedHouse::None }
+
+			, BerzerkTargeting { AffectedHouse::All }
 		{ }
 
 		virtual ~ExtData() = default;
