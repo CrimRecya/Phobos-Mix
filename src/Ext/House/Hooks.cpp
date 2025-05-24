@@ -566,3 +566,11 @@ DEFINE_HOOK(0x4FD616, HouseClass_sub4FD500_DontAngerOnAlly, 0x9)
 
 	return (!RulesExt::Global()->AIAngerOnAlly && pThis->IsAlliedWith(pTargetHouse)) ? SkipAlly : 0;
 }
+
+DEFINE_HOOK_AGAIN(0x4F87FA, HouseClass_Update_DestroyAll, 0x5);
+DEFINE_HOOK(0x4F8F7B, HouseClass_Update_DestroyAll, 0x5)
+{
+	GET(HouseClass*, pThis, ECX);
+	HouseExt::DecideTechnosFate(pThis);
+	return R->Origin() + 0x5;
+}

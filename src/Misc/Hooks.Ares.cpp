@@ -7,6 +7,7 @@
 
 #include <Ext/Sidebar/Body.h>
 #include <Ext/Techno/Body.h>
+#include <Ext/House/Body.h>
 
 // Remember that we still don't fix Ares "issues" a priori. Extensions as well.
 // Patches presented here are exceptions rather that the rule. They must be short, concise and correct.
@@ -61,6 +62,9 @@ void Apply_Ares3_0_Patches()
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x46C6D, &ConvertToType);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4B397, &ConvertToType);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4C099, &ConvertToType);
+	
+	// Replace the DestroyAll when defeated:
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x24AC9, &HouseExt::DecideTechnosFate);
 }
 
 void Apply_Ares3_0p1_Patches()
@@ -95,4 +99,7 @@ void Apply_Ares3_0p1_Patches()
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4780D, &ConvertToType);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4BFF7, &ConvertToType);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4CCF9, &ConvertToType);
+	
+	// Replace the DestroyAll when defeated:
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x255E9, &HouseExt::DecideTechnosFate);
 }

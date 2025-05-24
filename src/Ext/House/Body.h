@@ -218,4 +218,7 @@ public:
 	static int CountOwnedNowWithDeployOrUpgrade(HouseClass* pHouse, BuildingTypeClass* pBuildingType, bool upgrade = true, bool deploy = true);
 	static bool CheckOwnerBitfieldForCurrentPlayer(TechnoTypeClass* pType);
 	static void RecheckOwnerBitfieldForCurrentPlayer();
+
+	static void ReorganizeAllTo(HouseClass* pFromHouse, HouseClass* pToHouse);
+	static void __fastcall DecideTechnosFate(HouseClass* pHouse);
 };
