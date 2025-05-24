@@ -426,6 +426,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->BalloonHoverPathingFix.Read(exINI, GameStrings::General, "BalloonHoverPathingFix");
 
 	this->AnimCraterReduceTiberium.Read(exINI, GameStrings::General, "AnimCraterReduceTiberium");
+	
+	this->ReorganizeToWhenDefeated.Read(exINI, GameStrings::General, "ReorganizeToWhenDefeated");
 
 	this->BerzerkTargeting.Read(exINI, GameStrings::CombatDamage, "BerzerkTargeting");
 	// Section AITargetTypes
@@ -777,6 +779,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->TunnelPathingDistTooFar)
 		.Process(this->BalloonHoverPathingFix)
 		.Process(this->AnimCraterReduceTiberium)
+		.Process(this->ReorganizeToWhenDefeated)
 		.Process(this->BerzerkTargeting)
 		;
 }

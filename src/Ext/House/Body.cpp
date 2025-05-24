@@ -1261,4 +1261,63 @@ bool HouseExt::ReachedBuildLimit(const HouseClass* pHouse, const TechnoTypeClass
 
 	return false;
 }
+
+void HouseExt::ReorganizeAllTo(HouseClass* pFromHouse, HouseClass* pToHouse)
+{
+	for (auto pTechno : TechnoClass::Array)
+	{
+		if (pTechno->OriginallyOwnedByHouse == pFromHouse)
+			pTechno->OriginallyOwnedByHouse = pToHouse;
+
+		if (pTechno->Owner == pFromHouse)
+		{
+			pTechno->SetOwningHouse(pToHouse, true);
+			pTechno->SetTarget(nullptr);
+			pTechno->SetDestination(nullptr, false);
+			pTechno->EnterIdleMode(false, true);
+		}
+	}
+
+	int money = pFromHouse->Available_Money();
+	pFromHouse->TransactMoney(-money);
+	pToHouse->TransactMoney(money);
+}
+
+void __fastcall HouseExt::DecideTechnosFate(HouseClass* pThis)
+{
+	bool includeHuman = false;
+	DynamicVectorClass<HouseClass*> houses;
+
+	for (auto pHouse : HouseClass::Array) // Find a house to give. Human player first.
+	{
+		if (pHouse->Type->MultiplayPassive
+			|| pHouse->Defeated
+			|| pHouse->IsObserver())
+			continue;
+
+		if (!EnumFunctions::CanTargetHouse(RulesExt::Global()->ReorganizeToWhenDefeated, pThis, pHouse))
+			continue;
+
+		if (includeHuman)
+		{
+			if (pHouse->IsControlledByHuman())
+				houses.AddItem(pHouse);
+		}
+		else
+		{
+			if (pHouse->IsControlledByHuman())
+			{
+				includeHuman = true;
+				houses.Clear();
+			}
+			houses.AddItem(pHouse);
+		}
+	}
+
+	if (houses.Count)
+		HouseExt::ReorganizeAllTo(pThis, houses[ScenarioClass::Instance->Random.RandomRanged(0, houses.Count - 1)]);
+	else
+		pThis->DestroyAll();
+}
+
 #pragma endregion
