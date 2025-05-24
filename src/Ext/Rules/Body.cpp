@@ -427,7 +427,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->AnimCraterReduceTiberium.Read(exINI, GameStrings::General, "AnimCraterReduceTiberium");
 	
-	this->DefeatedBehavior.Read(exINI, GameStrings::General, "DefeatedBehavior");
+	this->ReorganizeToWhenDefeated.Read(exINI, GameStrings::General, "ReorganizeToWhenDefeated");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -778,7 +778,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->TunnelPathingDistTooFar)
 		.Process(this->BalloonHoverPathingFix)
 		.Process(this->AnimCraterReduceTiberium)
-		.Process(this->DefeatedBehavior)
+		.Process(this->ReorganizeToWhenDefeated)
 		;
 }
 

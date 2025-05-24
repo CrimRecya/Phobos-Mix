@@ -1270,90 +1270,54 @@ void HouseExt::ReorganizeAllTo(HouseClass* pFromHouse, HouseClass* pToHouse)
 			pTechno->OriginallyOwnedByHouse = pToHouse;
 
 		if (pTechno->Owner == pFromHouse)
+		{
 			pTechno->SetOwningHouse(pToHouse, true);
+			pTechno->SetTarget(nullptr);
+			pTechno->SetDestination(nullptr, false);
+			pTechno->EnterIdleMode(false, true);
+		}
 	}
+
+	int money = pFromHouse->Available_Money();
+	pFromHouse->TransactMoney(-money);
+	pToHouse->TransactMoney(money);
 }
 
 void __fastcall HouseExt::DecideTechnosFate(HouseClass* pThis)
 {
-	auto behavior = RulesExt::Global()->DefeatedBehavior;
+	bool includeHuman = false;
+	DynamicVectorClass<HouseClass*> houses;
 
-	if (!behavior) // Vanilla behavior
+	for (auto pHouse : HouseClass::Array) // Find a house to give. Human player first.
 	{
+		if (pHouse->Type->MultiplayPassive
+			|| pHouse->Defeated
+			|| pHouse->IsObserver())
+			continue;
+
+		if (!EnumFunctions::CanTargetHouse(RulesExt::Global()->ReorganizeToWhenDefeated, pThis, pHouse))
+			continue;
+
+		if (includeHuman)
+		{
+			if (pHouse->IsControlledByHuman())
+				houses.AddItem(pHouse);
+		}
+		else
+		{
+			if (pHouse->IsControlledByHuman())
+			{
+				includeHuman = true;
+				houses.Clear();
+			}
+			houses.AddItem(pHouse);
+		}
+	}
+
+	if (houses.Count)
+		HouseExt::ReorganizeAllTo(pThis, houses[ScenarioClass::Instance->Random.RandomRanged(0, houses.Count - 1)]);
+	else
 		pThis->DestroyAll();
-	}
-	else if (behavior > 0) // Reorganized to ally
-	{
-		bool includeHuman = false;
-		DynamicVectorClass<HouseClass*> allies;
-		for (auto pHouse : HouseClass::Array) // Find a house to give. Human player first.
-		{
-			if (pHouse->Type->MultiplayPassive
-				|| pHouse->Defeated
-				|| pHouse->IsObserver()
-				|| pHouse == pThis)
-				continue;
-
-			if (!pThis->IsAlliedWith(pHouse))
-				continue;
-
-			if (includeHuman)
-			{
-				if (pHouse->IsControlledByHuman())
-					allies.AddItem(pHouse);
-			}
-			else
-			{
-				if (pHouse->IsControlledByHuman())
-				{
-					includeHuman = true;
-					allies.Clear();
-				}
-				allies.AddItem(pHouse);
-			}
-		}
-		if (allies.Count)
-		{
-			HouseExt::ReorganizeAllTo(pThis, allies[ScenarioClass::Instance->Random.RandomRanged(0, allies.Count)]);
-		}
-		else
-			pThis->DestroyAll();
-	}
-	else // Surrender to enemy
-	{
-		bool includeHuman = false;
-		DynamicVectorClass<HouseClass*> enemies;
-		for (auto pHouse : HouseClass::Array) // Find a house to give. Human player first.
-		{
-			if (pHouse->Type->MultiplayPassive
-				|| pHouse->Defeated
-				|| pHouse->IsObserver()
-				|| pHouse == pThis)
-				continue;
-
-			if (pThis->IsAlliedWith(pHouse))
-				continue;
-
-			if (includeHuman)
-			{
-				if (pHouse->IsControlledByHuman())
-					enemies.AddItem(pHouse);
-			}
-			else
-			{
-				if (pHouse->IsControlledByHuman())
-				{
-					includeHuman = true;
-					enemies.Clear();
-				}
-				enemies.AddItem(pHouse);
-			}
-		}
-		if (enemies.Count)
-			HouseExt::ReorganizeAllTo(pThis, enemies[ScenarioClass::Instance->Random.RandomRanged(0, enemies.Count)]);
-		else
-			pThis->DestroyAll();
-	}
 }
 
 #pragma endregion
