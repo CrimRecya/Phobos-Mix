@@ -198,7 +198,7 @@ DEFINE_HOOK(0x4AE818, DisplayClass_sub_4AE750_AutoDistribution, 0xA)
 
 				for (size_t i = 0; i < recordSize; ++i)
 				{
-       				const auto& [pItem, num] = record[i];
+					const auto& [pItem, num] = record[i];
 
 					if (pSelect->MouseOverObject(pItem) == mouseAction
 						&& (targetIsNeutral || !pItem->Owner->IsNeutral())
