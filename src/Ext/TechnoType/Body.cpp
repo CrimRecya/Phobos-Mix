@@ -510,7 +510,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	if (!pINI->GetSection(pSection))
 		return;
 
-	char tempBuffer[36];
+	char tempBuffer[40];
 	INI_EX exINI(pINI);
 
 	this->HealthBar_Hide.Read(exINI, pSection, "HealthBar.Hide");
