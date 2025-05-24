@@ -157,12 +157,14 @@ DEFINE_HOOK(0x6F36DB, TechnoClass_WhatWeaponShouldIUse, 0x8)
 	{
 		if (pShield->IsActive())
 		{
-			auto const secondary = pThis->GetWeapon(1)->WeaponType;
-			auto const pSecondProjExt = BulletTypeExt::ExtMap.Find(secondary->Projectile);
-			bool secondaryIsAA = pTargetTechno && pTargetTechno->IsInAir() && secondary && secondary->Projectile->AA;
-			bool secondaryIsAU = pTargetTechno && pTargetTechno->InWhichLayer() == Layer::Underground && pSecondProjExt && pSecondProjExt->AU;
+			auto const pSecondary = pThis->GetWeapon(1)->WeaponType;
 
-			if (secondary && (allowFallback || (allowAAFallback && secondaryIsAA) || secondaryIsAU || TechnoExt::CanFireNoAmmoWeapon(pThis, 1)))
+			if (pSecondary
+				&& (allowFallback
+					|| (pTargetTechno
+						&& ((allowAAFallback && pTargetTechno->IsInAir() && pSecondary->Projectile->AA)
+							|| (pTargetTechno->InWhichLayer() == Layer::Underground && BulletTypeExt::ExtMap.Find(pSecondary->Projectile)->AU)))
+					|| TechnoExt::CanFireNoAmmoWeapon(pThis, 1)))
 			{
 				if (!pShield->CanBeTargeted(pThis->GetWeapon(0)->WeaponType))
 					return Secondary;
@@ -306,17 +308,6 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 
 	GET(TechnoClass*, pThis, ESI);
 	GET(WeaponTypeClass*, pWeapon, EDI);
-	GET(ObjectClass*, pTargetObj, EBP);
-
-	if (auto pTargetTechno=abstract_cast<TechnoClass*>(pTargetObj))
-	{
-		if (pThis->Berzerk
-			&& RulesExt::Global()->BerzerkTargeting != AffectedHouse::All
-			&& !EnumFunctions::CanTargetHouse(RulesExt::Global()->BerzerkTargeting, pThis->Owner, pTargetTechno->Owner))
-		{
-			return CannotFire;
-		}
-	}
 
 	// Checking for nullptr is not required here, since the game has already executed them before calling the hook  -- Belonit
 	const auto pWH = pWeapon->Warhead;
@@ -400,6 +391,14 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 			if (pTrajType->CreateCapacity <= static_cast<int>((*pFirerExt->TrajectoryGroup)[pBulletType->UniqueID].Bullets.size()))
 				return TemporarilyCannotFire;
 		}
+	}
+
+	GET(TechnoClass*, pTargetTechno, EBP);
+
+	if (pTargetTechno && pThis->Berzerk
+		&& !EnumFunctions::CanTargetHouse(RulesExt::Global()->BerzerkTargeting, pThis->Owner, pTargetTechno->Owner))
+	{
+		return CannotFire;
 	}
 
 	return 0;

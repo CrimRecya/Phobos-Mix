@@ -1264,7 +1264,7 @@ bool HouseExt::ReachedBuildLimit(const HouseClass* pHouse, const TechnoTypeClass
 
 void HouseExt::ReorganizeAllTo(HouseClass* pFromHouse, HouseClass* pToHouse)
 {
-	for (auto pTechno : TechnoClass::Array)
+	for (const auto& pTechno : TechnoClass::Array)
 	{
 		if (pTechno->OriginallyOwnedByHouse == pFromHouse)
 			pTechno->OriginallyOwnedByHouse = pToHouse;
@@ -1278,7 +1278,7 @@ void HouseExt::ReorganizeAllTo(HouseClass* pFromHouse, HouseClass* pToHouse)
 		}
 	}
 
-	int money = pFromHouse->Available_Money();
+	const int money = pFromHouse->Available_Money();
 	pFromHouse->TransactMoney(-money);
 	pToHouse->TransactMoney(money);
 }
@@ -1288,11 +1288,9 @@ void __fastcall HouseExt::DecideTechnosFate(HouseClass* pThis)
 	bool includeHuman = false;
 	DynamicVectorClass<HouseClass*> houses;
 
-	for (auto pHouse : HouseClass::Array) // Find a house to give. Human player first.
+	for (const auto& pHouse : HouseClass::Array) // Find a house to give. Human player first.
 	{
-		if (pHouse->Type->MultiplayPassive
-			|| pHouse->Defeated
-			|| pHouse->IsObserver())
+		if (pHouse->Type->MultiplayPassive || pHouse->Defeated || pHouse->IsObserver())
 			continue;
 
 		if (!EnumFunctions::CanTargetHouse(RulesExt::Global()->ReorganizeToWhenDefeated, pThis, pHouse))
