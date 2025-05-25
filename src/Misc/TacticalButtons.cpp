@@ -626,10 +626,10 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		}
 
 		{
-			const auto cell = pTechno->GetMapCoords();
-			const auto coords = pTechno->GetCoords();
+			const auto cellT = pTechno->GetMapCoords();
+			const auto coordsT = pTechno->GetCoords();
 
-			drawText("Location: (%05d,%05d,%05d)[%03d,%03d,%02d]", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pTechno->GetCellLevel());
+			drawText("Location: (%05d,%05d,%05d)[%03d,%03d,%02d]", coordsT.X, coordsT.Y, coordsT.Z, cellT.X, cellT.Y, pTechno->GetCellLevel());
 			updateLine();
 		}
 
