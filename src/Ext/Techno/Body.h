@@ -112,7 +112,6 @@ public:
 		std::vector<std::unique_ptr<AttachmentClass>> ChildAttachments;
 
 		// Ares
-		std::optional<bool> AltOccupation; // if the unit marks cell occupation flags, this is set to whether it uses the "high" occupation members
 
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
@@ -191,7 +190,6 @@ public:
 			, TrackingLasersTargetingMe { }
 			, ParentAttachment { nullptr }
 			, ChildAttachments {}
-			, AltOccupation {}
 		{ }
 
 		void OnEarlyUpdate();

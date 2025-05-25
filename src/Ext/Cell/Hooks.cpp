@@ -10,16 +10,10 @@ void __fastcall UnitClass_SetOccupyBit_Reimpl(UnitClass* pThis, discard_t, Coord
 	if (TechnoExt::DoesntOccupyCellAsChild(pThis))
 		return;
 
-	CellClass* pCell = MapClass::Instance.GetCellAt(*pCrd);
-	auto pCellExt = CellExt::ExtMap.Find(pCell);
-	int height = MapClass::Instance.GetCellFloorHeight(*pCrd) + CellClass::BridgeHeight;
-	bool alt = (pCrd->Z >= height && pCell->ContainsBridge());
+	const auto pCell = MapClass::Instance.GetCellAt(*pCrd);
+	const auto pCellExt = CellExt::ExtMap.Find(pCell);
 
-	// remember which occupation bit we set
-	auto pExt = TechnoExt::ExtMap.Find(pThis);
-	pExt->AltOccupation = alt;
-
-	if (alt)
+	if (pCrd->Z >= (MapClass::Instance.GetCellFloorHeight(*pCrd) + CellClass::BridgeHeight) && pCell->ContainsBridge())
 	{
 		pCell->AltOccupationFlags |= 0x20;
 		// Phobos addition: set incoming unit tracker
@@ -40,35 +34,21 @@ void __fastcall UnitClass_ClearOccupyBit_Reimpl(UnitClass* pThis, discard_t, Coo
 	if (TechnoExt::DoesntOccupyCellAsChild(pThis))
 		return;
 
-	enum { obNormal = 1, obAlt = 2 };
+	const auto pCell = MapClass::Instance.GetCellAt(*pCrd);
 
-	CellClass* pCell = MapClass::Instance.GetCellAt(*pCrd);
-	auto pCellExt = CellExt::ExtMap.Find(pCell);
-	int height = MapClass::Instance.GetCellFloorHeight(*pCrd) + CellClass::BridgeHeight;
-	int alt = (pCrd->Z >= height) ? obAlt : obNormal;
-
-	// also clear the last occupation bit, if set
-	auto pExt = TechnoExt::ExtMap.Find(pThis);
-	if(pExt->AltOccupation.has_value())
-	{
-		int lastAlt = pExt->AltOccupation.value() ? obAlt : obNormal;
-		alt |= lastAlt;
-		pExt->AltOccupation.reset();
-	}
-
-	if (alt & obAlt)
-	{
+	if (pCrd->Z >= (MapClass::Instance.GetCellFloorHeight(*pCrd) + CellClass::BridgeHeight))
 		pCell->AltOccupationFlags &= ~0x20;
-		// Phobos addition: clear incoming unit tracker
-		pCellExt->IncomingUnitAlt = nullptr;
-	}
-
-	if (alt & obNormal)
-	{
+	else
 		pCell->OccupationFlags &= ~0x20;
-		// Phobos addition: clear incoming unit tracker
+
+	const auto pCellExt = CellExt::ExtMap.Find(pCell);
+
+	// Phobos addition: clear incoming unit tracker
+	if (pCellExt->IncomingUnitAlt == pThis)
+		pCellExt->IncomingUnitAlt = nullptr;
+
+	if (pCellExt->IncomingUnit == pThis)
 		pCellExt->IncomingUnit = nullptr;
-	}
 }
 
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5D64, UnitClass_ClearOccupyBit_Reimpl);

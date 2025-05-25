@@ -1087,10 +1087,7 @@ bool TechnoExt::IsAttached(TechnoClass* pThis)
 
 bool TechnoExt::HasAttachmentLoco(FootClass* pThis)
 {
-	IPersistPtr pPersist = pThis->Locomotor;
-	CLSID locoCLSID {};
-	return pPersist && SUCCEEDED(pPersist->GetClassID(&locoCLSID))
-		&& locoCLSID == __uuidof(AttachmentLocomotionClass);
+	return locomotion_cast<AttachmentLocomotionClass*>(pThis->Locomotor) != nullptr;
 }
 
 bool TechnoExt::DoesntOccupyCellAsChild(TechnoClass* pThis)
@@ -1209,7 +1206,6 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->TrackingLasersTargetingMe)
 		.Process(this->ParentAttachment)
 		.Process(this->ChildAttachments)
-		.Process(this->AltOccupation)
 		;
 }
 
