@@ -215,6 +215,8 @@ DEFINE_HOOK(0x51C78F, InfantryClass_CanEnterCell_CheckMovingInto, 0x6)
 	return 0;
 }
 
+// Temporary no use
+/*
 enum class CellTechnoMode
 {
 	NoAttachments,
@@ -275,17 +277,21 @@ DEFINE_HOOK(0x47C432, CellClass_CellTechno_HandleAttachments, 0x0)
 
 	return Continue;
 }
+*/
 
+// ExtendedPlacing
+/*
 // skip building placement occupation checks for virtuals
 DEFINE_FUNCTION_JUMP(CALL, 0x47C805, CellTechno_NoVirtual);
 DEFINE_FUNCTION_JUMP(CALL, 0x47C738, CellTechno_NoVirtual);
+*/
 
+// EnhancedScatter
+/*
 // skip building attachments in bib check
 DEFINE_FUNCTION_JUMP(CALL, 0x4495F2, CellTechno_NoVirtualOrRelatives);
 DEFINE_FUNCTION_JUMP(CALL, 0x44964E, CellTechno_NoVirtualOrRelatives);
 
-// EnhancedScatter
-/*
 DEFINE_HOOK(0x4495F7, BuildingClass_ClearFactoryBib_SkipCreatedUnitAttachments, 0x0)
 {
 	enum { BibClear = 0x44969B, NotClear = 0x4495FF };
@@ -369,42 +375,6 @@ DEFINE_HOOK(0x51A0DA, InfantryClass_PerCellProcess_EntryLoopTechnos, 0x0)
 	return SkipEntry;
 }
 
-enum class AttachCargoMode
-{
-	SingleObject,
-	ObjectChain,
-
-	DefaultBehavior = SingleObject,
-};
-
-namespace TechnoAttachmentTemp
-{
-	AttachCargoMode currentAttachMode = AttachCargoMode::DefaultBehavior;
-}
-
-#define DEFINE_ATTACH_WRAPPER(mode) \
-void __fastcall CargoClass_Attach_##mode(PassengersClass* pThis, discard_t, FootClass* pThat) \
-{ \
-	TechnoAttachmentTemp::currentAttachMode = AttachCargoMode::mode; \
-	pThis->AddPassenger(pThat); \
-	TechnoAttachmentTemp::currentAttachMode = AttachCargoMode::DefaultBehavior; \
-}
-
-DEFINE_ATTACH_WRAPPER(SingleObject);
-DEFINE_ATTACH_WRAPPER(ObjectChain);
-
-DEFINE_FUNCTION_JUMP(CALL, 0x65DF88, CargoClass_Attach_ObjectChain);  // Create_Group
-DEFINE_FUNCTION_JUMP(CALL, 0x65DCF0, CargoClass_Attach_ObjectChain);  // Do_Reinforcements, paradrop loading
-
-DEFINE_HOOK(0x4733BD, CargoClass_Attach_HandleCurrentAttachMode, 0x6)
-{
-	enum { SkipAttachingChain = 0x4733FA, Continue = 0x0 };
-
-	return TechnoAttachmentTemp::currentAttachMode == AttachCargoMode::SingleObject
-		? SkipAttachingChain
-		: Continue;
-}
-
 #pragma endregion
 
 #pragma region InAir/OnGround
@@ -467,7 +437,7 @@ DEFINE_FUNCTION_JUMP(VTABLE, 0x7EB0D4, TechnoClass_IsSurfaced);
 
 DEFINE_HOOK(0x6CC763, SuperClass_Place_ChronoWarp_SkipChildren, 0x6)
 {
-	enum { Skip = 0x6CCCCA, Continue = 0 };
+	enum { Skip = 0x6CCCCA, Continue = 0x0 };
 
 	GET(FootClass* const, pFoot, ESI);
 
