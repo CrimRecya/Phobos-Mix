@@ -55,7 +55,6 @@ void RadSiteExt::CreateInstance(CellStruct location, int spread, int amount, Wea
 	if (pWeaponExt->RadType->GetHasInvoker() && pRadExt->RadInvoker != pInvoker)
 		pRadExt->RadInvoker = pInvoker;
 
-	pRadExt->LastUpdateFrame = Unsorted::CurrentFrame;
 	pRadExt->Weapon = pWeaponExt->OwnerObject();
 	pRadExt->Type = pWeaponExt->RadType;
 	pRadSite->SetBaseCell(&location);
@@ -71,48 +70,44 @@ void RadSiteExt::CreateInstance(CellStruct location, int spread, int amount, Wea
 void RadSiteExt::ExtData::CreateLight()
 {
 	const auto pThis = this->OwnerObject();
-	auto nLevelDelay = this->Type->GetLevelDelay();
-	auto nLightDelay = this->Type->GetLightDelay();
+	const int levelDelay = this->Type->GetLevelDelay();
+	const int lightDelay = this->Type->GetLightDelay();
 
-	pThis->RadLevelTimer.Start(nLevelDelay);
-	pThis->RadLightTimer.Start(nLightDelay);
+	pThis->RadLevelTimer.Start(levelDelay);
+	pThis->RadLightTimer.Start(lightDelay);
 
-	auto nLightFactor = pThis->RadLevel * this->Type->GetLightFactor();
-	nLightFactor = Math::min(nLightFactor, 2000.0);
-	auto nDuration = pThis->RadDuration;
+	const double lightFactor = Math::min((pThis->RadLevel * this->Type->GetLightFactor()), 2000.0);
+	const int duration = pThis->RadDuration;
+	const int intensitySteps = duration / lightDelay;
 
-	pThis->Intensity = Game::F2I(nLightFactor);
-	pThis->LevelSteps = nDuration / nLevelDelay;
-	pThis->IntensitySteps = nDuration / nLightDelay;
-	pThis->IntensityDecrement = Game::F2I(nLightFactor) / (nDuration / nLightDelay);
+	pThis->Intensity = Game::F2I(lightFactor);
+	pThis->LevelSteps = duration / levelDelay;
+	pThis->IntensitySteps = intensitySteps;
+	pThis->IntensityDecrement = intensitySteps ? Game::F2I(lightFactor) / intensitySteps : 0;
 
-	auto nRadcolor = this->Type->GetColor();
-	auto nTintFactor = this->Type->GetTintFactor();
+	const auto radcolor = this->Type->GetColor();
+	const double tintFactor = this->Type->GetTintFactor();
 
 	//=========Red
-	auto red = ((1000 * nRadcolor.R) / 255) * nTintFactor;
-	red = Math::min(red, 2000.0);
+	const double red = Math::min((((1000 * radcolor.R) / 255) * tintFactor), 2000.0);
 	//=========Green
-	auto green = ((1000 * nRadcolor.G) / 255) * nTintFactor;
-	green = Math::min(green, 2000.0);
+	const double green = Math::min((((1000 * radcolor.G) / 255) * tintFactor), 2000.0);
 	//=========Blue
-	auto blue = ((1000 * nRadcolor.B) / 255) * nTintFactor;
-	blue = Math::min(blue, 2000.0);;
+	const double blue = Math::min((((1000 * radcolor.B) / 255) * tintFactor), 2000.0);
 
-	TintStruct nTintBuffer { Game::F2I(red) ,Game::F2I(green) ,Game::F2I(blue) };
+	const TintStruct nTintBuffer { Game::F2I(red) ,Game::F2I(green) ,Game::F2I(blue) };
 	pThis->Tint = nTintBuffer;
-	bool update = false;
 
 	if (pThis->LightSource)
 	{
-		pThis->LightSource->ChangeLevels(Game::F2I(nLightFactor), nTintBuffer, update);
+		pThis->LightSource->ChangeLevels(Game::F2I(lightFactor), nTintBuffer, 0);
 	}
 	else if (const auto pCell = MapClass::Instance.TryGetCellAt(pThis->BaseCell))
 	{
-		const auto pLight = GameCreate<LightSourceClass>(pCell->GetCoords(), pThis->SpreadInLeptons, Game::F2I(nLightFactor), nTintBuffer);
+		const auto pLight = GameCreate<LightSourceClass>(pCell->GetCoords(), pThis->SpreadInLeptons, Game::F2I(lightFactor), nTintBuffer);
 		pThis->LightSource = pLight;
 		pLight->DetailLevel = 0;
-		pLight->Activate(update);
+		pLight->Activate();
 	}
 
 	pThis->Radiate();
@@ -129,7 +124,6 @@ void RadSiteExt::ExtData::Add(int amount)
 	pThis->RadDuration = pThis->RadLevel * RadExt->Type->GetDurationMultiple();
 	pThis->RadTimeLeft = pThis->RadDuration;
 	this->CreateLight();
-	this->LastUpdateFrame = Unsorted::CurrentFrame;
 }
 
 void RadSiteExt::ExtData::SetRadLevel(int amount)
@@ -141,6 +135,7 @@ void RadSiteExt::ExtData::SetRadLevel(int amount)
 	pThis->RadTimeLeft = mult * amount;
 }
 
+/*
 // helper function provided by AlexB
 double RadSiteExt::ExtData::GetRadLevelAt(CellStruct const& cell) const
 {
@@ -165,6 +160,7 @@ double RadSiteExt::ExtData::GetRadLevelAt(CellStruct const& cell) const
 
 	return radLevel;
 }
+*/
 
 // =============================
 // load / save
@@ -173,7 +169,6 @@ template <typename T>
 void RadSiteExt::ExtData::Serialize(T& Stm)
 {
 	Stm
-		.Process(this->LastUpdateFrame)
 		.Process(this->Weapon)
 		.Process(this->RadHouse)
 		.Process(this->RadInvoker)
