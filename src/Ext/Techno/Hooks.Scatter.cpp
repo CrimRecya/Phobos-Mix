@@ -5,6 +5,21 @@
 
 #pragma region EnhancedScatterContent
 
+static inline TechnoClass* FindOccupyTechno(CellClass* pCell, TechnoClass* pExclude)
+{
+	for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
+	{
+		if (const auto pTechno = abstract_cast<TechnoClass*, true>(pObject))
+		{
+			if (pTechno != pExclude && !TechnoExt::DoesntOccupyCellAsChild(pTechno) && !TechnoExt::IsChildOf(pTechno, pExclude))
+				return pTechno;
+		}
+	}
+
+	return nullptr;
+}
+
+template <bool checkParent = false>
 static inline void EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, const CoordStruct& coords, bool alt)
 {
 	for (auto pObject = (alt ? pCell->AltObject : pCell->FirstObject); pObject; pObject = pObject->NextObject)
@@ -21,6 +36,16 @@ static inline void EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, 
 
 		if (pFootExt->ScatteringStopFrame >= Unsorted::CurrentFrame)
 			continue;
+
+		if constexpr (checkParent)
+		{
+			if (pFootExt->ParentAttachment
+				&& (!pFootExt->ParentAttachment->GetType()->OccupiesCell
+					|| pFootExt->ParentAttachment->Parent == pThis))
+			{
+				continue;
+			}
+		}
 
 		if (pFoot->NavQueue.Count <= 0 && pFoot->CurrentMission == Mission::Move)
 		{
@@ -42,7 +67,7 @@ static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass*
 	{
 		if (RulesExt::Global()->ExtendedScatterAction)
 		{
-			EnhancedScatterContent(pCell, pFoot, coords, alt);
+			EnhancedScatterContent(pCell, pThis, coords, alt);
 
 			for (int i = 0; i < 8; ++i)
 			{
@@ -59,12 +84,12 @@ static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass*
 	{
 		if (RulesExt::Global()->ExtendedScatterAction)
 		{
-			EnhancedScatterContent(pCell, pThis, CoordStruct::Empty, alt);
+			EnhancedScatterContent<true>(pCell, pThis, CoordStruct::Empty, alt);
 
 			for (int i = 0; i < 8; ++i)
 			{
 				const auto pNearCell = pCell->GetNeighbourCell(static_cast<FacingType>(i));
-				EnhancedScatterContent(pNearCell, pThis, coords, alt);
+				EnhancedScatterContent<true>(pNearCell, pThis, coords, alt);
 			}
 		}
 		else
@@ -75,7 +100,7 @@ static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass*
 			{
 				const auto pNearCell = pCell->GetNeighbourCell(static_cast<FacingType>(i));
 
-				if (pNearCell->FindTechnoNearestTo(Point2D::Empty, false, pThis))
+				if (FindOccupyTechno(pNearCell, pThis))
 					pNearCell->ScatterContent(coords, true, true, alt);
 			}
 		}
@@ -96,7 +121,7 @@ DEFINE_HOOK(0x4495DF, BuildingClass_CheckWeaponFactoryOutsideBusy_ScatterEntranc
 	GET(CellClass* const, pCell, EAX);
 	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x30, -0xC));
 
-	const auto pTechno = pCell->FindTechnoNearestTo(Point2D::Empty, false, pThis);
+	const auto pTechno = FindOccupyTechno(pCell, pThis);
 
 	if (!pTechno || TechnoExt::IsChildOf(pTechno, pThis->GetNthLink(0)))
 		return NotBusy;

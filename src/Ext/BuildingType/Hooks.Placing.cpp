@@ -284,6 +284,9 @@ static inline bool CheckCanNotExistHere(FootClass* const pTechno, HouseClass* co
 		return false;
 	}
 
+	if (TechnoExt::DoesntOccupyCellAsChild(pTechno))
+		return false;
+
 	const auto pTechnoType = pTechno->GetTechnoType();
 
 	if (TechnoTypeExt::ExtMap.Find(pTechnoType)->CanBeBuiltOn)

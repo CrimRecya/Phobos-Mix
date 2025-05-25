@@ -106,17 +106,19 @@ bool IsOccupierIgnorable(TechnoClass* pThis, ObjectClass* pOccupier, byte& occup
 	if (pThis == pOccupier)
 		return true;
 
-	auto const pTechno = abstract_cast<TechnoClass*>(pOccupier);
-	if (pTechno &&
-		(TechnoExt::DoesntOccupyCellAsChild(pTechno) || TechnoExt::IsChildOf(pTechno, pThis)))
+	if (pOccupier)
 	{
-		return true;
-	}
+		if (auto const pTechno = abstract_cast<TechnoClass* ,true>(pOccupier))
+		{
+			if (TechnoExt::DoesntOccupyCellAsChild(pTechno) || TechnoExt::IsChildOf(pTechno, pThis))
+				return true;
+		}
 
-	if (abstract_cast<UnitClass*>(pOccupier))
-	{
-		occupyFlags |= TechnoAttachmentTemp::storedVehicleFlag;
-		isVehicleFlagSet = (occupyFlags & 0x20) != 0;
+		if (abstract_cast<UnitClass* ,true>(pOccupier))
+		{
+			occupyFlags |= TechnoAttachmentTemp::storedVehicleFlag;
+			isVehicleFlagSet = (occupyFlags & 0x20) != 0;
+		}
 	}
 
 	return false;
