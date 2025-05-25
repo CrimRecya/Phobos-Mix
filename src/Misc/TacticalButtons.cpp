@@ -262,19 +262,35 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 	if (!Phobos::ShowCurrentInfo)
 		return;
 
-	TechnoClass* pTechno = nullptr;
-
-	if (ObjectClass::CurrentObjects.Count > 0)
+	const auto mouseXY1 = WWMouseClass::Instance->XY1;
+	auto cell = CellStruct::Empty;
+	auto coords = CoordStruct::Empty;
+	ObjectClass* pObj = nullptr;
 	{
-		for (const auto& pCurrent : ObjectClass::CurrentObjects)
+		auto point = mouseXY1 - Point2D { DSurface::ViewBounds.X, DSurface::ViewBounds.Y };
+		BYTE fogged = 0;
+		BYTE shrouded = 0;
+		DisplayClass::Instance.ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
+	}
+
+	auto getTechnoForDraw = [&pObj]() -> TechnoClass*
+	{
+		if (ObjectClass::CurrentObjects.Count > 0)
 		{
-			if (const auto pCurrentTechno = abstract_cast<TechnoClass*>(pCurrent))
+			for (const auto& pCurrent : ObjectClass::CurrentObjects)
 			{
-				pTechno = pCurrentTechno;
-				break;
+				if (const auto pTechno = abstract_cast<TechnoClass*>(pCurrent))
+					return pTechno;
 			}
 		}
-	}
+
+		if (const auto pTechno = abstract_cast<TechnoClass*>(pObj))
+			return pTechno;
+
+		return nullptr;
+	};
+
+	const auto pTechno = getTechnoForDraw();
 
 	if (pTechno)
 	{
@@ -491,15 +507,6 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 	drawText("Current Frame: %d", Unsorted::CurrentFrame);
 	{
-		const auto mouseXY1 = WWMouseClass::Instance->XY1;
-		auto point = mouseXY1 - Point2D { DSurface::ViewBounds.X, DSurface::ViewBounds.Y };
-		auto cell = CellStruct::Empty;
-		auto coords = CoordStruct::Empty;
-		ObjectClass* pObj = nullptr;
-		BYTE fogged = 0;
-		BYTE shrouded = 0;
-
-		DisplayClass::Instance.ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
 		const auto pCell = MapClass::Instance.GetCellAt(cell);
 
 		drawText("Address: 0x%X", reinterpret_cast<DWORD>(pCell));
