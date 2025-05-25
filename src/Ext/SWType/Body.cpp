@@ -144,7 +144,7 @@ void SWTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	if (pINI->ReadString(pSection, "Message.Color", NONE_STR, Phobos::readBuffer))
 	{
 		this->Message_ColorScheme = ColorScheme::FindIndex(Phobos::readBuffer);
-		if (this->Message_ColorScheme < 0)
+		if (this->Message_ColorScheme < 0 && GeneralUtils::IsValidString(Phobos::readBuffer))
 			Debug::INIParseFailed(pSection, "Message.Color", Phobos::readBuffer, "Expected a valid color scheme name.");
 	}
 

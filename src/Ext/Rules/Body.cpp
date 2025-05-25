@@ -423,11 +423,11 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->TunnelSimpleDistTooFar.Read(exINI, GameStrings::General, "TunnelSimpleDistTooFar");
 	this->TunnelPathingDistTooFar.Read(exINI, GameStrings::General, "TunnelPathingDistTooFar");
-  
+
 	this->BalloonHoverPathingFix.Read(exINI, GameStrings::General, "BalloonHoverPathingFix");
 
 	this->AnimCraterReduceTiberium.Read(exINI, GameStrings::General, "AnimCraterReduceTiberium");
-	
+
 	this->ReorganizeToWhenDefeated.Read(exINI, GameStrings::General, "ReorganizeToWhenDefeated");
 
 	this->BerzerkTargeting.Read(exINI, GameStrings::CombatDamage, "BerzerkTargeting");
