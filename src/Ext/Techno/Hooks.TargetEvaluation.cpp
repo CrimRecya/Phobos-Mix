@@ -434,7 +434,10 @@ DEFINE_HOOK(0x708AC5, TechnoClass_CanRetaliateToAttacker_CeaseFireStance, 0x5)
 {
 	enum { FuncReturn = 0x708B17 };
 	GET(TechnoClass*, pThis, ESI);
-	return TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance() ? FuncReturn : 0;
+	GET_STACK(ThreatType, flags, STACK_OFFSET(0x0, 0x4));
+	return TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance()
+		&& ((flags & ThreatType::Range) != ThreatType::Normal || (flags & ThreatType::Area) != ThreatType::Normal) // Cease fire don't work for script auto targeting.
+		? FuncReturn : 0;
 }
 
 #pragma endregion
