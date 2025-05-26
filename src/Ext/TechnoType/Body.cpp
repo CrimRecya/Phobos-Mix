@@ -633,6 +633,11 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->VoiceEnterAggressiveStance.Read(exINI, pSection, "VoiceEnterAggressiveStance");
 	this->VoiceExitAggressiveStance.Read(exINI, pSection, "VoiceExitAggressiveStance");
 
+	this->CeaseFireStance.Read(exINI, pSection, "CeaseFireStance");
+	this->CeaseFireStance_Togglable.Read(exINI, pSection, "CeaseFireStance.Togglable");
+	this->VoiceEnterCeaseFireStance.Read(exINI, pSection, "VoiceEnterCeaseFireStance");
+	this->VoiceExitCeaseFireStance.Read(exINI, pSection, "VoiceExitCeaseFireStance");
+
 	this->AttachmentTypes.Read(exINI, pSection, "AttachmentTypes");
 	this->AttachmentTopLayerMinHeight.Read(exINI, pSection, "AttachmentTopLayerMinHeight");
 	this->AttachmentUndergroundLayerMaxHeight.Read(exINI, pSection, "AttachmentUndergroundLayerMaxHeight");
@@ -1370,6 +1375,11 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AggressiveStance_Togglable)
 		.Process(this->VoiceEnterAggressiveStance)
 		.Process(this->VoiceExitAggressiveStance)
+
+		.Process(this->CeaseFireStance)
+		.Process(this->CeaseFireStance_Togglable)
+		.Process(this->VoiceEnterCeaseFireStance)
+		.Process(this->VoiceExitCeaseFireStance)
 
 		.Process(this->NoSecondaryWeaponFallback)
 		.Process(this->NoSecondaryWeaponFallback_AllowAA)

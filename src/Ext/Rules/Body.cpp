@@ -364,6 +364,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->EnableAggressiveStance.Read(exINI, GameStrings::General, "EnableAggressiveStance");
 
+	this->EnableCeaseFireStance.Read(exINI, GameStrings::General, "EnableCeaseFireStance");
+
 	this->WarheadParticleAlphaImageIsLightFlash.Read(exINI, GameStrings::AudioVisual, "WarheadParticleAlphaImageIsLightFlash");
 	this->CombatLightDetailLevel.Read(exINI, GameStrings::AudioVisual, "CombatLightDetailLevel");
 	this->LightFlashAlphaImageDetailLevel.Read(exINI, GameStrings::AudioVisual, "LightFlashAlphaImageDetailLevel");
@@ -740,6 +742,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->NoTurret_TrackTarget)
 		.Process(this->GatherWhenMCVDeploy)
 		.Process(this->EnableAggressiveStance)
+		.Process(this->EnableCeaseFireStance)
 		.Process(this->AIFireSale)
 		.Process(this->AIFireSaleDelay)
 		.Process(this->AIAllToHunt)
