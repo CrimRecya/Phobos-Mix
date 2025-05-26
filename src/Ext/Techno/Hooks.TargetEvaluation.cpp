@@ -435,7 +435,7 @@ DEFINE_HOOK(0x7087DD, TechnoClass_CanRetaliateToAttacker_CeaseFireStance, 0x6)
 {
 	GET(TechnoTypeClass*, pType, EAX);
 	GET(TechnoClass*, pThis, ESI);
-	R->CL(pType->CanRetaliate && !TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance());
+	R->CL(pType->CanRetaliate && !(pThis->Owner->IsControlledByHuman() && TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance()));
 	return R->Origin() + 0x6;
 }
 
