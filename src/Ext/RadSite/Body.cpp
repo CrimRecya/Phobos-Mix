@@ -42,24 +42,25 @@ bool RadSiteExt::ExtData::ApplyRadiationDamage(TechnoClass* pTarget, int& damage
 }
 
 
-void RadSiteExt::CreateInstance(CellStruct location, int spread, int amount, WeaponTypeExt::ExtData* pWeaponExt, HouseClass* const pOwner, TechnoClass* const pInvoker)
+void RadSiteExt::CreateInstance(CellStruct location, int spread, int radLevel, WeaponTypeExt::ExtData* pWeaponExt, HouseClass* const pOwner, TechnoClass* const pInvoker)
 {
 	// use real ctor
 	const auto pRadSite = GameCreate<RadSiteClass>();
-	auto pRadExt = RadSiteExt::ExtMap.Find(pRadSite);
-
-	//Adding Owner to RadSite, from bullet
-	if (pWeaponExt->RadType->GetHasOwner() && pRadExt->RadHouse != pOwner)
-		pRadExt->RadHouse = pOwner;
-
-	if (pWeaponExt->RadType->GetHasInvoker() && pRadExt->RadInvoker != pInvoker)
-		pRadExt->RadInvoker = pInvoker;
-
+	const auto pRadExt = RadSiteExt::ExtMap.Find(pRadSite);
 	pRadExt->Weapon = pWeaponExt->OwnerObject();
 	pRadExt->Type = pWeaponExt->RadType;
+	const auto pRadType = pRadExt->Type;
+
+	//Adding Owner to RadSite, from bullet
+	if (pRadType->GetHasOwner() && pRadExt->RadHouse != pOwner)
+		pRadExt->RadHouse = pOwner;
+
+	if (pRadType->GetHasInvoker() && pRadExt->RadInvoker != pInvoker)
+		pRadExt->RadInvoker = pInvoker;
+
 	pRadSite->SetBaseCell(&location);
 	pRadSite->SetSpread(spread);
-	pRadExt->SetRadLevel(amount);
+	pRadExt->SetRadLevel(std::min(radLevel, pRadType->GetLevelMax()));
 	pRadExt->CreateLight();
 
 	if (const auto pCellExt = CellExt::ExtMap.Find(MapClass::Instance.TryGetCellAt(location)))
@@ -135,32 +136,30 @@ void RadSiteExt::ExtData::SetRadLevel(int amount)
 	pThis->RadTimeLeft = mult * amount;
 }
 
-/*
 // helper function provided by AlexB
-double RadSiteExt::ExtData::GetRadLevelAt(CellStruct const& cell) const
-{
-	const auto pThis = this->OwnerObject();
-	const auto base = MapClass::Instance.GetCellAt(pThis->BaseCell)->GetCoords();
-	const auto coords = MapClass::Instance.GetCellAt(cell)->GetCoords();
-	const auto max = static_cast<double>(pThis->SpreadInLeptons);
-	const auto dist = coords.DistanceFrom(base);
-	double radLevel = pThis->RadLevel;
-
-	//  will produce `-nan(ind)` result if both dist and max is zero
-	// and used on formula below this check
-	// ,.. -Otamaa
-	if (dist && max)
-		radLevel = (dist > max) ? 0.0 : (max - dist) / max * pThis->RadLevel;
-
-	// Vanilla YR stores & updates the decremented RadLevel on CellClass.
-	// Because we're not storing multiple radiation site data on CellClass (yet?)
-	// we need to fully recalculate this stuff every time we need the radiation level for a cell coord - Starkku
-	int stepCount = (Unsorted::CurrentFrame - this->LastUpdateFrame) / this->Type->GetLevelDelay();
-	radLevel -= (radLevel / pThis->LevelSteps) * stepCount;
-
-	return radLevel;
-}
-*/
+//double RadSiteExt::ExtData::GetRadLevelAt(CellStruct const& cell) const
+//{
+//	const auto pThis = this->OwnerObject();
+//	const auto base = MapClass::Instance.GetCellAt(pThis->BaseCell)->GetCoords();
+//	const auto coords = MapClass::Instance.GetCellAt(cell)->GetCoords();
+//	const auto max = static_cast<double>(pThis->SpreadInLeptons);
+//	const auto dist = coords.DistanceFrom(base);
+//	double radLevel = pThis->RadLevel;
+//
+//	//  will produce `-nan(ind)` result if both dist and max is zero
+//	// and used on formula below this check
+//	// ,.. -Otamaa
+//	if (dist && max)
+//		radLevel = (dist > max) ? 0.0 : (max - dist) / max * pThis->RadLevel;
+//
+//	// Vanilla YR stores & updates the decremented RadLevel on CellClass.
+//	// Because we're not storing multiple radiation site data on CellClass (yet?)
+//	// we need to fully recalculate this stuff every time we need the radiation level for a cell coord - Starkku
+//	int stepCount = (Unsorted::CurrentFrame - this->LastUpdateFrame) / this->Type->GetLevelDelay();
+//	radLevel -= (radLevel / pThis->LevelSteps) * stepCount;
+//
+//	return radLevel;
+//}
 
 // =============================
 // load / save
