@@ -423,20 +423,18 @@ DEFINE_FUNCTION_JUMP(VTABLE, 0x7EB0CC, InfantryClass__WhatAction_Wrapper)
 
 #pragma region CeaseFireStance
 
-DEFINE_HOOK(0x6F8E1F, TechnoClass_SelectAutoTarget_CeaseFireStance, 0x6)
+DEFINE_HOOK(0x6F8DFD, TechnoClass_SelectAutoTarget_CeaseFireStance, 0x5)
 {
-	GET(TechnoTypeClass*, pType, EAX);
+	enum { FuncReturn = 0x6F8E38 };
 	GET(TechnoClass*, pThis, ESI);
-	R->CL(pType->NoAutoFire || TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance());
-	return R->Origin() + 0x6;
+	return TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance() ? FuncReturn : 0;
 }
 
-DEFINE_HOOK(0x7087DD, TechnoClass_CanRetaliateToAttacker_CeaseFireStance, 0x6)
+DEFINE_HOOK(0x708AC5, TechnoClass_CanRetaliateToAttacker_CeaseFireStance, 0x5)
 {
-	GET(TechnoTypeClass*, pType, EAX);
+	enum { FuncReturn = 0x708B17 };
 	GET(TechnoClass*, pThis, ESI);
-	R->CL(pType->CanRetaliate && !(pThis->Owner->IsControlledByHuman() && TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance()));
-	return R->Origin() + 0x6;
+	return TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance() ? FuncReturn : 0;
 }
 
 #pragma endregion
