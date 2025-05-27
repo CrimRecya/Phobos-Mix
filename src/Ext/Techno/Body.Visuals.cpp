@@ -1244,10 +1244,13 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	const auto nuke = NukeFlash::Status;
 	NukeFlash::Status = NukeFlashStatus::Inactive;
 
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
-
 	const bool warp = pThis->BeingWarpedOut;
 	pThis->BeingWarpedOut = transparent;
+
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+
+	const bool shadow = pThis->Type->NoShadow;
+	pThis->Type->NoShadow = true;
 
 	const bool berzerk = pThis->Berzerk;
 	pThis->Berzerk = false;
@@ -1286,7 +1289,7 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	const auto slope = MapClass::InvalidCell.SlopeIndex;
 	MapClass::InvalidCell.SlopeIndex = static_cast<BYTE>(tilt);
 	struct LocomotionRampTemp { int CurrentRamp; int Rate; };
-	struct LocomotionFaceTemp { DirStruct DesiredFacing; DirStruct ROT; };
+	struct LocomotionFaceTemp { DirStruct DesiredFacing; DirStruct ROT; double Speed; };
 	const auto iLoco = pThis->Locomotor.GetInterfacePtr();
 	const auto pDrLoco = locomotion_cast<DriveLocomotionClass*>(iLoco);
 	const auto pShLoco = locomotion_cast<ShipLocomotionClass*>(iLoco);
@@ -1295,7 +1298,9 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	const auto rampTemp = (pDrLoco ? LocomotionRampTemp(pDrLoco->PreviousRamp, pDrLoco->SlopeTimer.Rate)
 		: (pShLoco ? LocomotionRampTemp(pShLoco->PreviousRamp, pShLoco->SlopeTimer.Rate)
 		: (pAdLoco ? LocomotionRampTemp(pAdLoco->CurrentRamp, pAdLoco->SlopeTimer.Rate) : LocomotionRampTemp())));
-	const auto faceTemp = pJjLoco ? LocomotionFaceTemp(pJjLoco->LocomotionFacing.DesiredFacing, pJjLoco->LocomotionFacing.ROT) : LocomotionFaceTemp();
+	const auto faceTemp = pJjLoco
+		? LocomotionFaceTemp(pJjLoco->LocomotionFacing.DesiredFacing, pJjLoco->LocomotionFacing.ROT, pJjLoco->CurrentSpeed)
+		: LocomotionFaceTemp();
 	if (pDrLoco)
 	{
 		pDrLoco->PreviousRamp = tilt;
@@ -1315,6 +1320,7 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	{
 		pJjLoco->LocomotionFacing.DesiredFacing = dir;
 		pJjLoco->LocomotionFacing.ROT = DirStruct(0);
+		pJjLoco->CurrentSpeed = 0.0;
 	}
 
 	const auto bodyDes = pThis->PrimaryFacing.DesiredFacing;
@@ -1352,6 +1358,7 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	{
 		pJjLoco->LocomotionFacing.DesiredFacing = faceTemp.DesiredFacing;
 		pJjLoco->LocomotionFacing.ROT = faceTemp.ROT;
+		pJjLoco->CurrentSpeed = faceTemp.Speed;
 	}
 	MapClass::InvalidCell.SlopeIndex = slope;
 
@@ -1373,6 +1380,8 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	pThis->AngleRotatedForwards = arf;
 	pThis->AngleRotatedSideways = ars;
 
+	pThis->Type->NoShadow = shadow;
+
 	pThis->BeingWarpedOut = warp;
 
 	LightningStorm::Active = lightning;
@@ -1392,10 +1401,13 @@ void TechnoExt::DrawExtraImage(InfantryClass* pThis, Point2D* pLocation, Rectang
 	const auto nuke = NukeFlash::Status;
 	NukeFlash::Status = NukeFlashStatus::Inactive;
 
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
-
 	const bool warp = pThis->BeingWarpedOut;
 	pThis->BeingWarpedOut = transparent;
+
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+
+	const bool shadow = pThis->Type->NoShadow;
+	pThis->Type->NoShadow = true;
 
 	const bool berzerk = pThis->Berzerk;
 	pThis->Berzerk = false;
@@ -1466,6 +1478,8 @@ void TechnoExt::DrawExtraImage(InfantryClass* pThis, Point2D* pLocation, Rectang
 	pThis->WarpingOut = warping;
 	pThis->TemporalTargetingMe = temporal;
 	pThis->CloakState = cloak;
+
+	pThis->Type->NoShadow = shadow;
 
 	pThis->BeingWarpedOut = warp;
 
