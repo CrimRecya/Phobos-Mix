@@ -612,7 +612,7 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 						if (pTechno->MouseOverObject(pItem) != action)
 							continue;
 
-						if (!targetIsNeutral && !pItem->Owner->IsNeutral())
+						if (!targetIsNeutral && pItem->Owner->IsNeutral())
 							continue;
 
 						if (mode2 < 2 || (pItem->WhatAmI() == pTarget->WhatAmI()
