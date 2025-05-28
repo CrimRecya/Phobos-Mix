@@ -39,6 +39,7 @@ void StraightTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->RotateCoord.Read(exINI, pSection, "Trajectory.RotateCoord");
 	this->OffsetCoord.Read(exINI, pSection, "Trajectory.OffsetCoord");
 	this->AxisOfRotation.Read(exINI, pSection, "Trajectory.AxisOfRotation");
+	this->LeadTimeMaximum.Read(exINI, pSection, "Trajectory.LeadTimeMaximum");
 	this->LeadTimeCalculate.Read(exINI, pSection, "Trajectory.LeadTimeCalculate");
 	this->DetonationDistance.Read(exINI, pSection, "Trajectory.DetonationDistance");
 	this->TargetSnapDistance.Read(exINI, pSection, "Trajectory.TargetSnapDistance");
@@ -217,7 +218,7 @@ CoordStruct StraightTrajectory::CalculateBulletLeadTime()
 				const double horizonDistance = sqrt(horizonDistanceSquared);
 				// Calculate using vertical distance
 				if (horizonDistance < 1e-10)
-					return extraOffsetCoord * (sqrt(verticalDistanceSquared) / pType->Speed);
+					return extraOffsetCoord * this->GetLeadTime(std::round(sqrt(verticalDistanceSquared) / pType->Speed));
 
 				const double targetSpeed = sqrt(targetSpeedSquared);
 				const double straightSpeedSquared = pType->Speed * pType->Speed;
@@ -226,7 +227,7 @@ CoordStruct StraightTrajectory::CalculateBulletLeadTime()
 				const int extraTime = theDistanceSquared >= lastSourceCoord.MagnitudeSquared() ? 2 : 1;
 				// Linear equation solving
 				if (std::abs(baseFactor) < 1e-10)
-					return extraOffsetCoord * (static_cast<int>(theDistanceSquared / (2 * horizonDistance * targetSpeed)) + extraTime);
+					return extraOffsetCoord * this->GetLeadTime(static_cast<int>(theDistanceSquared / (2 * horizonDistance * targetSpeed)) + extraTime);
 
 				const double squareFactor = baseFactor * verticalDistanceSquared + straightSpeedSquared * horizonDistanceSquared;
 				// Is there a solution?
@@ -238,9 +239,9 @@ CoordStruct StraightTrajectory::CalculateBulletLeadTime()
 					const int travelTimeP = static_cast<int>((minusFactor + factor) / baseFactor);
 
 					if (travelTimeM > 0)
-						return extraOffsetCoord * ((travelTimeP > 0 ? std::min(travelTimeM, travelTimeP) : travelTimeM) + extraTime);
+						return extraOffsetCoord * this->GetLeadTime((travelTimeP > 0 ? Math::min(travelTimeM, travelTimeP) : travelTimeM) + extraTime);
 					else if (travelTimeP > 0)
-						return extraOffsetCoord * (travelTimeP + extraTime);
+						return extraOffsetCoord * this->GetLeadTime(travelTimeP + extraTime);
 				}
 			}
 		}
