@@ -4,6 +4,7 @@
 #include <PreviewClass.h>
 #include <Surface.h>
 #include <ThemeClass.h>
+#include <FPSCounter.h>
 
 #include <Ext/House/Body.h>
 #include <Ext/Side/Body.h>
@@ -399,3 +400,10 @@ DEFINE_FUNCTION_JUMP(CALL, 0x63B100, Fake_HouseIsAlliedWith);
 DEFINE_FUNCTION_JUMP(CALL, 0x63B17F, Fake_HouseIsAlliedWith);
 DEFINE_FUNCTION_JUMP(CALL, 0x63B1BA, Fake_HouseIsAlliedWith);
 DEFINE_FUNCTION_JUMP(CALL, 0x63B2CE, Fake_HouseIsAlliedWith);
+
+DEFINE_HOOK(0x4F4480, GScreenClass_DrawOnTop_Start, 0x8)
+{
+	enum { retn = 0x4F45A8 };
+	int delay = Phobos::Config::SkipFrameDelay;
+	return delay && FPSCounter::CurrentFrameRate < RulesClass::Instance->DetailMinFrameRateNormal && !(Unsorted::CurrentFrame % delay) ? retn : 0;
+}
