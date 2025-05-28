@@ -403,7 +403,14 @@ DEFINE_FUNCTION_JUMP(CALL, 0x63B2CE, Fake_HouseIsAlliedWith);
 
 DEFINE_HOOK(0x4F4480, GScreenClass_DrawOnTop_Start, 0x8)
 {
-	enum { retn = 0x4F45A8 };
-	int delay = Phobos::Config::SkipFrameDelay;
-	return delay && FPSCounter::CurrentFrameRate < RulesClass::Instance->DetailMinFrameRateNormal && !(Unsorted::CurrentFrame % delay) ? retn : 0;
+	enum { SkipDraw = 0x4F45A8 };
+
+	auto shouldSkipDraw = []() -> bool
+		{
+			return Phobos::Config::SkipFrameDelay
+				&& FPSCounter::CurrentFrameRate < static_cast<size_t>(RulesClass::Instance->DetailMinFrameRateNormal)
+				&& !(Unsorted::CurrentFrame % Phobos::Config::SkipFrameDelay);
+		};
+
+	return shouldSkipDraw() ? SkipDraw : 0;
 }
