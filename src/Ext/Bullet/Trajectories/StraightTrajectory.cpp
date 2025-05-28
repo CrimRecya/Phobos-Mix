@@ -207,48 +207,40 @@ CoordStruct StraightTrajectory::CalculateBulletLeadTime()
 				const auto targetSourceCoord = source - target;
 				const auto lastSourceCoord = source - this->LastTargetCoord;
 
-				const auto theDistanceSquared = targetSourceCoord.MagnitudeSquared();
-				const auto targetSpeedSquared = extraOffsetCoord.MagnitudeSquared();
-				const auto targetSpeed = sqrt(targetSpeedSquared);
+				const double theDistanceSquared = targetSourceCoord.MagnitudeSquared();
+				const double targetSpeedSquared = extraOffsetCoord.MagnitudeSquared();
 
-				const auto crossFactor = lastSourceCoord.CrossProduct(targetSourceCoord).MagnitudeSquared();
-				const auto verticalDistanceSquared = crossFactor / targetSpeedSquared;
+				const double crossFactor = lastSourceCoord.CrossProduct(targetSourceCoord).MagnitudeSquared();
+				const double verticalDistanceSquared = crossFactor / targetSpeedSquared;
 
-				const auto horizonDistanceSquared = theDistanceSquared - verticalDistanceSquared;
-				const auto horizonDistance = sqrt(horizonDistanceSquared);
+				const double horizonDistanceSquared = theDistanceSquared - verticalDistanceSquared;
+				const double horizonDistance = sqrt(horizonDistanceSquared);
+				// Calculate using vertical distance
+				if (horizonDistance < 1e-10)
+					return extraOffsetCoord * (sqrt(verticalDistanceSquared) / pType->Speed);
 
-				const auto straightSpeedSquared = pType->Speed * pType->Speed;
-				const auto baseFactor = straightSpeedSquared - targetSpeedSquared;
-				const auto squareFactor = baseFactor * verticalDistanceSquared + straightSpeedSquared * horizonDistanceSquared;
+				const double targetSpeed = sqrt(targetSpeedSquared);
+				const double straightSpeedSquared = pType->Speed * pType->Speed;
+				const double baseFactor = straightSpeedSquared - targetSpeedSquared;
+				// When the target is moving away, provide an additional frame of correction
+				const int extraTime = theDistanceSquared >= lastSourceCoord.MagnitudeSquared() ? 2 : 1;
+				// Linear equation solving
+				if (std::abs(baseFactor) < 1e-10)
+					return extraOffsetCoord * (static_cast<int>(theDistanceSquared / (2 * horizonDistance * targetSpeed)) + extraTime);
+
+				const double squareFactor = baseFactor * verticalDistanceSquared + straightSpeedSquared * horizonDistanceSquared;
 				// Is there a solution?
 				if (squareFactor > 1e-10)
 				{
-					const auto minusFactor = -(horizonDistance * targetSpeed);
-					int travelTime = 0;
+					const double minusFactor = -(horizonDistance * targetSpeed);
+					const double factor = sqrt(squareFactor);
+					const int travelTimeM = static_cast<int>((minusFactor - factor) / baseFactor);
+					const int travelTimeP = static_cast<int>((minusFactor + factor) / baseFactor);
 
-					if (std::abs(baseFactor) < 1e-10)
-					{
-						travelTime = std::abs(horizonDistance) > 1e-10 ? (static_cast<int>(theDistanceSquared / (2 * horizonDistance * targetSpeed)) + 1) : 0;
-					}
-					else
-					{
-						const auto travelTimeM = static_cast<int>((minusFactor - sqrt(squareFactor)) / baseFactor);
-						const auto travelTimeP = static_cast<int>((minusFactor + sqrt(squareFactor)) / baseFactor);
-
-						if (travelTimeM > 0 && travelTimeP > 0)
-							travelTime = travelTimeM < travelTimeP ? travelTimeM : travelTimeP;
-						else if (travelTimeM > 0)
-							travelTime = travelTimeM;
-						else if (travelTimeP > 0)
-							travelTime = travelTimeP;
-
-						if (targetSourceCoord.MagnitudeSquared() < lastSourceCoord.MagnitudeSquared())
-							travelTime += 1;
-						else
-							travelTime += 2;
-					}
-
-					return extraOffsetCoord * travelTime;
+					if (travelTimeM > 0)
+						return extraOffsetCoord * ((travelTimeP > 0 ? std::min(travelTimeM, travelTimeP) : travelTimeM) + extraTime);
+					else if (travelTimeP > 0)
+						return extraOffsetCoord * (travelTimeP + extraTime);
 				}
 			}
 		}

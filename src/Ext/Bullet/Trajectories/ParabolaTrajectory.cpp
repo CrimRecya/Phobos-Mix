@@ -726,23 +726,30 @@ double ParabolaTrajectory::SolveFixedSpeedMeetTime(const CoordStruct& source, co
 	// Establishing a quadratic equation using time as a variable:
 	// (destinationCrd + targetSpeedCrd * time).Magnitude() = horizontalSpeed * time
 	// Solve this quadratic equation
-	const auto divisor = (targetSpeedCrd.MagnitudeSquared() - horizontalSpeed * horizontalSpeed) * 2;
-	const auto factor = 2 * (targetSpeedCrd * destinationCrd);
-	const auto delta = factor * factor - 2 * divisor * destinationCrd.MagnitudeSquared();
-
-	if (delta >= 1e-10)
-	{
-		const auto timeP = (-factor + sqrt(delta)) / divisor;
-		const auto timeM = (-factor - sqrt(delta)) / divisor;
-
-		if (timeM > 1e-10 && timeP > 1e-10)
-			return timeM < timeP ? timeM : timeP;
-		else if (timeM > 1e-10)
-			return timeM;
-		else if (timeP > 1e-10)
-			return timeP;
-	}
-
+	const auto targetSpeedSq = targetSpeedCrd.MagnitudeSquared();
+	const auto destinationSq = destinationCrd.MagnitudeSquared();
+	const auto speedSq = horizontalSpeed * horizontalSpeed;
+	const auto divisor = targetSpeedSq - speedSq;
+	const auto factor = targetSpeedCrd * destinationCrd;
+	const auto cosTheta = factor / (sqrt(targetSpeedSq * destinationSq) + 1e-10);
+	// The target speed is too fast
+	if (speedSq < (1.0 + 0.2 * std::max(0.0, -cosTheta)) * targetSpeedSq)
+		return -1.0;
+	// Normal solving
+	const auto delta = factor * factor - divisor * destinationSq;
+	// Check if there is no solution
+	if (delta < 1e-10)
+		return (delta >= -1e-10) ? (-factor / divisor) + (factor > 0 ? 1.0 : 0) : -1.0;
+	// Quadratic formula
+	const auto sqrtDelta = sqrt(delta);
+	const auto timeP = (-factor + sqrtDelta) / divisor;
+	const auto timeM = (-factor - sqrtDelta) / divisor;
+	// When the target is moving away, provide an additional frame of correction
+	if (timeM > 1e-10)
+		return ((timeP > 1e-10) ? std::min(timeM, timeP) : timeM) + (factor > 0 ? 1.0 : 0);
+	else if (timeP > 1e-10)
+		return timeP + (factor > 0 ? 1.0 : 0);
+	// Unsolvable
 	return -1.0;
 }
 
