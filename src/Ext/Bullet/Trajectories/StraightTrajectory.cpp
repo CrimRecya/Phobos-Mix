@@ -161,7 +161,7 @@ void StraightTrajectory::FireTrajectory()
 	auto& target = pBullet->TargetCoords;
 	target += this->CalculateBulletLeadTime();
 	// Calculate the orientation of the coordinate system
-	const double rotateRadian = this->Get2DOpRadian(((target == source && pBullet->Owner) ? pBullet->Owner->GetCoords() : source), target);
+	const auto rotateRadian = this->Get2DOpRadian(((target == source && pBullet->Owner) ? pBullet->Owner->GetCoords() : source), target);
 	// Add the fixed offset value
 	if (pType->OffsetCoord != CoordStruct::Empty)
 		target += this->GetOnlyStableOffsetCoords(rotateRadian);
@@ -208,35 +208,35 @@ CoordStruct StraightTrajectory::CalculateBulletLeadTime()
 				const auto targetSourceCoord = source - target;
 				const auto lastSourceCoord = source - this->LastTargetCoord;
 
-				const double theDistanceSquared = targetSourceCoord.MagnitudeSquared();
-				const double targetSpeedSquared = extraOffsetCoord.MagnitudeSquared();
+				const auto theDistanceSquared = targetSourceCoord.MagnitudeSquared();
+				const auto targetSpeedSquared = extraOffsetCoord.MagnitudeSquared();
 
-				const double crossFactor = lastSourceCoord.CrossProduct(targetSourceCoord).MagnitudeSquared();
-				const double verticalDistanceSquared = crossFactor / targetSpeedSquared;
+				const auto crossFactor = lastSourceCoord.CrossProduct(targetSourceCoord).MagnitudeSquared();
+				const auto verticalDistanceSquared = crossFactor / targetSpeedSquared;
 
-				const double horizonDistanceSquared = theDistanceSquared - verticalDistanceSquared;
-				const double horizonDistance = sqrt(horizonDistanceSquared);
+				const auto horizonDistanceSquared = theDistanceSquared - verticalDistanceSquared;
+				const auto horizonDistance = sqrt(horizonDistanceSquared);
 				// Calculate using vertical distance
 				if (horizonDistance < 1e-10)
 					return extraOffsetCoord * this->GetLeadTime(std::round(sqrt(verticalDistanceSquared) / pType->Speed));
 
-				const double targetSpeed = sqrt(targetSpeedSquared);
-				const double straightSpeedSquared = pType->Speed * pType->Speed;
-				const double baseFactor = straightSpeedSquared - targetSpeedSquared;
+				const auto targetSpeed = sqrt(targetSpeedSquared);
+				const auto straightSpeedSquared = pType->Speed * pType->Speed;
+				const auto baseFactor = straightSpeedSquared - targetSpeedSquared;
 				// When the target is moving away, provide an additional frame of correction
 				const int extraTime = theDistanceSquared >= lastSourceCoord.MagnitudeSquared() ? 2 : 1;
 				// Linear equation solving
 				if (std::abs(baseFactor) < 1e-10)
 					return extraOffsetCoord * this->GetLeadTime(static_cast<int>(theDistanceSquared / (2 * horizonDistance * targetSpeed)) + extraTime);
 
-				const double squareFactor = baseFactor * verticalDistanceSquared + straightSpeedSquared * horizonDistanceSquared;
+				const auto squareFactor = baseFactor * verticalDistanceSquared + straightSpeedSquared * horizonDistanceSquared;
 				// Is there a solution?
 				if (squareFactor > 1e-10)
 				{
-					const double minusFactor = -(horizonDistance * targetSpeed);
-					const double factor = sqrt(squareFactor);
-					const int travelTimeM = static_cast<int>((minusFactor - factor) / baseFactor);
-					const int travelTimeP = static_cast<int>((minusFactor + factor) / baseFactor);
+					const auto minusFactor = -(horizonDistance * targetSpeed);
+					const auto factor = sqrt(squareFactor);
+					const auto travelTimeM = static_cast<int>((minusFactor - factor) / baseFactor);
+					const auto travelTimeP = static_cast<int>((minusFactor + factor) / baseFactor);
 
 					if (travelTimeM > 0)
 						return extraOffsetCoord * this->GetLeadTime((travelTimeP > 0 ? Math::min(travelTimeM, travelTimeP) : travelTimeM) + extraTime);

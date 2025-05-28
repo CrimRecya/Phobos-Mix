@@ -986,7 +986,7 @@ Trajectory.AllowFirerTurning=true     ; boolean
 | `Trajectory.MirrorCoord` | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ | ⚪ |
 | `Trajectory.AxisOfRotation` | ⚪ | ⚪ | ⚪ | · | ⚪ | · |
 | `Trajectory.LeadTimeCalculate` | ⚪ | ⚪ | ⚪ | · | ⚪ | · |
-| `Trajectory.LeadTimeMaximum` | ⚪ | ⚪ | ⚪ | · | ⚪ | · |
+| `Trajectory.LeadTimeMaximum` | ⚪ | ⚪ | · | · | ⚪ | · |
 | `Trajectory.DetonationDistance` | ⚪ | ⚪ | ⚪ | · | ⚪ | · |
 | `Trajectory.TargetSnapDistance` | ⚪ | ⚪ | ⚪ | · | ⚪ | · |
 | `Trajectory.EarlyDetonation` | · | ⚪ | · | · | ⚪ | · |

@@ -365,7 +365,7 @@ void ParabolaTrajectory::FireTrajectory()
 	if (pTarget)
 		target = pTarget->GetCoords();
 	// Calculate the orientation of the coordinate system
-	const double rotateRadian = this->Get2DOpRadian(((target == source && pBullet->Owner) ? pBullet->Owner->GetCoords() : source), target);
+	const auto rotateRadian = this->Get2DOpRadian(((target == source && pBullet->Owner) ? pBullet->Owner->GetCoords() : source), target);
 	// Add the fixed offset value
 	if (pType->OffsetCoord != CoordStruct::Empty)
 		target += this->GetOnlyStableOffsetCoords(rotateRadian);
