@@ -49,8 +49,17 @@ public:
 
 		virtual void InvalidatePointer(void* ptr, bool bRemoved) override
 		{
-			AnnounceInvalidPointer(this->IncomingUnit, ptr);
-			AnnounceInvalidPointer(this->IncomingUnitAlt, ptr);
+			if (ptr == static_cast<void*>(this->IncomingUnit))
+			{
+				this->OwnerObject()->OccupationFlags &= ~0x20;
+				this->IncomingUnit = nullptr;
+			}
+
+			if (ptr == static_cast<void*>(this->IncomingUnitAlt))
+			{
+				this->OwnerObject()->AltOccupationFlags &= ~0x20;
+				this->IncomingUnitAlt = nullptr;
+			}
 		}
 
 		virtual void LoadFromStream(PhobosStreamReader& Stm) override;

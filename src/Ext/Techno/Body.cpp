@@ -1306,6 +1306,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->TrackingLasersTargetingMe)
 		.Process(this->ParentAttachment)
 		.Process(this->ChildAttachments)
+		.Process(this->AltOccupation)
 		;
 }
 

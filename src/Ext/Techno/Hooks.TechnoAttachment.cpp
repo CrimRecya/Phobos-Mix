@@ -134,8 +134,7 @@ DEFINE_HOOK(0x73F528, UnitClass_CanEnterCell_SkipChildren, 0x0)
 	REF_STACK(byte, occupyFlags, STACK_OFFSET(0x90, -0x7C));
 	REF_STACK(bool, isVehicleFlagSet, STACK_OFFSET(0x90, -0x7B));
 
-	return IsOccupierIgnorable(pThis, pOccupier, occupyFlags, isVehicleFlagSet)
-		? SkipToNextOccupier : ContinueCheck;
+	return IsOccupierIgnorable(pThis, pOccupier, occupyFlags, isVehicleFlagSet) ? SkipToNextOccupier : ContinueCheck;
 }
 
 void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte& occupyFlags, bool& isVehicleFlagSet)
@@ -144,8 +143,7 @@ void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte&
 	auto const& pIncoming = isAlt ? pCellExt->IncomingUnitAlt : pCellExt->IncomingUnit;
 
 	// Non-occupiers shouldn't be inserted as incoming units anyways so don't check that
-	if (pIncoming && pIncoming != pThis &&
-		!TechnoExt::IsChildOf(pIncoming, pThis))
+	if (pIncoming && pIncoming != pThis && !TechnoExt::IsChildOf(pIncoming, pThis))
 	{
 		occupyFlags |= TechnoAttachmentTemp::storedVehicleFlag;
 		isVehicleFlagSet = (occupyFlags & 0x20) != 0;
@@ -166,8 +164,7 @@ DEFINE_HOOK(0x73FA92, UnitClass_CanEnterCell_CheckMovingInto, 0x0)
 	AccountForMovingInto(into, isAlt, pThis, occupyFlags, isVehicleFlagSet);
 
 	// stolen code ahead
-	return GroundType::Array[static_cast<int>(isAlt ? LandType::Road : into->LandType)].Cost[static_cast<int>(pThis->Type->SpeedType)] == 0.0f
-		? NoMove : ContinueCheck;
+	return GroundType::Array[static_cast<int>(isAlt ? LandType::Road : into->LandType)].Cost[static_cast<int>(pThis->Type->SpeedType)] == 0.0f ? NoMove : ContinueCheck;
 }
 
 DEFINE_HOOK(0x51C249, InfantryClass_CanEnterCell_AssumeNoVehicleByDefault, 0x0)
@@ -197,8 +194,7 @@ DEFINE_HOOK(0x51C251, InfantryClass_CanEnterCell_SkipChildren, 0x0)
 	REF_STACK(byte, occupyFlags, STACK_OFFSET(0x34, -0x21));
 	REF_STACK(bool, isVehicleFlagSet, STACK_OFFSET(0x34, -0x22));
 
-	return IsOccupierIgnorable(pThis, pOccupier, occupyFlags, isVehicleFlagSet)
-		? IgnoreOccupier : Continue;
+	return IsOccupierIgnorable(pThis, pOccupier, occupyFlags, isVehicleFlagSet) ? IgnoreOccupier : Continue;
 }
 
 DEFINE_HOOK(0x51C78F, InfantryClass_CanEnterCell_CheckMovingInto, 0x6)
@@ -322,10 +318,8 @@ DEFINE_HOOK(0x73A5EA, UnitClass_PerCellProcess_EntryLoopTechnos, 0x0)
 		return SkipEntry;
 
 	CellClass* pCell = pThis->GetCell();
-	ObjectClass*& pFirst = pThis->OnBridge
-		? pCell->AltObject : pCell->FirstObject;
 
-	for (ObjectClass* pObject = pFirst; pObject; pObject = pObject->NextObject)
+	for (ObjectClass* pObject = (pThis->OnBridge ? pCell->AltObject : pCell->FirstObject); pObject; pObject = pObject->NextObject)
 	{
 		auto pEntryTarget = abstract_cast<TechnoClass*, true>(pObject);
 
@@ -353,18 +347,19 @@ DEFINE_HOOK(0x51A0DA, InfantryClass_PerCellProcess_EntryLoopTechnos, 0x0)
 		return SkipEntry;
 
 	CellClass* pCell = pThis->GetCell();
-	ObjectClass*& pFirst = pThis->OnBridge
-		? pCell->AltObject : pCell->FirstObject;
 
-	for (ObjectClass* pObject = pFirst; pObject; pObject = pObject->NextObject)
+	for (ObjectClass* pObject = (pThis->OnBridge ? pCell->AltObject : pCell->FirstObject); pObject; pObject = pObject->NextObject)
 	{
 		auto pEntryTarget = abstract_cast<TechnoClass*, true>(pObject);
 
 		// TODO additional priority checks (original code gets technos in certain order) because may backfire
 
-		if (pEntryTarget && pEntryTarget != pThis
-			&& (pThis->Target == pEntryTarget || pThis->Destination == pEntryTarget
-				|| pThis->OnBridge && pCell == pEntryTarget->GetCell()))
+		if (pEntryTarget
+			&& pEntryTarget != pThis
+			&& (pThis->Target == pEntryTarget
+				|| pThis->Destination == pEntryTarget
+				|| (pThis->OnBridge
+					&& pCell == pEntryTarget->GetCell())))
 		{
 			R->EDI<TechnoClass*>(pEntryTarget);
 			R->EBP<size_t>(0);
@@ -765,11 +760,8 @@ DEFINE_HOOK(0x469672, BulletClass_Logics_Locomotor_CheckIfAttached, 0x6)
 	enum { SkipInfliction = 0x469AA4, ContinueCheck = 0x0 };
 
 	GET(FootClass*, pThis, EDI);
-	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
 
-	return pExt->ParentAttachment
-		? SkipInfliction
-		: ContinueCheck;
+	return TechnoExt::ExtMap.Find(pThis)->ParentAttachment ? SkipInfliction : ContinueCheck;
 }
 
 DEFINE_HOOK(0x6FC3F4, TechnoClass_CanFire_HandleAttachmentLogics, 0x6)
@@ -780,16 +772,7 @@ DEFINE_HOOK(0x6FC3F4, TechnoClass_CanFire_HandleAttachmentLogics, 0x6)
 	GET(TechnoClass*, pTarget, EBP);
 	GET(WeaponTypeClass*, pWeapon, EDI);
 
-	//auto const& pExt = TechnoExt::ExtMap.Find(pThis);
-	//auto const& pTargetExt = TechnoExt::ExtMap.Find(pTarget);
-
-	bool illegalParentTargetWarhead = pWeapon->Warhead
-		&& pWeapon->Warhead->IsLocomotor;
-
-	if (illegalParentTargetWarhead && TechnoExt::IsChildOf(pThis, pTarget))
-		return ReturnFireErrorIllegal;
-
-	return ContinueCheck;
+	return (pWeapon->Warhead && pWeapon->Warhead->IsLocomotor && TechnoExt::IsChildOf(pThis, pTarget)) ? ReturnFireErrorIllegal : ContinueCheck;
 }
 
 // TODO WhatWeaponShouldIUse
@@ -799,11 +782,10 @@ DEFINE_HOOK(0x6F3283, TechnoClass_CanScatter_CheckIfAttached, 0x8)
 	enum { ReturnFalse = 0x6F32C5, ContinueCheck = 0x0 };
 
 	GET(TechnoClass*, pThis, ECX);
+
 	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
 
-	return pExt->ParentAttachment
-		? ReturnFalse
-		: ContinueCheck;
+	return pExt->ParentAttachment ? ReturnFalse : ContinueCheck;
 }
 
 DEFINE_HOOK(0x4817A8, CellClass_Incoming_CheckIfTechnoOccupies, 0x6)
@@ -811,11 +793,10 @@ DEFINE_HOOK(0x4817A8, CellClass_Incoming_CheckIfTechnoOccupies, 0x6)
 	enum { ConditionIsTrue = 0x4817C3, ContinueCheck = 0x0 };
 
 	GET(TechnoClass*, pTechno, ESI);
+
 	auto const& pExt = TechnoExt::ExtMap.Find(pTechno);
 
-	return pExt->ParentAttachment && pExt->ParentAttachment->GetType()->OccupiesCell
-		? ConditionIsTrue
-		: ContinueCheck;
+	return pExt->ParentAttachment && pExt->ParentAttachment->GetType()->OccupiesCell ? ConditionIsTrue : ContinueCheck;
 }
 
 DEFINE_HOOK(0x4817C3, CellClass_Incoming_HandleScatterWithAttachments, 0x0)
@@ -825,10 +806,9 @@ DEFINE_HOOK(0x4817C3, CellClass_Incoming_HandleScatterWithAttachments, 0x0)
 	GET(CoordStruct*, pThreatCoord, EBP);
 	GET(bool, isForced, EBX);
 	GET_STACK(bool, isNoKidding, STACK_OFFSET(0x2C, 0xC));  // direct all complaints to tomsons26 for the variable naming
-	CoordStruct const& threatCoord = *pThreatCoord;
 
 	// we already checked that this is something that occupies the cell, see the hook above - Kerbiter
-	TechnoExt::GetTopLevelParent(pTechno)->Scatter(threatCoord, isForced, isNoKidding);
+	TechnoExt::GetTopLevelParent(pTechno)->Scatter(*pThreatCoord, isForced, isNoKidding);
 
 	return 0x4817D9;
 }
@@ -839,9 +819,7 @@ DEFINE_HOOK(0x51D0DD, InfantryClass_Scatter_CheckAttachments, 0x6)
 
 	GET(InfantryClass*, pThis, ESI);
 
-	return TechnoExt::HasAttachmentLoco(pThis)
-		? Bail
-		: Continue;
+	return TechnoExt::HasAttachmentLoco(pThis) ? Bail : Continue;
 }
 
 // UpdateFiring
@@ -869,8 +847,7 @@ Action __fastcall UnitClass_MouseOverCell_Wrapper(UnitClass* pThis, discard_t, C
 {
 	Action result = pThis->UnitClass::MouseOverCell(pCell, checkFog, ignoreForce);
 
-	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
-	if (!pExt->ParentAttachment)
+	if (!TechnoExt::ExtMap.Find(pThis)->ParentAttachment)
 		return result;
 
 	switch (result)
@@ -896,25 +873,16 @@ Action __fastcall UnitClass_MouseOverCell_Wrapper(UnitClass* pThis, discard_t, C
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5CE0, UnitClass_MouseOverCell_Wrapper)
 
 // YSort for attachments
-int __fastcall TechnoClass_SortY_Wrapper(ObjectClass* pThis)
+int __fastcall TechnoClass_SortY_Wrapper(TechnoClass* pThis)
 {
-	auto const pTechno = abstract_cast<TechnoClass*>(pThis);
-
-	if (pTechno)
+	if (const auto pParentAttachment = TechnoExt::ExtMap.Find(pThis)->ParentAttachment)
 	{
-		const auto pExt = TechnoExt::ExtMap.Find(pTechno);
-
-		if (pExt->ParentAttachment)
+		if (const auto pParentTechno = pParentAttachment->Parent)
 		{
-			const auto ySortPosition = pExt->ParentAttachment->GetType()->YSortPosition.Get();
-			const auto pParentTechno = pExt->ParentAttachment->Parent;
+			const auto ySortPosition = pParentAttachment->GetType()->YSortPosition.Get();
 
-			if (ySortPosition != AttachmentYSortPosition::Default && pParentTechno)
-			{
-				int parentYSort = pParentTechno->GetYSort();
-
-				return parentYSort + (ySortPosition == AttachmentYSortPosition::OverParent ? 1 : -1);
-			}
+			if (ySortPosition != AttachmentYSortPosition::Default)
+				return pParentTechno->GetYSort() + (ySortPosition == AttachmentYSortPosition::OverParent ? 1 : -1);
 		}
 	}
 
@@ -937,10 +905,7 @@ DEFINE_HOOK(0x6DA3FF, TacticalClass_SelectAt_TransparentToMouse_TacticalSelectab
 
 	auto const pExt = TechnoExt::ExtMap.Find(pTechno);
 
-	if (pExt && pExt->ParentAttachment && pExt->ParentAttachment->GetType()->TransparentToMouse)
-		return SkipTechno;
-
-	return ContinueCheck;
+	return (pExt && pExt->ParentAttachment && pExt->ParentAttachment->GetType()->TransparentToMouse) ? SkipTechno : ContinueCheck;
 }
 
 // ShouldIgnoreByMouse
@@ -979,9 +944,7 @@ DEFINE_HOOK(0x4DA6A0, FootClass_AI_CheckLocoForSight, 0x0)
 
 	GET(FootClass*, pThis, ESI);
 
-	return pThis->IsInAir() || TechnoExt::HasAttachmentLoco(pThis)
-		? ContinueCheck
-		: NoSightUpdate;
+	return pThis->IsInAir() || TechnoExt::HasAttachmentLoco(pThis) ? ContinueCheck : NoSightUpdate;
 }
 
 DEFINE_HOOK(0x440951, BuildingClass_Unlimbo_AttachmentsFromUpgrade, 0x6)
