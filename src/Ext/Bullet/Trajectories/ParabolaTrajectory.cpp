@@ -538,7 +538,6 @@ void ParabolaTrajectory::CalculateBulletVelocityLeadTime(const CoordStruct& sour
 	{
 		// Step 1: Calculate the time when the projectile meets the target directly using horizontal velocity
 		const auto meetTime = this->SolveFixedSpeedMeetTime(source, target, offset, pType->Speed);
-		Debug::LogAndMessage("MeetTime:%6.2f (%d,%d,%d)-(%d,%d,%d)\n", meetTime, target.X, target.Y, target.Z, this->LastTargetCoord.X, this->LastTargetCoord.Y, this->LastTargetCoord.Z);
 		// Step 2: Substitute the time into the calculation of the attack coordinates
 		pBullet->TargetCoords += (target - this->LastTargetCoord) * meetTime;
 		const auto destinationCoords = pBullet->TargetCoords - source;
@@ -727,15 +726,10 @@ double ParabolaTrajectory::SolveFixedSpeedMeetTime(const CoordStruct& source, co
 	// Establishing a quadratic equation using time as a variable:
 	// (destinationCrd + targetSpeedCrd * time).Magnitude() = horizontalSpeed * time
 	// Solve this quadratic equation
-	const auto targetSpeedSq = targetSpeedCrd.MagnitudeSquared();
-	const auto divisor = (targetSpeedSq - horizontalSpeed * horizontalSpeed) * 2;
-	// Linear equation solving
-	if (std::abs(divisor) < 1e-10)
-		return destinationCrd.Magnitude() / (horizontalSpeed - sqrt(targetSpeedSq));
-	// Normal solving
+	const auto divisor = (targetSpeedCrd.MagnitudeSquared() - horizontalSpeed * horizontalSpeed) * 2;
 	const auto factor = 2 * (targetSpeedCrd * destinationCrd);
 	const auto delta = factor * factor - 2 * divisor * destinationCrd.MagnitudeSquared();
-	// Check if there is no solution
+
 	if (delta >= 1e-10)
 	{
 		const auto timeP = (-factor + sqrt(delta)) / divisor;
