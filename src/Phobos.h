@@ -118,6 +118,7 @@ public:
 		static bool AutomaticPlacingBuilding;
 		static bool AutomaticPlacingCombatBuilding;
 		static bool UnifiedTechnoColor;
+		static int SkipFrameDelay;
 	};
 
 	class Misc

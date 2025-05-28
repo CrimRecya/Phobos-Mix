@@ -2025,13 +2025,6 @@ DEFINE_HOOK(0x7460EC, UnitClass_AStarAttempt_PathingTooFar, 0x5)
 
 #pragma region
 
-DEFINE_HOOK(0x4F4480, GScreenClass_DrawOnTop_Start, 0x8)
-{
-	enum { retn = 0x4F45A8 };
-	int delay = RulesExt::Global()->SkipFrameDelay;
-	return delay && !(Unsorted::CurrentFrame % delay) ? retn : 0;
-}
-
 // TODO Self-made impl
 
 

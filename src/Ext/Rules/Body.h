@@ -369,8 +369,6 @@ public:
 
 		Valueable<AffectedHouse> BerzerkTargeting;
 
-		Valueable<int> SkipFrameDelay;
-
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, HarvesterDumpAmount { 0.0f }
@@ -679,8 +677,6 @@ public:
 			, ReorganizeToWhenDefeated { AffectedHouse::None }
 
 			, BerzerkTargeting { AffectedHouse::All }
-
-			, SkipFrameDelay { 0 }
 		{ }
 
 		virtual ~ExtData() = default;
