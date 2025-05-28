@@ -91,7 +91,7 @@ void CeaseFireStanceClass::Execute(WWKey eInput) const
 				EventExt::RaiseToggleCeaseFireStance(pTechno);
 
 			wchar_t buffer[0x100];
-			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:CeaseFire_STANCE_OFF", L"%i unit(s) ceased CeaseFire Stance."), TechnoVectorCeaseFire.size());
+			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:CEASEFIRE_STANCE_OFF", L"%i unit(s) ceased Cease Fire Stance."), TechnoVectorCeaseFire.size());
 			MessageListClass::Instance.PrintMessage(buffer);
 		}
 		else
@@ -100,7 +100,7 @@ void CeaseFireStanceClass::Execute(WWKey eInput) const
 				EventExt::RaiseToggleCeaseFireStance(pTechno);
 
 			wchar_t buffer[0x100];
-			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:CeaseFire_STANCE_ON", L"%i unit(s) entered CeaseFire Stance."), TechnoVectorNonCeaseFire.size());
+			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:CEASEFIRE_STANCE_ON", L"%i unit(s) entered Cease Fire Stance."), TechnoVectorNonCeaseFire.size());
 			MessageListClass::Instance.PrintMessage(buffer);
 		}
 	}
