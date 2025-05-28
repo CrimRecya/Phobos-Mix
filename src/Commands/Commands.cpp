@@ -20,6 +20,7 @@
 #include "ToggleSWSidebar.h"
 #include "FireTacticalSW.h"
 #include "AggressiveStance.h"
+#include "CeaseFireStance.h"
 #include "UnifiedTechnoColor.h"
 
 #include <CCINIClass.h>
@@ -58,6 +59,7 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 
 	MakeCommand<ManualReloadAmmoCommandClass>();
 	MakeCommand<AggressiveStanceClass>();
+	MakeCommand<CeaseFireStanceClass>();
 	MakeCommand<ToggleSWSidebar>();
 
 	SWSidebarClass::Commands[0] = MakeCommand<FireTacticalSWCommandClass<0>>();

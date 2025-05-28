@@ -927,6 +927,105 @@ bool TechnoExt::ExtData::CanToggleAggressiveStance()
 	return pTypeExt->AggressiveStance_Togglable.Get(true);
 }
 
+void TechnoExt::ExtData::InitCeaseFireStance()
+{
+	this->CeaseFireStance = this->TypeExtData->CeaseFireStance.Get();
+}
+
+bool TechnoExt::ExtData::GetCeaseFireStance() const
+{
+	// if this is a passenger then obey the configuration of the transport
+	if (auto pTransport = this->OwnerObject()->Transporter)
+		return TechnoExt::ExtMap.Find(pTransport)->GetCeaseFireStance();
+
+	return this->CeaseFireStance;
+}
+
+void TechnoExt::ExtData::ToggleCeaseFireStance()
+{
+	this->CeaseFireStance = !this->CeaseFireStance;
+	const auto pThis = this->OwnerObject();
+	const auto pTechnoType = this->TypeExtData->OwnerObject();
+	int voiceIndex;
+
+	if (!this->CeaseFireStance)
+	{
+		voiceIndex = this->TypeExtData->VoiceExitCeaseFireStance.Get();
+
+		if (voiceIndex < 0)
+		{
+			const auto& voiceList = pTechnoType->VoiceAttack.Count ? pTechnoType->VoiceAttack : pTechnoType->VoiceMove;
+
+			if (const auto count = voiceList.Count)
+				voiceIndex = voiceList.GetItem(Randomizer::Global.Random() % count);
+		}
+	}
+	else
+	{
+		pThis->SetTarget(nullptr);
+		voiceIndex = this->TypeExtData->VoiceEnterCeaseFireStance.Get();
+
+		if (voiceIndex < 0)
+		{
+			const auto& voiceList = pTechnoType->VoiceSelect.Count ? pTechnoType->VoiceSelect : pTechnoType->VoiceMove;
+
+			if (const auto count = voiceList.Count)
+				voiceIndex = voiceList.GetItem(Randomizer::Global.Random() % count);
+		}
+	}
+
+	pThis->QueueVoice(voiceIndex);
+}
+
+bool TechnoExt::ExtData::CanToggleCeaseFireStance()
+{
+	if (!RulesExt::Global()->EnableCeaseFireStance)
+		return false;
+
+	const auto pTypeExt = this->TypeExtData;
+
+	if (!pTypeExt->CeaseFireStance_Togglable.isset())
+	{
+		const auto pType = pTypeExt->OwnerObject();
+
+		// Only techno that are armed and open-topped can be CeaseFire stance.
+		if (!this->OwnerObject()->IsArmed() && !pType->OpenTopped)
+		{
+			pTypeExt->CeaseFireStance_Togglable = false;
+			return false;
+		}
+
+		const auto absType = pType->WhatAmI();
+
+		// Engineers and Agents are default to not allow CeaseFire stance.
+		if (absType == AbstractType::InfantryType)
+		{
+			const auto pInfantryType = static_cast<InfantryTypeClass*>(pType);
+
+			if (pInfantryType->Engineer || pInfantryType->Agent)
+			{
+				pTypeExt->CeaseFireStance_Togglable = false;
+				return false;
+			}
+		}
+		else if (absType == AbstractType::BuildingType)
+		{
+			const auto pBuildingType = static_cast<BuildingTypeClass*>(pType);
+
+			if (pBuildingType->EMPulseCannon)
+			{
+				pTypeExt->CeaseFireStance_Togglable = false;
+				return false;
+			}
+		}
+
+		pTypeExt->CeaseFireStance_Togglable = true;
+		return true;
+	}
+
+	return pTypeExt->CeaseFireStance_Togglable.Get(true);
+}
+
 UnitTypeClass* TechnoExt::ExtData::GetUnitTypeExtra() const
 {
 	if (auto pUnit = abstract_cast<UnitClass*>(this->OwnerObject()))
@@ -1191,6 +1290,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->LastWarpInDelay)
 		.Process(this->IsBeingChronoSphered)
 		.Process(this->AggressiveStance)
+		.Process(this->CeaseFireStance)
 		.Process(this->KeepTargetOnMove)
 		.Process(this->LastSensorsMapCoords)
 		.Process(this->PlayerAssignedLastTarget)

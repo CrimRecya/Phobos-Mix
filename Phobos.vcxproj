@@ -18,6 +18,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Commands\CeaseFireStance.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SWSidebar\SWColumnClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SWSidebar\SWSidebarClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SWSidebar\SWButtonClass.cpp" />
@@ -241,6 +242,7 @@
     <ClCompile Include="YRpp\StaticInits.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Commands\CeaseFireStance.h" />
     <ClInclude Include="src\Ext\Sidebar\SWSidebar\SWColumnClass.h" />
     <ClInclude Include="src\Ext\Sidebar\SWSidebar\SWSidebarClass.h" />
     <ClInclude Include="src\Ext\Sidebar\SWSidebar\SWButtonClass.h" />
