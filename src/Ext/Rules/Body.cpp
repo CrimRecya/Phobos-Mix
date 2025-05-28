@@ -431,6 +431,11 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->ReorganizeToWhenDefeated.Read(exINI, GameStrings::General, "ReorganizeToWhenDefeated");
 
 	this->BerzerkTargeting.Read(exINI, GameStrings::CombatDamage, "BerzerkTargeting");
+
+	this->SkipFrameDelay.Read(exINI, GameStrings::General, "SkipFrameDelay");
+	if (this->SkipFrameDelay < 2)
+		this->SkipFrameDelay = 0;
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -783,6 +788,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AnimCraterReduceTiberium)
 		.Process(this->ReorganizeToWhenDefeated)
 		.Process(this->BerzerkTargeting)
+		.Process(this->SkipFrameDelay)
 		;
 }
 
