@@ -93,6 +93,8 @@ public:
 		CDTimerClass TiberiumEater_Timer;
 
 		bool AggressiveStance;                  // Aggressive stance that will auto target buildings
+		bool CeaseFireStance;
+
 		DWORD PlayerAssignedLastTarget;
 
 		bool IsWreckage;
@@ -175,6 +177,7 @@ public:
 			, LastWarpInDelay { 0 }
 			, IsBeingChronoSphered { false }
 			, AggressiveStance { false }
+			, CeaseFireStance { false }
 			, KeepTargetOnMove { false }
 			, LastSensorsMapCoords { CellStruct::Empty }
 			, PlayerAssignedLastTarget { 0xFFFFFFFF }
@@ -250,6 +253,11 @@ public:
 		bool GetAggressiveStance() const;
 		void ToggleAggressiveStance();
 		bool CanToggleAggressiveStance();
+
+		void InitCeaseFireStance();
+		bool GetCeaseFireStance() const;
+		void ToggleCeaseFireStance();
+		bool CanToggleCeaseFireStance();
 
 	private:
 		template <typename T>

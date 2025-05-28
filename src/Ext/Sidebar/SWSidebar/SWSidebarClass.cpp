@@ -319,17 +319,3 @@ DEFINE_HOOK(0x6AA790, StripClass_RecheckCameo_RemoveCameo, 0x6)
 
 	return ShouldRemove;
 }
-
-DEFINE_HOOK(0x724B2E, ToolTipManager_SetXY, 0x6)
-{
-	if (SWSidebarClass::IsEnabled())
-	{
-		if (const auto button = SWSidebarClass::Instance.CurrentButton)
-		{
-			R->EDX(button->X + button->Width);
-			R->EAX(button->Y + SWButtonClass::ToolTip_Align_Y);
-		}
-	}
-
-	return 0;
-}

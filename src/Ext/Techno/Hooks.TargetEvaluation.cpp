@@ -420,3 +420,24 @@ Action __fastcall InfantryClass__WhatAction_Wrapper(InfantryClass* pThis, discar
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7EB0CC, InfantryClass__WhatAction_Wrapper)
 
 #pragma endregion
+
+#pragma region CeaseFireStance
+
+DEFINE_HOOK(0x6F8DFD, TechnoClass_SelectAutoTarget_CeaseFireStance, 0x5)
+{
+	enum { FuncReturn = 0x6F8E38 };
+	GET(TechnoClass*, pThis, ESI);
+	GET_STACK(ThreatType, flags, STACK_OFFSET(0x6C, 0x4));
+	return TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance()
+		&& (((flags & ThreatType::Range) != ThreatType::Normal) || ((flags & ThreatType::Area) != ThreatType::Normal)) // Cease fire don't work for script auto targeting.
+		? FuncReturn : 0;
+}
+
+DEFINE_HOOK(0x708AC5, TechnoClass_CanRetaliateToAttacker_CeaseFireStance, 0x5)
+{
+	enum { FuncReturn = 0x708B17 };
+	GET(TechnoClass*, pThis, ESI);
+	return TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance() ? FuncReturn : 0;
+}
+
+#pragma endregion

@@ -2120,7 +2120,7 @@ DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x9)
 	{
 		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
-			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno [%s](0x%X) with dirty vtable in TechnoArray!",
+			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno [%s](0x%X) with dirty vtable in TechnoArray!\n",
 				pTechno->get_ID(), reinterpret_cast<DWORD>(pTechno));
 		}
 
@@ -2142,7 +2142,7 @@ DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
 	{
 		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
-			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno [%s](0x%X) with dirty vtable in AircraftTracker!",
+			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno [%s](0x%X) with dirty vtable in AircraftTracker!\n",
 				pTechno->get_ID(), reinterpret_cast<DWORD>(pTechno));
 		}
 
@@ -2150,6 +2150,61 @@ DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
 	}
 
 	return 0;
+}
+
+#pragma endregion
+
+#pragma region DebugLogInTetherCheck
+
+DEFINE_HOOK(0x7043B9, TechnoClass_GetZAdjustment_LogTetherButNoLink, 0x6)
+{
+	enum { SkipGameCode = 0x7043E1 };
+
+	GET(TechnoClass* const, pLink, EAX);
+
+	if (pLink)
+		return 0;
+
+	GET(TechnoClass* const, pThis, ESI);
+
+	Debug::LogAndMessage("TechnoClass::GetZAdjustment: Found a Techno [%s](0x%X) in Tether state without any RadioLink! Skip processing.\n",
+		pThis->get_ID(), reinterpret_cast<DWORD>(pThis));
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x73B0C5, UnitClass_DrawIfVisible_LogTetherButNoLink, 0x6)
+{
+	enum { SkipGameCode = 0x73B124 };
+
+	GET(TechnoClass* const, pLink, EAX);
+
+	if (pLink)
+		return 0;
+
+	GET(TechnoClass* const, pThis, EDI);
+
+	Debug::LogAndMessage("UnitClass::DrawIfVisible: Found a Unit [%s](0x%X) in Tether state without any RadioLink! Skip processing.\n",
+		pThis->get_ID(), reinterpret_cast<DWORD>(pThis));
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x7410D6, UnitClass_GetFireError_LogTetherButNoLink, 0x7)
+{
+	enum { SkipGameCode = 0x7410EC };
+
+	GET(TechnoClass* const, pLink, EAX);
+
+	if (pLink)
+		return 0;
+
+	GET(TechnoClass* const, pThis, ESI);
+
+	Debug::LogAndMessage("UnitClass::GetFireError: Found a Techno [%s](0x%X) in Tether state without any RadioLink! Skip processing.\n",
+		pThis->get_ID(), reinterpret_cast<DWORD>(pThis));
+
+	return SkipGameCode;
 }
 
 #pragma endregion

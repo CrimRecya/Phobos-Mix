@@ -154,6 +154,8 @@ void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte&
 
 DEFINE_HOOK(0x73FA92, UnitClass_CanEnterCell_CheckMovingInto, 0x0)
 {
+	enum { ContinueCheck = 0x73FC24, NoMove = 0x73FACD };
+
 	GET_STACK(CellClass*, into, STACK_OFFSET(0x90, 0x4));
 	GET_STACK(bool const, isAlt, STACK_OFFSET(0x90, -0x7D));
 	GET(UnitClass*, pThis, EBX);
@@ -164,10 +166,8 @@ DEFINE_HOOK(0x73FA92, UnitClass_CanEnterCell_CheckMovingInto, 0x0)
 	AccountForMovingInto(into, isAlt, pThis, occupyFlags, isVehicleFlagSet);
 
 	// stolen code ahead
-	if (!isAlt)
-		return 0x73FA9E;
-
-	return 0x73FC24;
+	return GroundType::Array[static_cast<int>(isAlt ? LandType::Road : into->LandType)].Cost[static_cast<int>(pThis->Type->SpeedType)] == 0.0f
+		? NoMove : ContinueCheck;
 }
 
 DEFINE_HOOK(0x51C249, InfantryClass_CanEnterCell_AssumeNoVehicleByDefault, 0x0)
@@ -612,7 +612,7 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 						if (pTechno->MouseOverObject(pItem) != action)
 							continue;
 
-						if (!targetIsNeutral && !pItem->Owner->IsNeutral())
+						if (!targetIsNeutral && pItem->Owner->IsNeutral())
 							continue;
 
 						if (mode2 < 2 || (pItem->WhatAmI() == pTarget->WhatAmI()

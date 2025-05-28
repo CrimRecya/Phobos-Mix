@@ -37,6 +37,8 @@ public:
 		Nullable<int> InfantryGainSelfHealCap;
 		Nullable<int> UnitsGainSelfHealCap;
 		Valueable<bool> GainSelfHealAllowMultiplayPassive;
+		Valueable<bool> GainSelfHealFromPlayerControl;
+		Valueable<bool> GainSelfHealFromAllies;
 		Valueable<bool> EnemyInsignia;
 		Valueable<AffectedHouse> DisguiseBlinkingVisibility;
 		Valueable<int> ChronoSparkleDisplayDelay;
@@ -311,6 +313,8 @@ public:
 
 		Valueable<bool> EnableAggressiveStance;
 
+		Valueable<bool> EnableCeaseFireStance;
+
 		Valueable<bool> WarheadParticleAlphaImageIsLightFlash;
 		Valueable<int> CombatLightDetailLevel;
 		Valueable<int> LightFlashAlphaImageDetailLevel;
@@ -375,6 +379,8 @@ public:
 			, InfantryGainSelfHealCap {}
 			, UnitsGainSelfHealCap {}
 			, GainSelfHealAllowMultiplayPassive { true }
+			, GainSelfHealFromPlayerControl { false }
+			, GainSelfHealFromAllies { false }
 			, EnemyInsignia { true }
 			, DisguiseBlinkingVisibility { AffectedHouse::Owner }
 			, ChronoSparkleDisplayDelay { 24 }
@@ -626,6 +632,7 @@ public:
 			, AIAllToHunt { true }
 			, RepairBaseNodes { false }
 			, EnableAggressiveStance { false }
+			, EnableCeaseFireStance { false }
 			, WarheadParticleAlphaImageIsLightFlash { false }
 			, CombatLightDetailLevel { 0 }
 			, LightFlashAlphaImageDetailLevel { 0 }

@@ -26,7 +26,7 @@ static inline void EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, 
 	{
 		const auto pFoot = abstract_cast<FootClass*, true>(pObject);
 
-		if (!pFoot || pFoot == pThis || pFoot->IsTether || !pFoot->Owner->IsAlliedWith(pThis))
+		if (!pFoot || pFoot == pThis || pFoot->IsTether || !pFoot->Owner->IsAlliedWith(pThis->Owner))
 			continue;
 
 		if (pThis->QueueUpToEnter == pFoot || pThis->GetNthLink() == pFoot)
@@ -126,7 +126,7 @@ DEFINE_HOOK(0x4495DF, BuildingClass_CheckWeaponFactoryOutsideBusy_ScatterEntranc
 	if (!pTechno || TechnoExt::IsChildOf(pTechno, pThis->GetNthLink(0)))
 		return NotBusy;
 
-	if (RulesExt::Global()->ExtendedScatterAction && !pTechno->Owner->IsAlliedWith(pThis))
+	if (RulesExt::Global()->ExtendedScatterAction && !pTechno->Owner->IsAlliedWith(pThis->Owner))
 		return Busy;
 
 	CallEnhancedScatterContent(pCell, pThis, coords, false);
@@ -327,7 +327,7 @@ static inline void ScatterPathCellContent(FootClass* pThis, CellClass* pCell)
 	{
 		const auto pFoot = abstract_cast<FootClass*, true>(pObject);
 
-		if (!pFoot || pFoot == pThis || pFoot->IsTether || !pFoot->Owner->IsAlliedWith(pThis))
+		if (!pFoot || pFoot == pThis || pFoot->IsTether || !pFoot->Owner->IsAlliedWith(pThis->Owner))
 			continue;
 
 		if (pThis->QueueUpToEnter == pFoot || pThis->GetNthLink() == pFoot)

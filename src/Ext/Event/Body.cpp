@@ -31,6 +31,10 @@ void EventExt::RespondEvent()
 		this->RespondToToggleAggressiveStance();
 		break;
 
+	case EventTypeExt::ToggleCeaseFireStance:
+		this->RespondToToggleCeaseFireStance();
+		break;
+
 	case EventTypeExt::AssignSecondaryRallyPoint:
 		this->RespondToAssignSecondaryRallyPoint();
 		break;
@@ -98,6 +102,31 @@ void EventExt::RespondToToggleAggressiveStance()
 	}
 }
 
+void EventExt::RaiseToggleCeaseFireStance(TechnoClass* pTechno)
+{
+	EventExt eventExt {};
+	eventExt.Type = EventTypeExt::ToggleCeaseFireStance;
+	eventExt.HouseIndex = static_cast<char>(pTechno->Owner->ArrayIndex);
+	eventExt.Frame = Unsorted::CurrentFrame;
+	eventExt.ToggleCeaseFireStance.Who = TargetClass(pTechno);
+	eventExt.AddEvent();
+	Debug::LogGame("Adding event TOGGLE_CEASEFIRE\n");
+}
+
+void EventExt::RespondToToggleCeaseFireStance()
+{
+	if (const auto pTechno = this->ToggleCeaseFireStance.Who.As_Techno())
+	{
+		if (pTechno->IsAlive && !pTechno->Berzerk)
+		{
+			const auto pTechnoExt = TechnoExt::ExtMap.Find(pTechno);
+
+			if (pTechnoExt->CanToggleCeaseFireStance())
+				pTechnoExt->ToggleCeaseFireStance();
+		}
+	}
+}
+
 void EventExt::RaiseAssignSecondaryRallyPoint(BuildingClass* pBuilding, AbstractClass* pTarget)
 {
 	EventExt eventExt {};
@@ -127,6 +156,8 @@ size_t EventExt::GetDataSize(EventTypeExt type)
 		return sizeof(EventExt::ManualReloadEvent);
 	case EventTypeExt::ToggleAggressiveStance:
 		return sizeof(EventExt::ToggleAggressiveStance);
+	case EventTypeExt::ToggleCeaseFireStance:
+		return sizeof(EventExt::ToggleCeaseFireStance);
 	case EventTypeExt::AssignSecondaryRallyPoint:
 		return sizeof(EventExt::AssignSecondaryRallyPoint);
 	}

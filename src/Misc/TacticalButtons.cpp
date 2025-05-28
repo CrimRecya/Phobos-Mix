@@ -117,144 +117,181 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 	if (!Phobos::ShowCurrentInfo)
 		return;
 
-	if (ObjectClass::CurrentObjects.Count > 0)
+	auto getTechnoForDraw = []() -> TechnoClass*
 	{
-		for (const auto& pCurrent : ObjectClass::CurrentObjects)
+		if (ObjectClass::CurrentObjects.Count > 0)
 		{
-			if (const auto pTechno = abstract_cast<TechnoClass*>(pCurrent))
+			for (const auto& pCurrent : ObjectClass::CurrentObjects)
 			{
-				std::vector<CellClass*> pathCells;
+				if (const auto pTechno = abstract_cast<TechnoClass*>(pCurrent))
+					return pTechno;
+			}
+		}
 
-				if (const auto pFoot = abstract_cast<FootClass*, true>(pTechno))
+		const auto mouseXY1 = WWMouseClass::Instance->XY1;
+		auto point = mouseXY1 - Point2D { DSurface::ViewBounds.X, DSurface::ViewBounds.Y };
+		auto cell = CellStruct::Empty;
+		auto coords = CoordStruct::Empty;
+		ObjectClass* pObj = nullptr;
+		BYTE fogged = 0;
+		BYTE shrouded = 0;
+		DisplayClass::Instance.ProcessClickCoords(&point, &cell, &coords, &pObj, &fogged, &shrouded);
+
+		if (const auto pTechno = abstract_cast<TechnoClass*>(pObj))
+			return pTechno;
+
+		return nullptr;
+	};
+	const auto pTechno = getTechnoForDraw();
+
+	if (pTechno)
+	{
+		std::vector<CellClass*> pathCells;
+
+		if (const auto pFoot = abstract_cast<FootClass*, true>(pTechno))
+		{
+			JumpjetLocomotionClass* pJjLoco = nullptr;
+			FlyLocomotionClass* pFlyLoco = nullptr;
+
+			if ((pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(pFoot->Locomotor), (pJjLoco && pJjLoco->CurrentSpeed > 0.0))
+				|| (pFlyLoco = locomotion_cast<FlyLocomotionClass*>(pFoot->Locomotor), (pFlyLoco && pFlyLoco->CurrentSpeed > 0.0)))
+			{
+				auto curCoord = Point2D { pFoot->Location.X, pFoot->Location.Y };
+				auto pCurCell = MapClass::Instance.GetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
+				const auto pFace = pJjLoco ? &pJjLoco->LocomotionFacing : &pFoot->PrimaryFacing;
+				const auto checkLength = (pFace->IsRotating() || !pFoot->Destination) ? Unsorted::LeptonsPerCell
+					: Math::min((Unsorted::LeptonsPerCell * 12), pFoot->DistanceFrom(pFoot->Destination));
+				const auto angle = -pFace->Current().GetRadian<65536>();
+				const auto checkCoord = Point2D { static_cast<int>(checkLength * cos(angle) + 0.5), static_cast<int>(checkLength * sin(angle) + 0.5) };
+				const auto largeStep = Math::max(abs(checkCoord.X), abs(checkCoord.Y));
+				const auto checkSteps = (largeStep > Unsorted::LeptonsPerCell) ? (largeStep / Unsorted::LeptonsPerCell + 1) : 1;
+				const auto stepCoord = Point2D { (checkCoord.X / checkSteps), (checkCoord.Y / checkSteps) };
+
+				for (int i = 0; i < checkSteps; ++i)
 				{
-					JumpjetLocomotionClass* pJjLoco = nullptr;
-					FlyLocomotionClass* pFlyLoco = nullptr;
+					const auto lastCoord = curCoord;
+					curCoord += stepCoord;
+					pCurCell = MapClass::Instance.TryGetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
 
-					if ((pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(pFoot->Locomotor), (pJjLoco && pJjLoco->CurrentSpeed > 0.0))
-						|| (pFlyLoco = locomotion_cast<FlyLocomotionClass*>(pFoot->Locomotor), (pFlyLoco && pFlyLoco->CurrentSpeed > 0.0)))
+					if (!pCurCell)
+						break;
+
+					if (std::find(pathCells.begin(), pathCells.end(), pCurCell) == pathCells.end())
+						pathCells.push_back(pCurCell);
+
+					if ((curCoord.X >> 8) != (lastCoord.X >> 8) && (curCoord.Y >> 8) != (lastCoord.Y >> 8))
 					{
-						auto curCoord = Point2D { pFoot->Location.X, pFoot->Location.Y };
-						auto pCurCell = MapClass::Instance.GetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
-						const auto face = pJjLoco ? &pJjLoco->LocomotionFacing : &pFoot->PrimaryFacing;
-						const auto checkLength = (face->IsRotating() || !pFoot->Destination) ? Unsorted::LeptonsPerCell
-							: Math::min((Unsorted::LeptonsPerCell * 12), pFoot->DistanceFrom(pFoot->Destination));
-						const auto angle = -face->Current().GetRadian<65536>();
-						const auto checkCoord = Point2D { static_cast<int>(checkLength * cos(angle) + 0.5), static_cast<int>(checkLength * sin(angle) + 0.5) };
-						const auto largeStep = Math::max(abs(checkCoord.X), abs(checkCoord.Y));
-						const auto checkSteps = (largeStep > Unsorted::LeptonsPerCell) ? (largeStep / Unsorted::LeptonsPerCell + 1) : 1;
-						const auto stepCoord = Point2D { (checkCoord.X / checkSteps), (checkCoord.Y / checkSteps) };
+						bool lastX = (abs(stepCoord.X) > abs(stepCoord.Y))
+							? (((curCoord.Y - ((stepCoord.X > 0)
+								? (curCoord.X & 0XFF)
+								: ((curCoord.X & 0XFF) - Unsorted::LeptonsPerCell))
+							* checkCoord.Y / checkCoord.X) >> 8) == (curCoord.Y >> 8))
+							: (((curCoord.X - ((stepCoord.Y > 0)
+								? (curCoord.Y & 0XFF)
+								: ((curCoord.Y & 0XFF) - Unsorted::LeptonsPerCell))
+							* checkCoord.X / checkCoord.Y) >> 8) != (curCoord.X >> 8));
 
-						for (int i = 0; i < checkSteps; ++i)
+						if (const auto pCheckCell = MapClass::Instance.TryGetCellAt(lastX
+							? CellStruct { static_cast<short>(lastCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) }
+							: CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(lastCoord.Y >> 8) }))
 						{
-							const auto lastCoord = curCoord;
-							curCoord += stepCoord;
-							pCurCell = MapClass::Instance.TryGetCellAt(CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) });
-
-							if (!pCurCell)
-								break;
-
-							if (std::find(pathCells.begin(), pathCells.end(), pCurCell) == pathCells.end())
-								pathCells.push_back(pCurCell);
-
-							if ((curCoord.X >> 8) != (lastCoord.X >> 8) && (curCoord.Y >> 8) != (lastCoord.Y >> 8))
-							{
-								bool lastX = (abs(stepCoord.X) > abs(stepCoord.Y))
-									? (((curCoord.Y - ((stepCoord.X > 0)
-										? (curCoord.X & 0XFF)
-										: ((curCoord.X & 0XFF) - Unsorted::LeptonsPerCell))
-									* checkCoord.Y / checkCoord.X) >> 8) == (curCoord.Y >> 8))
-									: (((curCoord.X - ((stepCoord.Y > 0)
-										? (curCoord.Y & 0XFF)
-										: ((curCoord.Y & 0XFF) - Unsorted::LeptonsPerCell))
-									* checkCoord.X / checkCoord.Y) >> 8) != (curCoord.X >> 8));
-
-								if (const auto pCheckCell = MapClass::Instance.TryGetCellAt(lastX
-									? CellStruct { static_cast<short>(lastCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) }
-									: CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(lastCoord.Y >> 8) }))
-								{
-									if (std::find(pathCells.begin(), pathCells.end(), pCheckCell) == pathCells.end())
-										pathCells.push_back(pCheckCell);
-								}
-							}
+							if (std::find(pathCells.begin(), pathCells.end(), pCheckCell) == pathCells.end())
+								pathCells.push_back(pCheckCell);
 						}
 					}
-					else if (pFoot->CurrentMapCoords != CellStruct::Empty)
-					{
-						auto pCell = MapClass::Instance.GetCellAt(pFoot->CurrentMapCoords);
-
-						const auto& pD = pFoot->PathDirections;
-
-						for (int i = 0; i < 24; ++i)
-						{
-							const auto face = pD[i];
-
-							if (face <= -1 || face >= 8)
-								break;
-
-							pCell = pCell->GetNeighbourCell(static_cast<FacingType>(face));
-							pathCells.push_back(pCell);
-						}
-					}
 				}
-				else if (const auto pBuilding = abstract_cast<BuildingClass*, true>(pTechno))
+
+				if (pCurCell && checkSteps > 1)
 				{
-					if (pBuilding->Type->ConstructionYard)
-					{
-						const auto pBase = &pBuilding->Owner->Base;
-
-						for (const auto& baseCell : pBase->Cells_24)
-							pathCells.push_back(MapClass::Instance.GetCellAt(baseCell));
-					}
-					else
-					{
-						const auto baseCell = pBuilding->GetMapCoords();
-
-						for (auto pFoundation = pBuilding->Type->FoundationOutside; *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
-							pathCells.push_back(MapClass::Instance.GetCellAt(baseCell + *pFoundation));
-					}
+					const int height = pJjLoco ? pJjLoco->Height : pFlyLoco->FlightLevel;
+					TechnoExt::DrawExtraImage(pFoot, pCurCell, pFace->DesiredFacing, height);
 				}
+			}
+			else if (pFoot->CurrentMapCoords != CellStruct::Empty)
+			{
+				auto pCell = MapClass::Instance.GetCellAt(pFoot->CurrentMapCoords);
+				pathCells.push_back(pCell);
+				const auto& pD = pFoot->PathDirections;
+				auto face = pD[0];
 
-				if (const auto cellsSize = pathCells.size())
+				if (face > -1 && face < 8)
 				{
-					std::sort(&pathCells[0], &pathCells[cellsSize],[](CellClass* pCellA, CellClass* pCellB)
+					pCell = pCell->GetNeighbourCell(static_cast<FacingType>(face));
+					pathCells.push_back(pCell);
+
+					for (int i = 0; i < 24; ++i)
 					{
-						if (pCellA->MapCoords.X != pCellB->MapCoords.X)
-							return pCellA->MapCoords.X < pCellB->MapCoords.X;
+						const auto thisFace = pD[i];
 
-						return pCellA->MapCoords.Y < pCellB->MapCoords.Y;
-					});
+						if (thisFace <= -1 || thisFace >= 8)
+							break;
 
-					for (const auto& pPathCell : pathCells)
-					{
-						const auto location = CoordStruct { (pPathCell->MapCoords.X << 8), (pPathCell->MapCoords.Y << 8), 0 };
-						const auto height = pPathCell->GetLevel() * 15;
-						const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
-
-						DSurface::Temp->DrawSHP(
-							FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC),
-							(pPathCell->SlopeIndex + 2), &position, &DSurface::ViewBounds,
-							(BlitterFlags::Centered | BlitterFlags::TransLucent50 | BlitterFlags::bf_400 | BlitterFlags::Zero),
-							0, (-height - (pPathCell->SlopeIndex ? 12 : 2)), ZGradient::Ground, 1000, 0, 0, 0, 0, 0
-						);
+						face = thisFace;
+						pCell = pCell->GetNeighbourCell(static_cast<FacingType>(face));
+						pathCells.push_back(pCell);
 					}
-				}
 
-				return;
+					TechnoExt::DrawExtraImage(pFoot, pCell, DirStruct(face << 13));
+				}
+			}
+		}
+		else if (const auto pBuilding = abstract_cast<BuildingClass*, true>(pTechno))
+		{
+			if (pBuilding->Type->ConstructionYard)
+			{
+				const auto pBase = &pBuilding->Owner->Base;
+
+				for (const auto& baseCell : pBase->Cells_24)
+					pathCells.push_back(MapClass::Instance.GetCellAt(baseCell));
+			}
+			else
+			{
+				const auto baseCell = pBuilding->GetMapCoords();
+
+				for (auto pFoundation = pBuilding->Type->FoundationOutside; *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+					pathCells.push_back(MapClass::Instance.GetCellAt(baseCell + *pFoundation));
+			}
+		}
+
+		if (const auto cellsSize = pathCells.size())
+		{
+			std::sort(&pathCells[0], &pathCells[cellsSize],[](CellClass* pCellA, CellClass* pCellB)
+			{
+				if (pCellA->MapCoords.X != pCellB->MapCoords.X)
+					return pCellA->MapCoords.X < pCellB->MapCoords.X;
+
+				return pCellA->MapCoords.Y < pCellB->MapCoords.Y;
+			});
+
+			for (const auto& pPathCell : pathCells)
+			{
+				const auto location = CoordStruct { (pPathCell->MapCoords.X << 8), (pPathCell->MapCoords.Y << 8), 0 };
+				const auto height = pPathCell->GetLevel() * 15;
+				const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
+
+				DSurface::Temp->DrawSHP(
+					FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC),
+					(pPathCell->SlopeIndex + 2), &position, &DSurface::ViewBounds,
+					(BlitterFlags::Centered | BlitterFlags::TransLucent50 | BlitterFlags::bf_400 | BlitterFlags::Zero),
+					0, (-height - (pPathCell->SlopeIndex ? 12 : 2)), ZGradient::Ground, 1000, 0, 0, 0, 0, 0
+				);
 			}
 		}
 	}
+	else
+	{
+		const auto pCell = MapClass::Instance.GetCellAt(DisplayClass::Instance.CurrentFoundation_CenterCell);
+		const auto location = CoordStruct { (pCell->MapCoords.X << 8), (pCell->MapCoords.Y << 8), 0 };
+		const auto height = pCell->GetLevel() * 15;
+		const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
 
-	const auto pCell = MapClass::Instance.GetCellAt(DisplayClass::Instance.CurrentFoundation_CenterCell);
-	const auto location = CoordStruct { (pCell->MapCoords.X << 8), (pCell->MapCoords.Y << 8), 0 };
-	const auto height = pCell->GetLevel() * 15;
-	const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
-
-	DSurface::Temp->DrawSHP(
-		FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC),
-		(pCell->SlopeIndex + 2), &position, &DSurface::ViewBounds,
-		(BlitterFlags::Centered | BlitterFlags::TransLucent50 | BlitterFlags::bf_400 | BlitterFlags::Zero),
-		0, (-height - (pCell->SlopeIndex ? 12 : 2)), ZGradient::Ground, 1000, 0, 0, 0, 0, 0
-	);
+		DSurface::Temp->DrawSHP(
+			FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC),
+			(pCell->SlopeIndex + 2), &position, &DSurface::ViewBounds,
+			(BlitterFlags::Centered | BlitterFlags::TransLucent50 | BlitterFlags::bf_400 | BlitterFlags::Zero),
+			0, (-height - (pCell->SlopeIndex ? 12 : 2)), ZGradient::Ground, 1000, 0, 0, 0, 0, 0
+		);
+	}
 }
 
 void TacticalButtonsClass::CurrentSelectInfoDraw()
@@ -289,7 +326,6 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 		return nullptr;
 	};
-
 	const auto pTechno = getTechnoForDraw();
 
 	if (pTechno)
@@ -335,27 +371,6 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 		if (const auto pFoot = abstract_cast<FootClass*, true>(pTechno))
 		{
-			const auto& pD = pFoot->PathDirections;
-			auto face = pD[0];
-
-			if (face > -1 && face < 8)
-			{
-				auto pCell = MapClass::Instance.GetCellAt(pFoot->CurrentMapCoords)->GetNeighbourCell(static_cast<FacingType>(face));
-
-				for (int i = 1; i < 24; ++i)
-				{
-					const auto thisFace = pD[i];
-
-					if (thisFace <= -1 || thisFace >= 8)
-						break;
-
-					face = thisFace;
-					pCell = pCell->GetNeighbourCell(static_cast<FacingType>(face));
-				}
-
-				TechnoExt::DrawExtraImage(pFoot, pCell, DirStruct(face << 13));
-			}
-
 			drawDashLine(pFoot->Target, COLOR_RED);
 			drawDashLine(pFoot->ArchiveTarget, COLOR_PURPLE);
 			drawDashLine(pFoot->GetNthLink(), COLOR_WHITE);
@@ -383,10 +398,13 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			mtx.TranslateX(512.0f);
 			drawMtxLine(mtx, point, COLOR_GREEN);
 
-			if (pTechno->HasTurret())
+			const auto absType = pTechno->WhatAmI();
+			const auto pTechnoType = pTechno->GetTechnoType();
+
+			if (absType == AbstractType::Unit && pTechnoType->Turret || absType == AbstractType::Aircraft)
 			{
 				auto mtxTur = mtxBase;
-				TechnoTypeExt::ApplyTurretOffset(pTechno->GetTechnoType(), &mtxTur, 1.0);
+				TechnoTypeExt::ApplyTurretOffset(pTechnoType, &mtxTur, 1.0);
 
 				const auto turret = mtxTur.GetTranslation();
 				const auto turretPoint = pTactical->CoordsToScreen(technoCoord + CoordStruct{(int)turret.X,-(int)turret.Y,(int)turret.Z}) - pTactical->TacticalPos;
