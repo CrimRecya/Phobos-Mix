@@ -311,6 +311,8 @@ public:
 
 		Valueable<bool> EnableAggressiveStance;
 
+		Valueable<bool> EnableCeaseFireStance;
+
 		Valueable<bool> WarheadParticleAlphaImageIsLightFlash;
 		Valueable<int> CombatLightDetailLevel;
 		Valueable<int> LightFlashAlphaImageDetailLevel;
@@ -626,6 +628,7 @@ public:
 			, AIAllToHunt { true }
 			, RepairBaseNodes { false }
 			, EnableAggressiveStance { false }
+			, EnableCeaseFireStance { false }
 			, WarheadParticleAlphaImageIsLightFlash { false }
 			, CombatLightDetailLevel { 0 }
 			, LightFlashAlphaImageDetailLevel { 0 }

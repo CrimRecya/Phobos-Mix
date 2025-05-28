@@ -15,7 +15,8 @@ enum class EventTypeExt : uint8_t
 
 	ManualReload = 0x80,
 	ToggleAggressiveStance = 0x81,
-	AssignSecondaryRallyPoint = 0x82,
+	ToggleCeaseFireStance = 0x82,
+	AssignSecondaryRallyPoint = 0x83,
 
 	FIRST = ManualReload,
 	LAST = AssignSecondaryRallyPoint
@@ -43,6 +44,11 @@ public:
 			TargetClass Who;
 		} ToggleAggressiveStance;
 
+		struct ToggleCeaseFireStance
+		{
+			TargetClass Who;
+		} ToggleCeaseFireStance;
+
 		struct AssignSecondaryRallyPoint
 		{
 			TargetClass Who;
@@ -58,6 +64,9 @@ public:
 
 	static void RaiseToggleAggressiveStance(TechnoClass* pTechno);
 	void RespondToToggleAggressiveStance();
+
+	static void RaiseToggleCeaseFireStance(TechnoClass* pTechno);
+	void RespondToToggleCeaseFireStance();
 
 	static void RaiseAssignSecondaryRallyPoint(BuildingClass* pBuilding, AbstractClass* pTarget);
 	void RespondToAssignSecondaryRallyPoint();

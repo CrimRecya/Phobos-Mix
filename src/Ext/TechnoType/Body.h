@@ -160,6 +160,11 @@ public:
 		ValueableIdx<VocClass> VoiceEnterAggressiveStance;
 		ValueableIdx<VocClass> VoiceExitAggressiveStance;
 
+		Valueable<bool> CeaseFireStance;
+		Nullable<bool> CeaseFireStance_Togglable;
+		ValueableIdx<VocClass> VoiceEnterCeaseFireStance;
+		ValueableIdx<VocClass> VoiceExitCeaseFireStance;
+
 		Valueable<bool> NoSecondaryWeaponFallback;
 		Valueable<bool> NoSecondaryWeaponFallback_AllowAA;
 
@@ -612,6 +617,11 @@ public:
 			, AggressiveStance_Togglable {}
 			, VoiceEnterAggressiveStance { -1 }
 			, VoiceExitAggressiveStance { -1 }
+
+			, CeaseFireStance { false }
+			, CeaseFireStance_Togglable {}
+			, VoiceEnterCeaseFireStance { -1 }
+			, VoiceExitCeaseFireStance { -1 }
 
 			, NoSecondaryWeaponFallback { false }
 			, NoSecondaryWeaponFallback_AllowAA { false }
