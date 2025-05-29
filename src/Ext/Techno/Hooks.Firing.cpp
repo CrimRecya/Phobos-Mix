@@ -801,15 +801,9 @@ DEFINE_HOOK(0x6FF4CC, TechnoClass_FireAt_ToggleLaserWeaponIndex, 0x6)
 		if (auto const pExt = BuildingExt::ExtMap.Find(abstract_cast<BuildingClass*, true>(pThis)))
 		{
 			if (!pExt->CurrentLaserWeaponIndex.has_value())
-			{
-				GET_BASE(int, weaponIndex, 0xC);
-
 				pExt->CurrentLaserWeaponIndex = weaponIndex;
-			}
 			else
-			{
 				pExt->CurrentLaserWeaponIndex.reset();
-			}
 		}
 	}
 

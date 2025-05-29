@@ -422,8 +422,6 @@ DEFINE_HOOK(0x4687F8, BulletClass_Unlimbo_FlakScatter, 0x6)
 			return 0;
 		}
 
-		GET_STACK(float, mult, STACK_OFFSET(0x5C, -0x44));
-
 		const int defaultValue = RulesClass::Instance->BallisticScatter;
 		int min = pTypeExt->BallisticScatter_Min.Get(Leptons(0));
 		int max = pTypeExt->BallisticScatter_Max.Get(Leptons(defaultValue));
