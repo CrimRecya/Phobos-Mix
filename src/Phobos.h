@@ -105,6 +105,7 @@ public:
 		static bool HideLightFlashEffects;
 		static bool ShowFlashOnSelecting;
 		static bool UnitPowerDrain;
+		static int SuperWeaponSidebar_RequiredSignificance;
 		static bool EnableLaserTrails;
 		static bool SelectedDisplay_Enable;
 		static bool SelectedDisplay_Expand;

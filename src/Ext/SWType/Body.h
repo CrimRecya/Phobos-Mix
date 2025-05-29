@@ -84,6 +84,7 @@ public:
 		Nullable<bool> SuperWeaponSidebar_Allow;
 		DWORD SuperWeaponSidebar_PriorityHouses;
 		DWORD SuperWeaponSidebar_RequiredHouses;
+		Valueable<int> SuperWeaponSidebar_Significance;
 
 		CustomPalette SidebarPal;
 		PhobosPCXFile SidebarPCX;
@@ -169,6 +170,7 @@ public:
 			, SuperWeaponSidebar_Allow {}
 			, SuperWeaponSidebar_PriorityHouses { 0u }
 			, SuperWeaponSidebar_RequiredHouses { 0xFFFFFFFFu }
+			, SuperWeaponSidebar_Significance { 0 }
 			, SidebarPal {}
 			, SidebarPCX {}
 			, UseWeeds { false }
