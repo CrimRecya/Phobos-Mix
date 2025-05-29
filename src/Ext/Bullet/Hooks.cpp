@@ -356,6 +356,7 @@ DEFINE_HOOK(0x468E61, BulletClass_Explode_TargetSnapChecks1, 0x6)
 	}
 
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
+
 	if (pExt->Trajectory && CheckTrajectoryCanNotAlwaysSnap(pExt->Trajectory->Flag()) && !pExt->SnappedToTarget)
 	{
 		R->EAX(pThis->Type);
@@ -385,6 +386,7 @@ DEFINE_HOOK(0x468E9F, BulletClass_Explode_TargetSnapChecks2, 0x6)
 	// Do not force Trajectory=Straight projectiles to detonate at target coordinates under certain circumstances.
 	// Fixes issues with walls etc.
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
+
 	if (pExt->Trajectory && CheckTrajectoryCanNotAlwaysSnap(pExt->Trajectory->Flag()) && !pExt->SnappedToTarget)
 		return SkipSetCoordinate;
 
@@ -398,6 +400,7 @@ DEFINE_HOOK(0x468D3F, BulletClass_ShouldExplode_AirTarget, 0x6)
 	GET(BulletClass*, pThis, ESI);
 
 	auto const pExt = BulletExt::ExtMap.Find(pThis);
+
 	if (pExt->Trajectory && CheckTrajectoryCanNotAlwaysSnap(pExt->Trajectory->Flag()))
 		return SkipCheck;
 
@@ -407,6 +410,7 @@ DEFINE_HOOK(0x468D3F, BulletClass_ShouldExplode_AirTarget, 0x6)
 DEFINE_HOOK(0x4687F8, BulletClass_Unlimbo_FlakScatter, 0x6)
 {
 	GET(BulletClass*, pThis, EBX);
+	GET_STACK(float, mult, STACK_OFFSET(0x5C, -0x44));
 
 	if (pThis->WeaponType)
 	{

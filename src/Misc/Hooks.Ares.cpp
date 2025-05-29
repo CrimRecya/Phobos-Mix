@@ -62,9 +62,12 @@ void Apply_Ares3_0_Patches()
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x46C6D, &ConvertToType);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4B397, &ConvertToType);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4C099, &ConvertToType);
-	
+
 	// Replace the DestroyAll when defeated:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x24AC9, &HouseExt::DecideTechnosFate);
+
+	// SuperClass_Launch_SkipRelatedTags
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x3207C, AresHelper::AresBaseAddress + 0x320DF);
 }
 
 void Apply_Ares3_0p1_Patches()
@@ -99,7 +102,10 @@ void Apply_Ares3_0p1_Patches()
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4780D, &ConvertToType);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4BFF7, &ConvertToType);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4CCF9, &ConvertToType);
-	
+
 	// Replace the DestroyAll when defeated:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x255E9, &HouseExt::DecideTechnosFate);
+
+	// SuperClass_Launch_SkipRelatedTags
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x32A5C, AresHelper::AresBaseAddress + 0x32ABF);
 }
