@@ -151,13 +151,6 @@ void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte&
 
 		if (addr != 0x7F5C70) // UnitClass::AbsVTable
 		{
-			if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
-			{
-				FrameByFrameCommandClass::FrameStep = true;
-				auto coords = into->GetCoords();
-				TacticalClass::Instance->SetTacticalPosition(&coords);
-			}
-
 			const auto& pIncomingType = isAlt ? pCellExt->IncomingUnitAltType : pCellExt->IncomingUnitType;
 			const char* pName = pIncomingType ? pIncomingType->get_ID() : "N/A";
 			Debug::LogAndMessage("FootClass::IsCellOccupied: Found InvalidUnit [%s] at(%d,%d) with dirty vtable in moving check!\n",
@@ -166,6 +159,14 @@ void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte&
 			pIncoming = nullptr;
 			auto& occupationFlags = isAlt ? into->AltOccupationFlags : into->OccupationFlags;
 			occupationFlags &= ~0x20;
+
+			if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
+			{
+				Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
+				FrameByFrameCommandClass::FrameStep = true;
+				auto coords = into->GetCoords();
+				TacticalClass::Instance->SetTacticalPosition(&coords);
+			}
 
 			return;
 		}

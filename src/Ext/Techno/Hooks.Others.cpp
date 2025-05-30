@@ -2124,22 +2124,23 @@ DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x9)
 	{
 		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
-			if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
-			{
-				FrameByFrameCommandClass::FrameStep = true;
-				auto coords = pThis->GetCoords();
-				TacticalClass::Instance->SetTacticalPosition(&coords);
-			}
-
 			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X) with dirty vtable in TechnoArray!\n",
 				reinterpret_cast<DWORD>(pTechno));
 
 			TechnoClass::Array.RemoveItem(index);
 			R->EBX(index - 1);
+
+			if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
+			{
+				Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
+				FrameByFrameCommandClass::FrameStep = true;
+				auto coords = pThis->GetCoords();
+				TacticalClass::Instance->SetTacticalPosition(&coords);
+			}
 		}
 		else
 		{
-			Debug::Log("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X)[%s]at(%d,%d) in TechnoArray!\n",
+			Debug::Log("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X)[%s]at(%d,%d) in TechnoArray.\n",
 				reinterpret_cast<DWORD>(pTechno), pTechno->get_ID(), (pThis->Location.X / 256), (pThis->Location.Y / 256));
 		}
 
@@ -2162,13 +2163,6 @@ DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
 	{
 		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
-			if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
-			{
-				FrameByFrameCommandClass::FrameStep = true;
-				auto coords = pThis->GetCoords();
-				TacticalClass::Instance->SetTacticalPosition(&coords);
-			}
-
 			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X) with dirty vtable in AircraftTracker!\n",
 				reinterpret_cast<DWORD>(pTechno));
 
@@ -2180,10 +2174,18 @@ DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
 						return NextOne;
 				}
 			}
+
+			if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
+			{
+				Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
+				FrameByFrameCommandClass::FrameStep = true;
+				auto coords = pThis->GetCoords();
+				TacticalClass::Instance->SetTacticalPosition(&coords);
+			}
 		}
 		else
 		{
-			Debug::Log("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X)[%s]at(%d,%d) in AircraftTracker!\n",
+			Debug::Log("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X)[%s]at(%d,%d) in AircraftTracker.\n",
 				reinterpret_cast<DWORD>(pTechno), pTechno->get_ID(), (pThis->Location.X / 256), (pThis->Location.Y / 256));
 		}
 
@@ -2208,15 +2210,15 @@ DEFINE_HOOK(0x7043B9, TechnoClass_GetZAdjustment_LogTetherButNoLink, 0x6)
 
 	GET(TechnoClass* const, pThis, ESI);
 
+	Debug::LogAndMessage("TechnoClass::GetZAdjustment: Found a Techno [%s] in Tether state without any RadioLink!\n", pThis->get_ID());
+
 	if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 	{
+		Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
 		FrameByFrameCommandClass::FrameStep = true;
 		auto coords = pThis->GetCoords();
 		TacticalClass::Instance->SetTacticalPosition(&coords);
 	}
-
-	Debug::LogAndMessage("TechnoClass::GetZAdjustment: Found a Techno [%s] in Tether state without any RadioLink! Skip processing.\n",
-		pThis->get_ID());
 
 	return SkipGameCode;
 }
@@ -2232,15 +2234,15 @@ DEFINE_HOOK(0x73B0C5, UnitClass_DrawIfVisible_LogTetherButNoLink, 0x6)
 
 	GET(TechnoClass* const, pThis, EDI);
 
+	Debug::LogAndMessage("UnitClass::DrawIfVisible: Found a Unit [%s] in Tether state without any RadioLink!\n", pThis->get_ID());
+
 	if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 	{
+		Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
 		FrameByFrameCommandClass::FrameStep = true;
 		auto coords = pThis->GetCoords();
 		TacticalClass::Instance->SetTacticalPosition(&coords);
 	}
-
-	Debug::LogAndMessage("UnitClass::DrawIfVisible: Found a Unit [%s] in Tether state without any RadioLink! Skip processing.\n",
-		pThis->get_ID());
 
 	return SkipGameCode;
 }
@@ -2256,15 +2258,15 @@ DEFINE_HOOK(0x7410D6, UnitClass_GetFireError_LogTetherButNoLink, 0x7)
 
 	GET(TechnoClass* const, pThis, ESI);
 
+	Debug::LogAndMessage("UnitClass::GetFireError: Found a Unit [%s] in Tether state without any RadioLink!\n", pThis->get_ID());
+
 	if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 	{
+		Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
 		FrameByFrameCommandClass::FrameStep = true;
 		auto coords = pThis->GetCoords();
 		TacticalClass::Instance->SetTacticalPosition(&coords);
 	}
-
-	Debug::LogAndMessage("UnitClass::GetFireError: Found a Unit [%s] in Tether state without any RadioLink! Skip processing.\n",
-		pThis->get_ID());
 
 	return SkipGameCode;
 }
