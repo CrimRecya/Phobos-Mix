@@ -39,8 +39,12 @@ TechnoExt::ExtData::~ExtData()
 
 				if (pCellExt->IncomingUnitAlt == pThis)
 				{
-					Debug::LogAndMessage("Unit [%s] clear %s cell at(%d,%d)!\n",
-						pType->get_ID(), (last ? "last" : "this"), pCell->MapCoords.X, pCell->MapCoords.Y);
+					if (last)
+						Debug::LogAndMessage("Unit [%s] clear last cell at(%d,%d)[%d,%d]!\n", pType->get_ID(), pCell->MapCoords.X, pCell->MapCoords.Y,
+							static_cast<UnitClass*>(pThis)->LastMapCoords.X, static_cast<UnitClass*>(pThis)->LastMapCoords.Y);
+					else
+						Debug::LogAndMessage("Unit [%s] clear last cell at(%d,%d)[%d,%d]!\n", pType->get_ID(), pCell->MapCoords.X, pCell->MapCoords.Y,
+							(pThis->Location.X / 256), (pThis->Location.Y / 256));
 
 					pCellExt->IncomingUnitAlt = nullptr;
 					pCell->AltOccupationFlags &= ~0x20;
@@ -48,8 +52,12 @@ TechnoExt::ExtData::~ExtData()
 
 				if (pCellExt->IncomingUnit == pThis)
 				{
-					Debug::LogAndMessage("Unit [%s] clear %s cell at(%d,%d)!\n",
-						pType->get_ID(), (last ? "last" : "this"), pCell->MapCoords.X, pCell->MapCoords.Y);
+					if (last)
+						Debug::LogAndMessage("Unit [%s] clear last cell at(%d,%d)[%d,%d]!\n", pType->get_ID(), pCell->MapCoords.X, pCell->MapCoords.Y,
+							static_cast<UnitClass*>(pThis)->LastMapCoords.X, static_cast<UnitClass*>(pThis)->LastMapCoords.Y);
+					else
+						Debug::LogAndMessage("Unit [%s] clear last cell at(%d,%d)[%d,%d]!\n", pType->get_ID(), pCell->MapCoords.X, pCell->MapCoords.Y,
+							(pThis->Location.X / 256), (pThis->Location.Y / 256));
 
 					pCellExt->IncomingUnit = nullptr;
 					pCell->OccupationFlags &= ~0x20;

@@ -2123,11 +2123,9 @@ DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x9)
 	{
 		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
-			if (SessionClass::IsSingleplayer())
+			if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 			{
-				if (Phobos::Config::DevelopmentCommands)
-					FrameByFrameCommandClass::FrameStep = true;
-
+				FrameByFrameCommandClass::FrameStep = true;
 				auto coords = pThis->GetCoords();
 				TacticalClass::Instance->SetTacticalPosition(&coords);
 			}
@@ -2155,11 +2153,9 @@ DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
 	{
 		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
-			if (SessionClass::IsSingleplayer())
+			if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 			{
-				if (Phobos::Config::DevelopmentCommands)
-					FrameByFrameCommandClass::FrameStep = true;
-
+				FrameByFrameCommandClass::FrameStep = true;
 				auto coords = pThis->GetCoords();
 				TacticalClass::Instance->SetTacticalPosition(&coords);
 			}
@@ -2189,11 +2185,9 @@ DEFINE_HOOK(0x7043B9, TechnoClass_GetZAdjustment_LogTetherButNoLink, 0x6)
 
 	GET(TechnoClass* const, pThis, ESI);
 
-	if (SessionClass::IsSingleplayer())
+	if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 	{
-		if (Phobos::Config::DevelopmentCommands)
-			FrameByFrameCommandClass::FrameStep = true;
-
+		FrameByFrameCommandClass::FrameStep = true;
 		auto coords = pThis->GetCoords();
 		TacticalClass::Instance->SetTacticalPosition(&coords);
 	}
@@ -2215,11 +2209,9 @@ DEFINE_HOOK(0x73B0C5, UnitClass_DrawIfVisible_LogTetherButNoLink, 0x6)
 
 	GET(TechnoClass* const, pThis, EDI);
 
-	if (SessionClass::IsSingleplayer())
+	if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 	{
-		if (Phobos::Config::DevelopmentCommands)
-			FrameByFrameCommandClass::FrameStep = true;
-
+		FrameByFrameCommandClass::FrameStep = true;
 		auto coords = pThis->GetCoords();
 		TacticalClass::Instance->SetTacticalPosition(&coords);
 	}
@@ -2241,11 +2233,9 @@ DEFINE_HOOK(0x7410D6, UnitClass_GetFireError_LogTetherButNoLink, 0x7)
 
 	GET(TechnoClass* const, pThis, ESI);
 
-	if (SessionClass::IsSingleplayer())
+	if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 	{
-		if (Phobos::Config::DevelopmentCommands)
-			FrameByFrameCommandClass::FrameStep = true;
-
+		FrameByFrameCommandClass::FrameStep = true;
 		auto coords = pThis->GetCoords();
 		TacticalClass::Instance->SetTacticalPosition(&coords);
 	}
