@@ -145,30 +145,10 @@ void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte&
 	auto& pIncoming = isAlt ? pCellExt->IncomingUnitAlt : pCellExt->IncomingUnit;
 
 	// Non-occupiers shouldn't be inserted as incoming units anyways so don't check that
-	if (pIncoming)
+	if (pIncoming && pIncoming != pThis && !TechnoExt::IsChildOf(pIncoming, pThis))
 	{
-		if (!pIncoming->IsAlive || VTable::Get(pIncoming) != 0x7F5C70)
-		{
-			if (SessionClass::IsSingleplayer())
-			{
-				if (Phobos::Config::DevelopmentCommands)
-					FrameByFrameCommandClass::FrameStep = true;
-
-				auto coords = into->GetCoords();
-				TacticalClass::Instance->SetTacticalPosition(&coords);
-			}
-
-			Debug::LogAndMessage("FootClass::IsCellOccupied: Found Techno(0x%X) at(%d,%d) with alive=%d vtable=%08X in moving check!\n",
-				reinterpret_cast<DWORD>(pIncoming), into->MapCoords.X, into->MapCoords.Y, pIncoming->IsAlive, VTable::Get(pIncoming));
-
-			pIncoming = nullptr;
-		}
-
-		if (pIncoming != pThis && !TechnoExt::IsChildOf(pIncoming, pThis))
-		{
-			occupyFlags |= TechnoAttachmentTemp::storedVehicleFlag;
-			isVehicleFlagSet = (occupyFlags & 0x20) != 0;
-		}
+		occupyFlags |= TechnoAttachmentTemp::storedVehicleFlag;
+		isVehicleFlagSet = (occupyFlags & 0x20) != 0;
 	}
 }
 

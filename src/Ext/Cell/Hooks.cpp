@@ -10,10 +10,10 @@ void __fastcall UnitClass_SetOccupyBit_Reimpl(UnitClass* pThis, discard_t, Coord
 	if (TechnoExt::DoesntOccupyCellAsChild(pThis))
 		return;
 
-	CellClass* pCell = MapClass::Instance.GetCellAt(*pCrd);
-	auto pCellExt = CellExt::ExtMap.Find(pCell);
-	int height = MapClass::Instance.GetCellFloorHeight(*pCrd) + CellClass::BridgeHeight;
-	bool alt = (pCrd->Z >= height && pCell->ContainsBridge());
+	const auto pCell = MapClass::Instance.GetCellAt(*pCrd);
+	const auto pCellExt = CellExt::ExtMap.Find(pCell);
+	const int height = MapClass::Instance.GetCellFloorHeight(*pCrd) + CellClass::BridgeHeight;
+	const bool alt = (pCrd->Z >= height && pCell->ContainsBridge());
 
 	// remember which occupation bit we set
 	auto pExt = TechnoExt::ExtMap.Find(pThis);
@@ -42,15 +42,15 @@ void __fastcall UnitClass_ClearOccupyBit_Reimpl(UnitClass* pThis, discard_t, Coo
 
 	enum { obNormal = 1, obAlt = 2 };
 
-	CellClass* pCell = MapClass::Instance.GetCellAt(*pCrd);
-	auto pCellExt = CellExt::ExtMap.Find(pCell);
-	int height = MapClass::Instance.GetCellFloorHeight(*pCrd) + CellClass::BridgeHeight;
+	const auto pCell = MapClass::Instance.GetCellAt(*pCrd);
+	const auto pCellExt = CellExt::ExtMap.Find(pCell);
+	const int height = MapClass::Instance.GetCellFloorHeight(*pCrd) + CellClass::BridgeHeight;
 	int alt = (pCrd->Z >= height) ? obAlt : obNormal;
 
 	// also clear the last occupation bit, if set
-	auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
 
-	if(pExt->AltOccupation.has_value())
+	if (pExt->AltOccupation.has_value())
 	{
 		int lastAlt = pExt->AltOccupation.value() ? obAlt : obNormal;
 		alt |= lastAlt;

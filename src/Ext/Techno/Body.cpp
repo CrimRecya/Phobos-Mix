@@ -16,6 +16,7 @@
 #include <Ext/Scenario/Body.h>
 #include <Ext/WeaponType/Body.h>
 #include <Ext/House/Body.h>
+#include <Ext/Cell/Body.h>
 
 #include <Utilities/AresFunctions.h>
 
@@ -26,12 +27,26 @@ TechnoExt::ExtData::~ExtData()
 {
 	auto const pTypeExt = this->TypeExtData;
 	auto const pType = pTypeExt->OwnerObject();
-	auto pThis = this->OwnerObject();
+	auto const pThis = this->OwnerObject();
 	auto const whatAmI = pThis->WhatAmI();
 
 	// Destroyed while crushing, it seems unable to remove occupation bits correctly
-	if (whatAmI == AbstractType::Unit && this->OccupyingCell)
-		this->OwnerObject()->UnmarkAllOccupationBits(this->OccupyingCell->GetCoords());
+	if (auto const pCell = this->OccupyingCell)
+	{
+		auto const pCellExt = CellExt::ExtMap.Find(pCell);
+
+		if (pCellExt->IncomingUnitAlt == pThis)
+		{
+			pCellExt->IncomingUnitAlt = nullptr;
+			pCell->AltOccupationFlags &= ~0x20;
+		}
+
+		if (pCellExt->IncomingUnit == pThis)
+		{
+			pCellExt->IncomingUnit = nullptr;
+			pCell->OccupationFlags &= ~0x20;
+		}
+	}
 
 	if (pTypeExt->AutoDeath_Behavior.isset())
 	{
