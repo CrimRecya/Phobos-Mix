@@ -5,22 +5,8 @@
 
 #pragma region EnhancedScatterContent
 
-static inline TechnoClass* FindOccupyTechno(CellClass* pCell, TechnoClass* pExclude)
-{
-	for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
-	{
-		if (const auto pTechno = abstract_cast<TechnoClass*, true>(pObject))
-		{
-			if (pTechno != pExclude && !TechnoExt::DoesntOccupyCellAsChild(pTechno) && !TechnoExt::IsChildOf(pTechno, pExclude))
-				return pTechno;
-		}
-	}
-
-	return nullptr;
-}
-
-template <bool checkParent = false>
-static inline void EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, const CoordStruct& coords, bool alt)
+template <bool checkParent>
+void TechnoExt::EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, const CoordStruct& coords, bool alt)
 {
 	for (auto pObject = (alt ? pCell->AltObject : pCell->FirstObject); pObject; pObject = pObject->NextObject)
 	{
@@ -61,18 +47,32 @@ static inline void EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, 
 	}
 }
 
-static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, const CoordStruct& coords, bool alt)
+TechnoClass* TechnoExt::FindOccupyTechno(CellClass* pCell, TechnoClass* pExclude)
+{
+	for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
+	{
+		if (const auto pTechno = abstract_cast<TechnoClass*, true>(pObject))
+		{
+			if (pTechno != pExclude && !TechnoExt::DoesntOccupyCellAsChild(pTechno) && !TechnoExt::IsChildOf(pTechno, pExclude))
+				return pTechno;
+		}
+	}
+
+	return nullptr;
+}
+
+void __fastcall TechnoExt::CallEnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, const CoordStruct& coords, bool alt)
 {
 	if (const auto pFoot = abstract_cast<FootClass*, true>(pThis))
 	{
 		if (RulesExt::Global()->ExtendedScatterAction)
 		{
-			EnhancedScatterContent(pCell, pThis, coords, alt);
+			TechnoExt::EnhancedScatterContent(pCell, pThis, coords, alt);
 
 			for (int i = 0; i < 8; ++i)
 			{
 				const auto pNearCell = pCell->GetNeighbourCell(static_cast<FacingType>(i));
-				EnhancedScatterContent(pNearCell, pThis, coords, alt);
+				TechnoExt::EnhancedScatterContent(pNearCell, pThis, coords, alt);
 			}
 		}
 		else
@@ -84,12 +84,12 @@ static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass*
 	{
 		if (RulesExt::Global()->ExtendedScatterAction)
 		{
-			EnhancedScatterContent<true>(pCell, pThis, CoordStruct::Empty, alt);
+			TechnoExt::EnhancedScatterContent<true>(pCell, pThis, CoordStruct::Empty, alt);
 
 			for (int i = 0; i < 8; ++i)
 			{
 				const auto pNearCell = pCell->GetNeighbourCell(static_cast<FacingType>(i));
-				EnhancedScatterContent<true>(pNearCell, pThis, coords, alt);
+				TechnoExt::EnhancedScatterContent<true>(pNearCell, pThis, coords, alt);
 			}
 		}
 		else
@@ -100,16 +100,16 @@ static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass*
 			{
 				const auto pNearCell = pCell->GetNeighbourCell(static_cast<FacingType>(i));
 
-				if (FindOccupyTechno(pNearCell, pThis))
+				if (TechnoExt::FindOccupyTechno(pNearCell, pThis))
 					pNearCell->ScatterContent(coords, true, true, alt);
 			}
 		}
 	}
 }
 
-static inline void CallEnhancedScatterContent(CellClass* pCell, FootClass* pFoot, bool alt)
+void __fastcall TechnoExt::CallEnhancedScatterContent(CellClass* pCell, FootClass* pFoot, bool alt)
 {
-	CallEnhancedScatterContent(pCell, pFoot, pFoot->Location, alt);
+	TechnoExt::CallEnhancedScatterContent(pCell, pFoot, pFoot->Location, alt);
 }
 
 // Factory Entrance
@@ -121,7 +121,7 @@ DEFINE_HOOK(0x4495DF, BuildingClass_CheckWeaponFactoryOutsideBusy_ScatterEntranc
 	GET(CellClass* const, pCell, EAX);
 	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x30, -0xC));
 
-	const auto pTechno = FindOccupyTechno(pCell, pThis);
+	const auto pTechno = TechnoExt::FindOccupyTechno(pCell, pThis);
 
 	if (!pTechno || TechnoExt::IsChildOf(pTechno, pThis->GetNthLink(0)))
 		return NotBusy;
@@ -129,7 +129,7 @@ DEFINE_HOOK(0x4495DF, BuildingClass_CheckWeaponFactoryOutsideBusy_ScatterEntranc
 	if (RulesExt::Global()->ExtendedScatterAction && !pTechno->Owner->IsAlliedWith(pThis->Owner))
 		return Busy;
 
-	CallEnhancedScatterContent(pCell, pThis, coords, false);
+	TechnoExt::CallEnhancedScatterContent(pCell, pThis, coords, false);
 
 	return Busy;
 }
@@ -143,7 +143,7 @@ DEFINE_HOOK(0x4B1F2C, DriveLocomotionClass_MovingProcess_ScatterForwardContent, 
 	GET(Point2D* const, pCoords, ESI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(MapClass::Instance.GetTargetCell(*pCoords), pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(MapClass::Instance.GetTargetCell(*pCoords), pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -156,7 +156,7 @@ DEFINE_HOOK(0x4B2DB4, DriveLocomotionClass_MovingProcess2_ScatterForwardContent1
 	GET(CellClass* const, pCell, EDI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -169,7 +169,7 @@ DEFINE_HOOK(0x4B3271, DriveLocomotionClass_MovingProcess2_ScatterForwardContent2
 	GET(CellClass* const, pCell, ESI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -182,7 +182,7 @@ DEFINE_HOOK(0x4B391F, DriveLocomotionClass_MovingProcess2_ScatterForwardContent3
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x5C, -0x48));
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(MapClass::Instance.GetCellAt(cell), pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(MapClass::Instance.GetCellAt(cell), pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -195,7 +195,7 @@ DEFINE_HOOK(0x4B442D, DriveLocomotionClass_MovingProcess2_ScatterForwardContent4
 	GET(CellClass* const, pCell, ECX);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -208,7 +208,7 @@ DEFINE_HOOK(0x515966, HoverLocomotionClass_MovingProcess_ScatterForwardContent, 
 	GET(Point2D* const, pCoords, ESI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(MapClass::Instance.GetTargetCell(*pCoords), pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(MapClass::Instance.GetTargetCell(*pCoords), pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -221,7 +221,7 @@ DEFINE_HOOK(0x516BB9, HoverLocomotionClass_MovingProcess2_ScatterForwardContent,
 	GET(CellClass* const, pCell, EBX);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -234,7 +234,7 @@ DEFINE_HOOK(0x5B0BA4, MechLocomotionClass_MovingProcess_ScatterForwardContent, 0
 	GET(CellClass* const, pCell, ESI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -247,7 +247,7 @@ DEFINE_HOOK(0x6A156F, ShipLocomotionClass_MovingProcess_ScatterForwardContent, 0
 	GET(Point2D* const, pCoords, ESI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(MapClass::Instance.GetTargetCell(*pCoords), pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(MapClass::Instance.GetTargetCell(*pCoords), pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -260,7 +260,7 @@ DEFINE_HOOK(0x6A2404, ShipLocomotionClass_MovingProcess2_ScatterForwardContent1,
 	GET(CellClass* const, pCell, EDI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -273,7 +273,7 @@ DEFINE_HOOK(0x6A28C1, ShipLocomotionClass_MovingProcess2_ScatterForwardContent2,
 	GET(CellClass* const, pCell, ESI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -286,7 +286,7 @@ DEFINE_HOOK(0x6A2F6E, ShipLocomotionClass_MovingProcess2_ScatterForwardContent3,
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x5C, -0x48));
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(MapClass::Instance.GetCellAt(cell), pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(MapClass::Instance.GetCellAt(cell), pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -299,7 +299,7 @@ DEFINE_HOOK(0x6A3A59, ShipLocomotionClass_MovingProcess2_ScatterForwardContent4,
 	GET(CellClass* const, pCell, ECX);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -312,7 +312,7 @@ DEFINE_HOOK(0x75B885, WalkLocomotionClass_MovingProcess_ScatterForwardContent, 0
 	GET(CellClass* const, pCell, ESI);
 	GET(const bool, alt, EDX);
 
-	CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
+	TechnoExt::CallEnhancedScatterContent(pCell, pThis->LinkedTo, alt);
 
 	return SkipGameCode;
 }
@@ -321,7 +321,7 @@ DEFINE_HOOK(0x75B885, WalkLocomotionClass_MovingProcess_ScatterForwardContent, 0
 
 #pragma region EnhancedScatterExecute
 
-static inline void ScatterPathCellContent(FootClass* pThis, CellClass* pCell)
+void TechnoExt::ScatterPathCellContent(FootClass* pThis, CellClass* pCell)
 {
 	for (auto pObject = pCell->GetContent(); pObject; pObject = pObject->NextObject)
 	{
@@ -357,7 +357,7 @@ static inline void ScatterPathCellContent(FootClass* pThis, CellClass* pCell)
 	}
 }
 
-static inline CellStruct GetScatterCell(FootClass* pThis, int face)
+CellStruct TechnoExt::GetScatterCell(FootClass* pThis, int face)
 {
 	const auto thisCoord = pThis->GetDestination();
 	const auto thisCell = CellClass::Coord2Cell(thisCoord);
@@ -455,7 +455,7 @@ static inline CellStruct GetScatterCell(FootClass* pThis, int face)
 	return alternativeCell;
 }
 
-static inline int GetTechnoCloseEnoughRange(TechnoClass* pThis)
+int TechnoExt::GetTechnoCloseEnoughRange(TechnoClass* pThis)
 {
 	if (TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame >= Unsorted::CurrentFrame)
 		return pThis->WhatAmI() == AbstractType::Infantry ? 128 : 0;
@@ -477,7 +477,7 @@ DEFINE_HOOK(0x4B3659, DriveLocomotionClass_MovingProcess2_CheckOverrideMission, 
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x5C, -0x48));
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
+		TechnoExt::ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
 
 	return 0;
 }
@@ -488,7 +488,7 @@ DEFINE_HOOK(0x515D30, HoverLocomotionClass_MovingProcess_CheckOverrideMission, 0
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x68, -0x5C));
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
+		TechnoExt::ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
 
 	return 0;
 }
@@ -499,7 +499,7 @@ DEFINE_HOOK(0x5B0BCA, MechLocomotionClass_MovingProcess_CheckOverrideMission, 0x
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x68, -0x54));
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
+		TechnoExt::ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
 
 	return 0;
 }
@@ -510,7 +510,7 @@ DEFINE_HOOK(0x6A2CA8, ShipLocomotionClass_MovingProcess2_CheckOverrideMission, 0
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x5C, -0x48));
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
+		TechnoExt::ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
 
 	return 0;
 }
@@ -521,7 +521,7 @@ DEFINE_HOOK(0x75B8AC, WalkLocomotionClass_MovingProcess_CheckOverrideMission, 0x
 	GET_STACK(const CellStruct, cell, STACK_OFFSET(0x48, -0x38));
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
+		TechnoExt::ScatterPathCellContent(pThis, MapClass::Instance.GetCellAt(cell));
 
 	return 0;
 }
@@ -557,7 +557,7 @@ DEFINE_HOOK(0x51D487, InfantryClass_Scatter_EnhancedScatter, 0x6)
 	GET(InfantryClass* const, pThis, ESI);
 	GET_STACK(const int, face, STACK_OFFSET(0x50, -0x34));
 
-	const auto cell = GetScatterCell(pThis, face);
+	const auto cell = TechnoExt::GetScatterCell(pThis, face);
 
 	if (cell != CellStruct::Empty)
 	{
@@ -602,7 +602,7 @@ DEFINE_HOOK(0x743E08, UnitClass_Scatter_EnhancedScatter, 0x7)
 	GET(UnitClass* const, pThis, EBP);
 	GET(const int, face, EDI);
 
-	const auto cell = GetScatterCell(pThis, face);
+	const auto cell = TechnoExt::GetScatterCell(pThis, face);
 
 	if (cell != CellStruct::Empty)
 	{
@@ -662,7 +662,7 @@ DEFINE_HOOK(0x4B2979, DriveLocomotionClass_MovingProcess2_GetCloseEnoughRange1, 
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x4B2C56, DriveLocomotionClass_MovingProcess2_GetCloseEnoughRange2, 0x6)
@@ -672,7 +672,7 @@ DEFINE_HOOK(0x4B2C56, DriveLocomotionClass_MovingProcess2_GetCloseEnoughRange2, 
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x4B313B, DriveLocomotionClass_MovingProcess2_GetCloseEnoughRange3, 0x6)
@@ -682,7 +682,7 @@ DEFINE_HOOK(0x4B313B, DriveLocomotionClass_MovingProcess2_GetCloseEnoughRange3, 
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x4B37B8, DriveLocomotionClass_MovingProcess2_GetCloseEnoughRange4, 0x6)
@@ -692,7 +692,7 @@ DEFINE_HOOK(0x4B37B8, DriveLocomotionClass_MovingProcess2_GetCloseEnoughRange4, 
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x4B42D5, DriveLocomotionClass_MovingProcess2_GetCloseEnoughRange5, 0x6)
@@ -702,7 +702,7 @@ DEFINE_HOOK(0x4B42D5, DriveLocomotionClass_MovingProcess2_GetCloseEnoughRange5, 
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x51586A, HoverLocomotionClass_MovingProcess_GetCloseEnoughRange, 0x6)
@@ -712,7 +712,7 @@ DEFINE_HOOK(0x51586A, HoverLocomotionClass_MovingProcess_GetCloseEnoughRange, 0x
 	GET(LocomotionClass* const, pThis, EBX);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x51676F, HoverLocomotionClass_MovingProcess2_GetCloseEnoughRange1, 0x6)
@@ -722,7 +722,7 @@ DEFINE_HOOK(0x51676F, HoverLocomotionClass_MovingProcess2_GetCloseEnoughRange1, 
 	GET(LocomotionClass* const, pThis, ESI);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x516AC9, HoverLocomotionClass_MovingProcess2_GetCloseEnoughRange2, 0x6)
@@ -732,7 +732,7 @@ DEFINE_HOOK(0x516AC9, HoverLocomotionClass_MovingProcess2_GetCloseEnoughRange2, 
 	GET(LocomotionClass* const, pThis, ESI);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x5B0349, MechLocomotionClass_MovingProcess_GetCloseEnoughRange1, 0x6)
@@ -742,7 +742,7 @@ DEFINE_HOOK(0x5B0349, MechLocomotionClass_MovingProcess_GetCloseEnoughRange1, 0x
 	GET(LocomotionClass* const, pThis, EBX);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x5B0A99, MechLocomotionClass_MovingProcess_GetCloseEnoughRange2, 0x6)
@@ -752,7 +752,7 @@ DEFINE_HOOK(0x5B0A99, MechLocomotionClass_MovingProcess_GetCloseEnoughRange2, 0x
 	GET(LocomotionClass* const, pThis, EBX);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x6A1FC9, ShipLocomotionClass_MovingProcess2_GetCloseEnoughRange1, 0x6)
@@ -762,7 +762,7 @@ DEFINE_HOOK(0x6A1FC9, ShipLocomotionClass_MovingProcess2_GetCloseEnoughRange1, 0
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x6A22A6, ShipLocomotionClass_MovingProcess2_GetCloseEnoughRange2, 0x6)
@@ -772,7 +772,7 @@ DEFINE_HOOK(0x6A22A6, ShipLocomotionClass_MovingProcess2_GetCloseEnoughRange2, 0
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x6A278B, ShipLocomotionClass_MovingProcess2_GetCloseEnoughRange3, 0x6)
@@ -782,7 +782,7 @@ DEFINE_HOOK(0x6A278B, ShipLocomotionClass_MovingProcess2_GetCloseEnoughRange3, 0
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x6A2E07, ShipLocomotionClass_MovingProcess2_GetCloseEnoughRange4, 0x6)
@@ -792,7 +792,7 @@ DEFINE_HOOK(0x6A2E07, ShipLocomotionClass_MovingProcess2_GetCloseEnoughRange4, 0
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x6A3901, ShipLocomotionClass_MovingProcess2_GetCloseEnoughRange5, 0x6)
@@ -802,7 +802,7 @@ DEFINE_HOOK(0x6A3901, ShipLocomotionClass_MovingProcess2_GetCloseEnoughRange5, 0
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x75B040, WalkLocomotionClass_MovingProcess_GetCloseEnoughRange1, 0x6)
@@ -812,7 +812,7 @@ DEFINE_HOOK(0x75B040, WalkLocomotionClass_MovingProcess_GetCloseEnoughRange1, 0x
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 DEFINE_HOOK(0x75B75E, WalkLocomotionClass_MovingProcess_GetCloseEnoughRange2, 0x6)
@@ -822,7 +822,7 @@ DEFINE_HOOK(0x75B75E, WalkLocomotionClass_MovingProcess_GetCloseEnoughRange2, 0x
 	GET(LocomotionClass* const, pThis, EBP);
 	GET(const int, distance, EAX);
 
-	return distance > GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
+	return distance > TechnoExt::GetTechnoCloseEnoughRange(pThis->LinkedTo) ? Greater : Lower;
 }
 
 #pragma endregion

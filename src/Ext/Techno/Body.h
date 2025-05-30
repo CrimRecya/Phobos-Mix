@@ -329,6 +329,15 @@ public:
 	static CoordStruct GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FLHFound);
 	static CoordStruct GetSimpleFLH(InfantryClass* pThis, int weaponIndex, bool& FLHFound);
 
+	template <bool checkParent = false>
+	static void EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, const CoordStruct& coords, bool alt);
+	static TechnoClass* FindOccupyTechno(CellClass* pCell, TechnoClass* pExclude);
+	static void __fastcall CallEnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, const CoordStruct& coords, bool alt);
+	static void __fastcall CallEnhancedScatterContent(CellClass* pCell, FootClass* pFoot, bool alt);
+	static void ScatterPathCellContent(FootClass* pThis, CellClass* pCell);
+	static CellStruct GetScatterCell(FootClass* pThis, int face);
+	static int GetTechnoCloseEnoughRange(TechnoClass* pThis);
+
 	static bool AttachTo(TechnoClass* pThis, TechnoClass* pParent);
 	static bool DetachFromParent(TechnoClass* pThis);
 

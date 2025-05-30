@@ -527,7 +527,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 			const auto mission = pLinked->GetCurrentMission();
 
 			if (mission != Mission::Enter
-				&& (pLinked->Location - this->TargetCoord).Magnitude() < RulesClass::Instance->CloseEnough
+				&& (pLinked->Location - this->TargetCoord).Magnitude() < TechnoExt::GetTechnoCloseEnoughRange(pLinked)
 				&& (mission == Mission::Move || mission == Mission::Area_Guard))
 			{
 				this->StopDriving<true>();
@@ -562,7 +562,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 						{
 							if (pLinked->Owner->IsAlliedWith(pCellTechno) && !pType->IsTrain)
 							{
-								if ((pLinked->Location - this->TargetCoord).Magnitude() < RulesClass::Instance->CloseEnough
+								if ((pLinked->Location - this->TargetCoord).Magnitude() < TechnoExt::GetTechnoCloseEnoughRange(pLinked)
 									&& !pLinked->HasAnyLink()
 									&& std::abs(this->TargetCoord.Z - pLinked->Location.Z) < (2 * Unsorted::CellHeight)
 									&& MapClass::Instance.GetCellAt(pLinked->Location)->LandType != LandType::Tunnel)
@@ -573,7 +573,8 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 
 								const bool onBridge = pCell->ContainsBridge()
 									&& (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pCell->Level) > 2);
-								pCell->ScatterContent(CoordStruct::Empty, true, true, onBridge);
+
+								TechnoExt::CallEnhancedScatterContent(pCell, pLinked, onBridge);
 							}
 						}
 					}
@@ -649,7 +650,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 				{
 					if (pLinked->Owner->IsAlliedWith(pCellTechno) && !pType->IsTrain)
 					{
-						if ((pLinked->Location - this->TargetCoord).Magnitude() < RulesClass::Instance->CloseEnough
+						if ((pLinked->Location - this->TargetCoord).Magnitude() < TechnoExt::GetTechnoCloseEnoughRange(pLinked)
 							&& !pLinked->HasAnyLink()
 							&& std::abs(this->TargetCoord.Z - pLinked->Location.Z) < (2 * Unsorted::CellHeight)
 							&& MapClass::Instance.GetCellAt(pLinked->Location)->LandType != LandType::Tunnel)
@@ -660,7 +661,8 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 
 						const bool onBridge = pCell->ContainsBridge()
 							&& (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pCell->Level) > 2);
-						pCell->ScatterContent(CoordStruct::Empty, true, true, onBridge);
+
+						TechnoExt::CallEnhancedScatterContent(pCell, pLinked, onBridge);
 					}
 				}
 			}
@@ -825,7 +827,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 					return this->PassableCheck(pStop, false, false);
 				}
 
-				if ((pLinked->Location - this->TargetCoord).Magnitude() < RulesClass::Instance->CloseEnough
+				if ((pLinked->Location - this->TargetCoord).Magnitude() < TechnoExt::GetTechnoCloseEnoughRange(pLinked)
 					&& std::abs(this->TargetCoord.Z - pLinked->Location.Z) < (2 * Unsorted::CellHeight)
 					&& MapClass::Instance.GetCellAt(pLinked->Location)->LandType != LandType::Tunnel)
 				{
@@ -838,7 +840,8 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 				{
 					const bool onBridge = pNextCell->ContainsBridge()
 						&& (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pNextCell->Level) > 2);
-					pNextCell->ScatterContent(CoordStruct::Empty, true, true, onBridge);
+
+					TechnoExt::CallEnhancedScatterContent(pNextCell, pLinked, onBridge);
 				}
 			}
 		}
@@ -862,6 +865,9 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 		{
 			if (moveResult == Move::MovingBlock)
 			{
+				if (RulesExt::Global()->ExtendedScatterAction)
+					TechnoExt::ScatterPathCellContent(pLinked, pNextCell);
+
 				if (!pLinked->IsWaitingBlockagePath)
 				{
 					pLinked->IsWaitingBlockagePath = true;
@@ -1117,7 +1123,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 						return this->PassableCheck(pStop, false, false);
 					}
 
-					if ((pLinked->Location - this->TargetCoord).Magnitude() < RulesClass::Instance->CloseEnough
+					if ((pLinked->Location - this->TargetCoord).Magnitude() < TechnoExt::GetTechnoCloseEnoughRange(pLinked)
 						&& std::abs(this->TargetCoord.Z - pLinked->Location.Z) < (2 * Unsorted::CellHeight)
 						&& MapClass::Instance.GetCellAt(pLinked->Location)->LandType != LandType::Tunnel)
 					{
@@ -1130,7 +1136,8 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 					{
 						const bool onBridge = pNextCell->ContainsBridge()
 							&& (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pNextCell->Level) > 2);
-						pNextCell->ScatterContent(CoordStruct::Empty, true, true, onBridge);
+
+						TechnoExt::CallEnhancedScatterContent(pNextCell, pLinked, onBridge);
 					}
 				}
 			}
@@ -1596,8 +1603,8 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 					{
 						const bool onBridge = pCell->ContainsBridge()
 							&& (std::abs(pLinked->Location.Z / Unsorted::CellHeight - pCell->Level) > 2);
-						MapClass::Instance.GetCellAt(this->HeadToCoord)->ScatterContent(CoordStruct::Empty,
-							true, true, onBridge);
+
+						TechnoExt::CallEnhancedScatterContent(MapClass::Instance.GetCellAt(this->HeadToCoord), pLinked, onBridge);
 
 						break;
 					}
