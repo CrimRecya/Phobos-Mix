@@ -18,6 +18,7 @@ void __fastcall UnitClass_SetOccupyBit_Reimpl(UnitClass* pThis, discard_t, Coord
 	// remember which occupation bit we set
 	auto pExt = TechnoExt::ExtMap.Find(pThis);
 	pExt->AltOccupation = alt;
+	pExt->OccupyingCell = pCell;
 
 	if (alt)
 	{
@@ -48,12 +49,16 @@ void __fastcall UnitClass_ClearOccupyBit_Reimpl(UnitClass* pThis, discard_t, Coo
 
 	// also clear the last occupation bit, if set
 	auto pExt = TechnoExt::ExtMap.Find(pThis);
+
 	if(pExt->AltOccupation.has_value())
 	{
 		int lastAlt = pExt->AltOccupation.value() ? obAlt : obNormal;
 		alt |= lastAlt;
 		pExt->AltOccupation.reset();
 	}
+
+	if (pExt->OccupyingCell == pCell)
+		pExt->OccupyingCell = nullptr;
 
 	if (alt & obAlt)
 	{

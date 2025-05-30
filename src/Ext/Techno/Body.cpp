@@ -29,6 +29,10 @@ TechnoExt::ExtData::~ExtData()
 	auto pThis = this->OwnerObject();
 	auto const whatAmI = pThis->WhatAmI();
 
+	// Destroyed while crushing, it seems unable to remove occupation bits correctly
+	if (whatAmI == AbstractType::Unit && this->OccupyingCell)
+		this->OwnerObject()->UnmarkAllOccupationBits(this->OccupyingCell->GetCoords());
+
 	if (pTypeExt->AutoDeath_Behavior.isset())
 	{
 		auto& vec = ScenarioExt::Global()->AutoDeathObjects;
@@ -1306,6 +1310,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->TrackingLasersTargetingMe)
 		.Process(this->ParentAttachment)
 		.Process(this->ChildAttachments)
+		.Process(this->OccupyingCell)
 		.Process(this->AltOccupation)
 		;
 }
