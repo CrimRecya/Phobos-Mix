@@ -28,32 +28,38 @@ TechnoExt::ExtData::~ExtData()
 	auto const pTypeExt = this->TypeExtData;
 	auto const pType = pTypeExt->OwnerObject();
 	auto const pThis = this->OwnerObject();
-	auto const whatAmI = pThis->WhatAmI();
+	auto const whatAmI = pType->WhatAmI();
 
-	if (whatAmI == AbstractType::Unit)
+	if (whatAmI == AbstractType::UnitType)
 	{
-		auto invalidateCellPointer = [pThis](CellClass* pCell)
+		auto invalidateCellPointer = [pThis, pType](CellClass* pCell, bool last)
 			{
 				auto const pCellExt = CellExt::ExtMap.Find(pCell);
 
 				if (pCellExt->IncomingUnitAlt == pThis)
 				{
+					Debug::LogAndMessage("Unit [%s] clear %s cell at(%d,%d)!\n",
+						pType->get_ID(), (last ? "last" : "this"), pCell->MapCoords.X, pCell->MapCoords.Y);
+
 					pCellExt->IncomingUnitAlt = nullptr;
 					pCell->AltOccupationFlags &= ~0x20;
 				}
 
 				if (pCellExt->IncomingUnit == pThis)
 				{
+					Debug::LogAndMessage("Unit [%s] clear %s cell at(%d,%d)!\n",
+						pType->get_ID(), (last ? "last" : "this"), pCell->MapCoords.X, pCell->MapCoords.Y);
+
 					pCellExt->IncomingUnit = nullptr;
 					pCell->OccupationFlags &= ~0x20;
 				}
 			};
 
-		if (auto const pCell = MapClass::Instance.TryGetCellAt(static_cast<UnitClass*>(pThis)->LastMapCoords))
-			invalidateCellPointer(pCell);
+		if (auto const pCell = this->LastOccupationCell)
+			invalidateCellPointer(pCell, true);
 
-		if (auto const pCell = MapClass::Instance.TryGetCellAt(pThis->Location))
-			invalidateCellPointer(pCell);
+		if (auto const pCell = this->ThisOccupationCell)
+			invalidateCellPointer(pCell, false);
 	}
 
 	if (pTypeExt->AutoDeath_Behavior.isset())
@@ -62,7 +68,7 @@ TechnoExt::ExtData::~ExtData()
 		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
 	}
 
-	if (RulesExt::Global()->ExtendedBuildingPlacing && whatAmI == AbstractType::Unit && pType->DeploysInto)
+	if (RulesExt::Global()->ExtendedBuildingPlacing && whatAmI == AbstractType::UnitType && pType->DeploysInto)
 	{
 		auto& vec = HouseExt::ExtMap.Find(pThis->Owner)->OwnedDeployingUnits;
 		vec.erase(std::remove(vec.begin(), vec.end(), pThis), vec.end());
@@ -80,7 +86,7 @@ TechnoExt::ExtData::~ExtData()
 		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
 	}
 
-	if (whatAmI != AbstractType::Aircraft && whatAmI != AbstractType::Building
+	if (whatAmI != AbstractType::AircraftType && whatAmI != AbstractType::BuildingType
 		&& pType->Ammo > 0 && pTypeExt->ReloadInTransport)
 	{
 		auto& vec = ScenarioExt::Global()->TransportReloaders;
@@ -1333,6 +1339,8 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->TrackingLasersTargetingMe)
 		.Process(this->ParentAttachment)
 		.Process(this->ChildAttachments)
+		.Process(this->ThisOccupationCell)
+		.Process(this->LastOccupationCell)
 		.Process(this->AltOccupation)
 		;
 }

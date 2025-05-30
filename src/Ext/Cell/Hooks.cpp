@@ -18,6 +18,8 @@ void __fastcall UnitClass_SetOccupyBit_Reimpl(UnitClass* pThis, discard_t, Coord
 	// remember which occupation bit we set
 	auto pExt = TechnoExt::ExtMap.Find(pThis);
 	pExt->AltOccupation = alt;
+	pExt->LastOccupationCell = pExt->ThisOccupationCell;
+	pExt->ThisOccupationCell = pCell;
 
 	if (alt)
 	{
@@ -59,18 +61,17 @@ void __fastcall UnitClass_ClearOccupyBit_Reimpl(UnitClass* pThis, discard_t, Coo
 	}
 
 	if (alt & obAlt)
-	{
 		pCell->AltOccupationFlags &= ~0x20;
-		// Phobos addition: clear incoming unit tracker
-		pCellExt->IncomingUnitAlt = nullptr;
-	}
 
 	if (alt & obNormal)
-	{
 		pCell->OccupationFlags &= ~0x20;
-		// Phobos addition: clear incoming unit tracker
+
+	// Phobos addition: clear incoming unit tracker
+	if (pCellExt->IncomingUnitAlt == pThis)
+		pCellExt->IncomingUnitAlt = nullptr;
+
+	if (pCellExt->IncomingUnit == pThis)
 		pCellExt->IncomingUnit = nullptr;
-	}
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5D64, UnitClass_ClearOccupyBit_Reimpl);
 
