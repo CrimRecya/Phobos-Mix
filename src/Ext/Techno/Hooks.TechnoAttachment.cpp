@@ -164,6 +164,8 @@ void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte&
 				pName, into->MapCoords.X, into->MapCoords.Y);
 
 			pIncoming = nullptr;
+			auto& occupationFlags = isAlt ? into->AltOccupationFlags : into->OccupationFlags;
+			occupationFlags &= ~0x20;
 
 			return;
 		}
