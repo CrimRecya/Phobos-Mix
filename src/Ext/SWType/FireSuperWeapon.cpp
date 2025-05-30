@@ -31,16 +31,16 @@ void SWTypeExt::FireSuperWeaponExt(SuperClass* pSW, const CellStruct& cell)
 		pTypeExt->ApplyDetonation(pHouse, cell);
 
 	if (pTypeExt->SW_Next.size() > 0)
-		pTypeExt->ApplySWNext(pSW, cell);
+		pTypeExt->ApplySWNext(pHouse, cell);
 
 	if (pTypeExt->SW_GrantOneTime.size() > 0)
-		pTypeExt->GrantOneTimeFromList(pSW);
+		pTypeExt->GrantOneTimeFromList(pHouse);
 
 	if (pTypeExt->Attachment_Transform.size() > 0)
-		pTypeExt->ApplyAttachmentTransform(pSW);
+		pTypeExt->ApplyAttachmentTransform(pHouse);
 
 	if (pTypeExt->Convert_Pairs.size() > 0)
-		pTypeExt->ApplyTypeConversion(pSW);
+		pTypeExt->ApplyTypeConversion(pHouse);
 
 	if (static_cast<int>(pType->Type) == 28 && !pTypeExt->EMPulse_TargetSelf) // Ares' Type=EMPulse SW
 		pTypeExt->HandleEMPulseLaunch(pSW, cell);
@@ -204,12 +204,11 @@ void SWTypeExt::ExtData::ApplyDetonation(HouseClass* pHouse, const CellStruct& c
 	}
 }
 
-void SWTypeExt::ExtData::ApplySWNext(SuperClass* pSW, const CellStruct& cell)
+void SWTypeExt::ExtData::ApplySWNext(HouseClass* pHouse, const CellStruct& cell)
 {
 	// SW.Next proper launching mechanic
 	auto LaunchTheSW = [=](const int swIdxToLaunch)
 		{
-			HouseClass* pHouse = pSW->Owner;
 			if (const auto pSuper = pHouse->Supers.GetItem(swIdxToLaunch))
 			{
 				const auto pNextTypeExt = SWTypeExt::ExtMap.Find(pSuper->Type);
@@ -249,22 +248,21 @@ void SWTypeExt::ExtData::ApplySWNext(SuperClass* pSW, const CellStruct& cell)
 	}
 }
 
-void SWTypeExt::ExtData::ApplyAttachmentTransform(SuperClass* pSW)
+void SWTypeExt::ExtData::ApplyAttachmentTransform(HouseClass* pHouse)
 {
 	for (const auto& pAttachment : AttachmentClass::Array)
-		AttachmentTransformGroup::Trasform(pAttachment, this->Attachment_Transform, pSW->Owner);
+		AttachmentTransformGroup::Trasform(pAttachment, this->Attachment_Transform, pHouse);
 }
 
-void SWTypeExt::ExtData::ApplyTypeConversion(SuperClass* pSW)
+void SWTypeExt::ExtData::ApplyTypeConversion(HouseClass* pHouse)
 {
 	for (const auto pTarget : TechnoClass::Array)
-		TypeConvertGroup::Convert(pTarget, this->Convert_Pairs, pSW->Owner);
+		TypeConvertGroup::Convert(pTarget, this->Convert_Pairs, pHouse);
 }
 
-void SWTypeExt::ExtData::GrantOneTimeFromList(SuperClass* pSW)
+void SWTypeExt::ExtData::GrantOneTimeFromList(HouseClass* pHouse)
 {
 	// SW.GrantOneTime proper SW granting mechanic
-	HouseClass* pHouse = pSW->Owner;
 	bool notObserver = !pHouse->IsObserver() || !pHouse->IsCurrentPlayerObserver();
 
 	auto grantTheSW = [=](const int swIdxToAdd) -> bool
