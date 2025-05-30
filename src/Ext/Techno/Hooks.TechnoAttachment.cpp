@@ -11,6 +11,8 @@
 #include <Utilities/Helpers.Alex.h>
 #include <Utilities/Macro.h>
 
+#include <Commands/FrameByFrame.h>
+
 DEFINE_HOOK(0x707CB3, TechnoClass_KillCargo_HandleAttachments, 0x6)
 {
 	GET(TechnoClass*, pThis, EBX);
@@ -140,13 +142,33 @@ DEFINE_HOOK(0x73F528, UnitClass_CanEnterCell_SkipChildren, 0x0)
 void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte& occupyFlags, bool& isVehicleFlagSet)
 {
 	auto const pCellExt = CellExt::ExtMap.Find(into);
-	auto const& pIncoming = isAlt ? pCellExt->IncomingUnitAlt : pCellExt->IncomingUnit;
+	auto& pIncoming = isAlt ? pCellExt->IncomingUnitAlt : pCellExt->IncomingUnit;
 
 	// Non-occupiers shouldn't be inserted as incoming units anyways so don't check that
-	if (pIncoming && pIncoming != pThis && !TechnoExt::IsChildOf(pIncoming, pThis))
+	if (pIncoming)
 	{
-		occupyFlags |= TechnoAttachmentTemp::storedVehicleFlag;
-		isVehicleFlagSet = (occupyFlags & 0x20) != 0;
+		if (!pIncoming->IsAlive || VTable::Get(pIncoming) != 0x7F5C70)
+		{
+			if (SessionClass::IsSingleplayer())
+			{
+				if (Phobos::Config::DevelopmentCommands)
+					FrameByFrameCommandClass::FrameStep = true;
+
+				auto coords = into->GetCoords();
+				TacticalClass::Instance->SetTacticalPosition(&coords);
+			}
+
+			Debug::LogAndMessage("FootClass::IsCellOccupied: Found Techno(0x%X) at(%d,%d) with alive=%d vtable=%08X in moving check!\n",
+				reinterpret_cast<DWORD>(pIncoming), into->MapCoords.X, into->MapCoords.Y, pIncoming->IsAlive, VTable::Get(pIncoming));
+
+			pIncoming = nullptr;
+		}
+
+		if (pIncoming != pThis && !TechnoExt::IsChildOf(pIncoming, pThis))
+		{
+			occupyFlags |= TechnoAttachmentTemp::storedVehicleFlag;
+			isVehicleFlagSet = (occupyFlags & 0x20) != 0;
+		}
 	}
 }
 

@@ -19,6 +19,9 @@
 #include <Utilities/Helpers.Alex.h>
 #include <Helpers/Macro.h>
 
+#include <TacticalClass.h>
+#include <Commands/FrameByFrame.h>
+
 #pragma region NoBurstDelay
 
 DEFINE_HOOK(0x5209EE, InfantryClass_UpdateFiring_BurstNoDelay, 0x5)
@@ -2116,12 +2119,21 @@ DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x9)
 
 	auto pTechno = TechnoClass::Array.Items[R->EBX<int>()];
 
-	if (!pTechno->IsAlive)
+	if (pTechno->IsDead())
 	{
 		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
-			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno [%s](0x%X) with dirty vtable in TechnoArray!\n",
-				pTechno->get_ID(), reinterpret_cast<DWORD>(pTechno));
+			if (SessionClass::IsSingleplayer())
+			{
+				if (Phobos::Config::DevelopmentCommands)
+					FrameByFrameCommandClass::FrameStep = true;
+
+				auto coords = pThis->GetCoords();
+				TacticalClass::Instance->SetTacticalPosition(&coords);
+			}
+
+			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%X) with dirty vtable in TechnoArray!\n",
+				reinterpret_cast<DWORD>(pTechno));
 		}
 
 		return NextOne; // next
@@ -2136,14 +2148,24 @@ DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
 {
 	enum { NextOne = 0x6F9377 };
 
+	GET(TechnoClass* const, pThis, ESI);
 	GET(TechnoClass* const, pTechno, EBP);
 
-	if (!pTechno->IsAlive)
+	if (pTechno->IsDead())
 	{
 		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
-			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno [%s](0x%X) with dirty vtable in AircraftTracker!\n",
-				pTechno->get_ID(), reinterpret_cast<DWORD>(pTechno));
+			if (SessionClass::IsSingleplayer())
+			{
+				if (Phobos::Config::DevelopmentCommands)
+					FrameByFrameCommandClass::FrameStep = true;
+
+				auto coords = pThis->GetCoords();
+				TacticalClass::Instance->SetTacticalPosition(&coords);
+			}
+
+			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%X) with dirty vtable in AircraftTracker!\n",
+				reinterpret_cast<DWORD>(pTechno));
 		}
 
 		return NextOne; // next
@@ -2167,8 +2189,17 @@ DEFINE_HOOK(0x7043B9, TechnoClass_GetZAdjustment_LogTetherButNoLink, 0x6)
 
 	GET(TechnoClass* const, pThis, ESI);
 
-	Debug::LogAndMessage("TechnoClass::GetZAdjustment: Found a Techno [%s](0x%X) in Tether state without any RadioLink! Skip processing.\n",
-		pThis->get_ID(), reinterpret_cast<DWORD>(pThis));
+	if (SessionClass::IsSingleplayer())
+	{
+		if (Phobos::Config::DevelopmentCommands)
+			FrameByFrameCommandClass::FrameStep = true;
+
+		auto coords = pThis->GetCoords();
+		TacticalClass::Instance->SetTacticalPosition(&coords);
+	}
+
+	Debug::LogAndMessage("TechnoClass::GetZAdjustment: Found a Techno [%s] in Tether state without any RadioLink! Skip processing.\n",
+		pThis->get_ID());
 
 	return SkipGameCode;
 }
@@ -2184,8 +2215,17 @@ DEFINE_HOOK(0x73B0C5, UnitClass_DrawIfVisible_LogTetherButNoLink, 0x6)
 
 	GET(TechnoClass* const, pThis, EDI);
 
-	Debug::LogAndMessage("UnitClass::DrawIfVisible: Found a Unit [%s](0x%X) in Tether state without any RadioLink! Skip processing.\n",
-		pThis->get_ID(), reinterpret_cast<DWORD>(pThis));
+	if (SessionClass::IsSingleplayer())
+	{
+		if (Phobos::Config::DevelopmentCommands)
+			FrameByFrameCommandClass::FrameStep = true;
+
+		auto coords = pThis->GetCoords();
+		TacticalClass::Instance->SetTacticalPosition(&coords);
+	}
+
+	Debug::LogAndMessage("UnitClass::DrawIfVisible: Found a Unit [%s] in Tether state without any RadioLink! Skip processing.\n",
+		pThis->get_ID());
 
 	return SkipGameCode;
 }
@@ -2201,8 +2241,17 @@ DEFINE_HOOK(0x7410D6, UnitClass_GetFireError_LogTetherButNoLink, 0x7)
 
 	GET(TechnoClass* const, pThis, ESI);
 
-	Debug::LogAndMessage("UnitClass::GetFireError: Found a Techno [%s](0x%X) in Tether state without any RadioLink! Skip processing.\n",
-		pThis->get_ID(), reinterpret_cast<DWORD>(pThis));
+	if (SessionClass::IsSingleplayer())
+	{
+		if (Phobos::Config::DevelopmentCommands)
+			FrameByFrameCommandClass::FrameStep = true;
+
+		auto coords = pThis->GetCoords();
+		TacticalClass::Instance->SetTacticalPosition(&coords);
+	}
+
+	Debug::LogAndMessage("UnitClass::GetFireError: Found a Unit [%s] in Tether state without any RadioLink! Skip processing.\n",
+		pThis->get_ID());
 
 	return SkipGameCode;
 }
