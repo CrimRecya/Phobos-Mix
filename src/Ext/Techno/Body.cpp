@@ -28,6 +28,7 @@ TechnoExt::ExtData::~ExtData()
 	auto const pTypeExt = this->TypeExtData;
 	auto const pType = pTypeExt->OwnerObject();
 	auto const pThis = this->OwnerObject();
+	// Besides BuildingClass, calling pThis->WhatAmI() here will only result in AbstractType::None
 	auto const whatAmI = pType->WhatAmI();
 
 	if (whatAmI == AbstractType::UnitType)
