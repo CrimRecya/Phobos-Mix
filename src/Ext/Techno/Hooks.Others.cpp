@@ -2116,8 +2116,9 @@ DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x9)
 	enum { Continue = 0x6F9C89, NextOne = 0x6F9D93 };
 
 	GET(TechnoClass* const, pThis, ESI);
+	GET(int, index, EBX);
 
-	auto pTechno = TechnoClass::Array.Items[R->EBX<int>()];
+	auto pTechno = TechnoClass::Array.Items[index];
 
 	if (pTechno->IsDead())
 	{
@@ -2132,6 +2133,14 @@ DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x9)
 
 			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X) with dirty vtable in TechnoArray!\n",
 				reinterpret_cast<DWORD>(pTechno));
+
+			TechnoClass::Array.RemoveItem(index);
+			R->EBX(index - 1);
+		}
+		else
+		{
+			Debug::Log("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X)[%s]at(%d,%d) in TechnoArray!\n",
+				reinterpret_cast<DWORD>(pTechno), pTechno->get_ID(), (pThis->Location.X / 256), (pThis->Location.Y / 256));
 		}
 
 		return NextOne;
@@ -2162,6 +2171,20 @@ DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
 
 			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X) with dirty vtable in AircraftTracker!\n",
 				reinterpret_cast<DWORD>(pTechno));
+
+			for (int i = 0; i < 20; ++i)
+			{
+				for (int j = 0; j < 20; ++j)
+				{
+					if (AircraftTrackerClass::Instance.TrackerVectors[i][j].Remove(pTechno))
+						return NextOne;
+				}
+			}
+		}
+		else
+		{
+			Debug::Log("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X)[%s]at(%d,%d) in AircraftTracker!\n",
+				reinterpret_cast<DWORD>(pTechno), pTechno->get_ID(), (pThis->Location.X / 256), (pThis->Location.Y / 256));
 		}
 
 		return NextOne;
