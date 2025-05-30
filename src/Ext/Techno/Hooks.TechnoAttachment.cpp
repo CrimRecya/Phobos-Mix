@@ -145,10 +145,39 @@ void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte&
 	auto& pIncoming = isAlt ? pCellExt->IncomingUnitAlt : pCellExt->IncomingUnit;
 
 	// Non-occupiers shouldn't be inserted as incoming units anyways so don't check that
-	if (pIncoming && pIncoming != pThis && !TechnoExt::IsChildOf(pIncoming, pThis))
+	if (pIncoming)
 	{
-		occupyFlags |= TechnoAttachmentTemp::storedVehicleFlag;
-		isVehicleFlagSet = (occupyFlags & 0x20) != 0;
+		const unsigned int addr = VTable::Get(pIncoming);
+
+		if (addr != 0x7F5C70) // UnitClass::AbsVTable
+		{
+			if (addr != 0x7E1F50) // AbstractClass::AbsVTable
+			{
+				if (SessionClass::IsSingleplayer())
+				{
+					if (Phobos::Config::DevelopmentCommands)
+						FrameByFrameCommandClass::FrameStep = true;
+
+					auto coords = into->GetCoords();
+					TacticalClass::Instance->SetTacticalPosition(&coords);
+				}
+
+				const auto& pIncomingType = isAlt ? pCellExt->IncomingUnitAltType : pCellExt->IncomingUnitType;
+				const char* pName = pIncomingType ? pIncomingType->get_ID() : "N/A";
+				Debug::LogAndMessage("FootClass::IsCellOccupied: Found InvalidUnit [%s] at(%d,%d) with dirty vtable in moving check!\n",
+					pName, into->MapCoords.X, into->MapCoords.Y);
+
+				pIncoming = nullptr;
+			}
+
+			return;
+		}
+
+		if (pIncoming != pThis && !TechnoExt::IsChildOf(pIncoming, pThis))
+		{
+			occupyFlags |= TechnoAttachmentTemp::storedVehicleFlag;
+			isVehicleFlagSet = (occupyFlags & 0x20) != 0;
+		}
 	}
 }
 

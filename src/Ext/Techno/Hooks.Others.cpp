@@ -2132,16 +2132,16 @@ DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x9)
 				TacticalClass::Instance->SetTacticalPosition(&coords);
 			}
 
-			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%X) with dirty vtable in TechnoArray!\n",
+			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X) with dirty vtable in TechnoArray!\n",
 				reinterpret_cast<DWORD>(pTechno));
 		}
 
-		return NextOne; // next
+		return NextOne;
 	}
 
 	R->ECX(pThis->Owner);
 	R->EDI(pTechno);
-	return Continue;//contunye
+	return Continue;
 }
 
 DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
@@ -2164,11 +2164,11 @@ DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
 				TacticalClass::Instance->SetTacticalPosition(&coords);
 			}
 
-			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%X) with dirty vtable in AircraftTracker!\n",
+			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X) with dirty vtable in AircraftTracker!\n",
 				reinterpret_cast<DWORD>(pTechno));
 		}
 
-		return NextOne; // next
+		return NextOne;
 	}
 
 	return 0;

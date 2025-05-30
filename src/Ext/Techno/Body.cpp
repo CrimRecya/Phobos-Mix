@@ -30,22 +30,30 @@ TechnoExt::ExtData::~ExtData()
 	auto const pThis = this->OwnerObject();
 	auto const whatAmI = pThis->WhatAmI();
 
-	// Destroyed while crushing, it seems unable to remove occupation bits correctly
-	if (auto const pCell = this->OccupyingCell)
+	if (whatAmI == AbstractType::Unit)
 	{
-		auto const pCellExt = CellExt::ExtMap.Find(pCell);
+		auto invalidateCellPointer = [pThis](CellClass* pCell)
+			{
+				auto const pCellExt = CellExt::ExtMap.Find(pCell);
 
-		if (pCellExt->IncomingUnitAlt == pThis)
-		{
-			pCellExt->IncomingUnitAlt = nullptr;
-			pCell->AltOccupationFlags &= ~0x20;
-		}
+				if (pCellExt->IncomingUnitAlt == pThis)
+				{
+					pCellExt->IncomingUnitAlt = nullptr;
+					pCell->AltOccupationFlags &= ~0x20;
+				}
 
-		if (pCellExt->IncomingUnit == pThis)
-		{
-			pCellExt->IncomingUnit = nullptr;
-			pCell->OccupationFlags &= ~0x20;
-		}
+				if (pCellExt->IncomingUnit == pThis)
+				{
+					pCellExt->IncomingUnit = nullptr;
+					pCell->OccupationFlags &= ~0x20;
+				}
+			};
+
+		if (auto const pCell = MapClass::Instance.TryGetCellAt(static_cast<UnitClass*>(pThis)->LastMapCoords))
+			invalidateCellPointer(pCell);
+
+		if (auto const pCell = MapClass::Instance.TryGetCellAt(pThis->Location))
+			invalidateCellPointer(pCell);
 	}
 
 	if (pTypeExt->AutoDeath_Behavior.isset())
@@ -1325,7 +1333,6 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->TrackingLasersTargetingMe)
 		.Process(this->ParentAttachment)
 		.Process(this->ChildAttachments)
-		.Process(this->OccupyingCell)
 		.Process(this->AltOccupation)
 		;
 }

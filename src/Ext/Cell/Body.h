@@ -34,15 +34,21 @@ public:
 	class ExtData final : public Extension<CellClass>
 	{
 	public:
-		std::vector<RadSiteClass*> RadSites {};
-		std::vector<RadLevel> RadLevels { };
+		std::vector<RadSiteClass*> RadSites;
+		std::vector<RadLevel> RadLevels;
 
 		UnitClass* IncomingUnit;
+		UnitTypeClass* IncomingUnitType;
 		UnitClass* IncomingUnitAlt;
+		UnitTypeClass* IncomingUnitAltType;
 
 		ExtData(CellClass* OwnerObject) : Extension<CellClass>(OwnerObject)
-			, IncomingUnit()
-			, IncomingUnitAlt()
+			, RadSites {}
+			, RadLevels {}
+			, IncomingUnit { nullptr }
+			, IncomingUnitType { nullptr }
+			, IncomingUnitAlt { nullptr }
+			, IncomingUnitAltType { nullptr }
 		{ }
 
 		virtual ~ExtData() = default;

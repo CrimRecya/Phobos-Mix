@@ -112,7 +112,6 @@ public:
 
 		AttachmentClass* ParentAttachment;
 		std::vector<std::unique_ptr<AttachmentClass>> ChildAttachments;
-		CellClass* OccupyingCell;
 		// Ares
 		std::optional<bool> AltOccupation; // if the unit marks cell occupation flags, this is set to whether it uses the "high" occupation members
 
@@ -194,7 +193,6 @@ public:
 			, TrackingLasersTargetingMe { }
 			, ParentAttachment { nullptr }
 			, ChildAttachments {}
-			, OccupyingCell { nullptr }
 			, AltOccupation {}
 		{ }
 
