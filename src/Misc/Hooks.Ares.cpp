@@ -27,7 +27,7 @@ void __fastcall LetGo(TemporalClass* pTemporal)
 	pTemporal->LetGo();
 }
 
-void __stdcall ConvertToType(TechnoClass* pThis,TechnoTypeClass* pToType)
+void __stdcall ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 {
 	TechnoExt::ConvertToType(pThis, pToType);
 }

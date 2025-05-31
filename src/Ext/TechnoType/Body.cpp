@@ -1,5 +1,6 @@
 #include "Body.h"
 
+#include <AircraftClass.h>
 #include <AircraftTrackerClass.h>
 #include <AnimClass.h>
 #include <FlyLocomotionClass.h>
@@ -7,10 +8,12 @@
 #include <TechnoTypeClass.h>
 #include <StringTable.h>
 #include <EventClass.h>
+#include <OverlayTypeClass.h>
 
 #include <Ext/Anim/Body.h>
 #include <Ext/BuildingType/Body.h>
 #include <Ext/BulletType/Body.h>
+#include <Ext/WarheadType/Body.h>
 #include <Ext/Techno/Body.h>
 #include <Ext/House/Body.h>
 #include <New/Type/InsigniaTypeClass.h>
@@ -19,6 +22,7 @@
 #include <Utilities/AresFunctions.h>
 
 TechnoTypeExt::ExtContainer TechnoTypeExt::ExtMap;
+bool TechnoTypeExt::SelectWeaponMutex = false;
 
 void TechnoTypeExt::ExtData::Initialize()
 {
@@ -34,6 +38,381 @@ void TechnoTypeExt::ExtData::ApplyTurretOffset(Matrix3D* mtx, double factor, int
 	float z = static_cast<float>(offset->Z * factor);
 
 	mtx->Translate(x, y, z);
+}
+
+bool TechnoTypeExt::ExtData::IsSecondary(const int weaponIndex)
+{
+	if (this->OwnerObject()->IsGattling)
+		return weaponIndex != 0 && (weaponIndex % 2) != 0;
+
+	if (this->MultiWeapon.Get())
+		return this->MultiWeapon_IsSecondary[weaponIndex];
+
+	return weaponIndex != 0;
+}
+
+bool TechnoTypeExt::CheckMultiWeapon(TechnoClass* pThis, AbstractClass* pTarget, CellClass* pTargetCell, WeaponTypeClass* pWeapon)
+{
+	if (!pWeapon || pWeapon->NeverUse || (pThis->InOpenToppedTransport && !pWeapon->FireInTransport))
+		return false;
+
+	const auto pWH = pWeapon->Warhead;
+	const auto whatAmI = pTarget->WhatAmI();
+	const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
+
+	if (pTargetCell && !EnumFunctions::IsCellEligible(pTargetCell, pWeaponExt->CanTarget, true, true))
+		return false;
+
+	if (const auto pTargetTechno = abstract_cast<TechnoClass*, true>(pTarget))
+	{
+		const auto pBulletTypeExt = BulletTypeExt::ExtMap.Find(pWeapon->Projectile);
+
+		if (pTarget->IsInAir() ? !pWeapon->Projectile->AA : pBulletTypeExt->AAOnly.Get())
+			return false;
+
+		if (pTargetTechno->InWhichLayer() == Layer::Underground && !pBulletTypeExt->AU)
+			return false;
+
+		const auto pFirerHouse = pThis->Owner;
+		const auto pTargetHouse = pTargetTechno->Owner;
+
+		if (!EnumFunctions::CanTargetHouse(pWeaponExt->CanTargetHouses, pFirerHouse, pTargetHouse))
+			return false;
+
+		if (pTargetTechno->AttachedBomb ? pWH->IvanBomb : pWH->BombDisarm)
+			return false;
+
+		const auto pTargetTechnoType = pTargetTechno->GetTechnoType();
+
+		if (whatAmI == AbstractType::Building)
+		{
+			if (pWH->IsLocomotor || pWH->Parasite)
+				return false;
+
+			if (pWH->ElectricAssault && (!pFirerHouse->IsAlliedWith(pTargetHouse) || !static_cast<BuildingTypeClass*>(pTargetTechnoType)->Overpowerable))
+				return false;
+
+			if (pWH->Airstrike)
+			{
+				if (!EnumFunctions::IsTechnoEligible(pTargetTechno, WarheadTypeExt::ExtMap.Find(pWH)->AirstrikeTargets))
+					return false;
+
+				if (!TechnoTypeExt::ExtMap.Find(pTargetTechnoType)->AllowAirstrike.Get(static_cast<BuildingTypeClass*>(pTargetTechnoType)->CanC4))
+					return false;
+			}
+		}
+		else
+		{
+			if (pWH->IsLocomotor && pTargetTechnoType->Organic)
+				return false;
+
+			if (pWH->Parasite && static_cast<FootClass*>(pTargetTechno)->ParasiteEatingMe)
+				return false;
+
+			if (pWH->Airstrike)
+			{
+				if (!EnumFunctions::IsTechnoEligible(pTargetTechno, WarheadTypeExt::ExtMap.Find(pWH)->AirstrikeTargets))
+					return false;
+
+				if (!TechnoTypeExt::ExtMap.Find(pTargetTechnoType)->AllowAirstrike.Get(true))
+					return false;
+			}
+		}
+
+		if (pWH->Psychedelic && (pTargetTechno->BunkerLinkedItem || pTargetTechnoType->ImmuneToPsionics))
+			return false;
+
+		if (pWH->MindControl && (pTargetTechnoType->ImmuneToPsionics || pTargetTechno->IsMindControlled() || pFirerHouse == pTargetHouse))
+			return false;
+
+		if (!pWH->Temporal && pTargetTechno->BeingWarpedOut)
+			return false;
+
+		if (pWeapon->DrainWeapon && (!pTargetTechnoType->Drainable || (pTargetTechno->DrainingMe || pFirerHouse->IsAlliedWith(pTargetHouse))))
+			return false;
+
+		if (!EnumFunctions::IsTechnoEligible(pTargetTechno, pWeaponExt->CanTarget))
+			return false;
+
+		if (!pWeaponExt->HasRequiredAttachedEffects(pTargetTechno, pThis))
+			return false;
+
+		auto armorType = pTargetTechnoType->Armor;
+		const auto pShield = TechnoExt::ExtMap.Find(pTargetTechno)->Shield.get();
+
+		if (pShield && pShield->IsActive() && !pShield->CanBePenetrated(pWH))
+			armorType = pShield->GetArmorType();
+
+		if (GeneralUtils::GetWarheadVersusArmor(pWH, armorType) == 0.0)
+			return false;
+	}
+	else
+	{
+		if (whatAmI == AbstractType::Terrain)
+		{
+			if (!pWH->Wood)
+				return false;
+		}
+		else if (whatAmI == AbstractType::Cell)
+		{
+			const int overlayTypeIndex = static_cast<CellClass*>(pTarget)->OverlayTypeIndex;
+
+			if (overlayTypeIndex != -1)
+			{
+				auto const pOverlayType = OverlayTypeClass::Array.GetItem(overlayTypeIndex);
+
+				if (pOverlayType->Wall && !pWH->Wall && (!pWH->Wood || pOverlayType->Armor != Armor::Wood))
+					return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass* pTarget)
+{
+	if (!pTarget || !this->MultiWeapon.Get())
+		return -1;
+
+	const auto pType = this->OwnerObject();
+
+	if (pType->HasMultipleTurrets()
+		&& pThis->WhatAmI() == AbstractType::Unit
+		&& (pType->IsGattling || pType->Gunner))
+	{
+		return -1;
+	}
+
+	const int weaponCount = Math::min(pType->WeaponCount, this->MultiWeapon_SelectCount.Get());
+
+	if (weaponCount < 2)
+		return 0;
+
+	const bool isElite = pThis->Veterancy.IsElite();
+	CellClass* pTargetCell = nullptr;
+
+	// Ignore target cell for airborne and underground target technos.
+	const auto pTargetTechno = abstract_cast<TechnoClass*, true>(pTarget);
+	bool isAllies = false;
+
+	if (pTargetTechno)
+	{
+		if (!pTargetTechno->IsAlive
+			|| !pTargetTechno->IsOnMap
+			|| pTargetTechno->Health <= 0
+			|| pTargetTechno->InLimbo
+			|| pTargetTechno->IsSinking)
+		{
+			return -1;
+		}
+
+		isAllies = pThis->Owner->IsAlliedWith(pTargetTechno->Owner);
+	}
+
+	if (!pTargetTechno || (!pTargetTechno->IsInAir() && pTargetTechno->InWhichLayer() != Layer::Underground))
+	{
+		if (const auto pCell = abstract_cast<CellClass*, true>(pTarget))
+			pTargetCell = pCell;
+		else if (const auto pObject = abstract_cast<ObjectClass*, true>(pTarget))
+			pTargetCell = pObject->GetCell();
+	}
+
+	int primaryWeaponIndex = 0;
+	bool checkedPrimary = false;
+
+	for (int i = 0; i < weaponCount; ++i)
+	{
+		const bool isSecondary = this->MultiWeapon_IsSecondary[i];
+
+		if (checkedPrimary && !isSecondary)
+			continue;
+
+		const auto pWeapon = pType->GetWeapon(i, isElite).WeaponType;
+
+		if (!TechnoTypeExt::CheckMultiWeapon(pThis, pTarget, pTargetCell, pWeapon))
+		{
+			if (checkedPrimary)
+				break;
+
+			continue;
+		}
+
+		if (!isSecondary)
+		{
+			primaryWeaponIndex = i;
+			checkedPrimary = true;
+			continue;
+		}
+
+		if (!checkedPrimary)
+			return i;
+
+		const auto pWH = pWeapon->Warhead;
+		const auto targetAbsType = pTarget->WhatAmI();
+		const bool isBuilding = targetAbsType == AbstractType::Building;
+
+		if (pWH->Airstrike)
+		{
+			if (!isBuilding)
+				return i;
+
+			const auto pTargetBuildingType = static_cast<BuildingClass*>(pTargetTechno)->Type;
+
+			if (!pTargetBuildingType->ResourceDestination || !pTargetBuildingType->ResourceGatherer)
+				return i;
+		}
+
+		if (isBuilding && pType->GetWeapon(primaryWeaponIndex, isElite).WeaponType->Warhead->IsLocomotor)
+			return i;
+
+		if (pWeapon->DrainWeapon && !pThis->DrainTarget)
+			return i;
+
+		if (pWeapon->AreaFire && pThis->GetCurrentMission() == Mission::Unload)
+			return i;
+
+		if (pWH->ElectricAssault)
+			return i;
+
+		const auto thisAbsType = pThis->WhatAmI();
+
+		if (thisAbsType == AbstractType::Building)
+		{
+			if (static_cast<BuildingClass*>(pThis)->IsOverpowered)
+				return i;
+		}
+		else if (thisAbsType == AbstractType::Aircraft)
+		{
+			if (static_cast<AircraftClass*>(pThis)->IsKamikaze)
+				return i;
+		}
+
+		const auto pThisType = pThis->GetTechnoType();
+
+		if (targetAbsType == AbstractType::Cell
+			&& pThisType->LandTargeting == LandTargetingType::Land_Secondary
+			&& (pTargetCell->LandType != LandType::Water && pTargetCell->IsOnFloor())
+				|| (pTargetCell->ContainsBridge() && pThisType->Naval))
+		{
+			return i;
+		}
+
+		if (pTargetTechno)
+		{
+			if (pTargetTechno->IsInAir())
+				return i;
+
+			if (!pTargetTechno->OnBridge)
+			{
+				const auto landType = pTargetCell->LandType;
+
+				if (landType == LandType::Water || landType == LandType::Beach)
+					return (pThis->SelectNavalTargeting(pTargetTechno) == 1) ? i : primaryWeaponIndex;
+			}
+
+			if (pThisType->LandTargeting == LandTargetingType::Land_Secondary)
+				return i;
+		}
+
+		break;
+	}
+
+	return primaryWeaponIndex;
+}
+
+int TechnoTypeExt::ExtData::SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget)
+{
+	if (TechnoTypeExt::SelectWeaponMutex)
+		return -1;
+
+	const auto pTargetTechno = abstract_cast<TechnoClass*>(pTarget);
+
+	if (!pTargetTechno)
+		return -1;
+
+	const auto pTargetType = pTargetTechno->GetTechnoType();
+	int forceWeaponIndex = -1;
+
+	if (this->ForceWeapon_Naval_Decloaked >= 0
+		&& pTargetType->Cloakable
+		&& pTargetType->Naval
+		&& pTargetTechno->CloakState == CloakState::Uncloaked)
+	{
+		forceWeaponIndex = this->ForceWeapon_Naval_Decloaked;
+	}
+	else if (this->ForceWeapon_Cloaked >= 0
+		&& pTargetTechno->CloakState == CloakState::Cloaked)
+	{
+		forceWeaponIndex = this->ForceWeapon_Cloaked;
+	}
+	else if (this->ForceWeapon_Disguised >= 0
+		&& pTargetTechno->IsDisguised())
+	{
+		forceWeaponIndex = this->ForceWeapon_Disguised;
+	}
+	else if (this->ForceWeapon_UnderEMP >= 0
+		&& pTargetTechno->IsUnderEMP())
+	{
+		forceWeaponIndex = this->ForceWeapon_UnderEMP;
+	}
+	else if (!this->ForceWeapon_InRange.empty()
+		|| !this->ForceAAWeapon_InRange.empty())
+	{
+		TechnoTypeExt::SelectWeaponMutex = true;
+		forceWeaponIndex = TechnoExt::ExtMap.Find(pThis)->ApplyForceWeaponInRange(pTargetTechno);
+		TechnoTypeExt::SelectWeaponMutex = false;
+	}
+	else
+	{
+		switch (pTarget->WhatAmI())
+		{
+			case AbstractType::Building:
+			{
+				forceWeaponIndex = (this->ForceWeapon_Defenses >= 0
+					&& static_cast<BuildingTypeClass*>(pTargetType)->BuildCat == BuildCat::Combat)
+					? this->ForceWeapon_Defenses
+					: this->ForceWeapon_Buildings;
+
+				break;
+			}
+			case AbstractType::Infantry:
+			{
+				forceWeaponIndex = (this->ForceAAWeapon_Infantry >= 0
+					&& pTarget->IsInAir())
+					? this->ForceAAWeapon_Infantry
+					: this->ForceWeapon_Infantry;
+
+				break;
+			}
+			case AbstractType::Unit:
+			{
+				forceWeaponIndex = (this->ForceAAWeapon_Units >= 0
+					&& pTarget->IsInAir())
+					? this->ForceAAWeapon_Units
+					: (pTargetType->Naval
+						? this->ForceWeapon_Naval
+						: this->ForceWeapon_Units);
+
+				break;
+			}
+			case AbstractType::Aircraft:
+			{
+				forceWeaponIndex = (this->ForceAAWeapon_Aircraft >= 0
+					&& pTarget->IsInAir())
+					? this->ForceAAWeapon_Aircraft
+					: this->ForceWeapon_Aircraft;
+
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
+	}
+
+	return forceWeaponIndex;
 }
 
 // Ares 0.A source
@@ -63,7 +442,7 @@ void TechnoTypeExt::ExtData::ParseBurstFLHs(INI_EX& exArtINI, const char* pArtSe
 	char tempBuffer[32];
 	char tempBufferFLH[48];
 	auto pThis = this->OwnerObject();
-	bool parseMultiWeapons = pThis->TurretCount > 0 && pThis->WeaponCount > 0;
+	bool parseMultiWeapons = this->MultiWeapon.Get() || (pThis->TurretCount > 0 && pThis->WeaponCount > 0);
 	auto weaponCount = parseMultiWeapons ? pThis->WeaponCount : 2;
 	nFLH.resize(weaponCount);
 	nEFlh.resize(weaponCount);
@@ -665,6 +1044,16 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->ForceAAWeapon_InRange.Read(exINI, pSection, "ForceAAWeapon.InRange");
 	this->ForceAAWeapon_InRange_Overrides.Read(exINI, pSection, "ForceAAWeapon.InRange.Overrides");
 	this->ForceAAWeapon_InRange_ApplyRangeModifiers.Read(exINI, pSection, "ForceAAWeapon.InRange.ApplyRangeModifiers");
+	this->ForceWeapon_Naval.Read(exINI, pSection, "ForceWeapon.Naval");
+	this->ForceWeapon_Buildings.Read(exINI, pSection, "ForceWeapon.Buildings");
+	this->ForceWeapon_Defenses.Read(exINI, pSection, "ForceWeapon.Defenses");
+	this->ForceWeapon_Infantry.Read(exINI, pSection, "ForceWeapon.Infantry");
+	this->ForceWeapon_Units.Read(exINI, pSection, "ForceWeapon.Units");
+	this->ForceWeapon_Aircraft.Read(exINI, pSection, "ForceWeapon.Aircraft");
+	this->ForceAAWeapon_Infantry.Read(exINI, pSection, "ForceAAWeapon.Infantry");
+	this->ForceAAWeapon_Units.Read(exINI, pSection, "ForceAAWeapon.Units");
+	this->ForceAAWeapon_Aircraft.Read(exINI, pSection, "ForceAAWeapon.Aircraft");
+
 	this->Ammo_Shared.Read(exINI, pSection, "Ammo.Shared");
 	this->Ammo_Shared_Group.Read(exINI, pSection, "Ammo.Shared.Group");
 	this->SelfHealGainType.Read(exINI, pSection, "SelfHealGainType");
@@ -1404,6 +1793,16 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->ForceAAWeapon_InRange)
 		.Process(this->ForceAAWeapon_InRange_Overrides)
 		.Process(this->ForceAAWeapon_InRange_ApplyRangeModifiers)
+		.Process(this->ForceWeapon_Naval)
+		.Process(this->ForceWeapon_Buildings)
+		.Process(this->ForceWeapon_Defenses)
+		.Process(this->ForceWeapon_Infantry)
+		.Process(this->ForceWeapon_Units)
+		.Process(this->ForceWeapon_Aircraft)
+		.Process(this->ForceAAWeapon_Infantry)
+		.Process(this->ForceAAWeapon_Units)
+		.Process(this->ForceAAWeapon_Aircraft)
+
 		.Process(this->Ammo_Shared)
 		.Process(this->Ammo_Shared_Group)
 		.Process(this->SelfHealGainType)
@@ -1739,6 +2138,11 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->FallingDownDamage)
 		.Process(this->FallingDownDamage_Water)
+
+		.Process(this->MultiWeapon)
+		.Process(this->MultiWeapon_SelectCount)
+		.Process(this->MultiWeapon_IsSecondary)
+		.Process(this->ReadMultiWeapon)
 		;
 }
 

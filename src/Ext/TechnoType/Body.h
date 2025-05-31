@@ -190,6 +190,15 @@ public:
 		ValueableVector<int> ForceAAWeapon_InRange;
 		ValueableVector<double> ForceAAWeapon_InRange_Overrides;
 		Valueable<bool> ForceAAWeapon_InRange_ApplyRangeModifiers;
+		Valueable<int> ForceWeapon_Naval;
+		Valueable<int> ForceWeapon_Buildings;
+		Valueable<int> ForceWeapon_Defenses;
+		Valueable<int> ForceWeapon_Infantry;
+		Valueable<int> ForceWeapon_Units;
+		Valueable<int> ForceWeapon_Aircraft;
+		Valueable<int> ForceAAWeapon_Infantry;
+		Valueable<int> ForceAAWeapon_Units;
+		Valueable<int> ForceAAWeapon_Aircraft;
 
 		Valueable<bool> Ammo_Shared;
 		Valueable<int> Ammo_Shared_Group;
@@ -532,6 +541,11 @@ public:
 		Valueable<double> FallingDownDamage;
 		Nullable<double> FallingDownDamage_Water;
 
+		Valueable<bool> MultiWeapon;
+		Valueable<int> MultiWeapon_SelectCount;
+		ValueableVector<bool> MultiWeapon_IsSecondary;
+		bool ReadMultiWeapon;
+
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
 			, UIDescription {}
@@ -682,6 +696,15 @@ public:
 			, ForceAAWeapon_InRange {}
 			, ForceAAWeapon_InRange_Overrides {}
 			, ForceAAWeapon_InRange_ApplyRangeModifiers { false }
+			, ForceWeapon_Naval { -1 }
+			, ForceWeapon_Buildings { -1 }
+			, ForceWeapon_Defenses { -1 }
+			, ForceWeapon_Infantry { -1 }
+			, ForceWeapon_Units { -1 }
+			, ForceWeapon_Aircraft { -1 }
+			, ForceAAWeapon_Infantry { -1 }
+			, ForceAAWeapon_Units { -1 }
+			, ForceAAWeapon_Aircraft { -1 }
 
 			, Ammo_Shared { false }
 			, Ammo_Shared_Group { -1 }
@@ -1014,6 +1037,11 @@ public:
 
 			, FallingDownDamage { 1.0 }
 			, FallingDownDamage_Water {}
+
+			, MultiWeapon { false }
+			, MultiWeapon_SelectCount { 2 }
+			, MultiWeapon_IsSecondary {}
+			, ReadMultiWeapon { false }
 		{ }
 
 		virtual ~ExtData() = default;
@@ -1030,6 +1058,10 @@ public:
 		void SetTurretLimitedDir(FootClass* pThis, DirStruct desiredDir);
 		short GetTurretLimitedRaw(short currentDirectionRaw);
 		DirStruct GetBodyDesiredDir(DirStruct currentDir, DirStruct defaultDir);
+
+		bool IsSecondary(const int weaponIndex);
+		int SelectMultiWeapon(TechnoClass* pThis, AbstractClass* pTarget);
+		int SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget);
 
 		// Ares 0.A
 		const char* GetSelectionGroupID() const;
@@ -1050,7 +1082,7 @@ public:
 	};
 
 	static ExtContainer ExtMap;
-
+	static bool SelectWeaponMutex;
 	static constexpr double AngleToRaw = (65536.0 / 360);
 
 	static void ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor = 1.0, int turIdx = -1);
@@ -1058,6 +1090,8 @@ public:
 
 	static TechnoClass* CreateUnit(CreateUnitTypeClass* pCreateUnit, DirType facing, DirType* secondaryFacing,
 	CoordStruct location, HouseClass* pOwner, TechnoClass* pInvoker, HouseClass* pInvokerHouse);
+
+	static bool CheckMultiWeapon(TechnoClass* pThis, AbstractClass* pTarget, CellClass* pTargetCell, WeaponTypeClass* pWeapon);
 
 	static int __fastcall RequirementsMetExtraCheck(void* pAresHouseExt, discard_t _, TechnoTypeClass* pType);
 	static CanBuildResult CheckAlwaysExistCameo(TechnoTypeClass* pType, CanBuildResult canBuild);
