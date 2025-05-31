@@ -93,28 +93,30 @@ DEFINE_HOOK(0x6F3428, TechnoClass_WhatWeaponShouldIUse_ForceWeapon, 0x6)
 		auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
 		auto const pTargetType = pTargetTechno->GetTechnoType();
 
-		if (pTypeExt->ForceWeapon_Naval_Decloaked >= 0 &&
-			pTargetType->Cloakable && pTargetType->Naval &&
-			pTargetTechno->CloakState == CloakState::Uncloaked)
+		if (pTypeExt->ForceWeapon_Naval_Decloaked >= 0
+			&& pTargetType->Cloakable
+			&& pTargetType->Naval
+			&& pTargetTechno->CloakState == CloakState::Uncloaked)
 		{
 			forceWeaponIndex = pTypeExt->ForceWeapon_Naval_Decloaked;
 		}
-		else if (pTypeExt->ForceWeapon_Cloaked >= 0 &&
-			pTargetTechno->CloakState == CloakState::Cloaked)
+		else if (pTypeExt->ForceWeapon_Cloaked >= 0
+			&& pTargetTechno->CloakState == CloakState::Cloaked)
 		{
 			forceWeaponIndex = pTypeExt->ForceWeapon_Cloaked;
 		}
-		else if (pTypeExt->ForceWeapon_Disguised >= 0 &&
-			pTargetTechno->IsDisguised())
+		else if (pTypeExt->ForceWeapon_Disguised >= 0
+			&& pTargetTechno->IsDisguised())
 		{
 			forceWeaponIndex = pTypeExt->ForceWeapon_Disguised;
 		}
-		else if (pTypeExt->ForceWeapon_UnderEMP >= 0 &&
-			pTargetTechno->IsUnderEMP())
+		else if (pTypeExt->ForceWeapon_UnderEMP >= 0
+			&& pTargetTechno->IsUnderEMP())
 		{
 			forceWeaponIndex = pTypeExt->ForceWeapon_UnderEMP;
 		}
-		else if (!pTypeExt->ForceWeapon_InRange.empty() || !pTypeExt->ForceAAWeapon_InRange.empty())
+		else if (!pTypeExt->ForceWeapon_InRange.empty()
+			|| !pTypeExt->ForceAAWeapon_InRange.empty())
 		{
 			ForceWeaponInRangeTemp::SelectWeaponByRange = true;
 			forceWeaponIndex = TechnoExt::ExtMap.Find(pThis)->ApplyForceWeaponInRange(pTargetTechno);
@@ -357,8 +359,8 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 
 		if (pTechno)
 		{
-			if (!EnumFunctions::IsTechnoEligible(pTechno, pWeaponExt->CanTarget) ||
-				!EnumFunctions::CanTargetHouse(pWeaponExt->CanTargetHouses, pThis->Owner, pTechno->Owner))
+			if (!EnumFunctions::IsTechnoEligible(pTechno, pWeaponExt->CanTarget)
+				|| !EnumFunctions::CanTargetHouse(pWeaponExt->CanTargetHouses, pThis->Owner, pTechno->Owner))
 			{
 				return CannotFire;
 			}
