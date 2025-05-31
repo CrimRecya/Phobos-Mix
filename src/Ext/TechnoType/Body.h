@@ -180,6 +180,8 @@ public:
 		Valueable<bool> DeployingAnim_UseUnitDrawer;
 
 		Valueable<CSFText> EnemyUIName;
+
+		bool ForceWeapon_Check;
 		Valueable<int> ForceWeapon_Naval_Decloaked;
 		Valueable<int> ForceWeapon_Cloaked;
 		Valueable<int> ForceWeapon_Disguised;
@@ -190,11 +192,11 @@ public:
 		ValueableVector<int> ForceAAWeapon_InRange;
 		ValueableVector<double> ForceAAWeapon_InRange_Overrides;
 		Valueable<bool> ForceAAWeapon_InRange_ApplyRangeModifiers;
-		Valueable<int> ForceWeapon_Naval;
 		Valueable<int> ForceWeapon_Buildings;
 		Valueable<int> ForceWeapon_Defenses;
 		Valueable<int> ForceWeapon_Infantry;
 		Valueable<int> ForceWeapon_Units;
+		Valueable<int> ForceWeapon_Naval;
 		Valueable<int> ForceWeapon_Aircraft;
 		Valueable<int> ForceAAWeapon_Infantry;
 		Valueable<int> ForceAAWeapon_Units;
@@ -686,6 +688,7 @@ public:
 			, VoiceCreated {}
 			, VoicePickup {}
 
+			, ForceWeapon_Check { false }
 			, ForceWeapon_Naval_Decloaked { -1 }
 			, ForceWeapon_Cloaked { -1 }
 			, ForceWeapon_Disguised { -1 }
@@ -696,11 +699,11 @@ public:
 			, ForceAAWeapon_InRange {}
 			, ForceAAWeapon_InRange_Overrides {}
 			, ForceAAWeapon_InRange_ApplyRangeModifiers { false }
-			, ForceWeapon_Naval { -1 }
 			, ForceWeapon_Buildings { -1 }
 			, ForceWeapon_Defenses { -1 }
 			, ForceWeapon_Infantry { -1 }
 			, ForceWeapon_Units { -1 }
+			, ForceWeapon_Naval { -1 }
 			, ForceWeapon_Aircraft { -1 }
 			, ForceAAWeapon_Infantry { -1 }
 			, ForceAAWeapon_Units { -1 }

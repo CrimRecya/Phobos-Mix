@@ -323,7 +323,7 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 
 int TechnoTypeExt::ExtData::SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget)
 {
-	if (TechnoTypeExt::SelectWeaponMutex)
+	if (TechnoTypeExt::SelectWeaponMutex || !this->ForceWeapon_Check)
 		return -1;
 
 	const auto pTargetTechno = abstract_cast<TechnoClass*>(pTarget);
@@ -1034,6 +1034,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->DeployingAnim_UseUnitDrawer.Read(exINI, pSection, "DeployingAnim.UseUnitDrawer");
 
 	this->EnemyUIName.Read(exINI, pSection, "EnemyUIName");
+
 	this->ForceWeapon_Naval_Decloaked.Read(exINI, pSection, "ForceWeapon.Naval.Decloaked");
 	this->ForceWeapon_Cloaked.Read(exINI, pSection, "ForceWeapon.Cloaked");
 	this->ForceWeapon_Disguised.Read(exINI, pSection, "ForceWeapon.Disguised");
@@ -1044,15 +1045,32 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->ForceAAWeapon_InRange.Read(exINI, pSection, "ForceAAWeapon.InRange");
 	this->ForceAAWeapon_InRange_Overrides.Read(exINI, pSection, "ForceAAWeapon.InRange.Overrides");
 	this->ForceAAWeapon_InRange_ApplyRangeModifiers.Read(exINI, pSection, "ForceAAWeapon.InRange.ApplyRangeModifiers");
-	this->ForceWeapon_Naval.Read(exINI, pSection, "ForceWeapon.Naval");
 	this->ForceWeapon_Buildings.Read(exINI, pSection, "ForceWeapon.Buildings");
 	this->ForceWeapon_Defenses.Read(exINI, pSection, "ForceWeapon.Defenses");
 	this->ForceWeapon_Infantry.Read(exINI, pSection, "ForceWeapon.Infantry");
 	this->ForceWeapon_Units.Read(exINI, pSection, "ForceWeapon.Units");
+	this->ForceWeapon_Naval.Read(exINI, pSection, "ForceWeapon.Naval");
 	this->ForceWeapon_Aircraft.Read(exINI, pSection, "ForceWeapon.Aircraft");
 	this->ForceAAWeapon_Infantry.Read(exINI, pSection, "ForceAAWeapon.Infantry");
 	this->ForceAAWeapon_Units.Read(exINI, pSection, "ForceAAWeapon.Units");
 	this->ForceAAWeapon_Aircraft.Read(exINI, pSection, "ForceAAWeapon.Aircraft");
+	this->ForceWeapon_Check = (
+		this->ForceWeapon_Naval_Decloaked >= 0
+		|| this->ForceWeapon_Cloaked >= 0
+		|| this->ForceWeapon_Disguised >= 0
+		|| this->ForceWeapon_UnderEMP >= 0
+		|| !this->ForceWeapon_InRange.empty()
+		|| !this->ForceAAWeapon_InRange.empty()
+		|| this->ForceWeapon_Buildings >= 0
+		|| this->ForceWeapon_Defenses >= 0
+		|| this->ForceWeapon_Infantry >= 0
+		|| this->ForceWeapon_Units >= 0
+		|| this->ForceWeapon_Naval >= 0
+		|| this->ForceWeapon_Aircraft >= 0
+		|| this->ForceAAWeapon_Infantry >= 0
+		|| this->ForceAAWeapon_Units >= 0
+		|| this->ForceAAWeapon_Aircraft >= 0
+	);
 
 	this->Ammo_Shared.Read(exINI, pSection, "Ammo.Shared");
 	this->Ammo_Shared_Group.Read(exINI, pSection, "Ammo.Shared.Group");
@@ -1783,6 +1801,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->DeployingAnim_UseUnitDrawer)
 
 		.Process(this->EnemyUIName)
+
+		.Process(this->ForceWeapon_Check)
 		.Process(this->ForceWeapon_Naval_Decloaked)
 		.Process(this->ForceWeapon_Cloaked)
 		.Process(this->ForceWeapon_Disguised)
@@ -1793,11 +1813,11 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->ForceAAWeapon_InRange)
 		.Process(this->ForceAAWeapon_InRange_Overrides)
 		.Process(this->ForceAAWeapon_InRange_ApplyRangeModifiers)
-		.Process(this->ForceWeapon_Naval)
 		.Process(this->ForceWeapon_Buildings)
 		.Process(this->ForceWeapon_Defenses)
 		.Process(this->ForceWeapon_Infantry)
 		.Process(this->ForceWeapon_Units)
+		.Process(this->ForceWeapon_Naval)
 		.Process(this->ForceWeapon_Aircraft)
 		.Process(this->ForceAAWeapon_Infantry)
 		.Process(this->ForceAAWeapon_Units)
