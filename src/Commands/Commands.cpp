@@ -60,10 +60,10 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<ManualReloadAmmoCommandClass>();
 	MakeCommand<AggressiveStanceClass>();
 	MakeCommand<CeaseFireStanceClass>();
-	MakeCommand<ToggleSWSidebar>();
 
 	if (Phobos::Config::SuperWeaponSidebarCommands)
 	{
+		MakeCommand<ToggleSWSidebar>();
 		SWSidebarClass::Commands[0] = MakeCommand<FireTacticalSWCommandClass<0>>();
 		SWSidebarClass::Commands[1] = MakeCommand<FireTacticalSWCommandClass<1>>();
 		SWSidebarClass::Commands[2] = MakeCommand<FireTacticalSWCommandClass<2>>();
