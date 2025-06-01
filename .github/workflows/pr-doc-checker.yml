@@ -17,41 +17,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v1
         with:
           fetch-depth: 0
 
-      - name: 验证并检查变更日志
+      - name: 深度调试
         run: |
-          # export LANG=en_US.UTF-8
+          echo "=== 变更文件列表 ==="
+          git diff --name-only $BASE_REF HEAD
 
-          if [ ! -f "整合包说明/更新改动说明.md" ];
-          then
-            echo "❌ 文件不存在！实际路径结构："
-            ls -R
-            exit 1
-          fi
+          echo "=== 文件内容差异 ==="
+          git diff $BASE_REF HEAD -- "整合包说明/"
 
-          if ! git ls-files --error-unmatch "整合包说明/更新改动说明.md" >/dev/null 2>&1;
-          then
-            echo "❌ Git 未跟踪该文件！使用以下命令添加："
-            echo "git add '整合包说明/更新改动说明.md'"
-            exit 1
-          fi
+          echo "=== Git 状态 ==="
+          git status --porcelain
 
-          if [ ! -f "整合包说明/额外功能说明.md" ];
-          then
-            echo "❌ 文件不存在！实际路径结构："
-            ls -R
-            exit 1
-          fi
-
-          if ! git ls-files --error-unmatch "整合包说明/额外功能说明.md" >/dev/null 2>&1;
-          then
-            echo "❌ Git 未跟踪该文件！使用以下命令添加："
-            echo "git add '整合包说明/额外功能说明.md'"
-            exit 1
-          fi
+          echo "=== 文件详细信息 ==="
+          ls -l "整合包说明/"
 
   Changelog-Check:
     name: Changelog Mention
@@ -64,7 +46,6 @@ jobs:
       - name: Check that Changelog has been updated
         run: |
           # Check that Changelog has been updated
-          BASE_REF=${{ github.event.pull_request.base.sha }}
           if (git diff --name-only $(git merge-base origin/$BASE_BRANCH HEAD) | grep -q '^整合包说明/更新改动说明.md$')
           then
             echo "感谢您记得更新变更日志！😋"
@@ -86,7 +67,6 @@ jobs:
       - name: Check that Documentation has been updated
         run: |
           # Check that Documentation has been updated
-          BASE_REF=${{ github.event.pull_request.base.sha }}
           if (git diff --name-only $(git merge-base origin/$BASE_BRANCH HEAD) | grep -q '^整合包说明/额外功能说明.md$')
           then
             echo "感谢您记得更新功能说明！😋"
