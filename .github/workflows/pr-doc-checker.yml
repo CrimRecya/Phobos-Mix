@@ -24,7 +24,7 @@ jobs:
         run: |
           # Check that Changelog has been updated
           BASE_REF=${{ github.event.pull_request.base.sha }}
-          if (git diff --name-only $BASE_REF HEAD | grep -q '^整合包说明/更新改动说明.md$')
+          if (git diff --name-only $(git merge-base origin/$BASE_BRANCH HEAD) | grep -q '^整合包说明/更新改动说明.md$')
           then
             echo "感谢您记得更新变更日志！😋"
             exit 0
@@ -46,7 +46,7 @@ jobs:
         run: |
           # Check that Documentation has been updated
           BASE_REF=${{ github.event.pull_request.base.sha }}
-          if (git diff --name-only $BASE_REF HEAD | grep -q '^整合包说明/额外功能说明.md$')
+          if (git diff --name-only $(git merge-base origin/$BASE_BRANCH HEAD) | grep -q '^整合包说明/额外功能说明.md$')
           then
             echo "感谢您记得更新功能说明！😋"
             exit 0
