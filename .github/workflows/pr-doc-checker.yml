@@ -23,34 +23,13 @@ jobs:
       - name: Check that Changelog has been updated
         run: |
           # Check that Changelog has been updated
-          if (git diff --name-only $(git merge-base origin/$BASE_BRANCH HEAD) | grep ^docs/Whats-New.md$)
+          if (git diff --name-only $(git merge-base Phobos-Mix/Mix-ECpack HEAD) | grep -q '^整合包说明/更新改动说明.md$')
           then
-            echo "Thank you for remembering to update the Changelog! 😋"
+            echo "感谢您记得更新变更日志！😋"
             exit 0
           else
-            echo "It looks like you forgot to update the Changelog! 🧐"
-            echo "Please, mention your changes in 'docs/Whats-New.md' or use [Minor] label for your Pull Request."
-            exit 1
-          fi
-
-  Credits-Check:
-    name: Credits List Mention
-    # If the Minor label is set, then workflow will not be executed
-    if: false == contains(github.event.pull_request.labels.*.name, 'Minor')
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v1
-      - name: Check that Credits List has been updated
-        run: |
-          # Check that Credits List has been updated
-          if (git diff --name-only $(git merge-base origin/$BASE_BRANCH HEAD) | grep ^CREDITS.md$)
-          then
-            echo "Thank you for remembering to update the Credits List! 😋"
-            exit 0
-          else
-            echo "It looks like you forgot to update the Credits List! 🧐"
-            echo "Please, mention your contribution in 'CREDITS.md' or use [Minor] label for your Pull Request."
+            echo "你好像忘了更新变更日志！🧐"
+            echo "请在“整合包说明/更新改动说明”中提及您的更改。"
             exit 1
           fi
 
@@ -65,19 +44,12 @@ jobs:
       - name: Check that Documentation has been updated
         run: |
           # Check that Documentation has been updated
-          if (git diff --name-only $(git merge-base origin/$BASE_BRANCH HEAD) | \
-              grep \
-              -e ^docs/New-or-Enhanced-Logics.md$   \
-              -e ^docs/Fixed-or-Improved-Logics.md$ \
-              -e ^docs/AI-Scripting-and-Mapping.md$ \
-              -e ^docs/User-Interface.md$           \
-              -e ^docs/Miscellanous.md$             \
-          )
+          if (git diff --name-only $(git merge-base Phobos-Mix/Mix-ECpack HEAD) | grep -q '^整合包说明/额外功能说明.md$')
           then
-            echo "Thank you for remembering to add your changes to the docs! 😋"
+            echo "感谢您记得更新功能说明！😋"
             exit 0
           else
-            echo "It looks like you forgot to add your changes to the docs! 🧐"
-            echo "Please, document your changes or use [Minor] label for your Pull Request."
+            echo "你好像忘了更新功能说明！🧐"
+            echo "请在“整合包说明/额外功能说明”中提及您的更改。"
             exit 1
           fi
