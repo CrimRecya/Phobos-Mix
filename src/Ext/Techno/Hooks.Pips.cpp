@@ -106,6 +106,44 @@ DEFINE_HOOK(0x6F534E, TechnoClass_DrawExtras_Insignia, 0x5)
 	return SkipGameCode;
 }
 
+DEFINE_HOOK(0x6F5EE3, TechnoClass_DrawExtras_DrawAboveHealth, 0x9)
+{
+	GET(TechnoClass*, pThis, EBP);
+	GET_STACK(RectangleStruct*, pBounds, STACK_OFFSET(0x98, 0x8));
+
+	const auto pCell = MapClass::Instance.TryGetCellAt(pThis->GetCenterCoords());
+
+	if ((pCell && !pCell->IsFogged() && !pCell->IsShrouded()) || pThis->IsSelected || pThis->IsMouseHovering)
+	{
+		const auto absType = pThis->WhatAmI();
+
+		if (absType == AbstractType::Building)
+		{
+			const auto pBuilding = static_cast<BuildingClass*>(pThis);
+			const auto basePosition = TechnoExt::GetBuildingSelectBracketPosition(pBuilding, BuildingSelectBracketPosition::Top);
+
+			TechnoExt::DrawTemporalProgress(pThis, pBounds, basePosition, true, false);
+			TechnoExt::DrawIronCurtainProgress(pThis, pBounds, basePosition, true, false);
+
+			if (!pThis->Owner->IsNeutral())
+			{
+				TechnoExt::DrawSuperProgress(pBuilding, pBounds, basePosition);
+				TechnoExt::DrawFactoryProgress(pBuilding, pBounds, basePosition);
+			}
+		}
+		else
+		{
+			const bool isInfantry = absType == AbstractType::Infantry;
+			const auto basePosition = TechnoExt::GetFootSelectBracketPosition(pThis, Anchor(HorizontalPosition::Left, VerticalPosition::Top));
+
+			TechnoExt::DrawTemporalProgress(pThis, pBounds, basePosition, false, isInfantry);
+			TechnoExt::DrawIronCurtainProgress(pThis, pBounds, basePosition, false, isInfantry);
+		}
+	}
+
+	return 0;
+}
+
 DEFINE_HOOK(0x709B2E, TechnoClass_DrawPips_Sizes, 0x5)
 {
 	GET(TechnoClass*, pThis, ECX);
@@ -288,9 +326,9 @@ DEFINE_HOOK(0x70A1F6, TechnoClass_DrawPips_Tiberium, 0x6)
 
 	if (isWeeder)
 	{
-		const int fullWeedFrames = whatAmI == AbstractType::Building ?
-			static_cast<int>(pThis->Owner->GetWeedStoragePercentage() * maxPips + 0.5) :
-			static_cast<int>(pThis->Tiberium.GetTotalAmount() / totalStorage * maxPips + 0.5);
+		const int fullWeedFrames = whatAmI == AbstractType::Building
+			? static_cast<int>(pThis->Owner->GetWeedStoragePercentage() * maxPips + 0.5)
+			: static_cast<int>(pThis->Tiberium.GetTotalAmount() / totalStorage * maxPips + 0.5);
 
 		for (int i = 0; i < maxPips; i++)
 		{
@@ -320,8 +358,8 @@ DEFINE_HOOK(0x70A1F6, TechnoClass_DrawPips_Tiberium, 0x6)
 		// First make a new vector, removing all the duplicate and invalid tiberiums
 		for (int index : rawPipOrder)
 		{
-			if (std::find(pipOrder.begin(), pipOrder.end(), index) == pipOrder.end() &&
-				index >= 0 && index < count)
+			if (std::find(pipOrder.begin(), pipOrder.end(), index) == pipOrder.end()
+				&& index >= 0 && index < count)
 			{
 				pipOrder.push_back(index);
 			}

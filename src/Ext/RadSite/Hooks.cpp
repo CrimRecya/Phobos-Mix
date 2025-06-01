@@ -83,8 +83,9 @@ DEFINE_HOOK(0x5213B4, InfantryClass_AIDeployment_CheckRad, 0x7)
 		}
 	}
 
-	return (!radLevel || (radLevel < weaponRadLevel / 3)) ?
-		FireCheck : SetMissionRate;
+	return (!radLevel || (radLevel < weaponRadLevel / 3))
+		? FireCheck
+		: SetMissionRate;
 }
 
 // Fix for desolator unable to fire his deploy weapon when cloaked
@@ -123,8 +124,8 @@ DEFINE_HOOK(0x43FB23, BuildingClass_AI_Radiation, 0x5)
 
 	int radDelay = RulesExt::Global()->RadApplicationDelay_Building;
 
-	if (RulesExt::Global()->UseGlobalRadApplicationDelay &&
-		(radDelay == 0 || Unsorted::CurrentFrame % radDelay != 0))
+	if (RulesExt::Global()->UseGlobalRadApplicationDelay
+		&& (radDelay == 0 || Unsorted::CurrentFrame % radDelay != 0))
 	{
 		return 0;
 	}
@@ -191,8 +192,8 @@ DEFINE_HOOK(0x4DA59F, FootClass_AI_Radiation, 0x5)
 
 	GET(FootClass* const, pFoot, ESI);
 
-	if (pFoot->IsInPlayfield && !pFoot->TemporalTargetingMe &&
-		(!RulesExt::Global()->UseGlobalRadApplicationDelay || Unsorted::CurrentFrame % RulesClass::Instance->RadApplicationDelay == 0))
+	if (pFoot->IsInPlayfield && !pFoot->TemporalTargetingMe
+		&& (!RulesExt::Global()->UseGlobalRadApplicationDelay || Unsorted::CurrentFrame % RulesClass::Instance->RadApplicationDelay == 0))
 	{
 		const auto pCell = pFoot->GetCell();
 		const auto pCellExt = CellExt::ExtMap.Find(pCell);
@@ -371,6 +372,15 @@ DEFINE_HOOK(0x65BAC1, RadSiteClass_UpdateLevel, 0x8)// RadSiteClass_Radiate_Incr
 					GET_STACK(int, stepCount, STACK_OFFSET(0x70, -0x30));
 					const int level = static_cast<int>(static_cast<double>(max - distance) / max * pThis->RadLevel / pThis->LevelSteps * stepCount);
 					it->Level = std::max(it->Level - std::max(level, 0), 0);
+				}
+			}
+			else if (R->Origin() == 0x65BC6E)
+			{
+				if (it != radLevels.end())
+				{
+					GET_STACK(int, timeParam, STACK_OFFSET(0x70, -0x30));
+					const int amount = Game::F2I(static_cast<double>(max - distance) / max * pThis->RadLevel / pThis->LevelSteps * timeParam);
+					it->Level -= amount;
 				}
 			}
 			else

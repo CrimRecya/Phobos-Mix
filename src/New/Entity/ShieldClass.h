@@ -44,10 +44,7 @@ public:
 	}
 	bool IsActive() const
 	{
-		return
-			this->Available &&
-			this->HP > 0 &&
-			this->Online;
+		return this->Available && this->HP > 0 && this->Online;
 	}
 	bool IsAvailable() const
 	{

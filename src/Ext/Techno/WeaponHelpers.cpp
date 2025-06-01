@@ -11,8 +11,8 @@ int TechnoExt::PickWeaponIndex(TechnoClass* pThis, TechnoClass* pTargetTechno, A
 {
 	CellClass* pTargetCell = nullptr;
 
-	// Ignore target cell for airborne target technos.
-	if (!pTargetTechno || !pTargetTechno->IsInAir())
+	// Ignore target cell for airborne and underground target technos.
+	if (!pTargetTechno || (!pTargetTechno->IsInAir() && pTargetTechno->InWhichLayer() != Layer::Underground))
 	{
 		if (auto const pCell = abstract_cast<CellClass*>(pTarget))
 			pTargetCell = pCell;
@@ -35,38 +35,50 @@ int TechnoExt::PickWeaponIndex(TechnoClass* pThis, TechnoClass* pTargetTechno, A
 
 	if (auto const pSecondExt = WeaponTypeExt::ExtMap.Find(pWeaponTwo))
 	{
-		if ((pTargetCell && !EnumFunctions::IsCellEligible(pTargetCell, pSecondExt->CanTarget, true, true)) ||
-			(pTargetTechno && (!EnumFunctions::IsTechnoEligible(pTargetTechno, pSecondExt->CanTarget) ||
-				!EnumFunctions::CanTargetHouse(pSecondExt->CanTargetHouses, pThis->Owner, pTargetTechno->Owner) ||
-				!pSecondExt->HasRequiredAttachedEffects(pTargetTechno, pThis))))
+		if ((pTargetCell && !EnumFunctions::IsCellEligible(pTargetCell, pSecondExt->CanTarget, true, true))
+			|| (pTargetTechno && (!EnumFunctions::IsTechnoEligible(pTargetTechno, pSecondExt->CanTarget)
+				|| !EnumFunctions::CanTargetHouse(pSecondExt->CanTargetHouses, pThis->Owner, pTargetTechno->Owner)
+				|| !pSecondExt->HasRequiredAttachedEffects(pTargetTechno, pThis))))
 		{
 			return weaponIndexOne;
 		}
 		else if (auto const pFirstExt = WeaponTypeExt::ExtMap.Find(pWeaponOne))
 		{
-			bool secondIsAA = pTargetTechno && pTargetTechno->IsInAir() && pWeaponTwo->Projectile->AA;
-			bool firstAllowedAE = pFirstExt->HasRequiredAttachedEffects(pTargetTechno, pThis);
+			const bool firstAllowedAE = pFirstExt->HasRequiredAttachedEffects(pTargetTechno, pThis);
 
-			if (!allowFallback && (!allowAAFallback || !secondIsAA) && !TechnoExt::CanFireNoAmmoWeapon(pThis, 1) && firstAllowedAE)
+			if (!allowFallback
+				&& (!pTargetTechno
+					|| ((!allowAAFallback || !pTargetTechno->IsInAir() || !pWeaponTwo->Projectile->AA)
+						&& (pTargetTechno->InWhichLayer() != Layer::Underground || !BulletTypeExt::ExtMap.Find(pWeaponTwo->Projectile)->AU)))
+				&& !TechnoExt::CanFireNoAmmoWeapon(pThis, 1)
+				&& firstAllowedAE)
+			{
 				return weaponIndexOne;
+			}
 
-			if ((pTargetCell && !EnumFunctions::IsCellEligible(pTargetCell, pFirstExt->CanTarget, true, true)) ||
-				(pTargetTechno && (!EnumFunctions::IsTechnoEligible(pTargetTechno, pFirstExt->CanTarget) ||
-					!EnumFunctions::CanTargetHouse(pFirstExt->CanTargetHouses, pThis->Owner, pTargetTechno->Owner) || !firstAllowedAE)))
+			if ((pTargetCell && !EnumFunctions::IsCellEligible(pTargetCell, pFirstExt->CanTarget, true, true))
+				|| (pTargetTechno && (!EnumFunctions::IsTechnoEligible(pTargetTechno, pFirstExt->CanTarget)
+					|| !EnumFunctions::CanTargetHouse(pFirstExt->CanTargetHouses, pThis->Owner, pTargetTechno->Owner)
+					|| !firstAllowedAE)))
 			{
 				return weaponIndexTwo;
 			}
 		}
 	}
 
-	auto const pType = pThis->GetTechnoType();
-
 	// Handle special case with NavalTargeting / LandTargeting.
-	if (!pTargetTechno && (pType->NavalTargeting == NavalTargetingType::Naval_Primary ||
-		pType->LandTargeting == LandTargetingType::Land_Secondary) &&
-		pTargetCell->LandType != LandType::Water && pTargetCell->LandType != LandType::Beach)
+	if (!pTargetTechno
+		&& pTargetCell
+		&& pTargetCell->LandType != LandType::Water
+		&& pTargetCell->LandType != LandType::Beach)
 	{
-		return weaponIndexTwo;
+		auto const pType = pThis->GetTechnoType();
+
+		if (pType->NavalTargeting == NavalTargetingType::Naval_Primary
+			|| pType->LandTargeting == LandTargetingType::Land_Secondary)
+		{
+			return weaponIndexTwo;
+		}
 	}
 
 	return -1;

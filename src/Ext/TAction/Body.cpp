@@ -364,7 +364,7 @@ bool TActionExt::RunSuperWeaponAt(TActionClass* pThis, int X, int Y)
 		if (pExecuteHouse)
 		{
 			auto const pSuper = pExecuteHouse->Supers.Items[swIdx];
-	
+
 			CDTimerClass old_timer = pSuper->RechargeTimer;
 			pSuper->SetReadiness(true);
 			pSuper->Launch(targetLocation, false);
@@ -389,8 +389,7 @@ bool TActionExt::EditAngerNode(TActionClass* pThis, HouseClass* pHouse, ObjectCl
 
 	auto setValue = [pThis, pHouse](HouseClass* pTargetHouse)
 	{
-		if (!pTargetHouse || pHouse == pTargetHouse ||
-			pHouse->IsAlliedWith(pTargetHouse))
+		if (!pTargetHouse || pHouse == pTargetHouse || pHouse->IsAlliedWith(pTargetHouse))
 			return;
 
 		for (auto& pAngerNode : pHouse->AngerNodes)
@@ -421,9 +420,9 @@ bool TActionExt::EditAngerNode(TActionClass* pThis, HouseClass* pHouse, ObjectCl
 
 	if (pThis->Value >= 0)
 	{
-		HouseClass* pTargetHouse = HouseClass::Index_IsMP(pThis->Value) ?
-			HouseClass::FindByIndex(pThis->Value) :
-			HouseClass::FindByCountryIndex(pThis->Value);
+		HouseClass* pTargetHouse = HouseClass::Index_IsMP(pThis->Value)
+			? HouseClass::FindByIndex(pThis->Value)
+			: HouseClass::FindByCountryIndex(pThis->Value);
 
 		setValue(pTargetHouse);
 		pHouse->UpdateAngerNodes(0, pHouse);
@@ -448,9 +447,9 @@ bool TActionExt::ClearAngerNode(TActionClass* pThis, HouseClass* pHouse, ObjectC
 
 	if (pThis->Value >= 0)
 	{
-		HouseClass* pTargetHouse = HouseClass::Index_IsMP(pThis->Value) ?
-			HouseClass::FindByIndex(pThis->Value) :
-			HouseClass::FindByCountryIndex(pThis->Value);
+		HouseClass* pTargetHouse = HouseClass::Index_IsMP(pThis->Value)
+			? HouseClass::FindByIndex(pThis->Value)
+			: HouseClass::FindByCountryIndex(pThis->Value);
 
 		if (pTargetHouse)
 		{
@@ -486,12 +485,12 @@ bool TActionExt::SetForceEnemy(TActionClass* pThis, HouseClass* pHouse, ObjectCl
 	{
 		if (pThis->Param3 != -2)
 		{
-			HouseClass* pTargetHouse = HouseClass::Index_IsMP(pThis->Param3) ?
-				HouseClass::FindByIndex(pThis->Param3) :
-				HouseClass::FindByCountryIndex(pThis->Param3);
+			HouseClass* pTargetHouse = HouseClass::Index_IsMP(pThis->Param3)
+				? HouseClass::FindByIndex(pThis->Param3)
+				: HouseClass::FindByCountryIndex(pThis->Param3);
 
-			if (pTargetHouse && pHouse != pTargetHouse &&
-				!pHouse->IsAlliedWith(pTargetHouse))
+			if (pTargetHouse && pHouse != pTargetHouse
+				&& !pHouse->IsAlliedWith(pTargetHouse))
 			{
 				pHouseExt->SetForceEnemyIndex(pTargetHouse->GetArrayIndex());
 				pHouse->UpdateAngerNodes(0, pHouse);

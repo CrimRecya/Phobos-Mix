@@ -116,7 +116,6 @@ DEFINE_HOOK(0x711FDF, TechnoTypeClass_RefundAmount_FactoryPlant, 0x8)
 	return 0;
 }
 
-
 DEFINE_HOOK(0x71464A, TechnoTypeClass_ReadINI_Speed, 0x7)
 {
 	enum { SkipGameCode = 0x71469F };
@@ -131,4 +130,85 @@ DEFINE_HOOK(0x71464A, TechnoTypeClass_ReadINI_Speed, 0x7)
 	exINI.ReadSpeed(pSection, "Speed", &pThis->Speed);
 
 	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x7128B2, TechnoTypeClass_ReadFromINI_MultiWeapon, 0x6)
+{
+	enum { ReadWeaponX = 0x7128C0 };
+
+	GET(TechnoTypeClass*, pThis, EBP);
+	GET(CCINIClass*, pINI, ESI);
+
+	INI_EX exINI(pINI);
+	const char* pSection = pThis->ID;
+
+	const auto pExt = TechnoTypeExt::ExtMap.Find(pThis);
+
+	if (pThis->WeaponCount > 1)
+		pExt->MultiWeapon.Read(exINI, pSection, "MultiWeapon");
+	else
+		pExt->MultiWeapon = false;
+
+	const bool multiWeapon = pThis->HasMultipleTurrets() || pExt->MultiWeapon.Get();
+
+	if (pExt->ReadMultiWeapon != multiWeapon)
+	{
+		auto clearWeapon = [pThis](int index)
+		{
+			pThis->GetWeapon(index, false) = WeaponStruct();
+			pThis->GetWeapon(index, true) = WeaponStruct();
+		};
+
+		clearWeapon(0);
+		clearWeapon(1);
+
+		pExt->ReadMultiWeapon = multiWeapon;
+	}
+
+	if (pExt->MultiWeapon.Get())
+	{
+		ValueableVector<int> secondaryVec;
+		secondaryVec.Read(exINI, pSection, "MultiWeapon.IsSecondary");
+		pExt->MultiWeapon_SelectCount.Read(exINI, pSection, "MultiWeapon.SelectCount");
+
+		if (!secondaryVec.empty())
+		{
+			const int count = pThis->WeaponCount;
+			pExt->MultiWeapon_IsSecondary.clear();
+			pExt->MultiWeapon_IsSecondary.reserve(count);
+
+			for (int i = 0; i < count; ++i)
+				pExt->MultiWeapon_IsSecondary.push_back(secondaryVec.Contains(i));
+		}
+	}
+
+	return multiWeapon ? ReadWeaponX : 0;
+}
+
+DEFINE_HOOK(0x715B10, TechnoTypeClass_ReadFromINI_MultiWeaponArt, 0x7)
+{
+	enum { ReadWeaponX = 0x715B1F, Continue = 0x715B17 };
+
+	GET(TechnoTypeClass*, pThis, EBP);
+
+	if (TechnoTypeExt::ExtMap.Find(pThis)->ReadMultiWeapon)
+		return ReadWeaponX;
+
+	R->AL(pThis->HasMultipleTurrets());
+	return Continue;
+}
+
+DEFINE_HOOK(0x520888, InfantryClass_UpdateFiring_IsSecondary, 0x8)
+{
+	enum { Primary = 0x5208D6, Secondary = 0x520890 };
+
+	GET(InfantryClass*, pThis, EBP);
+	GET(int, weaponIdx, EDI);
+
+	if (!TechnoTypeExt::ExtMap.Find(pThis->Type)->IsSecondary(weaponIdx))
+		return Primary;
+
+	// Restore
+	R->AL(pThis->Crawling);
+	return Secondary;
 }

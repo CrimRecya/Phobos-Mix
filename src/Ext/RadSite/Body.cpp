@@ -77,8 +77,7 @@ void RadSiteExt::ExtData::CreateLight()
 	pThis->RadLevelTimer.Start(levelDelay);
 	pThis->RadLightTimer.Start(lightDelay);
 
-	double lightFactor = pThis->RadLevel * this->Type->GetLightFactor();
-	lightFactor = Math::min(lightFactor, 2000.0);
+	const double lightFactor = Math::min((pThis->RadLevel * this->Type->GetLightFactor()), 2000.0);
 	const int duration = pThis->RadDuration;
 	const int intensitySteps = duration / lightDelay;
 
@@ -91,29 +90,25 @@ void RadSiteExt::ExtData::CreateLight()
 	const double tintFactor = this->Type->GetTintFactor();
 
 	//=========Red
-	double red = ((1000 * radcolor.R) / 255) * tintFactor;
-	red = Math::min(red, 2000.0);
+	const double red = Math::min((((1000 * radcolor.R) / 255) * tintFactor), 2000.0);
 	//=========Green
-	double green = ((1000 * radcolor.G) / 255) * tintFactor;
-	green = Math::min(green, 2000.0);
+	const double green = Math::min((((1000 * radcolor.G) / 255) * tintFactor), 2000.0);
 	//=========Blue
-	double blue = ((1000 * radcolor.B) / 255) * tintFactor;
-	blue = Math::min(blue, 2000.0);
+	const double blue = Math::min((((1000 * radcolor.B) / 255) * tintFactor), 2000.0);
 
-	TintStruct nTintBuffer { Game::F2I(red) ,Game::F2I(green) ,Game::F2I(blue) };
+	const TintStruct nTintBuffer { Game::F2I(red) ,Game::F2I(green) ,Game::F2I(blue) };
 	pThis->Tint = nTintBuffer;
-	bool update = false;
 
 	if (pThis->LightSource)
 	{
-		pThis->LightSource->ChangeLevels(Game::F2I(lightFactor), nTintBuffer, update);
+		pThis->LightSource->ChangeLevels(Game::F2I(lightFactor), nTintBuffer, 0);
 	}
 	else if (const auto pCell = MapClass::Instance.TryGetCellAt(pThis->BaseCell))
 	{
 		const auto pLight = GameCreate<LightSourceClass>(pCell->GetCoords(), pThis->SpreadInLeptons, Game::F2I(lightFactor), nTintBuffer);
 		pThis->LightSource = pLight;
 		pLight->DetailLevel = 0;
-		pLight->Activate(update);
+		pLight->Activate();
 	}
 
 	pThis->Radiate();

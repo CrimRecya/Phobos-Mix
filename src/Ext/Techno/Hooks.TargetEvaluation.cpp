@@ -1,5 +1,7 @@
 #include "Body.h"
 
+#include <Ext/BuildingType/Body.h>
+
 // Cursor & target acquisition stuff not directly tied to other features can go here.
 
 #pragma region TargetAcquisition
@@ -23,7 +25,7 @@ DEFINE_HOOK(0x7098B9, TechnoClass_TargetSomethingNearby_AutoFire, 0x6)
 	return 0;
 }
 
-FireError __fastcall TechnoClass_TargetSomethingNearby_CanFire_Wrapper(TechnoClass* pThis, void* _, AbstractClass* pTarget, int weaponIndex, bool ignoreRange)
+FireError __fastcall TechnoClass_TargetSomethingNearby_CanFire_Wrapper(TechnoClass* pThis, discard_t _, AbstractClass* pTarget, int weaponIndex, bool ignoreRange)
 {
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 	bool disableWeapons = pExt->AE.DisableWeapons;
@@ -136,7 +138,7 @@ WeaponStruct* __fastcall TechnoClass_EvaluateCellGetWeaponWrapper(TechnoClass* p
 	return pThis->GetWeapon(CellEvalTemp::weaponIndex);
 }
 
-int __fastcall TechnoClass_EvaluateCellGetWeaponRangeWrapper(TechnoClass* pThis, void* _, int weaponIndex)
+int __fastcall TechnoClass_EvaluateCellGetWeaponRangeWrapper(TechnoClass* pThis, discard_t _, int weaponIndex)
 {
 	return pThis->GetWeaponRange(CellEvalTemp::weaponIndex);
 }
@@ -205,12 +207,25 @@ DEFINE_HOOK(0x6F85AB, TechnoClass_CanAutoTargetObject_AggressiveAttackMove, 0x6)
 	if (!pThis->Owner->IsControlledByHuman())
 		return CanTarget;
 
-	if (!pThis->MegaMissionIsAttackMove())
-		return ContinueCheck;
+	GET(TechnoClass*, pTarget, ESI);
 
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	if (pTarget->WhatAmI() == AbstractType::Building)
+	{
+		// Fallback to unmodded behavior if the building is an exempt of aggressive stance.
+		if (BuildingTypeExt::ExtMap.Find(static_cast<BuildingClass*>(pTarget)->Type)->AggressiveStance_Exempt)
+			return ContinueCheck;
 
-	return pExt->TypeExtData->AttackMove_Aggressive.Get(RulesExt::Global()->AttackMove_Aggressive) ? CanTarget : ContinueCheck;
+		if (TechnoExt::ExtMap.Find(pThis)->GetAggressiveStance())
+			return CanTarget;
+	}
+
+	if (pThis->MegaMissionIsAttackMove())
+	{
+		if (TechnoExt::ExtMap.Find(pThis)->TypeExtData->AttackMove_Aggressive.Get(RulesExt::Global()->AttackMove_Aggressive))
+			return CanTarget;
+	}
+
+	return ContinueCheck;
 }
 
 #pragma endregion
@@ -326,8 +341,8 @@ private:
 		if (allied && pBuilding->Type->Repairable)
 			return true;
 
-		if (!allied && pBuilding->Type->Capturable &&
-			(!pBuilding->Owner->Type->MultiplayPassive || !pBuilding->Type->CanBeOccupied || pBuilding->IsBeingWarpedOut()))
+		if (!allied && pBuilding->Type->Capturable
+			&& (!pBuilding->Owner->Type->MultiplayPassive || !pBuilding->Type->CanBeOccupied || pBuilding->IsBeingWarpedOut()))
 		{
 			return true;
 		}
@@ -336,7 +351,8 @@ private:
 	}
 };
 
-FireError __fastcall UnitClass__GetFireError_Wrapper(UnitClass* pThis, void* _, ObjectClass* pObj, int nWeaponIndex, bool ignoreRange)
+
+FireError __fastcall UnitClass__GetFireError_Wrapper(UnitClass* pThis, discard_t _, ObjectClass* pObj, int nWeaponIndex, bool ignoreRange)
 {
 	AresScheme::Prefix(pThis, pObj, nWeaponIndex, false);
 	auto const result = pThis->UnitClass::GetFireError(pObj, nWeaponIndex, ignoreRange);
@@ -345,7 +361,7 @@ FireError __fastcall UnitClass__GetFireError_Wrapper(UnitClass* pThis, void* _, 
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7F6030, UnitClass__GetFireError_Wrapper)
 
-FireError __fastcall InfantryClass__GetFireError_Wrapper(InfantryClass* pThis, void* _, ObjectClass* pObj, int nWeaponIndex, bool ignoreRange)
+FireError __fastcall InfantryClass__GetFireError_Wrapper(InfantryClass* pThis, discard_t _, ObjectClass* pObj, int nWeaponIndex, bool ignoreRange)
 {
 	AresScheme::Prefix(pThis, pObj, nWeaponIndex, false);
 	auto const result = pThis->InfantryClass::GetFireError(pObj, nWeaponIndex, ignoreRange);
@@ -354,22 +370,73 @@ FireError __fastcall InfantryClass__GetFireError_Wrapper(InfantryClass* pThis, v
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7EB418, InfantryClass__GetFireError_Wrapper)
 
-Action __fastcall UnitClass__WhatAction_Wrapper(UnitClass* pThis, void* _, ObjectClass* pObj, bool ignoreForce)
+Action __fastcall UnitClass__WhatAction_Wrapper(UnitClass* pThis, discard_t _, ObjectClass* pObj, bool ignoreForce)
 {
 	AresScheme::Prefix(pThis, pObj, -1, false);
-	auto const result = pThis->UnitClass::MouseOverObject(pObj, ignoreForce);
+	auto result = pThis->UnitClass::MouseOverObject(pObj, ignoreForce);
 	AresScheme::Suffix();
+
+	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
+	if (!pExt->ParentAttachment)
+		return result;
+
+	switch (result)
+	{
+	case Action::Repair:
+		result = Action::NoRepair;
+		break;
+
+	case Action::Self_Deploy:
+		if (pThis->Type->DeploysInto)
+			result = Action::NoDeploy;
+		break;
+
+	case Action::Sabotage:
+	case Action::Capture:
+	case Action::Enter:
+		result = Action::NoEnter;
+		break;
+
+	case Action::GuardArea:
+	case Action::AttackMoveNav:
+	case Action::Move:
+		result = Action::NoMove;
+		break;
+	}
+
 	return result;
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5CE4, UnitClass__WhatAction_Wrapper)
 
-Action __fastcall InfantryClass__WhatAction_Wrapper(InfantryClass* pThis, void* _, ObjectClass* pObj, bool ignoreForce)
+Action __fastcall InfantryClass__WhatAction_Wrapper(InfantryClass* pThis, discard_t _, ObjectClass* pObj, bool ignoreForce)
 {
 	AresScheme::Prefix(pThis, pObj, -1, pThis->Type->Engineer);
 	auto const result = pThis->InfantryClass::MouseOverObject(pObj, ignoreForce);
 	AresScheme::Suffix();
+
 	return result;
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7EB0CC, InfantryClass__WhatAction_Wrapper)
+
+#pragma endregion
+
+#pragma region CeaseFireStance
+
+DEFINE_HOOK(0x6F8DFD, TechnoClass_SelectAutoTarget_CeaseFireStance, 0x5)
+{
+	enum { FuncReturn = 0x6F8E38 };
+	GET(TechnoClass*, pThis, ESI);
+	GET_STACK(ThreatType, flags, STACK_OFFSET(0x6C, 0x4));
+	return TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance()
+		&& (((flags & ThreatType::Range) != ThreatType::Normal) || ((flags & ThreatType::Area) != ThreatType::Normal)) // Cease fire don't work for script auto targeting.
+		? FuncReturn : 0;
+}
+
+DEFINE_HOOK(0x708AC5, TechnoClass_CanRetaliateToAttacker_CeaseFireStance, 0x5)
+{
+	enum { FuncReturn = 0x708B17 };
+	GET(TechnoClass*, pThis, ESI);
+	return TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance() ? FuncReturn : 0;
+}
 
 #pragma endregion

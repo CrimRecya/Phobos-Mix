@@ -1326,6 +1326,77 @@ bool ScriptExt::EvaluateObjectWithMask(TechnoClass* pTechno, int mask, int attac
 
 		break;
 
+	case 37:
+		// Factorys on land
+
+		if (!pTechno->Owner->IsNeutral()
+			&& pTechno->GetCell()->LandType != LandType::Water)
+		{
+			switch (pTechno->WhatAmI())
+			{
+			case AbstractType::Building:
+
+				if (static_cast<BuildingTypeClass*>(pTechnoType)->Factory != AbstractType::None)
+					return true;
+
+				break;
+
+			case AbstractType::Unit:
+
+				if (const auto pDeployInto = pTechnoType->DeploysInto)
+				{
+					if (pDeployInto->Factory != AbstractType::None)
+						return true;
+				}
+
+				break;
+
+			default:
+				break;
+			}
+		}
+
+		break;
+
+	case 38:
+		// Buildings on land
+
+		if (!pTechno->Owner->IsNeutral()
+			&& pTechno->GetCell()->LandType != LandType::Water)
+		{
+			switch (pTechno->WhatAmI())
+			{
+			case AbstractType::Building:
+
+				return true;
+
+				break;
+
+			case AbstractType::Unit:
+
+				if (pTechnoType->DeploysInto)
+					return true;
+
+				break;
+
+			default:
+				break;
+			}
+		}
+
+		break;
+
+	case 39:
+		// All technos on land
+
+		if (!pTechno->Owner->IsNeutral()
+			&& pTechno->GetCell()->LandType != LandType::Water)
+		{
+			return true;
+		}
+
+		break;
+
 	default:
 		break;
 	}

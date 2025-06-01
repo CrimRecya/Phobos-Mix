@@ -1,4 +1,5 @@
 #pragma once
+
 #include <CellClass.h>
 
 #include <Utilities/Container.h>
@@ -33,18 +34,29 @@ public:
 	class ExtData final : public Extension<CellClass>
 	{
 	public:
-		std::vector<RadSiteClass*> RadSites {};
-		std::vector<RadLevel> RadLevels { };
+		std::vector<RadSiteClass*> RadSites;
+		std::vector<RadLevel> RadLevels;
+
+		UnitClass* IncomingUnit;
+		UnitTypeClass* IncomingUnitType;
+		UnitClass* IncomingUnitAlt;
+		UnitTypeClass* IncomingUnitAltType;
 
 		ExtData(CellClass* OwnerObject) : Extension<CellClass>(OwnerObject)
+			, RadSites {}
+			, RadLevels {}
+			, IncomingUnit { nullptr }
+			, IncomingUnitType { nullptr }
+			, IncomingUnitAlt { nullptr }
+			, IncomingUnitAltType { nullptr }
 		{ }
 
 		virtual ~ExtData() = default;
 
-		virtual void InvalidatePointer(void* ptr, bool removed) override;
-
+		virtual void InvalidatePointer(void* ptr, bool bRemoved) override {} // Useless
 		virtual void LoadFromStream(PhobosStreamReader& Stm) override;
 		virtual void SaveToStream(PhobosStreamWriter& Stm) override;
+		virtual void Initialize() override;
 
 	private:
 		template <typename T>
@@ -56,8 +68,6 @@ public:
 	public:
 		ExtContainer();
 		~ExtContainer();
-
-		virtual bool InvalidateExtDataIgnorable(void* const ptr) const override;
 	};
 
 	static ExtContainer ExtMap;
