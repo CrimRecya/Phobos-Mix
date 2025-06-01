@@ -3,8 +3,7 @@ name: Nightly Build
 on:
   push:
     branches:
-    - develop-Mix4BEtest
-    - develop-Mix4ECpack
+    - alpha-Mix
 
 env:
   # Path to the solution file relative to the root of the project.
