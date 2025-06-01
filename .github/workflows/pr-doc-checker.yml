@@ -12,6 +12,45 @@ env:
   BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
 
 jobs:
+  FilePath-Check:
+    name: FilePath Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 验证并检查变更日志
+        run: |
+          # export LANG=en_US.UTF-8
+
+          if [ ! -f "整合包说明/更新改动说明.md" ];
+          then
+            echo "❌ 文件不存在！实际路径结构："
+            ls -R
+          fi
+
+          if ! git ls-files --error-unmatch "整合包说明/更新改动说明.md" >/dev/null 2>&1;
+          then
+            echo "❌ Git 未跟踪该文件！使用以下命令添加："
+            echo "git add '整合包说明/更新改动说明.md'"
+          fi
+
+          if [ ! -f "整合包说明/额外功能说明.md" ];
+          then
+            echo "❌ 文件不存在！实际路径结构："
+            ls -R
+          fi
+
+          if ! git ls-files --error-unmatch "整合包说明/额外功能说明.md" >/dev/null 2>&1;
+          then
+            echo "❌ Git 未跟踪该文件！使用以下命令添加："
+            echo "git add '整合包说明/额外功能说明.md'"
+          fi
+
+          exit 1
+
   Changelog-Check:
     name: Changelog Mention
     # If the Minor label is set, then workflow will not be executed
