@@ -23,7 +23,7 @@ jobs:
       - name: Check that Changelog has been updated
         run: |
           # Check that Changelog has been updated
-          if (git diff --quiet $(git merge-base $BASE_REF HEAD) -- "整合包说明/更新改动说明.md")
+          if ! git diff --quiet $(git merge-base $BASE_REF HEAD) -- "整合包说明/更新改动说明.md";
           then
             echo "感谢您记得更新变更日志！😋"
             exit 0
@@ -44,7 +44,7 @@ jobs:
       - name: Check that Documentation has been updated
         run: |
           # Check that Documentation has been updated
-          if (git diff --quiet $(git merge-base $BASE_REF HEAD) -- "整合包说明/额外功能说明.md")
+          if ! git diff --quiet $(git merge-base $BASE_REF HEAD) -- "整合包说明/额外功能说明.md";
           then
             echo "感谢您记得更新功能说明！😋"
             exit 0
