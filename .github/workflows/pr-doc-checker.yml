@@ -29,27 +29,29 @@ jobs:
           then
             echo "❌ 文件不存在！实际路径结构："
             ls -R
+            exit 1
           fi
 
           if ! git ls-files --error-unmatch "整合包说明/更新改动说明.md" >/dev/null 2>&1;
           then
             echo "❌ Git 未跟踪该文件！使用以下命令添加："
             echo "git add '整合包说明/更新改动说明.md'"
+            exit 1
           fi
 
           if [ ! -f "整合包说明/额外功能说明.md" ];
           then
             echo "❌ 文件不存在！实际路径结构："
             ls -R
+            exit 1
           fi
 
           if ! git ls-files --error-unmatch "整合包说明/额外功能说明.md" >/dev/null 2>&1;
           then
             echo "❌ Git 未跟踪该文件！使用以下命令添加："
             echo "git add '整合包说明/额外功能说明.md'"
+            exit 1
           fi
-
-          exit 1
 
   Changelog-Check:
     name: Changelog Mention
