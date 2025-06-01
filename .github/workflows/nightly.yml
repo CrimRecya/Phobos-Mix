@@ -3,7 +3,7 @@ name: Nightly Build
 on:
   push:
     branches:
-    - alpha-Mix
+    - Mix-ECpack
 
 env:
   # Path to the solution file relative to the root of the project.
