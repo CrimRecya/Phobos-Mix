@@ -21,8 +21,8 @@ DEFINE_HOOK(0x508C30, HouseClass_UpdatePower_UpdateCounter, 0x5)
 		{
 			const auto pExt = BuildingTypeExt::ExtMap.Find(pBld->Type);
 
-			if (pExt->PowerPlantEnhancer_Buildings.size() &&
-				(pExt->PowerPlantEnhancer_Amount != 0 || pExt->PowerPlantEnhancer_Factor != 1.0f))
+			if (pExt->PowerPlantEnhancer_Buildings.size()
+				&& (pExt->PowerPlantEnhancer_Amount != 0 || pExt->PowerPlantEnhancer_Factor != 1.0f))
 			{
 				++pHouseExt->PowerPlantEnhancers[pBld->Type->ArrayIndex];
 			}
@@ -288,24 +288,29 @@ DEFINE_HOOK(0x7015C9, TechnoClass_Captured_UpdateTracking, 0x6)
 		pNewOwnerExt->OwnedCountedHarvesters.push_back(pThis);
 	}
 
-	if (auto pMe = generic_cast<FootClass*, true>(pThis))
+	if (const auto pMe = generic_cast<FootClass*, true>(pThis))
 	{
-		bool I_am_human = pThis->Owner->IsControlledByHuman();
-		bool You_are_human = pNewOwner->IsControlledByHuman();
-		auto pConvertTo = (I_am_human && !You_are_human) ? pExt->TypeExtData->Convert_HumanToComputer.Get() :
-			(!I_am_human && You_are_human) ? pExt->TypeExtData->Convert_ComputerToHuman.Get() : nullptr;
+		const bool I_am_human = pThis->Owner->IsControlledByHuman();
 
-		if (pConvertTo && pConvertTo->WhatAmI() == pType->WhatAmI())
-			TechnoExt::ConvertToType(pMe, pConvertTo);
-
-		for (auto& trail : pExt->LaserTrails)
+		if (I_am_human != pNewOwner->IsControlledByHuman())
 		{
-			if (trail.Type->IsHouseColor)
-				trail.CurrentColor = pNewOwner->LaserColor;
-		}
+			if (const auto pConvertTo = I_am_human
+				? pExt->TypeExtData->Convert_HumanToComputer.Get()
+				: pExt->TypeExtData->Convert_ComputerToHuman.Get())
+			{
+				if (pConvertTo->WhatAmI() == pType->WhatAmI())
+					TechnoExt::ConvertToType(pMe, pConvertTo);
+			}
 
-		if (!I_am_human && You_are_human)
-			TechnoExt::ChangeOwnerMissionFix(pMe);
+			if (!I_am_human)
+				TechnoExt::ChangeOwnerMissionFix(pMe);
+		}
+	}
+
+	for (auto& trail : pExt->LaserTrails)
+	{
+		if (trail.Type->IsHouseColor)
+			trail.CurrentColor = pNewOwner->LaserColor;
 	}
 
 	return 0;

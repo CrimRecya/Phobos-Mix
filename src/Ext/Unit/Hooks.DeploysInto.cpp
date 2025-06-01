@@ -3,8 +3,9 @@
 
 static void TransferMindControlOnDeploy(TechnoClass* pTechnoFrom, TechnoClass* pTechnoTo)
 {
-	auto pAnimType = pTechnoFrom->MindControlRingAnim ?
-		pTechnoFrom->MindControlRingAnim->Type : TechnoExt::ExtMap.Find(pTechnoFrom)->MindControlRingAnimType;
+	auto pAnimType = pTechnoFrom->MindControlRingAnim
+		? pTechnoFrom->MindControlRingAnim->Type
+		: TechnoExt::ExtMap.Find(pTechnoFrom)->MindControlRingAnimType;
 
 	if (auto Controller = pTechnoFrom->MindControlledBy)
 	{

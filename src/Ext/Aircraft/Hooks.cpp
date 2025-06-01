@@ -869,8 +869,8 @@ DEFINE_HOOK(0x708FC0, TechnoClass_ResponseMove_Pickup, 0x5)
 
 	if (auto const pAircraft = abstract_cast<AircraftClass*>(pThis))
 	{
-		if (pAircraft->Type->Carryall && pAircraft->HasAnyLink() &&
-			generic_cast<FootClass*>(pAircraft->Destination))
+		if (pAircraft->Type->Carryall && pAircraft->HasAnyLink()
+			&& generic_cast<FootClass*>(pAircraft->Destination))
 		{
 			auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pAircraft->Type);
 

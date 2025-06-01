@@ -145,9 +145,9 @@ DEFINE_HOOK(0x4690C1, BulletClass_Logics_DetonateOnAllMapObjects, 0x8)
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pThis->WH);
 
-	if (pWHExt->DetonateOnAllMapObjects && !pWHExt->WasDetonatedOnAllMapObjects &&
-		pWHExt->DetonateOnAllMapObjects_AffectTargets != AffectedTarget::None &&
-		pWHExt->DetonateOnAllMapObjects_AffectHouses != AffectedHouse::None)
+	if (pWHExt->DetonateOnAllMapObjects && !pWHExt->WasDetonatedOnAllMapObjects
+		&& pWHExt->DetonateOnAllMapObjects_AffectTargets != AffectedTarget::None
+		&& pWHExt->DetonateOnAllMapObjects_AffectHouses != AffectedHouse::None)
 	{
 		pWHExt->WasDetonatedOnAllMapObjects = true;
 		auto const originalLocation = pThis->Location;
@@ -549,10 +549,10 @@ DEFINE_HOOK(0x4899DA, MapClass_DamageArea_DamageUnderGround, 0x7)
 
 	for (auto const& pTechno : TechnoClass::Array)
 	{
-		if (pTechno->InWhichLayer() == Layer::Underground && // Layer.
-			pTechno->IsAlive && !pTechno->IsIronCurtained() &&
-			!pTechno->IsOnMap && // Underground is not on map.
-			!pTechno->InLimbo)
+		if (pTechno->InWhichLayer() == Layer::Underground // Layer.
+			&& pTechno->IsAlive && !pTechno->IsIronCurtained()
+			&& !pTechno->IsOnMap // Underground is not on map.
+			&& !pTechno->InLimbo)
 		{
 			double dist = 0.0;
 			auto technoCoords = pTechno->GetCoords();

@@ -309,8 +309,9 @@ DEFINE_HOOK(0x73EB2C, UnitClass_MissionHarvest_Status2, 0x6)
 	{
 		if (Unsorted::CurrentFrame - HouseExt::ExtMap.Find(pHouse)->LastRefineryBuildFrame >= pThis->UpdateTimer.TimeLeft)
 		{
-			const auto pDestinationCell = (pDestination->WhatAmI() == AbstractType::Cell) ?
-				static_cast<CellClass*>(pDestination) : MapClass::Instance.GetCellAt(pDestination->GetCoords());
+			const auto pDestinationCell = (pDestination->WhatAmI() == AbstractType::Cell)
+				? static_cast<CellClass*>(pDestination)
+				: MapClass::Instance.GetCellAt(pDestination->GetCoords());
 
 			for (int i = 0; i < 8; ++i)
 			{

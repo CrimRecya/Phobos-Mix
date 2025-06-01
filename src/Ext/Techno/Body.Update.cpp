@@ -312,8 +312,8 @@ void TechnoExt::ExtData::EatPassengers()
 				}
 
 				// Check if there is money refund
-				if (pDelType->Soylent &&
-					EnumFunctions::CanTargetHouse(pDelType->SoylentAllowedHouses, pThis->Owner, pPassenger->Owner))
+				if (pDelType->Soylent
+					&& EnumFunctions::CanTargetHouse(pDelType->SoylentAllowedHouses, pThis->Owner, pPassenger->Owner))
 				{
 					int nMoneyToGive = (int)(pPassenger->GetTechnoType()->GetRefund(pPassenger->Owner, true) * pDelType->SoylentMultiplier);
 
@@ -765,8 +765,8 @@ void TechnoExt::ExtData::UpdateMindControlAnim()
 		{
 			this->MindControlRingAnimType = pThis->MindControlRingAnim->Type;
 		}
-		else if (!pThis->MindControlRingAnim && this->MindControlRingAnimType &&
-			pThis->CloakState == CloakState::Uncloaked && !pThis->InLimbo && pThis->IsAlive)
+		else if (!pThis->MindControlRingAnim && this->MindControlRingAnimType
+			&& pThis->CloakState == CloakState::Uncloaked && !pThis->InLimbo && pThis->IsAlive)
 		{
 			auto coords = pThis->GetCoords();
 			int offset = 0;
@@ -1093,8 +1093,8 @@ void TechnoExt::ExtData::ApplyMindControlRangeLimit()
 	if (auto pCapturer = pThis->MindControlledBy)
 	{
 		auto pCapturerExt = TechnoTypeExt::ExtMap.Find(pCapturer->GetTechnoType());
-		if (pCapturerExt && pCapturerExt->MindControlRangeLimit.Get() > 0 &&
-			pThis->DistanceFrom(pCapturer) > pCapturerExt->MindControlRangeLimit.Get())
+		if (pCapturerExt && pCapturerExt->MindControlRangeLimit.Get() > 0
+			&& pThis->DistanceFrom(pCapturer) > pCapturerExt->MindControlRangeLimit.Get())
 		{
 			pCapturer->CaptureManager->FreeUnit(pThis);
 		}

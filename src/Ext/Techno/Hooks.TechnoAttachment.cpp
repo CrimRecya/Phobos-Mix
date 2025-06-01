@@ -286,11 +286,11 @@ DEFINE_HOOK(0x47C432, CellClass_CellTechno_HandleAttachments, 0x0)
 	const bool noAttachments =
 		currentMode == CellTechnoMode::NoAttachments;
 	const bool noVirtual =
-		currentMode == CellTechnoMode::NoVirtual ||
-		currentMode == CellTechnoMode::NoVirtualOrRelatives;
+		currentMode == CellTechnoMode::NoVirtual
+		|| currentMode == CellTechnoMode::NoVirtualOrRelatives;
 	const bool noRelatives =
-		currentMode == CellTechnoMode::NoRelatives ||
-		currentMode == CellTechnoMode::NoVirtualOrRelatives;
+		currentMode == CellTechnoMode::NoRelatives
+		|| currentMode == CellTechnoMode::NoVirtualOrRelatives;
 
 	if (pOccupier == pSelf  // restored code
 		|| noAttachments && TechnoExt::IsAttached(pOccupier)

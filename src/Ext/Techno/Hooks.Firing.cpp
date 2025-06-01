@@ -428,8 +428,8 @@ DEFINE_HOOK(0x6FC689, TechnoClass_CanFire_LandNavalTarget, 0x6)
 	{
 		const auto landType = pCell->LandType;
 
-		if (pType->NavalTargeting == NavalTargetingType::Naval_None &&
-			(landType == LandType::Water || landType == LandType::Beach))
+		if (pType->NavalTargeting == NavalTargetingType::Naval_None
+			&& (landType == LandType::Water || landType == LandType::Beach))
 		{
 			return DisallowFiring;
 		}
@@ -438,13 +438,13 @@ DEFINE_HOOK(0x6FC689, TechnoClass_CanFire_LandNavalTarget, 0x6)
 	{
 		const auto landType = pTerrain->GetCell()->LandType;
 
-		if (pType->LandTargeting == LandTargetingType::Land_Not_OK &&
-			landType != LandType::Water && landType != LandType::Beach)
+		if (pType->LandTargeting == LandTargetingType::Land_Not_OK
+			&& landType != LandType::Water && landType != LandType::Beach)
 		{
 			return DisallowFiring;
 		}
-		else if (pType->NavalTargeting == NavalTargetingType::Naval_None &&
-			(landType == LandType::Water || landType == LandType::Beach))
+		else if (pType->NavalTargeting == NavalTargetingType::Naval_None
+			&& (landType == LandType::Water || landType == LandType::Beach))
 		{
 			return DisallowFiring;
 		}

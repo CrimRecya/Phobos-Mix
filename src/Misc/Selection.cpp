@@ -51,13 +51,13 @@ public:
 			int nLocalX = selectable.X - pThis->TacticalPos.X;
 			int nLocalY = selectable.Y - pThis->TacticalPos.Y;
 
-			if ((nLocalX >= pRect->Left && nLocalX < pRect->Right + pRect->Left) &&
-				(nLocalY >= pRect->Top && nLocalY < pRect->Bottom + pRect->Top))
+			if ((nLocalX >= pRect->Left && nLocalX < pRect->Right + pRect->Left)
+				&& (nLocalY >= pRect->Top && nLocalY < pRect->Bottom + pRect->Top))
 			{
 				return true;
 			}
-			return (nLocalX >= pRect->Left && nLocalX < pRect->Right + pRect->Left) &&
-				(nLocalY >= pRect->Top && nLocalY < pRect->Bottom + pRect->Top);
+			return (nLocalX >= pRect->Left && nLocalX < pRect->Right + pRect->Left)
+				&& (nLocalY >= pRect->Top && nLocalY < pRect->Bottom + pRect->Top);
 		}
 		return false;
 	}

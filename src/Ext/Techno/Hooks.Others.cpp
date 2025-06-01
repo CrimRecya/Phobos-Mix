@@ -1372,9 +1372,9 @@ DEFINE_HOOK(0x4DF3A6, FootClass_UpdateAttackMove_Follow, 0x6)
 
 		for (auto pTechno : pTechnoVectors)
 		{
-			if ((pTechno->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None &&
-				pTechno != pThis && pTechno->Owner == pThis->Owner &&
-				pTechno->MegaMissionIsAttackMove())
+			if ((pTechno->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None
+				&& pTechno != pThis && pTechno->Owner == pThis->Owner
+				&& pTechno->MegaMissionIsAttackMove())
 			{
 				auto const pTargetExt = TechnoExt::ExtMap.Find(pTechno);
 

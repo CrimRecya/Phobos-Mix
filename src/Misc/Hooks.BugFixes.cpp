@@ -128,9 +128,9 @@ DEFINE_HOOK(0x702299, TechnoClass_ReceiveDamage_DebrisMaximumsFix, 0xA)
 	auto pType = pThis->GetTechnoType();
 
 	// If DebrisMaximums has one value, then legacy behavior is used
-	if (pType->DebrisMaximums.Count == 1 &&
-		pType->DebrisMaximums.GetItem(0) > 0 &&
-		pType->DebrisTypes.Count > 0)
+	if (pType->DebrisMaximums.Count == 1
+		&& pType->DebrisMaximums.GetItem(0) > 0
+		&& pType->DebrisTypes.Count > 0)
 	{
 		return 0;
 	}

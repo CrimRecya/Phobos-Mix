@@ -158,9 +158,11 @@ void DigitalDisplayTypeClass::DisplayShape(Point2D& position, int length, int va
 	}
 
 	Vector2D<int> spacing = (
-		Shape_Spacing.isset() ?
-		Shape_Spacing.Get() :
-		(isBuilding ? Vector2D<int> { 4, -2 } : Vector2D<int> { 4, 0 }) // default
+		Shape_Spacing.isset()
+		? Shape_Spacing.Get()
+		: (isBuilding
+			? Vector2D<int> { 4, -2 }
+			: Vector2D<int> { 4, 0 }) // default
 	);
 	const int pipsHeight = hasShield ? 4 : 0;
 
