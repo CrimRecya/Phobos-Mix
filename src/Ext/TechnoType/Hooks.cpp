@@ -197,18 +197,3 @@ DEFINE_HOOK(0x715B10, TechnoTypeClass_ReadFromINI_MultiWeaponArt, 0x7)
 	R->AL(pThis->HasMultipleTurrets());
 	return Continue;
 }
-
-DEFINE_HOOK(0x520888, InfantryClass_UpdateFiring_IsSecondary, 0x8)
-{
-	enum { Primary = 0x5208D6, Secondary = 0x520890 };
-
-	GET(InfantryClass*, pThis, EBP);
-	GET(int, weaponIdx, EDI);
-
-	if (!TechnoTypeExt::ExtMap.Find(pThis->Type)->IsSecondary(weaponIdx))
-		return Primary;
-
-	// Restore
-	R->AL(pThis->Crawling);
-	return Secondary;
-}

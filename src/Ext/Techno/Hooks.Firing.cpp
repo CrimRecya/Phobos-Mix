@@ -265,12 +265,13 @@ DEFINE_HOOK(0x6F3432, TechnoClass_WhatWeaponShouldIUse_Gattling, 0xA)
 
 DEFINE_HOOK(0x5218F3, InfantryClass_WhatWeaponShouldIUse_DeployFireWeapon, 0x6)
 {
+	GET(InfantryClass*, pThis, ESI);
 	GET(TechnoTypeClass*, pType, ECX);
 
 	if (pType->DeployFireWeapon == -1)
 		return 0x52194E;
 
-	return 0;
+	return pType->IsGattling && !pThis->IsDeployed() ? 0x52194E : 0;
 }
 
 #pragma endregion
@@ -575,7 +576,7 @@ DEFINE_HOOK(0x6FF8F1, TechnoClass_FireAt_AfterFire, 0x6)
 		if (pWeaponExt && pWeaponExt->ResetGattlingValue)
 		{
 			pThis->CurrentGattlingStage = 0;
-			reinterpret_cast<void(__thiscall*)(TechnoClass*, int)>(0x70E000)(pThis, 0); // TechnoClass::UpdateGattlingValueDecrease
+			reinterpret_cast<void(__thiscall*)(TechnoClass*, int)>(0x70E000)(pThis, 0); // TechnoClass::GattlingRateDown
 		}
 	}
 
@@ -1092,16 +1093,65 @@ DEFINE_HOOK(0x6FB086, TechnoClass_Reload_ReloadAmount, 0x8)
 
 namespace FiringAITemp
 {
+	bool canFire;
 	int weaponIndex;
+	bool isSecondary;
+	FireError fireError;
+}
+
+DEFINE_HOOK(0x520AD2, InfantryClass_FiringAI_NoTarget, 0x7)
+{
+	GET(InfantryClass*, pThis, EBP);
+
+	if (pThis->Type->IsGattling)
+		reinterpret_cast<void(__thiscall*)(TechnoClass*, int)>(0x70E000)(pThis, 1); // TechnoClass::GattlingRateDown
+
+	FiringAITemp::canFire = false;
+	return 0;
 }
 
 DEFINE_HOOK(0x5206D2, InfantryClass_FiringAI_SetContext, 0x6)
 {
+	GET(InfantryClass*, pThis, EBP);
 	GET(int, weaponIndex, EDI);
 
+	const auto pTarget = pThis->Target;
 	FiringAITemp::weaponIndex = weaponIndex;
+	FiringAITemp::isSecondary = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->IsSecondary(weaponIndex);
+	FiringAITemp::fireError = pThis->GetFireError(pTarget, weaponIndex, true);
+	FiringAITemp::canFire = true;
 
 	return 0;
+}
+
+// avoid repeatedly calling GetFireError().
+DEFINE_HOOK_AGAIN(0x5209D2, InfantryClass_FiringAI_SetFireError, 0x6)
+DEFINE_HOOK(0x5206E4, InfantryClass_FiringAI_SetFireError, 0x6)
+{
+	R->EAX(FiringAITemp::fireError);
+	return R->Origin() == 0x5206E4 ? 0x5206F9 : 0x5209E4;
+}
+
+// Do you think the infantry's way of determining that weapons are secondary is stupid?
+DEFINE_HOOK(0x520968, InfantryClass_UpdateFiring_IsSecondary, 0x6)
+{
+	enum { Secondary = 0x52096C, SkipGameCode = 0x5209A0 };
+
+	return FiringAITemp::isSecondary ? Secondary : SkipGameCode;
+}
+
+// I think it's kind of stupid.
+DEFINE_HOOK(0x520888, InfantryClass_UpdateFiring_IsSecondary2, 0x8)
+{
+	GET(InfantryClass*, pThis, EBP);
+	enum { Primary = 0x5208D6, Secondary = 0x520890 };
+
+	if (!FiringAITemp::isSecondary)
+		return Primary;
+
+	// Restore
+	R->AL(pThis->Crawling);
+	return Secondary;
 }
 
 DEFINE_HOOK(0x5209AF, InfantryClass_FiringAI_BurstDelays, 0x6)
@@ -1160,6 +1210,37 @@ DEFINE_HOOK(0x5209AF, InfantryClass_FiringAI_BurstDelays, 0x6)
 	}
 
 	return ReturnFromFunction;
+}
+
+// I think it should be executed after the execution of functions like Fire().
+DEFINE_HOOK(0x520AD9, InfantryClass_FiringAI_IsGattling, 0x5)
+{
+	GET(InfantryClass*, pThis, EBP);
+
+	if (FiringAITemp::canFire)
+	{
+		if (pThis->Type->IsGattling)
+		{
+			FireError fireError = FiringAITemp::fireError;
+
+			switch (fireError)
+			{
+			case FireError::OK:
+			case FireError::REARM:
+			case FireError::FACING:
+			case FireError::ROTATING:
+				reinterpret_cast<void(__thiscall*)(TechnoClass*, int)>(0x70DE70)(pThis, 1); // TechnoClass::GattlingRateUp
+				break;
+			default:
+				reinterpret_cast<void(__thiscall*)(TechnoClass*, int)>(0x70E000)(pThis, 1); // TechnoClass::GattlingRateDown
+				break;
+			}
+		}
+
+		FiringAITemp::canFire = false;
+	}
+
+	return 0;
 }
 
 // Author: Otamaa
