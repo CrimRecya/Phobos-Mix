@@ -186,6 +186,7 @@ public:
 		Valueable<int> ForceWeapon_Cloaked;
 		Valueable<int> ForceWeapon_Disguised;
 		Valueable<int> ForceWeapon_UnderEMP;
+		Valueable<bool> ForceWeapon_InRange_TechnoOnly;
 		ValueableVector<int> ForceWeapon_InRange;
 		ValueableVector<double> ForceWeapon_InRange_Overrides;
 		Valueable<bool> ForceWeapon_InRange_ApplyRangeModifiers;
@@ -693,6 +694,7 @@ public:
 			, ForceWeapon_Cloaked { -1 }
 			, ForceWeapon_Disguised { -1 }
 			, ForceWeapon_UnderEMP { -1 }
+			, ForceWeapon_InRange_TechnoOnly { true }
 			, ForceWeapon_InRange {}
 			, ForceWeapon_InRange_Overrides {}
 			, ForceWeapon_InRange_ApplyRangeModifiers { false }
