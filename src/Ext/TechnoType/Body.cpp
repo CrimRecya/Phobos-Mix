@@ -323,93 +323,94 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 
 int TechnoTypeExt::ExtData::SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget)
 {
-	if (TechnoTypeExt::SelectWeaponMutex || !this->ForceWeapon_Check)
+	if (TechnoTypeExt::SelectWeaponMutex || !this->ForceWeapon_Check || !pTarget) // In theory, pTarget must exist
 		return -1;
 
-	const auto pTargetTechno = abstract_cast<TechnoClass*>(pTarget);
-
-	if (!pTargetTechno)
-		return -1;
-
-	const auto pTargetType = pTargetTechno->GetTechnoType();
 	int forceWeaponIndex = -1;
 
-	if (this->ForceWeapon_Naval_Decloaked >= 0
-		&& pTargetType->Cloakable
-		&& pTargetType->Naval
-		&& pTargetTechno->CloakState == CloakState::Uncloaked)
+	if (const auto pTargetTechno = abstract_cast<TechnoClass*>(pTarget))
 	{
-		forceWeaponIndex = this->ForceWeapon_Naval_Decloaked;
-	}
-	else if (this->ForceWeapon_Cloaked >= 0
-		&& pTargetTechno->CloakState == CloakState::Cloaked)
-	{
-		forceWeaponIndex = this->ForceWeapon_Cloaked;
-	}
-	else if (this->ForceWeapon_Disguised >= 0
-		&& pTargetTechno->IsDisguised())
-	{
-		forceWeaponIndex = this->ForceWeapon_Disguised;
-	}
-	else if (this->ForceWeapon_UnderEMP >= 0
-		&& pTargetTechno->IsUnderEMP())
-	{
-		forceWeaponIndex = this->ForceWeapon_UnderEMP;
-	}
-	else if (!this->ForceWeapon_InRange.empty()
-		|| !this->ForceAAWeapon_InRange.empty())
-	{
-		TechnoTypeExt::SelectWeaponMutex = true;
-		forceWeaponIndex = TechnoExt::ExtMap.Find(pThis)->ApplyForceWeaponInRange(pTargetTechno);
-		TechnoTypeExt::SelectWeaponMutex = false;
-	}
-	else
-	{
-		switch (pTarget->WhatAmI())
+		const auto pTargetType = pTargetTechno->GetTechnoType();
+
+		if (this->ForceWeapon_Naval_Decloaked >= 0
+			&& pTargetType->Cloakable
+			&& pTargetType->Naval
+			&& pTargetTechno->CloakState == CloakState::Uncloaked)
 		{
-			case AbstractType::Building:
+			forceWeaponIndex = this->ForceWeapon_Naval_Decloaked;
+		}
+		else if (this->ForceWeapon_Cloaked >= 0
+			&& pTargetTechno->CloakState == CloakState::Cloaked)
+		{
+			forceWeaponIndex = this->ForceWeapon_Cloaked;
+		}
+		else if (this->ForceWeapon_Disguised >= 0
+			&& pTargetTechno->IsDisguised())
+		{
+			forceWeaponIndex = this->ForceWeapon_Disguised;
+		}
+		else if (this->ForceWeapon_UnderEMP >= 0
+			&& pTargetTechno->IsUnderEMP())
+		{
+			forceWeaponIndex = this->ForceWeapon_UnderEMP;
+		}
+		else
+		{
+			switch (pTarget->WhatAmI())
 			{
-				forceWeaponIndex = (this->ForceWeapon_Defenses >= 0
-					&& static_cast<BuildingTypeClass*>(pTargetType)->BuildCat == BuildCat::Combat)
-					? this->ForceWeapon_Defenses
-					: this->ForceWeapon_Buildings;
+				case AbstractType::Building:
+				{
+					forceWeaponIndex = (this->ForceWeapon_Defenses >= 0
+						&& static_cast<BuildingTypeClass*>(pTargetType)->BuildCat == BuildCat::Combat)
+						? this->ForceWeapon_Defenses
+						: this->ForceWeapon_Buildings;
 
-				break;
-			}
-			case AbstractType::Infantry:
-			{
-				forceWeaponIndex = (this->ForceAAWeapon_Infantry >= 0
-					&& pTarget->IsInAir())
-					? this->ForceAAWeapon_Infantry
-					: this->ForceWeapon_Infantry;
+					break;
+				}
+				case AbstractType::Infantry:
+				{
+					forceWeaponIndex = (this->ForceAAWeapon_Infantry >= 0
+						&& pTarget->IsInAir())
+						? this->ForceAAWeapon_Infantry
+						: this->ForceWeapon_Infantry;
 
-				break;
-			}
-			case AbstractType::Unit:
-			{
-				forceWeaponIndex = (this->ForceAAWeapon_Units >= 0
-					&& pTarget->IsInAir())
-					? this->ForceAAWeapon_Units
-					: (pTargetType->Naval
-						? this->ForceWeapon_Naval
-						: this->ForceWeapon_Units);
+					break;
+				}
+				case AbstractType::Unit:
+				{
+					forceWeaponIndex = (this->ForceAAWeapon_Units >= 0
+						&& pTarget->IsInAir())
+						? this->ForceAAWeapon_Units
+						: (pTargetType->Naval
+							? this->ForceWeapon_Naval
+							: this->ForceWeapon_Units);
 
-				break;
-			}
-			case AbstractType::Aircraft:
-			{
-				forceWeaponIndex = (this->ForceAAWeapon_Aircraft >= 0
-					&& pTarget->IsInAir())
-					? this->ForceAAWeapon_Aircraft
-					: this->ForceWeapon_Aircraft;
+					break;
+				}
+				case AbstractType::Aircraft:
+				{
+					forceWeaponIndex = (this->ForceAAWeapon_Aircraft >= 0
+						&& pTarget->IsInAir())
+						? this->ForceAAWeapon_Aircraft
+						: this->ForceWeapon_Aircraft;
 
-				break;
-			}
-			default:
-			{
-				break;
+					break;
+				}
+				default:
+				{
+					break;
+				}
 			}
 		}
+	}
+
+	if (forceWeaponIndex == -1
+		&& (!this->ForceWeapon_InRange.empty()
+			|| !this->ForceAAWeapon_InRange.empty()))
+	{
+		TechnoTypeExt::SelectWeaponMutex = true;
+		forceWeaponIndex = TechnoExt::ExtMap.Find(pThis)->ApplyForceWeaponInRange(pTarget);
+		TechnoTypeExt::SelectWeaponMutex = false;
 	}
 
 	return forceWeaponIndex;
