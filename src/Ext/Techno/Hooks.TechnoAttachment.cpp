@@ -836,8 +836,11 @@ DEFINE_HOOK(0x4817C3, CellClass_Incoming_HandleScatterWithAttachments, 0x0)
 	GET(bool, isForced, EBX);
 	GET_STACK(bool, isNoKidding, STACK_OFFSET(0x2C, 0xC));  // direct all complaints to tomsons26 for the variable naming
 
-	// we already checked that this is something that occupies the cell, see the hook above - Kerbiter
-	TechnoExt::GetTopLevelParent(pTechno)->Scatter(*pThreatCoord, isForced, isNoKidding);
+	if (pTechno)
+	{
+		// we already checked that this is something that occupies the cell, see the hook above - Kerbiter
+		TechnoExt::GetTopLevelParent(pTechno)->Scatter(*pThreatCoord, isForced, isNoKidding);
+	}
 
 	return 0x4817D9;
 }
