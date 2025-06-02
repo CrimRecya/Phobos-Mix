@@ -43,7 +43,7 @@ void TechnoExt::EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, con
 		}
 
 		// if scatter infantry with a coord, then they will swing from side to side and never leave.
-		pFoot->Scatter(pFoot->WhatAmI() == AbstractType::Infantry ? CoordStruct::Empty : coords, true, true);
+		TechnoExt::GetTopLevelParent(pFoot)->Scatter(pFoot->WhatAmI() == AbstractType::Infantry ? CoordStruct::Empty : coords, true, true);
 	}
 }
 
@@ -341,6 +341,12 @@ void TechnoExt::ScatterPathCellContent(FootClass* pThis, CellClass* pCell)
 		if (std::abs(static_cast<short>(static_cast<short>(pFoot->PrimaryFacing.Desired().Raw) - static_cast<short>(pThis->PrimaryFacing.Current().Raw))) < 16384)
 			continue;
 
+		if (const auto pParentAttachment = pFootExt->ParentAttachment)
+		{
+			if (!pParentAttachment->GetType()->OccupiesCell || pParentAttachment->Parent == pThis)
+				continue;
+		}
+
 		if (pFoot->WhatAmI() == AbstractType::Unit && ((pFoot->Location.X & 0xFF) != 128 || (pFoot->Location.Y & 0xFF) != 128))
 			continue;
 
@@ -353,7 +359,7 @@ void TechnoExt::ScatterPathCellContent(FootClass* pThis, CellClass* pCell)
 			}
 		}
 
-		pFoot->Scatter(CoordStruct::Empty, true, true);
+		TechnoExt::GetTopLevelParent(pFoot)->Scatter(CoordStruct::Empty, true, true);
 	}
 }
 
