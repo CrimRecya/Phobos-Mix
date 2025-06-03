@@ -598,6 +598,17 @@ DEFINE_HOOK(0x41A96C, AircraftClass_Mission_AreaGuard, 0x6)
 	return 0;
 }
 
+// Sleep: return to airbase if in incorrect sleep status
+int __fastcall AircraftClass_Mission_Sleep(AircraftClass* pThis)
+{
+	if (!pThis->Destination || pThis->Destination == pThis->DockNowHeadingTo)
+		return 450; // Vanilla MissionClass_Mission_Sleep value
+
+	pThis->EnterIdleMode(false, true);
+	return 1;
+}
+DEFINE_FUNCTION_JUMP(VTABLE, 0x7E24A8, AircraftClass_Mission_Sleep)
+
 // AttackMove: return when no ammo or arrived destination
 bool __fastcall AircraftTypeClass_CanAttackMove(AircraftTypeClass* pThis)
 {
@@ -710,7 +721,7 @@ AbstractClass* __fastcall AircraftClass_GreatestThreat(AircraftClass* pThis, dis
 	return pThis->FootClass::GreatestThreat(threatType, pSelectCoords, onlyTargetHouseEnemy);
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7E2668, AircraftClass_GreatestThreat)
-
+/*
 // Handle assigning area guard mission to aircraft.
 DEFINE_HOOK(0x4C7403, EventClass_Execute_AircraftAreaGuard, 0x6)
 {
@@ -718,12 +729,9 @@ DEFINE_HOOK(0x4C7403, EventClass_Execute_AircraftAreaGuard, 0x6)
 
 	GET(TechnoClass* const, pTechno, EDI);
 
-	if (RulesExt::Global()->ExtendedAircraftMissions && pTechno->WhatAmI() == AbstractType::Aircraft)
+	if (RulesExt::Global()->ExtendedAircraftMissions
+		&& pTechno->WhatAmI() == AbstractType::Aircraft)
 	{
-		// If we're on dock reloading but have ammo, untether from dock and try to scan for targets.
-		if (pTechno->CurrentMission == Mission::Sleep && pTechno->Ammo)
-			pTechno->SendToEachLink(RadioCommand::NotifyUnlink);
-
 		// Skip assigning destination / target here.
 		return SkipGameCode;
 	}
@@ -739,15 +747,18 @@ DEFINE_HOOK(0x4C72F2, EventClass_Execute_AircraftAreaGuard_Untether, 0x6)
 	GET(EventClass* const, pThis, ESI);
 	GET(TechnoClass* const, pTechno, EDI);
 
-	if (RulesExt::Global()->ExtendedAircraftMissions && pTechno->WhatAmI() == AbstractType::Aircraft
-		&& pThis->MegaMission.Mission == (char)Mission::Area_Guard)
+	if (RulesExt::Global()->ExtendedAircraftMissions
+		&& pTechno->WhatAmI() == AbstractType::Aircraft
+		&& pThis->MegaMission.Mission == (char)Mission::Area_Guard
+		&& (pTechno->CurrentMission != Mission::Sleep || !pTechno->Ammo))
 	{
+		// If we're on dock reloading but have ammo, untether from dock and try to scan for targets.
 		return SkipGameCode;
 	}
 
 	return 0;
 }
-
+*/
 #pragma endregion
 
 #pragma region AircraftScatterCell
