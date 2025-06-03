@@ -1863,67 +1863,74 @@ DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
 
 #pragma region ExtraTargeting
 
-DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting, 0x7)
+static inline bool ExtraTargeting_Range(TechnoClass* pThis)
+{
+	if (pThis->Spawned || pThis->SpawnOwner)
+		return false;
+
+	auto coord = pThis->GetCoords();
+
+	pThis->ShouldLoseTargetNow = true;
+	bool HasTarget = pThis->TargetAndEstimateDamage(coord, ThreatType::Range);
+	pThis->ShouldLoseTargetNow = HasTarget;
+
+	return HasTarget;
+}
+
+DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting_Idle, 0x7)
 {
 	enum { SkipGameCode = 0x4C765C };
 
 	GET(TechnoClass*, pTechno, ESI);
 
-	if (RulesExt::Global()->ExtraTargeting_OnStopCommand)
-	{
-		auto coord = pTechno->GetCoords();
-		pTechno->TargetAndEstimateDamage(coord, ThreatType::Range);
-	}
+	if (RulesExt::Global()->ExtraTargeting)
+		ExtraTargeting_Range(pTechno);
 
 	R->EAX(pTechno->WhatAmI());
 	return SkipGameCode;
 }
 
-static inline bool ExtraTargeting_OnLoseTarget(TechnoClass* pThis)
-{
-	if (!RulesExt::Global()->ExtraTargeting_OnLoseTarget || pThis->Spawned || pThis->SpawnOwner) return false;
-	auto coord = pThis->GetCoords();
-	return pThis->TargetAndEstimateDamage(coord, ThreatType::Range);
-}
-
 DEFINE_HOOK(0x4D4E72, FootClass_MissionAttack_ExtraTargeting, 0x6)
 {
 	enum { ApproachTarget = 0x4D4E64 };
+
 	GET(FootClass*, pThis, ESI);
-	return ExtraTargeting_OnLoseTarget(pThis) ? ApproachTarget : 0;
+
+	return pThis->MegaMissionIsAttackMove() && RulesExt::Global()->ExtraTargeting && ExtraTargeting_Range(pThis) ? ApproachTarget : 0;
 }
 
 DEFINE_HOOK(0x44AF90, BuildingClass_MissionAttack_ExtraTargeting, 0x5)
 {
 	enum { AttackTarget = 0x44AFED };
+
 	GET(BuildingClass*, pThis, ESI);
-	return ExtraTargeting_OnLoseTarget(pThis) ? AttackTarget : 0;
+
+	return RulesExt::Global()->ExtraTargeting && ExtraTargeting_Range(pThis) ? AttackTarget : 0;
 }
 
 DEFINE_HOOK(0x417FE0, AircraftClass_MissionAttack_ExtraTargeting, 0x6)
 {
 	GET(AircraftClass*, pThis, ECX);
-	if (!pThis->Target) ExtraTargeting_OnLoseTarget(pThis);
+
+	if (!pThis->Target && RulesExt::Global()->ExtraTargeting && pThis->MegaMissionIsAttackMove())
+		ExtraTargeting_Range(pThis);
+
 	return 0;
 }
 
-#pragma endregion
-
-#pragma region SmartTarget
-
-DEFINE_HOOK(0x4C73B0, EventClass_RespondToEvent_RecordTarget, 0x6)
+DEFINE_HOOK(0x4C7462, EventClass_RespondToEvent_ExtraTargeting_MegaMission, 0x5)
 {
-	GET(EventClass* const, pThis, ESI);
-	GET(TechnoClass* const, pTechno, EDI);
-	GET(const Mission, mission, EAX);
+	GET(TechnoClass*, pTechno, EDI);
+	GET(EventClass*, pThis, ESI);
 
-	if (mission == Mission::Attack)
-	{
-		if (const auto pTarget = pThis->MegaMission.Target.As_Abstract())
-			TechnoExt::ExtMap.Find(pTechno)->PlayerAssignedLastTarget = pTarget->UniqueID;
-	}
+	Mission mission = (Mission)pThis->MegaMission.Mission;
 
-	return 0;
+	return ((mission == Mission::Move || mission == Mission::Harvest)
+		&& pTechno->GetTechnoType()->OpportunityFire
+		&& RulesExt::Global()->ExtraTargeting
+		&& ExtraTargeting_Range(pTechno))
+		? 0x4C746D
+		: 0;
 }
 
 // Current target may hurt me.
@@ -1944,57 +1951,6 @@ static inline bool IsAThreatToMe(TechnoClass* const pTechno, AbstractClass* cons
 	return false;
 }
 
-// Target is assigned by player.
-static inline bool IsAssignedTarget(TechnoClass* const pTechno, AbstractClass* const pTarget)
-{
-	return pTarget && TechnoExt::ExtMap.Find(pTechno)->PlayerAssignedLastTarget == pTarget->UniqueID;
-}
-
-static inline bool CanRetarget(TechnoClass* const pThis, AbstractClass* const pTarget)
-{
-	return !IsAssignedTarget(pThis, pTarget) && !(IsAThreatToMe(pThis, pTarget) && pThis->IsCloseEnoughToAttack(pTarget));
-}
-
-DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_ReturnFireCheck, 0x7)
-{
-	enum { SkipReturnFire = 0x702B47 };
-
-	GET(TechnoClass* const, pThis, ESI);
-	GET_STACK(TechnoClass* const, pAttacker, STACK_OFFSET(0xC4, 0x10));
-
-	if (!pThis->Owner->IsControlledByHuman() || !RulesExt::Global()->PlayerReturnFire_Smarter) // Vanilla behavior.
-		return 0;
-
-	if (!pThis->IsCloseEnoughToAttack(pAttacker) || !CanRetarget(pThis, pThis->Target))
-		return SkipReturnFire;
-
-	pThis->Target = pAttacker; // Use SetTarget will result in pThis stop when pAttacker is a building
-	// pThis->SetTarget(pAttacker);
-	// pThis->QueueMission(Mission::Attack, false);
-	return SkipReturnFire;
-}
-
-DEFINE_HOOK(0x708859, TechnoClass_CanRetaliate_SmarterReturnFire, 0x6)
-{
-	enum { CanRetaliate = 0x708867 };
-	GET(TechnoClass* const, pThis, ESI);
-	return RulesClass::Instance->PlayerReturnFire && RulesExt::Global()->PlayerReturnFire_Smarter && CanRetarget(pThis, pThis->Target) ? CanRetaliate : 0;
-}
-
-DEFINE_HOOK(0x6FA697, TechnoClass_Update_AutoTargetMissionCheck, 0x6)
-{
-	enum { CanTargeting = 0x6FA6AC };
-	GET(TechnoClass* const, pThis, ESI);
-	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && !pThis->Spawned && !pThis->SpawnOwner ? CanTargeting : 0;
-}
-
-DEFINE_HOOK(0x7093E9, TechnoClass_CanPassiveAquireNow_MissionCheck, 0x7)
-{
-	enum { CanTargeting = 0x7093F8 };
-	GET(TechnoClass* const, pThis, ESI);
-	return pThis->CurrentMission == Mission::Attack && RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && !pThis->Spawned && !pThis->SpawnOwner && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
-}
-
 DEFINE_HOOK(0x70CE85, TechnoClass_ThreatCoefficient_CanAttackMeThreatBonus, 0x5)
 {
 	GET(TechnoClass* const, pThis, EDI);
@@ -2011,8 +1967,106 @@ DEFINE_HOOK(0x70CE85, TechnoClass_ThreatCoefficient_CanAttackMeThreatBonus, 0x5)
 DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
 {
 	enum { CanTargeting = 0x709926 };
-	GET(TechnoClass* const, pThis, ESI);
-	return RulesExt::Global()->ExtraTargeting_OnNoTargetAssigned && !pThis->Spawned && CanRetarget(pThis, pThis->Target) ? CanTargeting : 0;
+	// GET(TechnoClass* const, pThis, ESI);
+	return RulesExt::Global()->ExtraTargeting ? CanTargeting : 0;
+}
+
+DEFINE_HOOK(0x709957, TechnoClass_TargetAndEstimateDamage_SetTarget, 0x6)
+{
+	enum { SkipSetTarget = 0x709966, SkipSetTargetAndEstimateHealth = 0x7099B8 };
+
+	GET(AbstractClass*, pTarget, EDI);
+	GET(TechnoClass*, pThis, ESI);
+
+	if (RulesExt::Global()->ExtraTargeting ? (pThis->QueuedMission != Mission::Attack) : (pTarget != nullptr))
+		pThis->SetTarget(pTarget);
+
+	return RulesExt::Global()->VHPScan_Enhanced ? SkipSetTargetAndEstimateHealth : SkipSetTarget;
+}
+
+DEFINE_HOOK(0x7079D1, TechnoClass_PointerExpired_TargetExpired, 0x6)
+{
+	GET(TechnoClass*, pThis, ESI);
+
+	if(RulesExt::Global()->ExtraTargeting)
+		pThis->TargetingTimer.TimeLeft = 0;
+
+	return 0;
+}
+
+static inline void CheckVHPScanAndRetarget(TechnoClass* pThis)
+{
+	if (RulesExt::Global()->VHPScan_Enhanced)
+	{
+		auto technoTarget = abstract_cast<TechnoClass*>(pThis->Target);
+		auto pType = pThis->GetTechnoType();
+
+		if (technoTarget && pType->VHPScan == 2 && technoTarget->EstimatedHealth <= 0)
+		{
+			pThis->SetTarget(nullptr);
+
+			if (RulesExt::Global()->ExtraTargeting)
+			{
+				if (pThis->CurrentMission == Mission::Attack)
+					pThis->QueueMission(pThis->MegaMissionIsAttackMove() ? Mission::Attack : (pType->DefaultToGuardArea ? Mission::Area_Guard : Mission::Guard), true);
+
+				ExtraTargeting_Range(pThis);
+			}
+		}
+	}
+}
+
+DEFINE_HOOK(0x5206B7, InfantryClass_UpdateFiring_Start, 0x6)
+{
+	GET(InfantryClass*, pThis, EBP);
+	CheckVHPScanAndRetarget(pThis);
+	return 0;
+}
+
+DEFINE_HOOK(0x736DF8, UnitClass_UpdateFiring_Start, 0x6)
+{
+	GET(UnitClass*, pThis, ESI);
+	CheckVHPScanAndRetarget(pThis);
+	return 0;
+}
+
+DEFINE_HOOK(0x44ACF0, BuildingClass_MissionAttack_Start, 0x6)
+{
+	GET(BuildingClass*, pThis, ECX);
+	CheckVHPScanAndRetarget(pThis);
+	return 0;
+}
+
+DEFINE_HOOK(0x417FF1, AircraftClass_MissionAttack_Start, 0x6)
+{
+	GET(AircraftClass*, pThis, ESI);
+	CheckVHPScanAndRetarget(pThis);
+	return 0;
+}
+
+DEFINE_HOOK(0x6F7D0D, TechnoClass_CanAutoTargetObject_VHPScanStrong, 0x6)
+{
+	enum { SkipGameCode = 0x6F7D19 };
+	return RulesExt::Global()->VHPScan_Enhanced ? SkipGameCode : 0;
+}
+
+DEFINE_HOOK(0x6F8721, TechnoClass_CanAutoTargetObject_VHPScanThreat, 0x7)
+{
+	enum { SkipGameCode = 0x6F875F };
+
+	GET(TechnoClass*, pThis, EDI);
+	GET(ObjectClass*, pTarget, ESI);
+	GET_STACK(int*, pThreat, STACK_OFFSET(0x3C, 0x14));
+
+	if (RulesExt::Global()->VHPScan_Enhanced && pThis->GetTechnoType()->VHPScan == 2)
+	{
+		if (pTarget->EstimatedHealth <= 0)
+			*pThreat /= 10;
+
+		return SkipGameCode;
+	}
+
+	return 0;
 }
 
 #pragma endregion
