@@ -322,9 +322,7 @@ public:
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
-		Valueable<bool> ExtraTargeting_OnLoseTarget;
-		Valueable<bool> ExtraTargeting_OnStopCommand;
-		Valueable<bool> ExtraTargeting_OnNoTargetAssigned;
+		Valueable<bool> ExtraTargeting;
 		Valueable<double> CanAttackMeThreatBonus;
 
 		Valueable<bool> AllyShareControl;
@@ -372,6 +370,8 @@ public:
 		Valueable<AffectedHouse> ReorganizeToWhenDefeated;
 
 		Valueable<AffectedHouse> BerzerkTargeting;
+
+		Valueable<bool> VHPScan_Enhanced;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -639,9 +639,7 @@ public:
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
 
-			, ExtraTargeting_OnLoseTarget { false }
-			, ExtraTargeting_OnStopCommand { false }
-			, ExtraTargeting_OnNoTargetAssigned { false }
+			, ExtraTargeting { false }
 			, CanAttackMeThreatBonus { 0.0 }
 			, AllyShareControl { false }
 			, InTransportInfantryAmmoFix { false }
@@ -684,6 +682,8 @@ public:
 			, ReorganizeToWhenDefeated { AffectedHouse::None }
 
 			, BerzerkTargeting { AffectedHouse::All }
+
+			, VHPScan_Enhanced { false }
 		{ }
 
 		virtual ~ExtData() = default;

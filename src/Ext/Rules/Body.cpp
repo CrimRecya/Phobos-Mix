@@ -374,9 +374,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->BuildingTypeSelectable.Read(exINI, GameStrings::General, "BuildingTypeSelectable");
 
-	this->ExtraTargeting_OnLoseTarget.Read(exINI, GameStrings::General, "ExtraTargeting.OnLoseTarget");
-	this->ExtraTargeting_OnStopCommand.Read(exINI, GameStrings::General, "ExtraTargeting.OnStopCommand");
-	this->ExtraTargeting_OnNoTargetAssigned.Read(exINI, GameStrings::General, "ExtraTargeting.OnNoTargetAssigned");
+	this->ExtraTargeting.Read(exINI, GameStrings::General, "ExtraTargeting");
 	this->CanAttackMeThreatBonus.Read(exINI, GameStrings::General, "CanAttackMeThreatBonus");
 
 	this->AllyShareControl.Read(exINI, GameStrings::General, "AllyShareControl");
@@ -435,6 +433,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->ReorganizeToWhenDefeated.Read(exINI, GameStrings::General, "ReorganizeToWhenDefeated");
 
 	this->BerzerkTargeting.Read(exINI, GameStrings::CombatDamage, "BerzerkTargeting");
+
+	this->VHPScan_Enhanced.Read(exINI, GameStrings::CombatDamage, "VHPScan.Enhanced");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -756,9 +756,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->CombatLightDetailLevel)
 		.Process(this->LightFlashAlphaImageDetailLevel)
 		.Process(this->BuildingTypeSelectable)
-		.Process(this->ExtraTargeting_OnLoseTarget)
-		.Process(this->ExtraTargeting_OnStopCommand)
-		.Process(this->ExtraTargeting_OnNoTargetAssigned)
+		.Process(this->ExtraTargeting)
 		.Process(this->CanAttackMeThreatBonus)
 		.Process(this->AllyShareControl)
 		.Process(this->InTransportInfantryAmmoFix)
@@ -791,6 +789,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AnimCraterReduceTiberium)
 		.Process(this->ReorganizeToWhenDefeated)
 		.Process(this->BerzerkTargeting)
+		.Process(this->VHPScan_Enhanced)
 		;
 }
 

@@ -95,8 +95,6 @@ public:
 		bool AggressiveStance;                  // Aggressive stance that will auto target buildings
 		bool CeaseFireStance;
 
-		DWORD PlayerAssignedLastTarget;
-
 		bool IsWreckage;
 
 		BuildingClass* BuildingOccupying;
@@ -182,7 +180,6 @@ public:
 			, CeaseFireStance { false }
 			, KeepTargetOnMove { false }
 			, LastSensorsMapCoords { CellStruct::Empty }
-			, PlayerAssignedLastTarget { 0xFFFFFFFF }
 			, IsWreckage { false }
 			, BuildingOccupying { }
 			, TiberiumEater_Timer {}
