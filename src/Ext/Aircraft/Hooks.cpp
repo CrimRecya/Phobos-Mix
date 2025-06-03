@@ -721,7 +721,7 @@ AbstractClass* __fastcall AircraftClass_GreatestThreat(AircraftClass* pThis, dis
 	return pThis->FootClass::GreatestThreat(threatType, pSelectCoords, onlyTargetHouseEnemy);
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7E2668, AircraftClass_GreatestThreat)
-/*
+
 // Handle assigning area guard mission to aircraft.
 DEFINE_HOOK(0x4C7403, EventClass_Execute_AircraftAreaGuard, 0x6)
 {
@@ -756,78 +756,6 @@ DEFINE_HOOK(0x4C72F2, EventClass_Execute_AircraftAreaGuard_Untether, 0x6)
 		return SkipGameCode;
 	}
 
-	return 0;
-}
-*/
-#pragma endregion
-
-#pragma region AircraftScatterCell
-
-DEFINE_HOOK(0x41847E, AircraftClass_MissionAttack_ScatterCell1, 0x6)
-{
-	enum { SkipScatter = 0x4184C2, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-DEFINE_HOOK(0x4186DD, AircraftClass_MissionAttack_ScatterCell2, 0x5)
-{
-	enum { SkipScatter = 0x418720, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-DEFINE_HOOK(0x41882C, AircraftClass_MissionAttack_ScatterCell3, 0x6)
-{
-	enum { SkipScatter = 0x418870, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-DEFINE_HOOK(0x41893B, AircraftClass_MissionAttack_ScatterCell4, 0x6)
-{
-	enum { SkipScatter = 0x41897F, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-DEFINE_HOOK(0x418A4A, AircraftClass_MissionAttack_ScatterCell5, 0x6)
-{
-	enum { SkipScatter = 0x418A8E, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-DEFINE_HOOK(0x418B46, AircraftClass_MissionAttack_ScatterCell6, 0x6)
-{
-	enum { SkipScatter = 0x418B8A, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-#pragma endregion
-
-#pragma region AircraftFlight
-
-DEFINE_HOOK(0x4CDF84, FlyLocomotionClass_UpdateLoaction_FlightCrash, 0x5)
-{
-	GET(FootClass* const, pLinkedTo, EAX);
-
-	const int crashSpeed = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType())->FlightCrash;
-
-	if (crashSpeed >= 0)
-		R->ECX(crashSpeed);
-
-	return 0;
-}
-
-DEFINE_HOOK(0x4CDE96, FlyLocomotionClass_UpdateLoaction_FlightClimb, 0x6)
-{
-	GET(int, vZ, EAX);
-	GET(const int, height, EDI);
-	GET(FlyLocomotionClass* const, pThis, ESI);
-	GET(FootClass* const, pLinkedTo, ECX);
-
-	const int climbSpeed = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType())->FlightClimb;
-
-	if (climbSpeed >= 0)
-		vZ = climbSpeed;
-
-	R->EAX(Math::min(vZ, (pThis->FlightLevel - height)));
 	return 0;
 }
 

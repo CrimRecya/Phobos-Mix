@@ -729,7 +729,7 @@ DEFINE_HOOK(0x73C602, UnitClass_DrawSHP_WaterType_Extra, 0x6)
 	R->ECX(pThis->GetType());
 	return Continue;
 }
-
+/*
 // Do not explicitly reset target for KeepTargetOnMove vehicles when issued move command.
 DEFINE_HOOK(0x4C7462, EventClass_Execute_KeepTargetOnMove, 0x5)
 {
@@ -762,7 +762,7 @@ DEFINE_HOOK(0x4C7462, EventClass_Execute_KeepTargetOnMove, 0x5)
 
 	return 0;
 }
-
+*/
 #pragma endregion
 
 DEFINE_HOOK(0x70D703, TechnoClass_FireDeathWeapon_UseGlobalDeathWeaponDamage, 0xA)

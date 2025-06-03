@@ -31,12 +31,6 @@
 // Indicates Merge-related bugfixes only.
 #define MERGE_PATCH 0
 
-// Merge number. Counted main merge contributors.
-#define MERGE_NUMBER 3
-
-// Indicates Merge-related bugfixes only.
-#define MERGE_PATCH 31
-
 // Nightly defines GIT_COMMIT and GIT_BRANCH in GH Actions
 
 #ifdef IS_RELEASE_VER // Release build metadata
