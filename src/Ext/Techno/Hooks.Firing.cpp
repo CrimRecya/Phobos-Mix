@@ -1113,7 +1113,7 @@ DEFINE_HOOK(0x520AD2, InfantryClass_FiringAI_NoTarget, 0x7)
 DEFINE_HOOK(0x5206D2, InfantryClass_FiringAI_SetContext, 0x6)
 {
 	GET(InfantryClass*, pThis, EBP);
-	GET(int, weaponIndex, EDI);
+	GET(const int, weaponIndex, EDI);
 
 	const auto pTarget = pThis->Target;
 	FiringAITemp::weaponIndex = weaponIndex;
@@ -1135,16 +1135,17 @@ DEFINE_HOOK(0x5206E4, InfantryClass_FiringAI_SetFireError, 0x6)
 // Do you think the infantry's way of determining that weapons are secondary is stupid?
 DEFINE_HOOK(0x520968, InfantryClass_UpdateFiring_IsSecondary, 0x6)
 {
-	enum { Secondary = 0x52096C, SkipGameCode = 0x5209A0 };
-
-	return FiringAITemp::isSecondary ? Secondary : SkipGameCode;
+	enum { CrawlingAnim = 0x520970, NoCrawlingAnim = 0x52098A, SkipGameCode = 0x5209A0 };
+	GET(const bool, crawling, ECX);
+	return FiringAITemp::isSecondary ? (crawling ? CrawlingAnim : NoCrawlingAnim) : SkipGameCode;
 }
 
 // I think it's kind of stupid.
 DEFINE_HOOK(0x520888, InfantryClass_UpdateFiring_IsSecondary2, 0x8)
 {
-	GET(InfantryClass*, pThis, EBP);
 	enum { Primary = 0x5208D6, Secondary = 0x520890 };
+
+	GET(InfantryClass*, pThis, EBP);
 
 	if (!FiringAITemp::isSecondary)
 		return Primary;
@@ -1159,16 +1160,15 @@ DEFINE_HOOK(0x5209AF, InfantryClass_FiringAI_BurstDelays, 0x6)
 	enum { Continue = 0x5209CD, ReturnFromFunction = 0x520AD9 };
 
 	GET(InfantryClass*, pThis, EBP);
-	GET(int, firingFrame, EDX);
+	GET(const int, firingFrame, EDX);
 
 	int cumulativeDelay = 0;
 	int projectedDelay = 0;
 	int weaponIndex = FiringAITemp::weaponIndex;
-	auto const pWeapon = pThis->GetWeapon(weaponIndex)->WeaponType;
-	auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
+	auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pThis->GetWeapon(weaponIndex)->WeaponType);
 
 	// Calculate cumulative burst delay as well cumulative delay after next shot (projected delay).
-	if (pWeaponExt && pWeaponExt->Burst_FireWithinSequence)
+	if (pWeaponExt && pWeaponExt->Burst_FireWithinSequence.Get())
 	{
 		for (int i = 0; i <= pThis->CurrentBurstIndex; i++)
 		{
@@ -1193,7 +1193,7 @@ DEFINE_HOOK(0x5209AF, InfantryClass_FiringAI_BurstDelays, 0x6)
 
 	if (pThis->Animation.Value == firingFrame + cumulativeDelay)
 	{
-		if (pWeaponExt && pWeaponExt->Burst_FireWithinSequence)
+		if (pWeaponExt && pWeaponExt->Burst_FireWithinSequence.Get())
 		{
 			int frameCount = pThis->Type->Sequence->GetSequence(pThis->SequenceAnim).CountFrames;
 
@@ -1212,7 +1212,6 @@ DEFINE_HOOK(0x5209AF, InfantryClass_FiringAI_BurstDelays, 0x6)
 	return ReturnFromFunction;
 }
 
-// I think it should be executed after the execution of functions like Fire().
 DEFINE_HOOK(0x520AD9, InfantryClass_FiringAI_IsGattling, 0x5)
 {
 	GET(InfantryClass*, pThis, EBP);
