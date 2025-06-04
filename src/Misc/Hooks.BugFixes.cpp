@@ -2096,3 +2096,28 @@ DEFINE_HOOK(0x4834A0, CellClass_IsClearToMove_Start, 0x5)
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x481778, CellClass_ScatterContent_Scatter, 0x6)
+{
+	enum { NextTechno = 0x4817D9 };
+
+	GET(TechnoClass*, pTechno, ESI);
+
+	if (!pTechno)
+		return NextTechno;
+
+	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x2C, 0x4));
+	GET_STACK(const bool, ignoreMission, STACK_OFFSET(0x2C, 0x8));
+	GET_STACK(const bool, ignoreDestination, STACK_OFFSET(0x2C, 0xC));
+
+	if (ignoreDestination
+		|| pTechno->HasAbility(Ability::Scatter)
+		|| (pTechno->Owner->IsControlledByHuman()
+			? RulesClass::Instance->PlayerScatter
+			: pTechno->Owner->IQLevel2 >= RulesClass::Instance->Scatter))
+	{
+		pTechno->Scatter(coords, ignoreMission, ignoreDestination);
+	}
+
+	return NextTechno;
+}

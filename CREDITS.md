@@ -401,7 +401,8 @@ This page lists all the individual contributions to the project by their author.
   - Fix the bug that infantry ignored `Passengers` and `SizeLimit` when entering buildings
   - Tiberium eater logic
   - Fix the bug that ships can travel on elevated bridges
-  - `Arcing` elevation inaccuracy fix
+  - Original `Arcing` elevation inaccuracy fix
+  - Fix the bug that uncontrolled scatter when elite techno attacked by aircraft or some unit try crush it
   - Exclusive SuperWeapon Sidebar
   - Directional armor
 - **Apollo** - Translucent SHP drawing patches

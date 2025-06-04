@@ -1074,6 +1074,8 @@ public:
 		int SelectMultiWeapon(TechnoClass* pThis, AbstractClass* pTarget);
 		int SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget);
 
+		int SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget);
+
 		// Ares 0.A
 		const char* GetSelectionGroupID() const;
 
