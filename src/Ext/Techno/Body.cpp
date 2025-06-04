@@ -57,6 +57,14 @@ TechnoExt::ExtData::~ExtData()
 			invalidateCellPointer(pCell, false);
 	}
 
+	if (this->SquadManager)
+	{
+		this->SquadManager->RemoveMember(pThis);
+
+		if (this->SquadManager->Members.empty())
+			SquadManagerClass::Remove(this->SquadManager);
+	}
+
 	if (pTypeExt->AutoDeath_Behavior.isset())
 	{
 		auto& vec = ScenarioExt::Global()->AutoDeathObjects;
@@ -1332,6 +1340,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->MyTrackingLasers_CreatorWeapon)
 		.Process(this->MyTrackingLasersTarget)
 		.Process(this->TrackingLasersTargetingMe)
+		.Process(this->SquadManager)
 		.Process(this->ParentAttachment)
 		.Process(this->ChildAttachments)
 		.Process(this->ThisOccupationCell)

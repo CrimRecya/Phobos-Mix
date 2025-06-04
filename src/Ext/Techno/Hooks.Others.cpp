@@ -2201,6 +2201,118 @@ DEFINE_HOOK(0x740015, UnitClass_WhatAction_NoManualEject, 0x6)
 
 #pragma endregion
 
+#pragma region NoManualEject
+
+static inline InfantryClass* CreateInfantryFromFactory(InfantryTypeClass* pType, HouseClass* pOwner)
+{
+	// BuildLimit check goes before creation
+	if (pType->BuildLimit > 0)
+	{
+		int sum = pOwner->CountOwnedNow(pType);
+
+		// copy Ares' deployable units x build limit fix
+		if (auto const pUndeploy = pType->UndeploysInto)
+			sum += pOwner->CountOwnedNow(pUndeploy);
+
+		if (sum >= pType->BuildLimit)
+			return nullptr;
+	}
+
+	return static_cast<InfantryClass*>(pType->CreateObject(pOwner));
+}
+
+DEFINE_HOOK(0x444DDF, BuildingClass_KickOutUnit_InfantrySquad, 0x5)
+{
+	GET(TechnoClass*, pTechno, EDI);
+
+	if (const auto pInfantry = abstract_cast<InfantryClass*, true>(pTechno))
+	{
+		const auto pExt = TechnoExt::ExtMap.Find(pInfantry);
+		const auto pTypeExt = pExt->TypeExtData;
+
+		if (pTypeExt->Squad_IsInitAsTeam)
+		{
+			pExt->SquadManager = SquadManagerClass::Allocate();
+			pExt->SquadManager->AddMember(pInfantry);
+		}
+
+		const int size = pTypeExt->Squad_Members.size();
+
+		if (size > 0)
+		{
+			for (int i = 0; i < size; ++i)
+			{
+				if (const auto pMember = CreateInfantryFromFactory(pTypeExt->Squad_Members[i], pInfantry->Owner))
+				{
+					++Unsorted::ScenarioInit;
+					pMember->Unlimbo(pInfantry->Location, DirType::North);
+					pMember->SetDestination(pInfantry, true);
+					pMember->SetArchiveTarget(pInfantry);
+					pMember->QueueMission(Mission::Area_Guard, 0);
+					--Unsorted::ScenarioInit;
+
+					if (pExt->SquadManager)
+					{
+						TechnoExt::ExtMap.Find(pMember)->SquadManager = pExt->SquadManager;
+						pExt->SquadManager->AddMember(pMember);
+					}
+				}
+			}
+		}
+	}
+
+	return 0x444971;
+}
+
+DEFINE_HOOK(0x6FBFD0, TechnoClass_Select_SquadSelect, 0x5)
+{
+	GET(TechnoClass*, pTechno, ESI);
+
+	if (const auto pSquadManager = TechnoExt::ExtMap.Find(pTechno)->SquadManager)
+	{
+		if (!pSquadManager->Select)
+		{
+			pSquadManager->Select = true;
+
+			for (auto& pMember : pSquadManager->Members)
+			{
+				if (pMember != pTechno)
+					pMember->Select();
+			}
+
+			pSquadManager->Select = false;
+		}
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x737BBE, UnitClass_Unlimbo_CreatePassengerSquad, 0x6)
+{
+	GET(UnitClass*, pThis, ESI);
+
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+
+	if (pExt->TypeExtData->Squad_IsInitAsTeam)
+	{
+		if (pThis->Passengers.NumPassengers > 0)
+		{
+			pExt->SquadManager = SquadManagerClass::Allocate();
+			pExt->SquadManager->AddMember(pThis);
+
+			for (auto pPassenger = pThis->Passengers.GetFirstPassenger(); pPassenger; pPassenger = abstract_cast<FootClass*>(pPassenger->NextObject))
+			{
+				TechnoExt::ExtMap.Find(pPassenger)->SquadManager = pExt->SquadManager;
+				pExt->SquadManager->AddMember(pPassenger);
+			}
+		}
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
 // TODO Other contributors' impl
 
 

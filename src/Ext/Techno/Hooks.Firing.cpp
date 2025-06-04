@@ -575,7 +575,7 @@ DEFINE_HOOK(0x6FF8F1, TechnoClass_FireAt_AfterFire, 0x6)
 		if (pWeaponExt && pWeaponExt->ResetGattlingValue)
 		{
 			pThis->CurrentGattlingStage = 0;
-			reinterpret_cast<void(__thiscall*)(TechnoClass*, int)>(0x70E000)(pThis, 0); // TechnoClass::GattlingRateDown
+			pThis->GattlingRateDown(0);
 		}
 	}
 
@@ -1103,7 +1103,7 @@ DEFINE_HOOK(0x520AD2, InfantryClass_FiringAI_NoTarget, 0x7)
 	GET(InfantryClass*, pThis, EBP);
 
 	if (pThis->Type->IsGattling)
-		reinterpret_cast<void(__thiscall*)(TechnoClass*, int)>(0x70E000)(pThis, 1); // TechnoClass::GattlingRateDown
+		pThis->GattlingRateDown(1);
 
 	FiringAITemp::canFire = false;
 	return 0;
@@ -1228,10 +1228,10 @@ DEFINE_HOOK(0x520AD9, InfantryClass_FiringAI_IsGattling, 0x5)
 			case FireError::REARM:
 			case FireError::FACING:
 			case FireError::ROTATING:
-				reinterpret_cast<void(__thiscall*)(TechnoClass*, int)>(0x70DE70)(pThis, 1); // TechnoClass::GattlingRateUp
+				pThis->GattlingRateUp(1);
 				break;
 			default:
-				reinterpret_cast<void(__thiscall*)(TechnoClass*, int)>(0x70E000)(pThis, 1); // TechnoClass::GattlingRateDown
+				pThis->GattlingRateDown(1);
 				break;
 			}
 		}

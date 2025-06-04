@@ -11,6 +11,7 @@
 #include <New/Entity/LaserTrailClass.h>
 #include <New/Entity/AttachEffectClass.h>
 #include <New/Entity/AttachmentClass.h>
+#include <New/Entity/Discrete/SquadManagerClass.h>
 
 class BulletClass;
 
@@ -108,6 +109,8 @@ public:
 		AbstractClass* MyTrackingLasersTarget;
 		DynamicVectorClass<LaserDrawClass*> TrackingLasersTargetingMe;
 
+		SquadManagerClass* SquadManager;
+
 		AttachmentClass* ParentAttachment;
 		std::vector<std::unique_ptr<AttachmentClass>> ChildAttachments;
 		CellClass* ThisOccupationCell;
@@ -190,6 +193,7 @@ public:
 			, MyTrackingLasers_CreatorWeapon { }
 			, MyTrackingLasersTarget { }
 			, TrackingLasersTargetingMe { }
+			, SquadManager {}
 			, ParentAttachment { nullptr }
 			, ChildAttachments {}
 			, ThisOccupationCell { nullptr }

@@ -237,7 +237,8 @@ using PhobosTypeRegistry = TypeRegistry <
 	NewSWType,
 	SelectBoxTypeClass,
 	AttachmentClass,
-	AttachmentTypeClass
+	AttachmentTypeClass,
+	SquadManagerClass
 	// other classes
 > ;
 

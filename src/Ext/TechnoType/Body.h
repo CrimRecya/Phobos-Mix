@@ -541,6 +541,9 @@ public:
 		Nullable<bool> ExtendedAircraftMissions_EarlyDescend;
 		Nullable<bool> ExtendedAircraftMissions_RearApproach;
 
+		ValueableVector<InfantryTypeClass*> Squad_Members;
+		Valueable<bool> Squad_IsInitAsTeam;
+
 		Valueable<double> FallingDownDamage;
 		Nullable<double> FallingDownDamage_Water;
 
@@ -1039,6 +1042,9 @@ public:
 			, ExtendedAircraftMissions_SmoothMoving {}
 			, ExtendedAircraftMissions_EarlyDescend {}
 			, ExtendedAircraftMissions_RearApproach {}
+
+			, Squad_Members {}
+			, Squad_IsInitAsTeam { false }
 
 			, FallingDownDamage { 1.0 }
 			, FallingDownDamage_Water {}
