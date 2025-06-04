@@ -34,7 +34,6 @@ DEFINE_HOOK(0x6F3339, TechnoClass_WhatWeaponShouldIUse_Interceptor, 0x8)
 
 	if (TechnoTypeExt::ExtMap.Find(pType)->MultiWeapon.Get()
 		&& (!pType->HasMultipleTurrets()
-			|| pThis->WhatAmI() != AbstractType::Unit
 			|| (!pType->Gunner && !pType->IsGattling)))
 	{
 		return SkipGameCode;
@@ -1128,12 +1127,13 @@ DEFINE_HOOK(0x5206D2, InfantryClass_FiringAI_SetContext, 0x6)
 DEFINE_HOOK_AGAIN(0x5209D2, InfantryClass_FiringAI_SetFireError, 0x6)
 DEFINE_HOOK(0x5206E4, InfantryClass_FiringAI_SetFireError, 0x6)
 {
+	enum { SkipGameCode1 = 0x5206F9, SkipGameCode2 = 0x5209E4 };
 	R->EAX(FiringAITemp::fireError);
-	return R->Origin() == 0x5206E4 ? 0x5206F9 : 0x5209E4;
+	return R->Origin() == 0x5206E4 ? SkipGameCode1 : SkipGameCode2;
 }
 
 // Do you think the infantry's way of determining that weapons are secondary is stupid?
-DEFINE_HOOK(0x520968, InfantryClass_UpdateFiring_IsSecondary, 0x6)
+DEFINE_HOOK(0x520968, InfantryClass_FiringAI_IsSecondary, 0x6)
 {
 	enum { CrawlingAnim = 0x520970, NoCrawlingAnim = 0x52098A, SkipGameCode = 0x5209A0 };
 	GET(const bool, crawling, ECX);
@@ -1141,7 +1141,7 @@ DEFINE_HOOK(0x520968, InfantryClass_UpdateFiring_IsSecondary, 0x6)
 }
 
 // I think it's kind of stupid.
-DEFINE_HOOK(0x520888, InfantryClass_UpdateFiring_IsSecondary2, 0x8)
+DEFINE_HOOK(0x520888, InfantryClass_FiringAI_IsSecondary2, 0x8)
 {
 	enum { Primary = 0x5208D6, Secondary = 0x520890 };
 

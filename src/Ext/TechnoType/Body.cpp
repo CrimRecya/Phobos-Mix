@@ -178,7 +178,6 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 	const auto pType = this->OwnerObject();
 
 	if (pType->HasMultipleTurrets()
-		&& pThis->WhatAmI() == AbstractType::Unit
 		&& (pType->IsGattling || pType->Gunner))
 	{
 		return -1;
@@ -221,6 +220,16 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 	int primaryWeaponIndex = 0;
 	bool checkedPrimary = false;
 
+	auto getWeaponStruct = [pType](int weaponIndex, bool isElite) -> WeaponStruct*
+	{
+		if (weaponIndex < 18)
+			return &pType->GetWeapon(weaponIndex, isElite);
+
+		return isElite
+			? reinterpret_cast<WeaponStruct*(__thiscall*)(TechnoTypeClass*, int)>(0x7177E0)(pType, weaponIndex)
+			: reinterpret_cast<WeaponStruct*(__thiscall*)(TechnoTypeClass*, int)>(0x7177C0)(pType, weaponIndex);
+	};
+
 	for (int i = 0; i < weaponCount; ++i)
 	{
 		const bool isSecondary = this->MultiWeapon_IsSecondary[i];
@@ -228,7 +237,7 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 		if (checkedPrimary && !isSecondary)
 			continue;
 
-		const auto pWeapon = pType->GetWeapon(i, isElite).WeaponType;
+		const auto pWeapon = getWeaponStruct(i, isElite)->WeaponType;
 
 		if (!TechnoTypeExt::CheckMultiWeapon(pThis, pTarget, pTargetCell, pWeapon))
 		{
