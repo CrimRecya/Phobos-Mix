@@ -601,41 +601,6 @@ DEFINE_HOOK(0x6F755A, TechnoClass_IsCloseEnough_CylinderRangefinding, 0x7)
 
 #pragma endregion
 
-#pragma region ScatterFix
-
-DEFINE_HOOK(0x481778, CellClass_ScatterContent_Scatter, 0x6)
-{
-	enum { NextTechno = 0x4817D9 };
-
-	GET(TechnoClass*, pTechno, ESI);
-
-	if (!pTechno)
-		return NextTechno;
-
-	if (const auto pParentAttachment = TechnoExt::ExtMap.Find(pTechno)->ParentAttachment)
-	{
-		if (!pParentAttachment->GetType()->OccupiesCell)
-			return NextTechno;
-	}
-
-	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x2C, 0x4));
-	GET_STACK(const bool, ignoreMission, STACK_OFFSET(0x2C, 0x8));
-	GET_STACK(const bool, ignoreDestination, STACK_OFFSET(0x2C, 0xC));
-
-	if (ignoreDestination
-		|| pTechno->HasAbility(Ability::Scatter)
-		|| (pTechno->Owner->IsControlledByHuman()
-			? RulesClass::Instance->PlayerScatter
-			: (pTechno->Owner->IQLevel2 >= RulesClass::Instance->Scatter)))
-	{
-		TechnoExt::GetTopLevelParent(pTechno)->Scatter(coords, ignoreMission, ignoreDestination);
-	}
-
-	return NextTechno;
-}
-
-#pragma endregion
-
 #pragma region PlanWaypoint
 
 DEFINE_HOOK(0x63745D, UnknownClass_PlanWaypoint_ContinuePlanningOnEnter, 0x6)
