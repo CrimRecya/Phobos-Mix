@@ -57,17 +57,11 @@ void Apply_Ares3_0_Patches()
 	// Replace the TemporalClass::Detach call by LetGo in convert function:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x436DA, &LetGo);
 
-	// Use new convert
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x39DAE, &ConvertToType);
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x46C6D, &ConvertToType);
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4B397, &ConvertToType);
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4C099, &ConvertToType);
-
 	// Replace the DestroyAll when defeated:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x24AC9, &HouseExt::DecideTechnosFate);
 
 	// SuperClass_Launch_SkipRelatedTags
-  Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x3207C, AresHelper::AresBaseAddress + 0x320DF);
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x3207C, AresHelper::AresBaseAddress + 0x320DF);
 
 	// Convert ManagerFix
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x039DAE, &ConvertToType);
@@ -102,12 +96,6 @@ void Apply_Ares3_0p1_Patches()
 
 	// Replace the TemporalClass::Detach call by LetGo in convert function:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x441BA, &LetGo);
-
-	// Use new convert
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x3A82E, &ConvertToType);
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4780D, &ConvertToType);
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4BFF7, &ConvertToType);
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4CCF9, &ConvertToType);
 
 	// Replace the DestroyAll when defeated:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x255E9, &HouseExt::DecideTechnosFate);

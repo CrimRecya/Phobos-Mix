@@ -550,11 +550,6 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 
 	auto const pOldTypeExt = TechnoTypeExt::ExtMap.Find(pOldType);
 	auto const pOwner = pThis->Owner;
-	auto& pSlaveManager = pThis->SlaveManager;
-	auto& pSpawnManager = pThis->SpawnManager;
-	auto& pCaptureManager = pThis->CaptureManager;
-	auto& pTemporalImUsing = pThis->TemporalImUsing;
-	auto& pAirstrike = pThis->Airstrike;
 
 	// Cache the new type data
 	this->PreviousType = pOldType;
@@ -568,13 +563,13 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 	{
 		if (pOldTypeExt->ExtraBaseNormal)
 		{
-			if (!this->TypeExtData->ExtraBaseNormal)
+			if (!pNewTypeExt->ExtraBaseNormal)
 			{
 				auto& vec = ScenarioExt::Global()->BaseNormalTechnos;
 				vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
 			}
 		}
-		else if (this->TypeExtData->ExtraBaseNormal)
+		else if (pNewTypeExt->ExtraBaseNormal)
 		{
 			auto& vec = ScenarioExt::Global()->BaseNormalTechnos;
 
@@ -584,17 +579,17 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 	}
 
 	// Reset UniqueTechno
-	if (pThis->Owner->IsControlledByCurrentPlayer())
+	if (pOwner->IsControlledByCurrentPlayer())
 	{
 		if (pOldTypeExt->UniqueTechno)
 		{
-			if (!this->TypeExtData->UniqueTechno)
+			if (!pNewTypeExt->UniqueTechno)
 			{
 				auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
 				vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
 			}
 		}
-		else if (this->TypeExtData->UniqueTechno)
+		else if (pNewTypeExt->UniqueTechno)
 		{
 			auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
 
@@ -610,9 +605,9 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 	if (this->LaserTrails.size())
 		this->LaserTrails.clear();
 
-	this->LaserTrails.reserve(this->TypeExtData->LaserTrailData.size());
+	this->LaserTrails.reserve(pNewTypeExt->LaserTrailData.size());
 
-	for (auto const& entry : this->TypeExtData->LaserTrailData)
+	for (auto const& entry : pNewTypeExt->LaserTrailData)
 	{
 		this->LaserTrails.emplace_back(entry.GetType(), pOwner, entry.FLH, entry.IsOnTurret);
 	}
@@ -646,7 +641,14 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
 	}
 
+	// Manager fix
 	// Powered by ststl-s、Fly-Star
+	auto& pSlaveManager = pThis->SlaveManager;
+	auto& pSpawnManager = pThis->SpawnManager;
+	auto& pCaptureManager = pThis->CaptureManager;
+	auto& pTemporalImUsing = pThis->TemporalImUsing;
+	auto& pAirstrike = pThis->Airstrike;
+
 	if (pCurrentType->Enslaves && pCurrentType->SlavesNumber > 0)
 	{
 		// SlaveManager does not exist or they have different slaves.
@@ -772,8 +774,10 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 						{
 							pAircraft->SpawnOwner = nullptr;
 
-							if (pAircraft->InLimbo || pStatus == SpawnNodeStatus::Idle ||
-								pStatus == SpawnNodeStatus::Reloading || pStatus == SpawnNodeStatus::TakeOff)
+							if (pAircraft->InLimbo
+								|| pStatus == SpawnNodeStatus::Idle
+								|| pStatus == SpawnNodeStatus::Reloading
+								|| pStatus == SpawnNodeStatus::TakeOff)
 							{
 								if (pStatus == SpawnNodeStatus::TakeOff)
 									Kamikaze::Instance.Remove(pAircraft);
@@ -816,8 +820,10 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 			auto& pStatus = pSpawnNode->Status;
 
 			// A dead or idle Spawn is not killed.
-			if (!pAircraft || pStatus == SpawnNodeStatus::Dead ||
-				pStatus == SpawnNodeStatus::Idle || pStatus == SpawnNodeStatus::Reloading)
+			if (!pAircraft
+				|| pStatus == SpawnNodeStatus::Dead
+				|| pStatus == SpawnNodeStatus::Idle
+				|| pStatus == SpawnNodeStatus::Reloading)
 			{
 				continue;
 			}
@@ -888,7 +894,7 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 		checkWeapon(pThis->GetWeapon(index)->WeaponType);
 	}
 
-	auto clearMindControlNode = [pCaptureManager](const int& maxCapture)
+	auto clearMindControlNode = [pCaptureManager](const int maxCapture)
 		{
 			// If not exceeded, then stop.
 			if (pCaptureManager->ControlNodes.Count <= maxCapture)
@@ -989,6 +995,41 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 		pThis->ReleaseLocomotor(pThis->Target == pThis->LocomotorTarget);
 		pThis->LocomotorTarget->LocomotorSource = nullptr;
 		pThis->LocomotorTarget = nullptr;
+	}
+
+	// Cloakable
+	if (pThis->Cloakable && !pCurrentType->Cloakable)
+		pThis->Uncloak(true);
+
+	pThis->Cloakable = pCurrentType->Cloakable;
+
+	// BombSight
+	if (pOldType->BombSight)
+		BombListClass::Instance.RemoveDetector(pThis);
+
+	if (pCurrentType->BombSight)
+		BombListClass::Instance.AddDetector(pThis);
+
+	// FireAngle
+	pThis->BarrelFacing.SetCurrent(DirStruct(0x4000 - (pCurrentType->FireAngle << 8)));
+
+	// Sight
+	pThis->UpdateSight(0, 0, 0, 0, 0);
+
+	// Recoil data
+	{
+		auto& turretRecoil = pThis->TurretRecoil.Turret;
+		const auto& turretData = pCurrentType->TurretAnimData;
+		turretRecoil.Travel = turretData.Travel;
+		turretRecoil.CompressFrames = turretData.CompressFrames;
+		turretRecoil.RecoverFrames = turretData.RecoverFrames;
+		turretRecoil.HoldFrames = turretData.HoldFrames;
+		auto& barrelRecoil = pThis->BarrelRecoil.Turret;
+		const auto& barrelData = pCurrentType->BarrelAnimData;
+		barrelRecoil.Travel = barrelData.Travel;
+		barrelRecoil.CompressFrames = barrelData.CompressFrames;
+		barrelRecoil.RecoverFrames = barrelData.RecoverFrames;
+		barrelRecoil.HoldFrames = barrelData.HoldFrames;
 	}
 
 	// Only FootClass* can use this.
@@ -1124,6 +1165,18 @@ void TechnoExt::ExtData::UpdateTypeData_Foot()
 	{
 		// When it can't disguise or has lost its disguise, update its disguise.
 		pThis->ClearDisguise();
+	}
+
+	// SensorsSight
+	if (pOldType->SensorsSight)
+		pThis->RemoveSensorsAt(CellStruct::Empty);
+
+	if (pCurrentType->SensorsSight)
+	{
+		const auto temp = pOldType->SensorsSight;
+		pOldType->SensorsSight = pCurrentType->SensorsSight;
+		pThis->AddSensorsAt(CellStruct::Empty);
+		pOldType->SensorsSight = temp;
 	}
 
 	if (abs != AbstractType::Aircraft)
