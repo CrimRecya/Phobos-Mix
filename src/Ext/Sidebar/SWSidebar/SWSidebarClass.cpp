@@ -327,7 +327,6 @@ DEFINE_HOOK(0x6AA790, StripClass_RecheckCameo_RemoveCameo, 0x6)
 	enum { ShouldRemove = 0x6AA7B6, ShouldNotRemove = 0x6AAA68 };
 
 	GET(BuildType*, pItem, ESI);
-
 	const auto pCurrent = HouseClass::CurrentPlayer;
 	const auto& supers = pCurrent->Supers;
 

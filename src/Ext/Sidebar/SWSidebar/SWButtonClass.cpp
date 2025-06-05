@@ -83,10 +83,11 @@ bool SWButtonClass::Draw(bool forced)
 		if (buttonId < 10)
 		{
 			unsigned short hotkey = 0;
-			for (int i = 0; i < CommandClass::Hotkeys.IndexCount; i++)
+
+			for (int idx = 0; idx < CommandClass::Hotkeys.IndexCount; idx++)
 			{
-				if (CommandClass::Hotkeys.IndexTable[i].Data == SWSidebarClass::Commands[buttonId])
-					hotkey = CommandClass::Hotkeys.IndexTable[i].ID;
+				if (CommandClass::Hotkeys.IndexTable[idx].Data == SWSidebarClass::Commands[buttonId])
+					hotkey = CommandClass::Hotkeys.IndexTable[idx].ID;
 			}
 
 			Point2D textLoc = { location.X + this->Width / 2, location.Y };

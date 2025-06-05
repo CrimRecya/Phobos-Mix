@@ -253,7 +253,9 @@ DEFINE_HOOK(0x4AE51E, DisplayClass_GetToolTip_HelpText, 0x6)
 
 	if (SWSidebarClass::IsEnabled())
 	{
-		if (const auto button = SWSidebarClass::Instance.CurrentButton)
+		const auto& swSidebar = SWSidebarClass::Instance;
+
+		if (const auto button = swSidebar.CurrentButton)
 		{
 			PhobosToolTip::Instance.IsCameo = true;
 
@@ -270,8 +272,7 @@ DEFINE_HOOK(0x4AE51E, DisplayClass_GetToolTip_HelpText, 0x6)
 
 			return ApplyToolTip;
 		}
-		else if (SWSidebarClass::Instance.CurrentColumn
-			|| SWSidebarClass::Instance.ToggleButton && SWSidebarClass::Instance.ToggleButton->IsHovering)
+		else if (swSidebar.CurrentColumn || (swSidebar.ToggleButton && swSidebar.ToggleButton->IsHovering))
 		{
 			R->EAX(0);
 			return ApplyToolTip;

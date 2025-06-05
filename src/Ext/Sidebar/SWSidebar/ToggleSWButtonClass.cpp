@@ -1,6 +1,5 @@
 #include "ToggleSWButtonClass.h"
 #include "SWSidebarClass.h"
-#include <CCToolTip.h>
 #include <GameOptionsClass.h>
 #include <ScenarioClass.h>
 
