@@ -27,9 +27,9 @@ void __fastcall LetGo(TemporalClass* pTemporal)
 	pTemporal->LetGo();
 }
 
-void __stdcall ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
+bool __stdcall ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 {
-	TechnoExt::ConvertToType(pThis, pToType);
+	return TechnoExt::ConvertToType(pThis, pToType);
 }
 
 void Apply_Ares3_0_Patches()
@@ -67,7 +67,13 @@ void Apply_Ares3_0_Patches()
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x24AC9, &HouseExt::DecideTechnosFate);
 
 	// SuperClass_Launch_SkipRelatedTags
-	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x3207C, AresHelper::AresBaseAddress + 0x320DF);
+  Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x3207C, AresHelper::AresBaseAddress + 0x320DF);
+
+	// Convert ManagerFix
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x039DAE, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x046C6D, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x04B397, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x04C099, &ConvertToType);
 }
 
 void Apply_Ares3_0p1_Patches()
@@ -108,4 +114,10 @@ void Apply_Ares3_0p1_Patches()
 
 	// SuperClass_Launch_SkipRelatedTags
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x32A5C, AresHelper::AresBaseAddress + 0x32ABF);
+
+	// Convert ManagerFix
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x3A82E, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4780D, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4BFF7, &ConvertToType);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4CCF9, &ConvertToType);
 }
