@@ -57,12 +57,12 @@ TechnoExt::ExtData::~ExtData()
 			invalidateCellPointer(pCell, false);
 	}
 
-	if (this->SquadManager)
+	if (const auto pSquad = this->SquadManager)
 	{
-		this->SquadManager->RemoveMember(pThis);
+		pSquad->RemoveMember(pThis);
 
-		if (this->SquadManager->Members.empty())
-			SquadManagerClass::Remove(this->SquadManager);
+		if (pSquad->Members.empty())
+			SquadManagerClass::Remove(pSquad);
 	}
 
 	if (pTypeExt->AutoDeath_Behavior.isset())

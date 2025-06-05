@@ -15,7 +15,7 @@ bool SquadManagerClass::Serialize(T& Stm)
 {
 	return Stm
 		.Process(this->Members)
-		.Process(this->Select)
+		.Process(this->Selecting)
 		.Success();
 };
 

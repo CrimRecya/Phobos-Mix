@@ -12,11 +12,11 @@ class SquadManagerClass final : public EnumerableEntity<SquadManagerClass>
 {
 public:
 	std::vector<TechnoClass*> Members;
-	bool Select;
+	bool Selecting;
 
 	SquadManagerClass() : EnumerableEntity<SquadManagerClass>()
 		, Members { }
-		, Select { false }
+		, Selecting { false }
 	{ };
 
 	~SquadManagerClass() { };

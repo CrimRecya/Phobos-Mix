@@ -2188,64 +2188,75 @@ static inline InfantryClass* CreateInfantryFromFactory(InfantryTypeClass* pType,
 
 DEFINE_HOOK(0x444DDF, BuildingClass_KickOutUnit_InfantrySquad, 0x5)
 {
-	GET(TechnoClass*, pTechno, EDI);
+	enum { SkipGameCode = 0x444971 };
 
-	if (const auto pInfantry = abstract_cast<InfantryClass*, true>(pTechno))
+	GET(BuildingClass*, pThis, ESI);
+
+	const auto pThisType = pThis->Type;
+
+	if (pThisType->Factory == AbstractType::InfantryType || pThisType->Cloning)
 	{
-		const auto pExt = TechnoExt::ExtMap.Find(pInfantry);
-		const auto pTypeExt = pExt->TypeExtData;
+		GET(TechnoClass*, pTechno, EDI);
 
-		if (pTypeExt->Squad_IsInitAsTeam)
+		if (const auto pInfantry = abstract_cast<InfantryClass*, true>(pTechno))
 		{
-			pExt->SquadManager = SquadManagerClass::Allocate();
-			pExt->SquadManager->AddMember(pInfantry);
-		}
+			const auto pExt = TechnoExt::ExtMap.Find(pInfantry);
+			const auto pTypeExt = pExt->TypeExtData;
 
-		const int size = pTypeExt->Squad_Members.size();
-
-		if (size > 0)
-		{
-			for (int i = 0; i < size; ++i)
+			if (pTypeExt->Squad_IsInitAsTeam)
 			{
-				if (const auto pMember = CreateInfantryFromFactory(pTypeExt->Squad_Members[i], pInfantry->Owner))
-				{
-					++Unsorted::ScenarioInit;
-					pMember->Unlimbo(pInfantry->Location, DirType::North);
-					pMember->SetDestination(pInfantry, true);
-					pMember->SetArchiveTarget(pInfantry);
-					pMember->QueueMission(Mission::Area_Guard, 0);
-					--Unsorted::ScenarioInit;
+				pExt->SquadManager = SquadManagerClass::Allocate();
+				pExt->SquadManager->AddMember(pInfantry);
+			}
 
-					if (pExt->SquadManager)
+			const int size = pTypeExt->Squad_Members.size();
+
+			if (size > 0)
+			{
+				for (int i = 0; i < size; ++i)
+				{
+					if (const auto pMember = CreateInfantryFromFactory(pTypeExt->Squad_Members[i], pInfantry->Owner))
 					{
-						TechnoExt::ExtMap.Find(pMember)->SquadManager = pExt->SquadManager;
-						pExt->SquadManager->AddMember(pMember);
+						++Unsorted::ScenarioInit;
+						pMember->Unlimbo(pInfantry->Location, DirType::North);
+						pMember->SetDestination((pThis->ArchiveTarget ? pThis->ArchiveTarget : pInfantry), true);
+						pMember->QueueMission(Mission::Move, 0);
+						--Unsorted::ScenarioInit;
+
+						if (pExt->SquadManager)
+						{
+							TechnoExt::ExtMap.Find(pMember)->SquadManager = pExt->SquadManager;
+							pExt->SquadManager->AddMember(pMember);
+						}
 					}
 				}
 			}
 		}
 	}
 
-	return 0x444971;
+	return SkipGameCode;
 }
 
 DEFINE_HOOK(0x6FBFD0, TechnoClass_Select_SquadSelect, 0x5)
 {
 	GET(TechnoClass*, pTechno, ESI);
 
-	if (const auto pSquadManager = TechnoExt::ExtMap.Find(pTechno)->SquadManager)
+	if (pTechno->Owner->IsControlledByCurrentPlayer())
 	{
-		if (!pSquadManager->Select)
+		if (const auto pSquadManager = TechnoExt::ExtMap.Find(pTechno)->SquadManager)
 		{
-			pSquadManager->Select = true;
-
-			for (auto& pMember : pSquadManager->Members)
+			if (!pSquadManager->Selecting)
 			{
-				if (pMember != pTechno)
-					pMember->Select();
-			}
+				pSquadManager->Selecting = true;
 
-			pSquadManager->Select = false;
+				for (auto& pMember : pSquadManager->Members)
+				{
+					if (pMember != pTechno)
+						pMember->Select();
+				}
+
+				pSquadManager->Selecting = false;
+			}
 		}
 	}
 

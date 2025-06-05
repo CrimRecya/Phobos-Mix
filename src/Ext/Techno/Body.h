@@ -193,7 +193,7 @@ public:
 			, MyTrackingLasers_CreatorWeapon { }
 			, MyTrackingLasersTarget { }
 			, TrackingLasersTargetingMe { }
-			, SquadManager {}
+			, SquadManager { nullptr }
 			, ParentAttachment { nullptr }
 			, ChildAttachments {}
 			, ThisOccupationCell { nullptr }
