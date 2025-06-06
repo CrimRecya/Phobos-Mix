@@ -270,7 +270,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->CylinderRangefinding.Read(exINI, GameStrings::General, "CylinderRangefinding");
 	this->StopPlanningOnEnter.Read(exINI, GameStrings::General, "StopPlanningOnEnter");
-	this->StrafingTargetScatter.Read(exINI, GameStrings::General, "StrafingTargetScatter");
 	this->AINormalTargetingDelay.Read(exINI, GameStrings::General, "AINormalTargetingDelay");
 	this->PlayerNormalTargetingDelay.Read(exINI, GameStrings::General, "PlayerNormalTargetingDelay");
 	this->AIGuardAreaTargetingDelay.Read(exINI, GameStrings::General, "AIGuardAreaTargetingDelay");
@@ -670,7 +669,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->PodImage)
 		.Process(this->CylinderRangefinding)
 		.Process(this->StopPlanningOnEnter)
-		.Process(this->StrafingTargetScatter)
 		.Process(this->AINormalTargetingDelay)
 		.Process(this->PlayerNormalTargetingDelay)
 		.Process(this->AIGuardAreaTargetingDelay)

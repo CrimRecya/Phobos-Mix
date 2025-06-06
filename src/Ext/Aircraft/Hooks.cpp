@@ -777,46 +777,6 @@ DEFINE_HOOK(0x4C72F2, EventClass_Execute_AircraftAreaGuard_Untether, 0x6)
 
 #pragma endregion
 
-#pragma region AircraftScatterCell
-
-DEFINE_HOOK(0x41847E, AircraftClass_MissionAttack_ScatterCell1, 0x6)
-{
-	enum { SkipScatter = 0x4184C2, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-DEFINE_HOOK(0x4186DD, AircraftClass_MissionAttack_ScatterCell2, 0x5)
-{
-	enum { SkipScatter = 0x418720, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-DEFINE_HOOK(0x41882C, AircraftClass_MissionAttack_ScatterCell3, 0x6)
-{
-	enum { SkipScatter = 0x418870, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-DEFINE_HOOK(0x41893B, AircraftClass_MissionAttack_ScatterCell4, 0x6)
-{
-	enum { SkipScatter = 0x41897F, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-DEFINE_HOOK(0x418A4A, AircraftClass_MissionAttack_ScatterCell5, 0x6)
-{
-	enum { SkipScatter = 0x418A8E, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-DEFINE_HOOK(0x418B46, AircraftClass_MissionAttack_ScatterCell6, 0x6)
-{
-	enum { SkipScatter = 0x418B8A, Scatter = 0 };
-	return RulesExt::Global()->StrafingTargetScatter ? Scatter : SkipScatter;
-}
-
-#pragma endregion
-
 #pragma region AircraftFlight
 
 DEFINE_HOOK(0x4CDF84, FlyLocomotionClass_UpdateLoaction_FlightCrash, 0x5)

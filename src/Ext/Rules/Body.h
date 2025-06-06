@@ -220,7 +220,6 @@ public:
 
 		Valueable<bool> CylinderRangefinding;
 		Valueable<bool> StopPlanningOnEnter;
-		Valueable<bool> StrafingTargetScatter;
 		Nullable<int> AINormalTargetingDelay;
 		Nullable<int> PlayerNormalTargetingDelay;
 		Nullable<int> AIGuardAreaTargetingDelay;
@@ -548,7 +547,6 @@ public:
 			, PodImage { }
 			, CylinderRangefinding { false }
 			, StopPlanningOnEnter { true }
-			, StrafingTargetScatter { true }
 			, AINormalTargetingDelay {}
 			, PlayerNormalTargetingDelay {}
 			, AIGuardAreaTargetingDelay {}
