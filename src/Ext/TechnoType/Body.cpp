@@ -1383,6 +1383,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->FallingDownDamage.Read(exINI, pSection, "FallingDownDamage");
 	this->FallingDownDamage_Water.Read(exINI, pSection, "FallingDownDamage.Water");
 
+	this->FiringForceScatter.Read(exINI, pSection, "FiringForceScatter");
+
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
 	this->Cloneable.Read(exINI, pSection, "Cloneable");
@@ -2184,6 +2186,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->MultiWeapon_SelectCount)
 		.Process(this->MultiWeapon_IsSecondary)
 		.Process(this->ReadMultiWeapon)
+
+		.Process(this->FiringForceScatter)
 		;
 }
 

@@ -382,6 +382,7 @@ New:
 - [Customizable airstrike flare colors](Fixed-or-Improved-Logics.md#airstrike-flare-customizations) (by Starkku)
 - Allowed player's self-healing effects to be benefited by allied or `PlayerControl=true` houses (by Ollerus)
 - Exclusive SuperWeapon Sidebar (by NetsuNegi & CrimRecya)
+- Customize the scatter caused by aircraft attack mission (by TaranDahl)
 
 - New trajectory system (by CrimRecya)
 - New Missile trajectory (by CrimRecya)

@@ -553,6 +553,8 @@ public:
 		ValueableVector<bool> MultiWeapon_IsSecondary;
 		bool ReadMultiWeapon;
 
+		Valueable<bool> FiringForceScatter;
+
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
 			, UIDescription {}
@@ -1055,6 +1057,8 @@ public:
 			, MultiWeapon_SelectCount { 2 }
 			, MultiWeapon_IsSecondary {}
 			, ReadMultiWeapon { false }
+
+			, FiringForceScatter { true }
 		{ }
 
 		virtual ~ExtData() = default;
