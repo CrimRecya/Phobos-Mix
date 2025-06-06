@@ -357,12 +357,8 @@ bool ConvertToType_Foot(FootClass* pThis, TechnoTypeClass* pToType)
 
 	if (AresFunctions::ConvertTypeTo)
 	{
-		const int oldHealth = pThis->Health;
-
 		if (AresFunctions::ConvertTypeTo(pThis, pToType))
 		{
-			// Fixed an issue where morphing could result in -1 health.
-			pThis->Health = Math::max(1, oldHealth * pToType->Strength / pType->Strength);
 			auto const pExt = TechnoExt::ExtMap.Find(pThis);
 			pExt->UpdateTypeData(pToType);
 			pExt->UpdateTypeData_Foot();
@@ -531,7 +527,6 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 
 	// Maybe buggy
 	const auto coord = pBuilding->Location;
-	const auto oldHealth = pThis->Health;
 
 	pBuilding->Limbo();
 	pBuilding->ActuallyPlacedOnMap = false;
@@ -539,7 +534,7 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 	pBuilding->Type = pToBuildingType;
 	TechnoExt::ExtMap.Find(pThis)->UpdateTypeData(pToType);
 
-	pThis->Health = Math::max(1, oldHealth * pToType->Strength / pPrevBuildingType->Strength);
+	pThis->SetHealthPercentage(static_cast<double>(pThis->Health) / pPrevBuildingType->Strength);
 	pThis->EstimatedHealth = pThis->Health;
 
 	pThis->Ammo = Math::min(pThis->Ammo, pToType->Ammo);
