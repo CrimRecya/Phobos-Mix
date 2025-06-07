@@ -57,8 +57,12 @@ DEFINE_HOOK(0x6F33CD, TechnoClass_WhatWeaponShouldIUse_ForceFire, 0x6)
 		auto const pWeaponSecondary = pThis->GetWeapon(1)->WeaponType;
 		auto const pPrimaryExt = WeaponTypeExt::ExtMap.Find(pWeaponPrimary);
 
-		if (pWeaponSecondary && !pPrimaryExt->SkipWeaponPicking && (!EnumFunctions::IsCellEligible(pCell, pPrimaryExt->CanTarget, true, true)
-			|| !pPrimaryExt->IsHealthRatioEligible(pThis) || (pPrimaryExt->AttachEffect_CheckOnFirer && !pPrimaryExt->HasRequiredAttachedEffects(pThis, pThis))))
+		if (pWeaponSecondary
+			&& !pPrimaryExt->SkipWeaponPicking
+			&& (!EnumFunctions::IsCellEligible(pCell, pPrimaryExt->CanTarget, true, true)
+				|| !pPrimaryExt->IsHealthRatioEligible(pThis)
+				|| (pPrimaryExt->AttachEffect_CheckOnFirer
+					&& !pPrimaryExt->HasRequiredAttachedEffects(pThis, pThis))))
 		{
 			R->EAX(1);
 			return ReturnWeaponIndex;
@@ -301,11 +305,8 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 	const auto pBulletTypeExt = BulletTypeExt::ExtMap.Find(pBulletType);
 
 	// AAOnly doesn't need to be checked if LandTargeting=1.
-	if (pThis->GetTechnoType()->LandTargeting != LandTargetingType::Land_Not_OK
-		&& pBulletType->AA
-		&& pTarget
-		&& !pTarget->IsInAir()
-		&& pBulletTypeExt->AAOnly)
+	if (pThis->GetTechnoType()->LandTargeting != LandTargetingType::Land_Not_OK && pBulletType->AA
+		&& pTarget && !pTarget->IsInAir() && pBulletTypeExt->AAOnly)
 	{
 		return CannotFire;
 	}
@@ -315,11 +316,11 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 
 	if (pTarget)
 	{
-		if (const auto pCell = abstract_cast<CellClass*>(pTarget))
+		if (const auto pCell = abstract_cast<CellClass*, true>(pTarget))
 		{
 			pTargetCell = pCell;
 		}
-		else if (const auto pObject = abstract_cast<ObjectClass*>(pTarget))
+		else if (const auto pObject = abstract_cast<ObjectClass*, true>(pTarget))
 		{
 			// Ignore target cell for technos that are in air.
 			if ((pTechno && !pTechno->IsInAir()) || pObject != pTechno)
@@ -329,10 +330,10 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 
 	const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
 
-	if (!pWeaponExt->SkipWeaponPicking && pTargetCell)
+	if (!pWeaponExt->SkipWeaponPicking && pTargetCell
+		&& !EnumFunctions::IsCellEligible(pTargetCell, pWeaponExt->CanTarget, true, true))
 	{
-		if (!EnumFunctions::IsCellEligible(pTargetCell, pWeaponExt->CanTarget, true, true))
-			return CannotFire;
+		return CannotFire;
 	}
 
 	if (pTechno)
