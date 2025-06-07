@@ -25,7 +25,7 @@ DEFINE_HOOK(0x423B95, AnimClass_AI_HideIfNoOre_Threshold, 0x8)
 
 	if (pType->HideIfNoOre)
 	{
-		auto nThreshold = abs(AnimTypeExt::ExtMap.Find(pThis->Type)->HideIfNoOre_Threshold.Get());
+		const int nThreshold = abs(AnimTypeExt::ExtMap.Find(pThis->Type)->HideIfNoOre_Threshold.Get());
 		pThis->Invisible = pThis->GetCell()->GetContainedTiberiumValue() <= nThreshold;
 	}
 
@@ -42,8 +42,8 @@ DEFINE_HOOK(0x42453E, AnimClass_AI_Damage, 0x6)
 
 	GET(AnimClass*, pThis, ESI);
 
-	auto const pTypeExt = AnimTypeExt::ExtMap.Find(pThis->Type);
-	int delay = pTypeExt->Damage_Delay.Get();
+	const auto pTypeExt = AnimTypeExt::ExtMap.Find(pThis->Type);
+	const int delay = pTypeExt->Damage_Delay.Get();
 	int damageMultiplier = 1;
 	double damage = 0;
 	int appliedDamage = 0;
@@ -504,9 +504,9 @@ DEFINE_HOOK(0x5F4B7A, ObjectClass_DrawIfVisible_OnScreenCheck, 0x5)
 	return NoDraw;
 }
 
-DEFINE_HOOK(0x4250E1, AnimClass_Middle_CraterReduceTiberium, 0x6)
+DEFINE_HOOK(0x4250E1, AnimClass_Middle_CraterDestroyTiberium, 0x6)
 {
-	enum { SkipReduceTiberium = 0x4250EC };
+	enum { SkipDestroyTiberium = 0x4250EC };
 	GET(AnimTypeClass*, pType, EDX);
-	return AnimTypeExt::ExtMap.Find(pType)->Crater_ReduceTiberium.Get(RulesExt::Global()->AnimCraterReduceTiberium) ? 0 : SkipReduceTiberium;
+	return AnimTypeExt::ExtMap.Find(pType)->Crater_DestroyTiberium.Get(RulesExt::Global()->AnimCraterDestroyTiberium) ? 0 : SkipDestroyTiberium;
 }

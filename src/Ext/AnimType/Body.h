@@ -55,7 +55,7 @@ public:
 		ValueableVector<double> LargeFireChances;
 		ValueableVector<double> LargeFireDistances;
 		Valueable<bool> RenderIfOutOfScreen;
-		Nullable<bool> Crater_ReduceTiberium;
+		Nullable<bool> Crater_DestroyTiberium;
 
 		ExtData(AnimTypeClass* OwnerObject) : Extension<AnimTypeClass>(OwnerObject)
 			, Palette { CustomPalette::PaletteMode::Temperate }
@@ -94,7 +94,7 @@ public:
 			, LargeFireChances {}
 			, LargeFireDistances {}
 			, RenderIfOutOfScreen { false }
-			, Crater_ReduceTiberium {}
+			, Crater_DestroyTiberium {}
 		{ }
 
 		virtual ~ExtData() = default;

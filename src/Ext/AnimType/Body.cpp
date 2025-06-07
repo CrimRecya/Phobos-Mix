@@ -17,7 +17,6 @@ void AnimTypeExt::ProcessDestroyAnims(UnitClass* pThis, TechnoClass* pKiller)
 	if (!pThis)
 		return;
 
-	HouseClass* pInvoker = pKiller ? pKiller->Owner : nullptr;
 	auto const pType = pThis->GetTechnoType(); // Redirect I/A/BClass::Explode(TechnoClass::Explode) to UnitClass::Explode
 
 	if (pType->DestroyAnim.Count > 0)
@@ -50,6 +49,7 @@ void AnimTypeExt::ProcessDestroyAnims(UnitClass* pThis, TechnoClass* pKiller)
 		if (pAnimType)
 		{
 			auto const pAnim = GameCreate<AnimClass>(pAnimType, pThis->Location);
+			auto const pInvoker = pKiller ? pKiller->Owner : nullptr;
 
 			//auto VictimOwner = pThis->IsMindControlled() && pThis->GetOriginalOwner()
 			//	? pThis->GetOriginalOwner() : pThis->Owner;
@@ -121,7 +121,7 @@ void AnimTypeExt::ExtData::LoadFromINIFile(CCINIClass* pINI)
 	this->LargeFireChances.Read(exINI, pID, "LargeFireChances");
 	this->LargeFireDistances.Read(exINI, pID, "LargeFireDistances");
 	this->RenderIfOutOfScreen.Read(exINI, pID, "RenderIfOutOfScreen");
-	this->Crater_ReduceTiberium.Read(exINI, pID, "Crater.ReduceTiberium");
+	this->Crater_DestroyTiberium.Read(exINI, pID, "Crater.DestroyTiberium");
 
 	// Parasitic types
 	Nullable<TechnoTypeClass*> createUnit;
@@ -180,7 +180,7 @@ void AnimTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->LargeFireChances)
 		.Process(this->LargeFireDistances)
 		.Process(this->RenderIfOutOfScreen)
-		.Process(this->Crater_ReduceTiberium)
+		.Process(this->Crater_DestroyTiberium)
 		;
 }
 

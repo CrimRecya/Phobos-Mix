@@ -372,6 +372,8 @@ public:
 
 		Valueable<bool> VHPScan_Enhanced;
 
+		Valueable<bool> AnimCraterDestroyTiberium;
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, HarvesterDumpAmount { 0.0f }
@@ -682,6 +684,8 @@ public:
 			, BerzerkTargeting { AffectedHouse::All }
 
 			, VHPScan_Enhanced { false }
+
+			, AnimCraterDestroyTiberium { true }
 		{ }
 
 		virtual ~ExtData() = default;

@@ -435,6 +435,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->VHPScan_Enhanced.Read(exINI, GameStrings::CombatDamage, "VHPScan.Enhanced");
 
+	this->AnimCraterDestroyTiberium.Read(exINI, GameStrings::General, "AnimCraterDestroyTiberium");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -788,6 +790,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->ReorganizeToWhenDefeated)
 		.Process(this->BerzerkTargeting)
 		.Process(this->VHPScan_Enhanced)
+		.Process(this->AnimCraterDestroyTiberium)
 		;
 }
 
