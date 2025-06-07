@@ -267,6 +267,8 @@ DEFINE_HOOK(0x7015C9, TechnoClass_Captured_UpdateTracking, 0x6)
 
 			if (pSquad->Members.empty())
 				SquadManagerClass::Remove(pSquad);
+
+			pExt->SquadManager = nullptr;
 		}
 	}
 

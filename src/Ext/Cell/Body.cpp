@@ -18,9 +18,7 @@ void CellExt::ExtData::Serialize(T& Stm)
 		.Process(this->RadSites)
 		.Process(this->RadLevels)
 		.Process(this->IncomingUnit)
-		.Process(this->IncomingUnitType)
 		.Process(this->IncomingUnitAlt)
-		.Process(this->IncomingUnitAltType)
 		;
 }
 

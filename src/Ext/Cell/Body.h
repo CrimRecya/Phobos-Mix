@@ -38,17 +38,13 @@ public:
 		std::vector<RadLevel> RadLevels;
 
 		UnitClass* IncomingUnit;
-		UnitTypeClass* IncomingUnitType;
 		UnitClass* IncomingUnitAlt;
-		UnitTypeClass* IncomingUnitAltType;
 
 		ExtData(CellClass* OwnerObject) : Extension<CellClass>(OwnerObject)
 			, RadSites {}
 			, RadLevels {}
 			, IncomingUnit { nullptr }
-			, IncomingUnitType { nullptr }
 			, IncomingUnitAlt { nullptr }
-			, IncomingUnitAltType { nullptr }
 		{ }
 
 		virtual ~ExtData() = default;

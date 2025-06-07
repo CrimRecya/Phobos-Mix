@@ -2202,24 +2202,27 @@ DEFINE_HOOK(0x444DDF, BuildingClass_KickOutUnit_InfantrySquad, 0x5)
 		{
 			const auto pExt = TechnoExt::ExtMap.Find(pInfantry);
 			const auto pTypeExt = pExt->TypeExtData;
-
-			if (pTypeExt->Squad_IsInitAsTeam)
-			{
-				pExt->SquadManager = SquadManagerClass::Allocate();
-				pExt->SquadManager->AddMember(pInfantry);
-			}
-
 			const int size = pTypeExt->Squad_Members.size();
 
 			if (size > 0)
 			{
+				if (pTypeExt->Squad_IsInitAsTeam)
+				{
+					pExt->SquadManager = SquadManagerClass::Allocate();
+					pExt->SquadManager->Members.reserve(size + 1);
+					pExt->SquadManager->AddMember(pInfantry);
+				}
+
+				const auto pOwner = pInfantry->Owner;
+				const auto pDestination = (pThis->ArchiveTarget ? pThis->ArchiveTarget : pInfantry);
+
 				for (int i = 0; i < size; ++i)
 				{
-					if (const auto pMember = CreateInfantryFromFactory(pTypeExt->Squad_Members[i], pInfantry->Owner))
+					if (const auto pMember = CreateInfantryFromFactory(pTypeExt->Squad_Members[i], pOwner))
 					{
 						++Unsorted::ScenarioInit;
 						pMember->Unlimbo(pInfantry->Location, DirType::North);
-						pMember->SetDestination((pThis->ArchiveTarget ? pThis->ArchiveTarget : pInfantry), true);
+						pMember->SetDestination(pDestination, true);
 						pMember->QueueMission(Mission::Move, 0);
 						--Unsorted::ScenarioInit;
 
@@ -2274,6 +2277,7 @@ DEFINE_HOOK(0x737BBE, UnitClass_Unlimbo_CreatePassengerSquad, 0x6)
 		if (pThis->Passengers.NumPassengers > 0)
 		{
 			pExt->SquadManager = SquadManagerClass::Allocate();
+			pExt->SquadManager->Members.reserve(pThis->Passengers.NumPassengers + 1);
 			pExt->SquadManager->AddMember(pThis);
 
 			for (auto pPassenger = pThis->Passengers.GetFirstPassenger(); pPassenger; pPassenger = abstract_cast<FootClass*>(pPassenger->NextObject))
