@@ -1629,13 +1629,13 @@ DEFINE_HOOK(0x705D88, TechnoClass_GetRemapColour_UnifiedColor, 0x8)
 		const auto pRulesExt = RulesExt::Global();
 
 		if (pOwner->Type->MultiplayPassive)
-			return pRulesExt->UnifiedTechnoColor_NeutralColorIdx == -1 ? ColorScheme::FindIndex("LightGrey") : pRulesExt->UnifiedTechnoColor_NeutralColorIdx;
+			return pRulesExt->UnifiedTechnoColor_Neutral == -1 ? ColorScheme::FindIndex("LightGrey") : pRulesExt->UnifiedTechnoColor_Neutral;
 		else if (pOwner->IsControlledByCurrentPlayer())
-			return pRulesExt->UnifiedTechnoColor_SelfColorIdx == -1 ? ColorScheme::FindIndex("Green") : pRulesExt->UnifiedTechnoColor_SelfColorIdx;
+			return pRulesExt->UnifiedTechnoColor_Self == -1 ? ColorScheme::FindIndex("Green") : pRulesExt->UnifiedTechnoColor_Self;
 		else if (HouseClass::CurrentPlayer->IsAlliedWith(pOwner))
-			return pRulesExt->UnifiedTechnoColor_AllyColorIdx == -1 ? ColorScheme::FindIndex("Gold") : pRulesExt->UnifiedTechnoColor_AllyColorIdx;
+			return pRulesExt->UnifiedTechnoColor_Ally == -1 ? ColorScheme::FindIndex("Gold") : pRulesExt->UnifiedTechnoColor_Ally;
 
-		return pRulesExt->UnifiedTechnoColor_EnemyColorIdx == -1 ? ColorScheme::FindIndex("Red") : pRulesExt->UnifiedTechnoColor_EnemyColorIdx;
+		return pRulesExt->UnifiedTechnoColor_Enemy == -1 ? ColorScheme::FindIndex("Red") : pRulesExt->UnifiedTechnoColor_Enemy;
 	};
 	const int unifiedColorScheme = getSchemeIdx();
 	const int colorSchemeIdx = unifiedColorScheme != -1 ? unifiedColorScheme : pOwner->ColorSchemeIndex;

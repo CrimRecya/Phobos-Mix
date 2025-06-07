@@ -393,22 +393,10 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->UnifiedRadarColor_Ally.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Ally");
 	this->UnifiedRadarColor_Enemy.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Enemy");
 	this->UnifiedRadarColor_Neutral.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Neutral");
-	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.Self", NONE_STR, Phobos::readBuffer);
-	auto colorIndex = ColorScheme::FindIndex(Phobos::readBuffer);
-	if (colorIndex >= 0)
-		this->UnifiedTechnoColor_SelfColorIdx = colorIndex;
-	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.Ally", NONE_STR, Phobos::readBuffer);
-	colorIndex = ColorScheme::FindIndex(Phobos::readBuffer);
-	if (colorIndex >= 0)
-		this->UnifiedTechnoColor_AllyColorIdx = colorIndex;
-	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.Enemy", NONE_STR, Phobos::readBuffer);
-	colorIndex = ColorScheme::FindIndex(Phobos::readBuffer);
-	if (colorIndex >= 0)
-		this->UnifiedTechnoColor_EnemyColorIdx = colorIndex;
-	pINI->ReadString(GameStrings::AudioVisual, "UnifiedTechnoColor.Neutral", NONE_STR, Phobos::readBuffer);
-	colorIndex = ColorScheme::FindIndex(Phobos::readBuffer);
-	if (colorIndex >= 0)
-		this->UnifiedTechnoColor_NeutralColorIdx = colorIndex;
+	this->UnifiedTechnoColor_Self.Read(exINI, GameStrings::AudioVisual, "UnifiedTechnoColor.Self");
+	this->UnifiedTechnoColor_Ally.Read(exINI, GameStrings::AudioVisual, "UnifiedTechnoColor.Ally");
+	this->UnifiedTechnoColor_Enemy.Read(exINI, GameStrings::AudioVisual, "UnifiedTechnoColor.Enemy");
+	this->UnifiedTechnoColor_Neutral.Read(exINI, GameStrings::AudioVisual, "UnifiedTechnoColor.Neutral");
 
 	this->ProneSpeed_Crawls.Read(exINI, GameStrings::General, "ProneSpeed.Crawls");
 	this->ProneSpeed_NoCrawls.Read(exINI, GameStrings::General, "ProneSpeed.NoCrawls");
@@ -426,8 +414,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->TunnelPathingDistTooFar.Read(exINI, GameStrings::General, "TunnelPathingDistTooFar");
 
 	this->BalloonHoverPathingFix.Read(exINI, GameStrings::General, "BalloonHoverPathingFix");
-
-	this->AnimCraterReduceTiberium.Read(exINI, GameStrings::General, "AnimCraterReduceTiberium");
 
 	this->ReorganizeToWhenDefeated.Read(exINI, GameStrings::General, "ReorganizeToWhenDefeated");
 
@@ -772,10 +758,10 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->UnifiedRadarColor_Ally)
 		.Process(this->UnifiedRadarColor_Enemy)
 		.Process(this->UnifiedRadarColor_Neutral)
-		.Process(this->UnifiedTechnoColor_SelfColorIdx)
-		.Process(this->UnifiedTechnoColor_AllyColorIdx)
-		.Process(this->UnifiedTechnoColor_EnemyColorIdx)
-		.Process(this->UnifiedTechnoColor_NeutralColorIdx)
+		.Process(this->UnifiedTechnoColor_Self)
+		.Process(this->UnifiedTechnoColor_Ally)
+		.Process(this->UnifiedTechnoColor_Enemy)
+		.Process(this->UnifiedTechnoColor_Neutral)
 		.Process(this->ProneSpeed_Crawls)
 		.Process(this->ProneSpeed_NoCrawls)
 		.Process(this->DamagedSpeed)
@@ -786,7 +772,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->TunnelSimpleDistTooFar)
 		.Process(this->TunnelPathingDistTooFar)
 		.Process(this->BalloonHoverPathingFix)
-		.Process(this->AnimCraterReduceTiberium)
 		.Process(this->ReorganizeToWhenDefeated)
 		.Process(this->BerzerkTargeting)
 		.Process(this->VHPScan_Enhanced)

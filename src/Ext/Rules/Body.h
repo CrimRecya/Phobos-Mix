@@ -342,10 +342,10 @@ public:
 		Valueable<ColorStruct> UnifiedRadarColor_Ally;
 		Valueable<ColorStruct> UnifiedRadarColor_Enemy;
 		Valueable<ColorStruct> UnifiedRadarColor_Neutral;
-		int UnifiedTechnoColor_SelfColorIdx;
-		int UnifiedTechnoColor_AllyColorIdx;
-		int UnifiedTechnoColor_EnemyColorIdx;
-		int UnifiedTechnoColor_NeutralColorIdx;
+		ValueableIdx<ColorScheme> UnifiedTechnoColor_Self;
+		ValueableIdx<ColorScheme> UnifiedTechnoColor_Ally;
+		ValueableIdx<ColorScheme> UnifiedTechnoColor_Enemy;
+		ValueableIdx<ColorScheme> UnifiedTechnoColor_Neutral;
 
 		Valueable<double> ProneSpeed_Crawls;
 		Valueable<double> ProneSpeed_NoCrawls;
@@ -363,8 +363,6 @@ public:
 		Valueable<int> TunnelPathingDistTooFar;
 
 		Valueable<bool> BalloonHoverPathingFix;
-
-		Valueable<bool> AnimCraterReduceTiberium;
 
 		Valueable<AffectedHouse> ReorganizeToWhenDefeated;
 
@@ -655,10 +653,10 @@ public:
 			, UnifiedRadarColor_Ally { ColorStruct(255,255,0) }
 			, UnifiedRadarColor_Enemy { ColorStruct(255,0,0) }
 			, UnifiedRadarColor_Neutral { ColorStruct(255,255,255) }
-			, UnifiedTechnoColor_SelfColorIdx { -1 }
-			, UnifiedTechnoColor_AllyColorIdx { -1 }
-			, UnifiedTechnoColor_EnemyColorIdx { -1 }
-			, UnifiedTechnoColor_NeutralColorIdx { -1 }
+			, UnifiedTechnoColor_Self { -1 }
+			, UnifiedTechnoColor_Ally { -1 }
+			, UnifiedTechnoColor_Enemy { -1 }
+			, UnifiedTechnoColor_Neutral { -1 }
 
 			, ProneSpeed_Crawls { 0.67 }
 			, ProneSpeed_NoCrawls { 1.5 }
@@ -676,8 +674,6 @@ public:
 			, TunnelPathingDistTooFar { 15 }
 
 			, BalloonHoverPathingFix { true }
-
-			, AnimCraterReduceTiberium { true }
 
 			, ReorganizeToWhenDefeated { AffectedHouse::None }
 

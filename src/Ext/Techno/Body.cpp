@@ -353,8 +353,6 @@ bool TechnoExt::AllowedTargetByZone(TechnoClass* pThis, TechnoClass* pTarget, Ta
 
 bool ConvertToType_Foot(FootClass* pThis, TechnoTypeClass* pToType)
 {
-	const auto pType = pThis->GetTechnoType();
-
 	if (AresFunctions::ConvertTypeTo)
 	{
 		if (AresFunctions::ConvertTypeTo(pThis, pToType))
