@@ -316,15 +316,15 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 
 	if (pTarget)
 	{
-		if (const auto pCell = abstract_cast<CellClass*, true>(pTarget))
-		{
-			pTargetCell = pCell;
-		}
-		else if (const auto pObject = abstract_cast<ObjectClass*, true>(pTarget))
+		if (const auto pObject = abstract_cast<ObjectClass*, true>(pTarget))
 		{
 			// Ignore target cell for technos that are in air.
 			if ((pTechno && !pTechno->IsInAir()) || pObject != pTechno)
 				pTargetCell = pObject->GetCell();
+		}
+		else if (const auto pCell = abstract_cast<CellClass*, true>(pTarget))
+		{
+			pTargetCell = pCell;
 		}
 	}
 
@@ -342,13 +342,11 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 		{
 			if (!EnumFunctions::IsTechnoEligible(pTechno, pWeaponExt->CanTarget)
 				|| !EnumFunctions::CanTargetHouse(pWeaponExt->CanTargetHouses, pThis->Owner, pTechno->Owner)
-				|| !pWeaponExt->IsHealthRatioEligible(pTechno))
+				|| !pWeaponExt->IsHealthRatioEligible(pTechno)
+				|| !pWeaponExt->HasRequiredAttachedEffects(pTechno, pThis))
 			{
 				return CannotFire;
 			}
-
-			if (!pWeaponExt->HasRequiredAttachedEffects(pTechno, pThis))
-				return CannotFire;
 		}
 
 		if (pWH->Airstrike)

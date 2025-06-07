@@ -26,12 +26,12 @@ int TechnoExt::PickWeaponIndex(TechnoClass* pThis, TechnoClass* pTargetTechno, A
 	CellClass* pTargetCell = nullptr;
 
 	// Ignore target cell for airborne and underground target technos.
-	if (!pTargetTechno || (!pTargetTechno->IsInAir() && pTargetTechno->InWhichLayer() != Layer::Underground))
+	if (pTarget && (!pTargetTechno || (!pTargetTechno->IsInAir() && pTargetTechno->InWhichLayer() != Layer::Underground)))
 	{
-		if (auto const pCell = abstract_cast<CellClass*>(pTarget))
-			pTargetCell = pCell;
-		else if (auto const pObject = abstract_cast<ObjectClass*>(pTarget))
+		if (auto const pObject = abstract_cast<ObjectClass*, true>(pTarget))
 			pTargetCell = pObject->GetCell();
+		else if (auto const pCell = abstract_cast<CellClass*, true>(pTarget))
+			pTargetCell = pCell;
 	}
 
 	if (!pSecondExt->SkipWeaponPicking)
@@ -98,17 +98,19 @@ int TechnoExt::PickWeaponIndex(TechnoClass* pThis, TechnoClass* pTargetTechno, A
 	}
 
 	// Handle special case with NavalTargeting / LandTargeting.
-	if (!pTargetTechno
-		&& pTargetCell
-		&& pTargetCell->LandType != LandType::Water
-		&& pTargetCell->LandType != LandType::Beach)
+	if (!pTargetTechno && pTargetCell)
 	{
 		auto const pType = pThis->GetTechnoType();
 
 		if (pType->NavalTargeting == NavalTargetingType::Naval_Primary
 			|| pType->LandTargeting == LandTargetingType::Land_Secondary)
 		{
-			return weaponIndexTwo;
+			auto const landType = pTargetCell->LandType;
+
+			if (landType != LandType::Water && landType != LandType::Beach)
+			{
+				return weaponIndexTwo;
+			}
 		}
 	}
 
