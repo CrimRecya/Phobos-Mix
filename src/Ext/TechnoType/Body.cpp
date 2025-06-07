@@ -211,10 +211,10 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 
 	if (!pTargetTechno || (!pTargetTechno->IsInAir() && pTargetTechno->InWhichLayer() != Layer::Underground))
 	{
-		if (const auto pCell = abstract_cast<CellClass*, true>(pTarget))
-			pTargetCell = pCell;
-		else if (const auto pObject = abstract_cast<ObjectClass*, true>(pTarget))
+		if (const auto pObject = abstract_cast<ObjectClass*, true>(pTarget))
 			pTargetCell = pObject->GetCell();
+		else if (const auto pCell = abstract_cast<CellClass*, true>(pTarget))
+			pTargetCell = pCell;
 	}
 
 	int primaryWeaponIndex = 0;
