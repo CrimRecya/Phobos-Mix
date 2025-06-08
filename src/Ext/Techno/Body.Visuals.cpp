@@ -1194,7 +1194,7 @@ void TechnoExt::DrawExtraImage(TechnoClass* pThis, CellClass* pCell, DirStruct d
 
 	const bool inAir = height > Unsorted::CellHeight;
 	const auto slope = inAir ? 0 : pCell->SlopeIndex;
-	const auto action = (!inAir && pCell->LandType == LandType::Water) ? Sequence::Swim : Sequence::Ready;
+	const auto action = (!inAir && !pCell->ContainsBridge() && pCell->LandType == LandType::Water) ? Sequence::Swim : Sequence::Ready;
 	TechnoExt::DrawExtraImage(pThis, pair.first, DSurface::ViewBounds, dir, true, action, slope);
 }
 
@@ -1312,6 +1312,10 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	const bool unloading = pThis->Unloading;
 	pThis->Unloading = false;
 
+	const bool bridge = pThis->OnBridge;
+	pThis->OnBridge = false;
+	const bool map = pThis->IsOnMap;
+	pThis->IsOnMap = false;
 	const auto coords = pThis->Location;
 	pThis->Location = CoordStruct { INT_MAX, INT_MAX, INT_MAX };
 	const char tube = pThis->TubeIndex;
@@ -1394,6 +1398,8 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	}
 	MapClass::InvalidCell.SlopeIndex = slope;
 
+	pThis->OnBridge = bridge;
+	pThis->IsOnMap = map;
 	pThis->Location = coords;
 	pThis->TubeIndex = tube;
 
@@ -1460,6 +1466,10 @@ void TechnoExt::DrawExtraImage(InfantryClass* pThis, Point2D* pLocation, Rectang
 	const auto cloak = pThis->CloakState;
 	pThis->CloakState = CloakState::Uncloaked;
 
+	const bool bridge = pThis->OnBridge;
+	pThis->OnBridge = false;
+	const bool map = pThis->IsOnMap;
+	pThis->IsOnMap = false;
 	const auto coords = pThis->Location;
 	pThis->Location = CoordStruct { INT_MAX, INT_MAX, INT_MAX };
 	const char tube = pThis->TubeIndex;
@@ -1498,6 +1508,8 @@ void TechnoExt::DrawExtraImage(InfantryClass* pThis, Point2D* pLocation, Rectang
 	pThis->Animation.Value = anim;
 	pThis->SequenceAnim = sequence;
 
+	pThis->OnBridge = bridge;
+	pThis->IsOnMap = map;
 	pThis->Location = coords;
 	pThis->TubeIndex = tube;
 

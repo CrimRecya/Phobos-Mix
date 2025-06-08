@@ -8,6 +8,7 @@
 #include <WWMouseClass.h>
 #include <AITriggerTypeClass.h>
 #include <JumpjetLocomotionClass.h>
+#include <HoverLocomotionClass.h>
 
 #include <Ext/House/Body.h>
 #include <Ext/WarheadType/Body.h>
@@ -203,7 +204,7 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 
 				if (pCurCell && checkSteps > 1)
 				{
-					const int height = pJjLoco ? pJjLoco->Height : pFlyLoco->FlightLevel;
+					int height = pJjLoco ? pJjLoco->Height : pFlyLoco->FlightLevel;
 					TechnoExt::DrawExtraImage(pFoot, pCurCell, pFace->DesiredFacing, height);
 				}
 			}
@@ -219,7 +220,7 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 					pCell = pCell->GetNeighbourCell(static_cast<FacingType>(face));
 					pathCells.push_back(pCell);
 
-					for (int i = 0; i < 24; ++i)
+					for (int i = 1; i < 24; ++i)
 					{
 						const auto thisFace = pD[i];
 
@@ -231,7 +232,12 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 						pathCells.push_back(pCell);
 					}
 
-					TechnoExt::DrawExtraImage(pFoot, pCell, DirStruct(face << 13));
+					int height = pCell->ContainsBridge() ? CellClass::BridgeHeight : 0;
+
+					if (locomotion_cast<HoverLocomotionClass*>(pFoot->Locomotor))
+						height += RulesClass::Instance->HoverHeight;
+
+					TechnoExt::DrawExtraImage(pFoot, pCell, DirStruct(face << 13), height);
 				}
 			}
 		}
@@ -349,8 +355,17 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		{
 			if (pDest)
 			{
+				auto coords = pDest->GetCoords();
+				const auto pCell = MapClass::Instance.TryGetCellAt(coords);
+
+				if (!pCell)
+					return;
+
+				if (pCell->ContainsBridge())
+					coords.Z += CellClass::BridgeHeight;
+
 				auto footPoint = thisPoint;
-				auto destPoint = TacticalClass::Instance->CoordsToClient(pDest->GetCoords()).first;
+				auto destPoint = TacticalClass::Instance->CoordsToClient(coords).first;
 
 				if (reinterpret_cast<bool(__fastcall*)(Point2D*, Point2D*, RectangleStruct*)>(0x7BC2B0)(&footPoint, &destPoint, &DSurface::ViewBounds))
 					DSurface::Composite->DrawDashedLine_(&footPoint, &destPoint, color, pattern, offset, false);
