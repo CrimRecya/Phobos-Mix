@@ -803,7 +803,7 @@ OnlyUseLandSequences=false  ; boolean
   - `AdvancedDrive.ReverseSpeed` controls the speed ratio when reversing.
   - `AdvancedDrive.FaceTargetRange` controls how close the unit is to its target, allowing reversing.
   - `AdvancedDrive.MinimumDistance` controls how close the unit is to its destination, allowing reversing.
-  - `AdvancedDrive.ConfrontEnemies` controls whether to maitain the frontal movement towards the enemy within the aforementioned distance and no longer automatically selects by the current orientation.
+  - `AdvancedDrive.ConfrontEnemies` controls whether to maitain the frontal movement towards the enemy within `AdvancedDrive.FaceTargetRange` and no longer automatically selects by the current orientation.
   - `AdvancedDrive.RetreatDuration` controls how long since the unit was last injured, allowing reversing.
 
 In `rulesmd.ini`:
