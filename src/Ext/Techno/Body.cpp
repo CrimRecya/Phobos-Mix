@@ -1173,6 +1173,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->ThisOccupationCell)
 		.Process(this->LastOccupationCell)
 		.Process(this->AltOccupation)
+		.Process(this->FiringAnimationTimer)
 		;
 }
 

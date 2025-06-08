@@ -118,6 +118,8 @@ public:
 		// Ares
 		std::optional<bool> AltOccupation; // if the unit marks cell occupation flags, this is set to whether it uses the "high" occupation members
 
+		CDTimerClass FiringAnimationTimer;
+
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
 			, Shield {}
@@ -199,6 +201,7 @@ public:
 			, ThisOccupationCell { nullptr }
 			, LastOccupationCell { nullptr }
 			, AltOccupation {}
+			, FiringAnimationTimer {}
 		{ }
 
 		void OnEarlyUpdate();
