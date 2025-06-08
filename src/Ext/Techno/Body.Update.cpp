@@ -186,7 +186,7 @@ bool TechnoExt::ExtData::CheckDeathConditions(bool isInLimbo)
 					if (affectedHouse == AffectedHouse::Owner)
 						return allowLimbo ? HouseExt::ExtMap.Find(pThis->Owner)->CountOwnedPresentAndLimboed(pType) > 0 : pThis->Owner->CountOwnedAndPresent(pType) > 0;
 
-					for (auto const pHouse : HouseClass::Array)
+					for (auto const& pHouse : HouseClass::Array)
 					{
 						if (EnumFunctions::CanTargetHouse(affectedHouse, pThis->Owner, pHouse)
 							&& (allowLimbo ? HouseExt::ExtMap.Find(pHouse)->CountOwnedPresentAndLimboed(pType) > 0 : pHouse->CountOwnedAndPresent(pType) > 0))
@@ -814,7 +814,7 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 		pSpawnManager->ResetTarget();
 
 		// pSpawnManager->KillNodes() kills all Spawns, but it is not necessary to kill the parts that are not performing tasks.
-		for (const auto pSpawnNode : pSpawnManager->SpawnedNodes)
+		for (const auto& pSpawnNode : pSpawnManager->SpawnedNodes)
 		{
 			const auto pAircraft = pSpawnNode->Unit;
 			auto& pStatus = pSpawnNode->Status;
@@ -1567,7 +1567,7 @@ void TechnoExt::ApplyGainedSelfHeal(TechnoClass* pThis)
 								|| (fromAllies && (!isCampaign || (!pHouse->IsHumanPlayer && !pHouse->IsInPlayerControl)) && pHouse->IsAlliedWith(pOwner));
 						};
 
-					for (auto const pHouse : HouseClass::Array)
+					for (auto const& pHouse : HouseClass::Array)
 					{
 						if (checkHouse(pHouse))
 						{
