@@ -25,6 +25,7 @@
     <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedCameoClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedColumnClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedInfoClass.cpp" />
+    <ClCompile Include="src\Ext\Infantry\Hooks.Firing.cpp" />
     <ClCompile Include="src\Ext\Unit\Hooks.Firing.cpp" />
     <ClCompile Include="src\New\Type\Affiliated\CreateUnitTypeClass.cpp" />
     <ClCompile Include="src\Blowfish\blowfish.cpp" />
