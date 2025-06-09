@@ -1495,18 +1495,21 @@ void TechnoExt::ExtData::UpdateGattlingRateDownReset()
 	{
 		const auto pThis = this->OwnerObject();
 
-		if (pTypeExt->RateDown_Reset && (!pThis->Target || this->LastTargetID != pThis->Target->UniqueID))
+		if (pTypeExt->RateDown_Reset)
 		{
-			int oldStage = pThis->CurrentGattlingStage;
-			this->LastTargetID = pThis->Target ? pThis->Target->UniqueID : 0xFFFFFFFF;
-			pThis->GattlingValue = 0;
-			pThis->CurrentGattlingStage = 0;
-			this->AccumulatedGattlingValue = 0;
-			this->ShouldUpdateGattlingValue = false;
+			const auto pTarget = pThis->Target;
 
-			if (oldStage != 0)
+			if (!pTarget || this->LastTargetID != pTarget->UniqueID)
 			{
-				pThis->GattlingRateDown(0);
+				const int oldStage = pThis->CurrentGattlingStage;
+				this->LastTargetID = pTarget ? pTarget->UniqueID : 0xFFFFFFFF;
+				pThis->GattlingValue = 0;
+				pThis->CurrentGattlingStage = 0;
+				this->AccumulatedGattlingValue = 0;
+				this->ShouldUpdateGattlingValue = false;
+
+				if (oldStage != 0)
+					pThis->GattlingRateDown(0);
 			}
 		}
 	}
