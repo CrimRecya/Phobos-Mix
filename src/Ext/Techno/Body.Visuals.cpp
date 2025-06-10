@@ -852,7 +852,7 @@ void TechnoExt::GetValuesForDisplay(TechnoClass* pThis, DisplayInfoType infoType
 	}
 	case DisplayInfoType::Shield:
 	{
-		auto const pShield = TechnoExt::ExtMap.Find(pThis)->Shield.get();
+		const auto pShield = TechnoExt::ExtMap.Find(pThis)->Shield.get();
 
 		if (!pShield || pShield->IsBrokenAndNonRespawning())
 			return;

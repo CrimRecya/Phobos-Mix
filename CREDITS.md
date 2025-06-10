@@ -491,12 +491,12 @@ This page lists all the individual contributions to the project by their author.
   - Fix an issue that spawned `Strafe` aircraft on aircraft carriers may not be able to return normally if aircraft carriers moved a short distance when the aircraft is landing
   - Exclusive SuperWeapon Sidebar
   - Fix an issue that the widespread damage caused by detonation on the bridge/ground cannot affect objects on the ground/bridge who are in the opposite case
+  - Several new Infotypes, no display in specific status and a new single frame display method
   - New Missile trajectory
   - New Engrave trajectory
   - New Tracing trajectory
   - New trajectory system with general functions
   - Jumpjet Climbing Logic Enhancement
-  - Several new Infotypes, no display in specific status and a new single frame display method
   - Display factories, superweapons, iron curtain and temporal progress on specific technos
   - Customized Vehicle Turret Rotation
   - Observer sidebar in skirmish game mode
