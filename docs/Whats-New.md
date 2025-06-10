@@ -391,10 +391,10 @@ New:
 - [Turretless vehicles with `Voxel=no` support use `FireUp` like infantry](New-or-Enhanced-Logics.md#turretless-shape-vehicle-fireup) (by FlyStar)
 - Infantry support `IsGattling=yes` (by FlyStar)
 
-- New trajectory system (by CrimRecya)
 - New Missile trajectory (by CrimRecya)
 - New Engrave trajectory (by CrimRecya)
 - New Tracing trajectory (by CrimRecya)
+- New trajectory system with general functions (by CrimRecya)
 - Several new Infotypes, no display in specific status and a new single frame display method (by CrimRecya)
 - Customized Vehicle Turret Rotation (by CrimRecya)
 - Jumpjet Climbing Logic Enhancement (by CrimRecya)

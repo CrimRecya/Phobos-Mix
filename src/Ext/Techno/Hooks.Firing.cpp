@@ -358,19 +358,19 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 			if (!TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType())->AllowAirstrike.Get(pTechno->AbstractFlags & AbstractFlags::Foot ? true : static_cast<BuildingClass*>(pTechno)->Type->CanC4))
 				return CannotFire;
 		}
+	}
 
-		const auto pTrajType = pBulletTypeExt->TrajectoryType.get();
+	const auto pTrajType = pBulletTypeExt->TrajectoryType.get();
 
-		if (pTrajType && pTrajType->CreateCapacity >= 0)
-		{
-			const auto pFirerExt = TechnoExt::ExtMap.Find(pThis);
+	if (pTrajType && pTrajType->CreateCapacity >= 0)
+	{
+		const auto pFirerExt = TechnoExt::ExtMap.Find(pThis);
 
-			if (!pFirerExt->TrajectoryGroup)
-				pFirerExt->TrajectoryGroup = std::make_shared<PhobosMap<DWORD, PhobosTrajectory::GroupData>>();
+		if (!pFirerExt->TrajectoryGroup)
+			pFirerExt->TrajectoryGroup = std::make_shared<PhobosMap<DWORD, PhobosTrajectory::GroupData>>();
 
-			if (pTrajType->CreateCapacity <= static_cast<int>((*pFirerExt->TrajectoryGroup)[pBulletType->UniqueID].Bullets.size()))
-				return TemporarilyCannotFire;
-		}
+		if (pTrajType->CreateCapacity <= static_cast<int>((*pFirerExt->TrajectoryGroup)[pBulletType->UniqueID].Bullets.size()))
+			return TemporarilyCannotFire;
 	}
 
 	GET(TechnoClass*, pTargetTechno, EBP);
