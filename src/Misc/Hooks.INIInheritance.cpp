@@ -1,4 +1,4 @@
-#include <Utilities/Debug.h>
+﻿#include <Utilities/Debug.h>
 #include <Utilities/Macro.h>
 #include <Helpers/Macro.h>
 #include <CCINIClass.h>

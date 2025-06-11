@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Phobos.version.h>
 #include <Windows.h>
 
@@ -27,6 +27,7 @@ public:
 	static char readBuffer[readLength];
 	static wchar_t wideBuffer[readLength];
 	static constexpr auto readDelims = ",";
+	static bool HideWarning;
 
 	static const char* AppIconPath;
 	static const wchar_t* VersionDescription;

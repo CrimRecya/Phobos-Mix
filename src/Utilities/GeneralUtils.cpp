@@ -1,4 +1,4 @@
-#include "GeneralUtils.h"
+﻿#include "GeneralUtils.h"
 #include "Debug.h"
 #include <Theater.h>
 #include <ScenarioClass.h>

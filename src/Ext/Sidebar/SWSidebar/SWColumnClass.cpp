@@ -1,4 +1,4 @@
-#include "SWColumnClass.h"
+﻿#include "SWColumnClass.h"
 #include "SWSidebarClass.h"
 
 #include <Ext/SWType/Body.h>

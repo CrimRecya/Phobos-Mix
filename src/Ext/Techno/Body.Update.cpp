@@ -1,4 +1,4 @@
-// methods used in TechnoClass_AI hooks or anything similar
+﻿// methods used in TechnoClass_AI hooks or anything similar
 #include "Body.h"
 
 #include <SessionClass.h>
@@ -642,7 +642,7 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 	}
 
 	// Manager fix
-	// Powered by ststl-s、Fly-Star
+	// Powered by ststl-s銆丗ly-Star
 	auto& pSlaveManager = pThis->SlaveManager;
 	auto& pSpawnManager = pThis->SpawnManager;
 	auto& pCaptureManager = pThis->CaptureManager;

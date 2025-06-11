@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 double WeaponTypeExt::OldRadius = DiskLaserClass::Radius;
 // 0x4A6CF0 :

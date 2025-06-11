@@ -1,4 +1,4 @@
-#include <Ext/Techno/Body.h>
+﻿#include <Ext/Techno/Body.h>
 #include "TypeConvertGroup.h"
 
 void TypeConvertGroup::Convert(TechnoClass* pTarget, const std::vector<TypeConvertGroup>& convertPairs, HouseClass* pOwner)

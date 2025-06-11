@@ -1,4 +1,4 @@
-#include "EngraveTrajectory.h"
+﻿#include "EngraveTrajectory.h"
 
 #include <LaserDrawClass.h>
 

@@ -1,4 +1,4 @@
-#include "SelectCaptured.h"
+﻿#include "SelectCaptured.h"
 
 #include <BuildingTypeClass.h>
 #include <MessageListClass.h>

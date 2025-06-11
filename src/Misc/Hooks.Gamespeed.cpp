@@ -1,4 +1,4 @@
-#include <Phobos.h>
+﻿#include <Phobos.h>
 #include <Utilities/Macro.h>
 #include <SessionClass.h>
 #include <GameOptionsClass.h>

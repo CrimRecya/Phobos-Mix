@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "SWButtonClass.h"
 #include <ControlClass.h>
 

@@ -1,4 +1,4 @@
-#include "ObjectInfo.h"
+﻿#include "ObjectInfo.h"
 
 #include <Utilities/GeneralUtils.h>
 #include <BuildingClass.h>

@@ -1,4 +1,4 @@
-// Issue #5 Permanently stationary units
+﻿// Issue #5 Permanently stationary units
 // Author: Starkku
 
 #include "UnitClass.h"

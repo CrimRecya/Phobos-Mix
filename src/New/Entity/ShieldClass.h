@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <GeneralStructures.h>
 #include <SpecificStructures.h>

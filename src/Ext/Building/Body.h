@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <BuildingClass.h>
 #include <HouseClass.h>
 #include <TiberiumClass.h>

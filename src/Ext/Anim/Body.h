@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <AnimClass.h>
 #include <ParticleSystemClass.h>
 

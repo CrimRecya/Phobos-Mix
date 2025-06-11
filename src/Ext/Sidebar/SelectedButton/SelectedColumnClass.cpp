@@ -1,4 +1,4 @@
-#include "SelectedColumnClass.h"
+﻿#include "SelectedColumnClass.h"
 #include "SelectedInfoClass.h"
 
 #include <GameOptionsClass.h>

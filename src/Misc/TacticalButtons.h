@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Utilities/Macro.h>
 #include <Ext/SWType/Body.h>

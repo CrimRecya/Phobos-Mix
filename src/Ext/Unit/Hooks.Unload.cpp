@@ -1,4 +1,4 @@
-#include <AnimClass.h>
+﻿#include <AnimClass.h>
 #include <UnitClass.h>
 #include <TechnoClass.h>
 #include <TunnelLocomotionClass.h>

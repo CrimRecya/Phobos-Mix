@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <AbstractClass.h>
 #include <GeneralDefinitions.h>

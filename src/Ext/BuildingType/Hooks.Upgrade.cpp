@@ -1,4 +1,4 @@
-#include <Utilities/Macro.h>
+﻿#include <Utilities/Macro.h>
 #include <BuildingClass.h>
 #include <BuildingTypeClass.h>
 #include <HouseClass.h>

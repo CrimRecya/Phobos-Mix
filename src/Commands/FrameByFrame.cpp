@@ -1,4 +1,4 @@
-#include "FrameByFrame.h"
+﻿#include "FrameByFrame.h"
 
 #include <SessionClass.h>
 #include <TacticalClass.h>

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <WarheadTypeClass.h>
 #include <SuperWeaponTypeClass.h>
 #include <Helpers/Macro.h>

@@ -1,4 +1,4 @@
-#include "SquadManagerClass.h"
+﻿#include "SquadManagerClass.h"
 
 void SquadManagerClass::AddMember(TechnoClass* pTechno)
 {

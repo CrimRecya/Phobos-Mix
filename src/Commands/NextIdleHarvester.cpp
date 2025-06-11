@@ -1,4 +1,4 @@
-#include "NextIdleHarvester.h"
+﻿#include "NextIdleHarvester.h"
 
 #include <BuildingTypeClass.h>
 #include <MessageListClass.h>

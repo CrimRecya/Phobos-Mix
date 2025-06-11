@@ -1,4 +1,4 @@
-#include <AircraftClass.h>
+﻿#include <AircraftClass.h>
 #include <InfantryClass.h>
 #include <JumpjetLocomotionClass.h>
 #include <SuperClass.h>

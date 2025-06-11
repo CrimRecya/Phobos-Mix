@@ -1,4 +1,4 @@
-#include "SelectedInfo.h"
+﻿#include "SelectedInfo.h"
 
 #include <Ext/Sidebar/SelectedButton/SelectedInfoClass.h>
 

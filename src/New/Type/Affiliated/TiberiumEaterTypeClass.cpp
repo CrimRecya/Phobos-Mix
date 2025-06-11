@@ -1,4 +1,4 @@
-#include "TiberiumEaterTypeClass.h"
+﻿#include "TiberiumEaterTypeClass.h"
 
 #include <Utilities/SavegameDef.h>
 #include <Utilities/TemplateDef.h>

@@ -1,4 +1,4 @@
-#include "HerosInfo.h"
+﻿#include "HerosInfo.h"
 
 #include <Ext/Sidebar/UniqueButton/UniqueTechnoColumnClass.h>
 

@@ -1,4 +1,4 @@
-#include <AlphaShapeClass.h>
+﻿#include <AlphaShapeClass.h>
 #include <TacticalClass.h>
 
 #include <Ext/Building/Body.h>

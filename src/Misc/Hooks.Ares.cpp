@@ -1,4 +1,4 @@
-#include <BuildingClass.h>
+﻿#include <BuildingClass.h>
 #include <FootClass.h>
 
 #include <Utilities/Macro.h>
