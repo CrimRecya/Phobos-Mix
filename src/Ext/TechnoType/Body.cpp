@@ -51,125 +51,6 @@ bool TechnoTypeExt::ExtData::IsSecondary(const int weaponIndex)
 	return weaponIndex != 0;
 }
 
-bool TechnoTypeExt::CheckMultiWeapon(TechnoClass* pThis, AbstractClass* pTarget, CellClass* pTargetCell, WeaponTypeClass* pWeapon)
-{
-	if (!pWeapon || pWeapon->NeverUse || (pThis->InOpenToppedTransport && !pWeapon->FireInTransport))
-		return false;
-
-	const auto pWH = pWeapon->Warhead;
-	const auto whatAmI = pTarget->WhatAmI();
-	const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
-
-	if (pTargetCell && !EnumFunctions::IsCellEligible(pTargetCell, pWeaponExt->CanTarget, true, true))
-		return false;
-
-	if (const auto pTargetTechno = abstract_cast<TechnoClass*, true>(pTarget))
-	{
-		const auto pBulletTypeExt = BulletTypeExt::ExtMap.Find(pWeapon->Projectile);
-
-		if (pTarget->IsInAir() ? !pWeapon->Projectile->AA : pBulletTypeExt->AAOnly.Get())
-			return false;
-
-		if (pTargetTechno->InWhichLayer() == Layer::Underground && !pBulletTypeExt->AU)
-			return false;
-
-		const auto pFirerHouse = pThis->Owner;
-		const auto pTargetHouse = pTargetTechno->Owner;
-
-		if (!EnumFunctions::CanTargetHouse(pWeaponExt->CanTargetHouses, pFirerHouse, pTargetHouse))
-			return false;
-
-		if (pTargetTechno->AttachedBomb ? pWH->IvanBomb : pWH->BombDisarm)
-			return false;
-
-		const auto pTargetTechnoType = pTargetTechno->GetTechnoType();
-
-		if (whatAmI == AbstractType::Building)
-		{
-			if (pWH->IsLocomotor || pWH->Parasite)
-				return false;
-
-			if (pWH->ElectricAssault && (!pFirerHouse->IsAlliedWith(pTargetHouse) || !static_cast<BuildingTypeClass*>(pTargetTechnoType)->Overpowerable))
-				return false;
-
-			if (pWH->Airstrike)
-			{
-				if (!EnumFunctions::IsTechnoEligible(pTargetTechno, WarheadTypeExt::ExtMap.Find(pWH)->AirstrikeTargets))
-					return false;
-
-				if (!TechnoTypeExt::ExtMap.Find(pTargetTechnoType)->AllowAirstrike.Get(static_cast<BuildingTypeClass*>(pTargetTechnoType)->CanC4))
-					return false;
-			}
-		}
-		else
-		{
-			if (pWH->IsLocomotor && pTargetTechnoType->Organic)
-				return false;
-
-			if (pWH->Parasite && static_cast<FootClass*>(pTargetTechno)->ParasiteEatingMe)
-				return false;
-
-			if (pWH->Airstrike)
-			{
-				if (!EnumFunctions::IsTechnoEligible(pTargetTechno, WarheadTypeExt::ExtMap.Find(pWH)->AirstrikeTargets))
-					return false;
-
-				if (!TechnoTypeExt::ExtMap.Find(pTargetTechnoType)->AllowAirstrike.Get(true))
-					return false;
-			}
-		}
-
-		if (pWH->Psychedelic && (pTargetTechno->BunkerLinkedItem || pTargetTechnoType->ImmuneToPsionics))
-			return false;
-
-		if (pWH->MindControl && (pTargetTechnoType->ImmuneToPsionics || pTargetTechno->IsMindControlled() || pFirerHouse == pTargetHouse))
-			return false;
-
-		if (!pWH->Temporal && pTargetTechno->BeingWarpedOut)
-			return false;
-
-		if (pWeapon->DrainWeapon && (!pTargetTechnoType->Drainable || (pTargetTechno->DrainingMe || pFirerHouse->IsAlliedWith(pTargetHouse))))
-			return false;
-
-		if (!EnumFunctions::IsTechnoEligible(pTargetTechno, pWeaponExt->CanTarget))
-			return false;
-
-		if (!pWeaponExt->HasRequiredAttachedEffects(pTargetTechno, pThis))
-			return false;
-
-		auto armorType = pTargetTechnoType->Armor;
-		const auto pShield = TechnoExt::ExtMap.Find(pTargetTechno)->Shield.get();
-
-		if (pShield && pShield->IsActive() && !pShield->CanBePenetrated(pWH))
-			armorType = pShield->GetArmorType();
-
-		if (GeneralUtils::GetWarheadVersusArmor(pWH, armorType) == 0.0)
-			return false;
-	}
-	else
-	{
-		if (whatAmI == AbstractType::Terrain)
-		{
-			if (!pWH->Wood)
-				return false;
-		}
-		else if (whatAmI == AbstractType::Cell)
-		{
-			const int overlayTypeIndex = static_cast<CellClass*>(pTarget)->OverlayTypeIndex;
-
-			if (overlayTypeIndex != -1)
-			{
-				auto const pOverlayType = OverlayTypeClass::Array.GetItem(overlayTypeIndex);
-
-				if (pOverlayType->Wall && !pWH->Wall && (!pWH->Wood || pOverlayType->Armor != Armor::Wood))
-					return false;
-			}
-		}
-	}
-
-	return true;
-}
-
 int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass* pTarget)
 {
 	if (!pTarget || !this->MultiWeapon.Get())
@@ -177,8 +58,18 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 
 	const auto pType = this->OwnerObject();
 
-	if (pType->HasMultipleTurrets()
-		&& (pType->IsGattling || pType->Gunner))
+	if (pType->HasMultipleTurrets() && (pType->IsGattling || pType->Gunner))
+		return -1;
+
+	// Ignore target cell for airborne and underground target technos.
+	const auto pTargetTechno = abstract_cast<TechnoClass*, true>(pTarget);
+
+	if (pTargetTechno
+		&& (!pTargetTechno->IsAlive
+			|| !pTargetTechno->IsOnMap
+			|| pTargetTechno->Health <= 0
+			|| pTargetTechno->InLimbo
+			|| pTargetTechno->IsSinking))
 	{
 		return -1;
 	}
@@ -188,26 +79,7 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 	if (weaponCount < 2)
 		return 0;
 
-	const bool isElite = pThis->Veterancy.IsElite();
 	CellClass* pTargetCell = nullptr;
-
-	// Ignore target cell for airborne and underground target technos.
-	const auto pTargetTechno = abstract_cast<TechnoClass*, true>(pTarget);
-	bool isAllies = false;
-
-	if (pTargetTechno)
-	{
-		if (!pTargetTechno->IsAlive
-			|| !pTargetTechno->IsOnMap
-			|| pTargetTechno->Health <= 0
-			|| pTargetTechno->InLimbo
-			|| pTargetTechno->IsSinking)
-		{
-			return -1;
-		}
-
-		isAllies = pThis->Owner->IsAlliedWith(pTargetTechno->Owner);
-	}
 
 	if (!pTargetTechno || (!pTargetTechno->IsInAir() && pTargetTechno->InWhichLayer() != Layer::Underground))
 	{
@@ -217,117 +89,96 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 			pTargetCell = pCell;
 	}
 
-	int primaryWeaponIndex = 0;
-	bool checkedPrimary = false;
-
-	auto getWeaponStruct = [pType](int weaponIndex, bool isElite) -> WeaponStruct*
-	{
-		if (weaponIndex < 18)
-			return &pType->GetWeapon(weaponIndex, isElite);
-
-		return isElite
-			? reinterpret_cast<WeaponStruct*(__thiscall*)(TechnoTypeClass*, int)>(0x7177E0)(pType, weaponIndex)
-			: reinterpret_cast<WeaponStruct*(__thiscall*)(TechnoTypeClass*, int)>(0x7177C0)(pType, weaponIndex);
-	};
-
-	for (int i = 0; i < weaponCount; ++i)
-	{
-		const bool isSecondary = this->MultiWeapon_IsSecondary[i];
-
-		if (checkedPrimary && !isSecondary)
-			continue;
-
-		const auto pWeapon = getWeaponStruct(i, isElite)->WeaponType;
-
-		if (!TechnoTypeExt::CheckMultiWeapon(pThis, pTarget, pTargetCell, pWeapon))
+	std::vector<bool> secondaryCannotTargets {};
+	secondaryCannotTargets.resize(weaponCount, false);
+	const bool isElite = pThis->Veterancy.IsElite();
+	auto getBasePriority = [pThis, pTargetTechno, pTargetCell]()
 		{
-			if (checkedPrimary)
-				break;
+			if (!pTargetTechno)
+				return false;
 
-			continue;
-		}
-
-		if (!isSecondary)
-		{
-			primaryWeaponIndex = i;
-			checkedPrimary = true;
-			continue;
-		}
-
-		if (!checkedPrimary)
-			return i;
-
-		const auto pWH = pWeapon->Warhead;
-		const auto targetAbsType = pTarget->WhatAmI();
-		const bool isBuilding = targetAbsType == AbstractType::Building;
-
-		if (pWH->Airstrike)
-		{
-			if (!isBuilding)
-				return i;
-
-			const auto pTargetBuildingType = static_cast<BuildingClass*>(pTargetTechno)->Type;
-
-			if (!pTargetBuildingType->ResourceDestination || !pTargetBuildingType->ResourceGatherer)
-				return i;
-		}
-
-		if (isBuilding && pType->GetWeapon(primaryWeaponIndex, isElite).WeaponType->Warhead->IsLocomotor)
-			return i;
-
-		if (pWeapon->DrainWeapon && !pThis->DrainTarget)
-			return i;
-
-		if (pWeapon->AreaFire && pThis->GetCurrentMission() == Mission::Unload)
-			return i;
-
-		if (pWH->ElectricAssault)
-			return i;
-
-		const auto thisAbsType = pThis->WhatAmI();
-
-		if (thisAbsType == AbstractType::Building)
-		{
-			if (static_cast<BuildingClass*>(pThis)->IsOverpowered)
-				return i;
-		}
-		else if (thisAbsType == AbstractType::Aircraft)
-		{
-			if (static_cast<AircraftClass*>(pThis)->IsKamikaze)
-				return i;
-		}
-
-		const auto pThisType = pThis->GetTechnoType();
-
-		if (targetAbsType == AbstractType::Cell
-			&& pThisType->LandTargeting == LandTargetingType::Land_Secondary
-			&& (pTargetCell->LandType != LandType::Water && pTargetCell->IsOnFloor())
-				|| (pTargetCell->ContainsBridge() && pThisType->Naval))
-		{
-			return i;
-		}
-
-		if (pTargetTechno)
-		{
 			if (pTargetTechno->IsInAir())
-				return i;
+				return true;
 
-			if (!pTargetTechno->OnBridge)
+			if (pTargetTechno->OnBridge || !pTargetCell)
+				return false;
+
+			const auto landType = pTargetCell->LandType;
+
+			if (landType != LandType::Water && landType != LandType::Beach)
+				return false;
+
+			return pThis->SelectNavalTargeting(pTargetTechno) == -1;
+		};
+	const bool priority = getBasePriority();
+
+	if (pTargetTechno)
+	{
+		auto checkSecondary = [pThis, pType, pTargetTechno, pTargetCell, isElite, priority, &secondaryCannotTargets](int weaponIndex) -> bool
 			{
-				const auto landType = pTargetCell->LandType;
+				const auto pWeapon = TechnoTypeExt::GetWeaponStruct(pType, weaponIndex, isElite)->WeaponType;
 
-				if (landType == LandType::Water || landType == LandType::Beach)
-					return (pThis->SelectNavalTargeting(pTargetTechno) == 1) ? i : primaryWeaponIndex;
-			}
+				if (!pWeapon || pWeapon->NeverUse)
+				{
+					secondaryCannotTargets[weaponIndex] = true;
+					return false;
+				}
 
-			if (pThisType->LandTargeting == LandTargetingType::Land_Secondary)
+				auto secondaryPriority = [pThis, pTargetTechno, pTargetCell, pWeapon, priority]() -> bool
+					{
+						if (priority)
+							return true;
+
+						const auto pWH = pWeapon->Warhead;
+
+						if (pWH->Airstrike)
+							return true;
+
+						if (pWH->ElectricAssault && pTargetTechno->WhatAmI() == AbstractType::Building
+							&& static_cast<BuildingClass*>(pTargetTechno)->Type->Overpowerable)
+						{
+							if (pThis->Owner->IsAlliedWith(pTargetTechno->Owner))
+								return true;
+						}
+						else if (pThis->Owner->IsAlliedWith(pTargetTechno->Owner))
+						{
+							return false;
+						}
+
+						return (pWeapon->DrainWeapon && !pThis->DrainTarget && pTargetTechno->GetTechnoType()->Drainable);
+					};
+
+				if (secondaryPriority())
+				{
+					if (TechnoExt::MultiWeaponCanFire(pThis, pTargetTechno, pTargetCell, pWeapon))
+						return true;
+
+					secondaryCannotTargets[weaponIndex] = true;
+					return false;
+				}
+
+				return false;
+			};
+
+		for (int i = 0; i < weaponCount; i++)
+		{
+			if (this->MultiWeapon_IsSecondary[i] && checkSecondary(i))
 				return i;
 		}
-
-		break;
 	}
 
-	return primaryWeaponIndex;
+	for (int i = 0; i < weaponCount; i++)
+	{
+		if (secondaryCannotTargets[i])
+			continue;
+
+		const auto pWeapon = TechnoTypeExt::GetWeaponStruct(pType, i, isElite)->WeaponType;
+
+		if (TechnoExt::MultiWeaponCanFire(pThis, pTarget, pTargetCell, pWeapon))
+			return i;
+	}
+
+	return 0;
 }
 
 int TechnoTypeExt::ExtData::SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget)
@@ -889,6 +740,15 @@ CanBuildResult TechnoTypeExt::CheckAlwaysExistCameo(TechnoTypeClass* pType, CanB
 	}
 
 	return canBuild;
+}
+
+// used for more WeaponX added by Ares.
+WeaponStruct* TechnoTypeExt::GetWeaponStruct(TechnoTypeClass* pThis, int weaponIndex, bool isElite)
+{
+	if (weaponIndex < 18)
+		return &pThis->GetWeapon(weaponIndex, isElite);
+
+	return isElite ? pThis->GetEliteWeapon(weaponIndex) : pThis->GetWeapon(weaponIndex);
 }
 
 // =============================

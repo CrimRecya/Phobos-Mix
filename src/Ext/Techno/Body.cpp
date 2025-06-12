@@ -10,11 +10,14 @@
 #include <AirstrikeClass.h>
 #include <BombListClass.h>
 #include <TacticalClass.h>
+#include <OverlayTypeClass.h>
 
 #include <Ext/Anim/Body.h>
+#include <Ext/BulletType/Body.h>
 #include <Ext/House/Body.h>
 #include <Ext/Scenario/Body.h>
 #include <Ext/WeaponType/Body.h>
+#include <Ext/WarheadType/Body.h>
 #include <Ext/House/Body.h>
 #include <Ext/Cell/Body.h>
 
@@ -63,6 +66,14 @@ TechnoExt::ExtData::~ExtData()
 
 		if (pSquad->Members.empty())
 			SquadManagerClass::Remove(pSquad);
+	}
+
+	if (!this->ChildAttachments.empty())
+	{
+		for (auto const& pAttachment : this->ChildAttachments)
+			pAttachment->Destroy(nullptr);
+
+		this->ChildAttachments.clear();
 	}
 
 	if (pTypeExt->AutoDeath_Behavior.isset())
@@ -699,6 +710,143 @@ int TechnoExt::ExtData::GetAttachedEffectCumulativeCount(AttachEffectTypeClass* 
 	return foundCount;
 }
 
+UnitTypeClass* TechnoExt::ExtData::GetUnitTypeExtra() const
+{
+	if (auto const pUnit = abstract_cast<UnitClass*, true>(this->OwnerObject()))
+	{
+		auto const pData = TechnoTypeExt::ExtMap.Find(pUnit->Type);
+
+		if (pUnit->IsYellowHP() || pUnit->IsRedHP())
+		{
+			if (!pUnit->OnBridge && pUnit->GetCell()->LandType == LandType::Water && (pData->WaterImage_ConditionRed || pData->WaterImage_ConditionYellow))
+				return (pUnit->IsRedHP() && pData->WaterImage_ConditionRed) ? pData->WaterImage_ConditionRed : pData->WaterImage_ConditionYellow;
+			else if (pData->Image_ConditionRed || pData->Image_ConditionYellow)
+				return (pUnit->IsRedHP() && pData->Image_ConditionRed) ? pData->Image_ConditionRed : pData->Image_ConditionYellow;
+		}
+	}
+
+	return nullptr;
+}
+
+bool TechnoExt::MultiWeaponCanFire(TechnoClass* pThis, AbstractClass* pTarget, CellClass* pTargetCell, WeaponTypeClass* pWeapon)
+{
+	if (!pWeapon || pWeapon->NeverUse || (pThis->InOpenToppedTransport && !pWeapon->FireInTransport))
+		return false;
+
+	const auto pWH = pWeapon->Warhead;
+	const auto rtti = pTarget->WhatAmI();
+	const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
+
+	if (pTargetCell && !EnumFunctions::IsCellEligible(pTargetCell, pWeaponExt->CanTarget, true, true))
+		return false;
+
+	if (const auto pTargetTechno = abstract_cast<TechnoClass*, true>(pTarget))
+	{
+		const auto pBulletTypeExt = BulletTypeExt::ExtMap.Find(pWeapon->Projectile);
+
+		if (pTarget->IsInAir() ? !pWeapon->Projectile->AA : pBulletTypeExt->AAOnly.Get())
+			return false;
+
+		if (pTargetTechno->InWhichLayer() == Layer::Underground && !pBulletTypeExt->AU)
+			return false;
+
+		const auto pFirerHouse = pThis->Owner;
+		const auto pTargetHouse = pTargetTechno->Owner;
+
+		if (!EnumFunctions::CanTargetHouse(pWeaponExt->CanTargetHouses, pFirerHouse, pTargetHouse))
+			return false;
+
+		if (pTargetTechno->AttachedBomb ? pWH->IvanBomb : pWH->BombDisarm)
+			return false;
+
+		const auto pTargetTechnoType = pTargetTechno->GetTechnoType();
+
+		if (rtti == AbstractType::Building)
+		{
+			if (pWH->IsLocomotor || pWH->Parasite)
+				return false;
+
+			if (pWH->ElectricAssault && (!pFirerHouse->IsAlliedWith(pTargetHouse) || !static_cast<BuildingTypeClass*>(pTargetTechnoType)->Overpowerable))
+				return false;
+
+			if (pWH->Airstrike)
+			{
+				if (!EnumFunctions::IsTechnoEligible(pTargetTechno, WarheadTypeExt::ExtMap.Find(pWH)->AirstrikeTargets))
+					return false;
+
+				if (!TechnoTypeExt::ExtMap.Find(pTargetTechnoType)->AllowAirstrike.Get(static_cast<BuildingTypeClass*>(pTargetTechnoType)->CanC4))
+					return false;
+			}
+		}
+		else
+		{
+			if (pWH->IsLocomotor && pTargetTechnoType->Organic)
+				return false;
+
+			if (pWH->Parasite && static_cast<FootClass*>(pTargetTechno)->ParasiteEatingMe)
+				return false;
+
+			if (pWH->Airstrike)
+			{
+				if (!EnumFunctions::IsTechnoEligible(pTargetTechno, WarheadTypeExt::ExtMap.Find(pWH)->AirstrikeTargets))
+					return false;
+
+				if (!TechnoTypeExt::ExtMap.Find(pTargetTechnoType)->AllowAirstrike.Get(true))
+					return false;
+			}
+		}
+
+		if (pWH->Psychedelic && (pTargetTechno->BunkerLinkedItem || pTargetTechnoType->ImmuneToPsionics))
+			return false;
+
+		if (pWH->MindControl && (pTargetTechnoType->ImmuneToPsionics || pTargetTechno->IsMindControlled() || pFirerHouse == pTargetHouse))
+			return false;
+
+		if (!pWH->Temporal && pTargetTechno->BeingWarpedOut)
+			return false;
+
+		if (pWeapon->DrainWeapon && (!pTargetTechnoType->Drainable || (pTargetTechno->DrainingMe || pFirerHouse->IsAlliedWith(pTargetHouse))))
+			return false;
+
+		if (!EnumFunctions::IsTechnoEligible(pTargetTechno, pWeaponExt->CanTarget))
+			return false;
+
+		if (!pWeaponExt->HasRequiredAttachedEffects(pTargetTechno, pThis))
+			return false;
+
+		auto armorType = pTargetTechnoType->Armor;
+		const auto pShield = TechnoExt::ExtMap.Find(pTargetTechno)->Shield.get();
+
+		if (pShield && pShield->IsActive() && !pShield->CanBePenetrated(pWH))
+			armorType = pShield->GetArmorType();
+
+		if (GeneralUtils::GetWarheadVersusArmor(pWH, armorType) == 0.0)
+			return false;
+	}
+	else
+	{
+		if (rtti == AbstractType::Terrain)
+		{
+			if (!pWH->Wood)
+				return false;
+		}
+		else if (rtti == AbstractType::Cell)
+		{
+			const int overlayTypeIndex = static_cast<CellClass*>(pTarget)->OverlayTypeIndex;
+
+			if (overlayTypeIndex != -1)
+			{
+				auto const pOverlayType = OverlayTypeClass::Array.GetItem(overlayTypeIndex);
+
+				if (pOverlayType->Wall && !pWH->Wall && (!pWH->Wood || pOverlayType->Armor != Armor::Wood))
+					return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 void TechnoExt::ExtData::InitAggressiveStance()
 {
 	this->AggressiveStance = this->TypeExtData->AggressiveStance.Get();
@@ -889,24 +1037,6 @@ bool TechnoExt::ExtData::CanToggleCeaseFireStance()
 	return pTypeExt->CeaseFireStance_Togglable.Get(true);
 }
 
-UnitTypeClass* TechnoExt::ExtData::GetUnitTypeExtra() const
-{
-	if (auto const pUnit = abstract_cast<UnitClass*, true>(this->OwnerObject()))
-	{
-		auto const pData = TechnoTypeExt::ExtMap.Find(pUnit->Type);
-
-		if (pUnit->IsYellowHP() || pUnit->IsRedHP())
-		{
-			if (!pUnit->OnBridge && pUnit->GetCell()->LandType == LandType::Water && (pData->WaterImage_ConditionRed || pData->WaterImage_ConditionYellow))
-				return (pUnit->IsRedHP() && pData->WaterImage_ConditionRed) ? pData->WaterImage_ConditionRed : pData->WaterImage_ConditionYellow;
-			else if (pData->Image_ConditionRed || pData->Image_ConditionYellow)
-				return (pUnit->IsRedHP() && pData->Image_ConditionRed) ? pData->Image_ConditionRed : pData->Image_ConditionYellow;
-		}
-	}
-
-	return nullptr;
-}
-
 void TechnoExt::ExtData::UpdateTrackingLasers()
 {
 	const auto pThis = this->OwnerObject();
@@ -994,7 +1124,10 @@ void TechnoExt::ExtData::InitializeAttachments()
 
 void TechnoExt::DestroyAttachments(TechnoClass* pThis, TechnoClass* pSource)
 {
-	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+
+	if (!pExt)
+		return;
 
 	for (auto const& pAttachment : pExt->ChildAttachments)
 		pAttachment->Destroy(pSource);

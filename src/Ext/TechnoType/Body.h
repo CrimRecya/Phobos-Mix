@@ -1118,7 +1118,7 @@ public:
 	static TechnoClass* CreateUnit(CreateUnitTypeClass* pCreateUnit, DirType facing, DirType* secondaryFacing,
 	CoordStruct location, HouseClass* pOwner, TechnoClass* pInvoker, HouseClass* pInvokerHouse);
 
-	static bool CheckMultiWeapon(TechnoClass* pThis, AbstractClass* pTarget, CellClass* pTargetCell, WeaponTypeClass* pWeapon);
+	static WeaponStruct* GetWeaponStruct(TechnoTypeClass* pThis, int weaponIndex, bool isElite);
 
 	static int __fastcall RequirementsMetExtraCheck(void* pAresHouseExt, discard_t _, TechnoTypeClass* pType);
 	static CanBuildResult CheckAlwaysExistCameo(TechnoTypeClass* pType, CanBuildResult canBuild);
