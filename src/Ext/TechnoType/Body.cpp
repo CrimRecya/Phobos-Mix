@@ -391,7 +391,8 @@ int TechnoTypeExt::ExtData::SelectForceWeapon(TechnoClass* pThis, AbstractClass*
 					forceWeaponIndex = (this->ForceAAWeapon_Units >= 0
 						&& pTarget->IsInAir())
 						? this->ForceAAWeapon_Units
-						: (pTargetType->Naval
+						: ((this->ForceWeapon_Naval >= 0
+							&& pTargetType->Naval)
 							? this->ForceWeapon_Naval
 							: this->ForceWeapon_Units);
 
