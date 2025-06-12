@@ -126,19 +126,32 @@ DEFINE_HOOK(0x702299, TechnoClass_ReceiveDamage_DebrisMaximumsFix, 0xA)
 	GET(TechnoClass* const, pThis, ESI);
 
 	const auto pType = pThis->GetTechnoType();
+
+// Jun12,2025 - CrimRecya : I think there is no need to return to the unreasonable vanilla logic
+// Otherwise, they should be in a parallel relationship rather than a sequential relationship
+/*	// If DebrisMaximums has one value, then legacy behavior is used
+	if (pType->DebrisMaximums.Count == 1 &&
+		pType->DebrisMaximums.GetItem(0) > 0 &&
+		pType->DebrisTypes.Count > 0)
+	{
+		return 0;
+	}*/
+
+	// Removed -1 from the MaxDebris
 	int totalSpawnAmount = ScenarioClass::Instance->Random.RandomRanged(pType->MinDebris, pType->MaxDebris);
 
 	const auto& debrisTypes = pType->DebrisTypes;
 	const auto& debrisMaximums = pType->DebrisMaximums;
 
+	// Make DebrisTypes generate completely in accordance with DebrisMaximums,
+	// without continuously looping until it exceeds totalSpawnAmount
 	if (debrisTypes.Count > 0 && debrisMaximums.Count > 0)
 	{
-		const int maximumsMaxIndex = debrisMaximums.Count - 1;
 		auto coord = pThis->GetCoords();
 
-		for (int currentIndex = 0; currentIndex <= maximumsMaxIndex; ++currentIndex)
+		for (int currentIndex = 0; currentIndex < debrisMaximums.Count; ++currentIndex)
 		{
-			const int currentMaxDebris = debrisMaximums.GetItem(Math::min(currentIndex, maximumsMaxIndex));
+			const int currentMaxDebris = debrisMaximums.GetItem(currentIndex);
 
 			if (currentMaxDebris > 0)
 			{
@@ -152,7 +165,7 @@ DEFINE_HOOK(0x702299, TechnoClass_ReceiveDamage_DebrisMaximumsFix, 0xA)
 					GameCreate<VoxelAnimClass>(debrisTypes.GetItem(currentIndex), &coord, pThis->Owner);
 				}
 
-				if (totalSpawnAmount < 1)
+				if (totalSpawnAmount <= 0)
 					break;
 			}
 		}
