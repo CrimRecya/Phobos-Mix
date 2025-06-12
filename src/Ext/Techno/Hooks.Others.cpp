@@ -1980,6 +1980,23 @@ DEFINE_HOOK(0x7079D1, TechnoClass_PointerExpired_TargetExpired, 0x6)
 	return 0;
 }
 
+DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_DoRetaliate, 0x7)
+{
+	enum { SkipGameCode = 0x702B47 };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	if (RulesExt::Global()->ExtraTargeting && pThis->Owner->IsControlledByHuman())
+	{
+		if (pThis->GetTechnoType()->OpportunityFire)
+			ExtraTargeting_Range(pThis);
+
+		return SkipGameCode;
+	}
+
+	return 0;
+}
+
 #pragma endregion
 
 #pragma region VHPScan
