@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <ParticleSystemTypeClass.h>
 
 #include <Helpers/Macro.h>

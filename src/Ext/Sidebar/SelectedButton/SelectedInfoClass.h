@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "SelectedColumnClass.h"
 #include "SelectedCameoClass.h"
 #include "SelectedButtonClass.h"

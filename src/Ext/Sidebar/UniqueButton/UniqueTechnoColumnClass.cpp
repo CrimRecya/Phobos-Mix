@@ -1,4 +1,4 @@
-#include "UniqueTechnoColumnClass.h"
+﻿#include "UniqueTechnoColumnClass.h"
 
 UniqueTechnoColumnClass UniqueTechnoColumnClass::Instance;
 

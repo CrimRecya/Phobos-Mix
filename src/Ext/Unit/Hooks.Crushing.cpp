@@ -1,4 +1,4 @@
-#include <DriveLocomotionClass.h>
+﻿#include <DriveLocomotionClass.h>
 #include <ShipLocomotionClass.h>
 #include <UnitClass.h>
 
@@ -106,24 +106,9 @@ DEFINE_HOOK(0x6A108D, ShipLocomotionClass_WhileMoving_CrushTilt, 0xD)
 	return SkipGameCode;
 }
 
-DEFINE_HOOK(0x4B1146, DriveLocomotionClass_WhileMoving_SkipCrushSlowDown, 0x6)
+DEFINE_HOOK_AGAIN(0x6A0809, SomeLocomotionClass_WhileMoving_SkipCrushSlowDown, 0x6) // Ship
+DEFINE_HOOK(0x4B1146, SomeLocomotionClass_WhileMoving_SkipCrushSlowDown, 0x6) // Drive
 {
-	enum { Skip = 0x4B1182, NotSkip = 0 };
-
-	GET(UnitClass*, pTechno, ECX);
-
-	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
-
-	return (pTypeExt && pTypeExt->SkipCrushSlowdown) ? Skip : NotSkip;
-}
-
-DEFINE_HOOK(0x6A0809, ShipLocomotionClass_WhileMoving_SkipCrushSlowDown, 0x6)
-{
-	enum { Skip = 0x6A0845, NotSkip = 0 };
-
-	GET(UnitClass*, pTechno, ECX);
-
-	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
-
-	return (pTypeExt && pTypeExt->SkipCrushSlowdown) ? Skip : NotSkip;
+	GET(FootClass*, pLinked, ECX);
+	return TechnoTypeExt::ExtMap.Find(pLinked->GetTechnoType())->SkipCrushSlowdown ? (R->Origin() + 0x3C) : 0;
 }

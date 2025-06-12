@@ -1,4 +1,4 @@
-#include <Helpers/Macro.h>
+﻿#include <Helpers/Macro.h>
 
 #include <LaserDrawClass.h>
 #include <GeneralStructures.h>

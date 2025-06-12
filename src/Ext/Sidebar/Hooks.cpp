@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 #include "SWSidebar/SWSidebarClass.h"
 #include "UniqueButton/UniqueTechnoColumnClass.h"
 #include "SelectedButton/SelectedInfoClass.h"

@@ -1,4 +1,4 @@
-#include <ScenarioClass.h>
+﻿#include <ScenarioClass.h>
 
 #include <Ext/Techno/Body.h>
 #include <Utilities/Macro.h>

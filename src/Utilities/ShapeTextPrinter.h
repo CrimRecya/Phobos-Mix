@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Utilities/TemplateDef.h>
 
 // only numbers and sign

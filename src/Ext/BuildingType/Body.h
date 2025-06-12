@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <BuildingTypeClass.h>
 #include <SuperClass.h>
 #include <SuperWeaponTypeClass.h>

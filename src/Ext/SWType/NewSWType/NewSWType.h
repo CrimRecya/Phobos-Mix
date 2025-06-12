@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Ext/SWType/Body.h>
 #include <SuperClass.h>
 #include <HouseClass.h>

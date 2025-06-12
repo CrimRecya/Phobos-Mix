@@ -1,4 +1,4 @@
-#include "AttachmentTypeClass.h"
+﻿#include "AttachmentTypeClass.h"
 
 #include <Utilities/TemplateDef.h>
 

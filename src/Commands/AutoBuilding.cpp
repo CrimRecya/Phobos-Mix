@@ -1,4 +1,4 @@
-#include "AutoBuilding.h"
+﻿#include "AutoBuilding.h"
 
 #include <HouseClass.h>
 #include <MessageListClass.h>

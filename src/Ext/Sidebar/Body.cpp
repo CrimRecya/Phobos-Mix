@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 #include "SWSidebar/SWSidebarClass.h"
 
 #include <EventClass.h>

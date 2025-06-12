@@ -1,4 +1,4 @@
-#include "SelectedInfoClass.h"
+﻿#include "SelectedInfoClass.h"
 
 #include <AircraftClass.h>
 #include <FactoryClass.h>

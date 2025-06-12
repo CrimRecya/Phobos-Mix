@@ -1,4 +1,4 @@
-#include "ManualReloadAmmo.h"
+﻿#include "ManualReloadAmmo.h"
 
 #include <HouseClass.h>
 

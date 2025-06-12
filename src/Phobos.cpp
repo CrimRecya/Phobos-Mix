@@ -1,4 +1,4 @@
-#include "Phobos.h"
+﻿#include "Phobos.h"
 
 #include <Drawing.h>
 #include <SessionClass.h>
@@ -10,9 +10,7 @@
 #include "Utilities/AresHelper.h"
 #include "Utilities/Parser.h"
 
-#ifndef IS_RELEASE_VER
-bool HideWarning = false;
-#endif
+bool Phobos::HideWarning = false;
 
 HANDLE Phobos::hInstance = 0;
 
@@ -30,11 +28,11 @@ bool Phobos::Optimizations::DisableRadDamageOnBuildings = true;
 bool Phobos::Optimizations::DisableSyncLogging = false;
 
 #ifdef STR_GIT_COMMIT
-const wchar_t* Phobos::VersionDescription = L"Phobos nightly build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"(" STR_GIT_COMMIT L"). DO NOT SHIP IN MODS!";
+const wchar_t* Phobos::VersionDescription = L"Phobos sp nightly #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"(" STR_GIT_COMMIT L")";
 #elif !defined(IS_RELEASE_VER)
 const wchar_t* Phobos::VersionDescription = L"Phobos sp build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH);
 #else
-//const wchar_t* Phobos::VersionDescription = L"Phobos release build v" FILE_VERSION_STR L".";
+const wchar_t* Phobos::VersionDescription = L"Phobos sp release v" FILE_VERSION_STR;
 #endif
 
 
@@ -60,12 +58,10 @@ void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
 		{
 			Phobos::AppIconPath = ppArgs[++i];
 		}
-#ifndef IS_RELEASE_VER
-		if (_stricmp(pArg, "-m.b=" _STR(BUILD_NUMBER) "+" _STR(MERGE_NUMBER) "_" _STR(MERGE_PATCH)) == 0)
+		if (_stricmp(pArg, "-SPB=" _STR(BUILD_NUMBER) "+" _STR(MERGE_NUMBER) "_" _STR(MERGE_PATCH)) == 0)
 		{
-			HideWarning = true;
+			Phobos::HideWarning = true;
 		}
-#endif
 		if (_stricmp(pArg, "-Inheritance") == 0)
 		{
 			foundInheritance = true;
@@ -83,6 +79,12 @@ void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
 			if (boolParser.TryParse(value.c_str(), &v))
 				dontSetExceptionHandler = !v;
 		}
+	}
+
+	if (!Phobos::HideWarning)
+	{
+		MessageBoxExW(NULL, L"命令行参数中未检测到授权信息！", Phobos::VersionDescription, MB_ICONERROR, 0);
+		FatalExit(0xDEAD);
 	}
 
 	if (foundInclude)
@@ -233,20 +235,13 @@ DEFINE_HOOK(0x683E7F, ScenarioClass_Start_Optimizations, 0x7)
 	return 0;
 }
 
-#ifndef IS_RELEASE_VER
 DEFINE_HOOK(0x4F4583, GScreenClass_DrawText, 0x6)
 {
-#ifndef STR_GIT_COMMIT
-	if (!HideWarning)
-#endif // !STR_GIT_COMMIT
-	{
-		RectangleStruct wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0);
-		Point2D location { DSurface::Composite->GetWidth() - wanted.Width - 5, 5 };
-		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x061C);
-	}
+	RectangleStruct wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0);
+	Point2D location { DSurface::Composite->GetWidth() - wanted.Width - 5, 5 };
+	DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x061C);
 	return 0;
 }
-#endif
 
 // Mainly used to disable hooks for optimization.
 // Called after loading saved game and at end of scenario start after all INI data etc has been initialized.

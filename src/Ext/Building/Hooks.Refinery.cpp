@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 // The method of calculating the income is subject to each specific situation,
 // which may probably subject to further changes if anyone wants to extend the harvesting logic in the future.

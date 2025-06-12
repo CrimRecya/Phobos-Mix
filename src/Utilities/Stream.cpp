@@ -1,4 +1,4 @@
-#include "Stream.h"
+﻿#include "Stream.h"
 #include "Debug.h"
 
 #include <SwizzleManagerClass.h>

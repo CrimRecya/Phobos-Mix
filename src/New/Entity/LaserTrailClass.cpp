@@ -1,4 +1,4 @@
-#include "LaserTrailClass.h"
+﻿#include "LaserTrailClass.h"
 
 #include <Utilities/TemplateDef.h>
 

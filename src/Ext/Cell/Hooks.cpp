@@ -1,9 +1,9 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <Ext/Techno/Body.h>
 
 
-// because 🦅💣 takes over, we have to do reimpl even more of the func and replicate Ares code
+// because 馃馃挘 takes over, we have to do reimpl even more of the func and replicate Ares code
 
 void __fastcall UnitClass_SetOccupyBit_Reimpl(UnitClass* pThis, discard_t, CoordStruct* pCrd)
 {

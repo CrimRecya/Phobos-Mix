@@ -1,4 +1,4 @@
-#include <Helpers/Macro.h>
+﻿#include <Helpers/Macro.h>
 
 #include "PhobosToolTip.h"
 

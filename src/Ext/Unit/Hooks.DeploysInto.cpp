@@ -1,4 +1,4 @@
-#include <Ext/CaptureManager/Body.h>
+﻿#include <Ext/CaptureManager/Body.h>
 #include <Ext/WarheadType/Body.h>
 
 static void TransferMindControlOnDeploy(TechnoClass* pTechnoFrom, TechnoClass* pTechnoTo)

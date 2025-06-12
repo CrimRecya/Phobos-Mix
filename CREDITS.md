@@ -270,8 +270,7 @@ This page lists all the individual contributions to the project by their author.
   - Vehicles keeping target on move command
   - `IsSonic` wave drawing crash fix
   - Customizable electric bolt duration and electric bolt-related fixes
-  - Airstrike flare visual customizations
-  - Fix an issue where airstrike flare line drawn to target at lower elevation would clip
+  - Airstrike flare visual customizations & fixes
 - **Morton (MortonPL)**:
   - `XDrawOffset` for animations
   - Shield passthrough & absorption
@@ -413,6 +412,7 @@ This page lists all the individual contributions to the project by their author.
   - Exclusive SuperWeapon Sidebar
   - Fix the bug that AlphaImage remained after unit entered tunnel
   - Weapon target filtering by health percentage
+  - Fix the bug that `DamageSelf` and `AllowDamageOnSelf` are ineffective on airforce
   - Directional armor
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**:
@@ -492,6 +492,7 @@ This page lists all the individual contributions to the project by their author.
   - Exclusive SuperWeapon Sidebar
   - Fix an issue that the widespread damage caused by detonation on the bridge/ground cannot affect objects on the ground/bridge who are in the opposite case
   - Several new Infotypes, no display in specific status and a new single frame display method
+  - Customizable spawn delay of `VoxelAnim`'s `TrailerAnim` and fix its incorrect position
   - New Missile trajectory
   - New Engrave trajectory
   - New Tracing trajectory

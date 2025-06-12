@@ -1,4 +1,4 @@
-#include <Helpers/Macro.h>
+﻿#include <Helpers/Macro.h>
 #include <InfantryClass.h>
 
 #include <Ext/Techno/Body.h>

@@ -1,4 +1,4 @@
-#include <Utilities/Debug.h>
+﻿#include <Utilities/Debug.h>
 #include <YRCom.h>
 
 // Registers a manually created factory for a class.

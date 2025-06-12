@@ -1,4 +1,4 @@
-#include "TacticalButtons.h"
+﻿#include "TacticalButtons.h"
 
 #include <SuperClass.h>
 #include <AircraftClass.h>
@@ -1275,6 +1275,14 @@ DEFINE_HOOK(0x684A9A, UnknownClass_sub_684620_InitMessageList, 0x6)
 		const auto width = rect.Width - (sideWidth << 1);
 		const auto pList = &ScenarioExt::Global()->NewMessageList;
 		pList->Init((rect.X + sideWidth), (rect.Height - rect.Height / 8 - 120), 6, 98, 18, -1, -1, 0, 20, 98, width);
+
+#ifndef IS_RELEASE_VER
+		pList->PrintMessage(L"正在使用Phobos特别合并构建#" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L"。若在使用过程中发生问题，请按说明中的方法反馈。  — 绯红热茶", 480);
+	}
+	else
+	{
+		MessageListClass::Instance.PrintMessage(L"正在使用Phobos特别合并构建#" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L"。若在使用过程中发生问题，请按说明中的方法反馈。  — 绯红热茶", 480);
+#endif
 	}
 
 	return 0;

@@ -1,4 +1,4 @@
-#include "NewSWType.h"
+﻿#include "NewSWType.h"
 
 std::vector<std::unique_ptr<NewSWType>> NewSWType::Array;
 

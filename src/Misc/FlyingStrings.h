@@ -1,4 +1,4 @@
-/*FlyingStrings.h
+﻿/*FlyingStrings.h
 Useable to get out messages from units
 Used to output Bounty messages
 By AlexB and Joshy

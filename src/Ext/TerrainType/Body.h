@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <TerrainTypeClass.h>
 
 #include <Helpers/Macro.h>

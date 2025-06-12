@@ -1,4 +1,4 @@
-#include "TestLocomotionClass.h"
+﻿#include "TestLocomotionClass.h"
 
 #ifdef CUSTOM_LOCO_EXAMPLE_ENABLED // Define functions
 

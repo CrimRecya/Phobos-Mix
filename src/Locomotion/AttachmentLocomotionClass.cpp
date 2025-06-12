@@ -1,4 +1,4 @@
-#include "AttachmentLocomotionClass.h"
+﻿#include "AttachmentLocomotionClass.h"
 
 #include <CellSpread.h>
 #include <ScenarioClass.h>

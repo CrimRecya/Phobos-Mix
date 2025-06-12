@@ -1,4 +1,4 @@
-#include "ShowCurrentInfo.h"
+﻿#include "ShowCurrentInfo.h"
 
 const char* ShowCurrentInfoCommandClass::GetName() const
 {

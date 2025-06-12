@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "SWButtonClass.h"
 #include <ControlClass.h>
 
@@ -22,6 +22,8 @@ public:
 	void ClearButtons(bool remove = true);
 
 	void SetHeight(int height);
+
+	static constexpr int StartID = 2101;
 
 	std::vector<SWButtonClass*> Buttons {};
 	int MaxButtons { 0 };

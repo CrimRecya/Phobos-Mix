@@ -1,4 +1,4 @@
-#include <New/Entity/AttachmentClass.h>
+﻿#include <New/Entity/AttachmentClass.h>
 
 #include <Utilities/Macro.h>
 

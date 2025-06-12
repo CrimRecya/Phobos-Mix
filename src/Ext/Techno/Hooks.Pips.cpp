@@ -1,4 +1,4 @@
-#include <AircraftTypeClass.h>
+﻿#include <AircraftTypeClass.h>
 #include <SpawnManagerClass.h>
 #include <TiberiumClass.h>
 #include <TacticalClass.h>

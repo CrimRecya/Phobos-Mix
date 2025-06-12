@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 #include <Ext/House/Body.h>
 #include <Ext/AnimType/Body.h>
 
@@ -179,6 +179,11 @@ DEFINE_HOOK(0x7128B2, TechnoTypeClass_ReadFromINI_MultiWeapon, 0x6)
 
 			for (int i = 0; i < count; ++i)
 				pExt->MultiWeapon_IsSecondary.push_back(secondaryVec.Contains(i));
+		}
+		else if (pExt->MultiWeapon_IsSecondary.empty())
+		{
+			pExt->MultiWeapon_IsSecondary.resize(pThis->WeaponCount, true);
+			pExt->MultiWeapon_IsSecondary[0] = false;
 		}
 	}
 

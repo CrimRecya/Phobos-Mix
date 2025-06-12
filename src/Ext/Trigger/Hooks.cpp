@@ -1,4 +1,4 @@
-#include <TriggerClass.h>
+﻿#include <TriggerClass.h>
 
 #include <Helpers/Macro.h>
 

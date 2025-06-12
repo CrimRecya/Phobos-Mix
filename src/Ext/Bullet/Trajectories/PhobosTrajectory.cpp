@@ -1,4 +1,4 @@
-#include "PhobosTrajectory.h"
+﻿#include "PhobosTrajectory.h"
 #include "StraightTrajectory.h"
 #include "BombardTrajectory.h"
 #include "MissileTrajectory.h"

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <LocomotionClass.h>
 #include <MapClass.h>

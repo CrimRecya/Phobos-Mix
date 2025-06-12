@@ -1,4 +1,4 @@
-#include "ToggleSWButtonClass.h"
+﻿#include "ToggleSWButtonClass.h"
 #include "SWSidebarClass.h"
 #include <GameOptionsClass.h>
 #include <ScenarioClass.h>
