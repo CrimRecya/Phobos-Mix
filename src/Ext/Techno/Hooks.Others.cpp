@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
@@ -1988,7 +1988,7 @@ DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_DoRetaliate, 0x7)
 
 	if (RulesExt::Global()->ExtraTargeting && pThis->Owner->IsControlledByHuman())
 	{
-		if (pThis->GetTechnoType()->OpportunityFire)
+		if (pThis->GetTechnoType()->OpportunityFire || pThis->CurrentMission == Mission::Guard)
 			ExtraTargeting_Range(pThis);
 
 		return SkipGameCode;
