@@ -391,7 +391,7 @@ New:
 - [Turretless vehicles with `Voxel=no` support use `FireUp` like infantry](New-or-Enhanced-Logics.md#turretless-shape-vehicle-fireup) (by FlyStar)
 - Infantry support `IsGattling=yes` (by FlyStar)
 - [Several new Infotypes, no display in specific status and a new single frame display method](User-Interface.md#digital-display) (by CrimRecya)
-- Customizable debris trailer anim spawn delay (by CrimRecya)
+- Targeting limitation for berzerk technos (by TaranDahl)
 
 - New Missile trajectory (by CrimRecya)
 - New Engrave trajectory (by CrimRecya)
@@ -419,6 +419,7 @@ New:
 - Observer sidebar in skirmish game mode (by CrimRecya)
 - New AdvancedDrive locomotor (by CrimRecya)
 - Directional armor (by NetsuNegi)
+- Customizable debris trailer anim spawn delay (by CrimRecya)
 
 Vanilla fixes:
 - Fixed sidebar not updating queued unit numbers when adding or removing units when the production is on hold (by CrimRecya)
