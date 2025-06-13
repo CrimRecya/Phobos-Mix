@@ -113,19 +113,19 @@ DEFINE_HOOK(0x4898BF, MapClass_DamageArea_Cylinder_4, 0x5)
 #pragma endregion
 
 #pragma region AffectsInAirAndAffectsOnFloor
-
+/*
 DEFINE_HOOK(0x489416, MapClass_DamageArea_CheckHeight_1, 0x6)
 {
 	enum { SkipThisObject = 0x489547 };
 
 	GET_BASE(WarheadTypeClass* const, pWH, 0x0C);
-	GET(ObjectClass*, pObject, EBX);
+	GET(TechnoClass*, pTechno, EBX);
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	return (!pWHExt || !pObject || ((pWHExt->AffectsInAir && pObject->IsInAir()) || (pWHExt->AffectsOnFloor && !pObject->IsInAir()))) ? 0 : SkipThisObject;
+	return (pTechno->IsInAir() ? pWHExt->AffectsInAir : pWHExt->AffectsOnFloor) ? 0 : SkipThisObject;
 }
-
+*/
 DEFINE_HOOK(0x489710, MapClass_DamageArea_CheckHeight_2, 0x7)
 {
 	enum { SkipThisObject = 0x4899B3 };
@@ -135,7 +135,7 @@ DEFINE_HOOK(0x489710, MapClass_DamageArea_CheckHeight_2, 0x7)
 
 	auto pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	return (!pWHExt || !pObject || ((pWHExt->AffectsInAir && pObject->IsInAir()) || (pWHExt->AffectsOnFloor && !pObject->IsInAir()))) ? 0 : SkipThisObject;
+	return (pObject->IsInAir() ? pWHExt->AffectsInAir : pWHExt->AffectsOnFloor) ? 0 : SkipThisObject;
 }
 
 #pragma endregion

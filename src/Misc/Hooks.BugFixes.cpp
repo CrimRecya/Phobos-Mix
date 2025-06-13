@@ -2187,6 +2187,12 @@ DEFINE_HOOK(0x489416, MapClass_DamageArea_AirDamageSelfFix, 0x6)
 
 	GET(TechnoClass*, pAirTechno, EBX);
 	GET_BASE(TechnoClass*, pSourceTechno, 0x8);
+	GET_BASE(WarheadTypeClass*, pWarhead, 0xC);
+
+	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWarhead);
+
+	if (pAirTechno->IsInAir() ? !pWHExt->AffectsInAir : !pWHExt->AffectsOnFloor)
+		return NextTechno;
 
 	if (pAirTechno != pSourceTechno)
 		return 0;
@@ -2194,9 +2200,7 @@ DEFINE_HOOK(0x489416, MapClass_DamageArea_AirDamageSelfFix, 0x6)
 	if (pSourceTechno->GetTechnoType()->DamageSelf)
 		return 0;
 
-	GET_BASE(WarheadTypeClass*, pWarhead, 0xC);
-
-	if (WarheadTypeExt::ExtMap.Find(pWarhead)->AllowDamageOnSelf)
+	if (pWHExt->AllowDamageOnSelf)
 		return 0;
 
 	return NextTechno;
