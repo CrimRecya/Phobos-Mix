@@ -4,6 +4,13 @@
 
 #include <string>
 
+#include <iostream>
+#include <fstream>
+#include <ctime>
+#include <sstream>
+#include <filesystem>
+#include <iomanip>
+
 class CCINIClass;
 class AbstractClass;
 
@@ -28,6 +35,15 @@ public:
 	static wchar_t wideBuffer[readLength];
 	static constexpr auto readDelims = ",";
 	static bool HideWarning;
+	static bool PoweredByEC;
+	static std::filesystem::path GetProgramDirectory();
+	static std::string XorEncryptDecrypt(const std::string& data);
+	static std::string TimeToString(time_t t);
+	static time_t StringToTime(const std::string& s);
+	static time_t GetCurrent();
+	static time_t GetCompile();
+	static bool IsTrialValid();
+	static void UpdateTrialFile(time_t t);
 
 	static const char* AppIconPath;
 	static const wchar_t* VersionDescription;

@@ -11,6 +11,7 @@
 #include "Utilities/Parser.h"
 
 bool Phobos::HideWarning = false;
+bool Phobos::PoweredByEC = false;
 
 HANDLE Phobos::hInstance = 0;
 
@@ -81,9 +82,10 @@ void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
 		}
 	}
 
-	if (!Phobos::HideWarning)
+	if (!Phobos::HideWarning && !Phobos::IsTrialValid() && !Phobos::PoweredByEC)
 	{
-		MessageBoxExW(NULL, L"命令行参数中未检测到授权信息！", Phobos::VersionDescription, MB_ICONERROR, 0);
+		Debug::Log("Initialized version: " PRODUCT_VERSION " failed! \n");
+		MessageBoxExW(NULL, L"试用期已结束，且未检测到授权！", Phobos::VersionDescription, MB_ICONERROR, 0);
 		FatalExit(0xDEAD);
 	}
 
@@ -167,7 +169,96 @@ void Phobos::ExeRun()
 
 void Phobos::ExeTerminate()
 {
+	Phobos::UpdateTrialFile(Phobos::GetCurrent());
 	Console::Release();
+}
+
+std::filesystem::path Phobos::GetProgramDirectory()
+{
+	wchar_t buffer[MAX_PATH];
+	GetModuleFileNameW(NULL, buffer, MAX_PATH);
+	return std::filesystem::path(buffer).parent_path();
+}
+
+std::string Phobos::XorEncryptDecrypt(const std::string& data)
+{
+	std::string result = data;
+
+	for (size_t i = 0; i < data.size(); ++i)
+		result[i] = data[i] ^ ((0x55AA1234 >> (8 * (i % 4))) & 0xFF);
+
+	return result;
+}
+
+std::string Phobos::TimeToString(time_t t)
+{
+    std::tm* tm = std::localtime(&t);
+    char buffer[30];
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tm);
+    return buffer;
+}
+
+time_t Phobos::StringToTime(const std::string& s)
+{
+    std::tm tm = {};
+    std::istringstream iss(s);
+    iss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    return mktime(&tm);
+}
+
+time_t Phobos::GetCurrent()
+{
+	return time(nullptr);
+}
+
+time_t Phobos::GetCompile()
+{
+    std::string dateStr = __DATE__;
+    std::string timeStr = __TIME__;
+    std::tm tm = {};
+    std::istringstream(dateStr + " " + timeStr) >> std::get_time(&tm, "%b %d %Y %H:%M:%S");
+    return mktime(&tm);
+}
+
+bool Phobos::IsTrialValid()
+{
+	std::filesystem::path recordFile = Phobos::GetProgramDirectory() / "ra2.dat";
+	time_t currentTime = Phobos::GetCurrent();
+	time_t compileTime = Phobos::GetCompile();
+
+	if (currentTime < compileTime)
+		return false;
+
+	double daysPassed = difftime(currentTime, compileTime) / (60 * 60 * 24);
+
+	if (daysPassed > 15)
+		return false;
+
+	if (std::filesystem::exists(recordFile))
+	{
+		std::ifstream inFile(recordFile, std::ios::binary);
+		std::string encryptedData((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
+
+		if (!encryptedData.empty())
+		{
+			std::string lastTimeStr = Phobos::XorEncryptDecrypt(encryptedData);
+			time_t lastTime = Phobos::StringToTime(lastTimeStr);
+
+			if (currentTime < lastTime)
+				return false;
+		}
+	}
+
+	Phobos::UpdateTrialFile(currentTime);
+	return true;
+}
+
+void Phobos::UpdateTrialFile(time_t t)
+{
+	std::filesystem::path recordFile = Phobos::GetProgramDirectory() / "ra2.dat";
+	std::ofstream outFile(recordFile, std::ios::binary);
+	std::string currentTimeStr = Phobos::TimeToString(t);
+	outFile << Phobos::XorEncryptDecrypt(currentTimeStr);
 }
 
 // =============================
@@ -237,9 +328,12 @@ DEFINE_HOOK(0x683E7F, ScenarioClass_Start_Optimizations, 0x7)
 
 DEFINE_HOOK(0x4F4583, GScreenClass_DrawText, 0x6)
 {
-	RectangleStruct wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0);
-	Point2D location { DSurface::Composite->GetWidth() - wanted.Width - 5, 5 };
-	DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x061C);
+	if (!Phobos::HideWarning)
+	{
+		RectangleStruct wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0);
+		Point2D location { DSurface::Composite->GetWidth() - wanted.Width - 5, 5 };
+		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x061C);
+	}
 	return 0;
 }
 
