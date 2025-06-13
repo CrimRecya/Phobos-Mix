@@ -50,6 +50,8 @@ public:
 		std::map<int, int> ShadowIndices;
 		Valueable<bool> Spawner_LimitRange;
 		Valueable<int> Spawner_ExtraLimitRange;
+		int SpawnerRange;
+		int EliteSpawnerRange;
 		Nullable<int> Spawner_DelayFrames;
 		Valueable<bool> Spawner_AttackImmediately;
 		Valueable<bool> Spawner_ReturnOnRepairDone;
@@ -579,6 +581,8 @@ public:
 			, ShadowIndex_Frame { 0 }
 			, Spawner_LimitRange { false }
 			, Spawner_ExtraLimitRange { 0 }
+			, SpawnerRange { 0 }
+			, EliteSpawnerRange { 0 }
 			, Spawner_DelayFrames {}
 			, Spawner_AttackImmediately { false }
 			, Spawner_ReturnOnRepairDone { false }
@@ -1086,6 +1090,7 @@ public:
 		short GetTurretLimitedRaw(short currentDirectionRaw);
 		DirStruct GetBodyDesiredDir(DirStruct currentDir, DirStruct defaultDir);
 
+		void CalculateSpawnerRange();
 		bool IsSecondary(const int weaponIndex);
 		int SelectMultiWeapon(TechnoClass* pThis, AbstractClass* pTarget);
 		int SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget);
