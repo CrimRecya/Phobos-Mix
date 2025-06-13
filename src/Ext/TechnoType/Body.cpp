@@ -92,28 +92,33 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 	std::vector<bool> secondaryCannotTargets {};
 	secondaryCannotTargets.resize(weaponCount, false);
 	const bool isElite = pThis->Veterancy.IsElite();
-	auto getBasePriority = [pThis, pTargetTechno, pTargetCell]()
-		{
-			if (!pTargetTechno)
-				return false;
-
-			if (pTargetTechno->IsInAir())
-				return true;
-
-			if (pTargetTechno->OnBridge || !pTargetCell)
-				return false;
-
-			const auto landType = pTargetCell->LandType;
-
-			if (landType != LandType::Water && landType != LandType::Beach)
-				return false;
-
-			return pThis->SelectNavalTargeting(pTargetTechno) == -1;
-		};
-	const bool priority = getBasePriority();
 
 	if (pTargetTechno)
 	{
+		auto getBasePriority = [this, pThis, pTargetTechno, pTargetCell]()
+			{
+				if (!pTargetTechno)
+					return false;
+
+				if (this->NoSecondaryWeaponFallback.Get()
+					? (this->NoSecondaryWeaponFallback_AllowAA && pTargetTechno->IsInAir())
+					: (pTargetTechno->IsInAir() || pTargetTechno->InWhichLayer() == Layer::Underground))
+				{
+					return true;
+				}
+
+				if (pTargetTechno->OnBridge || !pTargetCell)
+					return false;
+
+				const auto landType = pTargetCell->LandType;
+
+				if (landType != LandType::Water && landType != LandType::Beach)
+					return false;
+
+				return pThis->SelectNavalTargeting(pTargetTechno) == -1;
+			};
+		const bool priority = getBasePriority();
+
 		auto checkSecondary = [pThis, pType, pTargetTechno, pTargetCell, isElite, priority, &secondaryCannotTargets](int weaponIndex) -> bool
 			{
 				const auto pWeapon = TechnoTypeExt::GetWeaponStruct(pType, weaponIndex, isElite)->WeaponType;

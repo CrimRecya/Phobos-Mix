@@ -2166,7 +2166,7 @@ DEFINE_HOOK(0x740015, UnitClass_WhatAction_NoManualEject, 0x6)
 
 #pragma endregion
 
-#pragma region NoManualEject
+#pragma region InfantrySquad
 
 static inline InfantryClass* CreateInfantryFromFactory(InfantryTypeClass* pType, HouseClass* pOwner)
 {
