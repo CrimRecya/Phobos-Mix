@@ -364,9 +364,6 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 			if (!TechnoTypeExt::ExtMap.Find(pTargetTechno->GetTechnoType())->AllowAirstrike.Get(pTargetTechno->AbstractFlags & AbstractFlags::Foot ? true : static_cast<BuildingClass*>(pTargetTechno)->Type->CanC4))
 				return CannotFire;
 		}
-
-		if (pThis->Berzerk && !EnumFunctions::CanTargetHouse(RulesExt::Global()->BerzerkTargeting, pThis->Owner, pTargetTechno->Owner))
-			return CannotFire;
 	}
 
 	const auto pTrajType = pBulletTypeExt->TrajectoryType.get();

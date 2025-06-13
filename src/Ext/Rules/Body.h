@@ -367,14 +367,12 @@ public:
 
 		Valueable<AffectedHouse> ReorganizeToWhenDefeated;
 
-		Valueable<AffectedHouse> BerzerkTargeting;
-
 		Valueable<bool> VHPScan_Enhanced;
 
 		Valueable<bool> AnimCraterDestroyTiberium;
 
 		Valueable<AffectedHouse> BerzerkTargeting;
-		
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, HarvesterDumpAmount { 0.0f }
@@ -681,12 +679,10 @@ public:
 
 			, ReorganizeToWhenDefeated { AffectedHouse::None }
 
-			, BerzerkTargeting { AffectedHouse::All }
-
 			, VHPScan_Enhanced { false }
 
 			, AnimCraterDestroyTiberium { true }
-			
+
 			, BerzerkTargeting { AffectedHouse::All }
 		{ }
 
