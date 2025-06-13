@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
@@ -1976,6 +1976,23 @@ DEFINE_HOOK(0x7079D1, TechnoClass_PointerExpired_TargetExpired, 0x6)
 
 	if(RulesExt::Global()->ExtraTargeting)
 		pThis->TargetingTimer.TimeLeft = 0;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_DoRetaliate, 0x7)
+{
+	enum { SkipGameCode = 0x702B47 };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	if (RulesExt::Global()->ExtraTargeting && pThis->Owner->IsControlledByHuman())
+	{
+		if (pThis->GetTechnoType()->OpportunityFire || pThis->CurrentMission == Mission::Guard)
+			ExtraTargeting_Range(pThis);
+
+		return SkipGameCode;
+	}
 
 	return 0;
 }
