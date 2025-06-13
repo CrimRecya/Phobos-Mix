@@ -47,11 +47,8 @@ bool WarheadTypeExt::ExtData::CanAffectTarget(TechnoClass* pTarget) const
 bool WarheadTypeExt::ExtData::IsHealthInThreshold(TechnoClass* pTarget) const
 {
 	// Check if the WH should affect the techno target or skip it
-	double hp = pTarget->GetHealthPercentage();
-	bool hpBelowPercent = hp <= this->AffectsBelowPercent;
-	bool hpAbovePercent = hp > this->AffectsAbovePercent;
-
-	return hpBelowPercent && hpAbovePercent;
+	const double hp = pTarget->GetHealthPercentage();
+	return hp <= this->AffectsBelowPercent && hp > this->AffectsAbovePercent;
 }
 
 // Checks if Warhead can affect target that might or might be currently invulnerable.
