@@ -284,20 +284,18 @@ void TacticalButtonsClass::CurrentSelectPathDraw()
 			}
 		}
 	}
-	else
-	{
-		const auto pCell = MapClass::Instance.GetCellAt(DisplayClass::Instance.CurrentFoundation_CenterCell);
-		const auto location = CoordStruct { (pCell->MapCoords.X << 8), (pCell->MapCoords.Y << 8), 0 };
-		const auto height = pCell->GetLevel() * 15;
-		const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
 
-		DSurface::Temp->DrawSHP(
-			FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC),
-			(pCell->SlopeIndex + 2), &position, &DSurface::ViewBounds,
-			(BlitterFlags::Centered | BlitterFlags::TransLucent50 | BlitterFlags::bf_400 | BlitterFlags::Zero),
-			0, (-height - (pCell->SlopeIndex ? 12 : 2)), ZGradient::Ground, 1000, 0, 0, 0, 0, 0
-		);
-	}
+	const auto pCell = MapClass::Instance.GetCellAt(DisplayClass::Instance.CurrentFoundation_CenterCell);
+	const auto location = CoordStruct { (pCell->MapCoords.X << 8), (pCell->MapCoords.Y << 8), 0 };
+	const auto height = pCell->GetLevel() * 15;
+	const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
+
+	DSurface::Temp->DrawSHP(
+		FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC),
+		(pCell->SlopeIndex + 2), &position, &DSurface::ViewBounds,
+		(BlitterFlags::Centered | BlitterFlags::TransLucent50 | BlitterFlags::bf_400 | BlitterFlags::Zero),
+		0, (-height - (pCell->SlopeIndex ? 12 : 2)), ZGradient::Ground, 1000, 0, 0, 0, 0, 0
+	);
 }
 
 void TacticalButtonsClass::CurrentSelectInfoDraw()
