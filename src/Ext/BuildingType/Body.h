@@ -117,6 +117,7 @@ public:
 		Nullable<float> BuildingBunkerROFMult;
 		NullableIdx<VocClass> BunkerWallsUpSound;
 		NullableIdx<VocClass> BunkerWallsDownSound;
+		NullableIdx<VocClass> BuildingRepairedSound;
 
 		ExtData(BuildingTypeClass* OwnerObject) : Extension<BuildingTypeClass>(OwnerObject)
 			, PowersUp_Owner { AffectedHouse::Owner }
@@ -196,6 +197,7 @@ public:
 			, BuildingBunkerROFMult {}
 			, BunkerWallsUpSound {}
 			, BunkerWallsDownSound {}
+			, BuildingRepairedSound {}
 		{ }
 
 		// Ares 0.A functions

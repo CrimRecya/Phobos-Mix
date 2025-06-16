@@ -373,6 +373,11 @@ public:
 
 		Valueable<AffectedHouse> BerzerkTargeting;
 
+		// cache tint color
+		int TintColorIronCurtain;
+		int TintColorForceShield;
+		int TintColorBerserk;
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, HarvesterDumpAmount { 0.0f }
@@ -684,6 +689,10 @@ public:
 			, AnimCraterDestroyTiberium { true }
 
 			, BerzerkTargeting { AffectedHouse::All }
+
+			, TintColorIronCurtain { 0 }
+			, TintColorForceShield { 0 }
+			, TintColorBerserk { 0 }
 		{ }
 
 		virtual ~ExtData() = default;
