@@ -76,6 +76,9 @@ TechnoExt::ExtData::~ExtData()
 		this->ChildAttachments.clear();
 	}
 
+	this->MyTrackingLasers.clear();
+	this->TrackingLasersTargetingMe.clear();
+
 	if (pTypeExt->AutoDeath_Behavior.isset())
 	{
 		auto& vec = ScenarioExt::Global()->AutoDeathObjects;
@@ -1043,15 +1046,17 @@ void TechnoExt::ExtData::UpdateTrackingLasers()
 
 	if (pThis->Target && pThis->Target == this->MyTrackingLasersTarget)
 	{
-		for (int idx = 0; idx != this->MyTrackingLasers.Count; ++idx)
+		const size_t size = this->MyTrackingLasers.size();
+
+		for (size_t i = 0; i < size; ++i)
 		{
-			const auto pLaser = this->MyTrackingLasers[idx];
+			const auto& data = this->MyTrackingLasers[i];
 			// Refresh the laser state to keep it alive.
-			pLaser->Progress.Value = 0;
+			data.Laser->Progress.Value = 0;
 			// Change the start point.
 			const int burstIdx = pThis->CurrentBurstIndex;
-			pThis->CurrentBurstIndex = this->MyTrackingLasers_BurstIdx[idx];
-			pLaser->Source = pThis->GetFLH(this->MyTrackingLasers_WeaponIdx[idx], CoordStruct { 0,0,0 });
+			pThis->CurrentBurstIndex = data.BurstIdx;
+			data.Laser->Source = pThis->GetFLH(data.WeaponIdx, CoordStruct::Empty);
 			pThis->CurrentBurstIndex = burstIdx;
 		}
 	}
@@ -1060,32 +1065,31 @@ void TechnoExt::ExtData::UpdateTrackingLasers()
 		// Stop tracking and delete all lasers if target changed.
 		if (const auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(this->MyTrackingLasersTarget)))
 		{
-			for (int i = 0; i != this->MyTrackingLasers.Count; ++i)
+			const size_t size = this->MyTrackingLasers.size();
+			auto& vec = pTargetExt->TrackingLasersTargetingMe;
+
+			for (size_t i = 0; i < size; ++i)
 			{
-				for (int j = 0; j != pTargetExt->TrackingLasersTargetingMe.Count; ++j)
-				{
-					if (this->MyTrackingLasers[i] == pTargetExt->TrackingLasersTargetingMe[j])
-					{
-						pTargetExt->TrackingLasersTargetingMe.RemoveItem(j);
-						break;
-					}
-				}
+				const auto pLaser = this->MyTrackingLasers[i].Laser;
+				vec.erase(std::remove(vec.begin(), vec.end(), pLaser), vec.end());
 			}
 		}
 
-		this->MyTrackingLasers.Clear();
-		this->MyTrackingLasers_WeaponIdx.Clear();
-		this->MyTrackingLasers_BurstIdx.Clear();
-		this->MyTrackingLasers_CreatorWeapon.Clear();
+		if (!this->MyTrackingLasers.empty())
+			this->MyTrackingLasers.clear();
+
 		this->MyTrackingLasersTarget = nullptr;
 	}
 
-	const auto targetCoords = pThis->GetTargetCoords();
-
-	for (const auto pLaser : this->TrackingLasersTargetingMe)
+	if (!this->TrackingLasersTargetingMe.empty())
 	{
-		// Change the end point.
-		pLaser->Target = targetCoords;
+		const auto targetCoords = pThis->GetTargetCoords();
+
+		for (const auto pLaser : this->TrackingLasersTargetingMe)
+		{
+			// Change the end point.
+			pLaser->Target = targetCoords;
+		}
 	}
 }
 
@@ -1233,6 +1237,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->AttachedEffects)
 		.Process(this->AE)
 		.Process(this->PreviousType)
+		//.Process(this->ElectricBolts)
 		.Process(this->AnimRefCount)
 		.Process(this->SubterraneanHarvFreshFromFactory)
 		.Process(this->SubterraneanHarvRallyDest)
@@ -1294,12 +1299,9 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->BuildingOccupying)
 		.Process(this->TiberiumEater_Timer)
 		.Process(this->AirstrikeTargetingMe)
-		.Process(this->MyTrackingLasers)
-		.Process(this->MyTrackingLasers_WeaponIdx)
-		.Process(this->MyTrackingLasers_BurstIdx)
-		.Process(this->MyTrackingLasers_CreatorWeapon)
+		//.Process(this->MyTrackingLasers)
 		.Process(this->MyTrackingLasersTarget)
-		.Process(this->TrackingLasersTargetingMe)
+		//.Process(this->TrackingLasersTargetingMe)
 		.Process(this->SquadManager)
 		.Process(this->ParentAttachment)
 		.Process(this->ChildAttachments)

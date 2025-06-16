@@ -279,102 +279,81 @@ DEFINE_HOOK(0x6FD210, TechnoClass_LaserZap_SetContext, 0x7)
 	return 0;
 }
 
-static void __fastcall AttachTrackingLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLaser, ObjectClass* pTarget, int nWpIdx)
+static void __fastcall AttachTrackingLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLaser, AbstractClass* pTarget, int wpIdx)
 {
-	if (auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon))
+	const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
+
+	if (!pWeaponExt->Laser_IsTracking)
+		return;
+
+	if (pWeaponExt->Laser_IsSingleColor)
+		pLaser->IsHouseColor = true;
+
+	const auto pThis = LaserZapContext::pThis;
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+
+	// Target changed. Stop tracking current lasers.
+	if (pExt->MyTrackingLasersTarget && pExt->MyTrackingLasersTarget != pTarget)
 	{
-		if (!pLaser->IsHouseColor && pWeaponExt->Laser_IsSingleColor)
-			pLaser->IsHouseColor = true;
-
-		if (pWeaponExt->Laser_IsTracking)
+		if (const auto pOldTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*, true>(pExt->MyTrackingLasersTarget)))
 		{
-			auto const pThis = LaserZapContext::pThis;
-			auto const flh = pThis->GetFLH(nWpIdx, CoordStruct { 0,0,0 }) - TechnoExt::GetFLHAbsoluteCoords(pThis, CoordStruct { 0,0,0 }, pThis->HasTurret());
-			auto const pExt = TechnoExt::ExtMap.Find(pThis);
-			auto const pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pTarget));
+			const size_t size = pExt->MyTrackingLasers.size();
+			auto& vec = pOldTargetExt->TrackingLasersTargetingMe;
 
-			// This laser must be fired from techno, not bullet.
-			// if (*pCrd != CoordStruct { 0,0,0 })
-			//	return;;
-
-			// Target changed. Stop tracking current lasers.
-			if (pExt->MyTrackingLasersTarget && pExt->MyTrackingLasersTarget != pTarget)
+			for (size_t i = 0; i < size; ++i)
 			{
-				if (auto pOldTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pExt->MyTrackingLasersTarget)))
+				const auto pTrackingLaser = pExt->MyTrackingLasers[i].Laser;
+				vec.erase(std::remove(vec.begin(), vec.end(), pTrackingLaser), vec.end());
+			}
+		}
+
+		pExt->MyTrackingLasers.clear();
+	}
+	else
+	{
+		const size_t size = pExt->MyTrackingLasers.size();
+
+		for (size_t i = 0; i < size; ++i)
+		{
+			auto& data = pExt->MyTrackingLasers[i];
+
+			if (data.WeaponIdx == wpIdx && data.BurstIdx == pThis->CurrentBurstIndex)
+			{
+				// Same flh and same weapon, delete the new laser.
+				if (data.CreatorWeapon == pWeapon)
 				{
-					for (int i = 0; i != pExt->MyTrackingLasers.Count; ++i)
-					{
-						for (int j = 0; j != pOldTargetExt->TrackingLasersTargetingMe.Count; ++j)
-						{
-							if (pExt->MyTrackingLasers[i] == pOldTargetExt->TrackingLasersTargetingMe[j])
-							{
-								pOldTargetExt->TrackingLasersTargetingMe.RemoveItem(j);
-								break;
-							}
-						}
-					}
+					pLaser->Duration = 0;
+					return;
 				}
 
-				pExt->MyTrackingLasers.Clear();
-				pExt->MyTrackingLasers_WeaponIdx.Clear();
-				pExt->MyTrackingLasers_BurstIdx.Clear();
-				pExt->MyTrackingLasers_CreatorWeapon.Clear();
-			}
+				// Same flh different weapon, delete the old laser.
+				data.Laser->Duration = 0;
 
-			for (int idx = 0; idx != pExt->MyTrackingLasers.Count; ++idx)
-			{
-				if (pExt->MyTrackingLasers_WeaponIdx[idx] == nWpIdx && pExt->MyTrackingLasers_BurstIdx[idx] == pThis->CurrentBurstIndex)
+				if (const auto pOldTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pExt->MyTrackingLasersTarget)))
 				{
-					if (pExt->MyTrackingLasers_CreatorWeapon[idx] == pWeapon)
-					{
-						// Same flh and same weapon, delete the new laser.
-						// R->EAX(nullptr);
-						// GameDelete(pLaser);
-						pLaser->Duration = 0;
-						return;
-					}
-					else
-					{
-						// Same flh different weapon, delete the old laser.
-						if (auto pOldTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pTargetExt->MyTrackingLasersTarget)))
-						{
-							for (int j = 0; j != pOldTargetExt->TrackingLasersTargetingMe.Count; ++j)
-							{
-								if (pExt->MyTrackingLasers[idx] == pOldTargetExt->TrackingLasersTargetingMe[j])
-								{
-									pOldTargetExt->TrackingLasersTargetingMe.RemoveItem(j);
-									break;
-								}
-							}
-						}
-
-						pExt->MyTrackingLasers[idx]->Duration = 0;
-						pExt->MyTrackingLasers[idx] = pLaser;
-						pExt->MyTrackingLasers_CreatorWeapon[idx] = pWeapon;
-						break;
-					}
+					auto& vec = pOldTargetExt->TrackingLasersTargetingMe;
+					vec.erase(std::remove(vec.begin(), vec.end(), data.Laser), vec.end());
 				}
+
+				data.Laser = pLaser;
+				data.CreatorWeapon = pWeapon;
+				break;
 			}
-
-			// Track the firer.
-			pExt->MyTrackingLasers.AddItem(pLaser);
-			pExt->MyTrackingLasers_WeaponIdx.AddItem(nWpIdx);
-			pExt->MyTrackingLasers_BurstIdx.AddItem(pThis->CurrentBurstIndex);
-			pExt->MyTrackingLasers_CreatorWeapon.AddItem(pWeapon);
-			pExt->MyTrackingLasersTarget = pTarget;
-
-			// Hardcoded these properties for tracking lasers.
-			pLaser->Fades = false;
-			pLaser->Duration = 2;
-			pLaser->Progress.Value = 0;
-
-			// Only track the target if it is a techno.
-			if (!pTargetExt)
-				return;
-
-			pTargetExt->TrackingLasersTargetingMe.AddItem(pLaser);
 		}
 	}
+
+	// Track the firer.
+	pExt->MyTrackingLasers.emplace_back(TechnoExt::ExtData::LaserTrackingData{pLaser, wpIdx, pThis->CurrentBurstIndex, pWeapon});
+	pExt->MyTrackingLasersTarget = pTarget;
+
+	// Hardcoded these properties for tracking lasers.
+	pLaser->Fades = false;
+	pLaser->Duration = 2;
+	pLaser->Progress.Value = 0;
+
+	// Only track the target if it is a techno.
+	if (const auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pTarget)))
+		pTargetExt->TrackingLasersTargetingMe.emplace_back(pLaser);
 }
 
 // Allow drawing single color lasers with thickness.
@@ -382,13 +361,13 @@ DEFINE_HOOK(0x6FD446, TechnoClass_LaserZap_IsSingleColor, 0x7)
 {
 	GET(WeaponTypeClass* const, pWeapon, ECX);
 	GET(LaserDrawClass* const, pLaser, EAX);
-	GET_STACK(ObjectClass* const, pTarget, STACK_OFFSET(0x48, 0x4));
-	GET_STACK(const int, nWpIdx, STACK_OFFSET(0x48, 0x8));
+	GET_STACK(AbstractClass* const, pTarget, STACK_OFFSET(0x48, 0x4));
+	GET_STACK(const int, wpIdx, STACK_OFFSET(0x48, 0x8));
 //	GET_STACK(CoordStruct*, pCrd, STACK_OFFSET(0x48, 0x10));
 
 	// Fixes drawing thick lasers for non-PrismSupport building-fired lasers.
 	pLaser->IsSupported = pLaser->Thickness > 3;
-	AttachTrackingLaser(pWeapon, pLaser, pTarget, nWpIdx);
+	AttachTrackingLaser(pWeapon, pLaser, pTarget, wpIdx);
 
 	return 0;
 }

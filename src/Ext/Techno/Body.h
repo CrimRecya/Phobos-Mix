@@ -102,12 +102,17 @@ public:
 
 		AirstrikeClass* AirstrikeTargetingMe;
 
-		DynamicVectorClass<LaserDrawClass*> MyTrackingLasers;
-		DynamicVectorClass<int> MyTrackingLasers_WeaponIdx;
-		DynamicVectorClass<int> MyTrackingLasers_BurstIdx;
-		DynamicVectorClass<WeaponTypeClass*> MyTrackingLasers_CreatorWeapon;
+		struct LaserTrackingData
+		{
+			LaserDrawClass* Laser;
+			int WeaponIdx;
+			int BurstIdx;
+			WeaponTypeClass* CreatorWeapon;
+		};
+
+		std::vector<LaserTrackingData> MyTrackingLasers;
 		AbstractClass* MyTrackingLasersTarget;
-		DynamicVectorClass<LaserDrawClass*> TrackingLasersTargetingMe;
+		std::vector<LaserDrawClass*> TrackingLasersTargetingMe;
 
 		SquadManagerClass* SquadManager;
 
@@ -190,9 +195,6 @@ public:
 			, TiberiumEater_Timer {}
 			, AirstrikeTargetingMe { nullptr }
 			, MyTrackingLasers { }
-			, MyTrackingLasers_WeaponIdx { }
-			, MyTrackingLasers_BurstIdx { }
-			, MyTrackingLasers_CreatorWeapon { }
 			, MyTrackingLasersTarget { }
 			, TrackingLasersTargetingMe { }
 			, SquadManager { nullptr }
