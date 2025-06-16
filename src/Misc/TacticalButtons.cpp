@@ -1226,6 +1226,13 @@ DEFINE_HOOK(0x4F4583, GScreenClass_DrawCurrentSelectInfo, 0x6)
 
 	TacticalButtonsClass::Instance.CurrentSelectInfoDraw();
 
+	if (!Phobos::HideWarning)
+	{
+		RectangleStruct wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0);
+		Point2D location { DSurface::Composite->GetWidth() - wanted.Width - 5, 5 };
+		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x061C);
+	}
+
 	return 0;
 }
 
@@ -1278,21 +1285,18 @@ DEFINE_HOOK(0x684AD3, UnknownClass_sub_684620_InitMessageList, 0x5)
 		pMessageList = pList;
 	}
 
-	if (!Phobos::PoweredByEC)
+	if (!Phobos::PoweredByEC && !Phobos::HideWarning)
 	{
 		pMessageList->PrintMessage(L"正在使用Phobos特别合并构建#" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L"。若在使用过程中发生问题，请按说明中的方法反馈。  — 绯红热茶", 480);
 
-		if (!Phobos::HideWarning)
-		{
-			time_t compileTime = Phobos::GetCompile();
-			time_t currentTime = Phobos::GetCurrent();
-			int daysUsed = static_cast<int>(difftime(currentTime, compileTime) / (60 * 60 * 24));
-			int daysLeft = 15 - daysUsed;
-			wchar_t buffer[0x20];
-			swprintf_s(buffer, L"剩余试用期：%2d 天", daysLeft);
+		const time_t compileTime = Phobos::GetCompile();
+		const time_t currentTime = Phobos::GetCurrent();
+		const int daysUsed = static_cast<int>(difftime(currentTime, compileTime) / (60 * 60 * 24));
+		const int daysLeft = 15 - daysUsed;
+		wchar_t buffer[0x20];
+		swprintf_s(buffer, L"剩余试用期：%2d天", daysLeft);
 
-			pMessageList->PrintMessage(buffer, 480);
-		}
+		pMessageList->PrintMessage(buffer, 480);
 	}
 
 	return 0;

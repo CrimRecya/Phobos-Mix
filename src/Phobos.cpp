@@ -192,7 +192,7 @@ std::string Phobos::XorEncryptDecrypt(const std::string& data)
 
 std::string Phobos::TimeToString(time_t t)
 {
-    std::tm* tm = std::localtime(&t);
+    const std::tm* tm = std::localtime(&t);
     char buffer[30];
     std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tm);
     return buffer;
@@ -223,13 +223,13 @@ time_t Phobos::GetCompile()
 bool Phobos::IsTrialValid()
 {
 	std::filesystem::path recordFile = Phobos::GetProgramDirectory() / "ra2.dat";
-	time_t currentTime = Phobos::GetCurrent();
-	time_t compileTime = Phobos::GetCompile();
+	const time_t currentTime = Phobos::GetCurrent();
+	const time_t compileTime = Phobos::GetCompile();
 
 	if (currentTime < compileTime)
 		return false;
 
-	double daysPassed = difftime(currentTime, compileTime) / (60 * 60 * 24);
+	const double daysPassed = difftime(currentTime, compileTime) / (60 * 60 * 24);
 
 	if (daysPassed > 15)
 		return false;
@@ -325,7 +325,7 @@ DEFINE_HOOK(0x683E7F, ScenarioClass_Start_Optimizations, 0x7)
 	Phobos::ApplyOptimizations();
 	return 0;
 }
-
+/*
 DEFINE_HOOK(0x4F4583, GScreenClass_DrawText, 0x6)
 {
 	if (!Phobos::HideWarning)
@@ -336,7 +336,7 @@ DEFINE_HOOK(0x4F4583, GScreenClass_DrawText, 0x6)
 	}
 	return 0;
 }
-
+*/
 // Mainly used to disable hooks for optimization.
 // Called after loading saved game and at end of scenario start after all INI data etc has been initialized.
 // Only executed once per game session.
