@@ -346,6 +346,8 @@ void TechnoTypeExt::ExtData::CalculateSpawnerRange()
 {
 	const auto pTechnoType = this->OwnerObject();
 	const int weaponRangeExtra = this->Spawner_ExtraLimitRange * Unsorted::LeptonsPerCell;
+	this->SpawnerRange = 0;
+	this->EliteSpawnerRange = 0;
 
 	auto setWeaponRange = [](int& weaponRange, WeaponTypeClass* pWeaponType)
 		{
@@ -353,7 +355,7 @@ void TechnoTypeExt::ExtData::CalculateSpawnerRange()
 				weaponRange = pWeaponType->Range;
 		};
 
-	if (pTechnoType->IsGattling)
+	if (pTechnoType->IsGattling || this->MultiWeapon.Get())
 	{
 		for (int i = 0; i < pTechnoType->WeaponCount; i++)
 		{
@@ -1387,10 +1389,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 			}
 		}
 	}
-
-	// Spawner range
-	if (this->Spawner_LimitRange)
-		this->CalculateSpawnerRange();
 
 	// Airstrike tint color
 	this->TintColorAirstrike = GeneralUtils::GetColorFromColorAdd(this->LaserTargetColor.Get(RulesClass::Instance->LaserTargetColor));
