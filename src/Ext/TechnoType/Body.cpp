@@ -61,7 +61,6 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 	if (pType->HasMultipleTurrets() && (pType->IsGattling || pType->Gunner))
 		return -1;
 
-	// Ignore target cell for airborne and underground target technos.
 	const auto pTargetTechno = abstract_cast<TechnoClass*, true>(pTarget);
 
 	if (pTargetTechno
@@ -81,6 +80,7 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 
 	CellClass* pTargetCell = nullptr;
 
+	// Ignore target cell for airborne and underground target technos.
 	if (!pTargetTechno || (!pTargetTechno->IsInAir() && pTargetTechno->InWhichLayer() != Layer::Underground))
 	{
 		if (const auto pObject = abstract_cast<ObjectClass*, true>(pTarget))
@@ -97,9 +97,6 @@ int TechnoTypeExt::ExtData::SelectMultiWeapon(TechnoClass* pThis, AbstractClass*
 	{
 		auto getBasePriority = [this, pThis, pTargetTechno, pTargetCell]()
 			{
-				if (!pTargetTechno)
-					return false;
-
 				if (this->NoSecondaryWeaponFallback.Get()
 					? (this->NoSecondaryWeaponFallback_AllowAA && pTargetTechno->IsInAir())
 					: (pTargetTechno->IsInAir() || pTargetTechno->InWhichLayer() == Layer::Underground))
@@ -2115,6 +2112,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->MultiWeapon)
 		.Process(this->MultiWeapon_SelectCount)
+		//.Process(this->MultiWeapon_Secondarys)
 		.Process(this->MultiWeapon_IsSecondary)
 		.Process(this->ReadMultiWeapon)
 

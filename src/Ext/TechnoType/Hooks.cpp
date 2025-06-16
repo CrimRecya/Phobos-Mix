@@ -154,10 +154,10 @@ DEFINE_HOOK(0x7128B2, TechnoTypeClass_ReadFromINI_MultiWeapon, 0x6)
 	if (pExt->ReadMultiWeapon != multiWeapon)
 	{
 		auto clearWeapon = [pThis](int index)
-		{
-			pThis->GetWeapon(index, false) = WeaponStruct();
-			pThis->GetWeapon(index, true) = WeaponStruct();
-		};
+			{
+				pThis->GetWeapon(index, false) = WeaponStruct();
+				pThis->GetWeapon(index, true) = WeaponStruct();
+			};
 
 		clearWeapon(0);
 		clearWeapon(1);
@@ -167,24 +167,8 @@ DEFINE_HOOK(0x7128B2, TechnoTypeClass_ReadFromINI_MultiWeapon, 0x6)
 
 	if (pExt->MultiWeapon.Get())
 	{
-		ValueableVector<int> secondaryVec;
-		secondaryVec.Read(exINI, pSection, "MultiWeapon.IsSecondary");
+		pExt->MultiWeapon_Secondarys.Read(exINI, pSection, "MultiWeapon.IsSecondary");
 		pExt->MultiWeapon_SelectCount.Read(exINI, pSection, "MultiWeapon.SelectCount");
-
-		if (!secondaryVec.empty())
-		{
-			const int count = pThis->WeaponCount;
-			pExt->MultiWeapon_IsSecondary.clear();
-			pExt->MultiWeapon_IsSecondary.reserve(count);
-
-			for (int i = 0; i < count; ++i)
-				pExt->MultiWeapon_IsSecondary.push_back(secondaryVec.Contains(i));
-		}
-		else if (pExt->MultiWeapon_IsSecondary.empty())
-		{
-			pExt->MultiWeapon_IsSecondary.resize(pThis->WeaponCount, true);
-			pExt->MultiWeapon_IsSecondary[0] = false;
-		}
 	}
 
 	return multiWeapon ? ReadWeaponX : 0;

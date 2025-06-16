@@ -60,6 +60,25 @@ void RulesExt::LoadAfterTypeData(RulesClass* pThis, CCINIClass* pINI)
 			// Spawner range
 			if (pTechnoTypeExt->Spawner_LimitRange)
 				pTechnoTypeExt->CalculateSpawnerRange();
+
+			// Multi weapon
+			if (pTechnoTypeExt->MultiWeapon)
+			{
+				if (!pTechnoTypeExt->MultiWeapon_Secondarys.empty())
+				{
+					const int count = pTechnoType->WeaponCount;
+					pTechnoTypeExt->MultiWeapon_IsSecondary.clear();
+					pTechnoTypeExt->MultiWeapon_IsSecondary.reserve(count);
+
+					for (int i = 0; i < count; ++i)
+						pTechnoTypeExt->MultiWeapon_IsSecondary.push_back(pTechnoTypeExt->MultiWeapon_Secondarys.Contains(i));
+				}
+				else if (pTechnoTypeExt->MultiWeapon_IsSecondary.empty())
+				{
+					pTechnoTypeExt->MultiWeapon_IsSecondary.resize(pTechnoType->WeaponCount, true);
+					pTechnoTypeExt->MultiWeapon_IsSecondary[0] = false;
+				}
+			}
 		}
 	}
 

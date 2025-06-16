@@ -556,7 +556,8 @@ public:
 
 		Valueable<bool> MultiWeapon;
 		Valueable<int> MultiWeapon_SelectCount;
-		ValueableVector<bool> MultiWeapon_IsSecondary;
+		ValueableVector<int> MultiWeapon_Secondarys;
+		std::vector<bool> MultiWeapon_IsSecondary;
 		bool ReadMultiWeapon;
 
 		Valueable<bool> FiringForceScatter;
@@ -1072,6 +1073,7 @@ public:
 
 			, MultiWeapon { false }
 			, MultiWeapon_SelectCount { 2 }
+			, MultiWeapon_Secondarys {}
 			, MultiWeapon_IsSecondary {}
 			, ReadMultiWeapon { false }
 

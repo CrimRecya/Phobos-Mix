@@ -771,9 +771,10 @@ bool TechnoExt::MultiWeaponCanFire(TechnoClass* pThis, AbstractClass* pTarget, C
 
 	if (const auto pTargetTechno = abstract_cast<TechnoClass*, true>(pTarget))
 	{
-		const auto pBulletTypeExt = BulletTypeExt::ExtMap.Find(pWeapon->Projectile);
+		const auto pBulletType = pWeapon->Projectile;
+		const auto pBulletTypeExt = BulletTypeExt::ExtMap.Find(pBulletType);
 
-		if (pTarget->IsInAir() ? !pWeapon->Projectile->AA : pBulletTypeExt->AAOnly.Get())
+		if (pTarget->IsInAir() ? !pBulletType->AA : pBulletTypeExt->AAOnly.Get())
 			return false;
 
 		if (pTargetTechno->InWhichLayer() == Layer::Underground && !pBulletTypeExt->AU)
@@ -782,9 +783,6 @@ bool TechnoExt::MultiWeaponCanFire(TechnoClass* pThis, AbstractClass* pTarget, C
 		const auto pFirerHouse = pThis->Owner;
 		const auto pTargetHouse = pTargetTechno->Owner;
 
-		if (!EnumFunctions::CanTargetHouse(pWeaponExt->CanTargetHouses, pFirerHouse, pTargetHouse))
-			return false;
-
 		if (pTargetTechno->AttachedBomb ? pWH->IvanBomb : pWH->BombDisarm)
 			return false;
 
@@ -792,7 +790,7 @@ bool TechnoExt::MultiWeaponCanFire(TechnoClass* pThis, AbstractClass* pTarget, C
 
 		if (rtti == AbstractType::Building)
 		{
-			if (pWH->IsLocomotor || pWH->Parasite)
+			if (pWH->IsLocomotor)
 				return false;
 
 			if (pWH->ElectricAssault && (!pFirerHouse->IsAlliedWith(pTargetHouse) || !static_cast<BuildingTypeClass*>(pTargetTechnoType)->Overpowerable))
@@ -803,30 +801,23 @@ bool TechnoExt::MultiWeaponCanFire(TechnoClass* pThis, AbstractClass* pTarget, C
 				if (!EnumFunctions::IsTechnoEligible(pTargetTechno, WarheadTypeExt::ExtMap.Find(pWH)->AirstrikeTargets))
 					return false;
 
-				if (!TechnoTypeExt::ExtMap.Find(pTargetTechnoType)->AllowAirstrike.Get(static_cast<BuildingTypeClass*>(pTargetTechnoType)->CanC4))
+				const auto pTechnoTypeExt = TechnoTypeExt::ExtMap.Find(pTargetTechnoType);
+
+				if (pTechnoTypeExt->AllowAirstrike.Get(static_cast<BuildingTypeClass*>(pTargetTechnoType)->CanC4)
+					&& (!pTargetTechnoType->ResourceDestination || !pTargetTechnoType->ResourceGatherer))
+				{
 					return false;
+				}
 			}
 		}
-		else
+		else if (pWH->Airstrike)
 		{
-			if (pWH->IsLocomotor && pTargetTechnoType->Organic)
+			if (!EnumFunctions::IsTechnoEligible(pTargetTechno, WarheadTypeExt::ExtMap.Find(pWH)->AirstrikeTargets))
 				return false;
 
-			if (pWH->Parasite && static_cast<FootClass*>(pTargetTechno)->ParasiteEatingMe)
+			if (!TechnoTypeExt::ExtMap.Find(pTargetTechnoType)->AllowAirstrike.Get(true))
 				return false;
-
-			if (pWH->Airstrike)
-			{
-				if (!EnumFunctions::IsTechnoEligible(pTargetTechno, WarheadTypeExt::ExtMap.Find(pWH)->AirstrikeTargets))
-					return false;
-
-				if (!TechnoTypeExt::ExtMap.Find(pTargetTechnoType)->AllowAirstrike.Get(true))
-					return false;
-			}
 		}
-
-		if (pWH->Psychedelic && (pTargetTechno->BunkerLinkedItem || pTargetTechnoType->ImmuneToPsionics))
-			return false;
 
 		if (pWH->MindControl && (pTargetTechnoType->ImmuneToPsionics || pTargetTechno->IsMindControlled() || pFirerHouse == pTargetHouse))
 			return false;
@@ -834,22 +825,21 @@ bool TechnoExt::MultiWeaponCanFire(TechnoClass* pThis, AbstractClass* pTarget, C
 		if (!pWH->Temporal && pTargetTechno->BeingWarpedOut)
 			return false;
 
-		if (pWeapon->DrainWeapon && (!pTargetTechnoType->Drainable || (pTargetTechno->DrainingMe || pFirerHouse->IsAlliedWith(pTargetHouse))))
+		if (pWeapon->DrainWeapon && (!pTargetTechnoType->Drainable || pTargetTechno->DrainingMe || pFirerHouse->IsAlliedWith(pTargetHouse)))
 			return false;
 
-		if (!EnumFunctions::IsTechnoEligible(pTargetTechno, pWeaponExt->CanTarget))
-			return false;
+		if (!pWeaponExt->SkipWeaponPicking)
+		{
+			if (!EnumFunctions::IsTechnoEligible(pTargetTechno, pWeaponExt->CanTarget)
+				|| !EnumFunctions::CanTargetHouse(pWeaponExt->CanTargetHouses, pFirerHouse, pTargetHouse)
+				|| !pWeaponExt->IsHealthRatioEligible(pTargetTechno)
+				|| !pWeaponExt->HasRequiredAttachedEffects(pTargetTechno, pThis))
+			{
+				return false;
+			}
+		}
 
-		if (!pWeaponExt->HasRequiredAttachedEffects(pTargetTechno, pThis))
-			return false;
-
-		auto armorType = pTargetTechnoType->Armor;
-		const auto pShield = TechnoExt::ExtMap.Find(pTargetTechno)->Shield.get();
-
-		if (pShield && pShield->IsActive() && !pShield->CanBePenetrated(pWH))
-			armorType = pShield->GetArmorType();
-
-		if (GeneralUtils::GetWarheadVersusArmor(pWH, armorType) == 0.0)
+		if (GeneralUtils::GetWarheadVersusArmor(pWH, pTargetTechno, pTargetTechnoType) == 0.0)
 			return false;
 	}
 	else

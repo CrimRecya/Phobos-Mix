@@ -32,16 +32,24 @@ DEFINE_HOOK(0x6F3339, TechnoClass_WhatWeaponShouldIUse_Interceptor, 0x8)
 		}
 	}
 
+	// Restore overridden instructions.
+	R->EAX(pType);
+	return ContinueCheck;
+}
+
+DEFINE_HOOK(0x6F3360, TechnoClass_WhatWeaponShouldIUse_MultiWeapon, 0x6)
+{
+	enum { SkipGameCode = 0x6F3379 };
+
+	GET(TechnoTypeClass*, pType, EAX);
+
 	if (TechnoTypeExt::ExtMap.Find(pType)->MultiWeapon.Get()
-		&& (!pType->HasMultipleTurrets()
-			|| (!pType->Gunner && !pType->IsGattling)))
+		&& (pType->WhatAmI() != AbstractType::UnitType || !pType->Gunner))
 	{
 		return SkipGameCode;
 	}
 
-	// Restore overridden instructions.
-	R->EAX(pType);
-	return ContinueCheck;
+	return 0;
 }
 
 DEFINE_HOOK(0x6F33CD, TechnoClass_WhatWeaponShouldIUse_ForceFire, 0x6)
@@ -294,14 +302,10 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 	// Checking for nullptr is not required here, since the game has already executed them before calling the hook  -- Belonit
 	const auto pWH = pWeapon->Warhead;
 	const auto pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
+	const int money = pWHExt->TransactMoney;
 
-	if (pWHExt)
-	{
-		const int nMoney = pWHExt->TransactMoney;
-
-		if (nMoney < 0 && pThis->Owner->Available_Money() < -nMoney)
-			return CannotFire;
-	}
+	if (money < 0 && pThis->Owner->Available_Money() < -money)
+		return CannotFire;
 
 	const auto pBulletType = pWeapon->Projectile;
 	const auto pBulletTypeExt = BulletTypeExt::ExtMap.Find(pBulletType);
@@ -358,7 +362,7 @@ DEFINE_HOOK(0x6FC339, TechnoClass_CanFire, 0x6)
 
 		if (pWH->Airstrike)
 		{
-			if (!pWHExt || !EnumFunctions::IsTechnoEligible(pTargetTechno, pWHExt->AirstrikeTargets))
+			if (!EnumFunctions::IsTechnoEligible(pTargetTechno, pWHExt->AirstrikeTargets))
 				return CannotFire;
 
 			if (!TechnoTypeExt::ExtMap.Find(pTargetTechno->GetTechnoType())->AllowAirstrike.Get(pTargetTechno->AbstractFlags & AbstractFlags::Foot ? true : static_cast<BuildingClass*>(pTargetTechno)->Type->CanC4))
