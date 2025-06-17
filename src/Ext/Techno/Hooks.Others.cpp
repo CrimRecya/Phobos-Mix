@@ -9,6 +9,7 @@
 #include <ShipLocomotionClass.h>
 #include <HoverLocomotionClass.h>
 
+#include <Ext/Anim/Body.h>
 #include <Ext/Building/Body.h>
 #include "Ext/BulletType/Body.h"
 #include <Ext/WeaponType/Body.h>
@@ -2501,8 +2502,18 @@ DEFINE_HOOK(0x4255B0, AnimClass_UnInit_LogWhenHaveBomb, 0x6)
 	if (!pAnim->AttachedBomb)
 		return 0;
 
-	Debug::LogAndMessage("AnimClass::UnInit: Found a Anim [%s] have been attached a bomb [0x%08X]!\n",
-		(pAnim->Type ? pAnim->Type->get_ID() : "N/A"), reinterpret_cast<DWORD>(pAnim->AttachedBomb));
+	TechnoClass* pInvoker = nullptr;
+	HouseClass* pInvokerHouse = nullptr;
+
+	if (const auto pAnimExt = AnimExt::ExtMap.Find(pAnim))
+	{
+		pInvoker = pAnimExt->Invoker;
+		pInvokerHouse = pAnimExt->InvokerHouse;
+	}
+
+	Debug::LogAndMessage("AnimClass::UnInit: Found a Anim [%s] (Invoker [%s](%s)) have been attached a bomb [0x%08X]!\n",
+		(pAnim->Type ? pAnim->Type->get_ID() : "N/A"), (pInvoker ? pInvoker->get_ID() : "N/A"),
+		(pInvokerHouse ? pInvokerHouse->get_ID() : "N/A"), reinterpret_cast<DWORD>(pAnim->AttachedBomb));
 
 	pAnim->AttachedBomb = nullptr;
 
