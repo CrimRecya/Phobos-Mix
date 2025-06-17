@@ -163,6 +163,10 @@ void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte&
 				auto coords = pThis->GetCoords();
 				TacticalClass::Instance->SetTacticalPosition(&coords);
 			}
+			else
+			{
+				Debug::LogAndMessage("Skip processing.\n");
+			}
 
 			return;
 		}

@@ -2351,6 +2351,10 @@ DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x9)
 				auto coords = pThis->GetCoords();
 				TacticalClass::Instance->SetTacticalPosition(&coords);
 			}
+			else
+			{
+				Debug::LogAndMessage("Skip processing.\n");
+			}
 		}
 		else
 		{
@@ -2396,6 +2400,10 @@ DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
 				auto coords = pThis->GetCoords();
 				TacticalClass::Instance->SetTacticalPosition(&coords);
 			}
+			else
+			{
+				Debug::LogAndMessage("Skip processing.\n");
+			}
 		}
 		else
 		{
@@ -2435,6 +2443,10 @@ DEFINE_HOOK(0x7043B9, TechnoClass_GetZAdjustment_LogTetherButNoLink, 0x6)
 		auto coords = pThis->GetCoords();
 		TacticalClass::Instance->SetTacticalPosition(&coords);
 	}
+	else
+	{
+		Debug::LogAndMessage("Skip processing.\n");
+	}
 
 	return SkipGameCode;
 }
@@ -2461,6 +2473,10 @@ DEFINE_HOOK(0x73B0C5, UnitClass_DrawIfVisible_LogTetherButNoLink, 0x6)
 		auto coords = pThis->GetCoords();
 		TacticalClass::Instance->SetTacticalPosition(&coords);
 	}
+	else
+	{
+		Debug::LogAndMessage("Skip processing.\n");
+	}
 
 	return SkipGameCode;
 }
@@ -2486,6 +2502,10 @@ DEFINE_HOOK(0x7410D6, UnitClass_GetFireError_LogTetherButNoLink, 0x7)
 		FrameByFrameCommandClass::FrameStep = true;
 		auto coords = pThis->GetCoords();
 		TacticalClass::Instance->SetTacticalPosition(&coords);
+	}
+	else
+	{
+		Debug::LogAndMessage("Skip processing.\n");
 	}
 
 	return SkipGameCode;
@@ -2523,6 +2543,10 @@ DEFINE_HOOK(0x4255B0, AnimClass_UnInit_LogWhenHaveBomb, 0x6)
 		FrameByFrameCommandClass::FrameStep = true;
 		auto coords = pAnim->GetCoords();
 		TacticalClass::Instance->SetTacticalPosition(&coords);
+	}
+	else
+	{
+		Debug::LogAndMessage("Skip processing.\n");
 	}
 
 	return 0;

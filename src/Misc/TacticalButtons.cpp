@@ -511,7 +511,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			else if (auto const pCell = abstract_cast<CellClass*, true>(pTarget))
 			{
 				mapCoords = pCell->MapCoords;
-				ID = "Cell";
+				ID = "CELL";
 			}
 
 			drawText("%s: %s(%03d,%03d)[%dC]", pInfoName, ID, mapCoords.X, mapCoords.Y, (pCurrent->DistanceFrom(pTarget) / Unsorted::LeptonsPerCell));
