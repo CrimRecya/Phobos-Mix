@@ -19,12 +19,12 @@ bool SquadManagerClass::Serialize(T& Stm)
 		.Success();
 };
 
-bool SquadManagerClass::LoadFromStream(PhobosStreamReader& Stm)
+bool SquadManagerClass::Load(PhobosStreamReader& Stm, bool RegisterForChange)
 {
-	return Serialize(Stm);
+	return this->Serialize(Stm);
 }
 
-bool SquadManagerClass::SaveToStream(PhobosStreamWriter& Stm)
+bool SquadManagerClass::Save(PhobosStreamWriter& Stm) const
 {
-	return Serialize(Stm);
+	return const_cast<SquadManagerClass*>(this)->Serialize(Stm);
 }

@@ -11,7 +11,7 @@
 #include <New/Entity/LaserTrailClass.h>
 #include <New/Entity/AttachEffectClass.h>
 #include <New/Entity/AttachmentClass.h>
-#include <New/Entity/Discrete/SquadManagerClass.h>
+#include <New/Entity/SquadManagerClass.h>
 
 class BulletClass;
 

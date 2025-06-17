@@ -42,7 +42,7 @@
     <ClCompile Include="src\Ext\Unit\Hooks.Sinking.cpp" />
     <ClCompile Include="src\Misc\Hooks.AlphaImage.cpp" />
     <ClCompile Include="src\New\Entity\AttachEffectClass.cpp" />
-    <ClCompile Include="src\New\Entity\Discrete\SquadManagerClass.cpp" />
+    <ClCompile Include="src\New\Entity\SquadManagerClass.cpp" />
     <ClCompile Include="src\New\Type\Affiliated\TiberiumEaterTypeClass.cpp" />
     <ClCompile Include="src\New\Type\AttachEffectTypeClass.cpp" />
     <ClCompile Include="src\Commands\AggressiveStance.cpp" />
@@ -264,7 +264,7 @@
     <ClInclude Include="src\Ext\Sidebar\SWSidebar\SWButtonClass.h" />
     <ClInclude Include="src\Ext\Sidebar\SWSidebar\ToggleSWButtonClass.h" />
     <ClInclude Include="src\New\Entity\AttachEffectClass.h" />
-    <ClInclude Include="src\New\Entity\Discrete\SquadManagerClass.h" />
+    <ClInclude Include="src\New\Entity\SquadManagerClass.h" />
     <ClInclude Include="src\New\Type\Affiliated\TiberiumEaterTypeClass.h" />
     <ClInclude Include="src\New\Type\AttachEffectTypeClass.h" />
     <ClInclude Include="src\Commands\SelectCaptured.h" />

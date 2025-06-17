@@ -49,7 +49,7 @@ public:
 			auto newPtr = Allocate();
 			PhobosSwizzle::RegisterChange(oldPtr, newPtr);
 
-			newPtr->LoadFromStream(Stm);
+			newPtr->Load(Stm, true);
 		}
 
 		return true;
@@ -61,9 +61,8 @@ public:
 
 		for (auto const& item : Array)
 		{
-			// write old pointer and name, then delegate
 			Stm.Save(item.get());
-			item->SaveToStream(Stm);
+			item->Save(Stm);
 		}
 
 		return true;
@@ -80,7 +79,6 @@ public:
 	EnumerableEntity()
 	{ }
 
-	void LoadFromStream(PhobosStreamReader& Stm) = delete;
-
-	void SaveToStream(PhobosStreamWriter& Stm) = delete;
+	bool Load(PhobosStreamReader& Stm, bool RegisterForChange) = delete;
+	bool Save(PhobosStreamWriter& Stm) const = delete;
 };

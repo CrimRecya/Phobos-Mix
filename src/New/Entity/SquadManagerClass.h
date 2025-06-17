@@ -1,12 +1,8 @@
 ﻿#pragma once
 
-#include <memory>
-#include <vector>
-
 #include <TechnoClass.h>
 
 #include <Utilities/EnumerableEntity.h>
-#include <Utilities/TemplateDef.h>
 
 class SquadManagerClass final : public EnumerableEntity<SquadManagerClass>
 {
@@ -19,13 +15,11 @@ public:
 		, Selecting { false }
 	{ };
 
-	~SquadManagerClass() { };
-
 	void AddMember(TechnoClass* const pTechno);
 	void RemoveMember(TechnoClass* const pTechno);
 
-	bool LoadFromStream(PhobosStreamReader& Stm);
-	bool SaveToStream(PhobosStreamWriter& Stm);
+	bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
+	bool Save(PhobosStreamWriter& Stm) const;
 
 private:
 	template <typename T>
