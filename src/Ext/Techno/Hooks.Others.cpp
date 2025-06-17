@@ -2425,6 +2425,8 @@ DEFINE_HOOK(0x7043B9, TechnoClass_GetZAdjustment_LogTetherButNoLink, 0x6)
 
 	Debug::LogAndMessage("TechnoClass::GetZAdjustment: Found a Techno [%s] in Tether state without any RadioLink!\n", pThis->get_ID());
 
+	pThis->IsTether = false;
+
 	if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 	{
 		Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
@@ -2448,6 +2450,8 @@ DEFINE_HOOK(0x73B0C5, UnitClass_DrawIfVisible_LogTetherButNoLink, 0x6)
 	GET(TechnoClass* const, pThis, EDI);
 
 	Debug::LogAndMessage("UnitClass::DrawIfVisible: Found a Unit [%s] in Tether state without any RadioLink!\n", pThis->get_ID());
+
+	pThis->IsTether = false;
 
 	if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 	{
@@ -2473,6 +2477,8 @@ DEFINE_HOOK(0x7410D6, UnitClass_GetFireError_LogTetherButNoLink, 0x7)
 
 	Debug::LogAndMessage("UnitClass::GetFireError: Found a Unit [%s] in Tether state without any RadioLink!\n", pThis->get_ID());
 
+	pThis->IsTether = false;
+
 	if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 	{
 		Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
@@ -2482,6 +2488,33 @@ DEFINE_HOOK(0x7410D6, UnitClass_GetFireError_LogTetherButNoLink, 0x7)
 	}
 
 	return SkipGameCode;
+}
+
+#pragma endregion
+
+#pragma region DebugLogInAnimBomb
+
+DEFINE_HOOK(0x4255B0, AnimClass_UnInit_LogWhenHaveBomb, 0x6)
+{
+	GET(AnimClass* const, pAnim, ECX);
+
+	if (!pAnim->AttachedBomb)
+		return 0;
+
+	Debug::LogAndMessage("AnimClass::UnInit: Found a Anim [%s] have been attached a bomb [0x%08X]!\n",
+		(pAnim->Type ? pAnim->Type->get_ID() : "N/A"), reinterpret_cast<DWORD>(pAnim->AttachedBomb));
+
+	pAnim->AttachedBomb = nullptr;
+
+	if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
+	{
+		Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
+		FrameByFrameCommandClass::FrameStep = true;
+		auto coords = pAnim->GetCoords();
+		TacticalClass::Instance->SetTacticalPosition(&coords);
+	}
+
+	return 0;
 }
 
 #pragma endregion
