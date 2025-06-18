@@ -540,7 +540,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 	{
 		const auto pCell = MapClass::Instance.GetCellAt(cell);
 
-		drawText("Address: 0x%X", reinterpret_cast<DWORD>(pCell));
+		drawText("Address: 0x%08X", reinterpret_cast<DWORD>(pCell));
 		drawText("Cell: %d", MapClass::Instance.GetCellIndex(pCell->MapCoords));
 		drawText("UniqueID: %d", pCell->UniqueID);
 
@@ -630,7 +630,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 	if (pTechno)
 	{
 		drawText("Current Select Techno:");
-		drawText("Address: 0x%X", reinterpret_cast<DWORD>(pTechno));
+		drawText("Address: 0x%08X", reinterpret_cast<DWORD>(pTechno));
 
 		const auto pType = pTechno->GetTechnoType();
 		const auto absType = pTechno->WhatAmI();

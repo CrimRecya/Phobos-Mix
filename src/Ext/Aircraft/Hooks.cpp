@@ -777,6 +777,18 @@ DEFINE_HOOK(0x4C72F2, EventClass_Execute_AircraftAreaGuard_Untether, 0x6)
 	return 0;
 }
 
+DEFINE_HOOK(0x418CF3, AircraftClass_Mission_Attack_PlanningFix, 0x5)
+{
+	enum { SkipIdle = 0x418D00 };
+
+	GET(AircraftClass*, pThis, ESI);
+
+	return !RulesExt::Global()->ExtendedAircraftMissions
+		|| (pThis->Ammo <= 0)
+		|| !pThis->TryNextPlanningTokenNode()
+		? 0 : SkipIdle;
+}
+
 #pragma endregion
 
 #pragma region AircraftFlight
