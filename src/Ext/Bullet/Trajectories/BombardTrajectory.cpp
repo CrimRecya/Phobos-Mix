@@ -421,8 +421,8 @@ bool BombardTrajectory::BulletVelocityChange()
 
 			if (pExt->LaserTrails.size())
 			{
-				for (auto& trail : pExt->LaserTrails)
-					trail.LastLocation = middleLocation;
+				for (const auto& pTrail : pExt->LaserTrails)
+					pTrail->LastLocation = middleLocation;
 			}
 			this->RefreshBulletLineTrail();
 

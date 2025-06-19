@@ -169,6 +169,21 @@ DEFINE_HOOK(0x7128B2, TechnoTypeClass_ReadFromINI_MultiWeapon, 0x6)
 	{
 		pExt->MultiWeapon_Secondarys.Read(exINI, pSection, "MultiWeapon.IsSecondary");
 		pExt->MultiWeapon_SelectCount.Read(exINI, pSection, "MultiWeapon.SelectCount");
+
+		if (!pExt->MultiWeapon_Secondarys.empty())
+		{
+			const int count = pThis->WeaponCount;
+			pExt->MultiWeapon_IsSecondary.clear();
+			pExt->MultiWeapon_IsSecondary.reserve(count);
+
+			for (int i = 0; i < count; ++i)
+				pExt->MultiWeapon_IsSecondary.push_back(pExt->MultiWeapon_Secondarys.Contains(i));
+		}
+		else if (pExt->MultiWeapon_IsSecondary.empty())
+		{
+			pExt->MultiWeapon_IsSecondary.resize(pThis->WeaponCount, true);
+			pExt->MultiWeapon_IsSecondary[0] = false;
+		}
 	}
 
 	return multiWeapon ? ReadWeaponX : 0;

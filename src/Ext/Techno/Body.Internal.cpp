@@ -93,7 +93,7 @@ CoordStruct TechnoExt::GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FL
 {
 	FLHFound = false;
 
-	auto getFLHs = [pThis]() -> const std::span<const std::vector<CoordStruct>>&
+	auto getFLHs = [pThis]() -> const std::span<const std::vector<CoordStruct>>
 	{
 		auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
 		auto const pInf = abstract_cast<InfantryClass*, true>(pThis);
@@ -123,9 +123,9 @@ CoordStruct TechnoExt::GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FL
 			return pTypeExt->WeaponBurstFLHs;
 		}
 	};
-	auto const& pickedFLHs = getFLHs();
+	auto const pickedFLHs = getFLHs();
 
-	if (pickedFLHs.size() > static_cast<size_t>(weaponIndex)
+	if (pickedFLHs.size() > static_cast<size_t>(weaponIndex) // weaponIndex >= 0 has been confirmed before call
 		&& pickedFLHs[weaponIndex].size() > static_cast<size_t>(pThis->CurrentBurstIndex))
 	{
 		FLHFound = true;

@@ -979,15 +979,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 				break;
 			}
 
-			// The input parameter is a Boolean value, and the v143 toolset compiler may over optimize it,
-			// causing the high 24 bits to be non-zero and resulting in fatal errors in the future.
-			// Here, the high 24 bits are reset to zero through mandatory adjustment.
-			uint32_t restart = 0;
-
-			if (pType->IsTrain)
-				restart = 1;
-
-			if (!pLinked->UpdatePathfinding(CellClass::Coord2Cell(this->TargetCoord), static_cast<bool>(restart), 0))
+			if (!pLinked->UpdatePathfinding(CellClass::Coord2Cell(this->TargetCoord), pType->IsTrain, 0))
 			{
 				if (!this->LinkedTo)
 				{

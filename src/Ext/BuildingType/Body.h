@@ -103,7 +103,6 @@ public:
 		Nullable<Point2D> BarracksExitCell;
 
 		Valueable<bool> HasSecondaryRallyPoint;
-		Valueable<bool> Refinery_UseNormalActiveAnim;
 
 		Valueable<bool> CloningFacility;
 
@@ -117,11 +116,11 @@ public:
 		Nullable<float> BuildingBunkerROFMult;
 		NullableIdx<VocClass> BunkerWallsUpSound;
 		NullableIdx<VocClass> BunkerWallsDownSound;
-		
+
 		NullableIdx<VocClass> BuildingRepairedSound;
 
 		Valueable<bool> Refinery_UseNormalActiveAnim;
-		
+
 		ExtData(BuildingTypeClass* OwnerObject) : Extension<BuildingTypeClass>(OwnerObject)
 			, PowersUp_Owner { AffectedHouse::Owner }
 			, PowersUp_Buildings {}
@@ -189,7 +188,6 @@ public:
 			, Adjacent_DisallowedExtra {}
 			, BarracksExitCell {}
 			, HasSecondaryRallyPoint { false }
-			, Refinery_UseNormalActiveAnim { false }
 			, CloningFacility { false }
 			, Overpower_KeepOnline { 2 }
 			, Overpower_ChargeWeapon { 1 }
