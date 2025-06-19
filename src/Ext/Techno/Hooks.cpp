@@ -18,6 +18,16 @@
 #include <Utilities/AresHelper.h>
 #include <Utilities/AresFunctions.h>
 
+#pragma region GetTechnoType
+
+// Avoid secondary jump
+DEFINE_JUMP(VTABLE, 0x7E2328, 0x41C200) // AircraftClass_GetTechnoType
+DEFINE_JUMP(VTABLE, 0x7E3F40, 0x459EE0) // BuildingClass_GetTechnoType
+DEFINE_JUMP(VTABLE, 0x7EB0DC, 0x51FAF0) // InfantryClass_GetTechnoType
+DEFINE_JUMP(VTABLE, 0x7F5CF4, 0x741490) // UnitClass_GetTechnoType
+
+#pragma endregion
+
 #pragma region Update
 
 // Early, before ObjectClass_AI
