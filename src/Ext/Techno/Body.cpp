@@ -228,7 +228,7 @@ void TechnoExt::SyncInvulnerability(TechnoClass* pFrom, TechnoClass* pTo)
 {
 	if (pFrom->IsIronCurtained())
 	{
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pFrom->GetTechnoType());
+		const auto pTypeExt = TechnoExt::ExtMap.Find(pFrom)->TypeExtData;
 		const bool isForceShielded = pFrom->ForceShielded;
 		const bool allowSyncing = !isForceShielded
 			? pTypeExt->IronCurtain_KeptOnDeploy.Get(RulesExt::Global()->IronCurtain_KeptOnDeploy)

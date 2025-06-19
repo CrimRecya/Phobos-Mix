@@ -14,9 +14,7 @@ void TechnoExt::ExtData::InitializeLaserTrails()
 	this->LaserTrails.reserve(pTypeExt->LaserTrailData.size());
 
 	for (auto const& entry : pTypeExt->LaserTrailData)
-	{
-		this->LaserTrails.emplace_back(entry.GetType(), this->OwnerObject()->Owner, entry.FLH, entry.IsOnTurret);
-	}
+		this->LaserTrails.emplace_back(std::make_unique<LaserTrailClass>(entry.GetType(), this->OwnerObject()->Owner, entry.FLH, entry.IsOnTurret));
 }
 
 void TechnoExt::ObjectKilledBy(TechnoClass* pVictim, TechnoClass* pKiller)
@@ -94,37 +92,47 @@ CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, const CoordStruc
 CoordStruct TechnoExt::GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FLHFound)
 {
 	FLHFound = false;
-	CoordStruct FLH = CoordStruct::Empty;
 
-	auto const pExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
-
-	auto pInf = abstract_cast<InfantryClass*, true>(pThis);
-	std::span<const std::vector<CoordStruct>> pickedFLHs = pExt->WeaponBurstFLHs;
-
-	if (pThis->Veterancy.IsElite())
+	auto getFLHs = [pThis]() -> const std::span<const std::vector<CoordStruct>>&
 	{
-		if (pInf && pInf->IsDeployed() && !pExt->EliteDeployedWeaponBurstFLHs.empty())
-			pickedFLHs = pExt->EliteDeployedWeaponBurstFLHs;
-		else if (pInf && pInf->Crawling && !pExt->EliteCrouchedWeaponBurstFLHs.empty())
-			pickedFLHs = pExt->EliteCrouchedWeaponBurstFLHs;
+		auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
+		auto const pInf = abstract_cast<InfantryClass*, true>(pThis);
+
+		if (pThis->Veterancy.IsElite())
+		{
+			if (pInf)
+			{
+				if (pInf->IsDeployed() && !pTypeExt->EliteDeployedWeaponBurstFLHs.empty())
+					return pTypeExt->EliteDeployedWeaponBurstFLHs;
+				else if (pInf->Crawling && !pTypeExt->EliteCrouchedWeaponBurstFLHs.empty())
+					return pTypeExt->EliteCrouchedWeaponBurstFLHs;
+			}
+
+			return pTypeExt->EliteWeaponBurstFLHs;
+		}
 		else
-			pickedFLHs = pExt->EliteWeaponBurstFLHs;
-	}
-	else
-	{
-		if (pInf && pInf->IsDeployed() && !pExt->DeployedWeaponBurstFLHs.empty())
-			pickedFLHs = pExt->DeployedWeaponBurstFLHs;
-		else if (pInf && pInf->Crawling && !pExt->CrouchedWeaponBurstFLHs.empty())
-			pickedFLHs = pExt->CrouchedWeaponBurstFLHs;
-	}
+		{
+			if (pInf)
+			{
+				if (pInf->IsDeployed() && !pTypeExt->DeployedWeaponBurstFLHs.empty())
+					return pTypeExt->DeployedWeaponBurstFLHs;
+				else if (pInf->Crawling && !pTypeExt->CrouchedWeaponBurstFLHs.empty())
+					return pTypeExt->CrouchedWeaponBurstFLHs;
+			}
+
+			return pTypeExt->WeaponBurstFLHs;
+		}
+	};
+	auto const& pickedFLHs = getFLHs();
+
 	if (pickedFLHs.size() > static_cast<size_t>(weaponIndex)
 		&& pickedFLHs[weaponIndex].size() > static_cast<size_t>(pThis->CurrentBurstIndex))
 	{
 		FLHFound = true;
-		FLH = pickedFLHs[weaponIndex][pThis->CurrentBurstIndex];
+		return pickedFLHs[weaponIndex][pThis->CurrentBurstIndex];
 	}
 
-	return FLH;
+	return CoordStruct::Empty;
 }
 
 CoordStruct TechnoExt::GetSimpleFLH(InfantryClass* pThis, int weaponIndex, bool& FLHFound)
@@ -254,11 +262,10 @@ int TechnoExt::GetTintColor(TechnoClass* pThis, bool invulnerability, bool airst
 
 		if (airstrike)
 		{
-			if (auto const pAirstrike = TechnoExt::ExtMap.Find(pThis)->AirstrikeTargetingMe)
-			{
-				auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pAirstrike->Owner->GetTechnoType());
-				tintColor |= pTypeExt->TintColorAirstrike;
-			}
+			auto const pExt =  TechnoExt::ExtMap.Find(pThis);
+
+			if (auto const pAirstrike = pExt->AirstrikeTargetingMe)
+				tintColor |= pExt->TypeExtData->TintColorAirstrike;
 		}
 
 		if (berserk && pThis->Berzerk)

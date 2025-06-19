@@ -10,7 +10,7 @@ DEFINE_HOOK(0x7098B9, TechnoClass_TargetSomethingNearby_AutoFire, 0x6)
 {
 	GET(TechnoClass* const, pThis, ESI);
 
-	auto pExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+	auto pExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
 
 	if (pExt->AutoFire)
 	{
@@ -50,7 +50,7 @@ DEFINE_HOOK(0x6F9C67, TechnoClass_GreatestThreat_MapZoneSetContext, 0x5)
 {
 	GET(TechnoClass*, pThis, ESI);
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
 	MapZoneTemp::zoneScanType = pTypeExt->TargetZoneScanType;
 
 	return 0;

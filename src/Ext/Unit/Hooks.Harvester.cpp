@@ -1,5 +1,4 @@
-﻿#include "Ext/Techno/Body.h"
-
+﻿#include <Ext/Techno/Body.h>
 #include <Ext/BuildingType/Body.h>
 #include <Ext/House/Body.h>
 #include <Utilities/EnumFunctions.h>
@@ -454,11 +453,13 @@ DEFINE_HOOK(0x441226, BuildingClass_Unlimbo_RecheckRefinery, 0x6)
 
 DEFINE_HOOK(0x4D6D34, FootClass_MissionAreaGuard_Miner, 0x5)
 {
-	enum { GuardArea = 0x4D6D69 };
+	enum { GoGuardArea = 0x4D6D69 };
 
 	GET(FootClass*, pThis, ESI);
 
-	return (pThis->Owner->IsControlledByHuman() && TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->Harvester_CanGuardArea) ? GuardArea : 0;
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
+
+	return pTypeExt->Harvester_CanGuardArea && pThis->Owner->IsControlledByHuman() ? GoGuardArea : 0;
 }
 
 #pragma region HarvesterScanAfterUnload

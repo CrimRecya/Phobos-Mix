@@ -95,6 +95,7 @@ void AnimTypeExt::ExtData::LoadFromINIFile(CCINIClass* pINI)
 	this->Damage_Delay.Read(exINI, pID, "Damage.Delay");
 	this->Damage_DealtByInvoker.Read(exINI, pID, "Damage.DealtByInvoker");
 	this->Damage_ApplyOncePerLoop.Read(exINI, pID, "Damage.ApplyOncePerLoop");
+	this->Damage_ApplyFirepowerMult.Read(exINI, pID, "Damage.ApplyFirepowerMult");
 	this->ExplodeOnWater.Read(exINI, pID, "ExplodeOnWater");
 	this->Warhead_Detonate.Read(exINI, pID, "Warhead.Detonate");
 	this->WakeAnim.Read(exINI, pID, "WakeAnim");
@@ -154,6 +155,7 @@ void AnimTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Damage_Delay)
 		.Process(this->Damage_DealtByInvoker)
 		.Process(this->Damage_ApplyOncePerLoop)
+		.Process(this->Damage_ApplyFirepowerMult)
 		.Process(this->ExplodeOnWater)
 		.Process(this->Warhead_Detonate)
 		.Process(this->WakeAnim)
@@ -239,7 +241,7 @@ DEFINE_HOOK(0x42898A, AnimTypeClass_Save_Suffix, 0x3)
 	return 0;
 }
 
-DEFINE_HOOK_AGAIN(0x4287E9, AnimTypeClass_LoadFromINI, 0xA)
+//DEFINE_HOOK_AGAIN(0x4287E9, AnimTypeClass_LoadFromINI, 0xA)// Section dont exist!
 DEFINE_HOOK(0x4287DC, AnimTypeClass_LoadFromINI, 0xA)
 {
 	GET(AnimTypeClass*, pItem, ESI);

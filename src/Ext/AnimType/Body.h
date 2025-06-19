@@ -29,6 +29,7 @@ public:
 		Valueable<int> Damage_Delay;
 		Valueable<bool> Damage_DealtByInvoker;
 		Valueable<bool> Damage_ApplyOncePerLoop;
+		Valueable<bool> Damage_ApplyFirepowerMult;
 		Valueable<bool> ExplodeOnWater;
 		Valueable<bool> Warhead_Detonate;
 		Valueable<AnimTypeClass*> WakeAnim;
@@ -68,6 +69,7 @@ public:
 			, Damage_Delay { 0 }
 			, Damage_DealtByInvoker { false }
 			, Damage_ApplyOncePerLoop { false }
+			, Damage_ApplyFirepowerMult { false }
 			, ExplodeOnWater { false }
 			, Warhead_Detonate { false }
 			, WakeAnim {}

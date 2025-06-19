@@ -2,6 +2,7 @@
 #include <ShipLocomotionClass.h>
 #include <UnitClass.h>
 
+#include <Ext/Techno/Body.h>
 #include <Ext/TechnoType/Body.h>
 #include <Utilities/Macro.h>
 #include <Utilities/TemplateDef.h>
@@ -50,7 +51,7 @@ DEFINE_HOOK(0x4B1150, DriveLocomotionClass_WhileMoving_CrushSlowdown, 0x9)
 
 	GET(DriveLocomotionClass*, pThis, EBP);
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->LinkedTo->GetTechnoType());
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis->LinkedTo)->TypeExtData;
 	auto slowdownCoefficient = pThis->movementspeed_50;
 
 	if (slowdownCoefficient > pTypeExt->CrushSlowdownMultiplier)
@@ -70,7 +71,7 @@ DEFINE_HOOK(0x4B19F7, DriveLocomotionClass_WhileMoving_CrushTilt, 0xD)
 	GET(DriveLocomotionClass*, pThis, EBP);
 
 	auto const pLinkedTo = pThis->LinkedTo;
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType());
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pLinkedTo)->TypeExtData;
 	pLinkedTo->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
 
 	return R->Origin() == 0x4B19F7 ? SkipGameCode1 : SkipGameCode2;
@@ -82,7 +83,7 @@ DEFINE_HOOK(0x6A0813, ShipLocomotionClass_WhileMoving_CrushSlowdown, 0xB)
 
 	GET(ShipLocomotionClass*, pThis, EBP);
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->LinkedTo->GetTechnoType());
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis->LinkedTo)->TypeExtData;
 	auto slowdownCoefficient = pThis->movementspeed_50;
 
 	if (slowdownCoefficient > pTypeExt->CrushSlowdownMultiplier)
@@ -100,7 +101,7 @@ DEFINE_HOOK(0x6A108D, ShipLocomotionClass_WhileMoving_CrushTilt, 0xD)
 	GET(ShipLocomotionClass*, pThis, EBP);
 
 	auto const pLinkedTo = pThis->LinkedTo;
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType());
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pLinkedTo)->TypeExtData;
 	pLinkedTo->RockingForwardsPerFrame = static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.02));
 
 	return SkipGameCode;

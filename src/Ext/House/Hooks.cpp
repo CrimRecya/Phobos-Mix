@@ -320,10 +320,10 @@ DEFINE_HOOK(0x7015C9, TechnoClass_Captured_UpdateTracking, 0x6)
 		}
 	}
 
-	for (auto& trail : pExt->LaserTrails)
+	for (const auto& pTrail : pExt->LaserTrails)
 	{
-		if (trail.Type->IsHouseColor)
-			trail.CurrentColor = pNewOwner->LaserColor;
+		if (pTrail->Type->IsHouseColor)
+			pTrail->CurrentColor = pNewOwner->LaserColor;
 	}
 
 	return 0;

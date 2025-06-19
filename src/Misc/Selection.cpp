@@ -1,10 +1,9 @@
 ﻿#include "Phobos.h"
-#include <Utilities/Macro.h>
 
+#include <Ext/Techno/Body.h>
+#include <Utilities/Macro.h>
 #include <New/Entity/AttachmentClass.h>
 #include <New/Type/AttachmentTypeClass.h>
-#include <Ext/TechnoType/Body.h>
-#include <Ext/Techno/Body.h>
 
 #include <TacticalClass.h>
 #include <HouseClass.h>
@@ -68,12 +67,15 @@ public:
 		{
 			if (Tactical_IsInSelectionRect(pThis, rect, selected) && ObjectClass_IsSelectable(selected.Techno))
 			{
-				auto const& pExt = TechnoExt::ExtMap.Find(selected.Techno);
-				auto const& pTypeExt = TechnoTypeExt::ExtMap.Find(selected.Techno->GetTechnoType());
+				const auto& pTypeExt = TechnoTypeExt::ExtMap.Find(selected.Techno->GetTechnoType());
 
-				bool isLowPriorityByAttachment = pExt->ParentAttachment && pExt->ParentAttachment->GetType()->LowSelectionPriority;
-				if (!pTypeExt->LowSelectionPriority && !isLowPriorityByAttachment)
-					return true;
+				if (!pTypeExt || !pTypeExt->LowSelectionPriority)
+				{
+					const auto& pExt = TechnoExt::ExtMap.Find(selected.Techno);
+
+					if (!pExt || !pExt->ParentAttachment || !pExt->ParentAttachment->GetType()->LowSelectionPriority)
+						return true;
+				}
 			}
 		}
 
@@ -92,10 +94,10 @@ public:
 		{
 			if (Tactical_IsInSelectionRect(pThis, pRect, selected))
 			{
-				auto const& pTechno = selected.Techno;
-				auto const& pExt = TechnoExt::ExtMap.Find(pTechno);
-				auto const& pTechnoType = pTechno->GetTechnoType();
-				auto const& pTypeExt = TechnoTypeExt::ExtMap.Find(pTechnoType);
+				const auto& pTechno = selected.Techno;
+				const auto& pExt = TechnoExt::ExtMap.Find(pTechno);
+				const auto& pTechnoType = pTechno->GetTechnoType();
+				const auto& pTypeExt = TechnoTypeExt::ExtMap.Find(pTechnoType);
 
 				// Attached units shouldn't be selected regardless of the setting
 				bool isLowPriorityByAttachment = pExt && pExt->ParentAttachment && pExt->ParentAttachment->GetType()->LowSelectionPriority;

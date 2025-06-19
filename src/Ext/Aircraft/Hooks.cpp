@@ -783,10 +783,7 @@ DEFINE_HOOK(0x418CF3, AircraftClass_Mission_Attack_PlanningFix, 0x5)
 
 	GET(AircraftClass*, pThis, ESI);
 
-	return !RulesExt::Global()->ExtendedAircraftMissions
-		|| (pThis->Ammo <= 0)
-		|| !pThis->TryNextPlanningTokenNode()
-		? 0 : SkipIdle;
+	return (pThis->Ammo <= 0) || !pThis->TryNextPlanningTokenNode() ? 0 : SkipIdle;
 }
 
 #pragma endregion

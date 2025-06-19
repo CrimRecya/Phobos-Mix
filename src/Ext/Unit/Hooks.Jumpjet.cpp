@@ -176,7 +176,7 @@ DEFINE_HOOK(0x736BA3, UnitClass_UpdateRotation_TurretFacing_Jumpjet, 0x6)
 DEFINE_HOOK(0x54CB0E, JumpjetLocomotionClass_State5_CrashSpin, 0x7)
 {
 	GET(JumpjetLocomotionClass*, pThis, EDI);
-	auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->LinkedTo->GetTechnoType());
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis->LinkedTo)->TypeExtData;
 	return pTypeExt->JumpjetRotateOnCrash ? 0 : 0x54CB3E;
 }
 
