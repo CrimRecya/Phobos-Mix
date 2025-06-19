@@ -406,6 +406,7 @@ New:
 - [Display banner](AI-Scripting-and-Mapping.md#display-banner) (by Morton & ststl)
 - Allows refineries to use multiple ActiveAnim simultaneously (by TaranDahl)
 - Electric/RadBeam trail for laser tails (by NetsuNegi)
+- Ground line for select box (by NetsuNegi)
 
 - New Missile trajectory (by CrimRecya)
 - New Engrave trajectory (by CrimRecya)
