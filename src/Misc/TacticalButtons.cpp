@@ -364,21 +364,13 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 				auto footPoint = thisPoint;
 				auto destPoint = TacticalClass::Instance->CoordsToClient(coords).first;
-
-				if (reinterpret_cast<bool(__fastcall*)(Point2D*, Point2D*, RectangleStruct*)>(0x7BC2B0)(&footPoint, &destPoint, &DSurface::ViewBounds))
-					DSurface::Composite->DrawDashedLine_(&footPoint, &destPoint, color, pattern, offset, false);
-
+				DSurface::Composite->DrawDashed(&footPoint, &destPoint, color, offset, pattern);
 				--footPoint.Y;
 				--destPoint.Y;
-
-				if (reinterpret_cast<bool(__fastcall*)(Point2D*, Point2D*, RectangleStruct*)>(0x7BC2B0)(&footPoint, &destPoint, &DSurface::ViewBounds))
-					DSurface::Composite->DrawDashedLine_(&footPoint, &destPoint, color, pattern, offset, false);
-
+				DSurface::Composite->DrawDashed(&footPoint, &destPoint, color, offset, pattern);
 				--footPoint.Y;
 				--destPoint.Y;
-
-				if (reinterpret_cast<bool(__fastcall*)(Point2D*, Point2D*, RectangleStruct*)>(0x7BC2B0)(&footPoint, &destPoint, &DSurface::ViewBounds))
-					DSurface::Composite->DrawDashedLine_(&footPoint, &destPoint, color, pattern, offset, false);
+				DSurface::Composite->DrawDashed(&footPoint, &destPoint, color, offset, pattern);
 			}
 		};
 

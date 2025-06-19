@@ -491,68 +491,77 @@ void BuildingTypeExt::DrawAdjacentLines()
 
 	const auto offset = Unsorted::CurrentFrame % 15;
 	bool pattern[16] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 };
-	auto drawDashLine = [&pattern, &offset](Point2D* pPointA, Point2D* pPointB)
+
+	if (const auto pCell = MapClass::Instance.TryGetCellAt(min)) // Top
 	{
-		if (reinterpret_cast<bool(__fastcall*)(Point2D*, Point2D*, RectangleStruct*)>(0x7BC2B0)(pPointA, pPointB, &DSurface::ViewBounds))
-			DSurface::Composite->DrawDashedLine_(pPointA, pPointB, COLOR_WHITE, pattern, offset, false);
-	};
+		const auto height = 1 + pCell->GetFloorHeight(Point2D::Empty);
+		const auto coords = CellClass::Cell2Coord(pCell->MapCoords, height);
+		const auto pair = TacticalClass::Instance->CoordsToClient(coords);
 
-	if (const auto pCell = MapClass::Instance.TryGetCellAt(min))
-	{
-		auto point = TacticalClass::Instance->CoordsToClient(CellClass::Cell2Coord(pCell->MapCoords, (1 + pCell->GetFloorHeight(Point2D::Empty)))).first;
-		point.Y -= 1;
-		auto nextPoint = point;
+		if (pair.second)
+		{
+			auto point = pair.first + Point2D { 0, -15 };
+			auto nextPoint = pair.first + Point2D { 29, -1 };
+			DSurface::Composite->DrawDashed(&point, &nextPoint, COLOR_WHITE, offset, pattern);
 
-		point.Y -= 14;
-		nextPoint.X += 29;
-		drawDashLine(&point, &nextPoint);
-
-		point.X -= 1;
-		nextPoint.X -= 59;
-		drawDashLine(&nextPoint, &point);
+			point = pair.first + Point2D { -1, -15 };
+			nextPoint = pair.first + Point2D { -30, -1 };
+			DSurface::Composite->DrawDashed(&nextPoint, &point, COLOR_WHITE, offset, pattern);
+		}
 	}
 
-	if (const auto pCell = MapClass::Instance.TryGetCellAt(CellStruct{ min.X, max.Y }))
+	if (const auto pCell = MapClass::Instance.TryGetCellAt(CellStruct{ min.X, max.Y })) // Left
 	{
-		auto point = TacticalClass::Instance->CoordsToClient(CellClass::Cell2Coord(pCell->MapCoords, (1 + pCell->GetFloorHeight(Point2D::Empty)))).first;
-		point.X -= 1;
-		auto nextPoint = point;
+		const auto height = 1 + pCell->GetFloorHeight(Point2D::Empty);
+		const auto coords = CellClass::Cell2Coord(pCell->MapCoords, height);
+		const auto pair = TacticalClass::Instance->CoordsToClient(coords);
 
-		point.X -= 29;
-		nextPoint.Y += 14;
-		drawDashLine(&nextPoint, &point);
+		if (pair.second)
+		{
+			auto point = pair.first + Point2D { -30, 0 };
+			auto nextPoint = pair.first + Point2D { -1, 14 };
+			DSurface::Composite->DrawDashed(&nextPoint, &point, COLOR_WHITE, offset, pattern);
 
-		point.Y -= 1;
-		nextPoint.Y -= 29;
-		drawDashLine(&point, &nextPoint);
+			point = pair.first + Point2D { -30, -1 };
+			nextPoint = pair.first + Point2D { -1, -15 };
+			DSurface::Composite->DrawDashed(&point, &nextPoint, COLOR_WHITE, offset, pattern);
+		}
 	}
 
-	if (const auto pCell = MapClass::Instance.TryGetCellAt(max))
+	if (const auto pCell = MapClass::Instance.TryGetCellAt(max)) // Bottom
 	{
-		auto point = TacticalClass::Instance->CoordsToClient(CellClass::Cell2Coord(pCell->MapCoords, (1 + pCell->GetFloorHeight(Point2D::Empty)))).first;
-		auto nextPoint = point;
+		const auto height = 1 + pCell->GetFloorHeight(Point2D::Empty);
+		const auto coords = CellClass::Cell2Coord(pCell->MapCoords, height);
+		const auto pair = TacticalClass::Instance->CoordsToClient(coords);
 
-		point.Y += 14;
-		nextPoint.X += 29;
-		drawDashLine(&nextPoint, &point);
+		if (pair.second)
+		{
+			auto point = pair.first + Point2D { 0, 14 };
+			auto nextPoint = pair.first + Point2D { 29, 0 };
+			DSurface::Composite->DrawDashed(&nextPoint, &point, COLOR_WHITE, offset, pattern);
 
-		point.X -= 1;
-		nextPoint.X -= 59;
-		drawDashLine(&point, &nextPoint);
+			point = pair.first + Point2D { -1, 14 };
+			nextPoint = pair.first + Point2D { -30, 0 };
+			DSurface::Composite->DrawDashed(&point, &nextPoint, COLOR_WHITE, offset, pattern);
+		}
 	}
 
-	if (const auto pCell = MapClass::Instance.TryGetCellAt(CellStruct{ max.X, min.Y }))
+	if (const auto pCell = MapClass::Instance.TryGetCellAt(CellStruct{ max.X, min.Y })) // Right
 	{
-		auto point = TacticalClass::Instance->CoordsToClient(CellClass::Cell2Coord(pCell->MapCoords, (1 + pCell->GetFloorHeight(Point2D::Empty)))).first;
-		auto nextPoint = point;
+		const auto height = 1 + pCell->GetFloorHeight(Point2D::Empty);
+		const auto coords = CellClass::Cell2Coord(pCell->MapCoords, height);
+		const auto pair = TacticalClass::Instance->CoordsToClient(coords);
 
-		point.X += 29;
-		nextPoint.Y += 14;
-		drawDashLine(&point, &nextPoint);
+		if (pair.second)
+		{
+			auto point = pair.first + Point2D { 29, 0 };
+			auto nextPoint = pair.first + Point2D { 0, 14 };
+			DSurface::Composite->DrawDashed(&point, &nextPoint, COLOR_WHITE, offset, pattern);
 
-		point.Y -= 1;
-		nextPoint.Y -= 29;
-		drawDashLine(&nextPoint, &point);
+			point = pair.first + Point2D { 29, -1 };
+			nextPoint = pair.first + Point2D { 0, -15 };
+			DSurface::Composite->DrawDashed(&nextPoint, &point, COLOR_WHITE, offset, pattern);
+		}
 	}
 }
 
