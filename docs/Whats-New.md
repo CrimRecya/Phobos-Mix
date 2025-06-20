@@ -407,6 +407,7 @@ New:
 - Allows refineries to use multiple ActiveAnim simultaneously (by TaranDahl)
 - Electric/RadBeam trail for laser tails (by NetsuNegi)
 - Ground line for select box (by NetsuNegi)
+- Add `DebrisMinimums` to keep the count of debris within a certain range (by CrimRecya)
 
 - New Missile trajectory (by CrimRecya)
 - New Engrave trajectory (by CrimRecya)

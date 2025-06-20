@@ -566,6 +566,9 @@ public:
 		Valueable<bool> FireUp_ResetInRetarget;
 		//Nullable<int> SecondaryFire;
 
+		Nullable<bool> DebrisTypes_Limit;
+		ValueableVector<int> DebrisMinimums;
+
 		Valueable<int> EngineerRepairAmount;
 
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
@@ -1082,6 +1085,9 @@ public:
 			, FireUp { -1 }
 			, FireUp_ResetInRetarget { true }
 			//, SecondaryFire {}
+
+			, DebrisTypes_Limit {}
+			, DebrisMinimums {}
 
 			, EngineerRepairAmount { 0 }
 		{ }
