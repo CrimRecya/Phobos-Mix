@@ -513,7 +513,7 @@ DEFINE_HOOK(0x4CF190, FlyLocomotionClass_FlightUpdate_SetPrimaryFacing, 0x6) // 
 				// When the direction is opposite, moving to the side first, then automatically shorten based on the current distance
 				if (std::abs(difference) >= 12288) // 12288 -> 3/16 * 65536 (1/8 < 3/16 < 1/4, so the landing can begin at the appropriate location)
 					cellOffset = (cellOffset + Unsorted::AdjacentCoord[((difference > 0) ? (landingFace + 2) : (landingFace - 2)) & 7]) * cellCounts;
-				else // 724 -> 512鈭?
+				else // 724 -> 512 * (2^0.5)
 					cellOffset *= Math::min(cellCounts, ((landingFace & 1) ? (distance / 724) : (distance / 512)));
 
 				// On the way back, increase the offset value of the destination so that it looks like a real airplane

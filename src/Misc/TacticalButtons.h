@@ -24,7 +24,6 @@ public:
 	bool MouseIsOverMessageLists(const Point2D* pMousePosition);
 
 	// Button index N/A : Show Current Info
-	void CurrentSelectPathDraw();
 	void CurrentSelectInfoDraw();
 
 	// TODO New buttons

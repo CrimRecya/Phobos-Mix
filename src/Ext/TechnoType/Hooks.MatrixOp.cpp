@@ -1017,9 +1017,9 @@ DEFINE_FUNCTION_JUMP(CALL, 0x749CAC, BounceClass_ShadowMatrix);
 
 // I don't know how can WW miscalculated
 // In fact, there should be three different degrees of tilt angles
-// - EBX -> atan((2*104)/(256鈭?)) should only be used on the steepest slopes (13-16)
+// - EBX -> atan((2*104)/(256 * (2^0.5))) should only be used on the steepest slopes (13-16)
 // - EBP -> atan(104/256) should be used on the most common slopes (1-4)
-// - A smaller radian atan(104/(256鈭?)) should be use to other slopes (5-12)
+// - A smaller radian atan(104/(256 * (2^0.5))) should be use to other slopes (5-12)
 // But this position is too far ahead, I can't find a good way to solve it perfectly
 // Using hooks and filling in floating-point numbers will cause the register to reset to zero
 // So I have to do it this way for now, make changes based on the existing data

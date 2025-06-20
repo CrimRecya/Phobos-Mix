@@ -1215,19 +1215,22 @@ void TechnoExt::GetDigitalDisplayFakeHealth(TechnoClass* pThis, int& value, int&
 	}
 }
 
-void TechnoExt::DrawExtraImage(TechnoClass* pThis, CellClass* pCell, DirStruct dir, int height)
+void TechnoExt::DrawExtraImage(TechnoClass* pThis, CellClass* pCell, const CoordStruct& coords, DirStruct dir)
 {
-	if (height < 0)
+	if (!pThis->IsAlive || pThis->Health <= 0 || pThis->IsSinking || pThis->IsCrashing)
 		return;
 
-	auto coords = pCell->GetCoords();
-	coords.Z += height;
+	const auto level = pCell->Level * Unsorted::LevelHeight;
+
+	if (coords.Z < level)
+		return;
+
 	const auto pair = TacticalClass::Instance->CoordsToClient(coords);
 
 	if (!pair.second)
 		return;
 
-	const bool inAir = height > Unsorted::CellHeight;
+	const bool inAir = coords.Z > (level + Unsorted::CellHeight);
 	const auto slope = inAir ? 0 : pCell->SlopeIndex;
 	const auto action = (!inAir && !pCell->ContainsBridge() && pCell->LandType == LandType::Water) ? Sequence::Swim : Sequence::Ready;
 	TechnoExt::DrawExtraImage(pThis, pair.first, DSurface::ViewBounds, dir, true, action, slope);
@@ -1291,9 +1294,12 @@ void TechnoExt::DrawExtraImage(TechnoClass* pThis, const Point2D& location, cons
 		TechnoExt::DrawExtraImage(static_cast<InfantryClass*>(pThis), &renderLocation, &renderBounds, dir, transparent, action);
 		break;
 
-	// Using similar methods for buildings should be possible
+	case AbstractType::Aircraft:
 
-	// Using similar methods for airplanes should pay attention to the use of SetHeight() in DrawIt()
+		TechnoExt::DrawExtraImage(static_cast<AircraftClass*>(pThis), &renderLocation, &renderBounds, dir, transparent);
+		break;
+
+	// case AbstractType::Building:
 
 	default:
 		break;
@@ -1315,9 +1321,10 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	pThis->BeingWarpedOut = transparent;
 
 	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pType = pThis->Type;
 
-	const bool shadow = pThis->Type->NoShadow;
-	pThis->Type->NoShadow = true;
+	const bool shadow = pType->NoShadow;
+	pType->NoShadow = true;
 
 	const bool berzerk = pThis->Berzerk;
 	pThis->Berzerk = false;
@@ -1453,7 +1460,7 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	pThis->AngleRotatedForwards = arf;
 	pThis->AngleRotatedSideways = ars;
 
-	pThis->Type->NoShadow = shadow;
+	pType->NoShadow = shadow;
 
 	pThis->BeingWarpedOut = warp;
 
@@ -1478,9 +1485,10 @@ void TechnoExt::DrawExtraImage(InfantryClass* pThis, Point2D* pLocation, Rectang
 	pThis->BeingWarpedOut = transparent;
 
 	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pType = pThis->Type;
 
-	const bool shadow = pThis->Type->NoShadow;
-	pThis->Type->NoShadow = true;
+	const bool shadow = pType->NoShadow;
+	pType->NoShadow = true;
 
 	const bool berzerk = pThis->Berzerk;
 	pThis->Berzerk = false;
@@ -1558,7 +1566,125 @@ void TechnoExt::DrawExtraImage(InfantryClass* pThis, Point2D* pLocation, Rectang
 	pThis->TemporalTargetingMe = temporal;
 	pThis->CloakState = cloak;
 
-	pThis->Type->NoShadow = shadow;
+	pType->NoShadow = shadow;
+
+	pThis->BeingWarpedOut = warp;
+
+	LightningStorm::Active = lightning;
+	PsyDom::Status = psy;
+	NukeFlash::Status = nuke;
+	TacticalClass::Instance->SelectableCount = select;
+}
+
+void TechnoExt::DrawExtraImage(AircraftClass* pThis, Point2D* pLocation, RectangleStruct* pBounds, DirStruct dir, bool transparent)
+{
+	const int select = TacticalClass::Instance->SelectableCount;
+	TacticalClass::Instance->SelectableCount = 500;
+	const bool lightning = LightningStorm::Active;
+	LightningStorm::Active = false;
+	const auto psy = PsyDom::Status;
+	PsyDom::Status = PsychicDominatorStatus::Inactive;
+	const auto nuke = NukeFlash::Status;
+	NukeFlash::Status = NukeFlashStatus::Inactive;
+
+	const bool warp = pThis->BeingWarpedOut;
+	pThis->BeingWarpedOut = transparent;
+
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pType = pThis->Type;
+
+	const bool shadow = pType->NoShadow;
+	pType->NoShadow = true;
+	const bool drop = pType->IsDropship;
+	pType->IsDropship = true;
+
+	const bool berzerk = pThis->Berzerk;
+	pThis->Berzerk = false;
+	const auto airstrike = pExt->AirstrikeTargetingMe;
+	pExt->AirstrikeTargetingMe = nullptr;
+	const int iron = pThis->IronCurtainTimer.TimeLeft;
+	pThis->IronCurtainTimer.TimeLeft = 0;
+	const int flash = pThis->Flashing.DurationRemaining;
+	pThis->Flashing.DurationRemaining = 0;
+	const bool disguised = pThis->Disguised;
+	pThis->Disguised = false;
+	const auto disguise = pThis->DisguiseCreationFrame;
+	pThis->DisguiseCreationFrame = Unsorted::CurrentFrame + 1;
+	const bool warping = pThis->WarpingOut;
+	pThis->WarpingOut = false;
+	const auto temporal = pThis->TemporalTargetingMe;
+	pThis->TemporalTargetingMe = nullptr;
+	const auto cloak = pThis->CloakState;
+	pThis->CloakState = CloakState::Uncloaked;
+	const float arf = pThis->AngleRotatedForwards;
+	pThis->AngleRotatedForwards = 0.0f;
+	const float ars = pThis->AngleRotatedSideways;
+	pThis->AngleRotatedSideways = 0.0f;
+
+	const bool bridge = pThis->OnBridge;
+	pThis->OnBridge = false;
+	const bool map = pThis->IsOnMap;
+	pThis->IsOnMap = false;
+	const auto coords = pThis->Location;
+	pThis->Location = CoordStruct { INT_MAX, INT_MAX, INT_MAX };
+	const char tube = pThis->TubeIndex;
+	pThis->TubeIndex = -1;
+
+	struct LocomotionFaceTemp { DirStruct DesiredFacing; DirStruct ROT; double Speed; };
+	const auto iLoco = pThis->Locomotor.GetInterfacePtr();
+	const auto pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(iLoco);
+	const auto faceTemp = pJjLoco
+		? LocomotionFaceTemp(pJjLoco->LocomotionFacing.DesiredFacing, pJjLoco->LocomotionFacing.ROT, pJjLoco->CurrentSpeed)
+		: LocomotionFaceTemp();
+	if (pJjLoco)
+	{
+		pJjLoco->LocomotionFacing.DesiredFacing = dir;
+		pJjLoco->LocomotionFacing.ROT = DirStruct(0);
+		pJjLoco->CurrentSpeed = 0.0;
+	}
+
+	const auto flyDes = pThis->PrimaryFacing.DesiredFacing;
+	const auto flyROT = pThis->PrimaryFacing.ROT;
+	const auto bodyDes = pThis->SecondaryFacing.DesiredFacing;
+	const auto bodyROT = pThis->SecondaryFacing.ROT;
+	pThis->PrimaryFacing.DesiredFacing = dir;
+	pThis->PrimaryFacing.ROT = DirStruct(0);
+	pThis->SecondaryFacing.DesiredFacing = dir;
+	pThis->SecondaryFacing.ROT = DirStruct(0);
+
+	pThis->DrawIt(pLocation, pBounds);
+
+	pThis->PrimaryFacing.DesiredFacing = flyDes;
+	pThis->PrimaryFacing.ROT = flyROT;
+	pThis->SecondaryFacing.DesiredFacing = bodyDes;
+	pThis->SecondaryFacing.ROT = bodyROT;
+
+	if (pJjLoco)
+	{
+		pJjLoco->LocomotionFacing.DesiredFacing = faceTemp.DesiredFacing;
+		pJjLoco->LocomotionFacing.ROT = faceTemp.ROT;
+		pJjLoco->CurrentSpeed = faceTemp.Speed;
+	}
+
+	pThis->OnBridge = bridge;
+	pThis->IsOnMap = map;
+	pThis->Location = coords;
+	pThis->TubeIndex = tube;
+
+	pThis->Berzerk = berzerk;
+	pExt->AirstrikeTargetingMe = airstrike;
+	pThis->IronCurtainTimer.TimeLeft = iron;
+	pThis->Flashing.DurationRemaining = flash;
+	pThis->Disguised = disguised;
+	pThis->DisguiseCreationFrame = disguise;
+	pThis->WarpingOut = warping;
+	pThis->TemporalTargetingMe = temporal;
+	pThis->CloakState = cloak;
+	pThis->AngleRotatedForwards = arf;
+	pThis->AngleRotatedSideways = ars;
+
+	pType->NoShadow = shadow;
+	pType->IsDropship = drop;
 
 	pThis->BeingWarpedOut = warp;
 
