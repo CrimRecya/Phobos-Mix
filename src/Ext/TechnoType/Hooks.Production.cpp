@@ -2,6 +2,8 @@
 #include <Ext/House/Body.h>
 #include <Ext/Techno/Body.h>
 
+DEFINE_HOOK_AGAIN(0x5F7A6C, ObjectTypeClass_FindFactory_End, 0x5)
+DEFINE_HOOK_AGAIN(0x5F7A78, ObjectTypeClass_FindFactory_End, 0x5)
 // Ares hooked all of the function away, so we can only hook the ending of the function.
 DEFINE_HOOK(0x5F7A89, ObjectTypeClass_FindFactory_End, 0x5)
 {
@@ -11,42 +13,44 @@ DEFINE_HOOK(0x5F7A89, ObjectTypeClass_FindFactory_End, 0x5)
 	GET_STACK(bool, requireCanBuild, STACK_OFFSET(0, 0xC));
 	GET_STACK(HouseClass* const, pHouse, STACK_OFFSET(0, 0x10));
 
-	const auto pAircraftType = abstract_cast<AircraftTypeClass*, true>(pObjectType);
-
-	if (!pAircraftType)
-		return 0;
-
-	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pAircraftType);
-
-	if (!pTypeExt->ThisIsAJumpjet)
-		return 0;
-
-	BuildingClass* pBuildingResult = nullptr;
-	const DWORD ownerHouse = pAircraftType->GetOwners();
-	const int buildingCount = pHouse->Buildings.Count;
-
-	for (int i = 0; i < buildingCount; ++i)
+	if (const auto pUnitType = abstract_cast<UnitTypeClass*, true>(pObjectType))
 	{
-		const auto pBuilding = pHouse->Buildings.Items[i];
-		const auto pBuildingType = pBuilding->Type;
-
-		if (pBuildingType->Factory == AbstractType::AircraftType
-			&& !pBuildingType->WeaponsFactory
-			&& (!requirePower || pBuilding->HasPower)
-			&& pBuilding->CurrentMission != Mission::Selling
-			&& pBuilding->QueuedMission != Mission::Selling
-			&& !pBuilding->InLimbo
-			&& (!requireCanBuild || pBuilding->Owner->CanBuild(pAircraftType, true, true) > CanBuildResult::Unbuildable)
-			&& (pBuildingType->GetOwners() & ownerHouse) != 0)
+		if (TechnoTypeExt::ExtMap.Find(pUnitType)->ThisIsAJumpjet)
+			R->EAX<BuildingClass*>(nullptr);
+	}
+	else if (const auto pAircraftType = abstract_cast<AircraftTypeClass*, true>(pObjectType))
+	{
+		if (TechnoTypeExt::ExtMap.Find(pAircraftType)->ThisIsAJumpjet)
 		{
-			pBuildingResult = pBuilding;
+			BuildingClass* pBuildingResult = nullptr;
+			const DWORD ownerHouse = pAircraftType->GetOwners();
+			const int buildingCount = pHouse->Buildings.Count;
 
-			if (pBuilding->IsPrimaryFactory)
-				break;
+			for (int i = 0; i < buildingCount; ++i)
+			{
+				const auto pBuilding = pHouse->Buildings.Items[i];
+				const auto pBuildingType = pBuilding->Type;
+
+				if (pBuildingType->Factory == AbstractType::AircraftType
+					&& !pBuildingType->WeaponsFactory
+					&& (!requirePower || pBuilding->HasPower)
+					&& pBuilding->CurrentMission != Mission::Selling
+					&& pBuilding->QueuedMission != Mission::Selling
+					&& !pBuilding->InLimbo
+					&& (!requireCanBuild || pBuilding->Owner->CanBuild(pAircraftType, true, true) > CanBuildResult::Unbuildable)
+					&& (pBuildingType->GetOwners() & ownerHouse) != 0)
+				{
+					pBuildingResult = pBuilding;
+
+					if (pBuilding->IsPrimaryFactory)
+						break;
+				}
+			}
+
+			R->EAX<BuildingClass*>(pBuildingResult);
 		}
 	}
 
-	R->EAX(pBuildingResult);
 	return 0;
 }
 
@@ -56,15 +60,13 @@ DEFINE_HOOK(0x443C71, BuildingClass_KickOutUnit_ThisIsAJumpjet, 0x6)
 
 	if (pProduct && pProduct->WhatAmI() == AbstractType::Aircraft)
 	{
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pProduct->GetTechnoType());
-
-		if (const auto pJumpjetType = pTypeExt->ThisIsAJumpjet.Get())
+		if (const auto pJumpjetType = TechnoTypeExt::ExtMap.Find(pProduct->GetTechnoType())->ThisIsAJumpjetOf)
 		{
 			if (pJumpjetType->Locomotor == LocomotionClass::CLSIDs::Jumpjet)
 			{
-				const auto pNewProduct = static_cast<UnitClass*>(pJumpjetType->CreateObject(pProduct->Owner));
+				const auto pNewProduct = static_cast<TechnoClass*>(pJumpjetType->CreateObject(pProduct->Owner));
 				TechnoExt::ExtMap.Find(pNewProduct)->JumpjetFromAirport = true;
-				R->EDI(pNewProduct);
+				R->EDI<TechnoClass*>(pNewProduct);
 				pProduct->UnInit();
 			}
 		}

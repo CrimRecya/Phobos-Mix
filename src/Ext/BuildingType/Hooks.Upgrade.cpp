@@ -85,6 +85,30 @@ CanBuildResult CheckBuildLimit(HouseClass const* const pHouse, BuildingTypeClass
 	return Remaining > 0 ? CanBuildResult::Buildable : CanBuildResult::TemporarilyUnbuildable;
 }
 
+CanBuildResult CheckExBuildLimit(HouseClass* pHouse, TechnoTypeClass* pItem, bool includeInProduction, CanBuildResult defaultResult)
+{
+	if (!pItem || pItem->BuildLimit < 0 || !TechnoTypeExt::ExtMap.Find(pItem)->ThisIsAJumpjet)
+		return defaultResult;
+
+	if (pItem->WhatAmI() == AbstractType::UnitType)
+		return CanBuildResult::Unbuildable;
+
+	const auto pJumpjetType = TechnoTypeExt::ExtMap.Find(pItem)->ThisIsAJumpjetOf;
+
+	if (!pJumpjetType)
+		return defaultResult;
+
+	int count = pHouse->CountOwnedNow(pJumpjetType);
+
+	if (includeInProduction)
+	{
+		if (const auto pFactory = pHouse->Primary_ForAircraft)
+			count += pFactory->CountTotal(pItem);
+	}
+
+	return pItem->BuildLimit <= count ? CanBuildResult::TemporarilyUnbuildable : defaultResult;
+}
+
 DEFINE_HOOK(0x4F8361, HouseClass_CanBuild_UpgradesInteraction, 0x5)
 {
 	GET(HouseClass* const, pThis, ECX);
@@ -95,12 +119,15 @@ DEFINE_HOOK(0x4F8361, HouseClass_CanBuild_UpgradesInteraction, 0x5)
 
 	if (canBuild == CanBuildResult::Buildable)
 	{
-		if (auto const pBuilding = abstract_cast<BuildingTypeClass* const>(pItem))
+		if (auto const pBuildingType = abstract_cast<BuildingTypeClass*>(pItem))
 		{
-			if (BuildingTypeExt::ExtMap.Find(pBuilding)->PowersUp_Buildings.size() > 0)
-				canBuild = CheckBuildLimit(pThis, pBuilding, includeInProduction);
+			if (BuildingTypeExt::ExtMap.Find(pBuildingType)->PowersUp_Buildings.size() > 0)
+				canBuild = CheckBuildLimit(pThis, pBuildingType, includeInProduction);
 		}
 	}
+
+	if (canBuild == CanBuildResult::Buildable)
+		canBuild = CheckExBuildLimit(pThis, pItem, includeInProduction, canBuild);
 
 	if (canBuild == CanBuildResult::Buildable)
 	{

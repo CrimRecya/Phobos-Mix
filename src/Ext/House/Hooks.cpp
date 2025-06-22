@@ -65,7 +65,7 @@ DEFINE_HOOK(0x508D8D, HouseClass_UpdatePower_Techno, 0x6)
 	GET(HouseClass*, pThis, ESI);
 
 	auto updateDrainForThisType = [pThis](const TechnoTypeClass* pType)
-	{
+		{
 			const int count = pThis->CountOwnedAndPresent(pType);
 			if (count == 0)
 				return;
@@ -74,7 +74,7 @@ DEFINE_HOOK(0x508D8D, HouseClass_UpdatePower_Techno, 0x6)
 				pThis->PowerOutput += pExt->Power * count;
 			else
 				pThis->PowerDrain -= pExt->Power * count;
-	};
+		};
 
 	for (const auto pType : InfantryTypeClass::Array)
 		updateDrainForThisType(pType);

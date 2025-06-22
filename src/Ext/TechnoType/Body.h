@@ -418,7 +418,8 @@ public:
 		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 		Valueable<bool> AttackMove_PursuitTarget;
 
-		Valueable<UnitTypeClass*> ThisIsAJumpjet;
+		Valueable<bool> ThisIsAJumpjet;
+		TechnoTypeClass* ThisIsAJumpjetOf;
 
 		Valueable<bool> IgnoreRallyPoint;
 
@@ -956,7 +957,8 @@ public:
 			, AttackMove_StopWhenTargetAcquired {}
 			, AttackMove_PursuitTarget { false }
 
-			, ThisIsAJumpjet { nullptr }
+			, ThisIsAJumpjet { false }
+			, ThisIsAJumpjetOf { nullptr }
 
 			, IgnoreRallyPoint { false }
 
