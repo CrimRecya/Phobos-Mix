@@ -76,7 +76,23 @@ TechnoExt::ExtData::~ExtData()
 		this->ChildAttachments.clear();
 	}
 
-	this->MyTrackingLasers.clear();
+	if (!this->MyTrackingLasers.empty())
+	{
+		if (const auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(this->MyTrackingLasersTarget)))
+		{
+			const size_t size = this->MyTrackingLasers.size();
+			auto& vec = pTargetExt->TrackingLasersTargetingMe;
+
+			for (size_t i = 0; i < size; ++i)
+			{
+				const auto pLaser = this->MyTrackingLasers[i].Laser;
+				vec.erase(std::remove(vec.begin(), vec.end(), pLaser), vec.end());
+			}
+		}
+
+		this->MyTrackingLasers.clear();
+	}
+
 	this->TrackingLasersTargetingMe.clear();
 
 	if (pTypeExt->AutoDeath_Behavior.isset())
@@ -1079,20 +1095,22 @@ void TechnoExt::ExtData::UpdateTrackingLasers()
 	else
 	{
 		// Stop tracking and delete all lasers if target changed.
-		if (const auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(this->MyTrackingLasersTarget)))
-		{
-			const size_t size = this->MyTrackingLasers.size();
-			auto& vec = pTargetExt->TrackingLasersTargetingMe;
-
-			for (size_t i = 0; i < size; ++i)
-			{
-				const auto pLaser = this->MyTrackingLasers[i].Laser;
-				vec.erase(std::remove(vec.begin(), vec.end(), pLaser), vec.end());
-			}
-		}
-
 		if (!this->MyTrackingLasers.empty())
+		{
+			if (const auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(this->MyTrackingLasersTarget)))
+			{
+				const size_t size = this->MyTrackingLasers.size();
+				auto& vec = pTargetExt->TrackingLasersTargetingMe;
+
+				for (size_t i = 0; i < size; ++i)
+				{
+					const auto pLaser = this->MyTrackingLasers[i].Laser;
+					vec.erase(std::remove(vec.begin(), vec.end(), pLaser), vec.end());
+				}
+			}
+
 			this->MyTrackingLasers.clear();
+		}
 
 		this->MyTrackingLasersTarget = nullptr;
 	}
