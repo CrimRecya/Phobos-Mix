@@ -1185,7 +1185,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->AttackMove_PursuitTarget.Read(exINI, pSection, "AttackMove.PursuitTarget");
 
 	this->ThisIsAJumpjet.Read(exINI, pSection, "ThisIsAJumpjet");
-	this->ImAJumpjetFromAirport.Read(exINI, pSection, "ImAJumpjetFromAirport");
 
 	this->IgnoreRallyPoint.Read(exINI, pSection, "IgnoreRallyPoint");
 
@@ -1994,7 +1993,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AttackMove_PursuitTarget)
 
 		.Process(this->ThisIsAJumpjet)
-		.Process(this->ImAJumpjetFromAirport)
 
 		.Process(this->IgnoreRallyPoint)
 

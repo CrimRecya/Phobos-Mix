@@ -375,7 +375,8 @@ DEFINE_HOOK(0x51A0DA, InfantryClass_PerCellProcess_EntryLoopTechnos, 0x0)
 	if (pThis->GetCurrentMission() != Mission::Enter)
 		return SkipEntry;
 
-	CellClass* pCell = pThis->GetCell();
+	const auto pCell = pThis->GetCell();
+	const auto pDest = pThis->Destination;
 
 	for (ObjectClass* pObject = (pThis->OnBridge ? pCell->AltObject : pCell->FirstObject); pObject; pObject = pObject->NextObject)
 	{
@@ -386,9 +387,9 @@ DEFINE_HOOK(0x51A0DA, InfantryClass_PerCellProcess_EntryLoopTechnos, 0x0)
 		if (pEntryTarget
 			&& pEntryTarget != pThis
 			&& (pThis->Target == pEntryTarget
-				|| pThis->Destination == pEntryTarget
-				|| (pThis->OnBridge
-					&& pCell == pEntryTarget->GetCell())))
+				|| pDest == pEntryTarget
+				|| (pDest->WhatAmI() == AbstractType::Cell
+					&& pThis->GetNthLink() == pEntryTarget)))
 		{
 			R->EDI<TechnoClass*>(pEntryTarget);
 			R->EBP<size_t>(0);

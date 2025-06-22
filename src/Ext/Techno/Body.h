@@ -99,6 +99,8 @@ public:
 
 		bool IsWreckage;
 
+		bool JumpjetFromAirport;
+
 		BuildingClass* BuildingOccupying;
 
 		AirstrikeClass* AirstrikeTargetingMe;
@@ -200,6 +202,7 @@ public:
 			, KeepTargetOnMove { false }
 			, LastSensorsMapCoords { CellStruct::Empty }
 			, IsWreckage { false }
+			, JumpjetFromAirport { false }
 			, BuildingOccupying { }
 			, TiberiumEater_Timer {}
 			, AirstrikeTargetingMe { nullptr }
