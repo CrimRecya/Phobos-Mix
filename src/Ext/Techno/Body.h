@@ -22,6 +22,7 @@ public:
 
 	static constexpr DWORD Canary = 0x55555555;
 	static constexpr size_t ExtPointerOffset = 0x34C;
+	static constexpr bool ShouldConsiderInvalidatePointer = true;
 
 	class ExtData final : public Extension<TechnoClass>
 	{
@@ -301,24 +302,7 @@ public:
 		ExtContainer();
 		~ExtContainer();
 
-		virtual bool InvalidateExtDataIgnorable(void* const ptr) const override
-		{
-			auto const abs = static_cast<AbstractClass*>(ptr)->WhatAmI();
-
-			switch (abs)
-			{
-			case AbstractType::Airstrike:
-			case AbstractType::Aircraft:
-			case AbstractType::Building:
-			case AbstractType::Infantry:
-			case AbstractType::Unit:
-			case AbstractType::Terrain:
-			case AbstractType::Bullet:
-				return false;
-			default:
-				return true;
-			}
-		}
+		virtual bool InvalidateExtDataIgnorable(void* const ptr) const override;
 	};
 
 	struct DrawFrameStruct

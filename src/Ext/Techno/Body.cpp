@@ -1381,9 +1381,26 @@ bool TechnoExt::SaveGlobals(PhobosStreamWriter& Stm)
 // container
 
 TechnoExt::ExtContainer::ExtContainer() : Container("TechnoClass") { }
-
 TechnoExt::ExtContainer::~ExtContainer() = default;
 
+bool TechnoExt::ExtContainer::InvalidateExtDataIgnorable(void* const ptr) const
+{
+	auto const abs = static_cast<AbstractClass*>(ptr)->WhatAmI();
+
+	switch (abs)
+	{
+	case AbstractType::Airstrike:
+	case AbstractType::Aircraft:
+	case AbstractType::Building:
+	case AbstractType::Infantry:
+	case AbstractType::Unit:
+	case AbstractType::Terrain:
+	case AbstractType::Bullet:
+		return false;
+	}
+
+	return true;
+}
 
 // =============================
 // container hooks
