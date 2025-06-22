@@ -406,7 +406,6 @@ New:
 - [Display banner](AI-Scripting-and-Mapping.md#display-banner) (by Morton & ststl)
 - Allows refineries to use multiple ActiveAnim simultaneously (by TaranDahl)
 - Electric/RadBeam trail for laser tails (by NetsuNegi)
-- Ground line for select box (by NetsuNegi)
 - Add `DebrisMinimums` to keep the count of debris within a certain range (by CrimRecya)
 
 - New Missile trajectory (by CrimRecya)
@@ -420,11 +419,10 @@ New:
 - Techno base normal and new placing grids (by CrimRecya)
 - Grey cameo preview and cameo overlays (by CrimRecya)
 - Manually empty and reload ammo (by CrimRecya)
-- Exclusive SuperWeapon Sidebar (by NetsuNegi & CrimRecya)
 - Allow merging AOE damage to buildings into one (by CrimRecya)
 - Distribution click action mode (by CrimRecya)
 - Change the scrolling action of the sidebar and trigger hook of mouse wheel scroll (by CrimRecya)
-- New hotkey to select the units within the current screen that are captured by non-permanent mind-controller. (by TaranDahl)
+- New hotkey to select the units within the current screen that are captured by non-permanent mind-controller (by TaranDahl)
 - CellSpread in cylinder shape (by TaranDahl)
 - CellSpread damage check if victim is in air (by TaranDahl)
 - Toggle waypoint for building and aircraft (by TaranDahl)
@@ -435,7 +433,7 @@ New:
 - Observer sidebar in skirmish game mode (by CrimRecya)
 - New AdvancedDrive locomotor (by CrimRecya)
 - Directional armor (by NetsuNegi)
-- Customizable debris trailer anim spawn delay (by CrimRecya)
+- Ground line for select box (by NetsuNegi)
 
 Vanilla fixes:
 - Fixed sidebar not updating queued unit numbers when adding or removing units when the production is on hold (by CrimRecya)
