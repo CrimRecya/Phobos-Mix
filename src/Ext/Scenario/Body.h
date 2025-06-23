@@ -50,7 +50,7 @@ public:
 		std::vector<TechnoExt::ExtData*> BaseNormalTechnos;
 		std::vector<TechnoExt::ExtData*> OwnedUniqueTechnos;
 
-		MessageListClass NewMessageList;
+		std::unique_ptr<MessageListClass> NewMessageList;
 
 		ExtData(ScenarioClass* OwnerObject) : Extension<ScenarioClass>(OwnerObject)
 			, ShowBriefing { false }

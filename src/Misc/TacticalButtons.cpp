@@ -89,7 +89,7 @@ void TacticalButtonsClass::PressDesignatedButton(int triggerIndex)
 
 bool TacticalButtonsClass::MouseIsOverMessageLists(const Point2D* pMousePosition)
 {
-	const auto pMessages = &ScenarioExt::Global()->NewMessageList;
+	const auto pMessages = ScenarioExt::Global()->NewMessageList.get();
 
 	if (TextLabelClass* pText = pMessages->MessageList)
 	{
@@ -98,7 +98,7 @@ bool TacticalButtonsClass::MouseIsOverMessageLists(const Point2D* pMousePosition
 			const int textHeight = pMessages->Height;
 			int height = pMessages->MessagePos.Y;
 
-			for (; pText; pText = static_cast<TextLabelClass*>(pText->GetNext()))
+			for ( ; pText; pText = static_cast<TextLabelClass*>(pText->GetNext()))
 				height += textHeight;
 
 			if (pMousePosition->Y < (height + 2))
@@ -1235,7 +1235,7 @@ DEFINE_HOOK(0x6D4941, TacticalClass_Render_DrawButtonCameo, 0x6)
 DEFINE_HOOK(0x4F4583, GScreenClass_DrawCurrentSelectInfo, 0x6)
 {
 	TacticalButtonsClass::Instance.NewMsgList = true;
-	ScenarioExt::Global()->NewMessageList.Draw();
+	ScenarioExt::Global()->NewMessageList->Draw();
 	TacticalButtonsClass::Instance.NewMsgList = false;
 
 	TacticalButtonsClass::Instance.CurrentSelectInfoDraw();
@@ -1257,15 +1257,21 @@ DEFINE_HOOK(0x4F4583, GScreenClass_DrawCurrentSelectInfo, 0x6)
 DEFINE_HOOK(0x55DDA0, MainLoop_FrameStep_NewMessageListManage, 0x5)
 {
 	if (!TacticalButtonsClass::Instance.OnMessages)
-		ScenarioExt::Global()->NewMessageList.Manage();
+	{
+		if (const auto pList = ScenarioExt::Global()->NewMessageList.get())
+			pList->Manage();
+	}
 
 	return 0;
 }
 
 DEFINE_HOOK(0x5D3BA0, MessageListClass_AddMessage_InCenter, 0x6)
 {
-	if (Phobos::Config::MessageDisplayInCenter && *R->ESP<int*>() == 0x6DE127) // TActionClass::Execute
-		R->ECX(&ScenarioExt::Global()->NewMessageList);
+	if (*R->ESP<int*>() == 0x6DE127) // TActionClass::Execute
+	{
+		if (const auto pList = ScenarioExt::Global()->NewMessageList.get())
+			R->ECX(pList);
+	}
 
 	return 0;
 }
@@ -1274,10 +1280,16 @@ DEFINE_HOOK(0x4A8BCE, DisplayClass_Set_View_Dimensions, 0x5)
 {
 	if (Phobos::Config::MessageDisplayInCenter)
 	{
+		const auto& pScenarioExt = ScenarioExt::Global();
+
+		if (!pScenarioExt->NewMessageList) // Load game
+			pScenarioExt->NewMessageList = std::make_unique<MessageListClass>();
+
 		const auto& rect = DSurface::ViewBounds;
 		const auto sideWidth = rect.Width / 6;
 		const auto width = rect.Width - (sideWidth << 1);
-		const auto pList = &ScenarioExt::Global()->NewMessageList;
+		const auto pList = pScenarioExt->NewMessageList.get();
+		// Except for X and Y, they are all original values
 		pList->Init((rect.X + sideWidth), (rect.Height - rect.Height / 8 - 120), 6, 98, 18, -1, -1, 0, 20, 98, width);
 		pList->SetWidth(width);
 	}
@@ -1291,10 +1303,16 @@ DEFINE_HOOK(0x684AD3, UnknownClass_sub_684620_InitMessageList, 0x5)
 
 	if (Phobos::Config::MessageDisplayInCenter)
 	{
+		const auto& pScenarioExt = ScenarioExt::Global();
+
+		if (!pScenarioExt->NewMessageList) // Start game
+			pScenarioExt->NewMessageList = std::make_unique<MessageListClass>();
+
 		const auto& rect = DSurface::ViewBounds;
 		const auto sideWidth = rect.Width / 6;
 		const auto width = rect.Width - (sideWidth << 1);
-		const auto pList = &ScenarioExt::Global()->NewMessageList;
+		const auto pList = pScenarioExt->NewMessageList.get();
+		// Except for X and Y, they are all original values
 		pList->Init((rect.X + sideWidth), (rect.Height - rect.Height / 8 - 120), 6, 98, 18, -1, -1, 0, 20, 98, width);
 		pMessageList = pList;
 	}

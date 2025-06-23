@@ -279,15 +279,18 @@ DEFINE_HOOK(0x6FD210, TechnoClass_LaserZap_SetContext, 0x7)
 	return 0;
 }
 
-static void __fastcall AttachTrackingLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLaser, AbstractClass* pTarget, int wpIdx)
+static void __fastcall AttachLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLaser, AbstractClass* pTarget, int wpIdx)
 {
-	const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
+	// Fixes drawing thick lasers for non-PrismSupport building-fired lasers.
+	pLaser->IsSupported = pLaser->Thickness > 3;
 
-	if (!pWeaponExt->Laser_IsTracking)
-		return;
+	const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
 
 	if (pWeaponExt->Laser_IsSingleColor)
 		pLaser->IsHouseColor = true;
+
+	if (!pWeaponExt->Laser_IsTracking)
+		return;
 
 	const auto pThis = LaserZapContext::pThis;
 	const auto pExt = TechnoExt::ExtMap.Find(pThis);
@@ -365,9 +368,7 @@ DEFINE_HOOK(0x6FD446, TechnoClass_LaserZap_IsSingleColor, 0x7)
 	GET_STACK(const int, wpIdx, STACK_OFFSET(0x48, 0x8));
 //	GET_STACK(CoordStruct*, pCrd, STACK_OFFSET(0x48, 0x10));
 
-	// Fixes drawing thick lasers for non-PrismSupport building-fired lasers.
-	pLaser->IsSupported = pLaser->Thickness > 3;
-	AttachTrackingLaser(pWeapon, pLaser, pTarget, wpIdx);
+	AttachLaser(pWeapon, pLaser, pTarget, wpIdx);
 
 	return 0;
 }
