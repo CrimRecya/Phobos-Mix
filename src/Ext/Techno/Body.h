@@ -116,7 +116,6 @@ public:
 
 		std::vector<LaserTrackingData> MyTrackingLasers;
 		AbstractClass* MyTrackingLasersTarget;
-		std::vector<LaserDrawClass*> TrackingLasersTargetingMe;
 
 		SquadManagerClass* SquadManager;
 
@@ -209,7 +208,6 @@ public:
 			, AirstrikeTargetingMe { nullptr }
 			, MyTrackingLasers { }
 			, MyTrackingLasersTarget { }
-			, TrackingLasersTargetingMe { }
 			, SquadManager { nullptr }
 			, ParentAttachment { nullptr }
 			, ChildAttachments {}

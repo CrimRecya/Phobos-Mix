@@ -1847,6 +1847,8 @@ void TechnoExt::ExtData::UpdateTemporal()
 		ae->AI_Temporal();
 
 	this->UpdateRearmInTemporal();
+	this->MyTrackingLasers.clear();
+	this->MyTrackingLasersTarget = nullptr;
 }
 
 void TechnoExt::ExtData::UpdateRearmInEMPState()

@@ -76,24 +76,7 @@ TechnoExt::ExtData::~ExtData()
 		this->ChildAttachments.clear();
 	}
 
-	if (!this->MyTrackingLasers.empty())
-	{
-		if (const auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(this->MyTrackingLasersTarget)))
-		{
-			const size_t size = this->MyTrackingLasers.size();
-			auto& vec = pTargetExt->TrackingLasersTargetingMe;
-
-			for (size_t i = 0; i < size; ++i)
-			{
-				const auto pLaser = this->MyTrackingLasers[i].Laser;
-				vec.erase(std::remove(vec.begin(), vec.end(), pLaser), vec.end());
-			}
-		}
-
-		this->MyTrackingLasers.clear();
-	}
-
-	this->TrackingLasersTargetingMe.clear();
+	this->MyTrackingLasers.clear();
 
 	if (pTypeExt->AutoDeath_Behavior.isset())
 	{
@@ -1075,16 +1058,20 @@ bool TechnoExt::ExtData::CanToggleCeaseFireStance()
 void TechnoExt::ExtData::UpdateTrackingLasers()
 {
 	const auto pThis = this->OwnerObject();
+	const auto pTarget = pThis->Target;
 
-	if (pThis->Target && pThis->Target == this->MyTrackingLasersTarget)
+	if (pTarget && pTarget == this->MyTrackingLasersTarget)
 	{
 		const size_t size = this->MyTrackingLasers.size();
+		const auto coords = pTarget->GetCoords();
 
 		for (size_t i = 0; i < size; ++i)
 		{
 			const auto& data = this->MyTrackingLasers[i];
 			// Refresh the laser state to keep it alive.
 			data.Laser->Progress.Value = 0;
+			// Change the end point.
+			data.Laser->Target = coords;
 			// Change the start point.
 			const int burstIdx = pThis->CurrentBurstIndex;
 			pThis->CurrentBurstIndex = data.BurstIdx;
@@ -1096,34 +1083,9 @@ void TechnoExt::ExtData::UpdateTrackingLasers()
 	{
 		// Stop tracking and delete all lasers if target changed.
 		if (!this->MyTrackingLasers.empty())
-		{
-			if (const auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(this->MyTrackingLasersTarget)))
-			{
-				const size_t size = this->MyTrackingLasers.size();
-				auto& vec = pTargetExt->TrackingLasersTargetingMe;
-
-				for (size_t i = 0; i < size; ++i)
-				{
-					const auto pLaser = this->MyTrackingLasers[i].Laser;
-					vec.erase(std::remove(vec.begin(), vec.end(), pLaser), vec.end());
-				}
-			}
-
 			this->MyTrackingLasers.clear();
-		}
 
 		this->MyTrackingLasersTarget = nullptr;
-	}
-
-	if (!this->TrackingLasersTargetingMe.empty())
-	{
-		const auto targetCoords = pThis->GetTargetCoords();
-
-		for (const auto pLaser : this->TrackingLasersTargetingMe)
-		{
-			// Change the end point.
-			pLaser->Target = targetCoords;
-		}
 	}
 }
 
@@ -1336,7 +1298,6 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->AirstrikeTargetingMe)
 		//.Process(this->MyTrackingLasers)
 		.Process(this->MyTrackingLasersTarget)
-		//.Process(this->TrackingLasersTargetingMe)
 		.Process(this->SquadManager)
 		.Process(this->ParentAttachment)
 		.Process(this->ChildAttachments)

@@ -1235,7 +1235,10 @@ DEFINE_HOOK(0x6D4941, TacticalClass_Render_DrawButtonCameo, 0x6)
 DEFINE_HOOK(0x4F4583, GScreenClass_DrawCurrentSelectInfo, 0x6)
 {
 	TacticalButtonsClass::Instance.NewMsgList = true;
-	ScenarioExt::Global()->NewMessageList->Draw();
+
+	if (const auto pList = ScenarioExt::Global()->NewMessageList.get())
+		pList->Draw();
+
 	TacticalButtonsClass::Instance.NewMsgList = false;
 
 	TacticalButtonsClass::Instance.CurrentSelectInfoDraw();
