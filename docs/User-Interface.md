@@ -370,12 +370,14 @@ ShowTimer.Priority=0  ; integer
 
 ### Task subtitles display in the middle of the screen
 
-- Now you can let task subtitles to display directly in the middle area of the screen instead of the upper left corner, with a semi transparent background.
+- Now you can set `MessageApplyHoverState` to true，to make the upper left messages not disappear while mouse hovering over the top of display area.
+- You can also let task subtitles to display directly in the middle area of the screen instead of the upper left corner, with a semi transparent background, by setting `MessageDisplayInCenter` to true.
   - When the mouse hovers over the subtitle area (simply judged as a rectangle), its opacity will increase and it will not disappear during this period.
 
 In `RA2MD.INI`:
 ```ini
 [Phobos]
+MessageApplyHoverState=false  ; boolean
 MessageDisplayInCenter=false  ; boolean
 ```
 
