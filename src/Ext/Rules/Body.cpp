@@ -310,8 +310,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->FollowTargetSelf.Read(exINI, GameStrings::General, "FollowTargetSelf");
 	this->DistributeTargetingFrame.Read(exINI, GameStrings::General, "DistributeTargetingFrame");
 	this->DistributeTargetingFrame_AIOnly.Read(exINI, GameStrings::General, "DistributeTargetingFrame.AIOnly");
-	this->AttackMove_IgnoreWeaponCheck.Read(exINI, GameStrings::General, "AttackMove.IgnoreWeaponCheck");
-	this->AttackMove_StopWhenTargetAcquired.Read(exINI, GameStrings::General, "AttackMove.StopWhenTargetAcquired");
 
 	this->JumpjetClimbPredictHeight.Read(exINI, GameStrings::General, "JumpjetClimbPredictHeight");
 	this->JumpjetClimbWithoutCutOut.Read(exINI, GameStrings::General, "JumpjetClimbWithoutCutOut");
@@ -706,8 +704,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->FollowTargetSelf)
 		.Process(this->DistributeTargetingFrame)
 		.Process(this->DistributeTargetingFrame_AIOnly)
-		.Process(this->AttackMove_IgnoreWeaponCheck)
-		.Process(this->AttackMove_StopWhenTargetAcquired)
 		.Process(this->JumpjetClimbPredictHeight)
 		.Process(this->JumpjetClimbWithoutCutOut)
 		.Process(this->DamageOwnerMultiplier)

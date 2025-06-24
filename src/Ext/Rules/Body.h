@@ -254,8 +254,6 @@ public:
 		Valueable<bool> FollowTargetSelf;
 		Valueable<bool> DistributeTargetingFrame;
 		Valueable<bool> DistributeTargetingFrame_AIOnly;
-		Valueable<bool> AttackMove_IgnoreWeaponCheck;
-		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 
 		Valueable<bool> JumpjetClimbPredictHeight;
 		Valueable<bool> JumpjetClimbWithoutCutOut;
@@ -375,7 +373,7 @@ public:
 
 		Valueable<bool> AttackMove_IgnoreWeaponCheck;
 		Nullable<bool> AttackMove_StopWhenTargetAcquired;
-		
+
 		// cache tint color
 		int TintColorIronCurtain;
 		int TintColorForceShield;
@@ -590,8 +588,6 @@ public:
 			, FollowTargetSelf { false }
 			, DistributeTargetingFrame { false }
 			, DistributeTargetingFrame_AIOnly { true }
-			, AttackMove_IgnoreWeaponCheck { false }
-			, AttackMove_StopWhenTargetAcquired {}
 
 			, JumpjetClimbPredictHeight { false }
 			, JumpjetClimbWithoutCutOut { false }

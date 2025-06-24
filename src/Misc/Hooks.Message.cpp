@@ -98,6 +98,8 @@ DEFINE_HOOK(0x4A8BCE, DisplayClass_Set_View_Dimensions, 0x5)
 
 DEFINE_HOOK(0x684AD3, UnknownClass_sub_684620_InitMessageList, 0x5)
 {
+	auto pMessageList = &MessageListClass::Instance;
+
 	if (Phobos::Config::MessageDisplayInCenter)
 	{
 		const auto& pScenarioExt = ScenarioExt::Global();
@@ -112,6 +114,21 @@ DEFINE_HOOK(0x684AD3, UnknownClass_sub_684620_InitMessageList, 0x5)
 
 		// Except for X and Y, they are all original values
 		pList->Init((rect.X + sideWidth), (rect.Height - rect.Height / 8 - 120), 6, 98, 18, -1, -1, 0, 20, 98, width);
+		pMessageList = pList;
+	}
+
+	if (!Phobos::PoweredByEC && !Phobos::HideWarning)
+	{
+		pMessageList->PrintMessage(L"正在使用Phobos特别合并构建#" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L"。若在使用过程中发生问题，请按说明中的方法反馈。  — 绯红热茶", 480);
+
+		const time_t compileTime = Phobos::GetCompile();
+		const time_t currentTime = Phobos::GetCurrent();
+		const int daysUsed = static_cast<int>(difftime(currentTime, compileTime) / (60 * 60 * 24));
+		const int daysLeft = 15 - daysUsed;
+		wchar_t buffer[0x20];
+		swprintf_s(buffer, L"剩余试用期：%2d天", daysLeft);
+
+		pMessageList->PrintMessage(buffer, 480);
 	}
 
 	return 0;

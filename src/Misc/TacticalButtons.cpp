@@ -2,7 +2,6 @@
 
 #include <SuperClass.h>
 #include <AircraftClass.h>
-#include <MessageListClass.h>
 #include <TacticalClass.h>
 #include <MouseClass.h>
 #include <WWMouseClass.h>
@@ -10,22 +9,17 @@
 #include <JumpjetLocomotionClass.h>
 #include <HoverLocomotionClass.h>
 
-#include <Ext/House/Body.h>
 #include <Ext/WarheadType/Body.h>
-#include <Ext/Scenario/Body.h>
 #include <Utilities/TemplateDef.h>
 
-TacticalButtonsClass TacticalButtonsClass::Instance;
+// TacticalButtonsClass TacticalButtonsClass::Instance;
 
 // Functions
-
+/*
 #pragma region PrivateFunctions
 
 int TacticalButtonsClass::CheckMouseOverButtons(const Point2D* pMousePosition)
 {
-	if (Phobos::Config::MessageDisplayInCenter)
-		this->OnMessages = this->MouseIsOverMessageLists(pMousePosition);
-
 	// TODO New buttons
 
 	if (this->CheckMouseOverBackground(pMousePosition))
@@ -84,33 +78,7 @@ void TacticalButtonsClass::PressDesignatedButton(int triggerIndex)
 }
 
 #pragma endregion
-
-#pragma region MessageLists
-
-bool TacticalButtonsClass::MouseIsOverMessageLists(const Point2D* pMousePosition)
-{
-	const auto pMessages = ScenarioExt::Global()->NewMessageList.get();
-
-	if (TextLabelClass* pText = pMessages->MessageList)
-	{
-		if (pMousePosition->Y >= pMessages->MessagePos.Y && pMousePosition->X >= pMessages->MessagePos.X && pMousePosition->X <= pMessages->MessagePos.X + pMessages->Width)
-		{
-			const int textHeight = pMessages->Height;
-			int height = pMessages->MessagePos.Y;
-
-			for ( ; pText; pText = static_cast<TextLabelClass*>(pText->GetNext()))
-				height += textHeight;
-
-			if (pMousePosition->Y < (height + 2))
-				return true;
-		}
-	}
-
-	return false;
-}
-
-#pragma endregion
-
+*/
 #pragma region ShowCurrentInfo
 
 void TacticalButtonsClass::CurrentSelectInfoDraw()
@@ -1109,7 +1077,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 #pragma endregion
 
 // Hooks
-
+/*
 #pragma region MouseTriggerHooks
 
 DEFINE_HOOK(0x6931A5, ScrollClass_WindowsProcedure_PressLeftMouseButton, 0x6)
@@ -1215,7 +1183,7 @@ DEFINE_HOOK(0x69300B, ScrollClass_MouseUpdate_SkipMouseActionUpdate, 0x6)
 }
 
 #pragma endregion
-
+*/
 #pragma region ButtonsDisplayHooks
 /*
 DEFINE_HOOK(0x6D462C, TacticalClass_Render_DrawBelowTechno, 0x5)
@@ -1234,126 +1202,8 @@ DEFINE_HOOK(0x6D4941, TacticalClass_Render_DrawButtonCameo, 0x6)
 */
 DEFINE_HOOK(0x4F4583, GScreenClass_DrawCurrentSelectInfo, 0x6)
 {
-	TacticalButtonsClass::Instance.NewMsgList = true;
-
-	if (const auto pList = ScenarioExt::Global()->NewMessageList.get())
-		pList->Draw();
-
-	TacticalButtonsClass::Instance.NewMsgList = false;
-
-	TacticalButtonsClass::Instance.CurrentSelectInfoDraw();
-
-	if (!Phobos::HideWarning)
-	{
-		RectangleStruct wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0);
-		Point2D location { DSurface::Composite->GetWidth() - wanted.Width - 5, 5 };
-		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x061C);
-	}
-
+	TacticalButtonsClass::CurrentSelectInfoDraw();
 	return 0;
-}
-
-#pragma endregion
-
-#pragma region MessageList
-
-DEFINE_HOOK(0x55DDA0, MainLoop_FrameStep_NewMessageListManage, 0x5)
-{
-	if (!TacticalButtonsClass::Instance.OnMessages)
-	{
-		if (const auto pList = ScenarioExt::Global()->NewMessageList.get())
-			pList->Manage();
-	}
-
-	return 0;
-}
-
-DEFINE_HOOK(0x5D3BA0, MessageListClass_AddMessage_InCenter, 0x6)
-{
-	if (*R->ESP<int*>() == 0x6DE127) // TActionClass::Execute
-	{
-		if (const auto pList = ScenarioExt::Global()->NewMessageList.get())
-			R->ECX(pList);
-	}
-
-	return 0;
-}
-
-DEFINE_HOOK(0x4A8BCE, DisplayClass_Set_View_Dimensions, 0x5)
-{
-	if (Phobos::Config::MessageDisplayInCenter)
-	{
-		const auto& pScenarioExt = ScenarioExt::Global();
-
-		if (!pScenarioExt->NewMessageList) // Load game
-			pScenarioExt->NewMessageList = std::make_unique<MessageListClass>();
-
-		const auto& rect = DSurface::ViewBounds;
-		const auto sideWidth = rect.Width / 6;
-		const auto width = rect.Width - (sideWidth << 1);
-		const auto pList = pScenarioExt->NewMessageList.get();
-		// Except for X and Y, they are all original values
-		pList->Init((rect.X + sideWidth), (rect.Height - rect.Height / 8 - 120), 6, 98, 18, -1, -1, 0, 20, 98, width);
-		pList->SetWidth(width);
-	}
-
-	return 0;
-}
-
-DEFINE_HOOK(0x684AD3, UnknownClass_sub_684620_InitMessageList, 0x5)
-{
-	auto pMessageList = &MessageListClass::Instance;
-
-	if (Phobos::Config::MessageDisplayInCenter)
-	{
-		const auto& pScenarioExt = ScenarioExt::Global();
-
-		if (!pScenarioExt->NewMessageList) // Start game
-			pScenarioExt->NewMessageList = std::make_unique<MessageListClass>();
-
-		const auto& rect = DSurface::ViewBounds;
-		const auto sideWidth = rect.Width / 6;
-		const auto width = rect.Width - (sideWidth << 1);
-		const auto pList = pScenarioExt->NewMessageList.get();
-		// Except for X and Y, they are all original values
-		pList->Init((rect.X + sideWidth), (rect.Height - rect.Height / 8 - 120), 6, 98, 18, -1, -1, 0, 20, 98, width);
-		pMessageList = pList;
-	}
-
-	if (!Phobos::PoweredByEC && !Phobos::HideWarning)
-	{
-		pMessageList->PrintMessage(L"正在使用Phobos特别合并构建#" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L"。若在使用过程中发生问题，请按说明中的方法反馈。  — 绯红热茶", 480);
-
-		const time_t compileTime = Phobos::GetCompile();
-		const time_t currentTime = Phobos::GetCurrent();
-		const int daysUsed = static_cast<int>(difftime(currentTime, compileTime) / (60 * 60 * 24));
-		const int daysLeft = 15 - daysUsed;
-		wchar_t buffer[0x20];
-		swprintf_s(buffer, L"剩余试用期：%2d天", daysLeft);
-
-		pMessageList->PrintMessage(buffer, 480);
-	}
-
-	return 0;
-}
-
-DEFINE_HOOK(0x623A9F, DSurface_sub_623880_DrawBitFontStrings, 0x5)
-{
-	if (!TacticalButtonsClass::Instance.NewMsgList)
-		return 0;
-
-	enum { SkipGameCode = 0x623AAB };
-
-	GET(RectangleStruct* const, pRect, EAX);
-	GET(DSurface* const, pSurface, ECX);
-	GET(const int, height, EBP);
-
-	pRect->Height = height;
-	auto black = ColorStruct { 0, 0, 0 };
-	auto trans = (TacticalButtonsClass::Instance.OnMessages || ScenarioClass::Instance->UserInputLocked) ? 80 : 40;
-	pSurface->FillRectTrans(pRect, &black, trans);
-
-	return SkipGameCode;
 }
 
 #pragma endregion

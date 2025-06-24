@@ -68,7 +68,6 @@ public:
 		std::vector<RecoilData> ExtraBarrelRecoil;
 		int ScatteringStopFrame;
 		int MyTargetingFrame;
-		int AttackMoveFollowerTempCount;
 		CellClass* AutoTargetedWallCell;
 		bool HasCachedClickMission;
 		Mission CachedMission;
@@ -180,7 +179,6 @@ public:
 			, ExtraBarrelRecoil {}
 			, ScatteringStopFrame { 0 }
 			, MyTargetingFrame { ScenarioClass::Instance->Random.RandomRanged(0,15) }
-			, AttackMoveFollowerTempCount { 0 }
 			, AutoTargetedWallCell{ nullptr }
 			, HasCachedClickMission { false }
 			, CachedMission { Mission::None }

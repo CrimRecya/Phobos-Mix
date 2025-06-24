@@ -1179,11 +1179,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->DistributeTargetingFrame.Read(exINI, pSection, "DistributeTargetingFrame");
 
-	this->AttackMove_Follow.Read(exINI, pSection, "AttackMove.Follow");
-	this->AttackMove_Follow_IncludeAir.Read(exINI, pSection, "AttackMove.Follow.IncludeAir");
-	this->AttackMove_StopWhenTargetAcquired.Read(exINI, pSection, "AttackMove.StopWhenTargetAcquired");
-	this->AttackMove_PursuitTarget.Read(exINI, pSection, "AttackMove.PursuitTarget");
-
 	this->ThisIsAJumpjet.Read(exINI, pSection, "ThisIsAJumpjet");
 
 	if (this->ThisIsAJumpjet && pThis->WhatAmI() == AbstractType::AircraftType)
@@ -1997,11 +1992,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->HarvesterQuickUnloader)
 
 		.Process(this->DistributeTargetingFrame)
-
-		.Process(this->AttackMove_Follow)
-		.Process(this->AttackMove_Follow_IncludeAir)
-		.Process(this->AttackMove_StopWhenTargetAcquired)
-		.Process(this->AttackMove_PursuitTarget)
 
 		.Process(this->ThisIsAJumpjet)
 		.Process(this->ThisIsAJumpjetOf)
