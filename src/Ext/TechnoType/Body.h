@@ -571,6 +571,11 @@ public:
 
 		Valueable<int> EngineerRepairAmount;
 
+		Valueable<bool> AttackMove_Follow;
+		Valueable<bool> AttackMove_Follow_IncludeAir;
+		Nullable<bool> AttackMove_StopWhenTargetAcquired;
+		Valueable<bool> AttackMove_PursuitTarget;
+
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
 			, UIDescription {}
@@ -1090,6 +1095,11 @@ public:
 			, DebrisMinimums {}
 
 			, EngineerRepairAmount { 0 }
+
+			, AttackMove_Follow { false }
+			, AttackMove_Follow_IncludeAir { false }
+			, AttackMove_StopWhenTargetAcquired { }
+			, AttackMove_PursuitTarget { false }
 		{ }
 
 		virtual ~ExtData() = default;

@@ -373,6 +373,9 @@ public:
 
 		Valueable<AffectedHouse> BerzerkTargeting;
 
+		Valueable<bool> AttackMove_IgnoreWeaponCheck;
+		Nullable<bool> AttackMove_StopWhenTargetAcquired;
+		
 		// cache tint color
 		int TintColorIronCurtain;
 		int TintColorForceShield;
@@ -693,6 +696,9 @@ public:
 			, TintColorIronCurtain { 0 }
 			, TintColorForceShield { 0 }
 			, TintColorBerserk { 0 }
+
+			, AttackMove_IgnoreWeaponCheck { false }
+			, AttackMove_StopWhenTargetAcquired { }
 		{ }
 
 		virtual ~ExtData() = default;
