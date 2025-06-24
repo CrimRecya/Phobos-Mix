@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <CCINIClass.h>
 #include <RulesClass.h>
@@ -373,6 +373,8 @@ public:
 
 		Valueable<AffectedHouse> BerzerkTargeting;
 
+		Valueable<bool> DamageWallRecursivly;
+
 		// cache tint color
 		int TintColorIronCurtain;
 		int TintColorForceShield;
@@ -689,6 +691,8 @@ public:
 			, AnimCraterDestroyTiberium { true }
 
 			, BerzerkTargeting { AffectedHouse::All }
+
+			, DamageWallRecursivly { true }
 
 			, TintColorIronCurtain { 0 }
 			, TintColorForceShield { 0 }
