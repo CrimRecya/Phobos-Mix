@@ -162,7 +162,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 					if (!pCurCell)
 						break;
 
-					if (std::ranges::find_if(pathCells, [pCurCell](auto Data){ return Data.Cell == pCurCell; }) == pathCells.end())
+					if (std::ranges::find_if(pathCells, [pCurCell](auto data){ return data.Cell == pCurCell; }) == pathCells.end())
 						pathCells.emplace_back(pCurCell, pCurCell->GetLevel());
 
 					if ((curCoord.X >> 8) != (lastCoord.X >> 8) && (curCoord.Y >> 8) != (lastCoord.Y >> 8))
@@ -181,7 +181,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 							? CellStruct { static_cast<short>(lastCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) }
 							: CellStruct { static_cast<short>(curCoord.X >> 8), static_cast<short>(lastCoord.Y >> 8) }))
 						{
-							if (std::ranges::find_if(pathCells, [pCheckCell](auto Data){ return Data.Cell == pCheckCell; }) == pathCells.end())
+							if (std::ranges::find_if(pathCells, [pCheckCell](auto data){ return data.Cell == pCheckCell; }) == pathCells.end())
 								pathCells.emplace_back(pCheckCell, pCheckCell->GetLevel());
 						}
 					}

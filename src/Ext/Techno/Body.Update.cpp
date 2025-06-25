@@ -583,9 +583,6 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 		}
 	}
 
-	// Reset recoil data
-	this->InitializeRecoilData();
-
 	// Recreate Laser Trails
 	if (const size_t trailCount = this->LaserTrails.size())
 	{
@@ -599,9 +596,9 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 		}
 
 		this->LaserTrails.clear();
-		this->LaserTrails.reserve(this->TypeExtData->LaserTrailData.size() + addition.size());
+		this->LaserTrails.reserve(pNewTypeExt->LaserTrailData.size() + addition.size());
 
-		for (const auto& entry : this->TypeExtData->LaserTrailData)
+		for (const auto& entry : pNewTypeExt->LaserTrailData)
 			this->LaserTrails.emplace_back(std::make_unique<LaserTrailClass>(entry.GetType(), pOwner, entry.FLH, entry.IsOnTurret));
 
 		for (auto& pTrail : addition)
@@ -637,15 +634,30 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
 	}
 
+	// Recreate attachment type
+	if (pNewTypeExt->AttachmentTypes.empty() != pOldTypeExt->AttachmentTypes.empty())
+	{
+		for (const auto& pAttachment : this->ChildAttachments)
+			pAttachment->Destroy(pThis);
+
+		this->ChildAttachments.clear();
+		this->ChildAttachments.reserve(pNewTypeExt->AttachmentTypes.size());
+
+		for (const auto& type : pNewTypeExt->AttachmentTypes)
+		{
+			this->ChildAttachments.emplace_back(std::make_unique<AttachmentClass>(type, pThis, nullptr));
+			this->ChildAttachments.back()->Initialize();
+		}
+	}
+
 	// Manager fix
-	// Powered by ststl-s銆丗ly-Star
+	// Powered by ststl-s, Fly-Star
 	auto& pSlaveManager = pThis->SlaveManager;
 	auto& pSpawnManager = pThis->SpawnManager;
 	auto& pCaptureManager = pThis->CaptureManager;
 	auto& pTemporalImUsing = pThis->TemporalImUsing;
 	auto& pAirstrike = pThis->Airstrike;
 
-	// Powered by ststl-s, Fly-Star
 	if (pCurrentType->Enslaves && pCurrentType->SlavesNumber > 0)
 	{
 		// SlaveManager does not exist or they have different slaves.
@@ -994,7 +1006,8 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 	// Sight
 	pThis->UpdateSight(0, 0, 0, 0, 0);
 
-	// Recoil data
+	// Reset recoil data
+	this->InitializeRecoilData();
 	{
 		auto& turretRecoil = pThis->TurretRecoil.Turret;
 		const auto& turretData = pCurrentType->TurretAnimData;

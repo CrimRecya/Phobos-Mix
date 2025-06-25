@@ -1112,10 +1112,10 @@ bool TechnoExt::DetachFromParent(TechnoClass* pThis)
 
 void TechnoExt::ExtData::InitializeAttachments()
 {
-	auto& types = this->TypeExtData->AttachmentTypes;
+	const auto& types = this->TypeExtData->AttachmentTypes;
 	const auto pThis = this->OwnerObject();
 
-	for (auto& type : types)
+	for (const auto& type : types)
 	{
 		this->ChildAttachments.emplace_back(std::make_unique<AttachmentClass>(type, pThis, nullptr));
 		this->ChildAttachments.back()->Initialize();
