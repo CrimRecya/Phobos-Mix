@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <CCINIClass.h>
 #include <RulesClass.h>
@@ -371,12 +371,10 @@ public:
 
 		Valueable<AffectedHouse> BerzerkTargeting;
 
-<<<<<<< DamageWall
 		Valueable<bool> DamageWallRecursivly;
-=======
+
 		Valueable<bool> AttackMove_IgnoreWeaponCheck;
 		Nullable<bool> AttackMove_StopWhenTargetAcquired;
->>>>>>> Mix-ECpack
 
 		// cache tint color
 		int TintColorIronCurtain;
