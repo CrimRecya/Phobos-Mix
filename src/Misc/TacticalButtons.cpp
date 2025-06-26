@@ -135,8 +135,8 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 		if (const auto pFoot = abstract_cast<FootClass*, true>(pTechno))
 		{
-			JumpjetLocomotionClass* pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(pFoot->Locomotor);
-			FlyLocomotionClass* pFlyLoco = locomotion_cast<FlyLocomotionClass*>(pFoot->Locomotor);
+			const auto pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(pFoot->Locomotor);
+			const auto pFlyLoco = locomotion_cast<FlyLocomotionClass*>(pFoot->Locomotor);
 
 			if (pJjLoco ? (pJjLoco->CurrentSpeed > 0.0) : (pFlyLoco && pFlyLoco->CurrentSpeed > 0.0))
 			{
@@ -293,7 +293,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const int height = data.Level * 15;
 				const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
 				const bool notOnBridge = data.Level == data.Cell->Level;
-				const int frameIndex = (notOnBridge && data.Cell->SlopeIndex) ? (data.Cell->SlopeIndex + 2) : ((notOnBridge ? data.Cell->FirstObject : data.Cell->AltObject) ? 1 : 0);
+				const int frameIndex = (notOnBridge && data.Cell->SlopeIndex)
+					? (data.Cell->SlopeIndex + 2)
+					: ((notOnBridge ? (data.Cell->FirstObject || (data.Cell->OccupationFlags & 0xFF)) : (data.Cell->AltObject || (data.Cell->AltOccupationFlags & 0xFF))) ? 1 : 0);
 				const int zAdjust = -height - ((notOnBridge && data.Cell->SlopeIndex) ? 12 : 2) - 16384;
 
 				DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC), frameIndex, &position,
@@ -318,7 +320,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 		const int height = pCell->Level * 15;
 		const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
-		const int frameIndex = pCell->SlopeIndex ? (pCell->SlopeIndex + 2) : (pCell->FirstObject ? 1 : 0);
+		const int frameIndex = pCell->SlopeIndex ? (pCell->SlopeIndex + 2) : ((pCell->FirstObject || (pCell->OccupationFlags & 0xFF)) ? 1 : 0);
 		const int zAdjust = -height - (pCell->SlopeIndex ? 12 : 2) - 16384;
 
 		DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC), frameIndex, &position,
