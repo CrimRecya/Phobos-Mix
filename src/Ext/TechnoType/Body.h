@@ -1111,7 +1111,6 @@ public:
 
 		void CalculateSpawnerRange();
 		bool IsSecondary(const int weaponIndex);
-		int SelectMultiWeapon(TechnoClass* pThis, AbstractClass* pTarget);
 		int SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget);
 		int SelectMultiWeapon(TechnoClass* const pThis, AbstractClass* const pTarget);
 
