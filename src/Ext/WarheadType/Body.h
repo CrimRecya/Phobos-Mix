@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <WarheadTypeClass.h>
 #include <SuperWeaponTypeClass.h>
 #include <Helpers/Macro.h>
@@ -208,6 +208,8 @@ public:
 
 		Valueable<double> AffectsAbovePercent;
 		Valueable<double> AffectsBelowPercent;
+
+		Nullable<bool> AutoTargetWalls;
 
 		// Ares tags
 		// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
@@ -440,6 +442,8 @@ public:
 			, KillWeapon_OnFirer_AffectsHouses { AffectedHouse::All }
 			, KillWeapon_Affects { AffectedTarget::All }
 			, KillWeapon_OnFirer_Affects { AffectedTarget::All }
+
+			, AutoTargetWalls {}
 		{ }
 
 		void ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget);

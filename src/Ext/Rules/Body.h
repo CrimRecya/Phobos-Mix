@@ -249,6 +249,8 @@ public:
 		Valueable<bool> RallyPointForceMove;
 		Valueable<bool> RallyPointAreaGuard;
 		Valueable<bool> PlayerDestroyWalls;
+		Valueable<int> AutoTargetWalls;
+		Valueable<bool> EndAutoTargetingIfFindWalls;
 		Valueable<bool> DestroyOwnerlessWalls;
 		Valueable<bool> AIAngerOnAlly;
 		Valueable<bool> FollowTargetSelf;
@@ -371,10 +373,10 @@ public:
 
 		Valueable<AffectedHouse> BerzerkTargeting;
 
-		Valueable<bool> DamageWallRecursivly;
-
 		Valueable<bool> AttackMove_IgnoreWeaponCheck;
 		Nullable<bool> AttackMove_StopWhenTargetAcquired;
+
+		Valueable<bool> DamageWallRecursivly;
 
 		// cache tint color
 		int TintColorIronCurtain;
@@ -585,6 +587,8 @@ public:
 			, RallyPointForceMove { false }
 			, RallyPointAreaGuard { false }
 			, PlayerDestroyWalls { false }
+			, AutoTargetWalls { 1 }
+			, EndAutoTargetingIfFindWalls { true }
 			, DestroyOwnerlessWalls { false }
 			, AIAngerOnAlly { true }
 			, FollowTargetSelf { false }

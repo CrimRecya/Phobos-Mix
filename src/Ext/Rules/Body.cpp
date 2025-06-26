@@ -305,6 +305,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->RallyPointForceMove.Read(exINI, GameStrings::General, "RallyPointForceMove");
 	this->RallyPointAreaGuard.Read(exINI, GameStrings::General, "RallyPointAreaGuard");
 	this->PlayerDestroyWalls.Read(exINI, GameStrings::General, "PlayerDestroyWalls");
+	this->AutoTargetWalls.Read(exINI, GameStrings::General, "AutoTargetWalls");
+	this->EndAutoTargetingIfFindWalls.Read(exINI, GameStrings::General, "EndAutoTargetingIfFindWalls");
 	this->DestroyOwnerlessWalls.Read(exINI, GameStrings::General, "DestroyOwnerlessWalls");
 	this->AIAngerOnAlly.Read(exINI, GameStrings::General, "AIAngerOnAlly");
 	this->FollowTargetSelf.Read(exINI, GameStrings::General, "FollowTargetSelf");
@@ -427,10 +429,10 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->BerzerkTargeting.Read(exINI, GameStrings::CombatDamage, "BerzerkTargeting");
 
-	this->DamageWallRecursivly.Read(exINI, GameStrings::CombatDamage, "DamageWallRecursivly");
-
 	this->AttackMove_IgnoreWeaponCheck.Read(exINI, GameStrings::General, "AttackMove.IgnoreWeaponCheck");
 	this->AttackMove_StopWhenTargetAcquired.Read(exINI, GameStrings::General, "AttackMove.StopWhenTargetAcquired");
+
+	this->DamageWallRecursivly.Read(exINI, GameStrings::CombatDamage, "DamageWallRecursivly");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -701,6 +703,8 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->RallyPointForceMove)
 		.Process(this->RallyPointAreaGuard)
 		.Process(this->PlayerDestroyWalls)
+		.Process(this->AutoTargetWalls)
+		.Process(this->EndAutoTargetingIfFindWalls)
 		.Process(this->DestroyOwnerlessWalls)
 		.Process(this->AIAngerOnAlly)
 		.Process(this->FollowTargetSelf)
