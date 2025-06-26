@@ -562,6 +562,7 @@ public:
 
 		Valueable<bool> AttackMove_Follow;
 		Valueable<bool> AttackMove_Follow_IncludeAir;
+		Valueable<bool> AttackMove_Follow_IfMindControlIsFull;
 		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 		Valueable<bool> AttackMove_PursuitTarget;
 
@@ -1081,6 +1082,7 @@ public:
 
 			, AttackMove_Follow { false }
 			, AttackMove_Follow_IncludeAir { false }
+			, AttackMove_Follow_IfMindControlIsFull { false }
 			, AttackMove_StopWhenTargetAcquired { }
 			, AttackMove_PursuitTarget { false }
 
