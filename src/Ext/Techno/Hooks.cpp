@@ -1310,6 +1310,7 @@ DEFINE_HOOK(0x4DF3A6, FootClass_UpdateAttackMove_Follow, 0x6)
 
 		TechnoClass* pClosestTarget = nullptr;
 		int closestRange = 65536;
+		auto pMegaMissionTarget = pThis->MegaDestination ? pThis->MegaDestination : (pThis->MegaTarget ? pThis->MegaTarget : pThis);
 
 		for (auto const pTechno : pTechnoVectors)
 		{
@@ -1327,7 +1328,7 @@ DEFINE_HOOK(0x4DF3A6, FootClass_UpdateAttackMove_Follow, 0x6)
 
 				if (!pTargetTypeExt->AttackMove_Follow)
 				{
-					auto const dist = pTechno->DistanceFrom(pThis);
+					auto const dist = pTechno->DistanceFrom(pMegaMissionTarget);
 
 					if (dist < closestRange)
 					{
