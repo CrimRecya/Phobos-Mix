@@ -559,14 +559,21 @@ DEFINE_HOOK(0x6F8D21, TechnoClass_ScanToAttackWall_CheckWH, 0x6)
 {
 	GET(WarheadTypeClass*, pWH, ECX);
 
-	bool defaultValue = false;
+	bool result = pWH->Wall;
 
-	if (RulesExt::Global()->AutoTargetWalls > 0)
-		defaultValue = true;
-	else if (RulesExt::Global()->AutoTargetWalls < 0)
-		defaultValue = pWH->WallAbsoluteDestroyer;
+	if (result)
+	{
+		bool defaultValue = false;
 
-	R->AL(WarheadTypeExt::ExtMap.Find(pWH)->AutoTargetWalls.Get(defaultValue));
+		if (RulesExt::Global()->AutoTargetWalls > 0)
+			defaultValue = true;
+		else if (RulesExt::Global()->AutoTargetWalls < 0)
+			defaultValue = pWH->WallAbsoluteDestroyer;
+
+		result = WarheadTypeExt::ExtMap.Find(pWH)->AutoTargetWalls.Get(defaultValue);
+	}
+
+	R->AL(result);
 	return R->Origin() + 0x6;
 }
 
