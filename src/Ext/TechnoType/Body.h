@@ -200,8 +200,8 @@ public:
 		Valueable<int> ForceWeapon_Buildings;
 		Valueable<int> ForceWeapon_Defenses;
 		Valueable<int> ForceWeapon_Infantry;
+		Valueable<int> ForceWeapon_Naval_Units;
 		Valueable<int> ForceWeapon_Units;
-		Valueable<int> ForceWeapon_Naval;
 		Valueable<int> ForceWeapon_Aircraft;
 		Valueable<int> ForceAAWeapon_Infantry;
 		Valueable<int> ForceAAWeapon_Units;
@@ -549,12 +549,6 @@ public:
 		Valueable<double> FallingDownDamage;
 		Nullable<double> FallingDownDamage_Water;
 
-		Valueable<bool> MultiWeapon;
-		Valueable<int> MultiWeapon_SelectCount;
-		ValueableVector<int> MultiWeapon_Secondarys;
-		ValueableVector<bool> MultiWeapon_IsSecondary;
-		bool ReadMultiWeapon;
-
 		Valueable<bool> FiringForceScatter;
 
 		Valueable<int> FireUp;
@@ -570,6 +564,11 @@ public:
 		Valueable<bool> AttackMove_Follow_IncludeAir;
 		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 		Valueable<bool> AttackMove_PursuitTarget;
+
+		Valueable<bool> MultiWeapon;
+		ValueableVector<bool> MultiWeapon_IsSecondary;
+		Valueable<int> MultiWeapon_SelectCount;
+		bool ReadMultiWeapon;
 
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
@@ -729,8 +728,8 @@ public:
 			, ForceWeapon_Buildings { -1 }
 			, ForceWeapon_Defenses { -1 }
 			, ForceWeapon_Infantry { -1 }
+			, ForceWeapon_Naval_Units { -1 }
 			, ForceWeapon_Units { -1 }
-			, ForceWeapon_Naval { -1 }
 			, ForceWeapon_Aircraft { -1 }
 			, ForceAAWeapon_Infantry { -1 }
 			, ForceAAWeapon_Units { -1 }
@@ -1069,12 +1068,6 @@ public:
 			, FallingDownDamage { 1.0 }
 			, FallingDownDamage_Water {}
 
-			, MultiWeapon { false }
-			, MultiWeapon_SelectCount { 2 }
-			, MultiWeapon_Secondarys {}
-			, MultiWeapon_IsSecondary {}
-			, ReadMultiWeapon { false }
-
 			, FiringForceScatter { true }
 
 			, FireUp { -1 }
@@ -1090,6 +1083,11 @@ public:
 			, AttackMove_Follow_IncludeAir { false }
 			, AttackMove_StopWhenTargetAcquired { }
 			, AttackMove_PursuitTarget { false }
+
+			, MultiWeapon { false }
+			, MultiWeapon_IsSecondary {}
+			, MultiWeapon_SelectCount { 2 }
+			, ReadMultiWeapon { false }
 		{ }
 
 		virtual ~ExtData() = default;
@@ -1113,6 +1111,7 @@ public:
 		bool IsSecondary(const int weaponIndex);
 		int SelectMultiWeapon(TechnoClass* pThis, AbstractClass* pTarget);
 		int SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget);
+		int SelectMultiWeapon(TechnoClass* const pThis, AbstractClass* const pTarget);
 
 		// Ares 0.A
 		const char* GetSelectionGroupID() const;
