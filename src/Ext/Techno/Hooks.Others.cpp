@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
@@ -555,6 +555,28 @@ DEFINE_HOOK(0x6F8C18, TechnoClass_ScanToAttackWall_PlayerDestroyWall, 0x6)
 	return RulesExt::Global()->PlayerDestroyWalls ? SkipIsAIChecks : FuncRetZero;
 }
 
+DEFINE_HOOK(0x6F8D21, TechnoClass_ScanToAttackWall_CheckWH, 0x6)
+{
+	GET(WarheadTypeClass*, pWH, ECX);
+
+	bool result = pWH->Wall;
+
+	if (result)
+	{
+		bool defaultValue = false;
+
+		if (RulesExt::Global()->AutoTargetWalls > 0)
+			defaultValue = true;
+		else if (RulesExt::Global()->AutoTargetWalls < 0)
+			defaultValue = pWH->WallAbsoluteDestroyer;
+
+		result = WarheadTypeExt::ExtMap.Find(pWH)->AutoTargetWalls.Get(defaultValue);
+	}
+
+	R->AL(result);
+	return R->Origin() + 0x6;
+}
+
 DEFINE_HOOK(0x6F8D32, TechnoClass_ScanToAttackWall_DestroyOwnerlessWalls, 0x9)
 {
 	enum { GoOtherChecks = 0x6F8D58, NotOkToFire = 0x6F8DE3 };
@@ -573,6 +595,27 @@ DEFINE_HOOK(0x6F8D32, TechnoClass_ScanToAttackWall_DestroyOwnerlessWalls, 0x9)
 	}
 
 	return GoOtherChecks;
+}
+
+DEFINE_HOOK(0x6F9B1B, TechnoClass_SelectAutoTarget_EndAutoTargetingIfFindWalls1, 0x5)
+{
+	enum { SkipGameCode = 0x6F9B37 };
+	return RulesExt::Global()->EndAutoTargetingIfFindWalls ? 0 : SkipGameCode;
+}
+
+DEFINE_HOOK(0x6F9B3E, TechnoClass_SelectAutoTarget_EndAutoTargetingIfFindWalls2, 0x6)
+{
+	enum { CheckNext = 0x6F9B44 , TargetTechno = 0x6F9DA1 , TargetWall = 0x6F9B55 };
+
+	GET(int, maxRange, ECX);
+	GET(int, currentRange, EDI);
+	GET_STACK(AbstractClass*, pBestTarget, STACK_OFFSET(0x6C, -0x4C));
+	GET_STACK(CellStruct, bestTargetCell, STACK_OFFSET(0x6C, -0x38));
+
+	if (currentRange > maxRange)
+		return RulesExt::Global()->EndAutoTargetingIfFindWalls || pBestTarget || bestTargetCell == CellStruct::Empty ? TargetTechno : TargetWall;
+
+	return CheckNext;
 }
 
 DEFINE_HOOK(0x6F9B64, TechnoClass_SelectAutoTarget_RecordAttackWall, 0x7)

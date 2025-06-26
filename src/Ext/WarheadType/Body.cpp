@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <BulletClass.h>
 #include <HouseClass.h>
@@ -323,6 +323,8 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	// AttachEffect
 	this->AttachEffects.LoadFromINI(pINI, pSection);
 
+	this->AutoTargetWalls.Read(exINI, pSection, "AutoTargetWalls");
+
 #ifdef LOCO_TEST_WARHEADS // Enable warheads parsing
 	this->InflictLocomotor.Read(exINI, pSection, "InflictLocomotor");
 	this->RemoveInflictedLocomotor.Read(exINI, pSection, "RemoveInflictedLocomotor");
@@ -603,6 +605,8 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->ActivateWreckage)
 
 		.Process(this->AirstrikeTargets)
+
+		.Process(this->AutoTargetWalls)
 
 		// Ares tags
 		.Process(this->AffectsEnemies)
