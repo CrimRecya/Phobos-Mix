@@ -413,11 +413,6 @@ public:
 
 		Nullable<bool> DistributeTargetingFrame;
 
-		Valueable<bool> AttackMove_Follow;
-		Valueable<bool> AttackMove_Follow_IncludeAir;
-		Nullable<bool> AttackMove_StopWhenTargetAcquired;
-		Valueable<bool> AttackMove_PursuitTarget;
-
 		Valueable<bool> ThisIsAJumpjet;
 		TechnoTypeClass* ThisIsAJumpjetOf;
 
@@ -570,6 +565,11 @@ public:
 		ValueableVector<int> DebrisMinimums;
 
 		Valueable<int> EngineerRepairAmount;
+
+		Valueable<bool> AttackMove_Follow;
+		Valueable<bool> AttackMove_Follow_IncludeAir;
+		Nullable<bool> AttackMove_StopWhenTargetAcquired;
+		Valueable<bool> AttackMove_PursuitTarget;
 
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
@@ -952,11 +952,6 @@ public:
 
 			, DistributeTargetingFrame {}
 
-			, AttackMove_Follow { false }
-			, AttackMove_Follow_IncludeAir { false }
-			, AttackMove_StopWhenTargetAcquired {}
-			, AttackMove_PursuitTarget { false }
-
 			, ThisIsAJumpjet { false }
 			, ThisIsAJumpjetOf { nullptr }
 
@@ -1090,6 +1085,11 @@ public:
 			, DebrisMinimums {}
 
 			, EngineerRepairAmount { 0 }
+
+			, AttackMove_Follow { false }
+			, AttackMove_Follow_IncludeAir { false }
+			, AttackMove_StopWhenTargetAcquired { }
+			, AttackMove_PursuitTarget { false }
 		{ }
 
 		virtual ~ExtData() = default;

@@ -68,7 +68,6 @@ public:
 		std::vector<RecoilData> ExtraBarrelRecoil;
 		int ScatteringStopFrame;
 		int MyTargetingFrame;
-		int AttackMoveFollowerTempCount;
 		CellClass* AutoTargetedWallCell;
 		bool HasCachedClickMission;
 		Mission CachedMission;
@@ -116,7 +115,6 @@ public:
 
 		std::vector<LaserTrackingData> MyTrackingLasers;
 		AbstractClass* MyTrackingLasersTarget;
-		std::vector<LaserDrawClass*> TrackingLasersTargetingMe;
 
 		SquadManagerClass* SquadManager;
 
@@ -136,6 +134,8 @@ public:
 		int TintIntensityOwner;
 		int TintIntensityAllies;
 		int TintIntensityEnemies;
+
+		int AttackMoveFollowerTempCount;
 
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
@@ -179,7 +179,6 @@ public:
 			, ExtraBarrelRecoil {}
 			, ScatteringStopFrame { 0 }
 			, MyTargetingFrame { ScenarioClass::Instance->Random.RandomRanged(0,15) }
-			, AttackMoveFollowerTempCount { 0 }
 			, AutoTargetedWallCell{ nullptr }
 			, HasCachedClickMission { false }
 			, CachedMission { Mission::None }
@@ -209,7 +208,6 @@ public:
 			, AirstrikeTargetingMe { nullptr }
 			, MyTrackingLasers { }
 			, MyTrackingLasersTarget { }
-			, TrackingLasersTargetingMe { }
 			, SquadManager { nullptr }
 			, ParentAttachment { nullptr }
 			, ChildAttachments {}
@@ -224,6 +222,7 @@ public:
 			, TintIntensityOwner { 0 }
 			, TintIntensityAllies { 0 }
 			, TintIntensityEnemies { 0 }
+			, AttackMoveFollowerTempCount { 0 }
 		{ }
 
 		void OnEarlyUpdate();

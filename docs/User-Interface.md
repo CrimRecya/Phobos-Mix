@@ -368,7 +368,23 @@ ShowTimer=yes
 ShowTimer.Priority=0  ; integer
 ```
 
+### Task subtitles display in the middle of the screen
+
+![Message Display In Center](_static/images/messagedisplayincenter.png)
+
+- Now you can set `MessageApplyHoverState` to true，to make the upper left messages not disappear while mouse hovering over the top of display area.
+- You can also let task subtitles to display directly in the middle area of the screen instead of the upper left corner, with a semi transparent background, by setting `MessageDisplayInCenter` to true.
+  - When the mouse hovers over the subtitle area (simply judged as a rectangle), its opacity will increase and it will not disappear during this period.
+
+In `RA2MD.INI`:
+```ini
+[Phobos]
+MessageApplyHoverState=false  ; boolean
+MessageDisplayInCenter=false  ; boolean
+```
+
 ### Type select for buildings
+
 - In vanilla game, type select can almost only be used on 1x1 buildings with `UndeploysInto`. Now it's possible to use it on all buildings if `BuildingTypeSelectable` set to true.
 
 In `rulesmd.ini`:
@@ -899,35 +915,35 @@ Positional superweapon hotkeys are an experimental feature and currently the use
 In `uimd.ini`:
 ```ini
 [Sidebar]
-SuperWeaponSidebar=false              ; boolean
-SuperWeaponSidebar.Pyramid=true      ; boolean
-SuperWeaponSidebar.Interval=0         ; integer, pixels
-SuperWeaponSidebar.LeftOffset=0       ; integer, pixels
-SuperWeaponSidebar.CameoHeight=48     ; integer, pixels
-SuperWeaponSidebar.Max=0              ; integer
-SuperWeaponSidebar.MaxColumns=        ; integer
+SuperWeaponSidebar=false                    ; boolean
+SuperWeaponSidebar.Pyramid=true             ; boolean
+SuperWeaponSidebar.Interval=0               ; integer, pixels
+SuperWeaponSidebar.LeftOffset=0             ; integer, pixels
+SuperWeaponSidebar.CameoHeight=48           ; integer, pixels
+SuperWeaponSidebar.Max=0                    ; integer
+SuperWeaponSidebar.MaxColumns=              ; integer
 ```
 
 In `rulesmd.ini`:
 ```ini
 [GlobalControls]
-SuperWeaponSidebarKeysEnabled=false    ; boolean
+SuperWeaponSidebarKeysEnabled=false         ; boolean
 
 [AudioVisual]
-SuperWeaponSidebar.AllowByDefault=false   ; boolean
+SuperWeaponSidebar.AllowByDefault=false     ; boolean
 
-[SOMESIDE]
-SuperWeaponSidebar.OnPCX=             ; filename - including the .pcx extension
-SuperWeaponSidebar.OffPCX=            ; filename - including the .pcx extension
-SuperWeaponSidebar.TopPCX=            ; filename - including the .pcx extension
-SuperWeaponSidebar.CenterPCX=         ; filename - including the .pcx extension
-SuperWeaponSidebar.BottomPCX=         ; filename - including the .pcx extension
+[SOMESIDE]                                  ; Side
+SuperWeaponSidebar.OnPCX=                   ; filename - including the .pcx extension
+SuperWeaponSidebar.OffPCX=                  ; filename - including the .pcx extension
+SuperWeaponSidebar.TopPCX=                  ; filename - including the .pcx extension
+SuperWeaponSidebar.CenterPCX=               ; filename - including the .pcx extension
+SuperWeaponSidebar.BottomPCX=               ; filename - including the .pcx extension
 
-[SOMESW]
-SuperWeaponSidebar.Allow=             ; boolean
-SuperWeaponSidebar.PriorityHouses=    ; List of house types
-SuperWeaponSidebar.RequiredHouses=    ; List of house types
-SuperWeaponSidebar.Significance=0     ; integer
+[SOMESW]                                    ; SuperWeaponType
+SuperWeaponSidebar.Allow=                   ; boolean
+SuperWeaponSidebar.PriorityHouses=          ; List of house types
+SuperWeaponSidebar.RequiredHouses=          ; List of house types
+SuperWeaponSidebar.Significance=0           ; integer
 ```
 
 In `RA2MD.INI`:

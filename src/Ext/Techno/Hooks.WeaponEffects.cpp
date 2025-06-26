@@ -298,18 +298,6 @@ static void __fastcall AttachLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLa
 	// Target changed. Stop tracking current lasers.
 	if (pExt->MyTrackingLasersTarget && pExt->MyTrackingLasersTarget != pTarget)
 	{
-		if (const auto pOldTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*, true>(pExt->MyTrackingLasersTarget)))
-		{
-			const size_t size = pExt->MyTrackingLasers.size();
-			auto& vec = pOldTargetExt->TrackingLasersTargetingMe;
-
-			for (size_t i = 0; i < size; ++i)
-			{
-				const auto pTrackingLaser = pExt->MyTrackingLasers[i].Laser;
-				vec.erase(std::remove(vec.begin(), vec.end(), pTrackingLaser), vec.end());
-			}
-		}
-
 		pExt->MyTrackingLasers.clear();
 	}
 	else
@@ -332,15 +320,17 @@ static void __fastcall AttachLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLa
 				// Same flh different weapon, delete the old laser.
 				data.Laser->Duration = 0;
 
-				if (const auto pOldTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pExt->MyTrackingLasersTarget)))
-				{
-					auto& vec = pOldTargetExt->TrackingLasersTargetingMe;
-					vec.erase(std::remove(vec.begin(), vec.end(), data.Laser), vec.end());
-				}
-
 				data.Laser = pLaser;
 				data.CreatorWeapon = pWeapon;
-				break;
+
+				// Track the firer.
+				pExt->MyTrackingLasersTarget = pTarget;
+
+				// Hardcoded these properties for tracking lasers.
+				pLaser->Fades = false;
+				pLaser->Duration = 2;
+				pLaser->Progress.Value = 0;
+				return;
 			}
 		}
 	}
@@ -353,10 +343,6 @@ static void __fastcall AttachLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLa
 	pLaser->Fades = false;
 	pLaser->Duration = 2;
 	pLaser->Progress.Value = 0;
-
-	// Only track the target if it is a techno.
-	if (const auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pTarget)))
-		pTargetExt->TrackingLasersTargetingMe.emplace_back(pLaser);
 }
 
 // Allow drawing single color lasers with thickness.
