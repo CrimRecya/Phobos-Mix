@@ -115,7 +115,7 @@ DEFINE_HOOK(0x740943, UnitClass_Mission_Guard_PlayerHarvester, 0x6)
 
 	GET(UnitClass*, pThis, ESI);
 
-	if (pThis->Type->Teleporter || pThis->Type->MovementZone == MovementZone::Subterrannean)
+	if (pThis->Type->Teleporter || pThis->Type->MovementZone == MovementZone::Subterrannean || pThis->ArchiveTarget)
 	{
 		auto const pCell = pThis->GetCell();
 		int cellIndex = 0;

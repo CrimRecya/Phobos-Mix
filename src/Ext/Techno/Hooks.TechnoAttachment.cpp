@@ -388,7 +388,7 @@ DEFINE_HOOK(0x51A0DA, InfantryClass_PerCellProcess_EntryLoopTechnos, 0x0)
 			&& pEntryTarget != pThis
 			&& (pThis->Target == pEntryTarget
 				|| pDest == pEntryTarget
-				|| (pDest->WhatAmI() == AbstractType::Cell
+				|| (pDest && pDest->WhatAmI() == AbstractType::Cell
 					&& pThis->GetNthLink() == pEntryTarget)))
 		{
 			R->EDI<TechnoClass*>(pEntryTarget);

@@ -2443,45 +2443,4 @@ DEFINE_HOOK(0x7410D6, UnitClass_GetFireError_LogTetherButNoLink, 0x7)
 
 #pragma endregion
 
-#pragma region DebugLogInAnimBomb
-
-DEFINE_HOOK(0x4255B0, AnimClass_UnInit_LogWhenHaveBomb, 0x6)
-{
-	GET(AnimClass* const, pAnim, ECX);
-
-	if (!pAnim->AttachedBomb)
-		return 0;
-
-	TechnoClass* pInvoker = nullptr;
-	HouseClass* pInvokerHouse = nullptr;
-
-	if (const auto pAnimExt = AnimExt::ExtMap.Find(pAnim))
-	{
-		pInvoker = pAnimExt->Invoker;
-		pInvokerHouse = pAnimExt->InvokerHouse;
-	}
-
-	Debug::LogAndMessage("AnimClass::UnInit: Found a Anim [%s] (Invoker [%s](%s)) have been attached a bomb [0x%08X]!\n",
-		(pAnim->Type ? pAnim->Type->get_ID() : "N/A"), (pInvoker ? pInvoker->get_ID() : "N/A"),
-		(pInvokerHouse ? pInvokerHouse->get_ID() : "N/A"), reinterpret_cast<DWORD>(pAnim->AttachedBomb));
-
-	pAnim->AttachedBomb = nullptr;
-
-	if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
-	{
-		Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
-		FrameByFrameCommandClass::FrameStep = true;
-		auto coords = pAnim->GetCoords();
-		TacticalClass::Instance->SetTacticalPosition(&coords);
-	}
-	else
-	{
-		Debug::LogAndMessage("Skip processing.\n");
-	}
-
-	return 0;
-}
-
-#pragma endregion
-
 // TODO Debug hooks
