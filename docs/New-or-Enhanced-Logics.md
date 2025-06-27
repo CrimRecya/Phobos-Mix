@@ -290,12 +290,6 @@ Due to performance concerns, unless any radiation type has `RadApplicationDelay.
 - Technos, Projectiles, and VoxelAnims can have multiple laser trails. For technos each trail can have custom laser trail type and FLH offset relative to turret and body.
 - LaserTrail can also be drawn as EBolt or RadBeam.
 
-In `ra2md.ini`:
-```ini
-[Phobos]
-EnableLaserTrails=true           ; boolean
-```
-
 In `artmd.ini`:
 ```ini
 [LaserTrailTypes]

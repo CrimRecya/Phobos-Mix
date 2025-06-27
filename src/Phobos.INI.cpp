@@ -72,7 +72,6 @@ bool Phobos::Config::HideLightFlashEffects = true;
 bool Phobos::Config::ShowFlashOnSelecting = false;
 bool Phobos::Config::UnitPowerDrain = false;
 int Phobos::Config::SuperWeaponSidebar_RequiredSignificance = 0;
-bool Phobos::Config::EnableLaserTrails = true;
 bool Phobos::Config::SelectedDisplay_Enable = false;
 bool Phobos::Config::SelectedDisplay_Expand = false;
 int Phobos::Config::SelectedDisplay_MaxCameo = 10;
@@ -118,7 +117,6 @@ DEFINE_HOOK(0x5FACDF, OptionsClass_LoadSettings_LoadPhobosSettings, 0x5)
 
 	Phobos::Config::ShowBuildingStatistics = CCINIClass::INI_RA2MD.ReadBool(phobosSection, "ShowBuildingStatistics", false);
 	Phobos::Config::DrawAdjacentBoundary = CCINIClass::INI_RA2MD.ReadBool(phobosSection, "DrawAdjacentBoundary", false);
-	Phobos::Config::EnableLaserTrails = CCINIClass::INI_RA2MD.ReadBool(phobosSection, "EnableLaserTrails", true);
 	Phobos::Config::DistributionSpreadMode = CCINIClass::INI_RA2MD.ReadInteger(phobosSection, "DefaultDistributionSpreadMode", 2);
 	Phobos::Config::DistributionSpreadMode = std::clamp(Phobos::Config::DistributionSpreadMode, 0, 3);
 	Phobos::Config::DistributionFilterMode = CCINIClass::INI_RA2MD.ReadInteger(phobosSection, "DefaultDistributionFilterMode", 2);
