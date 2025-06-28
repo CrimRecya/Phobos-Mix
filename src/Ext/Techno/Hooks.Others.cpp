@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
@@ -793,18 +793,22 @@ DEFINE_HOOK(0x728F9A, TunnelLocomotionClass_Process_Track, 0x7)
 {
 	// GET(FootClass*, pTechno, ECX);
 	GET(ILocomotion*, pThis, ESI);
+
 	const auto pLoco = static_cast<TunnelLocomotionClass*>(pThis);
 	auto pTechno = pLoco->LinkedTo;
 	ScenarioExt::Global()->UndergroundTracker.AddUnique(pTechno);
 	TechnoExt::ExtMap.Find(pTechno)->UndergroundTracked = true;
+
 	return 0;
 }
 
 DEFINE_HOOK(0x7297F6, TunnelLocomotionClass_ProcessDigging_Track, 0x7)
 {
 	GET(FootClass*, pTechno, ECX);
+
 	ScenarioExt::Global()->UndergroundTracker.Remove(pTechno);
 	TechnoExt::ExtMap.Find(pTechno)->UndergroundTracked = false;
+
 	return 0;
 }
 
@@ -814,7 +818,7 @@ DEFINE_HOOK(0x772AB3, WeaponTypeClass_AllowedThreats_AU, 0x5)
 	GET(ThreatType, flags, EAX);
 
 	if (BulletTypeExt::ExtMap.Find(pType)->AU)
-		R->EAX((unsigned int)flags | (unsigned int)0x20000);
+		R->EAX(static_cast<unsigned int>(flags) | 0x20000u);
 
 	return 0;
 }
@@ -827,7 +831,7 @@ namespace SelectAutoTarget_Context
 DEFINE_HOOK(0x6F8DF0, TechnoClass_SelectAutoTarget_Start_AU, 0x9)
 {
 	GET_STACK(unsigned int, flags, 0x4);
-	SelectAutoTarget_Context::AU = (flags & (unsigned int)0x20000) != 0;
+	SelectAutoTarget_Context::AU = (flags & 0x20000u) != 0;
 	return 0;
 }
 
@@ -849,27 +853,27 @@ DEFINE_HOOK(0x6F93BB, TechnoClass_SelectAutoTarget_Scan_AU, 0x6)
 {
 	enum { FuncRet = 0x6F9DA1, Continue = 0x6F93C1 };
 
-	REF_STACK(TechnoClass*, pBestTarget, STACK_OFFSET(0x6C, -0x4C));
+	REF_STACK(const TechnoClass*, pBestTarget, STACK_OFFSET(0x6C, -0x4C));
 	REF_STACK(int, bestThreat, STACK_OFFSET(0x6C, -0x50));
-	GET_STACK(bool, transportMCed, STACK_OFFSET(0x6C, -0x59));
-	GET_STACK(bool, onlyTargetEnemyHouse, STACK_OFFSET(0x6C, 0xC));
-	GET_STACK(int, canTargetWhatAmI, STACK_OFFSET(0x6C, -0x58));
-	GET_STACK(int, wantedDist, STACK_OFFSET(0x6C, -0x40));
-	GET_STACK(ThreatType, flags, STACK_OFFSET(0x6C, 0x4));
-	GET(TechnoClass*, pThis, ESI);
+	GET_STACK(const bool, transportMCed, STACK_OFFSET(0x6C, -0x59));
+	GET_STACK(const bool, onlyTargetEnemyHouse, STACK_OFFSET(0x6C, 0xC));
+	GET_STACK(const int, canTargetWhatAmI, STACK_OFFSET(0x6C, -0x58));
+	GET_STACK(const int, wantedDist, STACK_OFFSET(0x6C, -0x40));
+	GET_STACK(const ThreatType, flags, STACK_OFFSET(0x6C, 0x4));
+	GET(TechnoClass* const, pThis, ESI);
 
-	auto pType = pThis->GetTechnoType();
-	auto pOwner = pThis->Owner;
-	bool targetFriendly = pType->AttackFriendlies || pThis->Berzerk || transportMCed || pThis->CombatDamage(-1) < 0;
+	const auto pType = pThis->GetTechnoType();
+	const auto pOwner = pThis->Owner;
+	const bool targetFriendly = pType->AttackFriendlies || pThis->Berzerk || transportMCed || pThis->CombatDamage(-1) < 0;
 
 	int threatBuffer = 0;
 	auto tempCrd = CoordStruct::Empty;
 
-	for (auto pCurrent : ScenarioExt::Global()->SpecialTracker)
+	for (const auto pCurrent : ScenarioExt::Global()->SpecialTracker)
 	{
 		if ((!pOwner->IsAlliedWith(pCurrent) || targetFriendly)
 			&& (!onlyTargetEnemyHouse || pCurrent->Owner->ArrayIndex == pThis->Owner->EnemyHouseIndex)
-			&& pThis->CanAutoTargetObject(flags, canTargetWhatAmI, wantedDist, pCurrent, &threatBuffer, (DWORD)-1, &tempCrd))
+			&& pThis->CanAutoTargetObject(flags, canTargetWhatAmI, wantedDist, pCurrent, &threatBuffer, UINT_MAX, &tempCrd))
 		{
 			if (pType->DistributedFire)
 			{
@@ -887,11 +891,11 @@ DEFINE_HOOK(0x6F93BB, TechnoClass_SelectAutoTarget_Scan_AU, 0x6)
 
 	if (SelectAutoTarget_Context::AU)
 	{
-		for (auto pCurrent : ScenarioExt::Global()->UndergroundTracker)
+		for (const auto pCurrent : ScenarioExt::Global()->UndergroundTracker)
 		{
 			if ((!pOwner->IsAlliedWith(pCurrent) || targetFriendly)
 				&& (!onlyTargetEnemyHouse || pCurrent->Owner->ArrayIndex == pThis->Owner->EnemyHouseIndex)
-				&& pThis->CanAutoTargetObject(flags, canTargetWhatAmI, wantedDist, pCurrent, &threatBuffer, (DWORD)-1, &tempCrd))
+				&& pThis->CanAutoTargetObject(flags, canTargetWhatAmI, wantedDist, pCurrent, &threatBuffer, UINT_MAX, &tempCrd))
 			{
 				if (pType->DistributedFire)
 				{
@@ -909,14 +913,17 @@ DEFINE_HOOK(0x6F93BB, TechnoClass_SelectAutoTarget_Scan_AU, 0x6)
 	}
 
 	GET(int, rangeFindingCell, ECX);
+
 	return rangeFindingCell <= 0 ? FuncRet : Continue;
 }
 
 DEFINE_HOOK(0x6F7E1E, TechnoClass_CanAutoTargetObject_AU, 0x6)
 {
 	enum { Continue = 0x6F7E24, ReturnFalse = 0x6F894F };
+
 	GET(TechnoClass*, pTarget, ESI);
 	GET(int, height, EAX);
+
 	return height >= -20 || SelectAutoTarget_Context::AU || TechnoExt::ExtMap.Find(pTarget)->SpecialTracked ? Continue : ReturnFalse;
 }
 

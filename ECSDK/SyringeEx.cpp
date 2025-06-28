@@ -1,4 +1,4 @@
-#include "SyringeEx.h"
+ï»¿#include "SyringeEx.h"
 #include <YRPP.h>
 
 
@@ -96,21 +96,21 @@ namespace SyringeData
 
 			if (result == 0)
 			{
-				// Report failure to caller. 
+				// Report failure to caller.
 			}
 			else if (full_path_exe.size() == result)
 			{
-				// Buffer too small: increase size. 
+				// Buffer too small: increase size.
 				full_path_exe.resize(full_path_exe.size() * 2);
 			}
 			else
 			{
-				// Success. 
+				// Success.
 				break;
 			}
 		}
 
-		// Remove executable name. 
+		// Remove executable name.
 		std::string result(full_path_exe.begin(), full_path_exe.end());
 		std::string::size_type i = result.find_last_of("\\/");
 		if (std::string::npos != i) result.erase(i);
@@ -209,7 +209,7 @@ namespace SyringeData
 		pHeader = BufferOffset<RemoteDataHeader>(0);
 		GetModuleList(ModuleListHeader());
 
-		
+
 		pExe = BufferOffset<ExeRemoteData>(pHeader->ExeDataOffset);
 		pLibArray.N = pHeader->NLib;
 		pLibArray.Data = BufferOffset<LibRemoteData*>(pHeader->LibDataListOffset);
@@ -304,7 +304,7 @@ namespace SyringeData
 			+ pHeader->JmpBackCodeSize + OverriddenCount;
 	}
 
-	
+
 	SyrPArray<BYTE> GetOpCode(DWORD Addr)
 	{
 		auto pAddr = GetAddrData(Addr);
@@ -552,7 +552,7 @@ namespace SyringeData
 		DWORD EAX;
 	};
 
-	
+
 	HookContext::HookContext(HookContext&& rhs) :pReg(nullptr), Stack()
 	{
 		std::swap(pReg, rhs.pReg);
@@ -605,7 +605,7 @@ namespace SyringeData
 	//BYTE const hook_jmp[5] = { 0xE9, _INIT, _INIT, _INIT, _INIT };
 	void ReplaceFuncBody(DWORD Addr,DWORD Proc)
 	{
-		RestoreBackUp(Addr);//Õâ¸öÊÇ¸²¸ÇÊ½µÄ
+		RestoreBackUp(Addr);//ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ï¿½ï¿½Ê½ï¿½ï¿½
 		SetBackUp(Addr, 5);
 		DWORD OldProtect;
 		VirtualProtect((LPVOID)Addr, 5, PAGE_EXECUTE_READWRITE, &OldProtect);
@@ -618,4 +618,4 @@ namespace SyringeData
 	{
 		RestoreBackUp(Addr);
 	}
-}	
+}

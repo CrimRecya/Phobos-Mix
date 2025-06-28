@@ -1,4 +1,4 @@
-#include "Phobos.h"
+﻿#include "Phobos.h"
 
 #include <Drawing.h>
 #include <SessionClass.h>
@@ -324,7 +324,7 @@ DEFINE_HOOK(0x683E7F, ScenarioClass_Start_Optimizations, 0x7)
 
 DEFINE_HOOK(0x4F4583, GScreenClass_DrawText, 0x6)
 {
-	if (!Phobos::HideWarning)
+	if (!Phobos::HideWarning && !Phobos::PoweredByEC)
 	{
 		RectangleStruct wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0);
 		Point2D location { DSurface::Composite->GetWidth() - wanted.Width - 5, 5 };

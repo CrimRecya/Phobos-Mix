@@ -48,7 +48,7 @@ inline void ECInitialize()
 				MessageBoxExW(NULL, L"试用期已结束，且未检测到授权！", Phobos::VersionDescription, MB_ICONERROR, 0);
 				FatalExit(0xDEAD);
 			}
-		}                        
+		}
 	);
 }
 

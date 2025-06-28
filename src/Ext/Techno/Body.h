@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <InfantryClass.h>
 #include <AnimClass.h>
 
