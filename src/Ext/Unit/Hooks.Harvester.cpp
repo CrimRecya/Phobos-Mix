@@ -73,7 +73,7 @@ DEFINE_HOOK(0x44459A, BuildingClass_ExitObject_SubterraneanHarvester, 0x5)
 	{
 		auto const pType = pUnit->Type;
 
-		if ((pType->Harvester || pType->Weeder) && pType->MovementZone == MovementZone::Subterrannean)
+		if ((pType->Harvester || pType->Weeder) && pType->IsSubterranean)
 		{
 			auto const pExt = TechnoExt::ExtMap.Find(pUnit);
 			pExt->SubterraneanHarvFreshFromFactory = true;

@@ -121,6 +121,11 @@ DEFINE_HOOK(0x4495DF, BuildingClass_CheckWeaponFactoryOutsideBusy_ScatterEntranc
 	GET(CellClass* const, pCell, EAX);
 	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x30, -0xC));
 
+	const auto pLink = pThis->GetNthLink();
+
+	if (pLink && pLink->GetTechnoType()->JumpJet)
+		return NotBusy;
+
 	const auto pTechno = TechnoExt::FindOccupyTechno(pCell, pThis);
 
 	if (!pTechno || TechnoExt::IsChildOf(pTechno, pThis->GetNthLink(0)))
@@ -129,6 +134,7 @@ DEFINE_HOOK(0x4495DF, BuildingClass_CheckWeaponFactoryOutsideBusy_ScatterEntranc
 	if (RulesExt::Global()->ExtendedScatterAction && !pTechno->Owner->IsAlliedWith(pThis->Owner))
 		return Busy;
 
+	Debug::Log("Weapons factory clearing %s from bib\n", pTechno->get_ID());
 	TechnoExt::CallEnhancedScatterContent(pCell, pThis, coords, false);
 
 	return Busy;
