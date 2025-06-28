@@ -867,11 +867,9 @@ DEFINE_HOOK(0x6F93BB, TechnoClass_SelectAutoTarget_Scan_AU, 0x6)
 
 	for (auto pCurrent : ScenarioExt::Global()->SpecialTracker)
 	{
-		auto pCurrentOwner = pCurrent->Owner;
-
 		if ((!pOwner->IsAlliedWith(pCurrent) || targetFriendly)
 			&& (!onlyTargetEnemyHouse || pCurrent->Owner->ArrayIndex == pThis->Owner->EnemyHouseIndex)
-			&& pThis->CanAutoTargetObject(flags, canTargetWhatAmI, wantedDist, pCurrent, &threatBuffer, -1, &tempCrd))
+			&& pThis->CanAutoTargetObject(flags, canTargetWhatAmI, wantedDist, pCurrent, &threatBuffer, (DWORD)-1, &tempCrd))
 		{
 			if (pType->DistributedFire)
 			{
@@ -891,11 +889,9 @@ DEFINE_HOOK(0x6F93BB, TechnoClass_SelectAutoTarget_Scan_AU, 0x6)
 	{
 		for (auto pCurrent : ScenarioExt::Global()->UndergroundTracker)
 		{
-			auto pCurrentOwner = pCurrent->Owner;
-
 			if ((!pOwner->IsAlliedWith(pCurrent) || targetFriendly)
 				&& (!onlyTargetEnemyHouse || pCurrent->Owner->ArrayIndex == pThis->Owner->EnemyHouseIndex)
-				&& pThis->CanAutoTargetObject(flags, canTargetWhatAmI, wantedDist, pCurrent, &threatBuffer, -1, &tempCrd))
+				&& pThis->CanAutoTargetObject(flags, canTargetWhatAmI, wantedDist, pCurrent, &threatBuffer, (DWORD)-1, &tempCrd))
 			{
 				if (pType->DistributedFire)
 				{
@@ -918,7 +914,7 @@ DEFINE_HOOK(0x6F93BB, TechnoClass_SelectAutoTarget_Scan_AU, 0x6)
 
 DEFINE_HOOK(0x6F7E1E, TechnoClass_CanAutoTargetObject_AU, 0x6)
 {
-	enum { Continue = 0x6F7E24, ReturnFalse = 0x6F7E1E };
+	enum { Continue = 0x6F7E24, ReturnFalse = 0x6F894F };
 	GET(TechnoClass*, pTarget, ESI);
 	GET(int, height, EAX);
 	return height >= -20 || SelectAutoTarget_Context::AU || TechnoExt::ExtMap.Find(pTarget)->SpecialTracked ? Continue : ReturnFalse;
