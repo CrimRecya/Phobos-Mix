@@ -18,6 +18,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ECSDK\cJSON.cpp" />
+    <ClCompile Include="ECSDK\EC.cpp" />
+    <ClCompile Include="ECSDK\EC.Misc.cpp" />
+    <ClCompile Include="ECSDK\ExtJson.cpp" />
+    <ClCompile Include="ECSDK\IH.Ext.cpp" />
+    <ClCompile Include="ECSDK\IH.File.cpp" />
+    <ClCompile Include="ECSDK\IH.Initial.cpp" />
+    <ClCompile Include="ECSDK\IH.Loader.cpp" />
+    <ClCompile Include="ECSDK\SyringeEx.cpp" />
     <ClCompile Include="src\Commands\CeaseFireStance.cpp" />
     <ClCompile Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoButtonClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoColumnClass.cpp" />
@@ -250,6 +259,20 @@
     <ClCompile Include="YRpp\StaticInits.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ECSDK\cJSON.h" />
+    <ClInclude Include="ECSDK\EC.h" />
+    <ClInclude Include="ECSDK\EC.Listener.h" />
+    <ClInclude Include="ECSDK\EC.Misc.h" />
+    <ClInclude Include="ECSDK\ExtJson.h" />
+    <ClInclude Include="ECSDK\IH.Config.h" />
+    <ClInclude Include="ECSDK\IH.Ext.h" />
+    <ClInclude Include="ECSDK\IH.File.h" />
+    <ClInclude Include="ECSDK\IH.h" />
+    <ClInclude Include="ECSDK\IH.Initial.h" />
+    <ClInclude Include="ECSDK\IH.InitialService.h" />
+    <ClInclude Include="ECSDK\IH.Loader.h" />
+    <ClInclude Include="ECSDK\Phobos.ECInit.h" />
+    <ClInclude Include="ECSDK\SyringeEx.h" />
     <ClInclude Include="src\Commands\CeaseFireStance.h" />
     <ClInclude Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoButtonClass.h" />
     <ClInclude Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoColumnClass.h" />
@@ -438,14 +461,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <GenerateManifest>false</GenerateManifest>
-    <IncludePath>$(SolutionDir)src\;$(SolutionDir)src\ExtraHeaders;$(SolutionDir)yrpp;$(SolutionDir)lib;$(VC_IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)src\;$(SolutionDir)src\ExtraHeaders;$(SolutionDir)yrpp;$(SolutionDir)ecsdk;$(SolutionDir)lib;$(VC_IncludePath)</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\IntDir\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DevBuild|Win32'">
     <GenerateManifest>false</GenerateManifest>
-    <IncludePath>$(SolutionDir)src\;$(SolutionDir)src\ExtraHeaders;$(SolutionDir)yrpp;$(SolutionDir)lib;$(VC_IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)src\;$(SolutionDir)src\ExtraHeaders;$(SolutionDir)yrpp;$(SolutionDir)ecsdk;$(SolutionDir)lib;$(VC_IncludePath)</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\IntDir\</IntDir>
@@ -524,7 +547,7 @@
       <AssemblerListingLocation>$(IntDir)\%(RelativeDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)\%(RelativeDir)</ObjectFileName>
       <CallingConvention>StdCall</CallingConvention>
-      <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4100;4201;4530;4731;4740;4458;4819;5103;5105;26495</DisableSpecificWarnings>
       <EnableModules>true</EnableModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
