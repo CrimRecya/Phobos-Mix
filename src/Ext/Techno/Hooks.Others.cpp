@@ -8,6 +8,7 @@
 #include <DriveLocomotionClass.h>
 #include <ShipLocomotionClass.h>
 #include <HoverLocomotionClass.h>
+#include <TunnelLocomotionClass.h>
 
 #include <Ext/Anim/Body.h>
 #include <Ext/Building/Body.h>
@@ -790,7 +791,10 @@ DEFINE_HOOK(0x70023B, TechnoClass_MouseOverObject_AttackUnderGround, 0x5)
 DEFINE_HOOK_AGAIN(0x729029, TunnelLocomotionClass_Process_Track, 0x7);
 DEFINE_HOOK(0x728F9A, TunnelLocomotionClass_Process_Track, 0x7)
 {
-	GET(FootClass*, pTechno, ECX);
+	// GET(FootClass*, pTechno, ECX);
+	GET(ILocomotion*, pThis, ESI);
+	const auto pLoco = static_cast<TunnelLocomotionClass*>(pThis);
+	auto pTechno = pLoco->LinkedTo;
 	ScenarioExt::Global()->UndergroundTracker.AddUnique(pTechno);
 	TechnoExt::ExtMap.Find(pTechno)->UndergroundTracked = true;
 	return 0;
@@ -910,6 +914,14 @@ DEFINE_HOOK(0x6F93BB, TechnoClass_SelectAutoTarget_Scan_AU, 0x6)
 
 	GET(int, rangeFindingCell, ECX);
 	return rangeFindingCell <= 0 ? FuncRet : Continue;
+}
+
+DEFINE_HOOK(0x6F7E1E, TechnoClass_CanAutoTargetObject_AU, 0x6)
+{
+	enum { Continue = 0x6F7E24, ReturnFalse = 0x6F7E1E };
+	GET(TechnoClass*, pTarget, ESI);
+	GET(int, height, EAX);
+	return height >= -20 || SelectAutoTarget_Context::AU || TechnoExt::ExtMap.Find(pTarget)->SpecialTracked ? Continue : ReturnFalse;
 }
 
 #pragma endregion
