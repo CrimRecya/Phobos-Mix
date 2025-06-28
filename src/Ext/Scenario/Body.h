@@ -52,6 +52,9 @@ public:
 
 		std::unique_ptr<MessageListClass> NewMessageList;
 
+		DynamicVectorClass<TechnoClass*> UndergroundTracker;
+		DynamicVectorClass<TechnoClass*> SpecialTracker;
+
 		ExtData(ScenarioClass* OwnerObject) : Extension<ScenarioClass>(OwnerObject)
 			, ShowBriefing { false }
 			, BriefingTheme { -1 }
@@ -70,6 +73,8 @@ public:
 			, BaseNormalTechnos {}
 			, OwnedUniqueTechnos {}
 			, NewMessageList {}
+			, UndergroundTracker {}
+			, SpecialTracker {}
 		{ }
 
 		void SetVariableToByID(bool bIsGlobal, int nIndex, char bState);
