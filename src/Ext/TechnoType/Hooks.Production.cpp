@@ -1,24 +1,25 @@
 ﻿#include "Body.h"
+
+#include <AircraftClass.h>
+
 #include <Ext/House/Body.h>
 #include <Ext/Techno/Body.h>
+#include <Utilities/AresHelper.h>
 
-DEFINE_HOOK_AGAIN(0x5F7A6C, ObjectTypeClass_FindFactory_End, 0x5)
-DEFINE_HOOK_AGAIN(0x5F7A78, ObjectTypeClass_FindFactory_End, 0x5)
 // Ares hooked all of the function away, so we can only hook the ending of the function.
 DEFINE_HOOK(0x5F7A89, ObjectTypeClass_FindFactory_End, 0x5)
 {
+	// Different from Ares logic (stuck at 50%)
+	if (!AresHelper::CanUseAres)
+		return 0;
+
 	GET(ObjectTypeClass* const, pObjectType, ECX);
 	// GET_STACK(bool, allowOccupied, STACK_OFFSET(0, 0x4));
 	GET_STACK(bool, requirePower, STACK_OFFSET(0, 0x8));
 	GET_STACK(bool, requireCanBuild, STACK_OFFSET(0, 0xC));
 	GET_STACK(HouseClass* const, pHouse, STACK_OFFSET(0, 0x10));
 
-	if (const auto pUnitType = abstract_cast<UnitTypeClass*, true>(pObjectType))
-	{
-		if (TechnoTypeExt::ExtMap.Find(pUnitType)->ThisIsAJumpjet)
-			R->EAX<BuildingClass*>(nullptr);
-	}
-	else if (const auto pAircraftType = abstract_cast<AircraftTypeClass*, true>(pObjectType))
+	if (const auto pAircraftType = abstract_cast<AircraftTypeClass*, true>(pObjectType))
 	{
 		if (TechnoTypeExt::ExtMap.Find(pAircraftType)->ThisIsAJumpjet)
 		{
@@ -58,16 +59,16 @@ DEFINE_HOOK(0x443C71, BuildingClass_KickOutUnit_ThisIsAJumpjet, 0x6)
 {
 	GET(TechnoClass* const, pProduct, EDI);
 
-	if (pProduct && pProduct->WhatAmI() == AbstractType::Aircraft)
+	if (const auto pAircraft = abstract_cast<AircraftClass*>(pProduct))
 	{
-		if (const auto pJumpjetType = TechnoTypeExt::ExtMap.Find(pProduct->GetTechnoType())->ThisIsAJumpjetOf)
+		if (const auto pJumpjetType = TechnoTypeExt::ExtMap.Find(pAircraft->Type)->ThisIsAJumpjet.Get())
 		{
 			if (pJumpjetType->Locomotor == LocomotionClass::CLSIDs::Jumpjet)
 			{
-				const auto pNewProduct = static_cast<TechnoClass*>(pJumpjetType->CreateObject(pProduct->Owner));
+				const auto pNewProduct = static_cast<UnitClass*>(pJumpjetType->CreateObject(pAircraft->Owner));
 				TechnoExt::ExtMap.Find(pNewProduct)->JumpjetFromAirport = true;
 				R->EDI<TechnoClass*>(pNewProduct);
-				pProduct->UnInit();
+				pAircraft->UnInit();
 			}
 		}
 	}

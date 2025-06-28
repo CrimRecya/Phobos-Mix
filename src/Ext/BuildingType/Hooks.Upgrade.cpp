@@ -93,7 +93,7 @@ CanBuildResult CheckExBuildLimit(HouseClass* pHouse, TechnoTypeClass* pItem, boo
 	if (pItem->WhatAmI() == AbstractType::UnitType)
 		return CanBuildResult::Unbuildable;
 
-	const auto pJumpjetType = TechnoTypeExt::ExtMap.Find(pItem)->ThisIsAJumpjetOf;
+	const auto pJumpjetType = TechnoTypeExt::ExtMap.Find(pItem)->ThisIsAJumpjet;
 
 	if (!pJumpjetType)
 		return defaultResult;

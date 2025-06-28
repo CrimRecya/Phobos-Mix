@@ -413,8 +413,7 @@ public:
 
 		Nullable<bool> DistributeTargetingFrame;
 
-		Valueable<bool> ThisIsAJumpjet;
-		TechnoTypeClass* ThisIsAJumpjetOf;
+		Valueable<UnitTypeClass*> ThisIsAJumpjet;
 
 		Valueable<bool> IgnoreRallyPoint;
 
@@ -952,8 +951,7 @@ public:
 
 			, DistributeTargetingFrame {}
 
-			, ThisIsAJumpjet { false }
-			, ThisIsAJumpjetOf { nullptr }
+			, ThisIsAJumpjet { nullptr }
 
 			, IgnoreRallyPoint { false }
 

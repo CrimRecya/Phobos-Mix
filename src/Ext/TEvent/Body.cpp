@@ -213,7 +213,7 @@ bool TEventExt::HouseOwnsTechnoTypeTEvent(TEventClass* pThis)
 		return false;
 
 	int count = pHouse->CountOwnedNow(pType);
-	if (const auto pJumpjetType = TechnoTypeExt::ExtMap.Find(pType)->ThisIsAJumpjetOf)
+	if (const auto pJumpjetType = TechnoTypeExt::ExtMap.Find(pType)->ThisIsAJumpjet)
 		count += pHouse->CountOwnedNow(pJumpjetType);
 
 	return count > 0;

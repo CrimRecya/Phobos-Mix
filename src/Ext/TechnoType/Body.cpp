@@ -1166,13 +1166,10 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->DistributeTargetingFrame.Read(exINI, pSection, "DistributeTargetingFrame");
 
-	this->ThisIsAJumpjet.Read(exINI, pSection, "ThisIsAJumpjet");
-
-	if (this->ThisIsAJumpjet && pThis->WhatAmI() == AbstractType::AircraftType)
-	{
-		this->ThisIsAJumpjetOf = reinterpret_cast<UnitTypeClass*(__thiscall*)(const char*)>(0x7480D0)(pSection);
-		TechnoTypeExt::ExtMap.Find(this->ThisIsAJumpjetOf)->ThisIsAJumpjetOf = pThis;
-	}
+	if (pThis->WhatAmI() == AbstractType::AircraftType)
+		this->ThisIsAJumpjet.Read(exINI, pSection, "ThisIsAJumpjet");
+	else
+		this->ThisIsAJumpjet = nullptr;
 
 	this->IgnoreRallyPoint.Read(exINI, pSection, "IgnoreRallyPoint");
 
@@ -1978,7 +1975,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->DistributeTargetingFrame)
 
 		.Process(this->ThisIsAJumpjet)
-		.Process(this->ThisIsAJumpjetOf)
 
 		.Process(this->IgnoreRallyPoint)
 
