@@ -287,6 +287,8 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->BuildingUndeploy.Read(exINI, pSection, "BuildingUndeploy");
 	this->BuildingUndeploy_Leave.Read(exINI, pSection, "BuildingUndeploy.Leave");
 
+	this->ReverseEngineer.Read(exINI, pSection, "ReverseEngineer");
+
 	this->CombatAlert_Suppress.Read(exINI, pSection, "CombatAlert.Suppress");
 
 	this->NoCellSpread.Read(exINI, pSection, "NoCellSpread");
@@ -375,6 +377,7 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		|| this->AttachEffects.RemoveGroups.size() > 0
 		|| this->BuildingSell
 		|| this->BuildingUndeploy
+		|| this->ReverseEngineer
 	);
 
 	char tempBuffer[32];
@@ -588,7 +591,10 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->BuildingUndeploy)
 		.Process(this->BuildingUndeploy_Leave)
 
+		.Process(this->ReverseEngineer)
+
 		.Process(this->CombatAlert_Suppress)
+
 		.Process(this->NoCellSpread)
 		.Process(this->NoCellSpread_SnapDistance)
 

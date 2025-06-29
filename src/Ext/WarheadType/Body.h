@@ -187,6 +187,8 @@ public:
 		Valueable<bool> BuildingUndeploy;
 		Valueable<bool> BuildingUndeploy_Leave;
 
+		Valueable<bool> ReverseEngineer;
+
 		Nullable<bool> CombatAlert_Suppress;
 
 		Valueable<bool> NoCellSpread;
@@ -403,6 +405,8 @@ public:
 			, BuildingUndeploy { false }
 			, BuildingUndeploy_Leave { false }
 
+			, ReverseEngineer { false }
+
 			, CombatAlert_Suppress {}
 
 			, NoCellSpread { false }
@@ -480,6 +484,7 @@ public:
 		void ApplyShieldModifiers(TechnoClass* pTarget);
 		void ApplyAttachEffects(TechnoClass* pTarget, HouseClass* pInvokerHouse, TechnoClass* pInvoker);
 		void ApplyBuildingUndeploy(TechnoClass* pTarget);
+		void ApplyReverseEngineer(HouseClass* pHouse, TechnoClass* pTarget);
 		double GetCritChance(TechnoClass* pFirer) const;
 	};
 
