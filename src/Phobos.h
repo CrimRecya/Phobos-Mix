@@ -95,6 +95,7 @@ public:
 	class Config
 	{
 	public:
+		static bool DebugToolEnable;
 		static bool ToolTipDescriptions;
 		static bool ToolTipBlur;
 		static bool PrioritySelectionFiltering;

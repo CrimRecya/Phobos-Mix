@@ -2,12 +2,12 @@
 
 const char* ShowCurrentInfoCommandClass::GetName() const
 {
-	return "Show Current Object Info";
+	return "CrimViewerEx";
 }
 
 const wchar_t* ShowCurrentInfoCommandClass::GetUIName() const
 {
-	return L"Show Current Object Info";
+	return L"CrimViewerEx";
 }
 
 const wchar_t* ShowCurrentInfoCommandClass::GetUICategory() const
@@ -17,7 +17,7 @@ const wchar_t* ShowCurrentInfoCommandClass::GetUICategory() const
 
 const wchar_t* ShowCurrentInfoCommandClass::GetUIDescription() const
 {
-	return L"Show Current Object Info.";
+	return L"Show Object Extra Info - CrimRecya";
 }
 
 void ShowCurrentInfoCommandClass::Execute(WWKey eInput) const

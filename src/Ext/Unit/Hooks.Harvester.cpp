@@ -96,7 +96,7 @@ DEFINE_HOOK(0x4DEFC6, FootClass_FindDock_SubterraneanHarvester, 0x5)
 
 	if (auto const pUnitType = abstract_cast<UnitTypeClass*>(pTechnoType))
 	{
-		if ((pUnitType->Harvester || pUnitType->Weeder) && pUnitType->MovementZone == MovementZone::Subterrannean)
+		if ((pUnitType->Harvester || pUnitType->Weeder) && pUnitType->IsSubterranean)
 			R->ECX(MovementZone::Fly);
 	}
 

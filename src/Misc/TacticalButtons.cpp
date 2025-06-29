@@ -86,6 +86,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 	if (!Phobos::ShowCurrentInfo)
 		return;
 
+	constexpr COLORREF color_orange = 0xFC00;
 	constexpr BlitterFlags blit = BlitterFlags::Centered | BlitterFlags::TransLucent50 | BlitterFlags::bf_400 | BlitterFlags::Zero;
 
 	const auto mouseXY1 = WWMouseClass::Instance->XY1;
@@ -468,7 +469,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			textLocation.Y += 12;
 	};
 
-	auto drawText = [&loc, &updateLine, &drawRect, &textLocation](const char* pFormat, ...)
+	auto drawText = [&loc, &updateLine, &drawRect, &textLocation](COLORREF color, const char* pFormat, ...)
 	{
 		char buffer[0x60] = {0};
 		va_list args;
@@ -479,7 +480,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		CRT::mbstowcs(wBuffer, buffer, strlen(buffer));
 		constexpr TextPrintType printType = TextPrintType::FullShadow | TextPrintType::Point8;
 		textLocation.X = loc ? 188 : 8;
-		DSurface::Composite->DrawTextA(wBuffer, &drawRect, &textLocation, COLOR_WHITE, 0, printType);
+		DSurface::Composite->DrawTextA(wBuffer, &drawRect, &textLocation, color, 0, printType);
 		updateLine();
 	};
 
@@ -501,17 +502,17 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				ID = "CELL";
 			}
 
-			drawText("%s: %s(%03d,%03d)[%dC]", pInfoName, ID, mapCoords.X, mapCoords.Y, (pCurrent->DistanceFrom(pTarget) / 256));
+			drawText(COLOR_GREEN, "%s: %s(%03d,%03d)[%dC]", pInfoName, ID, mapCoords.X, mapCoords.Y, (pCurrent->DistanceFrom(pTarget) / 256));
 		}
 		else
 		{
-			drawText("%s: %s", pInfoName, "N/A");
+			drawText(COLOR_RED, "%s: %s", pInfoName, "N/A");
 		}
 	};
 
 	auto drawTask = [&drawText](const char* pInfoName, Mission mission)
 	{
-		drawText("%s: (%02d)[%s]", pInfoName, mission, MissionControlClass::FindName(mission));
+		drawText(COLOR_YELLOW, "%s: (%02d)[%s]", pInfoName, mission, MissionControlClass::FindName(mission));
 	};
 
 	auto drawTime = [&drawText](const char* pInfoName, CDTimerClass& timer)
@@ -520,30 +521,30 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		const auto timeCurrent = timeCeiling - timer.GetTimeLeft();
 		const auto timePercentage = (timeCeiling > 0) ? (timeCurrent * 100 / timeCeiling) : 0;
 
-		drawText("%s: (%d/%d)[%03d]", pInfoName, timeCurrent, timeCeiling, timePercentage);
+		drawText(COLOR_PURPLE, "%s: (%d/%d)[%03d]", pInfoName, timeCurrent, timeCeiling, timePercentage);
 	};
 
-	drawText("Current Frame: %d", Unsorted::CurrentFrame);
+	drawText(COLOR_WHITE, "Current Frame: %d", Unsorted::CurrentFrame);
 	{
-		drawText("Address: 0x%08X", reinterpret_cast<DWORD>(pCell));
-		drawText("Cell: %d", MapClass::Instance.GetCellIndex(pCell->MapCoords));
-		drawText("UniqueID: %d", pCell->UniqueID);
+		drawText(COLOR_WHITE, "Address: 0x%08X", reinterpret_cast<DWORD>(pCell));
+		drawText(COLOR_WHITE, "Cell: %d", MapClass::Instance.GetCellIndex(pCell->MapCoords));
+		drawText(COLOR_WHITE, "UniqueID: %d", pCell->UniqueID);
 
 		{
 			constexpr const char* landTypes[12] = { "Clear", "Road", "Water", "Rock", "Wall", "Tiberium", "Beach", "Rough", "Ice", "Railroad", "Tunnel", "Weeds" };
 			const auto landType = static_cast<int>(pCell->LandType);
 
-			drawText("LandType: ( %s )", (landType >= 0 && landType < 12) ? landTypes[landType] : "Unknown");
-			drawText("Slope: ( %d )", pCell->SlopeIndex);
+			drawText(COLOR_WHITE, "LandType: ( %s )", (landType >= 0 && landType < 12) ? landTypes[landType] : "Unknown");
+			drawText(COLOR_WHITE, "Slope: ( %d )", pCell->SlopeIndex);
 		}
 
-		drawText("Location: (%05d,%05d,%05d)[%03d,%03d,%02d]", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pCell->GetLevel());
+		drawText(color_orange, "Location: (%05d,%05d,%05d)[%03d,%03d,%02d]", coords.X, coords.Y, coords.Z, cell.X, cell.Y, pCell->GetLevel());
 		updateLine();
 
 		{
 			const auto nCF = static_cast<DWORD>(pCell->Flags);
 
-			drawText("CellFlags: %d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
+			drawText(COLOR_WHITE, "CellFlags: %d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
 				((nCF >> 22) & 0x1), ((nCF >> 21) & 0x1), ((nCF >> 20) & 0x1), ((nCF >> 19) & 0x1), ((nCF >> 18) & 0x1), ((nCF >> 17) & 0x1), ((nCF >> 16) & 0x1),
 				((nCF >> 15) & 0x1), ((nCF >> 14) & 0x1), ((nCF >> 13) & 0x1), ((nCF >> 12) & 0x1), ((nCF >> 11) & 0x1), ((nCF >> 10) & 0x1), ((nCF >> 9) & 0x1), ((nCF >> 8) & 0x1),
 				((nCF >> 7) & 0x1), ((nCF >> 6) & 0x1), ((nCF >> 5) & 0x1), ((nCF >> 4) & 0x1), ((nCF >> 3) & 0x1), ((nCF >> 2) & 0x1), ((nCF >> 1) & 0x1), (nCF & 0x1));
@@ -555,17 +556,17 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			const auto nOF = pCell->OccupationFlags;
 			const auto nAF = pCell->AltOccupationFlags;
 
-			drawText("TheOccupationFlags: %d%d%d%d%d%d%d%d", ((nOF >> 7) & 0x1), ((nOF >> 6) & 0x1), ((nOF >> 5) & 0x1), ((nOF >> 4) & 0x1), ((nOF >> 3) & 0x1), ((nOF >> 2) & 0x1), ((nOF >> 1) & 0x1), (nOF & 0x1));
-			drawText("AltOccupationFlags: %d%d%d%d%d%d%d%d", ((nAF >> 7) & 0x1), ((nAF >> 6) & 0x1), ((nAF >> 5) & 0x1), ((nAF >> 4) & 0x1), ((nAF >> 3) & 0x1), ((nAF >> 2) & 0x1), ((nAF >> 1) & 0x1), (nAF & 0x1));
+			drawText(COLOR_WHITE, "TheOccupationFlags: %d%d%d%d%d%d%d%d", ((nOF >> 7) & 0x1), ((nOF >> 6) & 0x1), ((nOF >> 5) & 0x1), ((nOF >> 4) & 0x1), ((nOF >> 3) & 0x1), ((nOF >> 2) & 0x1), ((nOF >> 1) & 0x1), (nOF & 0x1));
+			drawText(COLOR_WHITE, "AltOccupationFlags: %d%d%d%d%d%d%d%d", ((nAF >> 7) & 0x1), ((nAF >> 6) & 0x1), ((nAF >> 5) & 0x1), ((nAF >> 4) & 0x1), ((nAF >> 3) & 0x1), ((nAF >> 2) & 0x1), ((nAF >> 1) & 0x1), (nAF & 0x1));
 		}
 
-		drawText("TubeIndex: %d", pCell->TubeIndex);
-		drawText("RadLevel: %.2f", pCell->RadLevel);
+		drawText(COLOR_WHITE, "TubeIndex: %d", pCell->TubeIndex);
+		drawText(COLOR_WHITE, "RadLevel: %.2f", pCell->RadLevel);
 
 		{
 			const auto pOwner = HouseClass::Array.GetItemOrDefault(pCell->WallOwnerIndex);
 
-			drawText("WallOwner: %s(%s)", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
+			drawText(COLOR_WHITE, "WallOwner: %s(%s)", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->PlainName : "N/A"));
 			drawInfo("CurrentJumpjet", pCell, pCell->Jumpjet);
 		}
 
@@ -576,11 +577,11 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			for (auto pCellObj = pCell->FirstObject; pCellObj; pCellObj = pCellObj->NextObject)
 				++count;
 
-			drawText("TheObjects: (Ground)[%d]", count);
+			drawText(COLOR_WHITE, "TheObjects: (Ground)[%d]", count);
 			updateLine();
 
 			for (auto pCellObj = pCell->FirstObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
-				drawText("TheObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
+				drawText(COLOR_GREEN, "TheObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
 
 			if (loc)
 				updateLine();
@@ -593,11 +594,11 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			for (auto pCellObj = pCell->AltObject; pCellObj; pCellObj = pCellObj->NextObject)
 				++count;
 
-			drawText("AltObjects: (Bridge)[%d]", count);
+			drawText(COLOR_WHITE, "AltObjects: (Bridge)[%d]", count);
 			updateLine();
 
 			for (auto pCellObj = pCell->AltObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
-				drawText("AltObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
+				drawText(COLOR_GREEN, "AltObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
 
 			if (loc)
 				updateLine();
@@ -608,44 +609,44 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 		const auto pMouse = &MouseClass::Instance;
 
-		drawText("Mouse: (%04d,%04d)", mouseXY1.X, mouseXY1.Y);
-		drawText("RadarScope: (%03d,%03d,%02d,%02d)", pMouse->unknown_rect_14DC.X, pMouse->unknown_rect_14DC.Y, pMouse->unknown_rect_14DC.Width, pMouse->unknown_rect_14DC.Height);
+		drawText(COLOR_WHITE, "Mouse: (%04d,%04d)", mouseXY1.X, mouseXY1.Y);
+		drawText(COLOR_WHITE, "RadarScope: (%03d,%03d,%02d,%02d)", pMouse->unknown_rect_14DC.X, pMouse->unknown_rect_14DC.Y, pMouse->unknown_rect_14DC.Width, pMouse->unknown_rect_14DC.Height);
 	}
 
 	if (pTechno)
 	{
-		drawText("Current Select Techno:");
-		drawText("Address: 0x%08X", reinterpret_cast<DWORD>(pTechno));
+		drawText(COLOR_WHITE, "Current Select Techno:");
+		drawText(COLOR_WHITE, "Address: 0x%08X", reinterpret_cast<DWORD>(pTechno));
 
 		const auto pType = pTechno->GetTechnoType();
 		const auto absType = pTechno->WhatAmI();
 
 		if (absType == AbstractType::Unit)
-			drawText("%s: %s", "Vehicle", pType->ID);
+			drawText(COLOR_WHITE, "%s: %s", "Vehicle", pType->ID);
 		else if (absType == AbstractType::Infantry)
-			drawText("%s: %s", "Infantry", pType->ID);
+			drawText(COLOR_WHITE, "%s: %s", "Infantry", pType->ID);
 		else if (absType == AbstractType::Aircraft)
-			drawText("%s: %s", "Aircraft", pType->ID);
+			drawText(COLOR_WHITE, "%s: %s", "Aircraft", pType->ID);
 		else if (absType == AbstractType::Building)
-			drawText("%s: %s", "Building", pType->ID);
+			drawText(COLOR_WHITE, "%s: %s", "Building", pType->ID);
 		else
-			drawText("%s: %s", "Unknown", pType->ID);
+			drawText(COLOR_WHITE, "%s: %s", "Unknown", pType->ID);
 
-		drawText("UniqueID: %d", pTechno->UniqueID);
+		drawText(COLOR_WHITE, "UniqueID: %d", pTechno->UniqueID);
 
 		const auto pOwner = pTechno->Owner;
 		{
 			const auto pOrigin = pTechno->GetOriginalOwner();
 
-			drawText("Owner: %s(Player<%d>)", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->ArrayIndex : -1));
-			drawText("Origin: %s(Player<%d>)", (pOrigin ? pOrigin->get_ID() : "N/A"), (pOrigin ? pOrigin->ArrayIndex : -1));
+			drawText(COLOR_WHITE, "Owner: %s(Player<%d>)", (pOwner ? pOwner->get_ID() : "N/A"), (pOwner ? pOwner->ArrayIndex : -1));
+			drawText(COLOR_WHITE, "Origin: %s(Player<%d>)", (pOrigin ? pOrigin->get_ID() : "N/A"), (pOrigin ? pOrigin->ArrayIndex : -1));
 		}
 
 		{
 			const auto cellT = pTechno->GetMapCoords();
 			const auto coordsT = pTechno->GetCoords();
 
-			drawText("Location: (%05d,%05d,%05d)[%03d,%03d,%02d]", coordsT.X, coordsT.Y, coordsT.Z, cellT.X, cellT.Y, pTechno->GetCellLevel());
+			drawText(color_orange, "Location: (%05d,%05d,%05d)[%03d,%03d,%02d]", coordsT.X, coordsT.Y, coordsT.Z, cellT.X, cellT.Y, pTechno->GetCellLevel());
 			updateLine();
 		}
 
@@ -657,30 +658,30 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			const auto facing11 = pTechno->PrimaryFacing.StartFacing;
 			const auto facing12 = pTechno->PrimaryFacing.DesiredFacing;
 
-			drawText("PrimaryFacing: (%05d[%02d])[%s]", facing1.Raw, facing1.GetValue<5>(), facingTypes[primaryFacing]);
+			drawText(COLOR_CYAN, "PrimaryFacing: (%05d[%02d])[%s]", facing1.Raw, facing1.GetValue<5>(), facingTypes[primaryFacing]);
 			updateLine();
 
-			drawText("PriStartFacing: (%05d)", facing11.Raw);
-			drawText("PriDesiredFacing: (%05d)", facing12.Raw);
+			drawText(COLOR_CYAN, "PriStartFacing: (%05d)", facing11.Raw);
+			drawText(COLOR_CYAN, "PriDesiredFacing: (%05d)", facing12.Raw);
 
 			const auto facing2 = pTechno->SecondaryFacing.Current();
 			const auto facing21 = pTechno->SecondaryFacing.StartFacing;
 			const auto facing22 = pTechno->SecondaryFacing.DesiredFacing;
 
-			drawText("SecondaryFacing: (%05d[%02d])[%s]", facing2.Raw, facing2.GetValue<5>(), facingTypes[facing2.GetValue<3>()]);
+			drawText(COLOR_CYAN, "SecondaryFacing: (%05d[%02d])[%s]", facing2.Raw, facing2.GetValue<5>(), facingTypes[facing2.GetValue<3>()]);
 			updateLine();
 
-			drawText("SecStartFacing: (%05d)", facing21.Raw);
-			drawText("SecDesiredFacing: (%05d)", facing22.Raw);
+			drawText(COLOR_CYAN, "SecStartFacing: (%05d)", facing21.Raw);
+			drawText(COLOR_CYAN, "SecDesiredFacing: (%05d)", facing22.Raw);
 		}
 
 		const auto pExt = TechnoExt::ExtMap.Find(pTechno);
 
-		drawText("Ammo: (%d/%d)", pTechno->Ammo, pType->Ammo);
-		drawText("Tether: (%s,%s)", (pTechno->IsTether ? "Yes" : "No"), (pTechno->IsAlternativeTether ? "Yes" : "No"));
+		drawText(COLOR_WHITE, "Ammo: (%d/%d)", pTechno->Ammo, pType->Ammo);
+		drawText(COLOR_WHITE, "Tether: (%s,%s)", (pTechno->IsTether ? "Yes" : "No"), (pTechno->IsAlternativeTether ? "Yes" : "No"));
 
-		drawText("Health: (%d/%d)", pTechno->Health, pType->Strength);
-		drawText("Shield: (%d/%d)", (pExt->Shield ? pExt->Shield->GetHP() : -1), (pExt->CurrentShieldType ? pExt->CurrentShieldType->Strength : -1));
+		drawText(COLOR_WHITE, "Health: (%d/%d)", pTechno->Health, pType->Strength);
+		drawText(COLOR_WHITE, "Shield: (%d/%d)", (pExt->Shield ? pExt->Shield->GetHP() : -1), (pExt->CurrentShieldType ? pExt->CurrentShieldType->Strength : -1));
 
 		drawTime("Reload", pTechno->ReloadTimer);
 		drawTime("Rearm", pTechno->RearmTimer);
@@ -689,7 +690,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawInfo("Bunker Linked", pTechno, pTechno->BunkerLinkedItem);
 
 		drawInfo("Target", pTechno, pTechno->Target);
-		drawText("TargetInRange: %s", (pTechno->IsCloseEnough(pTechno->Target, pTechno->SelectWeapon(pTechno->Target)) ? "Yes" : "No"));
+		drawText(COLOR_WHITE, "TargetInRange: %s", (pTechno->IsCloseEnough(pTechno->Target, pTechno->SelectWeapon(pTechno->Target)) ? "Yes" : "No"));
 
 		drawInfo("First CurTarget", pTechno, (pTechno->CurrentTargets.Count > 0 ? pTechno->CurrentTargets.GetItem(0) : nullptr));
 		drawInfo("First OldTarget", pTechno, (pTechno->AttackedTargets.Count > 0 ? pTechno->AttackedTargets.GetItem(0) : nullptr));
@@ -706,7 +707,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			const int capacity = pType->Passengers;
 			ObjectClass* pPassenger = pTechno->Passengers.GetFirstPassenger();
 			int currentSize = 0;
-			drawText("Passengers: (%d/%d)[%d]", (bySize ? pTechno->Passengers.GetTotalSize() : count), capacity, count);
+			drawText(COLOR_WHITE, "Passengers: (%d/%d)[%d]", (bySize ? pTechno->Passengers.GetTotalSize() : count), capacity, count);
 
 			if (capacity > 1)
 				updateLine();
@@ -715,7 +716,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			{
 				if (currentSize > i)
 				{
-					drawText("Passenger(%d)[%s]", i, "---");
+					drawText(COLOR_WHITE, "Passenger(%d)[%s]", i, "---");
 					continue;
 				}
 
@@ -723,7 +724,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				{
 					if (const auto pPassengerType = pPassenger->GetTechnoType())
 					{
-						drawText("Passenger(%d)[%s]", i, pPassengerType->ID);
+						drawText(COLOR_GREEN, "Passenger(%d)[%s]", i, pPassengerType->ID);
 						currentSize += bySize ? static_cast<int>(pPassengerType->Size) : 1;
 						pPassenger = pPassenger->NextObject;
 						continue;
@@ -732,7 +733,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 					pPassenger = pPassenger->NextObject;
 				}
 
-				drawText("Passenger(%d)[%s]", i, "N/A");
+				drawText(COLOR_RED, "Passenger(%d)[%s]", i, "N/A");
 			}
 
 			if (loc)
@@ -749,7 +750,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 					++count;
 			}
 
-			drawText("RadioLinks: (%d/%d)", count, capacity);
+			drawText(COLOR_WHITE, "RadioLinks: (%d/%d)", count, capacity);
 
 			if (capacity > 1)
 				updateLine();
@@ -757,20 +758,20 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			for (int i = 0; i < capacity; ++i)
 			{
 				if (const auto pLink = pTechno->RadioLinks.Items[i])
-					drawText("RadioLink(%d)[%s]", i, pLink->GetType()->ID);
+					drawText(COLOR_GREEN, "RadioLink(%d)[%s]", i, pLink->GetType()->ID);
 				else
-					drawText("RadioLink(%d)[%s]", i, "N/A");
+					drawText(COLOR_RED, "RadioLink(%d)[%s]", i, "N/A");
 			}
 
 			if (loc)
 				updateLine();
 		}
 
-		drawText("TurretRecoil: %.3f", pTechno->TurretRecoil.TravelSoFar);
-		drawText("BarrelRecoil: %.3f", pTechno->BarrelRecoil.TravelSoFar);
+		drawText(COLOR_WHITE, "TurretRecoil: %.3f", pTechno->TurretRecoil.TravelSoFar);
+		drawText(COLOR_WHITE, "BarrelRecoil: %.3f", pTechno->BarrelRecoil.TravelSoFar);
 
 		drawTask("Mission", pTechno->CurrentMission);
-		drawText("Status: %d , Start: %d", pTechno->MissionStatus, pTechno->CurrentMissionStartTime);
+		drawText(COLOR_WHITE, "Status: %d , Start: %d", pTechno->MissionStatus, pTechno->CurrentMissionStartTime);
 
 		drawTask("Suspend", pTechno->SuspendedMission);
 		drawTask("Queued", pTechno->QueuedMission);
@@ -792,15 +793,15 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawInfo("First ArrayItem", pFoot, (pFoot->unknown_abstract_array_588.Count > 0 ? pFoot->unknown_abstract_array_588.GetItem(0) : nullptr));
 			drawInfo("First NavQueue", pFoot, (pFoot->NavQueue.Count > 0 ? pFoot->NavQueue.GetItem(0) : nullptr));
 
-			drawText("FootCell: (%03d,%03d)", pFoot->CurrentMapCoords.X, pFoot->CurrentMapCoords.Y);
-			drawText("LastCell: (%03d,%03d)", pFoot->LastMapCoords.X, pFoot->LastMapCoords.Y);
+			drawText(color_orange, "FootCell: (%03d,%03d)", pFoot->CurrentMapCoords.X, pFoot->CurrentMapCoords.Y);
+			drawText(color_orange, "LastCell: (%03d,%03d)", pFoot->LastMapCoords.X, pFoot->LastMapCoords.Y);
 
 			{
 				const auto destination = pFoot->Locomotor->Destination();
 				const auto headToCoord = pFoot->Locomotor->Head_To_Coord();
 
-				drawText("LocoDest: (%05d,%05d,%05d)", destination.X, destination.Y, destination.Z);
-				drawText("LocoHead: (%05d,%05d,%05d)", headToCoord.X, headToCoord.Y, headToCoord.Z);
+				drawText(color_orange, "LocoDest: (%05d,%05d,%05d)", destination.X, destination.Y, destination.Z);
+				drawText(color_orange, "LocoHead: (%05d,%05d,%05d)", headToCoord.X, headToCoord.Y, headToCoord.Z);
 			}
 
 			{
@@ -808,44 +809,44 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const auto facingType = static_cast<FacingType>(primaryFacing);
 				const auto moveType = static_cast<int>(pFoot->IsCellOccupied(MapClass::Instance.GetCellAt(pFoot->CurrentMapCoords)->GetNeighbourCell(facingType), facingType, pFoot->GetCellLevel(), nullptr, true));
 
-				drawText("PlanningPathIdx: %d", pFoot->PlanningPathIdx);
-				drawText("FaceMoveType: (%s)", (moveType >= 0 && moveType < 8) ? moveTypes[moveType] : "N/A");
+				drawText(COLOR_WHITE, "PlanningPathIdx: %d", pFoot->PlanningPathIdx);
+				drawText(COLOR_WHITE, "FaceMoveType: (%s)", (moveType >= 0 && moveType < 8) ? moveTypes[moveType] : "N/A");
 			}
 
 			const auto& pD = pFoot->PathDirections;
 
 			if (pD[0] == -1)
-				drawText("PathDir: N/A");
+				drawText(COLOR_CYAN, "PathDir: N/A");
 			else if (pD[1] == -1)
-				drawText("PathDir: %d", pD[0]);
+				drawText(COLOR_CYAN, "PathDir: %d", pD[0]);
 			else if (pD[2] == -1)
-				drawText("PathDir: %d-%d", pD[0], pD[1]);
+				drawText(COLOR_CYAN, "PathDir: %d-%d", pD[0], pD[1]);
 			else if (pD[3] == -1)
-				drawText("PathDir: %d-%d-%d", pD[0], pD[1], pD[2]);
+				drawText(COLOR_CYAN, "PathDir: %d-%d-%d", pD[0], pD[1], pD[2]);
 			else if (pD[4] == -1)
-				drawText("PathDir: %d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3]);
+				drawText(COLOR_CYAN, "PathDir: %d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3]);
 			else if (pD[5] == -1)
-				drawText("PathDir: %d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4]);
+				drawText(COLOR_CYAN, "PathDir: %d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4]);
 			else if (pD[6] == -1)
-				drawText("PathDir: %d-%d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5]);
+				drawText(COLOR_CYAN, "PathDir: %d-%d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5]);
 			else if (pD[7] == -1)
-				drawText("PathDir: %d-%d-%d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5], pD[6]);
+				drawText(COLOR_CYAN, "PathDir: %d-%d-%d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5], pD[6]);
 			else
-				drawText("PathDir: %d-%d-%d-%d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5], pD[6], pD[7]);
+				drawText(COLOR_CYAN, "PathDir: %d-%d-%d-%d-%d-%d-%d-%d", pD[0], pD[1], pD[2], pD[3], pD[4], pD[5], pD[6], pD[7]);
 
 			updateLine();
 
-			drawText("CurrentSpeed: %d", static_cast<int>(pFoot->GetCurrentSpeed()));
-			drawText("PercentSpeed: %d", static_cast<int>(pFoot->SpeedPercentage * 100));
+			drawText(COLOR_WHITE, "CurrentSpeed: %d", static_cast<int>(pFoot->GetCurrentSpeed()));
+			drawText(COLOR_WHITE, "PercentSpeed: %d", static_cast<int>(pFoot->SpeedPercentage * 100));
 
-			drawText("OnElevatedBridge: %s", (pFoot->OnBridge ? "Yes" : "No"));
-			drawText("NearElevatedBridge: %s", (reinterpret_cast<bool(__thiscall*)(FootClass*)>(0x703B10)(pFoot) ? "Yes" : "No"));
+			drawText(COLOR_WHITE, "OnElevatedBridge: %s", (pFoot->OnBridge ? "Yes" : "No"));
+			drawText(COLOR_WHITE, "NearElevatedBridge: %s", (reinterpret_cast<bool(__thiscall*)(FootClass*)>(0x703B10)(pFoot) ? "Yes" : "No"));
 
-			drawText("OnBacklit: %s", (pFoot->vt_entry_2B0() ? "Yes" : "No"));
-			drawText("IsCrushing: %s", (pFoot->IsCrushingSomething ? "Yes" : "No"));
+			drawText(COLOR_WHITE, "OnBacklit: %s", (pFoot->vt_entry_2B0() ? "Yes" : "No"));
+			drawText(COLOR_WHITE, "IsCrushing: %s", (pFoot->IsCrushingSomething ? "Yes" : "No"));
 
-			drawText("Scattering: %s", (pExt->ScatteringStopFrame >= Unsorted::CurrentFrame ? "Yes" : "No"));
-			drawText("Aggressive: %s", (pExt->AggressiveStance ? "Yes" : "No"));
+			drawText(COLOR_WHITE, "Scattering: %s", (pExt->ScatteringStopFrame >= Unsorted::CurrentFrame ? "Yes" : "No"));
+			drawText(COLOR_WHITE, "Aggressive: %s", (pExt->AggressiveStance ? "Yes" : "No"));
 
 			if (pFoot->BelongsToATeam())
 			{
@@ -867,35 +868,35 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const auto pScriptType = pTeam->CurrentScript->Type;
 				const auto mission = pTeam->CurrentScript->CurrentMission;
 
-				drawText("Trigger: %s", (pTriggerType ? pTriggerType->ID : "N/A"));
-				drawText("Team: %s", pTeamType->ID);
+				drawText(COLOR_YELLOW, "Trigger: %s", (pTriggerType ? pTriggerType->ID : "N/A"));
+				drawText(COLOR_YELLOW, "Team: %s", pTeamType->ID);
 
-				drawText("Task: %s", pTeamType->TaskForce->ID);
-				drawText("Script: %s", pScriptType->get_ID());
+				drawText(COLOR_YELLOW, "Task: %s", pTeamType->TaskForce->ID);
+				drawText(COLOR_YELLOW, "Script: %s", pScriptType->get_ID());
 
-				drawText("Weights [Cur,Min,Max] -");
+				drawText(COLOR_YELLOW, "Weights [Cur,Min,Max] -");
 
 				if (pTriggerType)
-					drawText("[%.2f,%.2f,%.2f]", pTriggerType->Weight_Current, pTriggerType->Weight_Minimum, pTriggerType->Weight_Maximum);
+					drawText(COLOR_YELLOW, "[%.2f,%.2f,%.2f]", pTriggerType->Weight_Current, pTriggerType->Weight_Minimum, pTriggerType->Weight_Maximum);
 				else
-					drawText("[%.2f,%.2f,%.2f]", -1.0, -1.0, -1.0);
+					drawText(COLOR_YELLOW, "[%.2f,%.2f,%.2f]", -1.0, -1.0, -1.0);
 
-				drawText("Script [Line=Act,Arg] -");
-				drawText("[%d=%d,%d]", mission, (mission >= 0 ? pScriptType->ScriptActions[mission].Action : -1), (mission >= 0 ? pScriptType->ScriptActions[mission].Argument : -1));
+				drawText(COLOR_YELLOW, "Script [Line=Act,Arg] -");
+				drawText(COLOR_YELLOW, "[%d=%d,%d]", mission, (mission >= 0 ? pScriptType->ScriptActions[mission].Action : -1), (mission >= 0 ? pScriptType->ScriptActions[mission].Argument : -1));
 			}
 			else
 			{
-				drawText("Trigger: %s", "N/A");
-				drawText("Team: %s", "N/A");
+				drawText(COLOR_YELLOW, "Trigger: %s", "N/A");
+				drawText(COLOR_YELLOW, "Team: %s", "N/A");
 
-				drawText("Task:", "N/A");
-				drawText("Script: %s", "N/A");
+				drawText(COLOR_YELLOW, "Task:", "N/A");
+				drawText(COLOR_YELLOW, "Script: %s", "N/A");
 
-				drawText("Weights [Cur,Min,Max] -");
-				drawText("[%.2f,%.2f,%.2f]", -1.0, -1.0, -1.0);
+				drawText(COLOR_YELLOW, "Weights [Cur,Min,Max] -");
+				drawText(COLOR_YELLOW, "[%.2f,%.2f,%.2f]", -1.0, -1.0, -1.0);
 
-				drawText("Script [Line=Act,Arg] -");
-				drawText("[%d=%d,%d]", -1, -1, -1);
+				drawText(COLOR_YELLOW, "Script [Line=Act,Arg] -");
+				drawText(COLOR_YELLOW, "[%d=%d,%d]", -1, -1, -1);
 			}
 
 			if (absType == AbstractType::Unit)
@@ -926,7 +927,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const int capacity = pBuildingType->MaxNumberOccupants;
 				const int count = pBuilding->Occupants.Count;
 
-				drawText("Occupants: (%d/%d)", count, capacity);
+				drawText(COLOR_WHITE, "Occupants: (%d/%d)", count, capacity);
 
 				if (capacity > 1)
 					updateLine();
@@ -934,9 +935,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				for (int i = 0; i < capacity; ++i)
 				{
 					if (i < count)
-						drawText("Occupant(%d)[%s]", i, pBuilding->Occupants.GetItem(i)->Type->ID);
+						drawText(COLOR_GREEN, "Occupant(%d)[%s]", i, pBuilding->Occupants.GetItem(i)->Type->ID);
 					else
-						drawText("Occupant(%d)[%s]", i, "N/A");
+						drawText(COLOR_RED, "Occupant(%d)[%s]", i, "N/A");
 				}
 
 				if (loc)
@@ -971,7 +972,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 					}
 				}
 
-				drawText("Overpowers: (%d/%d)[%d]", count, capacity, overpower);
+				drawText(COLOR_WHITE, "Overpowers: (%d/%d)[%d]", count, capacity, overpower);
 
 				if (capacity > 1)
 					updateLine();
@@ -983,20 +984,20 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				{
 					if (currentOverpower > i)
 					{
-						drawText("Overpower(%d)[%s]", i, "---");
+						drawText(COLOR_WHITE, "Overpower(%d)[%s]", i, "---");
 						continue;
 					}
 
 					if (currentCharger < static_cast<int>(chargers.size()))
 					{
 						const auto chargerPair = chargers[currentCharger];
-						drawText("Overpower(%d)[%s]", i, chargerPair.first->GetType()->ID);
+						drawText(COLOR_GREEN, "Overpower(%d)[%s]", i, chargerPair.first->GetType()->ID);
 						currentOverpower += chargerPair.second;
 						++currentCharger;
 						continue;
 					}
 
-					drawText("Overpower(%d)[%s]", i, "N/A");
+					drawText(COLOR_RED, "Overpower(%d)[%s]", i, "N/A");
 				}
 
 				if (loc)
@@ -1022,9 +1023,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				}
 
 				if (pFactory && pProduct)
-					drawText("Product: (%s)[%d]", pProduct->GetTechnoType()->ID, (pFactory->GetProgress() * 100 / 54));
+					drawText(COLOR_PURPLE, "Product: (%s)[%d]", pProduct->GetTechnoType()->ID, (pFactory->GetProgress() * 100 / 54));
 				else
-					drawText("Product: (%s)[%d]", "N/A", 0);
+					drawText(COLOR_PURPLE, "Product: (%s)[%d]", "N/A", 0);
 
 				drawTime("RetryProduction", pBuilding->FactoryRetryTimer);
 			}
@@ -1032,8 +1033,8 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawTime("CashProduction", pBuilding->CashProductionTimer);
 			drawTime("BuildingGate", pBuilding->GateTimer);
 
-			drawText("BaseNodes: %d", pOwner->Base.BaseNodes.Count);
-			drawText("BaseCenter: (%03d,%03d)", pOwner->Base.Center.X, pOwner->Base.Center.Y);
+			drawText(COLOR_WHITE, "BaseNodes: %d", pOwner->Base.BaseNodes.Count);
+			drawText(COLOR_WHITE, "BaseCenter: (%03d,%03d)", pOwner->Base.Center.X, pOwner->Base.Center.Y);
 
 			{
 				SuperClass* pSuper = nullptr;
@@ -1048,7 +1049,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				if (pSuper)
 					drawTime(pSuper->Type->ID, pSuper->RechargeTimer);
 				else
-					drawText("SuperWeapon: (0/-1)[000]");
+					drawText(COLOR_PURPLE, "SuperWeapon: (0/-1)[000]");
 
 				updateLine();
 			}
@@ -1060,17 +1061,17 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const auto pType2 = pBuilding->Upgrades[1];
 				const auto pType3 = pBuilding->Upgrades[2];
 
-				drawText("Upgrades: (%d/%d)", pBuilding->UpgradeLevel, upgrades);
-				drawText("Slot-1: %s", (pType1 ? pType1->ID : "N/A"));
-				drawText("Slot-2: %s", (pType2 ? pType2->ID : "N/A"));
-				drawText("Slot-3: %s", (pType3 ? pType3->ID : "N/A"));
+				drawText(COLOR_WHITE, "Upgrades: (%d/%d)", pBuilding->UpgradeLevel, upgrades);
+				drawText(COLOR_WHITE, "Slot-1: %s", (pType1 ? pType1->ID : "N/A"));
+				drawText(COLOR_WHITE, "Slot-2: %s", (pType2 ? pType2->ID : "N/A"));
+				drawText(COLOR_WHITE, "Slot-3: %s", (pType3 ? pType3->ID : "N/A"));
 			}
 			else
 			{
-				drawText("Upgrades: (%d/%d)", -1, -1);
-				drawText("Slot-1: %s", "N/A");
-				drawText("Slot-2: %s", "N/A");
-				drawText("Slot-3: %s", "N/A");
+				drawText(COLOR_WHITE, "Upgrades: (%d/%d)", -1, -1);
+				drawText(COLOR_WHITE, "Slot-1: %s", "N/A");
+				drawText(COLOR_WHITE, "Slot-2: %s", "N/A");
+				drawText(COLOR_WHITE, "Slot-3: %s", "N/A");
 			}
 		}
 	}

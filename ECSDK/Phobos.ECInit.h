@@ -42,12 +42,6 @@ inline void ECInitialize()
 			{
 				Debug::Log("EC Detected - Missing Components\n");
 			}
-			if (!Phobos::HideWarning && !Phobos::IsTrialValid() && !Phobos::PoweredByEC)
-			{
-				Debug::Log("Initialized version: " PRODUCT_VERSION " failed! \n");
-				MessageBoxExW(NULL, L"试用期已结束，且未检测到授权！", Phobos::VersionDescription, MB_ICONERROR, 0);
-				FatalExit(0xDEAD);
-			}
 		}
 	);
 }

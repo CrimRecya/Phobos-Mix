@@ -81,7 +81,6 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 		MakeCommand<DamageDisplayCommandClass>();
 		MakeCommand<SaveVariablesToFileCommandClass>();
 		MakeCommand<ObjectInfoCommandClass>();
-		MakeCommand<ShowCurrentInfoCommandClass>();
 		MakeCommand<FrameByFrameCommandClass>();
 		MakeCommand<FrameStepCommandClass<1>>(); // Single step in
 		MakeCommand<FrameStepCommandClass<5>>(); // Speed 1
@@ -90,6 +89,9 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 		MakeCommand<FrameStepCommandClass<30>>(); // Speed 4
 		MakeCommand<FrameStepCommandClass<60>>(); // Speed 5
 	}
+
+	if (Phobos::Config::DebugToolEnable)
+		MakeCommand<ShowCurrentInfoCommandClass>();
 
 	return 0;
 }
