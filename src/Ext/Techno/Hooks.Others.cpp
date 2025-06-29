@@ -1131,7 +1131,7 @@ DEFINE_HOOK(0x700B28, TechnoClass_MouseOverCell_JustHasRallyPoint, 0x6)
 
 DEFINE_HOOK(0x455DA0, BuildingClass_IsUnitFactory_JustHasRallyPoint, 0x6)
 {
-	enum { SkipGameCode = 0x455DCC };
+	enum { SkipGameCode = 0x455DCD };
 
 	GET(BuildingClass* const, pThis, ECX);
 

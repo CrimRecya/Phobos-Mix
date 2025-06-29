@@ -578,7 +578,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				++count;
 
 			drawText(COLOR_WHITE, "TheObjects: (Ground)[%d]", count);
-			updateLine();
+
+			if (!count)
+				updateLine();
 
 			for (auto pCellObj = pCell->FirstObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
 				drawText(COLOR_GREEN, "TheObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
@@ -595,7 +597,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				++count;
 
 			drawText(COLOR_WHITE, "AltObjects: (Bridge)[%d]", count);
-			updateLine();
+
+			if (!count)
+				updateLine();
 
 			for (auto pCellObj = pCell->AltObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
 				drawText(COLOR_GREEN, "AltObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
@@ -771,7 +775,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawText(COLOR_WHITE, "BarrelRecoil: %.3f", pTechno->BarrelRecoil.TravelSoFar);
 
 		drawTask("Mission", pTechno->CurrentMission);
-		drawText(COLOR_WHITE, "Status: %d , Start: %d", pTechno->MissionStatus, pTechno->CurrentMissionStartTime);
+		drawText(COLOR_YELLOW, "Status: %d , Start: %d", pTechno->MissionStatus, pTechno->CurrentMissionStartTime);
 
 		drawTask("Suspend", pTechno->SuspendedMission);
 		drawTask("Queued", pTechno->QueuedMission);
