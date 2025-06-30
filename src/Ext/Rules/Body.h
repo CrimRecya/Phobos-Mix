@@ -378,6 +378,8 @@ public:
 
 		Valueable<bool> DamageWallRecursivly;
 
+		Valueable<bool> InvisoBlockageFix;
+
 		// cache tint color
 		int TintColorIronCurtain;
 		int TintColorForceShield;
@@ -703,6 +705,8 @@ public:
 
 			, AttackMove_IgnoreWeaponCheck { false }
 			, AttackMove_StopWhenTargetAcquired { }
+
+			, InvisoBlockageFix { false }
 		{ }
 
 		virtual ~ExtData() = default;

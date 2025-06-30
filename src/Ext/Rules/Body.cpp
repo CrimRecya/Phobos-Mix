@@ -431,6 +431,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->DamageWallRecursivly.Read(exINI, GameStrings::CombatDamage, "DamageWallRecursivly");
 
+	this->InvisoBlockageFix.Read(exINI, GameStrings::General, "InvisoBlockageFix");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -797,6 +799,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->TintColorBerserk)
 		.Process(this->AttackMove_IgnoreWeaponCheck)
 		.Process(this->AttackMove_StopWhenTargetAcquired)
+		.Process(this->InvisoBlockageFix)
 		;
 }
 
