@@ -188,7 +188,7 @@ void WarheadTypeExt::ExtData::Detonate(TechnoClass* pOwner, HouseClass* pHouse, 
 				else
 					dist = bulletCoords.DistanceFrom(targetCoords);
 
-				// Starkku: We should only detonate on the target if the bullet, at the moment of detonation is within acceptable distance of the target.
+				// Jun 2, 2024 - Starkku: We should only detonate on the target if the bullet, at the moment of detonation is within acceptable distance of the target.
 				// Ares uses 64 leptons / quarter of a cell as a tolerance, so for sake of consistency we're gonna do the same here.
 				if (dist < Unsorted::LeptonsPerCell / 4
 					&& (this->AffectsInAir && pTarget->IsInAir()
