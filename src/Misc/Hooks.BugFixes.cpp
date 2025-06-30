@@ -1526,12 +1526,12 @@ DEFINE_HOOK(0x467C1C, BulletClass_Update_InvisoLatencyFix, 0x6)
 DEFINE_HOOK(0x468670, BulletClass_Unlimbo_Start_InvisoBlockageFix, 0x6)
 {
 	GET_STACK(int, returnAddress, 0);
+	GET(BulletClass*, pThis, ECX);
 
-	if (returnAddress != 0x6FF01A || !RulesExt::Global()->InvisoBlockageFix)
+	if (!RulesExt::Global()->InvisoBlockageFix || returnAddress != 0x6FF01A || !pThis->Type->Inviso)
 		return 0;
 
 	REF_STACK(CoordStruct*, pSrcCrd, 0x4);
-	GET(BulletClass*, pThis, ECX);
 
 	if (auto pTechno = pThis->Owner)
 	{
