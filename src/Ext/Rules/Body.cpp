@@ -431,7 +431,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->DamageWallRecursivly.Read(exINI, GameStrings::CombatDamage, "DamageWallRecursivly");
 
-	this->Decloak_OnTakingDamage.Read(exINI, GameStrings::General, "Decloak.OnTakingDamage");
+	this->DecloakDamagedTargets.Read(exINI, GameStrings::General, "Decloak.OnTakingDamage");
 	this->Decloak_OnBlockingMovement.Read(exINI, GameStrings::General, "Decloak.OnBlockingMovement");
 	this->Decloak_OnCloakingWithLowHealth.Read(exINI, GameStrings::General, "Decloak.OnCloakingWithLowHealth");
 	this->Decloak_OnCrushing.Read(exINI, GameStrings::General, "Decloak.OnCrushing");
@@ -802,7 +802,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->TintColorBerserk)
 		.Process(this->AttackMove_IgnoreWeaponCheck)
 		.Process(this->AttackMove_StopWhenTargetAcquired)
-		.Process(this->Decloak_OnTakingDamage)
+		.Process(this->DecloakDamagedTargets)
 		.Process(this->Decloak_OnBlockingMovement)
 		.Process(this->Decloak_OnCloakingWithLowHealth)
 		.Process(this->Decloak_OnCrushing)

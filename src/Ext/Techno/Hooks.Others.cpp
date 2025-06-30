@@ -2198,17 +2198,6 @@ DEFINE_HOOK(0x74192E, UnitClass_CrushCell_Decloak, 0x5)
 	return RulesExt::Global()->Decloak_OnCrushing ? 0 : R->Origin() + 0xB;
 }
 
-DEFINE_HOOK(0x702819, TechnoClass_ReceiveDamage_Decloak, 0xA)
-{
-	enum { SkipGameCode = 0x702823 };
-	GET(TechnoClass*, pThis, ESI);
-
-	if (RulesExt::Global()->Decloak_OnTakingDamage)
-		pThis->Reveal();
-
-	return SkipGameCode;
-}
-
 DEFINE_HOOK_AGAIN(0x75BBA1, SomeLocomotionClass_WhileMoving_DecloakBlockage, 0x6); // Walk
 DEFINE_HOOK_AGAIN(0x6A3A7A, SomeLocomotionClass_WhileMoving_DecloakBlockage, 0x6); // Ship
 DEFINE_HOOK_AGAIN(0x6A2FA0, SomeLocomotionClass_WhileMoving_DecloakBlockage, 0x6); // Ship

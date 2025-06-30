@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <TacticalClass.h>
 #include <RadarEventClass.h>
@@ -199,7 +199,7 @@ DEFINE_HOOK(0x702819, TechnoClass_ReceiveDamage_Decloak, 0xA)
 
 	if (auto pExt = WarheadTypeExt::ExtMap.Find(pWarhead))
 	{
-		if (pExt->DecloakDamagedTargets)
+		if (pExt->DecloakDamagedTargets.Get(RulesExt::Global()->DecloakDamagedTargets))
 			pThis->Uncloak(false);
 	}
 

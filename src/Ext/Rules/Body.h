@@ -378,7 +378,7 @@ public:
 
 		Valueable<bool> DamageWallRecursivly;
 
-		Valueable<bool> Decloak_OnTakingDamage;
+		Valueable<bool> DecloakDamagedTargets;
 		Valueable<bool> Decloak_OnBlockingMovement;
 		Valueable<bool> Decloak_OnCloakingWithLowHealth;
 		Valueable<bool> Decloak_OnCrushing;
@@ -709,7 +709,7 @@ public:
 			, AttackMove_IgnoreWeaponCheck { false }
 			, AttackMove_StopWhenTargetAcquired { }
 
-			, Decloak_OnTakingDamage { true }
+			, DecloakDamagedTargets { true }
 			, Decloak_OnBlockingMovement { true }
 			, Decloak_OnCloakingWithLowHealth { true }
 			, Decloak_OnCrushing { true }
