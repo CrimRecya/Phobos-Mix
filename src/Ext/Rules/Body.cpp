@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 #include <Ext/Side/Body.h>
 #include <Utilities/TemplateDef.h>
 #include <FPSCounter.h>
@@ -431,6 +431,11 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->DamageWallRecursivly.Read(exINI, GameStrings::CombatDamage, "DamageWallRecursivly");
 
+	this->Decloak_OnTakingDamage.Read(exINI, GameStrings::General, "Decloak.OnTakingDamage");
+	this->Decloak_OnBlockingMovement.Read(exINI, GameStrings::General, "Decloak.OnBlockingMovement");
+	this->Decloak_OnCloakingWithLowHealth.Read(exINI, GameStrings::General, "Decloak.OnCloakingWithLowHealth");
+	this->Decloak_OnCrushing.Read(exINI, GameStrings::General, "Decloak.OnCrushing");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -797,6 +802,10 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->TintColorBerserk)
 		.Process(this->AttackMove_IgnoreWeaponCheck)
 		.Process(this->AttackMove_StopWhenTargetAcquired)
+		.Process(this->Decloak_OnTakingDamage)
+		.Process(this->Decloak_OnBlockingMovement)
+		.Process(this->Decloak_OnCloakingWithLowHealth)
+		.Process(this->Decloak_OnCrushing)
 		;
 }
 
