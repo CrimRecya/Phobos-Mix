@@ -431,7 +431,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->DamageWallRecursivly.Read(exINI, GameStrings::CombatDamage, "DamageWallRecursivly");
 
-	this->DecloakDamagedTargets.Read(exINI, GameStrings::General, "Decloak.OnTakingDamage");
+	this->DecloakDamagedTargets.Read(exINI, GameStrings::General, "DecloakDamagedTargets");
 	this->Decloak_OnBlockingMovement.Read(exINI, GameStrings::General, "Decloak.OnBlockingMovement");
 	this->Decloak_OnCloakingWithLowHealth.Read(exINI, GameStrings::General, "Decloak.OnCloakingWithLowHealth");
 	this->Decloak_OnCrushing.Read(exINI, GameStrings::General, "Decloak.OnCrushing");
