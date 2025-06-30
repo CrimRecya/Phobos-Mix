@@ -1076,6 +1076,26 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Turret_BodyOrientationAngle.Read(exINI, pSection, "Turret.BodyOrientationAngle");
 	this->Turret_BodyOrientationSymmetric.Read(exINI, pSection, "Turret.BodyOrientationSymmetric");
 
+	this->TargetExtraThreat.Read(exINI, pSection, "TargetExtraThreat");
+	{
+		ValueableVector<double> ReadAngles {};
+		ReadAngles.Read(exINI, pSection, "TargetExtraThreat.Angles");
+
+		if (const size_t count = ReadAngles.size())
+		{
+			this->TargetExtraThreat_Angles.clear();
+			this->TargetExtraThreat_Angles.resize(count);
+
+			for (size_t i = 0; i < count; ++i)
+			{
+				const int raw = static_cast<int>(ReadAngles[i] * TechnoTypeExt::AngleToRaw + 0.5);
+				this->TargetExtraThreat_Angles[i] = DirStruct(std::clamp(raw, 0, 65535));
+			}
+		}
+	}
+	this->TargetExtraThreat_Multipliers.Read(exINI, pSection, "TargetExtraThreat.Multipliers");
+	this->TargetExtraThreat_Turret.Read(exINI, pSection, "TargetExtraThreat.Turret");
+
 	this->CanBeBuiltOn.Read(exINI, pSection, "CanBeBuiltOn");
 	this->ExtraBaseNormal.Read(exINI, pSection, "ExtraBaseNormal");
 	this->ExtraBaseForAllyBuilding.Read(exINI, pSection, "ExtraBaseForAllyBuilding");
@@ -1873,6 +1893,11 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Turret_BodyOrientation)
 		.Process(this->Turret_BodyOrientationAngle)
 		.Process(this->Turret_BodyOrientationSymmetric)
+
+		.Process(this->TargetExtraThreat)
+		.Process(this->TargetExtraThreat_Angles)
+		.Process(this->TargetExtraThreat_Multipliers)
+		.Process(this->TargetExtraThreat_Turret)
 
 		.Process(this->CanBeBuiltOn)
 		.Process(this->ExtraBaseNormal)

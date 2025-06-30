@@ -626,14 +626,48 @@ DEFINE_HOOK(0x6F88BF, TechnoClass_CanAutoTargetObject_AttackMindControlledDelay,
 {
 	enum { CannotSelect = 0x6F894F };
 
+	GET(TechnoClass* const, pThis, EDI);
 	GET(ObjectClass* const, pTarget, ESI);
+	GET(int* const, pThreat, EBP);
 
-	if (const auto pTechno = abstract_cast<TechnoClass*>(pTarget))
+	if (const auto pTechno = abstract_cast<TechnoClass*, true>(pTarget))
 	{
-		GET(TechnoClass* const, pThis, EDI);
-
 		if (!CanAttackMindControlled(pTechno, pThis))
 			return CannotSelect;
+	}
+
+	const auto pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
+
+	if (pTypeExt->TargetExtraThreat)
+	{
+		const auto& vec = pTypeExt->TargetExtraThreat_Multipliers;
+		const size_t multsCount = vec.size();
+
+		if (multsCount > 0)
+		{
+			const size_t angleCount = pTypeExt->TargetExtraThreat_Angles.size();
+
+			if (angleCount > 0)
+			{
+				const auto absType = pThis->WhatAmI();
+				const auto tgtDir = pThis->GetTargetDirection(pTarget);
+				const bool useSec = pTypeExt->TargetExtraThreat_Turret && absType == AbstractType::Unit && pTypeExt->OwnerObject()->Turret;
+				const auto curDir = (useSec || absType == AbstractType::Aircraft ? pThis->SecondaryFacing : pThis->PrimaryFacing).Current();
+				const int difference = std::abs(static_cast<short>(static_cast<short>(tgtDir.Raw) - static_cast<short>(curDir.Raw)));
+
+				for (size_t i = 0; i < angleCount; ++i)
+				{
+					if (difference <= static_cast<int>(pTypeExt->TargetExtraThreat_Angles[i].Raw))
+					{
+						*pThreat = static_cast<int>(*pThreat * vec[Math::min(i, (multsCount - 1))]);
+
+						return 0;
+					}
+				}
+			}
+
+			*pThreat = static_cast<int>(*pThreat * vec[Math::min(angleCount, (multsCount - 1))]);
+		}
 	}
 
 	return 0;

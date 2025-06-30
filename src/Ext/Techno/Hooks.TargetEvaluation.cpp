@@ -232,8 +232,6 @@ DEFINE_HOOK(0x6F85AB, TechnoClass_CanAutoTargetObject_AggressiveAttackMove, 0x6)
 
 #pragma endregion
 
-#pragma region HealingWeapons
-
 #pragma region TechnoClass_EvaluateObject
 
 namespace EvaluateObjectTemp
@@ -419,8 +417,6 @@ Action __fastcall InfantryClass__WhatAction_Wrapper(InfantryClass* pThis, discar
 	return result;
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7EB0CC, InfantryClass__WhatAction_Wrapper)
-
-#pragma endregion
 
 #pragma region CeaseFireStance
 

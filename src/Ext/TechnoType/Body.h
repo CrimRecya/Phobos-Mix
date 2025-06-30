@@ -313,6 +313,11 @@ public:
 		Valueable<double> Turret_BodyOrientationAngle;
 		Valueable<bool> Turret_BodyOrientationSymmetric;
 
+		Valueable<bool> TargetExtraThreat;
+		ValueableVector<DirStruct> TargetExtraThreat_Angles;
+		ValueableVector<double> TargetExtraThreat_Multipliers;
+		Valueable<bool> TargetExtraThreat_Turret;
+
 		Valueable<bool> CanBeBuiltOn;
 		Valueable<bool> ExtraBaseNormal;
 		Valueable<bool> ExtraBaseForAllyBuilding;
@@ -850,6 +855,11 @@ public:
 			, Turret_BodyOrientation { false }
 			, Turret_BodyOrientationAngle { 0.0 }
 			, Turret_BodyOrientationSymmetric { true }
+
+			, TargetExtraThreat { false }
+			, TargetExtraThreat_Angles {}
+			, TargetExtraThreat_Multipliers {}
+			, TargetExtraThreat_Turret { true }
 
 			, CanBeBuiltOn { false }
 			, ExtraBaseNormal { false }
