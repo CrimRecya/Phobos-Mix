@@ -1,4 +1,4 @@
-﻿#include <AircraftClass.h>
+#include <AircraftClass.h>
 #include <AircraftTrackerClass.h>
 #include <AnimClass.h>
 #include <BuildingClass.h>
@@ -1530,7 +1530,7 @@ DEFINE_HOOK(0x468670, BulletClass_Unlimbo_Start_InvisoBlockageFix, 0x6)
 	if (returnAddress != 0x6FF01A || !RulesExt::Global()->InvisoBlockageFix)
 		return 0;
 
-	REF_STACK(CoordStruct*, pSrcCrd, 0x8);
+	REF_STACK(CoordStruct*, pSrcCrd, 0x4);
 	GET(BulletClass*, pThis, ECX);
 
 	if (auto pTechno = pThis->Owner)
