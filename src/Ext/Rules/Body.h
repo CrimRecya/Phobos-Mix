@@ -378,6 +378,9 @@ public:
 
 		Valueable<bool> DamageWallRecursivly;
 
+		Valueable<int> AIAdjacentMax;
+		Nullable<int> AIAdjacentMax_Campaign;
+
 		// cache tint color
 		int TintColorIronCurtain;
 		int TintColorForceShield;
@@ -703,6 +706,9 @@ public:
 
 			, AttackMove_IgnoreWeaponCheck { false }
 			, AttackMove_StopWhenTargetAcquired { }
+
+			, AIAdjacentMax { -1 }
+			, AIAdjacentMax_Campaign {}
 		{ }
 
 		virtual ~ExtData() = default;

@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
@@ -2185,6 +2185,48 @@ DEFINE_HOOK(0x7460EC, UnitClass_AStarAttempt_PathingTooFar, 0x5)
 }
 
 #pragma region
+
+#pragma region AIAdjacentMax
+
+DEFINE_HOOK_AGAIN(0x42EB6A, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8);
+DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
+{
+	GET(BaseClass*, pThis, ESI);
+	GET(int, nodeIdx, EDI);
+
+	bool isValid = reinterpret_cast<bool(__thiscall*)(BaseClass*, int)>(0x42E780)(pThis, nodeIdx);
+	int rangeLimit = SessionClass::Instance.IsCampaign() ? RulesExt::Global()->AIAdjacentMax_Campaign.Get(RulesExt::Global()->AIAdjacentMax) : RulesExt::Global()->AIAdjacentMax;
+
+	if (rangeLimit >= 0 && isValid)
+	{
+		auto node = pThis->BaseNodes[nodeIdx];
+		auto pOwner = pThis->Owner;
+		auto pBuildingType = BuildingTypeClass::Array[node.BuildingTypeIndex];
+		auto center = node.MapCoords + CellStruct { (short)(pBuildingType->GetFoundationWidth() / 2), (short)(pBuildingType->GetFoundationHeight(false) / 2) };
+		auto cellList = GeneralUtils::AdjacentCellsInRange(rangeLimit);
+		bool hasAdjacent = false;
+
+		for (auto cell : cellList)
+		{
+			CellStruct currentCell = cell + center;
+			auto pBuilding = MapClass::Instance.GetCellAt(currentCell)->GetBuilding();
+
+			if (pBuilding && pBuilding->Owner == pOwner)
+			{
+				hasAdjacent = true;
+				break;
+			}
+		}
+
+		isValid = hasAdjacent;
+	}
+
+	R->AL(isValid);
+	return R->Origin() + 0x8;
+}
+
+
+#pragma endregion
 
 // TODO Self-made impl
 
