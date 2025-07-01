@@ -1463,7 +1463,7 @@ void TechnoExt::ExtData::UpdateIdleDir()
 	{
 		const auto pTypeExt = this->TypeExtData;
 
-		if (static_cast<int>(pTypeExt->Turret_Restriction.Get().Raw) < 65535)
+		if (static_cast<int>(pTypeExt->Turret_Restriction.Get().Raw) < 32768)
 		{
 			const auto rotate = pTypeExt->Turret_ExtraAngle.Get();
 			const auto dir = pUnit->SecondaryFacing.Desired();
