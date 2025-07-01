@@ -635,7 +635,7 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 	}
 
 	// Recreate attachment type
-	if (pNewTypeExt->AttachmentTypes.empty() != pOldTypeExt->AttachmentTypes.empty())
+	if (pNewTypeExt->AttachmentTypes != pOldTypeExt->AttachmentTypes)
 	{
 		for (const auto& pAttachment : this->ChildAttachments)
 			pAttachment->Destroy(pThis);
