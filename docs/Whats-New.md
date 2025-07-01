@@ -411,6 +411,7 @@ New:
 - Ground line for select box (by NetsuNegi)
 - [Support for more optional weapons](New-or-Enhanced-Logics.md#multi-weapon) (by FlyStar)
 - [Task subtitles display in the middle of the screen](User-Interface.md#task-subtitles-display-in-the-middle-of-the-screen) (by CrimRecya)
+- Event 606: AttachEffect is attaching to a Techno
 
 - New Missile trajectory (by CrimRecya)
 - New Engrave trajectory (by CrimRecya)
