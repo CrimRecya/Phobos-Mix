@@ -1645,6 +1645,15 @@ DEFINE_HOOK(0x47C329, CellClass_GetRadarColor_UnifiedRadarColor, 0x7)
 	return 0;
 }
 
+DEFINE_HOOK(0x655E58, RadarClass_ProcessPoint_DrawOccupiable, 0x6)
+{
+	GET(TechnoClass*, pTechno, EBP);
+	auto pBuilding = abstract_cast<BuildingClass*>(pTechno);
+	R->CL(pTechno->Owner->Type->MultiplayPassive
+		&& (!RulesExt::Global()->UnifiedRadarColor || !pBuilding || !pBuilding->Type->CanBeOccupied));
+	return R->Origin() + 0x6;
+}
+
 #pragma endregion
 
 #pragma region UnifiedTechnoColor
@@ -1655,10 +1664,11 @@ DEFINE_HOOK(0x655F80, RadarClass_ProcessPoint_UnifiedRadarColor, 0x6)
 
 	GET_STACK(HouseClass*, pOwner, STACK_OFFSET(0x40, 0x4));
 
-	if (!Phobos::Config::UnifiedTechnoColor)
+	const auto pRulesExt = RulesExt::Global();
+
+	if (!pRulesExt->UnifiedRadarColor)
 		return 0;
 
-	const auto pRulesExt = RulesExt::Global();
 	int colorCode = 0;
 
 	if (pOwner->Type->MultiplayPassive)
