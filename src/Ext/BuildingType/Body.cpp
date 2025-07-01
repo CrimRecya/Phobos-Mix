@@ -120,8 +120,6 @@ bool BuildingTypeExt::CheckOccupierCanLeave(HouseClass* pBuildingHouse, HouseCla
 {
 	if (!pOccupierHouse || !pBuildingHouse)
 		return false;
-	else if (pBuildingHouse == pOccupierHouse)
-		return true;
 	else if (pOccupierHouse->IsAlliedWith(pBuildingHouse))
 		return true;
 	else if (SessionClass::IsCampaign() && pBuildingHouse->IsControlledByHuman() && pOccupierHouse->IsControlledByHuman())
