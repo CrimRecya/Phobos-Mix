@@ -306,11 +306,11 @@ public:
 		Nullable<bool> Turret_IdleRotate;
 		Nullable<bool> Turret_PointToMouse;
 		Nullable<int> TurretROT;
-		Valueable<double> Turret_Restriction;
-		Valueable<double> Turret_ExtraAngle;
+		Valueable<DirStruct> Turret_Restriction;
+		Valueable<DirStruct> Turret_ExtraAngle;
 		Nullable<bool> Turret_BodyFoundation;
 		Valueable<bool> Turret_BodyOrientation;
-		Valueable<double> Turret_BodyOrientationAngle;
+		Valueable<DirStruct> Turret_BodyOrientationAngle;
 		Valueable<bool> Turret_BodyOrientationSymmetric;
 
 		Valueable<bool> TargetExtraThreat;
@@ -849,11 +849,11 @@ public:
 			, Turret_IdleRotate {}
 			, Turret_PointToMouse {}
 			, TurretROT {}
-			, Turret_Restriction { 180.0 }
-			, Turret_ExtraAngle { 0.0 }
+			, Turret_Restriction { DirStruct(65535) }
+			, Turret_ExtraAngle { DirStruct(0) }
 			, Turret_BodyFoundation {}
 			, Turret_BodyOrientation { false }
-			, Turret_BodyOrientationAngle { 0.0 }
+			, Turret_BodyOrientationAngle { DirStruct(0) }
 			, Turret_BodyOrientationSymmetric { true }
 
 			, TargetExtraThreat { false }
@@ -1142,7 +1142,6 @@ public:
 
 	static ExtContainer ExtMap;
 	static bool SelectWeaponMutex;
-	static constexpr double AngleToRaw = (65536.0 / 360);
 
 	static void ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor = 1.0, int turIdx = -1);
 	static TechnoTypeClass* GetTechnoType(ObjectTypeClass* pType);
