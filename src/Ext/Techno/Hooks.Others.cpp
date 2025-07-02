@@ -2095,7 +2095,7 @@ static inline void CheckVHPScanAndRetarget(TechnoClass* pThis)
 
 	const auto pTargetTechno = abstract_cast<TechnoClass*>(pThis->Target);
 
-	if (!pTargetTechno || pTargetTechno->EstimatedHealth > 0)
+	if (!pTargetTechno || pTargetTechno->EstimatedHealth > 0 || pThis->Owner->IsAlliedWith(pTargetTechno))
 		return;
 
 	pThis->SetTarget(nullptr);
@@ -2160,6 +2160,42 @@ DEFINE_HOOK(0x6F8721, TechnoClass_CanAutoTargetObject_VHPScanThreat, 0x7)
 	}
 
 	return 0;
+}
+
+DEFINE_HOOK(0x6F9F7B, TechnoClass_Update_EstimateHealth, 0x7)
+{
+	enum { SkipGameCode = 0x6F9F9F };
+
+	if (!RulesExt::Global()->VHPScan_Enhanced)
+		return 0;
+
+	GET(TechnoClass*, pThis, ESI);
+
+	if (pThis->EstimatedHealth < pThis->Health)
+	{
+		auto pBulletsTargetingMe = TechnoExt::ExtMap.Find(pThis)->BulletsTargetingMe;
+		bool shouldResetEstimateHealth = true;
+
+		for (int idx = 0; idx < pBulletsTargetingMe.Count; )
+		{
+			auto pBullet = pBulletsTargetingMe[idx];
+
+			if (VTable::Get(pBullet) != 0x7E46E4) // BulletClass::VTable
+			{
+				pBulletsTargetingMe.RemoveItem(idx);
+			}
+			else
+			{
+				shouldResetEstimateHealth = false;
+				break;
+			}
+		}
+
+		if (shouldResetEstimateHealth)
+			pThis->EstimatedHealth = pThis->Health;
+	}
+
+	return SkipGameCode;
 }
 
 #pragma endregion
