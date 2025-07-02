@@ -2210,10 +2210,14 @@ DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
 		{
 			CellStruct currentCell = cell + center;
 			auto pBuilding = MapClass::Instance.GetCellAt(currentCell)->GetBuilding();
+
+			if (!pBuilding)
+				continue;
+
 			auto pType = pBuilding->Type;
 			auto baseNormalDefault = (!pType->UndeploysInto || !pType->ResourceGatherer) && !pBuilding->IsStrange();
 
-			if (pBuilding && pBuilding->Owner == pOwner && BuildingTypeExt::ExtMap.Find(pType)->AIBaseNormal.Get(baseNormalDefault))
+			if (pBuilding->Owner == pOwner && BuildingTypeExt::ExtMap.Find(pType)->AIBaseNormal.Get(baseNormalDefault))
 			{
 				hasAdjacent = true;
 				break;
