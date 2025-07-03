@@ -191,55 +191,6 @@ DEFINE_HOOK(0x6B7282, SpawnManagerClass_AI_PromoteSpawns, 0x5)
 	return 0;
 }
 
-#pragma endregion
-
-#pragma region CheckRepairDone
-
-static inline bool ShouldResetSpawnManagerTarget(SpawnManagerClass* pThis)
-{
-	if (!pThis->Target)
-		return true;
-
-	if (TechnoTypeExt::ExtMap.Find(pThis->Owner->GetTechnoType())->Spawner_ReturnOnRepairDone)
-	{
-		auto pTarget = abstract_cast<TechnoClass*>(pThis->Target);
-
-		if (pTarget && pTarget->GetHealthPercentage() >= RulesClass::Instance->unknown_double_16F8)
-			return true;
-	}
-
-	return false;
-}
-
-DEFINE_HOOK(0x6B7702, SpawnManagerClass_AI_CheckRepairDone1, 0x5)
-{
-	enum { KeepTarget = 0x6B770D, ResetTarget = 0x6B7663 };
-
-	GET(SpawnManagerClass*, pThis, ESI);
-
-	R->EAX(pThis->Target);
-	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
-}
-
-DEFINE_HOOK(0x6B7752, SpawnManagerClass_AI_CheckRepairDone2, 0x5)
-{
-	enum { KeepTarget = 0x6B7759, ResetTarget = 0x6B7793 };
-
-	GET(SpawnManagerClass*, pThis, ESI);
-
-	R->EAX(pThis->Target);
-	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
-}
-
-DEFINE_HOOK(0x6B79BF, SpawnManagerClass_AI_CheckRepairDone3, 0x5)
-{
-	enum { ResetTarget = 0x6B79C4, KeepTarget = 0x6B79D3 };
-	GET(SpawnManagerClass*, pThis, ESI);
-	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
-}
-
-#pragma endregion
-
 DEFINE_HOOK(0x6B77B4, SpawnManagerClass_Update_RecycleSpawned, 0x7)
 {
 	enum { Recycle = 0x6B7809, NoRecycle = 0x6B7838 };
@@ -332,6 +283,70 @@ DEFINE_HOOK(0x6B74F0, SpawnManagerClass_AI_UseTurretFacing, 0x5)
 		R->EAX(pTechno->SecondaryFacing.Current().Raw);
 
 	return 0;
+}
+
+DEFINE_HOOK(0x418CF3, AircraftClass_Mission_Attack_ReturnToSpawnOwner, 0x5)
+{
+	enum { SkipGameCode = 0x418D00 };
+
+	GET(AircraftClass* const, pThis, ESI);
+
+	const auto pSpawnOwner = pThis->SpawnOwner;
+
+	if (!pSpawnOwner)
+		return 0;
+
+	pThis->SetDestination(pSpawnOwner, true);
+	pThis->QueueMission(Mission::Move, false);
+
+	return SkipGameCode;
+}
+
+#pragma endregion
+
+#pragma region CheckRepairDone
+
+static inline bool ShouldResetSpawnManagerTarget(SpawnManagerClass* pThis)
+{
+	if (!pThis->Target)
+		return true;
+
+	if (TechnoTypeExt::ExtMap.Find(pThis->Owner->GetTechnoType())->Spawner_ReturnOnRepairDone)
+	{
+		auto pTarget = abstract_cast<TechnoClass*>(pThis->Target);
+
+		if (pTarget && pTarget->GetHealthPercentage() >= RulesClass::Instance->unknown_double_16F8)
+			return true;
+	}
+
+	return false;
+}
+
+DEFINE_HOOK(0x6B7702, SpawnManagerClass_AI_CheckRepairDone1, 0x5)
+{
+	enum { KeepTarget = 0x6B770D, ResetTarget = 0x6B7663 };
+
+	GET(SpawnManagerClass*, pThis, ESI);
+
+	R->EAX(pThis->Target);
+	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
+}
+
+DEFINE_HOOK(0x6B7752, SpawnManagerClass_AI_CheckRepairDone2, 0x5)
+{
+	enum { KeepTarget = 0x6B7759, ResetTarget = 0x6B7793 };
+
+	GET(SpawnManagerClass*, pThis, ESI);
+
+	R->EAX(pThis->Target);
+	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
+}
+
+DEFINE_HOOK(0x6B79BF, SpawnManagerClass_AI_CheckRepairDone3, 0x5)
+{
+	enum { ResetTarget = 0x6B79C4, KeepTarget = 0x6B79D3 };
+	GET(SpawnManagerClass*, pThis, ESI);
+	return ShouldResetSpawnManagerTarget(pThis) ? ResetTarget : KeepTarget;
 }
 
 #pragma endregion
