@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 #include <Ext/Side/Body.h>
 #include <Utilities/TemplateDef.h>
 #include <FPSCounter.h>
@@ -431,6 +431,11 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->DamageWallRecursivly.Read(exINI, GameStrings::CombatDamage, "DamageWallRecursivly");
 
+	this->DecloakDamagedTargets.Read(exINI, GameStrings::General, "DecloakDamagedTargets");
+	this->Decloak_OnBlockingMovement.Read(exINI, GameStrings::General, "Decloak.OnBlockingMovement");
+	this->Decloak_OnCloakingWithLowHealth.Read(exINI, GameStrings::General, "Decloak.OnCloakingWithLowHealth");
+	this->Decloak_OnCrushing.Read(exINI, GameStrings::General, "Decloak.OnCrushing");
+
 	this->InvisoBlockageFix.Read(exINI, GameStrings::General, "InvisoBlockageFix");
 
 	this->AIAdjacentMax.Read(exINI, GameStrings::AI, "AIAdjacentMax");
@@ -802,6 +807,10 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->TintColorBerserk)
 		.Process(this->AttackMove_IgnoreWeaponCheck)
 		.Process(this->AttackMove_StopWhenTargetAcquired)
+		.Process(this->DecloakDamagedTargets)
+		.Process(this->Decloak_OnBlockingMovement)
+		.Process(this->Decloak_OnCloakingWithLowHealth)
+		.Process(this->Decloak_OnCrushing)
 		.Process(this->InvisoBlockageFix)
 		.Process(this->AIAdjacentMax)
 		.Process(this->AIAdjacentMax_Campaign)

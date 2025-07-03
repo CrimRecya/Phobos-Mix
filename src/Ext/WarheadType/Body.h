@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <WarheadTypeClass.h>
 #include <SuperWeaponTypeClass.h>
 #include <Helpers/Macro.h>
@@ -46,7 +46,7 @@ public:
 		Valueable<bool> RemoveMindControl_OnVictim;
 		Valueable<bool> RemoveMindControl_OnController;
 		Nullable<bool> RemoveParasite;
-		Valueable<bool> DecloakDamagedTargets;
+		Nullable<bool> DecloakDamagedTargets;
 		Valueable<bool> ShakeIsLocal;
 		Valueable<bool> ApplyModifiersOnNegativeDamage;
 		Valueable<bool> PenetratesIronCurtain;
@@ -266,7 +266,7 @@ public:
 			, RemoveMindControl_OnVictim { true }
 			, RemoveMindControl_OnController { false }
 			, RemoveParasite {}
-			, DecloakDamagedTargets { true }
+			, DecloakDamagedTargets {}
 			, ShakeIsLocal { false }
 			, ApplyModifiersOnNegativeDamage { false }
 			, PenetratesIronCurtain { false }

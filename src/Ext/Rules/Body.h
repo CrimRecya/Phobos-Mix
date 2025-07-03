@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <CCINIClass.h>
 #include <RulesClass.h>
@@ -378,6 +378,11 @@ public:
 
 		Valueable<bool> DamageWallRecursivly;
 
+		Valueable<bool> DecloakDamagedTargets;
+		Valueable<bool> Decloak_OnBlockingMovement;
+		Valueable<bool> Decloak_OnCloakingWithLowHealth;
+		Valueable<bool> Decloak_OnCrushing;
+
 		Valueable<bool> InvisoBlockageFix;
 
 		Valueable<int> AIAdjacentMax;
@@ -708,6 +713,11 @@ public:
 
 			, AttackMove_IgnoreWeaponCheck { false }
 			, AttackMove_StopWhenTargetAcquired { }
+
+			, DecloakDamagedTargets { true }
+			, Decloak_OnBlockingMovement { true }
+			, Decloak_OnCloakingWithLowHealth { true }
+			, Decloak_OnCrushing { true }
 
 			, InvisoBlockageFix { false }
 
