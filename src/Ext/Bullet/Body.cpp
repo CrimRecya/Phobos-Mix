@@ -28,6 +28,12 @@ BulletExt::ExtData::~ExtData()
 			}
 		}
 	}
+
+	if (const auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(this->OwnerObject()->Target)))
+	{
+		if (pTargetExt->BulletsTargetingMe.Count)
+			pTargetExt->BulletsTargetingMe.Remove(this->OwnerObject());
+	}
 }
 
 void BulletExt::ExtData::InterceptBullet(TechnoClass* pSource, WeaponTypeClass* pWeapon)

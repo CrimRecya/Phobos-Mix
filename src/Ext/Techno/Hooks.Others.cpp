@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
@@ -1648,9 +1648,14 @@ DEFINE_HOOK(0x47C329, CellClass_GetRadarColor_UnifiedRadarColor, 0x7)
 DEFINE_HOOK(0x655E58, RadarClass_ProcessPoint_DrawOccupiable, 0x6)
 {
 	GET(TechnoClass*, pTechno, EBP);
-	auto pBuilding = abstract_cast<BuildingClass*>(pTechno);
-	R->CL(pTechno->Owner->Type->MultiplayPassive
-		&& (!RulesExt::Global()->UnifiedRadarColor || !pBuilding || !pBuilding->Type->CanBeOccupied));
+
+	const auto pBuilding = abstract_cast<BuildingClass*>(pTechno);
+	const bool noDraw = pTechno->Owner->Type->MultiplayPassive
+		&& (!RulesExt::Global()->UnifiedRadarColor
+			|| !pBuilding
+			|| !pBuilding->Type->CanBeOccupied);
+
+	R->CL(noDraw);
 	return R->Origin() + 0x6;
 }
 
@@ -1663,6 +1668,9 @@ DEFINE_HOOK(0x655F80, RadarClass_ProcessPoint_UnifiedRadarColor, 0x6)
 	enum { SkipGameCode = 0x655FEB };
 
 	GET_STACK(HouseClass*, pOwner, STACK_OFFSET(0x40, 0x4));
+
+	if (!Phobos::Config::UnifiedTechnoColor)
+		return 0;
 
 	const auto pRulesExt = RulesExt::Global();
 
@@ -2183,6 +2191,24 @@ DEFINE_HOOK(0x6F9F7B, TechnoClass_Update_EstimateHealth, 0x7)
 			if (VTable::Get(pBullet) != 0x7E46E4) // BulletClass::VTable
 			{
 				pBulletsTargetingMe.RemoveItem(idx);
+
+				if (Phobos::Config::DebugToolEnable)
+				{
+					Debug::LogAndMessage("TechnoClass::Update: Found DeadBullet(0x%08X) with dirty vtable in VHPScan vector!\n",
+						reinterpret_cast<DWORD>(pBullet));
+
+					if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
+					{
+						Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
+						FrameByFrameCommandClass::FrameStep = true;
+						auto coords = pThis->GetCoords();
+						TacticalClass::Instance->SetTacticalPosition(&coords);
+					}
+					else
+					{
+						Debug::LogAndMessage("Skip processing.\n");
+					}
+				}
 			}
 			else
 			{
@@ -2238,32 +2264,38 @@ DEFINE_HOOK_AGAIN(0x42EB6A, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8);
 DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
 {
 	GET(BaseClass*, pThis, ESI);
-	GET(int, nodeIdx, EDI);
+	GET(const int, nodeIdx, EDI);
 
 	bool isValid = reinterpret_cast<bool(__thiscall*)(BaseClass*, int)>(0x42E780)(pThis, nodeIdx);
-	int rangeLimit = SessionClass::Instance.IsCampaign() ? RulesExt::Global()->AIAdjacentMax_Campaign.Get(RulesExt::Global()->AIAdjacentMax) : RulesExt::Global()->AIAdjacentMax;
+	const int rangeLimit = SessionClass::Instance.IsCampaign()
+		? RulesExt::Global()->AIAdjacentMax_Campaign.Get(RulesExt::Global()->AIAdjacentMax)
+		: RulesExt::Global()->AIAdjacentMax;
 
 	if (rangeLimit >= 0 && isValid)
 	{
-		auto node = pThis->BaseNodes[nodeIdx];
-		auto pOwner = pThis->Owner;
-		auto pBuildingType = BuildingTypeClass::Array[node.BuildingTypeIndex];
-		auto center = node.MapCoords + CellStruct { (short)(pBuildingType->GetFoundationWidth() / 2), (short)(pBuildingType->GetFoundationHeight(false) / 2) };
-		auto cellList = GeneralUtils::AdjacentCellsInRange(rangeLimit);
+		const auto node = pThis->BaseNodes[nodeIdx];
+		const auto pOwner = pThis->Owner;
+		const auto pBuildingType = BuildingTypeClass::Array[node.BuildingTypeIndex];
+		const CellStruct offset
+		{
+			static_cast<short>(pBuildingType->GetFoundationWidth() / 2),
+			static_cast<short>(pBuildingType->GetFoundationHeight(false) / 2)
+		};
+		const auto center = node.MapCoords + offset;
+		const auto cellList = GeneralUtils::AdjacentCellsInRange(rangeLimit);
 		bool hasAdjacent = false;
 
-		for (auto cell : cellList)
+		for (const auto& cell : cellList)
 		{
-			CellStruct currentCell = cell + center;
-			auto pBuilding = MapClass::Instance.GetCellAt(currentCell)->GetBuilding();
+			const auto pBuilding = MapClass::Instance.GetCellAt(cell + center)->GetBuilding();
 
-			if (!pBuilding)
+			if (!pBuilding || pBuilding->Owner != pOwner)
 				continue;
 
-			auto pType = pBuilding->Type;
-			auto baseNormalDefault = (!pType->UndeploysInto || !pType->ResourceGatherer) && !pBuilding->IsStrange();
+			const auto pType = pBuilding->Type;
+			const auto baseNormalDefault = (!pType->UndeploysInto || !pType->ResourceGatherer) && !pBuilding->IsStrange();
 
-			if (pBuilding->Owner == pOwner && BuildingTypeExt::ExtMap.Find(pType)->AIBaseNormal.Get(baseNormalDefault))
+			if (BuildingTypeExt::ExtMap.Find(pType)->AIBaseNormal.Get(baseNormalDefault))
 			{
 				hasAdjacent = true;
 				break;
@@ -2276,7 +2308,6 @@ DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
 	R->AL(isValid);
 	return R->Origin() + 0x8;
 }
-
 
 #pragma endregion
 
