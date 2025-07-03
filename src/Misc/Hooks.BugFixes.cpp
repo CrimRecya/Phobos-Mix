@@ -1,4 +1,4 @@
-#include <AircraftClass.h>
+﻿#include <AircraftClass.h>
 #include <AircraftTrackerClass.h>
 #include <AnimClass.h>
 #include <BuildingClass.h>
@@ -1132,7 +1132,7 @@ DEFINE_HOOK(0x546C95, IsometricTileTypeClass_ReadINI_LunarFixes, 0x6)
 	return 0;
 }
 
-// Oct 26, 2024 - Starkku: Fixes an edge case that affects AI-owned technos where they lose ally targets instantly even if they have AttackFriendlies=yes 
+// Oct 26, 2024 - Starkku: Fixes an edge case that affects AI-owned technos where they lose ally targets instantly even if they have AttackFriendlies=yes
 DEFINE_HOOK(0x6FA467, TechnoClass_AI_AttackFriendlies, 0x5)
 {
 	enum { SkipResetTarget = 0x6FA472 };

@@ -2181,44 +2181,19 @@ DEFINE_HOOK(0x6F9F7B, TechnoClass_Update_EstimateHealth, 0x7)
 
 	if (pThis->EstimatedHealth < pThis->Health)
 	{
-		auto pBulletsTargetingMe = TechnoExt::ExtMap.Find(pThis)->BulletsTargetingMe;
-		bool shouldResetEstimateHealth = true;
+		auto& vec = TechnoExt::ExtMap.Find(pThis)->BulletsTargetingMe;
 
-		for (int idx = 0; idx < pBulletsTargetingMe.Count; )
+		while (vec.Count > 0)
 		{
-			auto pBullet = pBulletsTargetingMe[idx];
+			auto pBullet = vec[0];
 
 			if (VTable::Get(pBullet) != 0x7E46E4) // BulletClass::VTable
-			{
-				pBulletsTargetingMe.RemoveItem(idx);
-
-				if (Phobos::Config::DebugToolEnable)
-				{
-					Debug::LogAndMessage("TechnoClass::Update: Found DeadBullet(0x%08X) with dirty vtable in VHPScan vector!\n",
-						reinterpret_cast<DWORD>(pBullet));
-
-					if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
-					{
-						Debug::LogAndMessage("Skip processing. Entering Stepping Mode...\n");
-						FrameByFrameCommandClass::FrameStep = true;
-						auto coords = pThis->GetCoords();
-						TacticalClass::Instance->SetTacticalPosition(&coords);
-					}
-					else
-					{
-						Debug::LogAndMessage("Skip processing.\n");
-					}
-				}
-			}
+				vec.RemoveItem(0);
 			else
-			{
-				shouldResetEstimateHealth = false;
-				break;
-			}
+				return SkipGameCode;
 		}
 
-		if (shouldResetEstimateHealth)
-			pThis->EstimatedHealth = pThis->Health;
+		pThis->EstimatedHealth = pThis->Health;
 	}
 
 	return SkipGameCode;

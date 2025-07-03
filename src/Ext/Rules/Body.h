@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <CCINIClass.h>
 #include <RulesClass.h>
