@@ -369,9 +369,9 @@ DEFINE_HOOK(0x55B4E1, LogicClass_Update_UnmarkCellOccupationFlags, 0x5)
 }
 
 #pragma endregion
-/*
-#pragma region HardLoco
 
+#pragma region HardLoco
+/*
 DEFINE_HOOK_AGAIN(0x742A8C, UnitClass_SetDestination_PiggyBack, 0x8)
 DEFINE_HOOK(0x742691, UnitClass_SetDestination_PiggyBack, 0x8)
 {
