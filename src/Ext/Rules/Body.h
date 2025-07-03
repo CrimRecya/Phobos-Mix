@@ -380,6 +380,9 @@ public:
 
 		Valueable<bool> InvisoBlockageFix;
 
+		Valueable<int> AIAdjacentMax;
+		Nullable<int> AIAdjacentMax_Campaign;
+
 		// cache tint color
 		int TintColorIronCurtain;
 		int TintColorForceShield;
@@ -707,6 +710,9 @@ public:
 			, AttackMove_StopWhenTargetAcquired { }
 
 			, InvisoBlockageFix { false }
+
+			, AIAdjacentMax { -1 }
+			, AIAdjacentMax_Campaign {}
 		{ }
 
 		virtual ~ExtData() = default;

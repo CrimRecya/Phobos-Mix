@@ -433,6 +433,9 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->InvisoBlockageFix.Read(exINI, GameStrings::General, "InvisoBlockageFix");
 
+	this->AIAdjacentMax.Read(exINI, GameStrings::AI, "AIAdjacentMax");
+	this->AIAdjacentMax_Campaign.Read(exINI, GameStrings::AI, "AIAdjacentMax.Campaign");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -800,6 +803,8 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AttackMove_IgnoreWeaponCheck)
 		.Process(this->AttackMove_StopWhenTargetAcquired)
 		.Process(this->InvisoBlockageFix)
+		.Process(this->AIAdjacentMax)
+		.Process(this->AIAdjacentMax_Campaign)
 		;
 }
 
