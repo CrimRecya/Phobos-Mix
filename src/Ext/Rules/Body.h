@@ -378,6 +378,8 @@ public:
 
 		Valueable<bool> DamageWallRecursivly;
 
+		Valueable<bool> InvisoBlockageFix;
+
 		Valueable<int> AIAdjacentMax;
 		Nullable<int> AIAdjacentMax_Campaign;
 
@@ -706,6 +708,8 @@ public:
 
 			, AttackMove_IgnoreWeaponCheck { false }
 			, AttackMove_StopWhenTargetAcquired { }
+
+			, InvisoBlockageFix { false }
 
 			, AIAdjacentMax { -1 }
 			, AIAdjacentMax_Campaign {}

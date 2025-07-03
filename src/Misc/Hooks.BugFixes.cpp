@@ -1,4 +1,4 @@
-﻿#include <AircraftClass.h>
+#include <AircraftClass.h>
 #include <AircraftTrackerClass.h>
 #include <AnimClass.h>
 #include <BuildingClass.h>
@@ -1521,6 +1521,25 @@ DEFINE_HOOK(0x467C1C, BulletClass_Update_InvisoLatencyFix, 0x6)
 	GET(BulletTypeClass*, pType, EAX);
 	R->CL(RulesExt::Global()->InvisoLatencyFix ? (pType->Inviso || pType->Ranged) : pType->Ranged);
 	return 0x467C22;
+}
+
+DEFINE_HOOK(0x468670, BulletClass_Unlimbo_Start_InvisoBlockageFix, 0x6)
+{
+	GET_STACK(int, returnAddress, 0);
+	GET(BulletClass*, pThis, ECX);
+
+	if (!RulesExt::Global()->InvisoBlockageFix || returnAddress != 0x6FF01A || !pThis->Type->Inviso)
+		return 0;
+
+	REF_STACK(CoordStruct*, pSrcCrd, 0x4);
+
+	if (auto pTechno = pThis->Owner)
+	{
+		CoordStruct technoCrd = pTechno->GetCoords();
+		pSrcCrd = &technoCrd;
+	}
+
+	return 0;
 }
 
 #pragma region Sensors
