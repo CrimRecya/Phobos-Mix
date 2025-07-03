@@ -121,6 +121,8 @@ public:
 
 		Valueable<bool> Refinery_UseNormalActiveAnim;
 
+		Nullable<bool> AIBaseNormal;
+
 		ExtData(BuildingTypeClass* OwnerObject) : Extension<BuildingTypeClass>(OwnerObject)
 			, PowersUp_Owner { AffectedHouse::Owner }
 			, PowersUp_Buildings {}
@@ -200,6 +202,7 @@ public:
 			, BunkerWallsDownSound {}
 			, BuildingRepairedSound {}
 			, Refinery_UseNormalActiveAnim { false }
+			, AIBaseNormal {}
 		{ }
 
 		// Ares 0.A functions

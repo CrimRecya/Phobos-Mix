@@ -1366,6 +1366,8 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		}
 	}
 
+	this->Refinery_UseNormalActiveAnim.Read(exArtINI, pArtSection, "Refinery.UseNormalActiveAnim");
+
 	// Ares tag
 	this->SpyEffect_Custom.Read(exINI, pSection, "SpyEffect.Custom");
 	if (SuperWeaponTypeClass::Array.Count > 0)
@@ -1394,6 +1396,7 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->Refinery_UseStorage.Read(exINI, pSection, "Refinery.UseStorage");
 	this->CloningFacility.Read(exINI, pSection, "CloningFacility");
+	this->AIBaseNormal.Read(exINI, pSection, "AIBaseNormal");
 
 	// PlacementPreview
 	{
@@ -1409,7 +1412,6 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	// Art
 	this->IsAnimDelayedBurst.Read(exArtINI, pArtSection, "IsAnimDelayedBurst");
 	this->ZShapePointMove_OnBuildup.Read(exArtINI, pArtSection, "ZShapePointMove.OnBuildup");
-	this->Refinery_UseNormalActiveAnim.Read(exArtINI, pArtSection, "Refinery.UseNormalActiveAnim");
 }
 
 void BuildingTypeExt::ExtData::CompleteInitialization()
@@ -1501,6 +1503,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->BunkerWallsDownSound)
 		.Process(this->BuildingRepairedSound)
 		.Process(this->Refinery_UseNormalActiveAnim)
+		.Process(this->AIBaseNormal)
 		;
 }
 

@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
@@ -1645,6 +1645,15 @@ DEFINE_HOOK(0x47C329, CellClass_GetRadarColor_UnifiedRadarColor, 0x7)
 	return 0;
 }
 
+DEFINE_HOOK(0x655E58, RadarClass_ProcessPoint_DrawOccupiable, 0x6)
+{
+	GET(TechnoClass*, pTechno, EBP);
+	auto pBuilding = abstract_cast<BuildingClass*>(pTechno);
+	R->CL(pTechno->Owner->Type->MultiplayPassive
+		&& (!RulesExt::Global()->UnifiedRadarColor || !pBuilding || !pBuilding->Type->CanBeOccupied));
+	return R->Origin() + 0x6;
+}
+
 #pragma endregion
 
 #pragma region UnifiedTechnoColor
@@ -1655,10 +1664,11 @@ DEFINE_HOOK(0x655F80, RadarClass_ProcessPoint_UnifiedRadarColor, 0x6)
 
 	GET_STACK(HouseClass*, pOwner, STACK_OFFSET(0x40, 0x4));
 
-	if (!Phobos::Config::UnifiedTechnoColor)
+	const auto pRulesExt = RulesExt::Global();
+
+	if (!pRulesExt->UnifiedRadarColor)
 		return 0;
 
-	const auto pRulesExt = RulesExt::Global();
 	int colorCode = 0;
 
 	if (pOwner->Type->MultiplayPassive)
@@ -2085,7 +2095,7 @@ static inline void CheckVHPScanAndRetarget(TechnoClass* pThis)
 
 	const auto pTargetTechno = abstract_cast<TechnoClass*>(pThis->Target);
 
-	if (!pTargetTechno || pTargetTechno->EstimatedHealth > 0)
+	if (!pTargetTechno || pTargetTechno->EstimatedHealth > 0 || pThis->Owner->IsAlliedWith(pTargetTechno))
 		return;
 
 	pThis->SetTarget(nullptr);
@@ -2152,6 +2162,42 @@ DEFINE_HOOK(0x6F8721, TechnoClass_CanAutoTargetObject_VHPScanThreat, 0x7)
 	return 0;
 }
 
+DEFINE_HOOK(0x6F9F7B, TechnoClass_Update_EstimateHealth, 0x7)
+{
+	enum { SkipGameCode = 0x6F9F9F };
+
+	if (!RulesExt::Global()->VHPScan_Enhanced)
+		return 0;
+
+	GET(TechnoClass*, pThis, ESI);
+
+	if (pThis->EstimatedHealth < pThis->Health)
+	{
+		auto pBulletsTargetingMe = TechnoExt::ExtMap.Find(pThis)->BulletsTargetingMe;
+		bool shouldResetEstimateHealth = true;
+
+		for (int idx = 0; idx < pBulletsTargetingMe.Count; )
+		{
+			auto pBullet = pBulletsTargetingMe[idx];
+
+			if (VTable::Get(pBullet) != 0x7E46E4) // BulletClass::VTable
+			{
+				pBulletsTargetingMe.RemoveItem(idx);
+			}
+			else
+			{
+				shouldResetEstimateHealth = false;
+				break;
+			}
+		}
+
+		if (shouldResetEstimateHealth)
+			pThis->EstimatedHealth = pThis->Health;
+	}
+
+	return SkipGameCode;
+}
+
 #pragma endregion
 
 #pragma region Activate
@@ -2185,6 +2231,54 @@ DEFINE_HOOK(0x7460EC, UnitClass_AStarAttempt_PathingTooFar, 0x5)
 }
 
 #pragma region
+
+#pragma region AIAdjacentMax
+
+DEFINE_HOOK_AGAIN(0x42EB6A, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8);
+DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
+{
+	GET(BaseClass*, pThis, ESI);
+	GET(int, nodeIdx, EDI);
+
+	bool isValid = reinterpret_cast<bool(__thiscall*)(BaseClass*, int)>(0x42E780)(pThis, nodeIdx);
+	int rangeLimit = SessionClass::Instance.IsCampaign() ? RulesExt::Global()->AIAdjacentMax_Campaign.Get(RulesExt::Global()->AIAdjacentMax) : RulesExt::Global()->AIAdjacentMax;
+
+	if (rangeLimit >= 0 && isValid)
+	{
+		auto node = pThis->BaseNodes[nodeIdx];
+		auto pOwner = pThis->Owner;
+		auto pBuildingType = BuildingTypeClass::Array[node.BuildingTypeIndex];
+		auto center = node.MapCoords + CellStruct { (short)(pBuildingType->GetFoundationWidth() / 2), (short)(pBuildingType->GetFoundationHeight(false) / 2) };
+		auto cellList = GeneralUtils::AdjacentCellsInRange(rangeLimit);
+		bool hasAdjacent = false;
+
+		for (auto cell : cellList)
+		{
+			CellStruct currentCell = cell + center;
+			auto pBuilding = MapClass::Instance.GetCellAt(currentCell)->GetBuilding();
+
+			if (!pBuilding)
+				continue;
+
+			auto pType = pBuilding->Type;
+			auto baseNormalDefault = (!pType->UndeploysInto || !pType->ResourceGatherer) && !pBuilding->IsStrange();
+
+			if (pBuilding->Owner == pOwner && BuildingTypeExt::ExtMap.Find(pType)->AIBaseNormal.Get(baseNormalDefault))
+			{
+				hasAdjacent = true;
+				break;
+			}
+		}
+
+		isValid = hasAdjacent;
+	}
+
+	R->AL(isValid);
+	return R->Origin() + 0x8;
+}
+
+
+#pragma endregion
 
 // TODO Self-made impl
 
