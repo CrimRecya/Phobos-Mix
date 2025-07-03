@@ -12,12 +12,15 @@ DEFINE_HOOK(0x74312A, UnitClass_SetDestination_ReplaceWithHarvestMission, 0x5)
 	GET(UnitClass*, pThis, EBP);
 
 	// Jumpjet will overlap when entering buildings,
-	// which can cause errors in the connection between Jumpjet harvester and Refinery building,
+	// which can cause errors in the connection between jumpjet harvester and refinery building,
 	// leading to game crashes in drawing
 	// Here change the Mission::Enter to Mission::Harvest
 	pThis->QueueMission(Mission::Harvest, false);
 	pThis->NextMission();
 	pThis->MissionStatus = 2; // Status: returning to refinery
+	pThis->IsHarvesting = false;
+	// Note: jumpjet harvester should not be allowed to comply with this behavior alone, otherwise
+	// it may still overlap with other types and crash
 
 	return SkipGameCode;
 }
@@ -180,7 +183,7 @@ DEFINE_HOOK(0x740943, UnitClass_Mission_Guard_PlayerHarvester, 0x6)
 
 	GET(UnitClass*, pThis, ESI);
 
-	if (pThis->Type->Teleporter || pThis->Type->MovementZone == MovementZone::Subterrannean || pThis->ArchiveTarget)
+	if (pThis->Type->Teleporter || pThis->Type->MovementZone == MovementZone::Subterrannean)
 	{
 		auto const pCell = pThis->GetCell();
 		int cellIndex = 0;

@@ -1211,6 +1211,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->AttackMoveFollowerTempCount)
 		.Process(this->UndergroundTracked)
 		.Process(this->SpecialTracked)
+		.Process(this->BulletsTargetingMe)
 		;
 }
 

@@ -120,8 +120,6 @@ bool BuildingTypeExt::CheckOccupierCanLeave(HouseClass* pBuildingHouse, HouseCla
 {
 	if (!pOccupierHouse || !pBuildingHouse)
 		return false;
-	else if (pBuildingHouse == pOccupierHouse)
-		return true;
 	else if (pOccupierHouse->IsAlliedWith(pBuildingHouse))
 		return true;
 	else if (SessionClass::IsCampaign() && pBuildingHouse->IsControlledByHuman() && pOccupierHouse->IsControlledByHuman())
@@ -1167,10 +1165,10 @@ void BuildingTypeExt::CreateLimboBuilding(BuildingClass* pBuilding, BuildingType
 		pBuilding->IsAlive = true;
 		pBuilding->IsOnMap = true;
 
-		// For reasons beyond my comprehension, the discovery logic is checked for certain logics like power drain/output in campaign only.
+		// Jun 3, 2023 - Starkku: For reasons beyond my comprehension, the discovery logic is checked for certain logics like power drain/output in campaign only.
 		// Normally on unlimbo the buildings are revealed to current player if unshrouded or if game is a campaign and to non-player houses always.
 		// Because of the unique nature of LimboDelivered buildings, this has been adjusted to always reveal to the current player in singleplayer
-		// and to the owner of the building regardless, removing the shroud check from the equation since they don't physically exist - Starkku
+		// and to the owner of the building regardless, removing the shroud check from the equation since they don't physically exist
 		if (SessionClass::IsCampaign())
 			pBuilding->DiscoveredBy(HouseClass::CurrentPlayer);
 
@@ -1396,6 +1394,7 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->Refinery_UseStorage.Read(exINI, pSection, "Refinery.UseStorage");
 	this->CloningFacility.Read(exINI, pSection, "CloningFacility");
+	this->AIBaseNormal.Read(exINI, pSection, "AIBaseNormal");
 
 	// PlacementPreview
 	{
@@ -1503,6 +1502,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->BunkerWallsDownSound)
 		.Process(this->BuildingRepairedSound)
 		.Process(this->Refinery_UseNormalActiveAnim)
+		.Process(this->AIBaseNormal)
 		;
 }
 

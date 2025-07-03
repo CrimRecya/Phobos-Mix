@@ -635,7 +635,7 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 	}
 
 	// Recreate attachment type
-	if (pNewTypeExt->AttachmentTypes.empty() != pOldTypeExt->AttachmentTypes.empty())
+	if (pNewTypeExt->AttachmentTypes != pOldTypeExt->AttachmentTypes)
 	{
 		for (const auto& pAttachment : this->ChildAttachments)
 			pAttachment->Destroy(pThis);
@@ -1463,9 +1463,9 @@ void TechnoExt::ExtData::UpdateIdleDir()
 	{
 		const auto pTypeExt = this->TypeExtData;
 
-		if (pTypeExt->Turret_Restriction.Get() < 180.0)
+		if (static_cast<int>(pTypeExt->Turret_Restriction.Get().Raw) < 32768)
 		{
-			const auto rotate = DirStruct { static_cast<int>(pTypeExt->Turret_ExtraAngle.Get() * TechnoTypeExt::AngleToRaw + 0.5) };
+			const auto rotate = pTypeExt->Turret_ExtraAngle.Get();
 			const auto dir = pUnit->SecondaryFacing.Desired();
 			pTypeExt->SetTurretLimitedDir(pUnit, DirStruct { static_cast<short>(pUnit, dir.Raw) - static_cast<short>(rotate.Raw) });
 		}

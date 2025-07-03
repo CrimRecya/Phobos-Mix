@@ -578,7 +578,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				++count;
 
 			drawText(COLOR_WHITE, "TheObjects: (Ground)[%d]", count);
-			updateLine();
+
+			if (!count)
+				updateLine();
 
 			for (auto pCellObj = pCell->FirstObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
 				drawText(COLOR_GREEN, "TheObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
@@ -595,7 +597,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				++count;
 
 			drawText(COLOR_WHITE, "AltObjects: (Bridge)[%d]", count);
-			updateLine();
+
+			if (!count)
+				updateLine();
 
 			for (auto pCellObj = pCell->AltObject; pCellObj; pCellObj = pCellObj->NextObject, ++index)
 				drawText(COLOR_GREEN, "AltObject(%d)[%s]", index, pCellObj->GetType()->get_ID());
@@ -771,7 +775,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawText(COLOR_WHITE, "BarrelRecoil: %.3f", pTechno->BarrelRecoil.TravelSoFar);
 
 		drawTask("Mission", pTechno->CurrentMission);
-		drawText(COLOR_WHITE, "Status: %d , Start: %d", pTechno->MissionStatus, pTechno->CurrentMissionStartTime);
+		drawText(COLOR_YELLOW, "Status: %d , Start: %d", pTechno->MissionStatus, pTechno->CurrentMissionStartTime);
 
 		drawTask("Suspend", pTechno->SuspendedMission);
 		drawTask("Queued", pTechno->QueuedMission);
@@ -1210,3 +1214,14 @@ DEFINE_HOOK(0x4F4583, GScreenClass_DrawCurrentSelectInfo, 0x6)
 }
 
 #pragma endregion
+
+//	Game::SpecialDialog = 0; // 游戏画面
+//	Game::SpecialDialog = 1; // 暂停页面
+//	Game::SpecialDialog = 2; // 投降页面
+//	Game::SpecialDialog = 3; // 退出页面
+//	Game::SpecialDialog = 4; // 快捷键设置页面
+//	Game::SpecialDialog = 5; // 游戏控制页面
+//	Game::SpecialDialog = 6; // 音效控制页面
+//	Game::SpecialDialog = 7; // 传送讯息页面
+//	Game::SpecialDialog = 8; // 盟友页面
+//	Game::SpecialDialog = 9; // 任务简介页面

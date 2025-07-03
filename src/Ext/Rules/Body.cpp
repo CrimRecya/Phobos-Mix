@@ -436,6 +436,11 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->Decloak_OnCloakingWithLowHealth.Read(exINI, GameStrings::General, "Decloak.OnCloakingWithLowHealth");
 	this->Decloak_OnCrushing.Read(exINI, GameStrings::General, "Decloak.OnCrushing");
 
+	this->InvisoBlockageFix.Read(exINI, GameStrings::General, "InvisoBlockageFix");
+
+	this->AIAdjacentMax.Read(exINI, GameStrings::AI, "AIAdjacentMax");
+	this->AIAdjacentMax_Campaign.Read(exINI, GameStrings::AI, "AIAdjacentMax.Campaign");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -806,6 +811,9 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->Decloak_OnBlockingMovement)
 		.Process(this->Decloak_OnCloakingWithLowHealth)
 		.Process(this->Decloak_OnCrushing)
+		.Process(this->InvisoBlockageFix)
+		.Process(this->AIAdjacentMax)
+		.Process(this->AIAdjacentMax_Campaign)
 		;
 }
 
