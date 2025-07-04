@@ -66,6 +66,8 @@ bool PhobosTrajectory::BulletRetargetTechno()
 
 					if (!pTechnoType->LegalTarget)
 						continue;
+					else if (pTechno->IsBeingWarpedOut())
+						continue;
 					else if (pTechno->WhatAmI() == AbstractType::Building && static_cast<BuildingClass*>(pTechno)->Type->InvisibleInGame)
 						continue;
 					else if (MapClass::GetTotalDamage(100, pBullet->WH, pTechnoType->Armor, 0) == 0)
@@ -390,6 +392,8 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 						if (!pTechnoType->LegalTarget)
 							continue;
 						else if (pType->DisperseTendency && !pType->DisperseDoRepeat && pTechno == pTarget)
+							continue;
+						else if (pTechno->IsBeingWarpedOut())
 							continue;
 
 						const auto isBuilding = pTechno->WhatAmI() == AbstractType::Building;

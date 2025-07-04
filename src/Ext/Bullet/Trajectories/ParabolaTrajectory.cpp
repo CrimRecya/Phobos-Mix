@@ -210,26 +210,28 @@ bool ParabolaTrajectory::OnVelocityCheck()
 		const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 		// No need to use these variables anymore
 		{
-			const auto pSourceCell = MapClass::Instance.GetCellAt(theSourceCoords);
-			const auto sourceCell = pSourceCell->MapCoords;
-			const auto pTargetCell = MapClass::Instance.GetCellAt(theTargetCoords);
-			const auto targetCell = pTargetCell->MapCoords;
-			auto pLastCell = MapClass::Instance.GetCellAt(pBullet->LastMapCoords);
 			const auto pBulletTypeExt = BulletTypeExt::ExtMap.Find(pBulletType);
 			const bool subjectToWCS = pBulletType->SubjectToWalls || pBulletType->SubjectToCliffs || pBulletTypeExt->SubjectToSolid;
 			const bool checkLevel = !pBulletTypeExt->SubjectToLand.isset() && !pBulletTypeExt->SubjectToWater.isset();
+			const auto pFromCell = subjectToWCS ? MapClass::Instance.GetCellAt(pBullet->SourceCoords) : nullptr;
+			const auto pToCell = subjectToWCS ? MapClass::Instance.GetCellAt(pBullet->TargetCoords) : nullptr;
+			const auto pLastCell = subjectToWCS ? MapClass::Instance.GetCellAt(pBullet->LastMapCoords) : nullptr;
+			const auto pSourceCell = MapClass::Instance.GetCellAt(theSourceCoords);
+			const auto pTargetCell = MapClass::Instance.GetCellAt(theTargetCoords);
+			const auto sourceCell = pSourceCell->MapCoords;
+			const auto targetCell = pTargetCell->MapCoords;
 			const auto cellDist = sourceCell - targetCell;
 			const auto cellPace = CellStruct { static_cast<short>(std::abs(cellDist.X)), static_cast<short>(std::abs(cellDist.Y)) };
 			// Take big steps as much as possible to reduce check times, just ensure that each cell is inspected
 			auto largePace = static_cast<size_t>(Math::max(cellPace.X, cellPace.Y));
 			const auto stepCoord = !largePace ? CoordStruct::Empty : (theTargetCoords - theSourceCoords) * (1.0 / largePace);
 			auto curCoord = theSourceCoords;
-			auto pCurCell = MapClass::Instance.GetCellAt(sourceCell);
+			auto pCurCell = pSourceCell;
 			// Check one by one towards the direction of the next frame's position
 			for (size_t i = 0; i < largePace; ++i)
 			{
 				if ((checkThrough && this->CheckThroughAndSubjectInCell(pCurCell, pOwner)) // Blocked by obstacles?
-					|| (subjectToWCS && TrajectoryHelper::GetObstacle(pSourceCell, pTargetCell, pLastCell, curCoord, pBulletType, pOwner)) // Impact on the wall/cliff/solid?
+					|| (subjectToWCS && TrajectoryHelper::GetObstacle(pFromCell, pToCell, pLastCell, curCoord, pBulletType, pOwner)) // Impact on the wall/cliff/solid?
 					|| (checkLevel ? (pBulletType->Level && pCurCell->IsOnFloor()) // Level or above land/water?
 						: ((pCurCell->LandType == LandType::Water || pCurCell->LandType == LandType::Beach)
 							? (pBulletTypeExt->SubjectToWater.Get(false) && pBulletTypeExt->SubjectToWater_Detonate)
@@ -247,7 +249,6 @@ bool ParabolaTrajectory::OnVelocityCheck()
 				}
 				// There are no obstacles, continue to check the next cell
 				curCoord += stepCoord;
-				pLastCell = pCurCell;
 				pCurCell = MapClass::Instance.GetCellAt(curCoord);
 			}
 		}

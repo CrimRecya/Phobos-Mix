@@ -415,13 +415,16 @@ void PhobosTrajectory::PrepareForDetonateAt()
 
 				if (!pTechno || PhobosTrajectory::CheckTechnoIsInvalid(pTechno))
 					continue;
+				// Not directly harming friendly forces
+				if (!pType->ProximityAllies && pOwner && pOwner->IsAlliedWith(pTechno->Owner) && pTechno != pTarget)
+					continue;
+
+				if (pTechno->IsBeingWarpedOut())
+					continue;
 
 				const auto isBuilding = pTechno->WhatAmI() == AbstractType::Building;
 
 				if (isBuilding && static_cast<BuildingClass*>(pTechno)->Type->InvisibleInGame)
-					continue;
-				// Not directly harming friendly forces
-				if (!pType->ProximityAllies && pOwner && pOwner->IsAlliedWith(pTechno->Owner) && pTechno != pTarget)
 					continue;
 				// Check distance within the range of half capsule shape
 				const auto targetCrd = pTechno->GetCoords();
