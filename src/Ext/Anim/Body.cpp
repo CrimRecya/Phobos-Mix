@@ -440,19 +440,13 @@ void AnimExt::InvalidateTechnoPointers(TechnoClass* pTechno)
 		auto const pExt = AnimExt::ExtMap.Find(pAnim);
 
 		if (!pExt)
-		{
-			auto const ID = pAnim->Type ? pAnim->Type->get_ID() : "N/A";
-			Debug::LogAndMessage(__FUNCTION__": Animation of type[%s] has no ExtData!", ID);
-//			Debug::FatalErrorAndExit(__FUNCTION__": Animation of type[%s] has no ExtData!", ID);
-		}
-		else
-		{
-			if (pExt->Invoker == pTechno)
-				pExt->Invoker = nullptr;
+			continue;
 
-			if ((TechnoClass*)pExt->ParentBuilding == pTechno)
-				pExt->ParentBuilding = nullptr;
-		}
+		if (pExt->Invoker == pTechno)
+			pExt->Invoker = nullptr;
+
+		if ((TechnoClass*)pExt->ParentBuilding == pTechno)
+			pExt->ParentBuilding = nullptr;
 	}
 }
 
@@ -463,12 +457,9 @@ void AnimExt::InvalidateParticleSystemPointers(ParticleSystemClass* pParticleSys
 		auto const pExt = AnimExt::ExtMap.Find(pAnim);
 
 		if (!pExt)
-		{
-			auto const ID = pAnim->Type ? pAnim->Type->get_ID() : "N/A";
-			Debug::LogAndMessage(__FUNCTION__": Animation of type[%s] has no ExtData!", ID);
-//			Debug::FatalErrorAndExit(__FUNCTION__": Animation of type[%s] has no ExtData!", ID);
-		}
-		else if (pExt->AttachedSystem == pParticleSystem)
+			continue;
+
+		if (pExt->AttachedSystem == pParticleSystem)
 		{
 			pExt->AttachedSystem = nullptr;
 
