@@ -88,7 +88,7 @@ void TechnoExt::ExtData::ApplyInterceptor()
 			auto const pBulletExt = BulletExt::ExtMap.Find(pBullet);
 			auto const pBulletTypeExt = pBulletExt->TypeExtData;
 
-			if (!pBulletTypeExt->Interceptable)
+			if (!pBulletTypeExt->Interceptable || pBullet->SpawnNextAnim)
 				continue;
 
 			auto const distanceSq = pBullet->Location.DistanceFromSquared(pThis->Location);
@@ -110,7 +110,7 @@ void TechnoExt::ExtData::ApplyInterceptor()
 			{
 				pTargetBullet = pBullet;
 
-				if (pBulletExt->InterceptedStatus == InterceptedStatus::Targeted)
+				if (pBulletExt->InterceptedStatus & InterceptedStatus::Targeted)
 					continue;
 
 				break;
