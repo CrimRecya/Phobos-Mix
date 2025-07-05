@@ -443,14 +443,14 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 				}
 			}
 
-			if (checkObjects && pFirer && TechnoExt::ExtMap.Find(pFirer)->TypeExtData->InterceptorType)
+			if (checkObjects && BulletExt::ExtMap.Find(pBullet)->InterceptorTechnoType)
 			{
 				for (auto const& pObject : BulletClass::Array)
 				{
 					auto const pBulletExt = BulletExt::ExtMap.Find(pObject);
 					auto const pBulletTypeExt = pBulletExt->TypeExtData;
 
-					if (!pBulletTypeExt || !pBulletTypeExt->Interceptable)
+					if (!pBulletTypeExt->Interceptable || pObject->SpawnNextAnim)
 						continue;
 					else if (centerCoords.DistanceFrom(pObject->Location) > range)
 						continue;
@@ -579,10 +579,13 @@ void PhobosTrajectory::CreateDisperseBullets(TechnoClass* pTechno, const CoordSt
 		// Simulate the actual weapon launch effect
 		BulletExt::SimulatedFiringEffects(pBullet, pOwner, nullptr, true, true);
 
-		if (pTarget->WhatAmI() == AbstractType::Bullet)
+		if (pTechno && pTarget->WhatAmI() == AbstractType::Bullet)
 		{
-			pExt->IsInterceptor = true;
-			pExt->InterceptedStatus = InterceptedStatus::Targeted;
+			pExt->InterceptorTechnoType = BulletExt::ExtMap.Find(this->Bullet)->InterceptorTechnoType;
+			pExt->InterceptedStatus &= InterceptedStatus::Targeted;
+
+			if (!pExt->InterceptorTechnoType->InterceptorType->ApplyFirepowerMult)
+				pBullet->Health = pWeapon->Damage;
 		}
 	}
 }
