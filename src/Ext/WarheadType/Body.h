@@ -68,6 +68,7 @@ public:
 		ValueableVector<AnimTypeClass*> Crit_ActiveChanceAnims;
 		Valueable<bool> Crit_AnimOnAffectedTargets;
 		Valueable<double> Crit_AffectBelowPercent;
+		Valueable<double> Crit_AffectAbovePercent;
 		Valueable<bool> Crit_SuppressWhenIntercepted;
 
 		Nullable<AnimTypeClass*> MindControl_Anim;
@@ -210,8 +211,8 @@ public:
 
 		Valueable<AffectedTarget> AirstrikeTargets;
 
-		Valueable<double> AffectsAbovePercent;
 		Valueable<double> AffectsBelowPercent;
+		Valueable<double> AffectsAbovePercent;
 
 		Nullable<bool> AutoTargetWalls;
 
@@ -288,6 +289,7 @@ public:
 			, Crit_ActiveChanceAnims {}
 			, Crit_AnimOnAffectedTargets { false }
 			, Crit_AffectBelowPercent { 1.0 }
+			, Crit_AffectAbovePercent { 0.0 }
 			, Crit_SuppressWhenIntercepted { false }
 
 			, MindControl_Anim {}
@@ -423,8 +425,8 @@ public:
 
 			, AirstrikeTargets { AffectedTarget::Building }
 
-			, AffectsAbovePercent { 0.0 }
 			, AffectsBelowPercent { 1.0 }
+			, AffectsAbovePercent { 0.0 }
 
 			, AffectsEnemies { true }
 			, AffectsOwner {}

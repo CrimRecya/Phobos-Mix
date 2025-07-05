@@ -1117,6 +1117,12 @@ TechnoClass* TechnoExt::GetTopLevelParent(TechnoClass* pThis)
 		: pThis;
 }
 
+bool TechnoExt::IsHealthInThreshold(TechnoClass* pObject, double min, double max)
+{
+	double hp = pObject->GetHealthPercentage();
+	return hp <= max && hp >= min;
+}
+
 // =============================
 // load / save
 
