@@ -143,8 +143,13 @@ DEFINE_HOOK(0x4AE818, DisplayClass_sub_4AE750_AutoDistribution, 0xA)
 		const auto mode2 = Phobos::Config::DistributionFilterMode;
 
 		// Distribution mode main
-		if (DistributionModeHoldDownCommandClass::Enabled && mode1 && count > 1 && mouseAction != Action::NoMove && !PlanningNodeClass::PlanningModeActive
-			&& (pTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None && !pTarget->IsInAir())
+		if (DistributionModeHoldDownCommandClass::Enabled
+			&& mode1
+			&& count > 1
+			&& mouseAction != Action::NoMove
+			&& !PlanningNodeClass::PlanningModeActive
+			&& (pTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None
+			&& !pTarget->IsInAir())
 		{
 			VocClass::PlayGlobal(RulesExt::Global()->AddDistributionModeCommandSound, 0x2000, 1.0);
 
@@ -271,9 +276,9 @@ DEFINE_HOOK(0x6DBE74, TacticalClass_DrawAllRadialIndicators_DrawDistributionRang
 	if (mode1 || mode2)
 	{
 		const auto pCell = MapClass::Instance.GetCellAt(DisplayClass::Instance.CurrentFoundation_CenterCell);
-		const auto color = ((mode2 > 1)
+		const auto color = (mode2 > 1)
 			? ((mode2 == 3) ? ColorStruct { 255, 0, 0 } : ColorStruct { 200, 200, 0 })
-			: (mode2 == 1) ? ColorStruct { 0, 100, 255 } : ColorStruct { 0, 255, 50 });
+			: ((mode2 == 1) ? ColorStruct { 0, 100, 255 } : ColorStruct { 0, 255, 50 });
 		Game::DrawRadialIndicator(false, true, pCell->GetCoords(), color, static_cast<float>(mode1 ? (2 << mode1) : 0.5), false, true);
 	}
 

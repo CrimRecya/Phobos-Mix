@@ -761,7 +761,7 @@ DEFINE_HOOK(0x6FF660, TechnoClass_FireAt_Interceptor, 0x6)
 	GET(TechnoClass* const, pSource, ESI);
 	GET_BASE(AbstractClass* const, pTarget, 0x8);
 	GET_STACK(BulletClass* const, pBullet, STACK_OFFSET(0xB0, -0x74));
-	GET_STACK(WeaponTypeClass* const, pWeapon, STACK_OFFSET(0xB0, -0x70));
+	GET(WeaponTypeClass* const, pWeapon, EBX);
 
 	const auto pSourceTypeExt = TechnoExt::ExtMap.Find(pSource)->TypeExtData;
 	const auto pInterceptorType = pSourceTypeExt->InterceptorType.get();
