@@ -582,7 +582,7 @@ void PhobosTrajectory::CreateDisperseBullets(TechnoClass* pTechno, const CoordSt
 		if (pTechno && pTarget->WhatAmI() == AbstractType::Bullet)
 		{
 			pExt->InterceptorTechnoType = BulletExt::ExtMap.Find(this->Bullet)->InterceptorTechnoType;
-			pExt->InterceptedStatus &= InterceptedStatus::Targeted;
+			pExt->InterceptedStatus |= InterceptedStatus::Targeted;
 
 			if (!pExt->InterceptorTechnoType->InterceptorType->ApplyFirepowerMult)
 				pBullet->Health = pWeapon->Damage;
