@@ -39,7 +39,7 @@ void BulletExt::ExtData::InterceptBullet(TechnoClass* pSource, BulletClass* pInt
 	if (!pTypeExt->Armor.isset())
 	{
 		if (!pInterceptorType->KeepIntact)
-			this->InterceptedStatus &= InterceptedStatus::Intercepted;
+			this->InterceptedStatus |= InterceptedStatus::Intercepted;
 	}
 	else
 	{
@@ -59,7 +59,7 @@ void BulletExt::ExtData::InterceptBullet(TechnoClass* pSource, BulletClass* pInt
 			this->CurrentStrength = 0;
 
 			if (!pInterceptorType->KeepIntact)
-				this->InterceptedStatus &= InterceptedStatus::Intercepted;
+				this->InterceptedStatus |= InterceptedStatus::Intercepted;
 		}
 	}
 
