@@ -579,13 +579,16 @@ void PhobosTrajectory::CreateDisperseBullets(TechnoClass* pTechno, const CoordSt
 		// Simulate the actual weapon launch effect
 		BulletExt::SimulatedFiringEffects(pBullet, pOwner, nullptr, true, true);
 
-		if (pTechno && pTarget->WhatAmI() == AbstractType::Bullet)
+		if (pTarget->WhatAmI() == AbstractType::Bullet)
 		{
-			pExt->InterceptorTechnoType = BulletExt::ExtMap.Find(this->Bullet)->InterceptorTechnoType;
-			pExt->InterceptedStatus |= InterceptedStatus::Targeted;
+			if (const auto pTypeExt = BulletExt::ExtMap.Find(this->Bullet)->InterceptorTechnoType)
+			{
+				pExt->InterceptorTechnoType = pTypeExt;
+				pExt->InterceptedStatus |= InterceptedStatus::Targeted;
 
-			if (!pExt->InterceptorTechnoType->InterceptorType->ApplyFirepowerMult)
-				pBullet->Health = pWeapon->Damage;
+				if (!pTypeExt->InterceptorType->ApplyFirepowerMult)
+					pBullet->Health = pWeapon->Damage;
+			}
 		}
 	}
 }
