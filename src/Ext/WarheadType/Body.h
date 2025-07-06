@@ -213,6 +213,7 @@ public:
 
 		Valueable<double> AffectsBelowPercent;
 		Valueable<double> AffectsAbovePercent;
+		Valueable<bool> AffectsNeutral;
 
 		Nullable<bool> AutoTargetWalls;
 
@@ -232,6 +233,7 @@ public:
 		bool Reflected;
 		int RemainingAnimCreationInterval;
 		bool PossibleCellSpreadDetonate;
+		bool HealthCheck;
 		TechnoClass* DamageAreaTarget;
 
 		Valueable<bool> CanKill;
@@ -427,6 +429,7 @@ public:
 
 			, AffectsBelowPercent { 1.0 }
 			, AffectsAbovePercent { 0.0 }
+			, AffectsNeutral { true }
 
 			, AffectsEnemies { true }
 			, AffectsOwner {}
@@ -442,6 +445,7 @@ public:
 			, Reflected { false }
 			, RemainingAnimCreationInterval { 0 }
 			, PossibleCellSpreadDetonate { false }
+			, HealthCheck { false }
 			, DamageAreaTarget {}
 
 			, CanKill { true }
