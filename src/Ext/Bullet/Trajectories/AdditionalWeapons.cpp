@@ -445,10 +445,10 @@ bool PhobosTrajectory::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct
 
 			if (checkObjects && BulletExt::ExtMap.Find(pBullet)->InterceptorTechnoType)
 			{
-				for (auto const& pObject : BulletClass::Array)
+				for (const auto& pObject : BulletClass::Array)
 				{
-					auto const pBulletExt = BulletExt::ExtMap.Find(pObject);
-					auto const pBulletTypeExt = pBulletExt->TypeExtData;
+					const auto pBulletExt = BulletExt::ExtMap.Find(pObject);
+					const auto pBulletTypeExt = pBulletExt->TypeExtData;
 
 					if (!pBulletTypeExt->Interceptable || pObject->SpawnNextAnim)
 						continue;
