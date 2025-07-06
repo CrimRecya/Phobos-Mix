@@ -18,6 +18,8 @@ public:
 	Valueable<bool> InheritCommands;
 	Valueable<bool> InheritCommands_StopCommand;
 	Valueable<bool> InheritCommands_DeployCommand;
+	Valueable<bool> InheritTarget;
+	Valueable<bool> InheritTarget_Force;
 	Valueable<bool> InheritOwner; // aka mind control inheritance
 	Valueable<bool> InheritStateEffects; // phasing out, stealth etc.
 	Valueable<bool> InheritDestruction;
@@ -41,6 +43,8 @@ public:
 		, InheritCommands { true }
 		, InheritCommands_StopCommand { true }
 		, InheritCommands_DeployCommand { true }
+		, InheritTarget { false }
+		, InheritTarget_Force { false }
 		, InheritOwner { true }
 		, InheritStateEffects { true }
 		, OccupiesCell { true }

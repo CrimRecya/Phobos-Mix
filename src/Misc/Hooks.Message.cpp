@@ -156,10 +156,10 @@ DEFINE_HOOK(0x684AD3, UnknownClass_sub_684620_InitMessageList, 0x5)
 		const time_t compileTime = Phobos::GetCompile();
 		const time_t currentTime = Phobos::GetCurrent();
 		const int daysUsed = static_cast<int>(difftime(currentTime, compileTime) / (60 * 60 * 24));
-		const int daysLeft = 15 - daysUsed;
+		const int daysLeft = 30 - daysUsed;
 		wchar_t buffer[0x40];
 
-		if (daysLeft > 5)
+		if (daysLeft > 7)
 			swprintf_s(buffer, L"剩余试用期：%2d天", daysLeft);
 		else
 			swprintf_s(buffer, L"剩余试用期：%2d天，注意及时在群内获取最新版本。", daysLeft);

@@ -1012,6 +1012,7 @@ bool TechnoExt::AttachTo(TechnoClass* pThis, TechnoClass* pParent)
 bool TechnoExt::DetachFromParent(TechnoClass* pThis)
 {
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+
 	return pExt->ParentAttachment->DetachChild();
 }
 
@@ -1055,6 +1056,7 @@ void TechnoExt::HandleDestructionAsChild(TechnoClass* pThis)
 void TechnoExt::UnlimboAttachments(TechnoClass* pThis)
 {
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+
 	for (auto const& pAttachment : pExt->ChildAttachments)
 		pAttachment->Unlimbo();
 }
@@ -1062,6 +1064,7 @@ void TechnoExt::UnlimboAttachments(TechnoClass* pThis)
 void TechnoExt::LimboAttachments(TechnoClass* pThis)
 {
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+
 	for (auto const& pAttachment : pExt->ChildAttachments)
 		pAttachment->Limbo();
 }
@@ -1080,9 +1083,25 @@ void TechnoExt::TransferAttachments(TechnoClass* pThis, TechnoClass* pThat)
 	pThisExt->ChildAttachments.clear();
 }
 
+bool TechnoExt::ShouldInheritTarget(TechnoClass* pThis)
+{
+	if (auto const& pExt = TechnoExt::ExtMap.Find(pThis))
+	{
+		if (auto const pAttachment = pExt->ParentAttachment)
+		{
+			auto const pType = pAttachment->GetType();
+
+			return pType->InheritTarget && pType->InheritTarget_Force;
+		}
+	}
+
+	return false;
+}
+
 bool TechnoExt::IsAttached(TechnoClass* pThis)
 {
 	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
+
 	return pExt && pExt->ParentAttachment;
 }
 
@@ -1094,6 +1113,7 @@ bool TechnoExt::HasAttachmentLoco(FootClass* pThis)
 bool TechnoExt::DoesntOccupyCellAsChild(TechnoClass* pThis)
 {
 	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
+
 	return pExt && pExt->ParentAttachment
 		&& !pExt->ParentAttachment->GetType()->OccupiesCell;
 }
@@ -1110,8 +1130,7 @@ bool TechnoExt::IsChildOf(TechnoClass* pThis, TechnoClass* pParent, bool deep)
 
 bool TechnoExt::AreRelatives(TechnoClass* pThis, TechnoClass* pThat)
 {
-	return TechnoExt::GetTopLevelParent(pThis)
-		== TechnoExt::GetTopLevelParent(pThat);
+	return TechnoExt::GetTopLevelParent(pThis) == TechnoExt::GetTopLevelParent(pThat);
 }
 
 // Returns this if no parent.
@@ -1234,8 +1253,10 @@ void TechnoExt::ExtData::InvalidatePointer(void* ptr, bool bRemoved)
 	AnnounceInvalidPointer(this->AirstrikeTargetingMe, ptr);
 	AnnounceInvalidPointer(this->MyTrackingLasersTarget, ptr);
 
+/* Clearing in advance can cause the game to crash
 	for (auto const& pAttachment : ChildAttachments)
 		pAttachment->InvalidatePointer(ptr);
+*/
 
 	if (this->HasCachedClickMission && this->CachedTarget == ptr)
 	{

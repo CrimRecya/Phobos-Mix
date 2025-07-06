@@ -226,7 +226,7 @@ bool Phobos::IsTrialValid()
 
 	const double daysPassed = difftime(currentTime, compileTime) / (60 * 60 * 24);
 
-	if (daysPassed > 15)
+	if (daysPassed > 30)
 		return false;
 
 	if (std::filesystem::exists(recordFile))

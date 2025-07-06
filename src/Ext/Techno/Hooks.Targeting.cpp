@@ -14,7 +14,7 @@ DEFINE_HOOK(0x6FA697, TechnoClass_Update_DontScanIfUnarmed, 0x6)
 
 	GET(TechnoClass* const, pThis, ESI);
 
-	return pThis->IsArmed() ? 0 : SkipTargeting;
+	return pThis->IsArmed() && !TechnoExt::ShouldInheritTarget(pThis) ? 0 : SkipTargeting;
 }
 
 DEFINE_HOOK(0x709866, TechnoClass_TargetAndEstimateDamage_ScanDelayGuardArea, 0x6)
