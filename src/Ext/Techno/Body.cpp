@@ -769,9 +769,13 @@ void TechnoExt::ExtData::InitAggressiveStance()
 
 bool TechnoExt::ExtData::GetAggressiveStance() const
 {
-	// if this is a passenger then obey the configuration of the transport
+	// If this is a passenger then obey the configuration of the transport
 	if (auto pTransport = this->OwnerObject()->Transporter)
 		return TechnoExt::ExtMap.Find(pTransport)->GetAggressiveStance();
+
+	// If this is a child then obey the configuration of the parent
+	if (const auto pAttachment = this->ParentAttachment)
+		return TechnoExt::ExtMap.Find(pAttachment->Parent)->GetAggressiveStance();
 
 	return this->AggressiveStance;
 }
@@ -860,9 +864,13 @@ void TechnoExt::ExtData::InitCeaseFireStance()
 
 bool TechnoExt::ExtData::GetCeaseFireStance() const
 {
-	// if this is a passenger then obey the configuration of the transport
-	if (auto pTransport = this->OwnerObject()->Transporter)
+	// If this is a passenger then obey the configuration of the transport
+	if (const auto pTransport = this->OwnerObject()->Transporter)
 		return TechnoExt::ExtMap.Find(pTransport)->GetCeaseFireStance();
+
+	// If this is a child then obey the configuration of the parent
+	if (const auto pAttachment = this->ParentAttachment)
+		return TechnoExt::ExtMap.Find(pAttachment->Parent)->GetCeaseFireStance();
 
 	return this->CeaseFireStance;
 }
