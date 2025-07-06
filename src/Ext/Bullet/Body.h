@@ -31,6 +31,7 @@ public:
 		int DamageNumberOffset;
 		TechnoClass* LimboedLauncher;
 		DirType LimboedDir;
+		int ParabombFallRate;
 
 		TrajectoryPointer Trajectory;
 		bool DispersedTrajectory;
@@ -47,6 +48,7 @@ public:
 			, DamageNumberOffset { INT32_MIN }
 			, LimboedLauncher { nullptr }
 			, LimboedDir { 0 }
+			, ParabombFallRate { 0 }
 
 			, Trajectory { nullptr }
 			, DispersedTrajectory { false }

@@ -67,13 +67,8 @@ void BulletExt::ExtData::InterceptBullet(TechnoClass* pSource, BulletClass* pInt
 
 	if (const auto pWeaponOverride = pInterceptorType->WeaponOverride.Get(pTypeExt->Interceptable_WeaponOverride))
 	{
-		int damage = pWeaponOverride->Damage;
-
-		if (pSource && pInterceptorType->ApplyFirepowerMult.Get())
-			damage = static_cast<int>(damage * pSource->FirepowerMultiplier * TechnoExt::ExtMap.Find(pSource)->AE.FirepowerMultiplier);
-
 		pThis->WeaponType = pWeaponOverride;
-		pThis->Health = pInterceptorType->WeaponCumulativeDamage.Get() ? pThis->Health + damage : damage;
+		pThis->Health = pInterceptorType->WeaponCumulativeDamage.Get() ? pThis->Health + pWeaponOverride->Damage : pWeaponOverride->Damage;
 		pThis->WH = pWeaponOverride->Warhead;
 		pThis->Bright = pWeaponOverride->Bright;
 
@@ -436,6 +431,7 @@ void BulletExt::ExtData::Serialize(T& Stm)
 		.Process(this->DamageNumberOffset)
 		.Process(this->LimboedLauncher)
 		.Process(this->LimboedDir)
+		.Process(this->ParabombFallRate)
 
 		.Process(this->Trajectory)
 		.Process(this->DispersedTrajectory)
