@@ -85,12 +85,6 @@ void SWTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->UseWeeds_Amount)
 		.Process(this->UseWeeds_StorageTimer)
 		.Process(this->UseWeeds_ReadinessAnimationPercentage)
-		.Process(this->SW_GrantOneTime)
-		.Process(this->SW_GrantOneTime_InitialReady)
-		.Process(this->SW_GrantOneTime_RandomWeightsData)
-		.Process(this->SW_GrantOneTime_RollChances)
-		.Process(this->Message_GrantOneTimeLaunched)
-		.Process(this->EVA_GrantOneTimeLaunched)
 		.Process(this->EMPulse_WeaponIndex)
 		.Process(this->EMPulse_SuspendOthers)
 		.Process(this->EMPulse_Cannons)
@@ -284,38 +278,6 @@ void SWTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		NewSWType* pNewSWType = NewSWType::GetNthItem(newidx);
 		pNewSWType->Initialize(const_cast<SWTypeExt::ExtData*>(this), OwnerObject());
 		pNewSWType->LoadFromINI(const_cast<SWTypeExt::ExtData*>(this), OwnerObject(), pINI);
-	}
-
-	this->SW_GrantOneTime.Read(exINI, pSection, "SW.GrantOneTime");
-	this->SW_GrantOneTime_InitialReady.Read(exINI, pSection, "SW.GrantOneTime.InitialReady");
-	this->Message_GrantOneTimeLaunched.Read(exINI, pSection, "Message.GrantOneTimeLaunched");
-	this->EVA_GrantOneTimeLaunched.Read(exINI, pSection, "EVA.GrantOneTimeLaunched");
-	this->SW_GrantOneTime_RollChances.Read(exINI, pSection, "SW.GrantOneTime.RollChances");
-
-	// SW.GrantOneTime.RandomWeights
-	for (size_t i = 0; ; ++i)
-	{
-		ValueableVector<int> weights3;
-		_snprintf_s(tempBuffer, sizeof(tempBuffer), "SW.GrantOneTime.RandomWeights%d", i);
-		weights3.Read(exINI, pSection, tempBuffer);
-
-		if (!weights3.size())
-			break;
-
-		if (this->SW_GrantOneTime_RandomWeightsData.size() > i)
-			this->SW_GrantOneTime_RandomWeightsData[i] = std::move(weights3);
-		else
-			this->SW_GrantOneTime_RandomWeightsData.push_back(std::move(weights3));
-	}
-
-	ValueableVector<int> weights3;
-	weights3.Read(exINI, pSection, "SW.GrantOneTime.RandomWeights");
-	if (weights3.size())
-	{
-		if (this->SW_GrantOneTime_RandomWeightsData.size())
-			this->SW_GrantOneTime_RandomWeightsData[0] = std::move(weights3);
-		else
-			this->SW_GrantOneTime_RandomWeightsData.push_back(std::move(weights3));
 	}
 
 	// Ares 0.1

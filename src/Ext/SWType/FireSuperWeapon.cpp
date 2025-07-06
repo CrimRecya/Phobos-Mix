@@ -34,9 +34,6 @@ void SWTypeExt::FireSuperWeaponExt(SuperClass* pSW, const CellStruct& cell)
 	if (pTypeExt->SW_Next.size() > 0)
 		pTypeExt->ApplySWNext(pHouse, cell);
 
-	if (pTypeExt->SW_GrantOneTime.size() > 0)
-		pTypeExt->GrantOneTimeFromList(pHouse);
-
 	if (pTypeExt->Attachment_Transform.size() > 0)
 		pTypeExt->ApplyAttachmentTransform(pHouse);
 
@@ -262,77 +259,6 @@ void SWTypeExt::ExtData::ApplyTypeConversion(HouseClass* pHouse)
 {
 	for (const auto pTarget : TechnoClass::Array)
 		TypeConvertGroup::Convert(pTarget, this->Convert_Pairs, pHouse);
-}
-
-void SWTypeExt::ExtData::GrantOneTimeFromList(HouseClass* pHouse)
-{
-	// SW.GrantOneTime proper SW granting mechanic
-	bool notObserver = !pHouse->IsObserver() || !pHouse->IsCurrentPlayerObserver();
-
-	auto grantTheSW = [=](const int swIdxToAdd) -> bool
-	{
-		if (const auto pSuper = pHouse->Supers.GetItem(swIdxToAdd))
-		{
-			bool granted = pSuper->Grant(true, false, false);
-
-			if (granted)
-			{
-				auto const pTypeExt = SWTypeExt::ExtMap.Find(pSuper->Type);
-				bool isReady = this->SW_GrantOneTime_InitialReady.isset() && this->SW_GrantOneTime_InitialReady.Get() ? true : false;
-				isReady = !this->SW_GrantOneTime_InitialReady.isset() && pTypeExt->SW_InitialReady ? true : isReady;
-
-				if (isReady)
-				{
-					pSuper->RechargeTimer.TimeLeft = 0;
-					pSuper->SetReadiness(true);
-				}
-				else
-				{
-					pSuper->Reset();
-				}
-
-				if (notObserver && pHouse->IsCurrentPlayer())
-				{
-					if (MouseClass::Instance.AddCameo(AbstractType::Special, swIdxToAdd))
-						MouseClass::Instance.RepaintSidebar(1);
-				}
-			}
-
-			return granted;
-		}
-
-		return false;
-	};
-
-	bool grantedAnySW = false;
-
-	// random mode
-	if (this->SW_GrantOneTime_RandomWeightsData.size())
-	{
-		auto results = this->WeightedRollsHandler(&this->SW_GrantOneTime_RollChances, &this->SW_GrantOneTime_RandomWeightsData, this->SW_GrantOneTime.size());
-		for (int result : results)
-		{
-			if (grantTheSW(this->SW_GrantOneTime[result]))
-				grantedAnySW = true;
-		}
-	}
-	// no randomness mode
-	else
-	{
-		for (const auto swType : this->SW_GrantOneTime)
-		{
-			if (grantTheSW(swType))
-				grantedAnySW = true;
-		}
-	}
-
-	if (notObserver && pHouse->IsCurrentPlayer())
-	{
-		if (this->EVA_GrantOneTimeLaunched.isset())
-			VoxClass::PlayIndex(this->EVA_GrantOneTimeLaunched.Get(), -1, -1);
-
-		MessageListClass::Instance.PrintMessage(this->Message_GrantOneTimeLaunched.Get(), RulesClass::Instance->MessageDelay, HouseClass::CurrentPlayer->ColorSchemeIndex, true);
-	}
 }
 
 void SWTypeExt::ExtData::HandleEMPulseLaunch(SuperClass* pSW, const CellStruct& cell) const
