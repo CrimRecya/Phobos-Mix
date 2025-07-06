@@ -147,7 +147,7 @@ void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte&
 	// Non-occupiers shouldn't be inserted as incoming units anyways so don't check that
 	if (pIncoming)
 	{
-		if (VTable::Get(pIncoming) != 0x7F5C70) // UnitClass::AbsVTable
+		if (VTable::Get(pIncoming) != 0x7F5C70 && Phobos::Config::DebugToolEnable) // UnitClass::AbsVTable
 		{
 			Debug::LogAndMessage("FootClass::IsCellOccupied: Found InvalidUnit(0x%08X) at(%d,%d) with dirty vtable in moving check!\n",
 				reinterpret_cast<DWORD>(pIncoming), into->MapCoords.X, into->MapCoords.Y);

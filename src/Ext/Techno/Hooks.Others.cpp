@@ -2523,7 +2523,7 @@ DEFINE_HOOK(0x737BBE, UnitClass_Unlimbo_CreatePassengerSquad, 0x6)
 
 #pragma region DebugLogInGreatestThreat
 
-DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x9)
+DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x6)
 {
 	enum { Continue = 0x6F9C89, NextOne = 0x6F9D93 };
 
@@ -2532,7 +2532,7 @@ DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x9)
 
 	auto pTechno = TechnoClass::Array.Items[index];
 
-	if (pTechno->IsDead() && Phobos::Config::DebugToolEnable)
+	if (pTechno->IsDead())
 	{
 		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
@@ -2575,7 +2575,7 @@ DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
 	GET(TechnoClass* const, pThis, ESI);
 	GET(TechnoClass* const, pTechno, EBP);
 
-	if (pTechno->IsDead() && Phobos::Config::DebugToolEnable)
+	if (pTechno->IsDead())
 	{
 		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
@@ -2625,7 +2625,7 @@ DEFINE_HOOK(0x7043B9, TechnoClass_GetZAdjustment_LogTetherButNoLink, 0x6)
 
 	GET(TechnoClass* const, pLink, EAX);
 
-	if (pLink || !Phobos::Config::DebugToolEnable)
+	if (pLink)
 		return 0;
 
 	GET(TechnoClass* const, pThis, ESI);
@@ -2655,7 +2655,7 @@ DEFINE_HOOK(0x73B0C5, UnitClass_DrawIfVisible_LogTetherButNoLink, 0x6)
 
 	GET(TechnoClass* const, pLink, EAX);
 
-	if (pLink || !Phobos::Config::DebugToolEnable)
+	if (pLink)
 		return 0;
 
 	GET(TechnoClass* const, pThis, EDI);
@@ -2685,7 +2685,7 @@ DEFINE_HOOK(0x7410D6, UnitClass_GetFireError_LogTetherButNoLink, 0x7)
 
 	GET(TechnoClass* const, pLink, EAX);
 
-	if (pLink || !Phobos::Config::DebugToolEnable)
+	if (pLink)
 		return 0;
 
 	GET(TechnoClass* const, pThis, ESI);
