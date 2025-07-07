@@ -77,6 +77,7 @@ TechnoExt::ExtData::~ExtData()
 	}
 
 	this->MyTrackingLasers.clear();
+	this->BulletsTargetingMe.Clear();
 
 	if (this->UndergroundTracked)
 		ScenarioExt::Global()->UndergroundTracker.Remove(pThis);
@@ -1244,7 +1245,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->AttackMoveFollowerTempCount)
 		.Process(this->UndergroundTracked)
 		.Process(this->SpecialTracked)
-		.Process(this->BulletsTargetingMe)
+		//.Process(this->BulletsTargetingMe)
 		;
 }
 
