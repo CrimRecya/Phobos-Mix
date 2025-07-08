@@ -6,7 +6,7 @@ DEFINE_JUMP(LJMP, 0x741406, 0x741427)
 
 DEFINE_HOOK(0x736F61, UnitClass_UpdateFiring_FireUp, 0x6)
 {
-	enum { SkipFiring = 0x736F73 };
+	enum { SkipFiring = 0x737063 };
 
 	GET(UnitClass*, pThis, ESI);
 	GET(int, weaponIndex, EDI);
@@ -43,15 +43,15 @@ DEFINE_HOOK(0x736F61, UnitClass_UpdateFiring_FireUp, 0x6)
 	{
 		int cumulativeDelay = 0;
 		int projectedDelay = 0;
-		auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pThis->GetWeapon(weaponIndex)->WeaponType);
-		bool allowBurst = pWeaponExt && pWeaponExt->Burst_FireWithinSequence;
+		const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pThis->GetWeapon(weaponIndex)->WeaponType);
+		const bool allowBurst = pWeaponExt && pWeaponExt->Burst_FireWithinSequence;
 
 		// Calculate cumulative burst delay as well cumulative delay after next shot (projected delay).
 		if (allowBurst)
 		{
 			for (int i = 0; i <= pThis->CurrentBurstIndex; i++)
 			{
-				int burstDelay = pWeaponExt->GetBurstDelay(i);
+				const int burstDelay = pWeaponExt->GetBurstDelay(i);
 				int delay = 0;
 
 				if (burstDelay > -1)
@@ -87,6 +87,45 @@ DEFINE_HOOK(0x736F61, UnitClass_UpdateFiring_FireUp, 0x6)
 			// If projected frame for firing next shot goes beyond the sequence frame count, cease firing after this shot and start rearm timer.
 			if (fireUp + projectedDelay > frames)
 				pExt->ForceFullRearmDelay = true;
+		}
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x736F67, UnitClass_UpdateFiring_BurstNoDelay, 0x6)
+{
+	enum { SkipVanillaFire = 0x737063 };
+
+	GET(UnitClass* const, pThis, ESI);
+	GET(const int, wpIdx, EDI);
+	GET(AbstractClass* const, pTarget, EAX);
+
+	if (const auto pWeapon = pThis->GetWeapon(wpIdx)->WeaponType)
+	{
+		if (pWeapon->Burst > 1)
+		{
+			if (WeaponTypeExt::ExtMap.Find(pWeapon)->Burst_NoDelay)
+			{
+				if (pThis->Fire(pTarget, wpIdx))
+				{
+					if (!pThis->CurrentBurstIndex)
+						return SkipVanillaFire;
+
+					auto rof = pThis->RearmTimer.TimeLeft;
+					pThis->RearmTimer.Start(0);
+
+					for (auto i = pThis->CurrentBurstIndex; i < pWeapon->Burst && pThis->GetFireError(pTarget, wpIdx, true) == FireError::OK && pThis->Fire(pTarget, wpIdx); ++i)
+					{
+						rof = pThis->RearmTimer.TimeLeft;
+						pThis->RearmTimer.Start(0);
+					}
+
+					pThis->RearmTimer.Start(rof);
+				}
+
+				return SkipVanillaFire;
+			}
 		}
 	}
 

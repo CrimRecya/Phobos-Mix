@@ -170,3 +170,42 @@ DEFINE_HOOK(0x520AD9, InfantryClass_FiringAI_IsGattling, 0x5)
 
 	return 0;
 }
+
+DEFINE_HOOK(0x5209EE, InfantryClass_UpdateFiring_BurstNoDelay, 0x5)
+{
+	enum { SkipVanillaFire = 0x520A57 };
+
+	GET(InfantryClass* const, pThis, EBP);
+	GET(const int, wpIdx, ESI);
+	GET(AbstractClass* const, pTarget, EAX);
+
+	if (const auto pWeapon = pThis->GetWeapon(wpIdx)->WeaponType)
+	{
+		if (pWeapon->Burst > 1)
+		{
+			if (WeaponTypeExt::ExtMap.Find(pWeapon)->Burst_NoDelay)
+			{
+				if (pThis->Fire(pTarget, wpIdx))
+				{
+					if (!pThis->CurrentBurstIndex)
+						return SkipVanillaFire;
+
+					auto rof = pThis->RearmTimer.TimeLeft;
+					pThis->RearmTimer.Start(0);
+
+					for (auto i = pThis->CurrentBurstIndex; i < pWeapon->Burst && pThis->GetFireError(pTarget, wpIdx, true) == FireError::OK && pThis->Fire(pTarget, wpIdx); ++i)
+					{
+						rof = pThis->RearmTimer.TimeLeft;
+						pThis->RearmTimer.Start(0);
+					}
+
+					pThis->RearmTimer.Start(rof);
+				}
+
+				return SkipVanillaFire;
+			}
+		}
+	}
+
+	return 0;
+}
