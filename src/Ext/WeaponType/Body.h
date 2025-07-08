@@ -82,13 +82,23 @@ public:
 		Valueable<bool> AddtionalDamage_GattlingValue;
 		Valueable<double> AddtionalDamage_GattlingValue_Mult;
 		Valueable<bool> KickOutPassengers;
-
 		Nullable<ColorStruct> Beam_Color;
 		Valueable<int> Beam_Duration;
 		Valueable<double> Beam_Amplitude;
 		Valueable<bool> Beam_IsHouseColor;
 		Valueable<int> LaserThickness;
 		Valueable<bool> Laser_IsTracking;
+		Nullable<PartialVector2D<int>> DelayedFire_Duration;
+		Valueable<bool> DelayedFire_SkipInTransport;
+		Valueable<AnimTypeClass*> DelayedFire_Animation;
+		Nullable<AnimTypeClass*> DelayedFire_OpenToppedAnimation;
+		Valueable<bool> DelayedFire_AnimIsAttached;
+		Valueable<bool> DelayedFire_CenterAnimOnFirer;
+		Valueable<bool> DelayedFire_RemoveAnimOnNoDelay;
+		Valueable<bool> DelayedFire_PauseFiringSequence;
+		Valueable<bool> DelayedFire_OnlyOnInitialBurst;
+		Nullable<CoordStruct> DelayedFire_AnimOffset;
+		Valueable<bool> DelayedFire_AnimOnTurret;
 
 		bool SkipWeaponPicking;
 
@@ -159,6 +169,17 @@ public:
 			, LaserThickness { 3 }
 			, Laser_IsTracking { false }
 			, SkipWeaponPicking { true }
+			, DelayedFire_Duration {}
+			, DelayedFire_SkipInTransport { false }
+			, DelayedFire_Animation {}
+			, DelayedFire_OpenToppedAnimation {}
+			, DelayedFire_AnimIsAttached { true }
+			, DelayedFire_CenterAnimOnFirer { false }
+			, DelayedFire_RemoveAnimOnNoDelay { false }
+			, DelayedFire_PauseFiringSequence { false }
+			, DelayedFire_OnlyOnInitialBurst { false }
+			, DelayedFire_AnimOffset {}
+			, DelayedFire_AnimOnTurret { true }
 		{ }
 
 		int GetBurstDelay(int burstIndex) const;

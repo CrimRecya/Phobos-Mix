@@ -425,7 +425,7 @@ public:
 			, SuppressWreckage { false }
 			, ActivateWreckage { false }
 
-			, AirstrikeTargets { AffectedTarget::Building }
+			, AirstrikeTargets { AffectedTarget::All }
 
 			, AffectsBelowPercent { 1.0 }
 			, AffectsAbovePercent { 0.0 }

@@ -6,9 +6,10 @@ DEFINE_JUMP(LJMP, 0x741406, 0x741427)
 
 DEFINE_HOOK(0x736F61, UnitClass_UpdateFiring_FireUp, 0x6)
 {
+	enum { SkipFiring = 0x736F73 };
+
 	GET(UnitClass*, pThis, ESI);
 	GET(int, weaponIndex, EDI);
-	enum { SkipFiring = 0x736F73 };
 
 	const auto pType = pThis->Type;
 
@@ -43,14 +44,14 @@ DEFINE_HOOK(0x736F61, UnitClass_UpdateFiring_FireUp, 0x6)
 		int cumulativeDelay = 0;
 		int projectedDelay = 0;
 		auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pThis->GetWeapon(weaponIndex)->WeaponType);
-		const bool allowBurst = pWeaponExt && pWeaponExt->Burst_FireWithinSequence;
+		bool allowBurst = pWeaponExt && pWeaponExt->Burst_FireWithinSequence;
 
 		// Calculate cumulative burst delay as well cumulative delay after next shot (projected delay).
 		if (allowBurst)
 		{
 			for (int i = 0; i <= pThis->CurrentBurstIndex; i++)
 			{
-				const int burstDelay = pWeaponExt->GetBurstDelay(i);
+				int burstDelay = pWeaponExt->GetBurstDelay(i);
 				int delay = 0;
 
 				if (burstDelay > -1)
@@ -68,6 +69,9 @@ DEFINE_HOOK(0x736F61, UnitClass_UpdateFiring_FireUp, 0x6)
 					projectedDelay = cumulativeDelay + delay;
 			}
 		}
+
+		if (TechnoExt::HandleDelayedFireWithPauseSequence(pThis, weaponIndex, fireUp + cumulativeDelay))
+			return SkipFiring;
 
 		const int frame = (timer.TimeLeft - timer.GetTimeLeft());
 
