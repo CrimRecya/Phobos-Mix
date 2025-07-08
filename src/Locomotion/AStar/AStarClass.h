@@ -2,7 +2,7 @@
 
 #pragma region Toggle
 
-//#define ENABLE_ASTAR_REIMPL
+#define ENABLE_ASTAR_REIMPL
 
 #pragma endregion
 
@@ -19,347 +19,346 @@
 class AStarClass
 {
 public:
-	struct PathType
+
+	// 结构体定义
+
+	struct PathFinderData
 	{
-		CellStruct Start;
-		int AccumulatedDistance;
-		int AccumulatedCount;
-		int* Facings;
+		// 路径起点单元格
+		CellStruct StartCell;
+
+		// 路径总距离
+		int TotalDistance;
+
+		// 路径节点数量
+		int PathLength;
+
+		// 移动方向数组
+		int* Directions;
+
+		// 不明
 		int unknown_int_10;
+
+		// 单元格高度数组
 		int* Levels;
+
+		// 不明
 		CellStruct unknown_cellstruct_18;
+
+		// 不明
 		int unknown_int_1C;
 	};
 
-	struct WorkPathHeapNode
+	struct PathNode
 	{
-		CellClass** Items;
+		// 指向单元格的指针
+		CellClass **CellItems;
+
+		// 单元格高度
 		int Level;
-		WorkPathHeapNode* Prev;
+
+		// 前一个路径节点
+		PathNode* PreviousNode;
 	};
 
-	struct WorkPathHeapData
+	struct PathNodeBuffer
 	{
-		WorkPathHeapNode WorkPathHeapData[131072];
+		// 路径节点缓冲区
+		PathNode Nodes[131072];
+
+		// 当前节点数量
 		int Count;
 	};
 
-	struct PassabilityIndexData
+	struct PassabilityData
 	{
-		short Indexes[500];
+		// 可通行性索引
+		short Indices[500];
 	};
 
-	struct WorkPathQueueNode
+	struct PathQueueNode
 	{
-		WorkPathHeapNode* WorkPathHeapNodes;
-		float MovementDistance;
-		float AccumulatedDistance;
-		int AccumulatedCount;
+		// 路径节点数据
+		PathNode* NodeData;
+
+		// 路径成本
+		float PathCost;
+
+		// 总成本(路径成本+启发式成本)
+		float TotalCost;
+
+		// 节点计数
+		int NodeCount;
 	};
 
-	struct HierarchicalQueueNode
+	struct HierarchicalNode
 	{
+		// 节点索引
 		int NodeIndex;
+
+		// 查找器索引
 		int FinderIndex;
-		float Coefficient;
+
+		// 节点成本
+		float Cost;
+
+		// 计数
 		int Count;
 	};
+
+	// 实体引用
 
 	DEFINE_REFERENCE(AStarClass, Instance, 0x87E8B8u)
-	DEFINE_REFERENCE(AStarClass::PathType, PathData, 0x89A2D8u)
+	DEFINE_REFERENCE(AStarClass::PathFinderData, PathData, 0x89A2D8u)
 
-	AStarClass() JMP_THIS(0x42A6D0);
-	~AStarClass() JMP_THIS(0x42A900);
+	// 构造/析构函数
 
-	void CleanUp() JMP_THIS(0x42A5B0);
-	void ClearPassability() JMP_THIS(0x42C1C0);
-	void ReinitCostArrays(RectangleStruct* a2) JMP_THIS(0x42AC00);
+	AStarClass()
+		JMP_THIS(0x42A6D0);
 
-	void RecordCellIndex(FootClass* pFoot) JMP_THIS(0x42CCD0);
-	void RegisterCellIndex(int a2, int index) JMP_THIS(0x42CF80);
+	~AStarClass()
+		JMP_THIS(0x42A900);
 
-	static CellStruct* __fastcall NextPathCell(CellStruct* a1, CellStruct* a2, int a3) JMP_STD(0x42D490);
+	// 初始化函数
 
+	void CleanUp()
+		JMP_THIS(0x42A5B0);
 
-	// main external interface
-	PathType* DoPathfinding
-	(
-		CellStruct* pSource,
-		CellStruct* pDestination,
-		FootClass* pFoot,
-		int* a5,
-		int a6,
-		MovementZone movementZone,
-		int mode
-	)
-	JMP_THIS(0x42C900);
+	void ClearPassability()
+		JMP_THIS(0x42C1C0);
 
-	// lightweight external interface
-	int AttemptPath
-	(
-		CellStruct* pSource,
-		CellStruct* pDestination,
-		FootClass* pFoot,
-		bool checkSourceBridge,
-		bool checkDestinationBridge,
-		MovementZone movementZone
-	)
-	JMP_THIS(0x42D170);
+	void ReinitCostArrays(
+		RectangleStruct* pMapRect
+	) JMP_THIS(0x42AC00);
 
+	// 记录函数
 
-	// main function
-	PathType* FindPathRegular
-	(
-		CellStruct* pSource,
-		CellStruct* pDestination,
-		FootClass* pFoot,
-		int* a5,
-		int a6,
-		bool a7
-	)
-	JMP_THIS(0x429A90);
-
-	// hierarchical quick find
-	bool FindHierarchical
-	(
-		CellStruct* pSource,
-		CellStruct* pDestination,
-		MovementZone movementZone,
+	void RecordCellIndex(
 		FootClass* pFoot
-	)
-	JMP_THIS(0x42C290);
+	) JMP_THIS(0x42CCD0);
 
+	void RegisterCellIndex(
+		int index,
+		int dataIndex
+	) JMP_THIS(0x42CF80);
 
-	// auxiliary function in FindPathRegular
-	WorkPathQueueNode* CreateNode
-	(
-		WorkPathQueueNode* a2,
-		CellClass** a3,
-		CellStruct* a4,
-		float a5
-	)
-	JMP_THIS(0x42A460);
+	// 静态函数
 
-	// auxiliary function in FindPathRegular
-	void PostProcessCells(FootClass* pFoot) JMP_THIS(0x42ACF0);
-	// auxiliary function in PostProcessCells
-	FootClass* GetOccupier(CellStruct* pCheckCell, int level) JMP_THIS(0x42B080);
+	// static CellStruct* __fastcall NextPathCell(CellStruct* pBuffer, CellStruct* pCurrent, int dir) JMP_STD(0x42D490);
+	static CellStruct NextPathCell(
+		const CellStruct cell,
+		const int dir
+	);
 
-	// auxiliary function in FindPathRegular
-	double GetMovementCost
-	(
-		CellClass** a2,
-		CellClass** a3,
-		bool a4,
-		int a5,
-		FootClass* pFoot
-	)
-	JMP_THIS(0x429830);
+	// 接口函数
 
-	// auxiliary function in FindPathRegular
-	PathType* BuildFinalPath(WorkPathQueueNode* a2, int* a3) JMP_THIS(0x42AA90);
-
-	// auxiliary function in FindPathRegular
-	void ProcessFinalPath(PathType* pPath, FootClass* pFoot) JMP_THIS(0x42B210);
-	// auxiliary function in ProcessFinalPath
-	int FixupFinalPath
-	(
+	// 主要路径查找接口
+	PathFinderData* FindPath(
+		CellStruct* pStart,
+		CellStruct* pEnd,
 		FootClass* pFoot,
-		int* facings,
-		int* levels,
-		int a5,
-		int a6,
-		CellStruct* pCurCell
-	)
-	JMP_THIS(0x42B420);
-
-	// auxiliary function in FindPathRegular
-	void OptimizeFinalPath(PathType* pPath, FootClass* pFoot) JMP_THIS(0x42B7F0);
-	// auxiliary function in OptimizeFinalPath
-	void AdjacentCell
-	(
-		int* a2,
-		int a3,
-		int a4,
-		int* a5,
-		CellStruct* pAdjCell
-	)
-	JMP_THIS(0x42BCA0);
-	// auxiliary function in OptimizeFinalPath
-	void PlotStraightLine
-	(
 		int* pDirs,
-		int maxLength,
-		CellStruct* pCurrent,
-		CellStruct* pVector,
-		FootClass* pFoot,
-		int curLevel,
-		bool allowThreats
-	)
-	JMP_THIS(0x42BE20);
-
-
-	// All temp variable name
-	__int8 unknown_byte_0;
-	bool FindBridgeOwner;
-	__int8 unknown_byte_2;
-	bool CanFind;
-	float FinderCoefficient;
-	bool IsAlt;
-	WorkPathHeapData* WorkPathHeapData; // -> [131072]
-	WorkPathQueueNode** WorkPathPriorityQueueBuffer; // -> [65536]
-	PriorityQueueClass<WorkPathQueueNode>* WorkPathPriorityQueueDatas; // Count = 65537
-	int* AltCounts;
-	int* Counts;
-	float* Distances;
-	float* AltDistances;
-	int FindCount;
-	SpeedType FinderSpeedType;
-	int SourceCellLevel;
-	int DestinationCellLevel;
-	bool Finding;
-	int FindMode;
-	int* BothWayPassabilityCounts[3];
-	int* OneWayPassabilityCounts[3];
-	float* OneWayPassabilityCoefficients[3];
-	HierarchicalQueueNode** HierarchicalPriorityQueueBuffer; // -> [10000]
-	PriorityQueueClass<HierarchicalQueueNode>* HierarchicalPriorityQueueDatas; // Count = 10001
-	int CellStructCount;
-	CellStruct CellStructBuffer;
-	DynamicVectorClass<unsigned int> SubzonesIndexes[3];
-	PassabilityIndexData PassabilityIndexes[3];
-	int PassabilityCounts[3];
-};
-
-class AStarClassFake final : public AStarClass
-{
-public:
-
-#ifdef DISABLED_ASTAR_REIMPL
-
-	PathType* DoPathfinding_AsVanilla
-	(
-		CellStruct* pSource,
-		CellStruct* pDestination,
-		FootClass* pFoot,
-		int* a5,
-		int a6,
+		int maxSteps,
 		MovementZone movementZone,
 		int mode
-	);
+	) JMP_THIS(0x42C900);
 
-	int AttemptPath_AsVanilla
-	(
-		CellStruct* pSource,
-		CellStruct* pDestination,
+	// 轻量级路径检查接口
+	int AttemptPath(
+		CellStruct* pStart,
+		CellStruct* pEnd,
 		FootClass* pFoot,
-		bool checkSourceBridge,
-		bool checkDestinationBridge,
+		bool checkStartBridge,
+		bool checkEndBridge,
 		MovementZone movementZone
-	);
+	) JMP_THIS(0x42D170);
 
-	PathType* FindPathRegular_AsVanilla
-	(
-		CellStruct* pSource,
-		CellStruct* pDestination,
+	// 功能函数
+
+	// 常规路径查找
+	PathFinderData* FindRegularPath(
+		CellStruct* pStart,
+		CellStruct* pEnd,
 		FootClass* pFoot,
-		int* a5,
-		int a6,
-		bool a7
-	);
+		int* pDirs,
+		int maxSteps,
+		bool useHierarchical
+	) JMP_THIS(0x429A90);
 
-	bool FindHierarchical_AsVanilla
-	(
-		CellStruct* pSource,
-		CellStruct* pDestination,
+	// 分层快速查找
+	bool FindHierarchicalPath(
+		CellStruct* pStart,
+		CellStruct* pEnd,
 		MovementZone movementZone,
 		FootClass* pFoot
-	);
+	) JMP_THIS(0x42C290);
 
-	WorkPathQueueNode* CreateNode_AsVanilla
-	(
-		WorkPathQueueNode* a2,
-		CellClass** a3,
-		CellStruct* a4,
-		float a5
-	);
+	// 辅助函数
 
-	void PostProcessCells_AsVanilla(FootClass* pFoot);
+	// 创建路径节点 ∈ FindRegularPath
+	PathQueueNode* CreatePathNode(
+		PathQueueNode* pPrevNode,
+		CellClass** pCellPtr,
+		CellStruct* pCoords,
+		float cost
+	) JMP_THIS(0x42A460);
 
-	double GetMovementCost
-	(
-		CellClass** a2,
-		CellClass** a3,
-		bool a4,
-		int a5,
+	// 后处理单元格 ∈ FindRegularPath
+	void PostProcessCells(
 		FootClass* pFoot
-	);
+	) JMP_THIS(0x42ACF0);
 
-	PathType* BuildFinalPath_AsVanilla(WorkPathQueueNode* a2, int* a3);
+	// 获取单元格占用者 ∈ PostProcessCells
+	FootClass* GetOccupier(
+		CellStruct* pCell,
+		int level
+	) const JMP_THIS(0x42B080);
 
-	void ProcessFinalPath_AsVanilla(PathType* pPath, FootClass* pFoot);
+	// 计算移动成本 ∈ FindRegularPath
+	double CalculateMoveCost(
+		CellClass** pFromCellPtr,
+		CellClass** pToCellPtr,
+		bool isAlternate,
+		Move moveType,
+		FootClass* pFoot
+	) const JMP_THIS(0x429830);
 
-	int FixupFinalPath_AsVanilla
-	(
-		FootClass* pFoot,
-		int* facings,
-		int* levels,
-		int a5,
-		int a6,
-		CellStruct* pCurCell
-	);
+	// 构建最终路径 ∈ FindRegularPath
+	PathFinderData* BuildFinalPath(
+		PathQueueNode* pEndNode,
+		int* pDirs
+	) const JMP_THIS(0x42AA90);
 
-	void OptimizeFinalPath_AsVanilla(PathType* pPath, FootClass* pFoot);
+	// 处理最终路径 ∈ FindRegularPath
+	void ProcessFinalPath(
+		PathFinderData* const pPath,
+		const FootClass* const pFoot
+	) const; // JMP_THIS(0x42B210)
 
-	void AdjacentCell_AsVanilla
-	(
-		int* a2,
-		int a3,
-		int a4,
-		int* a5,
-		CellStruct* pAdjCell
-	);
+	// 修正最终路径 ∈ ProcessFinalPath
+	int AdjustFinalPath(
+		const FootClass* const pFoot,
+		int* const pDirs,
+		const int* const pLevels,
+		const int steps,
+		int offset,
+		CellStruct* const pCurrent
+	) const; // JMP_THIS(0x42B420)
 
-#endif
+	// 优化最终路径 ∈ FindRegularPath
+	void OptimizeFinalPath(
+		PathFinderData* const pPath,
+		const FootClass* const pFoot
+	) const; // JMP_THIS(0x42B7F0)
 
-	static void PlotStraightLine_Reimplement
-	(
+	// 获取相邻单元格 ∈ OptimizeFinalPath
+	void GetFinalStepCell(
+		const int* const pDirs,
+		const int segmentEndIdx,
+		const int segmentStartIdx,
+		int* const pOutIdx,
+		CellStruct* const pAdjacent
+	) const; // JMP_THIS(0x42BCA0);
+
+	// 绘制直线路径 ∈ OptimizeFinalPath
+	bool PlotStraightPath(
 		int* const pDirs,
 		const int maxLength,
-		const CellStruct* const pCurCell,
-		const CellStruct* const pVecCell,
+		const CellStruct* const pCurrent,
+		const CellStruct* const pVector,
 		const FootClass* const pFoot,
-		int curLevel,
+		const int curLevel,
 		const bool allowThreats
-	)
-	{
-		if (ENABLE_ASTAR_OPTIMIZE)
-			AStarClassFake::PlotStraightLine_Optimized(pDirs, maxLength, pCurCell, pVecCell, pFoot, curLevel, allowThreats);
-		else
-			AStarClassFake::PlotStraightLine_AsVanilla(pDirs, maxLength, pCurCell, pVecCell, pFoot, curLevel, allowThreats);
-	}
+	) const; // JMP_THIS(0x42BE20)
 
-	static bool PlotStraightLine_AsVanilla
-	(
-		int* const pDirs,
-		const int maxLength,
-		const CellStruct* const pCurCell,
-		const CellStruct* const pVecCell,
-		const FootClass* const pFoot,
-		int& curLevel,
-		const bool allowThreats
-	);
+	// 成员变量（分层：大区块、子区域、单元格）
 
-	static void PlotStraightLine_Optimized
-	(
-		int* const pDirs,
-		const int maxLength,
-		const CellStruct* const pCurCell,
-		const CellStruct* const pVecCell,
-		const FootClass* const pFoot,
-		int curLevel,
-		const bool allowThreats
-	);
+	// 是否已初始化
+	bool Initialized;
+
+	// 是否查找桥梁所有者
+	bool FindBridgeOwner;
+
+	// 不明
+	char unknown_char_2;
+
+	// 是否能找到路径
+	bool CanFindPath;
+
+	// 路径成本因子
+	float PathCostFactor;
+
+	// 是否是桥梁路径
+	bool IsAlt;
+
+	// 路径节点缓冲区
+	PathNodeBuffer* PathNodeBuffer; // -> [131072]
+
+	// 路径队列缓冲区
+	PathQueueNode** PathQueueBuffer; // -> [65536]
+
+	// 路径优先级队列
+	PriorityQueueClass<PathQueueNode>* PathQueue; // Count = 65537
+
+	// 桥梁路径访问计数数组
+	int* AltVisitCounts;
+
+	// 访问计数数组
+	int* VisitCounts;
+
+	// 距离数组
+	float* Distances;
+
+	// 桥梁路径距离数组
+	float* AltDistances;
+
+	// 标记访问号
+	int SearchID;
+
+	// 单位速度类型
+	SpeedType FinderSpeedType;
+
+	// 起始高度
+	int StartLevel;
+
+	// 目标高度
+	int EndLevel;
+
+	// 是否正在搜索
+	bool IsSearching;
+
+	// 搜索模式
+	int FindMode;
+
+	// 双向通行计数
+	int* TwoWayPassCounts[3];
+
+	// 单向通行计数
+	int* OneWayPassCounts[3];
+
+	// 单向通行因子
+	float* OneWayPassFactors[3];
+
+	// 分层节点缓冲区
+	HierarchicalNode** HierarchyBuffer; // -> [10000]
+
+	// 分层优先级队列
+	PriorityQueueClass<HierarchicalNode>* HierarchyQueue; // Count = 10001
+
+	// 单元格计数
+	int CellStructCount;
+
+	// 单元格缓冲区
+	CellStruct CellStructBuffer;
+
+	// 区域索引数组
+	DynamicVectorClass<unsigned int> ZoneIndices[3];
+
+	// 可通行性数据
+	PassabilityData PassabilityData[3];
+
+	// 可通行性计数
+	int PassabilityCounts[3];
 };
 
 #endif
