@@ -453,12 +453,10 @@ DEFINE_HOOK(0x469AA4, BulletClass_Logics_Extras, 0x5)
 			int damage = defaultDamage;
 			size_t size = pWeaponExt->ExtraWarheads_DamageOverrides.size();
 			auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
+			auto const pTarget = abstract_cast<TechnoClass*>(pThis->Target);
 
-			if (auto const pTarget = abstract_cast<TechnoClass*>(pThis->Target))
-			{
-				if (!pWHExt->IsHealthInThreshold(pTarget))
-					continue;
-			}
+			if (pTarget && !pWHExt->IsHealthInThreshold(pTarget))
+				continue;
 
 			if (size > i)
 				damage = pWeaponExt->ExtraWarheads_DamageOverrides[i];
@@ -487,7 +485,7 @@ DEFINE_HOOK(0x469AA4, BulletClass_Logics_Extras, 0x5)
 			if (isFull)
 				WarheadTypeExt::DetonateAt(pWH, *coords, pTechno, damage, pOwner, pThis->Target);
 			else
-				WarheadTypeExt::ExtMap.Find(pWH)->DamageAreaWithTarget(*coords, damage, pTechno, pWH, true, pOwner, abstract_cast<TechnoClass*>(pThis->Target));
+				WarheadTypeExt::ExtMap.Find(pWH)->DamageAreaWithTarget(*coords, damage, pTechno, pWH, true, pOwner, pTarget);
 		}
 
 		// Unlimbo the launcher
