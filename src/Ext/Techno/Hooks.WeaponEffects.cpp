@@ -296,9 +296,20 @@ static void __fastcall AttachLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLa
 	const auto pExt = TechnoExt::ExtMap.Find(pThis);
 
 	// Target changed. Stop tracking current lasers.
-	if (pExt->MyTrackingLasersTarget && pExt->MyTrackingLasersTarget != pTarget)
+	if (!pTarget || pExt->MyTrackingLasersTarget != pTarget)
 	{
-		pExt->MyTrackingLasers.clear();
+		const size_t size = pExt->MyTrackingLasers.size();
+
+		if (size > 0)
+		{
+			for (size_t i = 0; i < size; ++i)
+				pExt->MyTrackingLasers[i].Laser->Duration = 0;
+
+			pExt->MyTrackingLasers.clear();
+		}
+
+		if (!pTarget)
+			return;
 	}
 	else
 	{
@@ -328,7 +339,7 @@ static void __fastcall AttachLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLa
 
 				// Hardcoded these properties for tracking lasers.
 				pLaser->Fades = false;
-				pLaser->Duration = 2;
+				pLaser->Duration = INT_MAX;
 				pLaser->Progress.Value = 0;
 				return;
 			}
@@ -341,7 +352,7 @@ static void __fastcall AttachLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLa
 
 	// Hardcoded these properties for tracking lasers.
 	pLaser->Fades = false;
-	pLaser->Duration = 2;
+	pLaser->Duration = INT_MAX;
 	pLaser->Progress.Value = 0;
 }
 

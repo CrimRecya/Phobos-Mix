@@ -76,7 +76,16 @@ TechnoExt::ExtData::~ExtData()
 		this->ChildAttachments.clear();
 	}
 
-	this->MyTrackingLasers.clear();
+	const size_t size = this->MyTrackingLasers.size();
+
+	if (size > 0)
+	{
+		for (size_t i = 0; i < size; ++i)
+			this->MyTrackingLasers[i].Laser->Duration = 0;
+
+		this->MyTrackingLasers.clear();
+	}
+
 	this->BulletsTargetingMe.Clear();
 
 	if (this->UndergroundTracked)
@@ -988,8 +997,15 @@ void TechnoExt::ExtData::UpdateTrackingLasers()
 	else
 	{
 		// Stop tracking and delete all lasers if target changed.
-		if (!this->MyTrackingLasers.empty())
+		const size_t size = this->MyTrackingLasers.size();
+
+		if (size > 0)
+		{
+			for (size_t i = 0; i < size; ++i)
+				this->MyTrackingLasers[i].Laser->Duration = 0;
+
 			this->MyTrackingLasers.clear();
+		}
 
 		this->MyTrackingLasersTarget = nullptr;
 	}
