@@ -336,7 +336,7 @@ static void __fastcall AttachLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLa
 	}
 
 	// Track the firer.
-	pExt->MyTrackingLasers.emplace_back(TechnoExt::ExtData::LaserTrackingData{pLaser, wpIdx, pThis->CurrentBurstIndex, pWeapon});
+	pExt->MyTrackingLasers.emplace_back(pLaser, wpIdx, pThis->CurrentBurstIndex, pWeapon);
 	pExt->MyTrackingLasersTarget = pTarget;
 
 	// Hardcoded these properties for tracking lasers.

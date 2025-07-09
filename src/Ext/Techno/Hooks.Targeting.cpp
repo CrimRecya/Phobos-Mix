@@ -3,9 +3,7 @@
 DEFINE_HOOK(0x6FA697, TechnoClass_Update_DontScanIfUnarmed, 0x6)
 {
 	enum { SkipTargeting = 0x6FA6F5 };
-
 	GET(TechnoClass* const, pThis, ESI);
-
 	return pThis->IsArmed() && !TechnoExt::ShouldInheritTarget(pThis) ? 0 : SkipTargeting;
 }
 

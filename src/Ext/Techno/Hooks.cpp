@@ -222,13 +222,13 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	auto const pOwner = pThis->Owner;
 	pExt->TypeExtData = pTypeExt;
 
 	pExt->CurrentShieldType = pTypeExt->ShieldType;
 	pExt->InitializeAttachEffects();
 	pExt->InitializeDisplayInfo();
 	pExt->InitializeLaserTrails();
-	pExt->InitializeDisplayInfo();
 	pExt->InitAggressiveStance();
 	pExt->InitCeaseFireStance();
 	pExt->InitializeRecoilData();
@@ -237,16 +237,16 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	if (RulesExt::Global()->CheckExtraBaseNormal && pTypeExt->ExtraBaseNormal)
 		ScenarioExt::Global()->BaseNormalTechnos.push_back(pExt);
 
-	if (pTypeExt->UniqueTechno && pThis->Owner->IsControlledByCurrentPlayer())
+	if (pTypeExt->UniqueTechno && pOwner->IsControlledByCurrentPlayer())
 		ScenarioExt::Global()->OwnedUniqueTechnos.push_back(pExt);
 
 	if (!pExt->AE.HasTint && !pExt->CurrentShieldType)
 		pExt->UpdateTintValues();
 
 	if (pTypeExt->Harvester_Counted)
-		HouseExt::ExtMap.Find(pThis->Owner)->OwnedCountedHarvesters.push_back(pThis);
+		HouseExt::ExtMap.Find(pOwner)->OwnedCountedHarvesters.push_back(pThis);
 
-	if ((pThis->Owner->IsControlledByHuman() || !RulesExt::Global()->DistributeTargetingFrame_AIOnly)
+	if ((pOwner->IsControlledByHuman() || !RulesExt::Global()->DistributeTargetingFrame_AIOnly)
 		&& pTypeExt->DistributeTargetingFrame.Get(RulesExt::Global()->DistributeTargetingFrame))
 	{
 		pThis->TargetingTimer.Start(ScenarioClass::Instance->Random.RandomRanged(0, 15));

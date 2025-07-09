@@ -216,7 +216,7 @@ public:
 			, TiberiumEater_Timer {}
 			, AirstrikeTargetingMe { nullptr }
 			, MyTrackingLasers { }
-			, MyTrackingLasersTarget { }
+			, MyTrackingLasersTarget { nullptr }
 			, SquadManager { nullptr }
 			, ParentAttachment { nullptr }
 			, ChildAttachments {}
