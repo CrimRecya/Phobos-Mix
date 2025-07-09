@@ -37,7 +37,7 @@ bool WarheadTypeExt::ExtData::CanTargetHouse(HouseClass* pHouse, TechnoClass* pT
 
 bool WarheadTypeExt::ExtData::CanAffectTarget(TechnoClass* pTarget) const
 {
-	if (!IsHealthInThreshold(pTarget))
+	if (!this->IsHealthInThreshold(pTarget))
 		return false;
 
 	if (!this->EffectsRequireVerses)
