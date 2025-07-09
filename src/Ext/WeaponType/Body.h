@@ -76,7 +76,6 @@ public:
 		Valueable<bool> KeepRange_AllowPlayer;
 		Nullable<bool> CylinderRangefinding;
 		Nullable<bool> AttackIronCurtain;
-		Valueable<bool> Burst_NoDelay;
 		Valueable<bool> UnlimboDetonate;
 		Valueable<bool> UnlimboDetonate_Force;
 		Valueable<bool> ResetGattlingValue;
@@ -157,7 +156,6 @@ public:
 			, KeepRange_AllowPlayer { false }
 			, CylinderRangefinding {}
 			, AttackIronCurtain {}
-			, Burst_NoDelay { false }
 			, UnlimboDetonate { false }
 			, UnlimboDetonate_Force { false }
 			, ResetGattlingValue { false }

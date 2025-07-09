@@ -140,7 +140,6 @@ void WeaponTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->KeepRange_AllowPlayer.Read(exINI, pSection, "KeepRange.AllowPlayer");
 	this->CylinderRangefinding.Read(exINI, pSection, "CylinderRangefinding");
 	this->AttackIronCurtain.Read(exINI, pSection, "AttackIronCurtain");
-	this->Burst_NoDelay.Read(exINI, pSection, "Burst.NoDelay");
 	this->UnlimboDetonate.Read(exINI, pSection, "UnlimboDetonate");
 	this->UnlimboDetonate_Force.Read(exINI, pSection, "UnlimboDetonate.Force");
 	this->ResetGattlingValue.Read(exINI, pSection, "ResetGattlingValue");
@@ -232,7 +231,6 @@ void WeaponTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->KeepRange_AllowPlayer)
 		.Process(this->CylinderRangefinding)
 		.Process(this->AttackIronCurtain)
-		.Process(this->Burst_NoDelay)
 		.Process(this->UnlimboDetonate)
 		.Process(this->UnlimboDetonate_Force)
 		.Process(this->ResetGattlingValue)
