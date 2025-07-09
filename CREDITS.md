@@ -513,6 +513,7 @@ This page lists all the individual contributions to the project by their author.
   - Fix an issue that jumpjet harvester cannot automatically go mining when leaving the weapons factory
   - Fix an issue that jumpjet harvester will overlap when manually entering refinery buildings and cause game crashes
   - Fix an issue that `Spawned` aircraft will fly towards the edge of the map when its `Spawner` is under EMP
+  - Burst without delay
   - New Missile trajectory
   - New Engrave trajectory
   - New Tracing trajectory
@@ -590,6 +591,7 @@ This page lists all the individual contributions to the project by their author.
   - Allows refineries to use multiple ActiveAnim simultaneously
   - Several attackmove related enhancement
   - Fix the bug that `OpenToppedWarpDistance` is calculated incorrectly for building target
+  - Burst without delay
 - **tyuah8**:
   - Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix
   - Destroyed unit leaves sensors bugfix

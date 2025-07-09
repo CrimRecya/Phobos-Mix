@@ -33,6 +33,7 @@ DEFINE_HOOK(0x736F61, UnitClass_UpdateFiring_FireUp, 0x6)
 	}
 
 	const int frames = pType->FiringFrames;
+
 	if (!timer.InProgress() && frames >= 1)
 	{
 		pThis->CurrentFiringFrame = 2 * frames - 1;
@@ -43,7 +44,7 @@ DEFINE_HOOK(0x736F61, UnitClass_UpdateFiring_FireUp, 0x6)
 	{
 		int cumulativeDelay = 0;
 		int projectedDelay = 0;
-		const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pThis->GetWeapon(weaponIndex)->WeaponType);
+		auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pThis->GetWeapon(weaponIndex)->WeaponType);
 		const bool allowBurst = pWeaponExt && pWeaponExt->Burst_FireWithinSequence;
 
 		// Calculate cumulative burst delay as well cumulative delay after next shot (projected delay).
@@ -52,12 +53,7 @@ DEFINE_HOOK(0x736F61, UnitClass_UpdateFiring_FireUp, 0x6)
 			for (int i = 0; i <= pThis->CurrentBurstIndex; i++)
 			{
 				const int burstDelay = pWeaponExt->GetBurstDelay(i);
-				int delay = 0;
-
-				if (burstDelay > -1)
-					delay = burstDelay;
-				else
-					delay = ScenarioClass::Instance->Random.RandomRanged(3, 5);
+				int delay = (burstDelay > -1) ? burstDelay : ScenarioClass::Instance->Random.RandomRanged(3, 5);
 
 				// Other than initial delay, treat 0 frame delays as 1 frame delay due to per-frame processing.
 				if (i != 0)
