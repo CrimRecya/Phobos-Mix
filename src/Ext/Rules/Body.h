@@ -221,10 +221,6 @@ public:
 
 		Valueable<bool> CylinderRangefinding;
 		Valueable<bool> StopPlanningOnEnter;
-		Nullable<int> AINormalTargetingDelay;
-		Nullable<int> PlayerNormalTargetingDelay;
-		Nullable<int> AIGuardAreaTargetingDelay;
-		Nullable<int> PlayerGuardAreaTargetingDelay;
 		Valueable<bool> PlayerAttackIronCurtain;
 		Valueable<bool> AIAttackIronCurtain;
 		Valueable<bool> PlayerAutoRepair;
@@ -254,8 +250,6 @@ public:
 		Valueable<bool> DestroyOwnerlessWalls;
 		Valueable<bool> AIAngerOnAlly;
 		Valueable<bool> FollowTargetSelf;
-		Valueable<bool> DistributeTargetingFrame;
-		Valueable<bool> DistributeTargetingFrame_AIOnly;
 
 		Valueable<bool> JumpjetClimbPredictHeight;
 		Valueable<bool> JumpjetClimbWithoutCutOut;
@@ -578,10 +572,6 @@ public:
 			, PodImage { }
 			, CylinderRangefinding { false }
 			, StopPlanningOnEnter { true }
-			, AINormalTargetingDelay {}
-			, PlayerNormalTargetingDelay {}
-			, AIGuardAreaTargetingDelay {}
-			, PlayerGuardAreaTargetingDelay {}
 			, PlayerAttackIronCurtain { true }
 			, AIAttackIronCurtain { false }
 			, PlayerAutoRepair { false }
@@ -611,8 +601,6 @@ public:
 			, DestroyOwnerlessWalls { false }
 			, AIAngerOnAlly { true }
 			, FollowTargetSelf { false }
-			, DistributeTargetingFrame { false }
-			, DistributeTargetingFrame_AIOnly { true }
 
 			, JumpjetClimbPredictHeight { false }
 			, JumpjetClimbWithoutCutOut { false }

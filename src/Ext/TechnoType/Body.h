@@ -374,11 +374,6 @@ public:
 		Nullable<bool> NoReload_Temporal;
 		Nullable<bool> NoTurret_TrackTarget;
 
-		Nullable<int> AINormalTargetingDelay;
-		Nullable<int> PlayerNormalTargetingDelay;
-		Nullable<int> AIGuardAreaTargetingDelay;
-		Nullable<int> PlayerGuardAreaTargetingDelay;
-
 		Valueable<bool> KeepWarping;
 		Nullable<int> KeepWarping_Distance;
 
@@ -415,8 +410,6 @@ public:
 		Valueable<bool> MissileSpawnUseOtherFLHs;
 
 		Valueable<bool> HarvesterQuickUnloader;
-
-		Nullable<bool> DistributeTargetingFrame;
 
 		Valueable<UnitTypeClass*> ThisIsAJumpjet;
 
@@ -925,11 +918,6 @@ public:
 			, NoReload_Temporal {}
 			, NoTurret_TrackTarget {}
 
-			, AINormalTargetingDelay {}
-			, PlayerNormalTargetingDelay {}
-			, AIGuardAreaTargetingDelay {}
-			, PlayerGuardAreaTargetingDelay {}
-
 			, KeepWarping { false }
 			, KeepWarping_Distance {}
 
@@ -966,8 +954,6 @@ public:
 			, MissileSpawnUseOtherFLHs { false }
 
 			, HarvesterQuickUnloader { false }
-
-			, DistributeTargetingFrame {}
 
 			, ThisIsAJumpjet { nullptr }
 

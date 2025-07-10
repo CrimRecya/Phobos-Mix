@@ -1138,11 +1138,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->NoReload_Temporal.Read(exINI, pSection, "NoReload.Temporal");
 	this->NoTurret_TrackTarget.Read(exINI, pSection, "NoTurret.TrackTarget");
 
-	this->AINormalTargetingDelay.Read(exINI, pSection, "AINormalTargetingDelay");
-	this->PlayerNormalTargetingDelay.Read(exINI, pSection, "PlayerNormalTargetingDelay");
-	this->AIGuardAreaTargetingDelay.Read(exINI, pSection, "AIGuardAreaTargetingDelay");
-	this->PlayerGuardAreaTargetingDelay.Read(exINI, pSection, "PlayerGuardAreaTargetingDelay");
-
 	this->KeepWarping.Read(exINI, pSection, "KeepWarping");
 	this->KeepWarping_Distance.Read(exINI, pSection, "KeepWarping.Distance");
 
@@ -1179,8 +1174,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->MissileSpawnUseOtherFLHs.Read(exINI, pSection, "MissileSpawnUseOtherFLHs");
 
 	this->HarvesterQuickUnloader.Read(exINI, pSection, "HarvesterQuickUnloader");
-
-	this->DistributeTargetingFrame.Read(exINI, pSection, "DistributeTargetingFrame");
 
 	if (pThis->WhatAmI() == AbstractType::AircraftType)
 		this->ThisIsAJumpjet.Read(exINI, pSection, "ThisIsAJumpjet");
@@ -1961,11 +1954,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->NoReload_Temporal)
 		.Process(this->NoTurret_TrackTarget)
 
-		.Process(this->AINormalTargetingDelay)
-		.Process(this->PlayerNormalTargetingDelay)
-		.Process(this->AIGuardAreaTargetingDelay)
-		.Process(this->PlayerGuardAreaTargetingDelay)
-
 		.Process(this->KeepWarping)
 		.Process(this->KeepWarping_Distance)
 
@@ -2002,8 +1990,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->MissileSpawnUseOtherFLHs)
 
 		.Process(this->HarvesterQuickUnloader)
-
-		.Process(this->DistributeTargetingFrame)
 
 		.Process(this->ThisIsAJumpjet)
 
