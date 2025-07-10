@@ -236,16 +236,19 @@ DEFINE_HOOK(0x4A904E, MapClass_PassesProximityCheck_RestoreResult, 0x5)
 	return 0;
 }
 
-// BaseNormal for units Hook #2-1 -> sub_4AAC10 - Let the game do the PassesProximityCheck when the cell which mouse is pointing at has not changed
-DEFINE_HOOK(0x4AACD9, MapClass_TacticalAction_BaseNormalRecheck, 0x5)
-{
-	return (RulesExt::Global()->CheckExtraBaseNormal && !(Unsorted::CurrentFrame % 8)) ? 0x4AACF5 : 0;
-}
+// Let the game do the proximity and shroud check when the cell which mouse is pointing at has not changed
+DEFINE_JUMP(LJMP, 0x4AACD9, 0x4AACF5);
+DEFINE_JUMP(LJMP, 0x4A9361, 0x4A9371);
 
-// BaseNormal for units Hook #2-2 -> sub_4A91B0 - Let the game do the PassesProximityCheck when the cell which mouse is pointing at has not changed
-DEFINE_HOOK(0x4A9361, MapClass_CallBuildingPlaceCheck_BaseNormalRecheck, 0x5)
+// Only when the position changes, the cell flags need to be remark
+DEFINE_HOOK(0x4A9385, DisplayClass_CallBuildingPlaceCheck_CheckMarkActiveFoundation, 0x5)
 {
-	return (RulesExt::Global()->CheckExtraBaseNormal && !(Unsorted::CurrentFrame % 8)) ? 0x4A9371 : 0;
+	enum { ContinueCheck = 0x4A9393, SkipMarkFlags = 0x4A9434 };
+
+	GET(const CellStruct, oldCell, EBX);
+	GET(const CellStruct, newCell, EBP);
+
+	return newCell != oldCell ? ContinueCheck : SkipMarkFlags;
 }
 
 static inline bool IsSameFenceType(const BuildingTypeClass* const pPostType, const BuildingTypeClass* const pFenceType)
@@ -1338,8 +1341,8 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 }
 
 // Place Another Type Hook #2 -> sub_4AB9B0 - Replace current building type for check
-DEFINE_HOOK_AGAIN(0x4ABA47, DisplayClass_PreparePassesProximityCheck_ReplaceBuildingType, 0x6)
-DEFINE_HOOK(0x4A946E, DisplayClass_PreparePassesProximityCheck_ReplaceBuildingType, 0x6)
+DEFINE_HOOK_AGAIN(0x4ABA19, DisplayClass_PreparePassesProximityCheck_ReplaceBuildingType, 0x7)
+DEFINE_HOOK(0x4A943A, DisplayClass_PreparePassesProximityCheck_ReplaceBuildingType, 0x7)
 {
 	const auto pDisplay = &DisplayClass::Instance;
 
