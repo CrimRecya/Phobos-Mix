@@ -430,6 +430,14 @@ public:
 		Nullable<AnimTypeClass*> Wake_Grapple;
 		Nullable<AnimTypeClass*> Wake_Sinking;
 
+		Nullable<int> AINormalTargetingDelay;
+		Nullable<int> PlayerNormalTargetingDelay;
+		Nullable<int> AIGuardAreaTargetingDelay;
+		Nullable<int> PlayerGuardAreaTargetingDelay;
+		Nullable<int> AIAttackMoveTargetingDelay;
+		Nullable<int> PlayerAttackMoveTargetingDelay;
+		Nullable<bool> DistributeTargetingFrame;
+
 		Nullable<bool> AttackMove_Aggressive;
 		Nullable<bool> AttackMove_UpdateTarget;
 
@@ -972,6 +980,14 @@ public:
 			, Wake { }
 			, Wake_Grapple { }
 			, Wake_Sinking { }
+
+			, AINormalTargetingDelay {}
+			, PlayerNormalTargetingDelay {}
+			, AIGuardAreaTargetingDelay {}
+			, PlayerGuardAreaTargetingDelay {}
+			, AIAttackMoveTargetingDelay {}
+			, PlayerAttackMoveTargetingDelay {}
+			, DistributeTargetingFrame {}
 
 			, DigitalDisplay_Health_FakeAtDisguise { true }
 

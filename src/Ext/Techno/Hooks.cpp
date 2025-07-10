@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <AircraftClass.h>
 #include <EventClass.h>
@@ -220,9 +220,9 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	if (!pType) // Critical sanity check in s/l
 		return 0;
 
+	auto const pOwner = pThis->Owner;
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-	auto const pOwner = pThis->Owner;
 	pExt->TypeExtData = pTypeExt;
 
 	pExt->CurrentShieldType = pTypeExt->ShieldType;
@@ -1260,7 +1260,7 @@ DEFINE_HOOK(0x6FABC4, TechnoClass_AI_AnimationPaused, 0x6)
 
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 
-	if (pExt->FiringSequencePaused)
+	if (pExt->DelayedFireSequencePaused)
 		return SkipGameCode;
 
 	return 0;

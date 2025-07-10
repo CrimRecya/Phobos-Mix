@@ -274,10 +274,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->CylinderRangefinding.Read(exINI, GameStrings::General, "CylinderRangefinding");
 	this->StopPlanningOnEnter.Read(exINI, GameStrings::General, "StopPlanningOnEnter");
-	this->AINormalTargetingDelay.Read(exINI, GameStrings::General, "AINormalTargetingDelay");
-	this->PlayerNormalTargetingDelay.Read(exINI, GameStrings::General, "PlayerNormalTargetingDelay");
-	this->AIGuardAreaTargetingDelay.Read(exINI, GameStrings::General, "AIGuardAreaTargetingDelay");
-	this->PlayerGuardAreaTargetingDelay.Read(exINI, GameStrings::General, "PlayerGuardAreaTargetingDelay");
 	this->PlayerAttackIronCurtain.Read(exINI, GameStrings::General, "PlayerAttackIronCurtain");
 	this->AIAttackIronCurtain.Read(exINI, GameStrings::General, "AIAttackIronCurtain");
 	this->PlayerAutoRepair.Read(exINI, GameStrings::General, "PlayerAutoRepair");
@@ -307,8 +303,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->DestroyOwnerlessWalls.Read(exINI, GameStrings::General, "DestroyOwnerlessWalls");
 	this->AIAngerOnAlly.Read(exINI, GameStrings::General, "AIAngerOnAlly");
 	this->FollowTargetSelf.Read(exINI, GameStrings::General, "FollowTargetSelf");
-	this->DistributeTargetingFrame.Read(exINI, GameStrings::General, "DistributeTargetingFrame");
-	this->DistributeTargetingFrame_AIOnly.Read(exINI, GameStrings::General, "DistributeTargetingFrame.AIOnly");
 
 	this->JumpjetClimbPredictHeight.Read(exINI, GameStrings::General, "JumpjetClimbPredictHeight");
 	this->JumpjetClimbWithoutCutOut.Read(exINI, GameStrings::General, "JumpjetClimbWithoutCutOut");
@@ -440,6 +434,15 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->AIAdjacentMax.Read(exINI, GameStrings::AI, "AIAdjacentMax");
 	this->AIAdjacentMax_Campaign.Read(exINI, GameStrings::AI, "AIAdjacentMax.Campaign");
+
+	this->AINormalTargetingDelay.Read(exINI, GameStrings::General, "AINormalTargetingDelay");
+	this->PlayerNormalTargetingDelay.Read(exINI, GameStrings::General, "PlayerNormalTargetingDelay");
+	this->AIGuardAreaTargetingDelay.Read(exINI, GameStrings::General, "AIGuardAreaTargetingDelay");
+	this->PlayerGuardAreaTargetingDelay.Read(exINI, GameStrings::General, "PlayerGuardAreaTargetingDelay");
+	this->AIAttackMoveTargetingDelay.Read(exINI, GameStrings::General, "AIAttackMoveTargetingDelay");
+	this->PlayerAttackMoveTargetingDelay.Read(exINI, GameStrings::General, "PlayerAttackMoveTargetingDelay");
+	this->DistributeTargetingFrame.Read(exINI, GameStrings::General, "DistributeTargetingFrame");
+	this->DistributeTargetingFrame_AIOnly.Read(exINI, GameStrings::General, "DistributeTargetingFrame.AIOnly");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -682,10 +685,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->PodImage)
 		.Process(this->CylinderRangefinding)
 		.Process(this->StopPlanningOnEnter)
-		.Process(this->AINormalTargetingDelay)
-		.Process(this->PlayerNormalTargetingDelay)
-		.Process(this->AIGuardAreaTargetingDelay)
-		.Process(this->PlayerGuardAreaTargetingDelay)
 		.Process(this->PlayerAttackIronCurtain)
 		.Process(this->AIAttackIronCurtain)
 		.Process(this->PlayerAutoRepair)
@@ -715,8 +714,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->DestroyOwnerlessWalls)
 		.Process(this->AIAngerOnAlly)
 		.Process(this->FollowTargetSelf)
-		.Process(this->DistributeTargetingFrame)
-		.Process(this->DistributeTargetingFrame_AIOnly)
 		.Process(this->JumpjetClimbPredictHeight)
 		.Process(this->JumpjetClimbWithoutCutOut)
 		.Process(this->DamageOwnerMultiplier)
@@ -766,6 +763,14 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->WarheadParticleAlphaImageIsLightFlash)
 		.Process(this->CombatLightDetailLevel)
 		.Process(this->LightFlashAlphaImageDetailLevel)
+		.Process(this->AINormalTargetingDelay)
+		.Process(this->PlayerNormalTargetingDelay)
+		.Process(this->AIGuardAreaTargetingDelay)
+		.Process(this->PlayerGuardAreaTargetingDelay)
+		.Process(this->AIAttackMoveTargetingDelay)
+		.Process(this->PlayerAttackMoveTargetingDelay)
+		.Process(this->DistributeTargetingFrame)
+		.Process(this->DistributeTargetingFrame_AIOnly)
 		.Process(this->BuildingTypeSelectable)
 		.Process(this->ExtraTargeting)
 		.Process(this->CanAttackMeThreatBonus)
