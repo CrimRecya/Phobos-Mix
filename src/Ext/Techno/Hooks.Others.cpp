@@ -2230,7 +2230,13 @@ DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
 }
 
 #pragma endregion
+/*
+#pragma region SmoothMouseMoving
 
+DEFINE_PATCH(0x7B853C, 0x01);
+
+#pragma endregion
+*/
 // TODO Self-made impl
 
 
