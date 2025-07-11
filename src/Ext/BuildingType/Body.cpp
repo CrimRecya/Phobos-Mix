@@ -115,6 +115,32 @@ int BuildingTypeExt::GetUpgradesAmount(BuildingTypeClass* pBuilding, HouseClass*
 	return isUpgrade ? result : -1;
 }
 
+BuildingTypeClass* BuildingTypeExt::ExtData::GetAnotherPlacingType(size_t direction, bool onWater)
+{
+	const auto pType = this->OwnerObject();
+
+	if (pType->PlaceAnywhere || this->LimboBuild)
+		return nullptr;
+
+	const auto& types = onWater ? this->PlaceBuilding_OnWater : this->PlaceBuilding_OnLand;
+	const size_t size = types.size();
+
+	if (!size)
+		return nullptr;
+
+	direction = (direction + (16u / size)) & 0x1Fu;
+	const auto pAnotherType = types[static_cast<int>(direction * size / 32u)];
+
+	if (pAnotherType->BuildCat != pType->BuildCat
+		|| pAnotherType->PlaceAnywhere
+		|| BuildingTypeExt::ExtMap.Find(pAnotherType)->LimboBuild)
+	{
+		return nullptr;
+	}
+
+	return pAnotherType;
+}
+
 // Check whether can call the occupiers leave
 bool BuildingTypeExt::CheckOccupierCanLeave(HouseClass* pBuildingHouse, HouseClass* pOccupierHouse)
 {
@@ -1005,7 +1031,9 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 
 	auto addPlaceEvent = [&pType, &pHouse](CellStruct cell)
 	{
-		const EventClass event (pHouse->ArrayIndex, EventType::Place, AbstractType::Building, pType->GetArrayIndex(), pType->Naval, cell);
+		const int placeType = MapClass::Instance.GetCellAt(cell)->LandType == LandType::Water;
+		const auto arrayIndex = pType->GetArrayIndex();
+		const EventClass event (pHouse->ArrayIndex, EventType::Place, AbstractType::Building, arrayIndex, placeType, cell);
 		EventClass::AddEvent(event);
 	};
 
@@ -1310,6 +1338,9 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->LaserFencePost_Fence.Read(exINI, pSection, "LaserFencePost.Fence");
 	this->PlaceBuilding_OnLand.Read(exINI, pSection, "PlaceBuilding.OnLand");
 	this->PlaceBuilding_OnWater.Read(exINI, pSection, "PlaceBuilding.OnWater");
+	this->PlaceBuilding_DirectionShape.Read(exINI, pSection, "PlaceBuilding.DirectionShape");
+	this->PlaceBuilding_DirectionPalette.LoadFromINI(pINI, pSection, "PlaceBuilding.DirectionPalette");
+	this->PlaceBuilding_Extra.Read(exINI, pSection, "PlaceBuilding.Extra");
 
 	this->FactoryPlant_AllowTypes.Read(exINI, pSection, "FactoryPlant.AllowTypes");
 	this->FactoryPlant_DisallowTypes.Read(exINI, pSection, "FactoryPlant.DisallowTypes");
@@ -1473,6 +1504,9 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->LaserFencePost_Fence)
 		.Process(this->PlaceBuilding_OnLand)
 		.Process(this->PlaceBuilding_OnWater)
+		.Process(this->PlaceBuilding_DirectionShape)
+		.Process(this->PlaceBuilding_DirectionPalette)
+		.Process(this->PlaceBuilding_Extra)
 		.Process(this->AircraftDockingDirs)
 		.Process(this->FactoryPlant_AllowTypes)
 		.Process(this->FactoryPlant_DisallowTypes)
