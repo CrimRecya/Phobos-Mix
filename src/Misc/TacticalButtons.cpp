@@ -1225,3 +1225,40 @@ DEFINE_HOOK(0x4F4583, GScreenClass_DrawCurrentSelectInfo, 0x6)
 //	Game::SpecialDialog = 7; // 传送讯息页面
 //	Game::SpecialDialog = 8; // 盟友页面
 //	Game::SpecialDialog = 9; // 任务简介页面
+
+/*
+union VoxelIndexKey
+{
+	struct MainKey
+	{
+		uint32_t mainFrame  : 5; // 移动帧号（0-4）
+		uint32_t mainFace   : 5; // 车体朝向（5-9）
+		uint32_t slopeIndex : 6; // 斜坡索引（10-15）
+		uint32_t isSpawnAlt : 1; // SpawnAlt（16）
+		uint32_t reserved   : 15;// 空保留位（17-31）
+	}
+	Main;
+
+	struct TurretKey
+	{
+		uint32_t turretFace : 5; // 炮塔朝向（0-4）
+		uint32_t mainFace   : 5; // 车体朝向（5-9），如果 TurretOffset=0 ，则此段归零，因为从中心点开始画不需要有偏移
+		uint32_t slopeIndex : 6; // 斜坡索引（10-15）
+		uint32_t turretFrame: 8; // 炮塔帧号（16-23）
+		uint32_t turretNum  : 8; // 炮塔编号（24-31）
+	}
+	Turret;
+
+	struct ShadowKey
+	{
+		uint32_t offsetY    : 5; // 垂直偏移（0-4）
+		uint32_t mainFace   : 5; // 车体朝向（5-9）
+		uint32_t slopeIndex : 5; // 斜坡索引（10-14）
+		uint32_t reserved   : 16;// 空保留位（15-30）
+		uint32_t onGround   : 1; // 位于地面（31）
+	}
+	Shadow;
+
+	uint32_t Value;
+};
+*/
