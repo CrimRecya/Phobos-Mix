@@ -66,32 +66,32 @@ Matrix3D AttachmentLocomotionClass::Draw_Matrix(VoxelIndexKey* key)
 
 				if (pTypeExt->JumpjetTilt && pChild->WhatAmI() == AbstractType::Unit)
 				{
-					const auto forwardSpeedFactor = pJjLoco->CurrentSpeed * pTypeExt->JumpjetTilt_ForwardSpeedFactor;
-					const auto forwardAccelFactor = pJjLoco->Accel * pTypeExt->JumpjetTilt_ForwardAccelFactor;
+					const float forwardSpeedFactor = static_cast<float>(pJjLoco->CurrentSpeed * pTypeExt->JumpjetTilt_ForwardSpeedFactor);
+					const float forwardAccelFactor = static_cast<float>(pJjLoco->Accel * pTypeExt->JumpjetTilt_ForwardAccelFactor);
 
-					const float arf = std::min(JumpjetTiltReference::MaxTilt, static_cast<float>((forwardAccelFactor + forwardSpeedFactor)
-						* JumpjetTiltReference::ForwardBaseTilt));
+					const float arf = Math::clamp(static_cast<float>((forwardAccelFactor + forwardSpeedFactor)
+						* JumpjetTiltReference::ForwardBaseTilt), -JumpjetTiltReference::MaxTilt, JumpjetTiltReference::MaxTilt);
 
 					const auto& locoFace = pJjLoco->LocomotionFacing;
 
 					if (locoFace.IsRotating())
 					{
-						const auto sidewaysSpeedFactor = pJjLoco->CurrentSpeed * pTypeExt->JumpjetTilt_SidewaysSpeedFactor;
-						const auto sidewaysRotationFactor = static_cast<short>(locoFace.Difference().Raw)
-							* pTypeExt->JumpjetTilt_SidewaysRotationFactor;
+						const float sidewaysSpeedFactor = static_cast<float>(pJjLoco->CurrentSpeed * pTypeExt->JumpjetTilt_SidewaysSpeedFactor);
+						const float sidewaysRotationFactor = static_cast<float>(static_cast<short>(locoFace.Difference().Raw)
+							* pTypeExt->JumpjetTilt_SidewaysRotationFactor);
 
 						const float ars = Math::clamp(static_cast<float>(sidewaysSpeedFactor * sidewaysRotationFactor
 							* JumpjetTiltReference::SidewaysBaseTilt), -JumpjetTiltReference::MaxTilt, JumpjetTiltReference::MaxTilt);
 
 						const auto arsDir = DirStruct(ars);
-						arsFace = arsDir.GetFacing<128>();
+						arsFace = (arsDir.GetFacing<128>() + 96u) & 0x7Fu;
 
 						if (arsFace)
 							mtx.RotateX(static_cast<float>(arsDir.GetRadian<128>()));
 					}
 
 					const auto arfDir = DirStruct(arf);
-					arfFace = arfDir.GetFacing<128>();
+					arfFace = (arfDir.GetFacing<128>() + 96u) & 0x7Fu;
 
 					if (arfFace)
 						mtx.RotateY(static_cast<float>(arfDir.GetRadian<128>()));
