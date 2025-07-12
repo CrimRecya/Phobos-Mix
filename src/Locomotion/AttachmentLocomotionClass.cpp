@@ -84,14 +84,14 @@ Matrix3D AttachmentLocomotionClass::Draw_Matrix(VoxelIndexKey* key)
 							* JumpjetTiltReference::SidewaysBaseTilt), -JumpjetTiltReference::MaxTilt, JumpjetTiltReference::MaxTilt);
 
 						const auto arsDir = DirStruct(ars);
-						arsFace = (arsDir.GetFacing<128>() + 96u) & 0x7Fu;
+						arsFace = arsDir.GetFacing<128>(96);
 
 						if (arsFace)
 							mtx.RotateX(static_cast<float>(arsDir.GetRadian<128>()));
 					}
 
 					const auto arfDir = DirStruct(arf);
-					arfFace = (arfDir.GetFacing<128>() + 96u) & 0x7Fu;
+					arfFace = arfDir.GetFacing<128>(96);
 
 					if (arfFace)
 						mtx.RotateY(static_cast<float>(arfDir.GetRadian<128>()));
