@@ -1,4 +1,4 @@
-#include <Utilities/Macro.h>
+﻿#include <Utilities/Macro.h>
 
 #include <InfantryClass.h>
 #include <HouseClass.h>
