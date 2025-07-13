@@ -745,8 +745,16 @@ DEFINE_HOOK(0x4FB1EA, HouseClass_UnitFromFactory_HangUpPlaceEvent, 0x5)
 		{
 			if (HouseClass::CurrentPlayer == pHouse)
 			{
-				if (pDisplay->CurrentBuilding == pBufferBuilding)
+				if (!pDisplay->CurrentBuilding)
+				{
+					ScenarioExt::Global()->PlacingDirection = 0;
+				}
+				else if (pDisplay->CurrentBuilding == pBufferBuilding)
+				{
 					pDisplay->CurrentBuilding = pBuilding;
+
+					ScenarioExt::Global()->PlacingDirection = 0;
+				}
 
 				if (pDisplay->CurrentBuildingType == pBufferType)
 					pDisplay->CurrentBuildingType = pBuildingType;
@@ -767,6 +775,12 @@ DEFINE_HOOK(0x4FB1EA, HouseClass_UnitFromFactory_HangUpPlaceEvent, 0x5)
 			pBufferBuilding->UnInit();
 			pPrimary->Object = pBuilding;
 			R->ESI(pBuilding);
+		}
+		else if (HouseClass::CurrentPlayer == pHouse
+			&& (!pDisplay->CurrentBuilding
+				|| pDisplay->CurrentBuilding == pBuilding))
+		{
+			ScenarioExt::Global()->PlacingDirection = 0;
 		}
 
 		return CanBuild;
@@ -825,7 +839,9 @@ DEFINE_HOOK(0x4A937D, DisplayClass_CallBuildingPlaceCheck_ReplaceBuildingType, 0
 			R->EBP(pDisplay->CurrentFoundation_CenterCell.X);
 
 		const auto delta = cell - pDisplay->CurrentFoundation_CenterCell;
-		ScenarioExt::Global()->PlacingDirection = DirStruct(Math::atan2(-delta.Y, delta.X)).GetFacing<32>();
+
+		if (delta.Y || delta.X)
+			ScenarioExt::Global()->PlacingDirection = DirStruct(Math::atan2(-delta.Y, delta.X)).GetFacing<32>();
 
 		auto getAnotherPlacingType = [pDisplay, pTypeExt]() -> BuildingTypeClass*
 			{
