@@ -458,8 +458,8 @@ public:
 		std::vector<CoordStruct> ExtraTurretOffsets;
 		Valueable<int> BurstPerTurret;
 
-		Nullable<UnitTypeClass*> Image_ConditionYellow;
-		Nullable<UnitTypeClass*> Image_ConditionRed;
+		Nullable<TechnoTypeClass*> Image_ConditionYellow;
+		Nullable<TechnoTypeClass*> Image_ConditionRed;
 		Nullable<UnitTypeClass*> WaterImage_ConditionYellow;
 		Nullable<UnitTypeClass*> WaterImage_ConditionRed;
 

@@ -61,6 +61,7 @@ public:
 	ArmorType GetArmorType(TechnoTypeClass* pTechnoType = nullptr) const;
 	int GetFramesSinceLastBroken() const;
 	void SetAnimationVisibility(bool visible);
+	void UpdateTint();
 
 	static void SyncShieldToAnother(TechnoClass* pFrom, TechnoClass* pTo);
 	static bool ShieldIsBrokenTEvent(ObjectClass* pAttached);
@@ -100,8 +101,6 @@ private:
 
 	int DrawShieldBar_Pip(const bool isBuilding) const;
 	int DrawShieldBar_PipAmount(const int length) const;
-
-	void UpdateTint();
 
 	/// Properties ///
 	TechnoClass* Techno;

@@ -45,7 +45,7 @@ public:
 	// Reversed from Tactical::Select
 	static bool Tactical_IsInSelectionRect(TacticalClass* pThis, LTRBStruct* pRect, const TacticalSelectableStruct& selectable)
 	{
-		if (selectable.Techno && selectable.Techno->IsAlive)
+		if (selectable.Object && selectable.Object->IsAlive)
 		{
 			int nLocalX = selectable.X - pThis->TacticalPos.X;
 			int nLocalY = selectable.Y - pThis->TacticalPos.Y;
@@ -65,16 +65,19 @@ public:
 	{
 		for (const auto& selected : Array)
 		{
-			if (Tactical_IsInSelectionRect(pThis, rect, selected) && ObjectClass_IsSelectable(selected.Techno))
+			if (Tactical_IsInSelectionRect(pThis, rect, selected) && ObjectClass_IsSelectable(selected.Object))
 			{
-				const auto& pTypeExt = TechnoTypeExt::ExtMap.Find(selected.Techno->GetTechnoType());
-
-				if (!pTypeExt || !pTypeExt->LowSelectionPriority)
+				if (const auto pTechno = abstract_cast<TechnoClass*, true>(selected.Object))
 				{
-					const auto& pExt = TechnoExt::ExtMap.Find(selected.Techno);
+					const auto pExt = TechnoExt::ExtMap.Find(pTechno);
 
-					if (!pExt || !pExt->ParentAttachment || !pExt->ParentAttachment->GetType()->LowSelectionPriority)
-						return true;
+					if (!pExt->TypeExtData->LowSelectionPriority)
+					{
+						const auto pParent = pExt->ParentAttachment;
+
+						if (!pParent || !pParent->GetType()->LowSelectionPriority)
+							return true;
+					}
 				}
 			}
 		}
@@ -94,35 +97,40 @@ public:
 		{
 			if (Tactical_IsInSelectionRect(pThis, pRect, selected))
 			{
-				const auto& pTechno = selected.Techno;
-				const auto& pExt = TechnoExt::ExtMap.Find(pTechno);
-				const auto& pTechnoType = pTechno->GetTechnoType();
-				const auto& pTypeExt = TechnoTypeExt::ExtMap.Find(pTechnoType);
+				const auto pObject = selected.Object;
+				const auto pTechnoType = pObject->GetTechnoType(); // Returns nullptr on non techno objects
 
-				// Attached units shouldn't be selected regardless of the setting
-				bool isLowPriorityByAttachment = pExt && pExt->ParentAttachment && pExt->ParentAttachment->GetType()->LowSelectionPriority;
-				bool isLowPriorityByTechno = Phobos::Config::PrioritySelectionFiltering && pTypeExt && pTypeExt->LowSelectionPriority;
-
-				if (bFilter && (isLowPriorityByAttachment || isLowPriorityByTechno))
-					continue;
-
-				if (pTypeExt && Game::IsTypeSelecting())
+				if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pTechnoType)) // If pTechnoType is nullptr so will be pTypeExt
 				{
-					Game::UICommands_TypeSelect_7327D0(pTypeExt->GetSelectionGroupID());
+					const auto pExt = TechnoExt::ExtMap.Find(static_cast<TechnoClass*>(pObject));
+
+					if (bFilter // Attached units shouldn't be selected regardless of the setting
+						&& (pExt->ParentAttachment && pExt->ParentAttachment->GetType()->LowSelectionPriority
+							|| Phobos::Config::PrioritySelectionFiltering && pTypeExt->LowSelectionPriority))
+					{
+						continue;
+					}
+
+					if (Game::IsTypeSelecting())
+					{
+						Game::UICommands_TypeSelect_7327D0(pTypeExt->GetSelectionGroupID());
+						continue;
+					}
 				}
-				else if (fpCheckCallback)
+
+				if (fpCheckCallback)
 				{
-					(*fpCheckCallback)(pTechno);
+					(*fpCheckCallback)(pObject);
 				}
 				else
 				{
-					const auto& pBldType = abstract_cast<BuildingTypeClass*>(pTechnoType);
-					const auto& pOwner = pTechno->GetOwningHouse();
+					const auto pBldType = abstract_cast<BuildingTypeClass*>(pTechnoType);
+					const auto pOwner = pObject->GetOwningHouse();
 
-					if (pOwner && pOwner->IsControlledByCurrentPlayer() && pTechno->CanBeSelected()
+					if (pOwner && pOwner->IsControlledByCurrentPlayer() && pObject->CanBeSelected()
 						&& (!pBldType || (pBldType && pBldType->UndeploysInto && pBldType->IsVehicle())))
 					{
-						Unsorted::MoveFeedback = !pTechno->Select();
+						Unsorted::MoveFeedback = !pObject->Select();
 					}
 				}
 			}

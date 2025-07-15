@@ -290,8 +290,6 @@ public:
 		void ResetDelayedFireTimer();
 		void UpdateTintValues();
 
-		UnitTypeClass* GetUnitTypeExtra() const;
-
 		virtual ~ExtData() override;
 		virtual void InvalidatePointer(void* ptr, bool bRemoved) override;
 		virtual void LoadFromStream(PhobosStreamReader& Stm) override;
@@ -419,6 +417,8 @@ public:
 	static void CreateDelayedFireAnim(TechnoClass* pThis, AnimTypeClass* pAnimType, int weaponIndex, bool attach, bool center, bool removeOnNoDelay, bool onTurret, CoordStruct firingCoords);
 	static bool HandleDelayedFireWithPauseSequence(TechnoClass* pThis, int weaponIndex, int firingFrame);
 	static bool IsHealthInThreshold(TechnoClass* pObject, double min, double max);
+	static UnitTypeClass* GetUnitTypeExtra(UnitClass* pUnit);
+	static AircraftTypeClass* GetAircraftTypeExtra(AircraftClass* pAircraft);
 
 	static void DrawExtraImage(TechnoClass* pThis, CellClass* pCell, const CoordStruct& coords, DirStruct dir = DirStruct(0));
 	static void DrawExtraImage(TechnoClass* pThis, const Point2D& location, const RectangleStruct& bounds, DirStruct dir = DirStruct(0), bool transparent = false, Sequence action = Sequence::Nothing, int tilt = -1);
