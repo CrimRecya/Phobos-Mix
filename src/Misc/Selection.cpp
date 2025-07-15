@@ -86,7 +86,7 @@ public:
 	}
 
 	static // Reversed from Tactical::Select
-	void Tactical_SelectFiltered(TacticalClass* pThis, LTRBStruct* pRect, callback_type fpCheckCallback, bool bFilter)
+	void Tactical_SelectFiltered(TacticalClass* pThis, LTRBStruct* pRect, callback_type check_callback, bool priorityFiltering)
 	{
 		Unsorted::MoveFeedback = true;
 
@@ -104,7 +104,7 @@ public:
 				{
 					const auto pExt = TechnoExt::ExtMap.Find(static_cast<TechnoClass*>(pObject));
 
-					if (bFilter // Attached units shouldn't be selected regardless of the setting
+					if (priorityFiltering // Attached units shouldn't be selected regardless of the setting
 						&& (pExt->ParentAttachment && pExt->ParentAttachment->GetType()->LowSelectionPriority
 							|| Phobos::Config::PrioritySelectionFiltering && pTypeExt->LowSelectionPriority))
 					{
@@ -118,9 +118,9 @@ public:
 					}
 				}
 
-				if (fpCheckCallback)
+				if (check_callback)
 				{
-					(*fpCheckCallback)(pObject);
+					(*check_callback)(pObject);
 				}
 				else
 				{
@@ -140,7 +140,7 @@ public:
 	}
 
 	static // Reversed from Tactical::MakeSelection
-	void __fastcall Tactical_MakeFilteredSelection(TacticalClass* pThis, discard_t _, callback_type fpCheckCallback)
+	void __fastcall Tactical_MakeFilteredSelection(TacticalClass* pThis, discard_t _, callback_type check_callback)
 	{
 		if (pThis->Band.Left || pThis->Band.Top)
 		{
@@ -156,7 +156,7 @@ public:
 
 			LTRBStruct rect { nLeft , nTop, nRight - nLeft + 1, nBottom - nTop + 1 };
 
-			Tactical_SelectFiltered(pThis, &rect, fpCheckCallback,
+			Tactical_SelectFiltered(pThis, &rect, check_callback,
 				Tactical_IsHighPriorityInRect(pThis, &rect));
 
 			pThis->Band.Left = 0;
