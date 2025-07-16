@@ -1387,7 +1387,8 @@ Trajectory.Tracing.ChasableDistance=0    ; floating point value
 - The referenced images, weapons, and warheads should be supplemented by yourself.
 
 ````{note}
-> Trajectory_Demo_A_Image_Placeholder
+> ![Trajectory-Demo-A](_static/images/Trajectory-Demo-A.gif)
+> The assets of the case come from mod *Light Cone*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEA1]
 AA=no
@@ -1409,7 +1410,8 @@ Trajectory.Speed=400.0
 ````
 
 ````{note}
-> Trajectory_Demo_B_Image_Placeholder
+> ![Trajectory-Demo-B](_static/images/Trajectory-Demo-B.gif)
+> The assets of the case come from mod *Light Cone*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEB1]
 AA=no
@@ -1461,7 +1463,8 @@ Trajectory.Speed=300.0
 ````
 
 ````{note}
-> Trajectory_Demo_C_Image_Placeholder
+> ![Trajectory-Demo-C](_static/images/Trajectory-Demo-C.gif)
+> The assets of the case come from mod *Light Cone*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEC1]
 AA=yes
@@ -1484,7 +1487,8 @@ Trajectory.Speed=250.0
 ````
 
 ````{note}
-> Trajectory_Demo_D_Image_Placeholder
+> ![Trajectory-Demo-D](_static/images/Trajectory-Demo-D.gif)
+> The assets of the case come from mod *Light Cone*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILED1]
 AA=no
@@ -1516,7 +1520,8 @@ Trajectory.Speed=60.0
 ````
 
 ````{note}
-![Trajectory-Demo-E](_static/images/Trajectory-Demo-E.gif)
+> ![Trajectory-Demo-E](_static/images/Trajectory-Demo-E.gif)
+> The assets of the case come from an unreleased mod *Horizon*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEE1]
 AA=no
@@ -1548,7 +1553,8 @@ Trajectory.Speed=300.0
 ````
 
 ````{note}
-> Trajectory_Demo_F_Image_Placeholder
+> ![Trajectory-Demo-F](_static/images/Trajectory-Demo-F.gif)
+> The assets of the case come from mod *Light Cone*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEF1]
 AA=no
@@ -1577,7 +1583,8 @@ Trajectory.Speed=60.0
 ````
 
 ````{note}
-![Trajectory-Demo-G](_static/images/Trajectory-Demo-G.gif)
+> ![Trajectory-Demo-G](_static/images/Trajectory-Demo-G.gif)
+> The assets of the case come from an unreleased mod *Horizon*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEG1]
 AA=yes
@@ -1598,6 +1605,7 @@ Gravity=0
 
 ````{note}
 > Trajectory_Demo_H_Image_Placeholder (Maybe not necessary)
+> The assets of the case come from mod *???*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEH1]
 AA=no
@@ -1665,6 +1673,7 @@ Trajectory.Speed=40.0
 
 ````{note}
 > Trajectory_Demo_I_Image_Placeholder
+> The assets of the case come from mod *???*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEI1]
 AA=no
@@ -1680,6 +1689,7 @@ Trajectory.Missile.UniqueCurve=yes
 
 ````{note}
 > Trajectory_Demo_J_Image_Placeholder (Maybe not necessary)
+> The assets of the case come from mod *???*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEJ1]
 AA=no
@@ -1703,6 +1713,7 @@ Trajectory.Speed=40.0
 
 ````{note}
 > Trajectory_Demo_K_Image_Placeholder (Maybe not necessary)
+> The assets of the case come from mod *???*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEK1]
 AA=no
@@ -1727,6 +1738,7 @@ Trajectory.RotateCoord=30
 
 ````{note}
 > Trajectory_Demo_L_Image_Placeholder (Maybe not necessary)
+> The assets of the case come from mod *???*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEL1]
 AA=no
@@ -1757,7 +1769,8 @@ Trajectory.Speed=60.0
 ````
 
 ````{note}
-![Trajectory-Demo-M](_static/images/Trajectory-Demo-M.gif)
+> ![Trajectory-Demo-M](_static/images/Trajectory-Demo-M.gif)
+> The assets of the case come from an unreleased mod *Horizon*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEM1]
 AA=yes
@@ -1780,6 +1793,7 @@ Trajectory.Speed=200.0
 
 ````{note}
 > Trajectory_Demo_N_Image_Placeholder
+> The assets of the case come from mod *???*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEN1]
 AA=no
@@ -1801,7 +1815,8 @@ Trajectory.Speed=40.0
 ````
 
 ````{note}
-![Trajectory-Demo-O](_static/images/Trajectory-Demo-O.gif)
+> ![Trajectory-Demo-O](_static/images/Trajectory-Demo-O.gif)
+> The assets of the case come from an unreleased mod *Horizon*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEO1]
 AA=no
@@ -1848,7 +1863,8 @@ Gravity=8.0
 ````
 
 ````{note}
-> Trajectory_Demo_P_Image_Placeholder
+> ![Trajectory-Demo-P](_static/images/Trajectory-Demo-P.gif)
+> The assets of the case come from mod *Mental Omega*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEP1]
 AA=no
@@ -1887,6 +1903,7 @@ Trajectory.Parabola.LaunchAngle=0.0
 
 ````{note}
 > Trajectory_Demo_Q_Image_Placeholder (Maybe not necessary)
+> The assets of the case come from mod *???*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEQ1]
 AA=no
@@ -1903,7 +1920,8 @@ Trajectory.Synchronize=yes
 ````
 
 ````{note}
-> Trajectory_Demo_R_Image_Placeholder
+> ![Trajectory-Demo-R](_static/images/Trajectory-Demo-R.gif)
+> The assets of the case come from mod *Mental Omega*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILER1]
 AA=no
@@ -1927,6 +1945,7 @@ Gravity=15.0
 
 ````{note}
 > Trajectory_Demo_S_Image_Placeholder
+> The assets of the case come from mod *???*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILES1]
 AA=no
@@ -1945,6 +1964,7 @@ Trajectory.BulletFacing=Target
 Trajectory.PeacefulVanish=yes
 Trajectory.Tracing.TrackTarget=no
 Trajectory.Tracing.AttachCoord=520,0,400
+Trajectory.Synchronize=yes
 Trajectory.DisperseCoord=100,0,0
 Trajectory.DisperseFromFirer=no
 Trajectory.DisperseWeapons=SOMEWEAPONS2
@@ -1960,7 +1980,8 @@ Trajectory.Speed=30.0
 ````
 
 ````{note}
-> Trajectory_Demo_T_Image_Placeholder
+> ![Trajectory-Demo-T](_static/images/Trajectory-Demo-T.gif)
+> The assets of the case come from an unreleased mod *Horizon*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILET1]
 AA=yes
@@ -1974,10 +1995,10 @@ Trajectory.Tracing.TraceMode=RotateCCW
 Trajectory.Tracing.StableRotation=yes
 Trajectory.Tracing.AttachCoord=640,0,500
 Trajectory.Tracing.ChasableDistance=10
+Trajectory.Synchronize=yes
 Trajectory.Duration=-1
 Trajectory.TolerantTime=0
 Trajectory.CreateCapacity=5
-Trajectory.BulletROT=3
 Trajectory.BulletFacing=Target
 Trajectory.PeacefulVanish=yes
 Trajectory.DisperseCoord=100,0,0
@@ -1985,17 +2006,17 @@ Trajectory.DisperseFromFirer=no
 Trajectory.DisperseWeapons=SOMEWEAPONT2
 Trajectory.DisperseBursts=1
 Trajectory.DisperseCounts=-1
-Trajectory.DisperseDelays=40
+Trajectory.DisperseDelays=1
 Trajectory.DisperseInitialDelay=50
 Trajectory.DisperseCycle=-1
-Trajectory.DisperseFaceCheck=yes
 Trajectory.DisperseForceFire=no
 Trajectory.Speed=45.0
 ```
 ````
 
 ````{note}
-![Trajectory-Demo-U](_static/images/Trajectory-Demo-U.gif)
+> ![Trajectory-Demo-U](_static/images/Trajectory-Demo-U.gif)
+> The assets of the case come from an unreleased mod *Horizon*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEU1]
 AA=no
@@ -2051,6 +2072,7 @@ Trajectory.Engrave.TargetCoord=130,-75
 
 ````{note}
 > Trajectory_Demo_V_Image_Placeholder
+> The assets of the case come from mod *???*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEV1]
 AA=no
@@ -2124,7 +2146,8 @@ Trajectory.Speed=10000.0
 ````
 
 ````{note}
-![Trajectory-Demo-W](_static/images/Trajectory-Demo-W.gif)
+> ![Trajectory-Demo-W](_static/images/Trajectory-Demo-W.gif)
+> The assets of the case come from an unreleased mod *Horizon*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEW1]
 AA=no
