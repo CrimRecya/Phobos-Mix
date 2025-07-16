@@ -380,8 +380,6 @@ public:
 
 		Valueable<bool> FiringByPassMovingCheck;
 
-		Valueable<bool> SkipCrushSlowdown;
-
 		Nullable<bool> PlayerGuardModePursuit;
 		Nullable<Leptons> PlayerGuardModeStray;
 		Nullable<double> PlayerGuardModeGuardRangeMultiplier;
@@ -924,8 +922,6 @@ public:
 			, KeepWarping_Distance {}
 
 			, FiringByPassMovingCheck { false }
-
-			, SkipCrushSlowdown { false }
 
 			, PlayerGuardModePursuit {}
 			, PlayerGuardModeStray {}

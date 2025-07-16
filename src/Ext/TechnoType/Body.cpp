@@ -1003,6 +1003,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->CrushForwardTiltPerFrame.Read(exINI, pSection, "CrushForwardTiltPerFrame");
 	this->CrushOverlayExtraForwardTilt.Read(exINI, pSection, "CrushOverlayExtraForwardTilt");
 	this->CrushSlowdownMultiplier.Read(exINI, pSection, "CrushSlowdownMultiplier");
+	this->SkipCrushSlowdown.Read(exINI, pSection, "SkipCrushSlowdown");
 
 	this->DigitalDisplay_Disable.Read(exINI, pSection, "DigitalDisplay.Disable");
 	this->DigitalDisplayTypes.Read(exINI, pSection, "DigitalDisplayTypes");
@@ -1137,8 +1138,6 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->KeepWarping_Distance.Read(exINI, pSection, "KeepWarping.Distance");
 
 	this->FiringByPassMovingCheck.Read(exINI, pSection, "FiringByPassMovingCheck");
-
-	this->SkipCrushSlowdown.Read(exINI, pSection, "SkipCrushSlowdown");
 
 	this->PlayerGuardModePursuit.Read(exINI, pSection, "PlayerGuardModePursuit");
 	this->PlayerGuardModeStray.Read(exINI, pSection, "PlayerGuardModeStray");
@@ -1819,6 +1818,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->CrushForwardTiltPerFrame)
 		.Process(this->CrushOverlayExtraForwardTilt)
 		.Process(this->CrushSlowdownMultiplier)
+		.Process(this->SkipCrushSlowdown)
 
 		.Process(this->DigitalDisplay_Disable)
 		.Process(this->DigitalDisplayTypes)
@@ -1953,8 +1953,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->KeepWarping_Distance)
 
 		.Process(this->FiringByPassMovingCheck)
-
-		.Process(this->SkipCrushSlowdown)
 
 		.Process(this->PlayerGuardModePursuit)
 		.Process(this->PlayerGuardModeStray)
