@@ -247,6 +247,7 @@ public:
 		Nullable<double> CrushForwardTiltPerFrame;
 		Valueable<double> CrushOverlayExtraForwardTilt;
 		Valueable<double> CrushSlowdownMultiplier;
+		Valueable<bool> SkipCrushSlowdown;
 
 		Valueable<bool> DigitalDisplay_Disable;
 		ValueableVector<DigitalDisplayTypeClass*> DigitalDisplayTypes;
@@ -616,7 +617,7 @@ public:
 			, TintColorAirstrike { 0 }
 			, LaserTargetColor {}
 			, AirstrikeLineColor {}
-			, ShieldType {}
+			, ShieldType { nullptr }
 			, PassengerDeletionType { nullptr }
 
 			, WarpOut {}
@@ -789,6 +790,7 @@ public:
 			, CrushSlowdownMultiplier { 0.2 }
 			, CrushForwardTiltPerFrame {}
 			, CrushOverlayExtraForwardTilt { 0.02 }
+			, SkipCrushSlowdown { false }
 
 			, DigitalDisplay_Disable { false }
 			, DigitalDisplayTypes {}
@@ -1104,7 +1106,7 @@ public:
 
 		virtual ~ExtData() = default;
 		virtual void LoadFromINIFile(CCINIClass* pINI) override;
-		virtual void Initialize() override;
+		virtual void Initialize() override { }
 
 		virtual void InvalidatePointer(void* ptr, bool bRemoved) override { }
 

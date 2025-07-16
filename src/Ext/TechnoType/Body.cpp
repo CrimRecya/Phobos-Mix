@@ -24,11 +24,6 @@
 TechnoTypeExt::ExtContainer TechnoTypeExt::ExtMap;
 bool TechnoTypeExt::SelectWeaponMutex = false;
 
-void TechnoTypeExt::ExtData::Initialize()
-{
-	this->ShieldType = ShieldTypeClass::FindOrAllocate(NONE_STR);
-}
-
 void TechnoTypeExt::ExtData::ApplyTurretOffset(Matrix3D* mtx, double factor, int turIdx)
 {
 	// Does not verify if the offset actually has all values parsed as it makes no difference, it will be 0 for the unparsed ones either way.
