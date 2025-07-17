@@ -91,25 +91,57 @@ DEFINE_HOOK(0x4FD538, HouseClass_AIHouseUpdate_CheckAIBaseCenter, 0x7)
 }
 
 DEFINE_JUMP(LJMP, 0x445249, 0x445253);
-/*
-DEFINE_HOOK(0x4FE42F, HouseClass_AIBaseConstructionUpdate_SkipConYards, 0x6)
+
+DEFINE_HOOK(0x5885D1, MapClass_BuildingToFirestormWall_SkipExtraWalls, 0x6)
 {
-	enum { SkipGameCode = 0x4FE443 };
+	enum { NextDirection = 0x588730 };
 
-	GET(BuildingTypeClass*, pType, EAX);
+	GET_STACK(const HouseClass* const, pHouse, STACK_OFFSET(0x38, 0x8));
+	GET_STACK(const int, count, STACK_OFFSET(0x38, -0x24));
 
-	return (RulesExt::Global()->AIForbidConYard && pType->ConstructionYard) ? SkipGameCode : 0;
+	if (pHouse->IsControlledByHuman() || !RulesExt::Global()->AINodeWallsOnly || count)
+		return 0;
+
+	GET(const CellStruct, cell, EBX);
+	GET(const BuildingTypeClass* const, pType, EBP);
+
+	const auto index = pType->ArrayIndex;
+	const auto& nodes = pHouse->Base.BaseNodes;
+
+	for (const auto& pNode : nodes)
+	{
+		if (pNode.MapCoords == cell && pNode.BuildingTypeIndex == index)
+			return 0;
+	}
+
+	return NextDirection;
 }
 
-DEFINE_HOOK(0x505550, HouseClass_AIBaseConstructionUpdate_SkipConYards, 0x6)
+DEFINE_HOOK(0x5887C1, MapClass_BuildingToWall_SkipExtraWalls, 0x6)
 {
-	enum { SkipGameCode = 0x5056C1 };
+	enum { NextDirection = 0x588935 };
 
-	GET(BuildingTypeClass*, pType, ESI);
+	GET_STACK(const HouseClass* const, pHouse, STACK_OFFSET(0x3C, 0x8));
+	GET_STACK(const int, count, STACK_OFFSET(0x3C, -0x2C));
 
-	return (RulesExt::Global()->AIForbidConYard && pType->ConstructionYard) ? SkipGameCode : 0;
+	if (pHouse->IsControlledByHuman() || !RulesExt::Global()->AINodeWallsOnly || count)
+		return 0;
+
+	GET(const CellStruct, cell, EDX);
+	GET(const BuildingTypeClass* const, pType, EDI);
+
+	const auto index = pType->ArrayIndex;
+	const auto& nodes = pHouse->Base.BaseNodes;
+
+	for (const auto& pNode : nodes)
+	{
+		if (pNode.MapCoords == cell && pNode.BuildingTypeIndex == index)
+			return 0;
+	}
+
+	return NextDirection;
 }
-*/
+
 #pragma endregion
 
 #pragma region AirBarrier

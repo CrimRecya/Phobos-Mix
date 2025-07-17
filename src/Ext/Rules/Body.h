@@ -149,6 +149,7 @@ public:
 		Valueable<bool> AISetBaseCenter;
 		Valueable<bool> AIBiasSpawnCell;
 		Valueable<bool> AIForbidConYard;
+		Valueable<bool> AINodeWallsOnly;
 		Valueable<int> CleanUpAirBarrier;
 		Valueable<bool> ExtendedScatterAction;
 		Valueable<bool> MergeBuildingDamage;
@@ -508,6 +509,7 @@ public:
 			, AISetBaseCenter { true }
 			, AIBiasSpawnCell { false }
 			, AIForbidConYard { false }
+			, AINodeWallsOnly { false }
 			, SelectedInfantryMissingPCX {}
 			, SelectedVehicleMissingPCX {}
 			, SelectedAircraftMissingPCX {}
