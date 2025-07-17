@@ -1073,6 +1073,28 @@ DEFINE_HOOK(0x4451F8, BuildingClass_KickOutUnit_CleanUpAIBuildingSpace, 0x6)
 		return BuildFailed;
 	}
 
+	if (RulesExt::Global()->AICleanWallNode && pBuildingType->Wall)
+	{
+		auto notValidWallNode = [topLeftCell]()
+			{
+				const auto pCell = MapClass::Instance.GetCellAt(topLeftCell);
+
+				for (int i = 0; i < 8; ++i)
+				{
+					if (const auto pAdjBuilding = pCell->GetNeighbourCell(static_cast<FacingType>(i))->GetBuilding())
+					{
+						if (pAdjBuilding->Type->ProtectWithWall)
+							return false;
+					}
+				}
+
+				return true;
+			};
+
+		if (notValidWallNode())
+			return CanNotBuild;
+	}
+
 	const auto pHouse = pFactory->Owner;
 	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType);
 

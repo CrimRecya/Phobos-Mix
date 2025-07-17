@@ -150,6 +150,7 @@ public:
 		Valueable<bool> AIBiasSpawnCell;
 		Valueable<bool> AIForbidConYard;
 		Valueable<bool> AINodeWallsOnly;
+		Valueable<bool> AICleanWallNode;
 		Valueable<int> CleanUpAirBarrier;
 		Valueable<bool> ExtendedScatterAction;
 		Valueable<bool> MergeBuildingDamage;
@@ -510,6 +511,7 @@ public:
 			, AIBiasSpawnCell { false }
 			, AIForbidConYard { false }
 			, AINodeWallsOnly { false }
+			, AICleanWallNode { false }
 			, SelectedInfantryMissingPCX {}
 			, SelectedVehicleMissingPCX {}
 			, SelectedAircraftMissingPCX {}
