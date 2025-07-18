@@ -74,6 +74,7 @@ public:
 		Valueable<Leptons> KeepRange;
 		Valueable<bool> KeepRange_AllowAI;
 		Valueable<bool> KeepRange_AllowPlayer;
+		Valueable<int> KeepRange_EarlyStopFrame;
 		Nullable<bool> CylinderRangefinding;
 		Nullable<bool> AttackIronCurtain;
 		Valueable<bool> UnlimboDetonate;
@@ -154,6 +155,7 @@ public:
 			, KeepRange { Leptons(0) }
 			, KeepRange_AllowAI { false }
 			, KeepRange_AllowPlayer { false }
+			, KeepRange_EarlyStopFrame { 0 }
 			, CylinderRangefinding {}
 			, AttackIronCurtain {}
 			, UnlimboDetonate { false }

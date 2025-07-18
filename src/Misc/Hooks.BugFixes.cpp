@@ -1710,13 +1710,11 @@ DEFINE_HOOK(0x449462, BuildingClass_IsCellOccupied_UndeploysInto, 0x6)
 /* // TechnoAttachment
 DEFINE_HOOK(0x73FA92, UnitClass_IsCellOccupied_LandType, 0x8)
 {
-	enum { ContinueCheck = 0x73FC24, NoMove = 0x73FACD };
+	enum { CantMoveHere = 0x73AEB4 };
 
-	GET(UnitClass*, pThis, EBX);
-	GET(CellClass*, pCell, EDI);
-	GET_STACK(bool, containsBridge, STACK_OFFSET(0x90, -0x7D));
+	GET(UnitClass*, pThis, EBP);
 
-	return GroundType::Array[static_cast<int>(containsBridge ? LandType::Road : pCell->LandType)].Cost[static_cast<int>(pThis->Type->SpeedType)] == 0.0f ? NoMove : ContinueCheck;
+	return pThis->OnBridge && GroundType::Array[static_cast<int>(LandType::Road)].Cost[static_cast<int>(pThis->Type->SpeedType)] == 0.0f ? CantMoveHere : 0;
 }
 */
 #pragma region XSurfaceFix
