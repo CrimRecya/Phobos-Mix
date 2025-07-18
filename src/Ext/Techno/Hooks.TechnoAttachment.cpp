@@ -181,8 +181,6 @@ void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte&
 
 DEFINE_HOOK(0x73FA92, UnitClass_CanEnterCell_CheckMovingInto, 0x0)
 {
-	enum { ContinueCheck = 0x73FC24, NoMove = 0x73FACD };
-
 	GET_STACK(CellClass*, into, STACK_OFFSET(0x90, 0x4));
 	GET_STACK(bool const, isAlt, STACK_OFFSET(0x90, -0x7D));
 	GET(UnitClass*, pThis, EBX);
@@ -193,7 +191,7 @@ DEFINE_HOOK(0x73FA92, UnitClass_CanEnterCell_CheckMovingInto, 0x0)
 	AccountForMovingInto(into, isAlt, pThis, occupyFlags, isVehicleFlagSet);
 
 	// stolen code ahead
-	return GroundType::Array[static_cast<int>(isAlt ? LandType::Road : into->LandType)].Cost[static_cast<int>(pThis->Type->SpeedType)] == 0.0f ? NoMove : ContinueCheck;
+	return isAlt ? 0x73FC24 : 0x73FA9E;
 }
 
 DEFINE_HOOK(0x51C249, InfantryClass_CanEnterCell_AssumeNoVehicleByDefault, 0x0)

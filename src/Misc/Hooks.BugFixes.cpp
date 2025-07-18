@@ -1707,8 +1707,8 @@ DEFINE_HOOK(0x449462, BuildingClass_IsCellOccupied_UndeploysInto, 0x6)
 	R->AL(pCell->IsClearToMove(pUndeploysInto->SpeedType, false, false, -1, pUndeploysInto->MovementZone, -1, 1));
 	return SkipGameCode;
 }
-/* // TechnoAttachment
-DEFINE_HOOK(0x73FA92, UnitClass_IsCellOccupied_LandType, 0x8)
+
+DEFINE_HOOK(0x73AE70, UnitClass_UpdatePosition_Bridge, 0x5)
 {
 	enum { CantMoveHere = 0x73AEB4 };
 
@@ -1716,7 +1716,7 @@ DEFINE_HOOK(0x73FA92, UnitClass_IsCellOccupied_LandType, 0x8)
 
 	return pThis->OnBridge && GroundType::Array[static_cast<int>(LandType::Road)].Cost[static_cast<int>(pThis->Type->SpeedType)] == 0.0f ? CantMoveHere : 0;
 }
-*/
+
 #pragma region XSurfaceFix
 
 // Fix a crash at 0x7BAEA1 when trying to access a point outside of surface bounds.
