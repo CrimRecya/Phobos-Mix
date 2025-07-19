@@ -1503,8 +1503,9 @@ void TechnoExt::ExtData::ApplyIdleAction()
 void TechnoExt::ExtData::ManualIdleAction()
 {
 	const auto pThis = this->OwnerObject();
+	const auto pParent = this->ParentAttachment;
 
-	if (pThis->IsSelected)
+	if (pThis->IsSelected || pParent && pParent->GetType()->InheritTarget && pParent->Parent && pParent->Parent->IsSelected)
 	{
 		this->CheckIdleAction();
 		this->UnitIdleIsSelected = true;
