@@ -15,6 +15,8 @@ public:
 	int Variable;
 	int ShapeFrameIndex;
 	bool IsGlobalVariable;
+	int Duration;
+	int Delay;
 
 	BannerClass()
 		: Type {}
@@ -23,6 +25,8 @@ public:
 		, Variable {}
 		, ShapeFrameIndex {}
 		, IsGlobalVariable {}
+		, Duration {}
+		, Delay {}
 	{ };
 
 	BannerClass(BannerTypeClass* pBannerType, int id, Point2D position, int variable, bool isGlobalVariable)
@@ -32,6 +36,8 @@ public:
 		, Variable { variable }
 		, ShapeFrameIndex { 0 }
 		, IsGlobalVariable { isGlobalVariable }
+		, Duration { pBannerType->Duration }
+		, Delay { pBannerType->Delay }
 	{ };
 
 	void Render();
