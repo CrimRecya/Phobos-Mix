@@ -22,6 +22,7 @@ void AttachmentTypeClass::LoadFromINI(CCINIClass* pINI)
 	this->InheritCommands.Read(exINI, section, "InheritCommands");
 	this->InheritCommands_StopCommand.Read(exINI, section, "InheritCommands.StopCommand");
 	this->InheritCommands_DeployCommand.Read(exINI, section, "InheritCommands.DeployCommand");
+	this->InheritExperience.Read(exINI, section, "InheritExperience");
 	this->InheritTarget.Read(exINI, section, "InheritTarget");
 	this->InheritTarget_Force.Read(exINI, section, "InheritTarget.Force");
 	this->InheritOwner.Read(exINI, section, "InheritOwner");
@@ -51,6 +52,7 @@ void AttachmentTypeClass::Serialize(T& Stm)
 		.Process(this->InheritCommands)
 		.Process(this->InheritCommands_StopCommand)
 		.Process(this->InheritCommands_DeployCommand)
+		.Process(this->InheritExperience)
 		.Process(this->InheritTarget)
 		.Process(this->InheritTarget_Force)
 		.Process(this->InheritOwner)

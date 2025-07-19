@@ -1065,7 +1065,7 @@ void TechnoExt::DestroyAttachments(TechnoClass* pThis, TechnoClass* pSource)
 
 void TechnoExt::HandleDestructionAsChild(TechnoClass* pThis)
 {
-	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 
 	if (pExt->ParentAttachment)
 		pExt->ParentAttachment->ChildDestroyed();
@@ -1089,21 +1089,21 @@ void TechnoExt::LimboAttachments(TechnoClass* pThis)
 
 void TechnoExt::TransferAttachments(TechnoClass* pThis, TechnoClass* pThat)
 {
-	auto const pThisExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 	auto const pThatExt = TechnoExt::ExtMap.Find(pThat);
 
-	for (auto& pAttachment : pThisExt->ChildAttachments)
+	for (auto& pAttachment : pExt->ChildAttachments)
 	{
 		pAttachment->Parent = pThat;
 		pThatExt->ChildAttachments.push_back(std::move(pAttachment));
 	}
 
-	pThisExt->ChildAttachments.clear();
+	pExt->ChildAttachments.clear();
 }
 
 bool TechnoExt::ShouldInheritTarget(TechnoClass* pThis)
 {
-	if (auto const& pExt = TechnoExt::ExtMap.Find(pThis))
+	if (auto const pExt = TechnoExt::ExtMap.Find(pThis))
 	{
 		if (auto const pAttachment = pExt->ParentAttachment)
 		{
@@ -1116,9 +1116,19 @@ bool TechnoExt::ShouldInheritTarget(TechnoClass* pThis)
 	return false;
 }
 
+TechnoClass* TechnoExt::GetTrainParent(TechnoClass* pThis)
+{
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+
+	return pExt && pExt->ParentAttachment
+		&& pExt->ParentAttachment->GetType()->InheritExperience
+		? TechnoExt::GetTrainParent(pExt->ParentAttachment->Parent)
+		: pThis;
+}
+
 bool TechnoExt::IsAttached(TechnoClass* pThis)
 {
-	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 
 	return pExt && pExt->ParentAttachment;
 }
@@ -1130,7 +1140,7 @@ bool TechnoExt::HasAttachmentLoco(FootClass* pThis)
 
 bool TechnoExt::DoesntOccupyCellAsChild(TechnoClass* pThis)
 {
-	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 
 	return pExt && pExt->ParentAttachment
 		&& !pExt->ParentAttachment->GetType()->OccupiesCell;
@@ -1138,12 +1148,12 @@ bool TechnoExt::DoesntOccupyCellAsChild(TechnoClass* pThis)
 
 bool TechnoExt::IsChildOf(TechnoClass* pThis, TechnoClass* pParent, bool deep)
 {
-	auto const pThisExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 
-	return pThis && pThisExt && pParent  // sanity check, sometimes crashes because ext is null - Kerbiter
-		&& pThisExt->ParentAttachment
-		&& (pThisExt->ParentAttachment->Parent == pParent
-			|| (deep && TechnoExt::IsChildOf(pThisExt->ParentAttachment->Parent, pParent)));
+	return pExt && pParent  // sanity check, sometimes crashes because ext is null - Kerbiter
+		&& pExt->ParentAttachment
+		&& (pExt->ParentAttachment->Parent == pParent
+			|| (deep && TechnoExt::IsChildOf(pExt->ParentAttachment->Parent, pParent)));
 }
 
 bool TechnoExt::AreRelatives(TechnoClass* pThis, TechnoClass* pThat)
@@ -1154,11 +1164,11 @@ bool TechnoExt::AreRelatives(TechnoClass* pThis, TechnoClass* pThat)
 // Returns this if no parent.
 TechnoClass* TechnoExt::GetTopLevelParent(TechnoClass* pThis)
 {
-	auto const pThisExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 
-	return pThis && pThisExt  // sanity check, sometimes crashes because ext is null - Kerbiter
-		&& pThisExt->ParentAttachment
-		? TechnoExt::GetTopLevelParent(pThisExt->ParentAttachment->Parent)
+	return pExt  // sanity check, sometimes crashes because ext is null - Kerbiter
+		&& pExt->ParentAttachment
+		? TechnoExt::GetTopLevelParent(pExt->ParentAttachment->Parent)
 		: pThis;
 }
 

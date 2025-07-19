@@ -42,7 +42,6 @@ DEFINE_HOOK(0x4DEBB4, FootClass_OnDestroyed_NotifyParent, 0x8)
 	return 0;
 }
 
-
 DEFINE_HOOK(0x6F6F20, TechnoClass_Unlimbo_UnlimboAttachments, 0x6)
 {
 	GET(TechnoClass*, pThis, ESI);
@@ -57,6 +56,15 @@ DEFINE_HOOK(0x6F6B1C, TechnoClass_Limbo_LimboAttachments, 0x6)
 	GET(TechnoClass*, pThis, ESI);
 
 	TechnoExt::LimboAttachments(pThis);
+
+	return 0;
+}
+
+DEFINE_HOOK(0x702D6D, TechnoClass_RegisterDestruction_ResetKiller, 0x6)
+{
+	GET(TechnoClass*, pKiller, EDI);
+
+	R->EDI(TechnoExt::GetTrainParent(pKiller));
 
 	return 0;
 }

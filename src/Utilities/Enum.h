@@ -232,7 +232,7 @@ enum class DamageDisplayType
 	Intercept = 2
 };
 
-enum class AttachmentYSortPosition
+enum class AttachmentYSortPosition : unsigned char
 {
 	Default = 0,
 	UnderParent = 1,

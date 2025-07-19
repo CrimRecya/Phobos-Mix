@@ -18,6 +18,7 @@ public:
 	Valueable<bool> InheritCommands;
 	Valueable<bool> InheritCommands_StopCommand;
 	Valueable<bool> InheritCommands_DeployCommand;
+	Valueable<bool> InheritExperience;
 	Valueable<bool> InheritTarget;
 	Valueable<bool> InheritTarget_Force;
 	Valueable<bool> InheritOwner; // aka mind control inheritance
@@ -43,6 +44,7 @@ public:
 		, InheritCommands { true }
 		, InheritCommands_StopCommand { true }
 		, InheritCommands_DeployCommand { true }
+		, InheritExperience { false }
 		, InheritTarget { false }
 		, InheritTarget_Force { false }
 		, InheritOwner { true }
