@@ -82,6 +82,7 @@ public:
 		Valueable<SHPStruct*> PlaceBuilding_DirectionShape;
 		CustomPalette PlaceBuilding_DirectionPalette;
 		Valueable<bool> PlaceBuilding_Extra;
+		Valueable<bool> CanBuildUnderUnits;
 
 		Valueable<bool> IsAnimDelayedBurst;
 
@@ -179,6 +180,7 @@ public:
 			, PlaceBuilding_DirectionShape { nullptr }
 			, PlaceBuilding_DirectionPalette {}
 			, PlaceBuilding_Extra { false }
+			, CanBuildUnderUnits { false }
 			, AircraftDockingDirs {}
 			, FactoryPlant_AllowTypes {}
 			, FactoryPlant_DisallowTypes {}
