@@ -1521,7 +1521,7 @@ Trajectory.Speed=60.0
 
 ````{note}
 > ![Trajectory-Demo-E](_static/images/Trajectory-Demo-E.gif)
-> The assets of the case come from an unreleased mod *Horizon*.
+> The assets of the case come from an unreleased mod by [jingliujiang](https://github.com/jingliujiang).
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEE1]
 AA=no
@@ -1584,7 +1584,7 @@ Trajectory.Speed=60.0
 
 ````{note}
 > ![Trajectory-Demo-G](_static/images/Trajectory-Demo-G.gif)
-> The assets of the case come from an unreleased mod *Horizon*.
+> The assets of the case come from an unreleased mod by [jingliujiang](https://github.com/jingliujiang).
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEG1]
 AA=yes
@@ -1600,74 +1600,6 @@ Trajectory.Missile.TurningSpeed=30
 Trajectory.RetargetRadius=2.5
 Trajectory.Speed=150.0
 Gravity=0
-```
-````
-
-````{note}
-> Trajectory_Demo_H_Image_Placeholder (Maybe not necessary)
-> The assets of the case come from mod *???*.
-```{dropdown} Click to show ini
-[SOMEPROJECTILEH1]
-AA=no
-AG=yes
-SubjectToCliffs=no
-SubjectToElevation=no
-SubjectToWalls=no
-Image=SOMEIMAGEH1
-Trajectory=Missile
-Trajectory.Missile.LaunchSpeed=0
-Trajectory.Missile.Acceleration=0
-Trajectory.Missile.TurningSpeed=0
-Trajectory.Missile.LockDirection=yes
-Trajectory.DisperseWeapons=SOMEWEAPONH2
-Trajectory.DisperseBursts=1
-Trajectory.DisperseCounts=1
-Trajectory.DisperseCycle=1
-Trajectory.Speed=0
-
-[SOMEPROJECTILEH2]
-AA=no
-AG=yes
-SubjectToCliffs=no
-SubjectToElevation=no
-SubjectToWalls=no
-Image=SOMEIMAGEH2
-Trajectory=Missile
-Trajectory.Missile.LaunchSpeed=0
-Trajectory.Missile.Acceleration=0
-Trajectory.Missile.TurningSpeed=0
-Trajectory.Missile.LockDirection=yes
-Trajectory.DisperseWeapons=SOMEWEAPONH3
-Trajectory.DisperseBursts=8
-Trajectory.DisperseCounts=1
-Trajectory.DisperseInitialDelay=100
-Trajectory.DisperseCycle=1
-Trajectory.Speed=0
-
-[SOMEPROJECTILEH3]
-AA=no
-AG=yes
-SubjectToCliffs=no
-SubjectToElevation=no
-SubjectToWalls=no
-Image=SOMEIMAGEH3
-Trajectory=Straight
-Trajectory.ApplyRangeModifiers=yes
-Trajectory.DetonationDistance=9.2
-Trajectory.TargetSnapDistance=0
-Trajectory.Straight.PassThrough=yes
-Trajectory.PassDetonate=yes
-Trajectory.PassDetonateWarhead=SOMEWARHEADH3
-Trajectory.PassDetonateDamage=60
-Trajectory.PassDetonateDelay=6
-Trajectory.PassDetonateInitialDelay=15
-Trajectory.PassDetonateLocal=yes
-Trajectory.OffsetCoord=100000,0,0
-Trajectory.MirrorCoord=no
-Trajectory.RotateCoord=70
-Trajectory.DamageEdgeAttenuation=2.5
-Trajectory.Straight.ConfineAtHeight=500
-Trajectory.Speed=40.0
 ```
 ````
 
@@ -1688,89 +1620,8 @@ Trajectory.Missile.UniqueCurve=yes
 ````
 
 ````{note}
-> Trajectory_Demo_J_Image_Placeholder (Maybe not necessary)
-> The assets of the case come from mod *???*.
-```{dropdown} Click to show ini
-[SOMEPROJECTILEJ1]
-AA=no
-AG=yes
-SubjectToCliffs=yes
-SubjectToElevation=yes
-SubjectToWalls=no
-SubjectToGround=yes
-Image=SOMEIMAGEJ1
-Trajectory=Engrave
-Trajectory.PassDetonate=yes
-Trajectory.PassDetonateDelay=2
-Trajectory.Engrave.SourceCoord=0,300
-Trajectory.Engrave.TargetCoord=0,-300
-Trajectory.Engrave.IsIntense=yes
-Trajectory.Engrave.IsSingleColor=yes
-Trajectory.Engrave.LaserInnerColor=255,0,0
-Trajectory.Speed=40.0
-```
-````
-
-````{note}
-> Trajectory_Demo_K_Image_Placeholder (Maybe not necessary)
-> The assets of the case come from mod *???*.
-```{dropdown} Click to show ini
-[SOMEPROJECTILEK1]
-AA=no
-AG=yes
-SubjectToCliffs=yes
-SubjectToElevation=yes
-SubjectToWalls=no
-Image=SOMEIMAGEK1
-Gravity=4.0
-Trajectory=Parabola
-Trajectory.Speed=50.0
-Trajectory.DetonationDistance=0
-Trajectory.TargetSnapDistance=0
-Trajectory.Parabola.OpenFireMode=SpeedAndAngle
-Trajectory.Parabola.LaunchAngle=10
-Trajectory.Parabola.BounceTimes=3
-Trajectory.Parabola.BounceDetonate=yes
-Trajectory.OffsetCoord=0,80,0
-Trajectory.RotateCoord=30
-```
-````
-
-````{note}
-> Trajectory_Demo_L_Image_Placeholder (Maybe not necessary)
-> The assets of the case come from mod *???*.
-```{dropdown} Click to show ini
-[SOMEPROJECTILEL1]
-AA=no
-AG=yes
-Inaccurate=yes
-BallisticScatter.Min=0
-BallisticScatter.Max=0.6
-SubjectToCliffs=yes
-SubjectToElevation=no
-SubjectToWalls=yes
-SubjectToBuildings=yes
-Image=SOMEIMAGEL1
-Trajectory=Straight
-Trajectory.DetonationDistance=5.2
-Trajectory.TargetSnapDistance=0
-Trajectory.Straight.PassThrough=yes
-Trajectory.OffsetCoord=0,115,0
-Trajectory.ProximityImpact=-1
-Trajectory.ProximityWarhead=SOMEWARHEADL1
-Trajectory.ProximityDamage=40
-Trajectory.ProximityRadius=0.8
-Trajectory.ProximityDirect=yes
-Trajectory.ProximityAllies=yes
-Trajectory.ThroughBuilding=no
-Trajectory.Straight.ConfineAtHeight=105
-Trajectory.Speed=60.0
-```
-````
-
-````{note}
 > ![Trajectory-Demo-M](_static/images/Trajectory-Demo-M.gif)
-> The assets of the case come from an unreleased mod *Horizon*.
+> The assets of the case come from an unreleased mod by [jingliujiang](https://github.com/jingliujiang).
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEM1]
 AA=yes
@@ -1816,7 +1667,7 @@ Trajectory.Speed=40.0
 
 ````{note}
 > ![Trajectory-Demo-O](_static/images/Trajectory-Demo-O.gif)
-> The assets of the case come from an unreleased mod *Horizon*.
+> The assets of the case come from an unreleased mod by [jingliujiang](https://github.com/jingliujiang).
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEO1]
 AA=no
@@ -1902,24 +1753,6 @@ Trajectory.Parabola.LaunchAngle=0.0
 ````
 
 ````{note}
-> Trajectory_Demo_Q_Image_Placeholder (Maybe not necessary)
-> The assets of the case come from mod *???*.
-```{dropdown} Click to show ini
-[SOMEPROJECTILEQ1]
-AA=no
-AG=yes
-SubjectToCliffs=no
-SubjectToElevation=no
-SubjectToWalls=no
-Image=SOMEIMAGEQ1
-Trajectory=Tracing
-Trajectory.Duration=100
-Trajectory.Speed=40.0
-Trajectory.Synchronize=yes
-```
-````
-
-````{note}
 > ![Trajectory-Demo-R](_static/images/Trajectory-Demo-R.gif)
 > The assets of the case come from mod *Mental Omega*.
 ```{dropdown} Click to show ini
@@ -1945,7 +1778,7 @@ Gravity=15.0
 
 ````{note}
 > ![Trajectory-Demo-S](_static/images/Trajectory-Demo-S.gif)
-> The assets of the case come from an unreleased mod *Horizon*.
+> The assets of the case come from an unreleased mod by [jingliujiang](https://github.com/jingliujiang).
 ```{dropdown} Click to show ini
 [SOMEPROJECTILES1]
 AA=no
@@ -2003,7 +1836,7 @@ Trajectory.Speed=90.0
 
 ````{note}
 > ![Trajectory-Demo-T](_static/images/Trajectory-Demo-T.gif)
-> The assets of the case come from an unreleased mod *Horizon*.
+> The assets of the case come from an unreleased mod by [jingliujiang](https://github.com/jingliujiang).
 ```{dropdown} Click to show ini
 [SOMEPROJECTILET1]
 AA=yes
@@ -2038,7 +1871,7 @@ Trajectory.Speed=45.0
 
 ````{note}
 > ![Trajectory-Demo-U](_static/images/Trajectory-Demo-U.gif)
-> The assets of the case come from an unreleased mod *Horizon*.
+> The assets of the case come from mod *Source Deity*.
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEU1]
 AA=no
@@ -2070,25 +1903,24 @@ Image=SOMEIMAGEU2
 Trajectory=Engrave
 Trajectory.PassDetonate=yes
 Trajectory.PassDetonateDelay=2
-Trajectory.Engrave.SourceCoord=0,150
-Trajectory.Engrave.TargetCoord=0,-150
+Trajectory.Engrave.SourceCoord=0,600
+Trajectory.Engrave.TargetCoord=0,-600
 Trajectory.UseDisperseCoord=yes
 Trajectory.AllowFirerTurning=no
 Trajectory.Engrave.IsIntense=yes
 Trajectory.Engrave.IsSingleColor=yes
-Trajectory.Engrave.LaserInnerColor=0,255,0
-Trajectory.Engrave.LaserThickness=1
+Trajectory.Engrave.LaserInnerColor=255,0,0
 Trajectory.Engrave.AttachToTarget=yes
 Trajectory.Engrave.UpdateDirection=yes
-Trajectory.Speed=8.0
+Trajectory.Speed=40.0
 
 [SOMEPROJECTILEU3]:[SOMEPROJECTILEU2]
-Trajectory.Engrave.SourceCoord=130,75
-Trajectory.Engrave.TargetCoord=-130,-75
+Trajectory.Engrave.SourceCoord=300,520
+Trajectory.Engrave.TargetCoord=-300,-520
 
 [SOMEPROJECTILEU4]:[SOMEPROJECTILEU2]
-Trajectory.Engrave.SourceCoord=-130,75
-Trajectory.Engrave.TargetCoord=130,-75
+Trajectory.Engrave.SourceCoord=-300,520
+Trajectory.Engrave.TargetCoord=300,-520
 ```
 ````
 
@@ -2169,7 +2001,7 @@ Trajectory.Speed=10000.0
 
 ````{note}
 > ![Trajectory-Demo-W](_static/images/Trajectory-Demo-W.gif)
-> The assets of the case come from an unreleased mod *Horizon*.
+> The assets of the case come from an unreleased mod by [jingliujiang](https://github.com/jingliujiang).
 ```{dropdown} Click to show ini
 [SOMEPROJECTILEW1]
 AA=no
