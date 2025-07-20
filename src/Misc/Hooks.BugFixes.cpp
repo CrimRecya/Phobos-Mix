@@ -2487,16 +2487,17 @@ DEFINE_HOOK(0x458180, BuildingClass_RemoveOccupants_CheckWhenNoPlaceToUnload, 0x
 	GET(BuildingClass* const, pThis, ESI);
 	GET_STACK(const DWORD, retnAddr, STACK_OFFSET(0x3C, 0x0));
 
-	// AI all to hunt or trigger action
-	if (retnAddr == 0x50150E || retnAddr == 0x6DF784)
-		return UnloadAsSell;
-
 	// If it is called from Mission_Unload, then skip execution if there is not enough space
 	// Remain unchanged in other cases like dead when receive damage or neutral ones get red
 	if (retnAddr != 0x44D8A1)
 		pThis->KillOccupants(nullptr);
+	else
+		pThis->SetTarget(nullptr);
 
 	return SkipGameCode;
 }
+
+DEFINE_PATCH(0x501504, 0x01); // HouseClass::All_To_Hunt
+DEFINE_PATCH(0x6DF77A, 0x01); // TActionClass::Execute
 
 #pragma endregion
