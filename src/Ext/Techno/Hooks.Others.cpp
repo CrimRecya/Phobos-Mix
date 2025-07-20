@@ -332,39 +332,6 @@ DEFINE_HOOK(0x742691, UnitClass_SetDestination_PiggyBack, 0x8)
 */
 #pragma endregion
 
-#pragma region BuildingUnloadFix
-/*
-static inline bool CanBuildingUnloadOccupants(BuildingClass* pThis)
-{
-	if (pThis->GetOccupantCount() <= 0)
-		return false;
-
-	const auto topLeftCell = pThis->GetMapCoords();
-	const auto pOccupant = pThis->Occupants.GetItem(0);
-
-	for (auto pFoundation = pThis->Type->FoundationOutside; *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
-	{
-		if (const auto pSearchCell = MapClass::Instance.TryGetCellAt(topLeftCell + *pFoundation))
-		{
-			if (pOccupant->IsCellOccupied(pSearchCell, FacingType::None, -1, nullptr, true) == Move::OK)
-				return true;
-		}
-	}
-
-	return false;
-}
-
-DEFINE_HOOK(0x44733A, BuildingClass_MouseOverObject_BuildingCheckDeploy, 0xA)
-{
-	enum { OccupantsCannotLeave = 0x447348, OccupantsCanLeave = 0x4472E7 };
-
-	GET(BuildingClass* const, pThis, ESI);
-
-	return CanBuildingUnloadOccupants(pThis) ? OccupantsCanLeave : OccupantsCannotLeave;
-}
-*/
-#pragma endregion
-
 #pragma region DetectionLogic
 /*
 DEFINE_HOOK(0x5865E2, MapClass_IsLocationFogged_Check, 0x5)
