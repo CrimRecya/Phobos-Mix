@@ -37,9 +37,9 @@ DEFINE_HOOK(0x73B780, UnitClass_DrawVXL_TurretMultiOffset, 0x0)
 {
 	enum { CleanFlag = 0x73B78A, SkipFlag = 0x73B790 };
 
-	GET(UnitTypeClass*, pType, EBX);
+	GET(TechnoTypeClass* const, pDrawType, EBX);
 
-	auto const pDrawTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	auto const pDrawTypeExt = TechnoTypeExt::ExtMap.Find(pDrawType);
 
 	return (*pDrawTypeExt->TurretOffset.GetEx() == CoordStruct::Empty
 		&& pDrawTypeExt->ExtraTurretCount <= 0
@@ -62,7 +62,7 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteTurretDrawing, 0x6)
 	enum { SkipGameCode = 0x73BEA4 };
 
 	GET(UnitClass* const, pThis, EBP);
-	GET(UnitTypeClass* const, pDrawType, EBX);
+	GET(TechnoTypeClass* const, pDrawType, EBX);
 	GET_STACK(const bool, haveTurretCache, STACK_OFFSET(0x1C4, -0x1B3));
 	GET_STACK(const bool, haveBar, STACK_OFFSET(0x1C4, -0x1B2));
 	GET(const bool, haveBarrelCache, EAX);
@@ -197,12 +197,12 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteTurretDrawing, 0x6)
 						const auto barrelsSize = barrels.size();
 						const bool faceRight = turretDir == 0 || turretDir == 1;
 						std::sort(&barrels[0], &barrels[barrelsSize],[pDrawTypeExt, faceRight](const auto& idxA, const auto& idxB)
-						{
-							const auto offsetA = idxA < 0 ? pDrawTypeExt->BarrelOffset.Get() : pDrawTypeExt->ExtraBarrelOffsets[idxA];
-							const auto offsetB = idxB < 0 ? pDrawTypeExt->BarrelOffset.Get() : pDrawTypeExt->ExtraBarrelOffsets[idxB];
+							{
+								const auto offsetA = idxA < 0 ? pDrawTypeExt->BarrelOffset.Get() : pDrawTypeExt->ExtraBarrelOffsets[idxA];
+								const auto offsetB = idxB < 0 ? pDrawTypeExt->BarrelOffset.Get() : pDrawTypeExt->ExtraBarrelOffsets[idxB];
 
-							return faceRight ? (offsetA > offsetB) : (offsetA <= offsetB);
-						});
+								return faceRight ? (offsetA > offsetB) : (offsetA <= offsetB);
+							});
 
 						for (const auto& i : barrels)
 							drawBarrel(i);
@@ -245,27 +245,27 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteTurretDrawing, 0x6)
 
 				const auto turretsSize = turrets.size();
 				std::sort(&turrets[0], &turrets[turretsSize],[pThis, pDrawTypeExt](const auto& idxA, const auto& idxB)
-				{
-					const auto pOffsetA = idxA < 0 ? static_cast<CoordStruct*>(pDrawTypeExt->TurretOffset.GetEx()) : &pDrawTypeExt->ExtraTurretOffsets[idxA];
-					const auto pOffsetB = idxB < 0 ? static_cast<CoordStruct*>(pDrawTypeExt->TurretOffset.GetEx()) : &pDrawTypeExt->ExtraTurretOffsets[idxB];
+					{
+						const auto pOffsetA = idxA < 0 ? static_cast<CoordStruct*>(pDrawTypeExt->TurretOffset.GetEx()) : &pDrawTypeExt->ExtraTurretOffsets[idxA];
+						const auto pOffsetB = idxB < 0 ? static_cast<CoordStruct*>(pDrawTypeExt->TurretOffset.GetEx()) : &pDrawTypeExt->ExtraTurretOffsets[idxB];
 
-					if (pOffsetA->Z < pOffsetB->Z)
-						return true;
+						if (pOffsetA->Z < pOffsetB->Z)
+							return true;
 
-					if (pOffsetA->Z > pOffsetB->Z)
-						return false;
+						if (pOffsetA->Z > pOffsetB->Z)
+							return false;
 
-					const auto pointA = TacticalClass::Instance->CoordsToClient(TechnoExt::GetFLHAbsoluteCoords(pThis, *pOffsetA)).first;
-					const auto pointB = TacticalClass::Instance->CoordsToClient(TechnoExt::GetFLHAbsoluteCoords(pThis, *pOffsetB)).first;
+						const auto pointA = TacticalClass::Instance->CoordsToClient(TechnoExt::GetFLHAbsoluteCoords(pThis, *pOffsetA)).first;
+						const auto pointB = TacticalClass::Instance->CoordsToClient(TechnoExt::GetFLHAbsoluteCoords(pThis, *pOffsetB)).first;
 
-					if (pointA.Y < pointB.Y)
-						return true;
+						if (pointA.Y < pointB.Y)
+							return true;
 
-					if (pointA.Y > pointB.Y)
-						return false;
+						if (pointA.Y > pointB.Y)
+							return false;
 
-					return pointA.X <= pointB.X;
-				});
+						return pointA.X <= pointB.X;
+					});
 
 				for (const auto& i : turrets)
 					drawTurret(i);
@@ -655,7 +655,7 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 	LEA_STACK(Point2D* const, pt, STACK_OFFSET(0x1C4, -0x1A4));
 	GET_STACK(Surface* const, surface, STACK_OFFSET(0x1C4, -0x1A8));
 
-	GET(UnitTypeClass* const, pDrawType, EBX);
+	GET(TechnoTypeClass* const, pDrawType, EBX);
 	// This is not necessarily pThis->Type : UnloadingClass or WaterImage
 	// This is the very reason I need to do this here, there's no less hacky way to get this Type from those inner calls
 
@@ -765,7 +765,9 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 	if (height > 0)
 		shadow_point.Y += 1;
 
-	if (!pDrawType->UseTurretShadow)
+	const bool notUseTurretShadow = pDrawType->WhatAmI() != AbstractType::UnitType || !static_cast<UnitTypeClass*>(pDrawType)->UseTurretShadow;
+
+	if (notUseTurretShadow)
 	{
 		if (pDrawTypeExt->ShadowIndices.empty())
 		{
@@ -785,7 +787,7 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 		}
 	}
 
-	if (main_vxl == &pDrawType->TurretVoxel || (!pDrawType->UseTurretShadow && !pDrawTypeExt->TurretShadow.Get(RulesExt::Global()->DrawTurretShadow)))
+	if (main_vxl == &pDrawType->TurretVoxel || (notUseTurretShadow && !pDrawTypeExt->TurretShadow.Get(RulesExt::Global()->DrawTurretShadow)))
 		return SkipDrawing;
 
 	auto getTurretVoxel = [pDrawType](int idx) ->VoxelStruct*
@@ -834,7 +836,8 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 	auto pCache = &pDrawType->VoxelShadowCache;
 	const auto pExt = TechnoExt::ExtMap.Find(pThis);
 
-	if (!pDrawType->UseTurretShadow)
+	// Not available under multiple turrets/barrels due to different base positions
+	if (notUseTurretShadow)
 		pCache = (haveBar || pTurretVoxel != &pDrawType->TurretVoxel) ? nullptr : reinterpret_cast<decltype(pCache)>(&pDrawType->VoxelTurretBarrelCache);
 
 	auto drawTurretShadow = [&](int turIdx)
