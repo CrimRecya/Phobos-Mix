@@ -138,9 +138,9 @@ void BuildingExt::ExtData::UpdatePrimaryFactoryAI()
 
 				if (pBuilding->Factory)
 				{
-					auto const* prodType = pBuilding->Factory->Object->GetType();
+					//auto const* prodType = pBuilding->Factory->Object->GetType();
 					pBuilding->Factory->AbandonProduction();
-					Debug::Log("%s is not CurrentAirFactory of %s, production of %s aborted\n", pBuilding->Type->ID, pOwner->PlainName, prodType->ID);
+					//Debug::Log("%s is not CurrentAirFactory of %s, production of %s aborted\n", pBuilding->Type->ID, pOwner->PlainName, prodType->ID);
 				}
 			}
 		}
@@ -173,9 +173,9 @@ void BuildingExt::ExtData::UpdatePrimaryFactoryAI()
 
 		if (pBuilding->Factory)
 		{
-			auto const* prodType = pBuilding->Factory->Object->GetType();
+			//auto const* prodType = pBuilding->Factory->Object->GetType();
 			pBuilding->Factory->AbandonProduction();
-			Debug::Log("%s of %s abandonded production of %s due to redundancies\n", pBuilding->Type->ID, pOwner->PlainName, prodType->ID);
+			//Debug::Log("%s of %s abandonded production of %s due to redundancies\n", pBuilding->Type->ID, pOwner->PlainName, prodType->ID);
 		}
 	}
 
