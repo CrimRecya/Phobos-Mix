@@ -253,6 +253,10 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fix the bug that occupyable structure won't redraw when press deploy hotkey to release all occupants.
 - Fixed an issue that if the garrison unload occupants when there is no open space around it would result in the disappearance of the occupants.
 - Fixed the bug that Locomotor warhead won’t stop working when the attacker is being affected by `Temporal=yes` warhead.
+- Fixed the bug that `IsLocomotor=yes` warhead rendering hover units unselectable and undamageable on elevated bridge.
+- Fixed the bug that Locomotor warhead won't stop working when firer (except for vehicle) stop firing.
+- Fixed the bug that hover vehicle will sink if destroyed on bridge.
+- Fix the fact that when the selected unit is in a rearmed state, it can unconditionally use attack mouse on the target.
 
 ## Fixes / interactions with other extensions
 
@@ -273,6 +277,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fixed an issue where a portion of Ares's trigger event 75/77 was determined unsuccessfully.
 - Fixed an issue where some units crashed after the deployment transformation.
 - Fixed the bug that AlphaImage remained after unit entered tunnel.
+- Fixed an issue where Ares' `Convert.Deploy` triggers repeatedly when the unit is turning or moving.
 
 ## Aircraft
 

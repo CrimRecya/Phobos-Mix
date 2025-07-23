@@ -386,6 +386,7 @@ This page lists all the individual contributions to the project by their author.
   - Player-controlled spies are not forced to perform other tasks while attacking buildings
   - If `BombDisarm=yes` is not present for all weapon warheads, then the engineer will no longer use the appropriate mouse action
   - Fix an unusual use of DeployFireWeapon for InfantryType
+  - Fix the fact that when the selected unit is in a rearmed state, it can unconditionally use attack mouse on the target
 - **NetsuNegi**:
   - Forbidding parallel AI queues by type
   - Jumpjet crash speed fix when crashing onto building
@@ -435,6 +436,9 @@ This page lists all the individual contributions to the project by their author.
   - Fix the bug that submarine always turn left after changed owner by map event
   - Fix the bug that occupyable structure won't redraw when press deploy hotkey to release all occupants
   - Fix the bug that Locomotor warhead won’t stop working when the attacker is being affected by `Temporal=yes` warhead
+  - Fix the bug that `IsLocomotor=yes` warhead rendering hover units unselectable and undamageable on elevated bridge
+  - Fix the bug that Locomotor warhead won't stop working when firer (except for vehicle) stop firing
+  - Fix the bug that hover vehicle will sink if destroyed on bridge
   - Directional armor
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**:
@@ -525,6 +529,7 @@ This page lists all the individual contributions to the project by their author.
   - Fix an issue that `Spawned` aircraft will fly towards the edge of the map when its `Spawner` is under EMP
   - Burst without delay
   - Fix an issue that if the garrison unload occupants when there is no open space around it would result in the disappearance of the occupants
+  - Fix an issue where Ares' `Convert.Deploy` triggers repeatedly when the unit is turning or moving
   - New Missile trajectory
   - New Engrave trajectory
   - New Tracing trajectory
