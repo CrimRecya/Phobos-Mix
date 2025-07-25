@@ -644,7 +644,7 @@ DirStruct TechnoTypeExt::ExtData::GetBodyDesiredDir(DirStruct currentDir, DirStr
 	return (std::abs(rightDifference) < std::abs(leftDifference)) ? rightDir : leftDir;
 }
 
-int __fastcall TechnoTypeExt::RequirementsMetExtraCheck(void* pAresHouseExt, discard_t _, TechnoTypeClass* pType)
+int __fastcall TechnoTypeExt::RequirementsMetExtraCheck(void* pAresHouseExt, void* _, TechnoTypeClass* pType)
 {
 	// Only with Ares will call this function, so skip sanity check.
 	const auto result = AresFunctions::RequirementsMet(pAresHouseExt, pType);

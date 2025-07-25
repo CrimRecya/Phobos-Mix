@@ -1151,7 +1151,7 @@ public:
 
 	static WeaponTypeClass* GetWeaponType(TechnoTypeClass* pThis, int weaponIndex, bool isElite);
 
-	static int __fastcall RequirementsMetExtraCheck(void* pAresHouseExt, discard_t _, TechnoTypeClass* pType);
+	static int __fastcall RequirementsMetExtraCheck(void* pAresHouseExt, void* _, TechnoTypeClass* pType);
 	static CanBuildResult CheckAlwaysExistCameo(TechnoTypeClass* pType, CanBuildResult canBuild);
 
 	// Ares 0.A

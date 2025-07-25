@@ -265,7 +265,7 @@ namespace TechnoAttachmentTemp
 }
 
 #define DEFINE_CELLTECHNO_WRAPPER(mode) \
-TechnoClass* __fastcall CellTechno_##mode(CellClass* pThis, discard_t, Point2D *a2, bool check_alt, TechnoClass* techno) \
+TechnoClass* __fastcall CellTechno_##mode(CellClass* pThis, void*, Point2D *a2, bool check_alt, TechnoClass* techno) \
 { \
 	TechnoAttachmentTemp::currentMode = CellTechnoMode::mode; \
 	auto const retval = pThis->FindTechnoNearestTo(*a2, check_alt, techno); \
@@ -882,7 +882,7 @@ DEFINE_HOOK(0x736A2F, UnitClass_RotationAI_ForbidAttachmentRotation, 0x7)
 	return TechnoExt::HasAttachmentLoco(pThis) && TechnoExt::ExtMap.Find(pThis)->ParentAttachment ? SkipBodyRotation : ContinueCheck;
 }
 
-Action __fastcall UnitClass_MouseOverCell_Wrapper(UnitClass* pThis, discard_t, CellStruct const* pCell, bool checkFog, bool ignoreForce)
+Action __fastcall UnitClass_MouseOverCell_Wrapper(UnitClass* pThis, void*, CellStruct const* pCell, bool checkFog, bool ignoreForce)
 {
 	Action result = pThis->UnitClass::MouseOverCell(pCell, checkFog, ignoreForce);
 

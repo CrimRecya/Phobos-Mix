@@ -25,7 +25,7 @@ DEFINE_HOOK(0x7098B9, TechnoClass_TargetSomethingNearby_AutoFire, 0x6)
 	return 0;
 }
 
-FireError __fastcall TechnoClass_TargetSomethingNearby_CanFire_Wrapper(TechnoClass* pThis, discard_t _, AbstractClass* pTarget, int weaponIndex, bool ignoreRange)
+FireError __fastcall TechnoClass_TargetSomethingNearby_CanFire_Wrapper(TechnoClass* pThis, void* _, AbstractClass* pTarget, int weaponIndex, bool ignoreRange)
 {
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 	bool disableWeapons = pExt->AE.DisableWeapons;
@@ -138,7 +138,7 @@ WeaponStruct* __fastcall TechnoClass_EvaluateCellGetWeaponWrapper(TechnoClass* p
 	return pThis->GetWeapon(CellEvalTemp::weaponIndex);
 }
 
-int __fastcall TechnoClass_EvaluateCellGetWeaponRangeWrapper(TechnoClass* pThis, discard_t _, int weaponIndex)
+int __fastcall TechnoClass_EvaluateCellGetWeaponRangeWrapper(TechnoClass* pThis, void* _, int weaponIndex)
 {
 	return pThis->GetWeaponRange(CellEvalTemp::weaponIndex);
 }
@@ -433,7 +433,7 @@ private:
 };
 
 
-FireError __fastcall UnitClass__GetFireError_Wrapper(UnitClass* pThis, discard_t _, ObjectClass* pObj, int nWeaponIndex, bool ignoreRange)
+FireError __fastcall UnitClass__GetFireError_Wrapper(UnitClass* pThis, void* _, ObjectClass* pObj, int nWeaponIndex, bool ignoreRange)
 {
 	AresScheme::Prefix(pThis, pObj, nWeaponIndex, false);
 	auto const result = pThis->UnitClass::GetFireError(pObj, nWeaponIndex, ignoreRange);
@@ -442,7 +442,7 @@ FireError __fastcall UnitClass__GetFireError_Wrapper(UnitClass* pThis, discard_t
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7F6030, UnitClass__GetFireError_Wrapper)
 
-FireError __fastcall InfantryClass__GetFireError_Wrapper(InfantryClass* pThis, discard_t _, ObjectClass* pObj, int nWeaponIndex, bool ignoreRange)
+FireError __fastcall InfantryClass__GetFireError_Wrapper(InfantryClass* pThis, void* _, ObjectClass* pObj, int nWeaponIndex, bool ignoreRange)
 {
 	AresScheme::Prefix(pThis, pObj, nWeaponIndex, false);
 	auto const result = pThis->InfantryClass::GetFireError(pObj, nWeaponIndex, ignoreRange);
@@ -451,7 +451,7 @@ FireError __fastcall InfantryClass__GetFireError_Wrapper(InfantryClass* pThis, d
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7EB418, InfantryClass__GetFireError_Wrapper)
 
-Action __fastcall UnitClass__WhatAction_Wrapper(UnitClass* pThis, discard_t _, ObjectClass* pObj, bool ignoreForce)
+Action __fastcall UnitClass__WhatAction_Wrapper(UnitClass* pThis, void* _, ObjectClass* pObj, bool ignoreForce)
 {
 	AresScheme::Prefix(pThis, pObj, -1, false);
 	auto result = pThis->UnitClass::MouseOverObject(pObj, ignoreForce);
@@ -489,7 +489,7 @@ Action __fastcall UnitClass__WhatAction_Wrapper(UnitClass* pThis, discard_t _, O
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5CE4, UnitClass__WhatAction_Wrapper)
 
-Action __fastcall InfantryClass__WhatAction_Wrapper(InfantryClass* pThis, discard_t _, ObjectClass* pObj, bool ignoreForce)
+Action __fastcall InfantryClass__WhatAction_Wrapper(InfantryClass* pThis, void* _, ObjectClass* pObj, bool ignoreForce)
 {
 	AresScheme::Prefix(pThis, pObj, -1, pThis->Type->Engineer);
 	auto const result = pThis->InfantryClass::MouseOverObject(pObj, ignoreForce);

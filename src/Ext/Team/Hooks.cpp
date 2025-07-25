@@ -17,7 +17,7 @@ namespace TechnoAttachmentTemp
 }
 
 #define DEFINE_ATTACH_WRAPPER(mode) \
-void __fastcall CargoClass_Attach_##mode(PassengersClass* pThis, discard_t, FootClass* pThat) \
+void __fastcall CargoClass_Attach_##mode(PassengersClass* pThis, void*, FootClass* pThat) \
 { \
 	TechnoAttachmentTemp::currentAttachMode = AttachCargoMode::mode; \
 	pThis->AddPassenger(pThat); \
