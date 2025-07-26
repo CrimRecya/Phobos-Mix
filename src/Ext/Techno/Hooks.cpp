@@ -1336,20 +1336,13 @@ DEFINE_HOOK(0x4DF4DB, FootClass_RefreshMegaMission_CheckMissionFix, 0xA)
 
 	GET(FootClass* const, pThis, ESI);
 
+	auto const pType = pThis->GetTechnoType();
+	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 	auto const mission = pThis->GetCurrentMission();
 
-	if (mission != Mission::Guard)
-	{
-		auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
-
-		if (!pTypeExt->AttackMove_StopWhenTargetAcquired.Get(RulesExt::Global()->AttackMove_StopWhenTargetAcquired.Get(!pTypeExt->OwnerObject()->OpportunityFire))
-			|| mission != Mission::Move || !pThis->MegaDestination || pThis->DistanceFrom(pThis->MegaDestination) <= Unsorted::LeptonsPerCell)
-		{
-			return ClearMegaMission;
-		}
-	}
-
-	return ContinueMegaMission;
+	return (pTypeExt->AttackMove_StopWhenTargetAcquired.Get(RulesExt::Global()->AttackMove_StopWhenTargetAcquired.Get(!pType->OpportunityFire))
+		? (!(mission == Mission::Move && pThis->MegaDestination && pThis->DistanceFrom(pThis->MegaDestination) > 256) && mission != Mission::Guard) : mission != Mission::Guard)
+		? ClearMegaMission : ContinueMegaMission;
 }
 
 DEFINE_HOOK(0x711E90, TechnoTypeClass_CanAttackMove_IgnoreWeapon, 0x6)
