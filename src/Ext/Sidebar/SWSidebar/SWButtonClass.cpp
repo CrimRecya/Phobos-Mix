@@ -8,14 +8,27 @@
 #include <Ext/SWType/Body.h>
 #include <Utilities/AresFunctions.h>
 
-SWButtonClass::SWButtonClass(unsigned int id, int superIdx, int x, int y, int width, int height)
-	: ControlClass(id, x, y, width, height, (GadgetFlag::LeftPress | GadgetFlag::RightPress), false)
+SWButtonClass::SWButtonClass(int superIdx, int x, int y, int width, int height)
+	: GadgetClass(x, y, width, height, (GadgetFlag::LeftPress | GadgetFlag::RightPress), false)
 	, SuperIndex(superIdx)
 {
 	if (const auto backColumn = SWSidebarClass::Instance.Columns.back())
 		backColumn->Buttons.emplace_back(this);
 
 	this->Disabled = !SWSidebarClass::IsEnabled();
+}
+
+SWButtonClass::~SWButtonClass()
+{
+	// The vanilla game did not consider adding/deleting buttons midway through the game,
+	// so this behavior needs to be made known to the global variable and then remove it
+	auto& pCurrentMouseOverGadget = Make_Global<GadgetClass*>(0x8B3E94);
+
+	if (pCurrentMouseOverGadget == this)
+	{
+		pCurrentMouseOverGadget = nullptr;
+		this->OnMouseLeave();
+	}
 }
 
 bool SWButtonClass::Draw(bool forced)
@@ -161,8 +174,7 @@ bool SWButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
 		this->LaunchSuper();
 	}
 
-	// this->ControlClass::Action(flags, pKey, KeyModifier::None);
-	reinterpret_cast<bool(__thiscall*)(ControlClass*, GadgetFlag, DWORD*, KeyModifier)>(0x48E5A0)(this, flags, pKey, KeyModifier::None);
+	this->GadgetClass::Action(flags, pKey, KeyModifier::None);
 	return true;
 }
 

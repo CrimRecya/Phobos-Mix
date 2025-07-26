@@ -152,7 +152,7 @@ void TechnoExt::DrawInsignia(TechnoClass* pThis, Point2D* pLocation, RectangleSt
 
 	TechnoTypeExt::ExtData* pTechnoTypeExt = TechnoTypeExt::ExtMap.Find(pTechnoType);
 
-	bool isVisibleToPlayer = (pOwner && pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
+	const bool isVisibleToPlayer = (pOwner && pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
 		|| HouseClass::IsCurrentPlayerObserver()
 		|| pTechnoTypeExt->Insignia_ShowEnemy.Get(RulesExt::Global()->EnemyInsignia);
 
@@ -176,7 +176,7 @@ void TechnoExt::DrawInsignia(TechnoClass* pThis, Point2D* pLocation, RectangleSt
 	int insigniaFrame = insigniaFrames.X;
 	int frameIndex = pTechnoTypeExt->InsigniaFrame.Get(pThis);
 
-	if (pTechnoType->Passengers > 0)
+	if (pTechnoType->Passengers > 0 && pTechnoTypeExt->Insignia_Passengers.size() > 0)
 	{
 		int passengersIndex = pTechnoTypeExt->Passengers_BySize ? pThis->Passengers.GetTotalSize() : pThis->Passengers.NumPassengers;
 		passengersIndex = Math::min(passengersIndex, pTechnoType->Passengers);
@@ -188,7 +188,7 @@ void TechnoExt::DrawInsignia(TechnoClass* pThis, Point2D* pLocation, RectangleSt
 			isCustomInsignia = true;
 		}
 
-		int frame = pTechnoTypeExt->InsigniaFrame_Passengers[passengersIndex].Get(pThis);
+		const int frame = pTechnoTypeExt->InsigniaFrame_Passengers[passengersIndex].Get(pThis);
 
 		if (frame != -1)
 			frameIndex = frame;
@@ -199,9 +199,9 @@ void TechnoExt::DrawInsignia(TechnoClass* pThis, Point2D* pLocation, RectangleSt
 			insigniaFrames = frames.Get();
 	}
 
-	if (pTechnoType->Gunner)
+	if (pTechnoType->Gunner && pTechnoTypeExt->Insignia_Weapon.size() > 0)
 	{
-		int weaponIndex = pThis->CurrentWeaponNumber;
+		const int weaponIndex = pThis->CurrentWeaponNumber;
 
 		if (auto const pCustomShapeFile = pTechnoTypeExt->Insignia_Weapon[weaponIndex].Get(pThis))
 		{
@@ -210,7 +210,7 @@ void TechnoExt::DrawInsignia(TechnoClass* pThis, Point2D* pLocation, RectangleSt
 			isCustomInsignia = true;
 		}
 
-		int frame = pTechnoTypeExt->InsigniaFrame_Weapon[weaponIndex].Get(pThis);
+		const int frame = pTechnoTypeExt->InsigniaFrame_Weapon[weaponIndex].Get(pThis);
 
 		if (frame != -1)
 			frameIndex = frame;
