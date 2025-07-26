@@ -195,6 +195,39 @@ bool TrajectoryPointer::Save(PhobosStreamWriter& Stm) const
 
 // ------------------------------------------------------------------------------ //
 
+// Check and set the group
+bool PhobosTrajectoryType::CheckExceededCapacity(TechnoClass* pTechno, BulletTypeClass* pBulletType, PhobosTrajectory* pTraj) const
+{
+	const auto pTechnoExt = TechnoExt::ExtMap.Find(pTechno);
+
+	if (!pTechnoExt->TrajectoryGroup)
+		pTechnoExt->TrajectoryGroup = std::make_shared<PhobosMap<BulletTypeClass*, PhobosTrajectory::GroupData>>();
+
+	// Get shared container
+	auto& group = (*pTechnoExt->TrajectoryGroup)[pBulletType].Bullets;
+	const auto size = static_cast<int>(group.size());
+
+	if (!pTraj)
+		return size >= this->CreateCapacity;
+
+	pTraj->TrajectoryGroup = pTechnoExt->TrajectoryGroup;
+
+	// Check trajectory capacity
+	if (size >= this->CreateCapacity)
+	{
+		// Peaceful vanish
+		pTraj->Status |= TrajectoryStatus::Vanish;
+		return true;
+	}
+	else
+	{
+		// Increase trajectory count
+		pTraj->GroupIndex = size;
+		group.push_back(pTraj->Bullet->UniqueID);
+		return false;
+	}
+}
+
 // Have generated projectile on the map and prepare for launch
 void PhobosTrajectory::OnUnlimbo()
 {
@@ -246,31 +279,7 @@ void PhobosTrajectory::OnUnlimbo()
 
 		// Check trajectory capacity
 		if (pType->CreateCapacity >= 0)
-		{
-			const auto pFirerExt = TechnoExt::ExtMap.Find(pFirer);
-
-			if (!pFirerExt->TrajectoryGroup)
-				pFirerExt->TrajectoryGroup = std::make_shared<PhobosMap<DWORD, PhobosTrajectory::GroupData>>();
-
-			// Get shared container
-			this->TrajectoryGroup = pFirerExt->TrajectoryGroup;
-			auto& group = (*this->TrajectoryGroup)[pBullet->Type->UniqueID].Bullets;
-			const auto size = static_cast<int>(group.size());
-
-			// Check trajectory capacity
-			if (size >= pType->CreateCapacity)
-			{
-				// Peaceful vanish
-				pBullet->Health = 0;
-				this->ShouldDetonate = true;
-			}
-			else
-			{
-				// Increase trajectory count
-				this->GroupIndex = size;
-				group.push_back(pBullet->UniqueID);
-			}
-		}
+			pType->CheckExceededCapacity(pFirer, pBullet->Type, this);
 	}
 	else
 	{
@@ -301,7 +310,7 @@ bool PhobosTrajectory::OnEarlyUpdate()
 		return false;
 
 	// The previous check requires detonation at this time
-	if (this->ShouldDetonate)
+	if (this->Status & (TrajectoryStatus::Detonate | TrajectoryStatus::Vanish))
 		return true;
 
 	// Check the remaining existence time
@@ -503,7 +512,7 @@ void PhobosTrajectory::OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* 
 TrajectoryCheckReturnType PhobosTrajectory::OnDetonateUpdate(const CoordStruct& position)
 {
 	// Need to detonate at the next location
-	if (this->ShouldDetonate)
+	if (this->Status & (TrajectoryStatus::Detonate | TrajectoryStatus::Vanish))
 		return TrajectoryCheckReturnType::Detonate;
 
 	// Below ground level? (16 -> error range)
@@ -525,23 +534,23 @@ void PhobosTrajectory::OnPreDetonate()
 
 	const auto pBullet = this->Bullet;
 
-	// No damage, no anims...
 	if (pType->PeacefulVanish.Get(this->Flag() == TrajectoryFlag::Engrave || pType->ProximityImpact || pType->DisperseCycle))
 	{
-		pBullet->Health = 0;
-		pBullet->Limbo();
-		pBullet->UnInit();
-
 		// To skip all extra effects
-		this->ShouldDetonate = false;
+		this->Status |= TrajectoryStatus::Vanish;
 	}
 	else
 	{
 		// Calculate the current damage
 		pBullet->Health = this->GetTrueDamage(pBullet->Health, true);
+	}
 
-		// Ensure the detonation flag is established
-		this->ShouldDetonate = true;
+	// No damage, no anims...
+	if (this->Status & TrajectoryStatus::Vanish)
+	{
+		pBullet->Health = 0;
+		pBullet->Limbo();
+		pBullet->UnInit();
 	}
 }
 
@@ -577,7 +586,7 @@ void PhobosTrajectory::OpenFire()
 			const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
 
 			if (TrajectoryHelper::GetObstacle(pSourceCell, pTargetCell, pSourceCell, pBullet->Location, pBulletType, pOwner))
-				this->ShouldDetonate = true;
+				this->Status |= TrajectoryStatus::Detonate;
 		}
 	}
 }
@@ -614,7 +623,7 @@ void PhobosTrajectory::MultiplyBulletVelocity(const double ratio, const bool sho
 
 	// The next frame needs to detonate itself
 	if (shouldDetonate)
-		this->ShouldDetonate = true;
+		this->Status |= TrajectoryStatus::Detonate;
 }
 
 /*!
@@ -843,7 +852,7 @@ void PhobosTrajectory::DetonateOnObstacle()
 	if (speed && distance < speed)
 		this->MultiplyBulletVelocity(distance / speed, true);
 	else
-		this->ShouldDetonate = true;
+		this->Status |= TrajectoryStatus::Detonate;
 
 	// Need to cause additional damage?
 	if (!this->ProximityImpact)
@@ -914,7 +923,7 @@ bool PhobosTrajectory::CheckTolerantTime()
 void PhobosTrajectory::UpdateGroupIndex()
 {
 	const auto pBullet = this->Bullet;
-	auto& groupData = (*this->TrajectoryGroup)[pBullet->Type->UniqueID];
+	auto& groupData = (*this->TrajectoryGroup)[pBullet->Type];
 
 	// Should update group index
 	if (groupData.ShouldUpdate)
@@ -1114,7 +1123,7 @@ void PhobosTrajectory::Serialize(T& Stm)
 		.Process(this->TargetIsInAir)
 		.Process(this->TargetIsTechno)
 		.Process(this->NotMainWeapon)
-		.Process(this->ShouldDetonate)
+		.Process(this->Status)
 		.Process(this->FLHCoord)
 		.Process(this->CurrentBurst)
 		.Process(this->CountOfBurst)
