@@ -128,7 +128,7 @@ DEFINE_HOOK(0x4495DF, BuildingClass_CheckWeaponFactoryOutsideBusy_ScatterEntranc
 
 	const auto pTechno = TechnoExt::FindOccupyTechno(pCell, pThis);
 
-	if (!pTechno || TechnoExt::IsChildOf(pTechno, pThis->GetNthLink(0)))
+	if (!pTechno || pTechno == pLink || TechnoExt::IsChildOf(pTechno, pLink))
 		return NotBusy;
 
 	if (RulesExt::Global()->ExtendedScatterAction && !pTechno->Owner->IsAlliedWith(pThis->Owner))

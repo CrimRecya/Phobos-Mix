@@ -393,6 +393,9 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 				if (pThis->Owner != pUnit->Owner || pUnit->IsTether)
 					continue;
 
+				if (TechnoExt::IsAttached(pUnit))
+					continue;
+
 				const auto height = pUnit->GetHeight();
 
 				if (height < 0 || height > Unsorted::CellHeight)
