@@ -149,28 +149,41 @@ void AttachmentClass::AI()
 
 		if (pType->InheritTarget)
 		{
-			const auto pTarget = pParent->Target;
-
-			if (pType->InheritTarget_Force)
-			{
-				if (pChild->Target != pTarget)
+			auto childInheritTarget = [pParent, pChild, pType]()
 				{
-					pChild->SetTarget(pTarget);
-					pChild->QueueMission((pTarget ? Mission::Attack : Mission::Guard), true);
-				}
-			}
-			else
-			{
-				if (pChild->GetCurrentMission() != Mission::Guard)
-					pChild->QueueMission(Mission::Guard, true);
+					const auto pTarget = pParent->Target;
 
-				const auto pChildTarget = pChild->Target;
+					if (pType->InheritTarget_Force)
+					{
+						if (pChild->Target != pTarget)
+						{
+							pChild->SetTarget(pTarget);
+							pChild->QueueMission((pTarget ? Mission::Attack : Mission::Guard), true);
+						}
 
-				if (pTarget && pChildTarget != pTarget && pChild->IsCloseEnoughToAttack(pTarget))
-					pChild->SetTarget(pTarget);
-				else if (pChildTarget && !pChild->IsCloseEnoughToAttack(pChildTarget))
-					pChild->SetTarget(nullptr);
-			}
+						return;
+					}
+
+					if (pChild->GetCurrentMission() != Mission::Guard)
+						pChild->QueueMission(Mission::Guard, true);
+
+					const auto pChildTarget = pChild->Target;
+
+					if (pTarget && pChildTarget != pTarget && pChild->IsCloseEnoughToAttack(pTarget))
+					{
+						const auto fireError = pChild->GetFireErrorWithoutRange(pTarget, pChild->SelectWeapon(pTarget));
+
+						if (fireError != FireError::CANT && fireError != FireError::ILLEGAL)
+						{
+							pChild->SetTarget(pTarget);
+							return;
+						}
+					}
+
+					if (pChildTarget && !pChild->IsCloseEnoughToAttack(pChildTarget))
+						pChild->SetTarget(nullptr);
+				};
+			childInheritTarget();
 		}
 
 		if (pType->InheritStateEffects)
