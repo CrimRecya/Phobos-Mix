@@ -181,7 +181,7 @@ public:
 		, FirepowerMult { 1.0 }
 		, AttenuationRange { 0 }
 		, RemainingDistance { 1 }
-		, TargetInTheAir { false }
+		, TargetIsInAir { false }
 		, TargetIsTechno { false }
 		, NotMainWeapon { false }
 		, ShouldDetonate { false }
@@ -196,7 +196,7 @@ public:
 		, ProximityImpact { trajType->ProximityImpact }
 		, ProximityDamage { 0 }
 		, ExtraCheck { nullptr }
-		, TheCasualty {}
+		, Casualty {}
 
 		, DisperseIndex { 0 }
 		, DisperseCount { 0 }
@@ -213,7 +213,7 @@ public:
 	double FirepowerMult; // Inherited firepower bonus
 	int AttenuationRange; // Maximum range
 	int RemainingDistance; // Remaining distance from the self explosion location
-	bool TargetInTheAir; // Is the original target the Air Force
+	bool TargetIsInAir; // Is the original target the Air Force
 	bool TargetIsTechno; // Is the original target a techno type
 	bool NotMainWeapon; // Does it ignore the launcher
 	bool ShouldDetonate; // Should detonate when checking before and after moving
@@ -223,9 +223,9 @@ public:
 
 	struct GroupData
 	{
-		std::vector<DWORD> Bullets {};
-		double Angle { 0.0 };
-		bool ShouldUpdate { true };
+		std::vector<DWORD> Bullets {}; // <UniqueID>, Capacity
+		double Angle { 0.0 }; // Tracing.StableRotation use this value to update the angle
+		bool ShouldUpdate { true }; // Remind members to update themselves
 
 		GroupData() = default;
 
@@ -237,7 +237,7 @@ public:
 		bool Serialize(T& stm);
 	};
 
-	std::shared_ptr<PhobosMap<DWORD, PhobosTrajectory::GroupData>> TrajectoryGroup; // For capacity count
+	std::shared_ptr<PhobosMap<DWORD, PhobosTrajectory::GroupData>> TrajectoryGroup; // <UniqueID, Data>, for capacity count
 	int GroupIndex; // Index in trajectory group
 
 	int PassDetonateDamage; // Current damage caused by the pass warhead
@@ -245,7 +245,7 @@ public:
 	int ProximityImpact; // How many times can proximity warhead be triggered
 	int ProximityDamage; // Current damage caused by the proximity warhead
 	TechnoClass* ExtraCheck; // The obstacle, no taken out for use in next frame
-	std::map<DWORD, int> TheCasualty; // <UniqueID, Frames>, only for recording existence to check whether have damaged
+	std::map<DWORD, int> Casualty; // <UniqueID, Frames>, only for recording existence to check whether have damaged
 
 	int DisperseIndex; // Launch weapon group Index
 	int DisperseCount; // Launch weapon group remaining times
@@ -341,6 +341,32 @@ public:
 
 		return pTechno->CloakState != CloakState::Cloaked || pCell->Sensors_InclHouse(pHouse->ArrayIndex);
 	}
+	static inline bool CheckCanRetarget(TechnoClass* const pTechno, HouseClass* const pOwner, const AffectedHouse retargetHouses, const CoordStruct& center, const double retargetRange, const int range,
+		const BulletClass* const pBullet, const WeaponTypeClass* const pWeapon, const WeaponTypeExt::ExtData* const pWeaponExt, TechnoClass* const pFirer)
+	{
+		const auto pTechnoType = pTechno->GetTechnoType();
+
+		return pTechnoType->LegalTarget
+			&& !pTechno->IsBeingWarpedOut()
+			&& PhobosTrajectory::CheckWeaponValidness(pOwner, pTechno, pTechno->GetCell(), retargetHouses)
+			&& PhobosTrajectory::GetDistanceFrom(center, pTechno) <= retargetRange
+			&& MapClass::GetTotalDamage(100, pBullet->WH, pTechnoType->Armor, 0) != 0
+			&& (!pWeapon || PhobosTrajectory::GetDistanceFrom(pFirer ? pFirer->GetCoords() : pBullet->SourceCoords, pTechno) <= range)
+			&& PhobosTrajectory::CheckWeaponCanTarget(pWeaponExt, pFirer, pTechno);
+	}
+	static inline bool CheckCanDisperse(TechnoClass* const pTechno, HouseClass* const pOwner, const PhobosTrajectoryType* const pType, const CoordStruct& center, const CellClass* const pCell, const int range,
+		const AbstractClass* const pTarget, const WeaponTypeClass* const pWeapon, const WeaponTypeExt::ExtData* const pWeaponExt, TechnoClass* const pFirer)
+	{
+		const auto pTechnoType = pTechno->GetTechnoType();
+
+		return pTechnoType->LegalTarget
+			&& (!pType->DisperseTendency || pType->DisperseDoRepeat || pTechno != pTarget)
+			&& !pTechno->IsBeingWarpedOut()
+			&& PhobosTrajectory::CheckWeaponValidness(pOwner, pTechno, pCell, pWeaponExt->CanTargetHouses)
+			&& PhobosTrajectory::GetDistanceFrom(center, pTechno) <= range
+			&& MapClass::GetTotalDamage(100, pWeapon->Warhead, pTechnoType->Armor, 0) != 0
+			&& PhobosTrajectory::CheckWeaponCanTarget(pWeaponExt, pFirer, pTechno);
+	}
 	static inline void SetNewDamage(int& damage, const double ratio)
 	{
 		if (damage)
@@ -376,12 +402,12 @@ public:
 	void PassWithDetonateAt();
 	void PrepareForDetonateAt();
 	void ProximityDetonateAt(HouseClass* pOwner, TechnoClass* pTarget);
-	int GetTheTrueDamage(int damage, bool self);
+	int GetTrueDamage(int damage, bool self);
 	double GetExtraDamageMultiplier();
 
 	bool BulletRetargetTechno();
 	void GetTechnoFLHCoord();
-	CoordStruct GetWeaponFireCoord(TechnoClass* pTechno);
+	CoordStruct GetDisperseWeaponFireCoord(TechnoClass* pTechno);
 	bool PrepareDisperseWeapon();
 	bool FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourceCoord, HouseClass* pOwner);
 	void CreateDisperseBullets(TechnoClass* pTechno, const CoordStruct& sourceCoord, WeaponTypeClass* pWeapon, AbstractClass* pTarget, HouseClass* pOwner, int curBurst, int maxBurst);

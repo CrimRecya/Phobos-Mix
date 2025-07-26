@@ -2,6 +2,19 @@
 
 #include "PhobosTrajectory.h"
 
+/*
+	Base class: Actual Trajectory
+
+	- The trajectory itself is an attacking object
+	- Used to share the properties/functions
+
+	- for:
+		- Straight
+		- Bombard
+		- Missile
+		- Parabola
+*/
+
 class ActualTrajectoryType : public PhobosTrajectoryType
 {
 public:
