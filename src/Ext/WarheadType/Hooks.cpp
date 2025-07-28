@@ -400,6 +400,7 @@ DEFINE_HOOK(0x4899DA, DamageArea_DamageBuilding_CauseMergeBuildingDamage, 0x7)
 				if (group->Distance > cellSpread)
 					continue;
 
+				// Calculate the distance damage ratio in advance
 				const auto multiplier = (cellSpread && percentDifference) ? 1.0 - (percentDifference * group->Distance / cellSpread) : 1.0;
 				MapBuildings[pBuilding] += multiplier > 0 ? multiplier : 0;
 			}
@@ -410,8 +411,13 @@ DEFINE_HOOK(0x4899DA, DamageArea_DamageBuilding_CauseMergeBuildingDamage, 0x7)
 	{
 		if (const auto pBuilding = abstract_cast<BuildingClass*>(group->Target))
 		{
-			if (pBuilding->IsAlive && !pBuilding->Type->InvisibleInGame && (!invincibleWithoutPenetrateAndCloseTo || pBuilding->IsIronCurtained())
-				&& pBuilding->Health > 0 && pBuilding->IsOnMap && !pBuilding->InLimbo && MapBuildings.contains(pBuilding))
+			if (pBuilding->IsAlive
+				&& !pBuilding->Type->InvisibleInGame
+				&& (!invincibleWithoutPenetrateAndCloseTo || pBuilding->IsIronCurtained())
+				&& pBuilding->Health > 0
+				&& pBuilding->IsOnMap
+				&& !pBuilding->InLimbo
+				&& MapBuildings.contains(pBuilding))
 			{
 				auto receiveDamage = Game::F2I(baseDamage * MapBuildings[pBuilding]);
 				MapBuildings.erase(pBuilding);
@@ -419,6 +425,7 @@ DEFINE_HOOK(0x4899DA, DamageArea_DamageBuilding_CauseMergeBuildingDamage, 0x7)
 				if (!receiveDamage && baseDamage)
 					receiveDamage = Math::sgn(baseDamage);
 
+				// Set the distance coefficient to 0
 				pBuilding->ReceiveDamage(&receiveDamage, 0, pWH, pAttacker, false, false, pAttackHouse);
 			}
 		}
