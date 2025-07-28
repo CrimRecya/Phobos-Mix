@@ -168,15 +168,22 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 					if ((curCoord.X >> 8) != (lastCoord.X >> 8) && (curCoord.Y >> 8) != (lastCoord.Y >> 8))
 					{
-						bool lastX = (abs(stepCoord.X) > abs(stepCoord.Y))
-							? (((curCoord.Y - ((stepCoord.X > 0)
-								? (curCoord.X & 0XFF)
-								: ((curCoord.X & 0XFF) - 256))
-							* checkCoord.Y / checkCoord.X) >> 8) == (curCoord.Y >> 8))
-							: (((curCoord.X - ((stepCoord.Y > 0)
-								? (curCoord.Y & 0XFF)
-								: ((curCoord.Y & 0XFF) - 256))
-							* checkCoord.X / checkCoord.Y) >> 8) != (curCoord.X >> 8));
+						bool lastX = false;
+
+						if (std::abs(stepCoord.X) > std::abs(stepCoord.Y))
+						{
+							const int offsetX = curCoord.X & 0xFF;
+							const int deltaX = (stepCoord.X > 0) ? deltaX : (deltaX - Unsorted::LeptonsPerCell);
+							const int projectedY = curCoord.Y - deltaX * checkCoord.Y / checkCoord.X;
+							lastX = (projectedY ^ curCoord.Y) >> 8 == 0;
+						}
+						else
+						{
+							const int offsetY = curCoord.Y & 0xFF;
+							const int deltaY = (stepCoord.Y > 0) ? offsetY : (offsetY - Unsorted::LeptonsPerCell);
+							const int projectedX = curCoord.X - deltaY * checkCoord.X / checkCoord.Y;
+							lastX = (projectedX ^ curCoord.X) >> 8 != 0;
+						}
 
 						if (const auto pCheckCell = MapClass::Instance.TryGetCellAt(lastX
 							? CellStruct { static_cast<short>(lastCoord.X >> 8), static_cast<short>(curCoord.Y >> 8) }
