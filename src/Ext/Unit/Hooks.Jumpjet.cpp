@@ -1,6 +1,7 @@
 ﻿#include <JumpjetLocomotionClass.h>
 #include <UnitClass.h>
 #include <BuildingClass.h>
+
 #include <Utilities/Macro.h>
 #include <Ext/Techno/Body.h>
 #include <Ext/WeaponType/Body.h>
@@ -324,7 +325,7 @@ int JumpjetRushHelpers::JumpjetLocomotionPredictHeight(JumpjetLocomotionClass* p
 				if (std::abs(stepCoord.X) > std::abs(stepCoord.Y))
 				{
 					const int offsetX = curCoord.X & mask;
-					const int deltaX = (stepCoord.X > 0) ? deltaX : (deltaX - Unsorted::LeptonsPerCell);
+					const int deltaX = (stepCoord.X > 0) ? offsetX : (offsetX - Unsorted::LeptonsPerCell);
 					const int projectedY = curCoord.Y - deltaX * checkCoord.Y / checkCoord.X;
 					lastX = (projectedY ^ curCoord.Y) >> shift == 0;
 				}

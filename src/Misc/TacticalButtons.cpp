@@ -173,7 +173,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 						if (std::abs(stepCoord.X) > std::abs(stepCoord.Y))
 						{
 							const int offsetX = curCoord.X & 0xFF;
-							const int deltaX = (stepCoord.X > 0) ? deltaX : (deltaX - Unsorted::LeptonsPerCell);
+							const int deltaX = (stepCoord.X > 0) ? offsetX : (offsetX - Unsorted::LeptonsPerCell);
 							const int projectedY = curCoord.Y - deltaX * checkCoord.Y / checkCoord.X;
 							lastX = (projectedY ^ curCoord.Y) >> 8 == 0;
 						}
