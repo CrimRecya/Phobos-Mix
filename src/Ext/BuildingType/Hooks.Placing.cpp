@@ -946,8 +946,14 @@ DEFINE_HOOK(0x4ABAC0, DisplayClass_LeftMouseButtonUp_ReplaceBuildingType, 0x6)
 	const int arrayIndex = pType->GetArrayIndex();
 	const auto absType = pPlace->WhatAmI();
 
-	const EventClass event (HouseClass::CurrentPlayer->ArrayIndex, EventType::Place, absType, arrayIndex, placeType, placeCell);
-	EventClass::OutList.Add(event);
+	EventClass::OutList.Add(EventClass(
+		HouseClass::CurrentPlayer->ArrayIndex,
+		EventType::Place,
+		absType,
+		arrayIndex,
+		placeType,
+		placeCell
+	));
 
 	return SkipGameCode;
 }
@@ -1428,8 +1434,7 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 			{
 				const int place = static_cast<int>(placeType);
 				const auto arrayIndex = pType->GetArrayIndex();
-				const EventClass event (pHouse->ArrayIndex, EventType::Place, AbstractType::Building, arrayIndex, place, cell);
-				EventClass::OutList.Add(event);
+				EventClass::OutList.Add(EventClass(pHouse->ArrayIndex, EventType::Place, AbstractType::Building, arrayIndex, place, cell));
 			}
 		};
 

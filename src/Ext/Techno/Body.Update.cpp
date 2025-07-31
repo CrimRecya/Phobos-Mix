@@ -2383,8 +2383,7 @@ void TechnoExt::ExtData::UpdateCachedClick()
 		TargetClass target4;
 		target4.m_ID = target3.m_ID;
 		target4.m_RTTI = 0;
-		EventClass event = EventClass(HouseClass::CurrentPlayer->ArrayIndex, target3, this->CachedMission, target2, target1, target4);
-		EventClass::OutList.Add(event);
+		EventClass::OutList.Add(EventClass(HouseClass::CurrentPlayer->ArrayIndex, target3, this->CachedMission, target2, target1, target4));
 		// clear
 		this->HasCachedClickMission = false;
 		this->CachedMission = Mission::None;

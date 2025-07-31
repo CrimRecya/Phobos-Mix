@@ -721,15 +721,13 @@ CanBuildResult TechnoTypeExt::CheckAlwaysExistCameo(TechnoTypeClass* pType, CanB
 
 				if (pCurrent->GetPrimaryFactory(pType->WhatAmI(), pType->Naval, buildCat))
 				{
-					const EventClass event
-					(
+					EventClass::OutList.Add(EventClass(
 						pCurrent->ArrayIndex,
 						EventType::AbandonAll,
 						static_cast<int>(pType->WhatAmI()),
 						pType->GetArrayIndex(),
 						pType->Naval
-					);
-					EventClass::OutList.Add(event);
+					));
 				}
 			}
 

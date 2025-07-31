@@ -1033,8 +1033,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 	{
 		const int placeType = MapClass::Instance.GetCellAt(cell)->LandType == LandType::Water;
 		const auto arrayIndex = pType->GetArrayIndex();
-		const EventClass event (pHouse->ArrayIndex, EventType::Place, AbstractType::Building, arrayIndex, placeType, cell);
-		EventClass::OutList.Add(event);
+		EventClass::OutList.Add(EventClass(pHouse->ArrayIndex, EventType::Place, AbstractType::Building, arrayIndex, placeType, cell));
 	};
 
 	if (pType->LaserFencePost || pType->Wall)
@@ -1167,16 +1166,14 @@ bool BuildingTypeExt::BuildLimboBuilding(BuildingClass* pBuilding)
 
 	if (BuildingTypeExt::ExtMap.Find(pBuildingType)->LimboBuild)
 	{
-		const EventClass event
-		(
+		EventClass::OutList.Add(EventClass(
 			pBuilding->Owner->ArrayIndex,
 			EventType::Place,
 			AbstractType::Building,
 			pBuildingType->GetArrayIndex(),
 			pBuildingType->Naval,
 			CellStruct { 1, 1 }
-		);
-		EventClass::OutList.Add(event);
+		));
 
 		return true;
 	}
