@@ -9,57 +9,139 @@ MessageColumnClass MessageColumnClass::Instance;
 
 // --------------------------------------------------
 
-MessageBoardClass::MessageBoardClass(int x, int y, int width, int height)
+MessageScrollClass::MessageScrollClass(int id, int x, int y, int width, int height)
 	: GadgetClass(x, y, width, height, GadgetFlag::LeftPress | GadgetFlag::LeftHeld | GadgetFlag::LeftRelease, true)
+	, ID(id)
 {
 	this->Disabled = true;
 }
 
-bool MessageBoardClass::Draw(bool forced)
+bool MessageScrollClass::Draw(bool forced)
 {
 	return false;
 }
 
-void MessageBoardClass::OnMouseEnter()
+void MessageScrollClass::OnMouseEnter()
 {
 	this->Hovering = true;
 	MessageColumnClass::Instance.MouseEnter();
 }
 
-void MessageBoardClass::OnMouseLeave()
+void MessageScrollClass::OnMouseLeave()
 {
 	this->Hovering = false;
 	MessageColumnClass::Instance.MouseLeave();
 }
 
-bool MessageBoardClass::Clicked(DWORD* pKey, GadgetFlag flags, int x, int y, KeyModifier modifier)
+bool MessageScrollClass::Clicked(DWORD* pKey, GadgetFlag flags, int x, int y, KeyModifier modifier)
 {
 	if (!MessageColumnClass::IsStickyButton(this))
 	{
-		if (!(flags & GadgetFlag::LeftPress) || !MessageColumnClass::Instance.IsExpanded() || !this->Hovering)
-			return false;
+		if (this->ID) // Scroll_Board
+		{
+			if (!(flags & GadgetFlag::LeftPress) || !MessageColumnClass::Instance.IsExpanded() || !this->Hovering)
+				return false;
 
-		this->LastY = y;
-		this->LastScroll = MessageColumnClass::Instance.GetScroll();
+			this->LastY = y;
+			this->LastScroll = MessageColumnClass::Instance.GetScroll();
+		}
+		else // Scroll_Bar
+		{
+			if (!(flags & GadgetFlag::LeftPress) || !this->Hovering)
+				return false;
+
+			const int totalRecords = static_cast<int>(ScenarioExt::Global()->RecordMessages.size());
+			const int displayRecords = MessageColumnClass::Instance.GetRecord();
+			const int maxScroll = totalRecords - displayRecords;
+
+			if (maxScroll > 0)
+			{
+				const int thumbHeight = Math::max((this->Height * displayRecords / totalRecords), MessageToggleClass::ButtonSide);
+				const int currentScroll = MessageColumnClass::Instance.GetScroll();
+				const int spaceHeight = this->Height - thumbHeight;
+				const int thumbPosY = spaceHeight * currentScroll / maxScroll + this->Y;
+
+				if (y >= thumbPosY && y <= thumbPosY + thumbHeight)
+				{
+					this->LastY = y;
+					this->LastScroll = currentScroll;
+				}
+				else
+				{
+					const int newScroll = maxScroll * (y - this->Y - thumbHeight / 2) / spaceHeight;
+					MessageColumnClass::Instance.SetScroll(newScroll);
+					this->LastY = y;
+					this->LastScroll = newScroll;
+				}
+			}
+		}
 	}
 	else if (flags & GadgetFlag::LeftHeld)
 	{
-		const int indexOffset = (this->LastY - y) / MessageToggleClass::ButtonSide;
-		MessageColumnClass::Instance.SetScroll(this->LastScroll + indexOffset);
+		if (this->ID) // Scroll_Board
+		{
+			const int indexOffset = (this->LastY - y) / MessageToggleClass::ButtonSide;
+			MessageColumnClass::Instance.SetScroll(this->LastScroll + indexOffset);
+		}
+		else // Scroll_Bar
+		{
+			const int totalRecords = static_cast<int>(ScenarioExt::Global()->RecordMessages.size());
+			const int displayRecords = MessageColumnClass::Instance.GetRecord();
+			const int maxScroll = totalRecords - displayRecords;
+
+			if (maxScroll > 0)
+			{
+				const int thumbHeight = Math::max((this->Height * displayRecords / totalRecords), MessageToggleClass::ButtonSide);
+				const int indexOffset = maxScroll * (y - this->LastY) / (this->Height - thumbHeight);
+				MessageColumnClass::Instance.SetScroll(this->LastScroll + indexOffset);
+			}
+		}
 	}
 
 	return this->Action(flags, pKey, modifier);
 }
 
-void MessageBoardClass::DrawShape() const
+void MessageScrollClass::DrawShape() const
 {
-	if ((MessageColumnClass::Instance.IsHovering() && Phobos::Config::MessageApplyHoverState)
-		|| MessageColumnClass::Instance.IsExpanded()
-		|| ScenarioClass::Instance->UserInputLocked)
+	if (this->ID) // Scroll_Board
 	{
-		RectangleStruct drawRect { this->X, this->Y, this->Width, this->Height };
-		ColorStruct color { 0, 0, 0 };
-		DSurface::Composite->FillRectTrans(&drawRect, &color, MessageColumnClass::LowOpacity);
+		if ((MessageColumnClass::Instance.IsHovering() && Phobos::Config::MessageApplyHoverState)
+			|| MessageColumnClass::Instance.IsExpanded()
+			|| ScenarioClass::Instance->UserInputLocked)
+		{
+			RectangleStruct drawRect { this->X, this->Y, this->Width, this->Height };
+			ColorStruct color { 0, 0, 0 };
+			DSurface::Composite->FillRectTrans(&drawRect, &color, MessageColumnClass::LowOpacity);
+		}
+	}
+	else // Scroll_Bar
+	{
+		if (!this->Disabled)
+		{
+			const int totalRecords = static_cast<int>(ScenarioExt::Global()->RecordMessages.size());
+			const int displayRecords = MessageColumnClass::Instance.GetRecord();
+			const int maxScroll = totalRecords - displayRecords;
+			int thumbHeight = this->Height;
+			int thumbPos = 0;
+
+			if (maxScroll > 0)
+			{
+				thumbHeight = Math::max((thumbHeight * displayRecords / totalRecords), MessageToggleClass::ButtonSide);
+				thumbPos = (this->Height - thumbHeight) * MessageColumnClass::Instance.GetScroll() / maxScroll;
+			}
+
+			const int thumbY = WWMouseClass::Instance->XY1.Y - this->Y;
+			const bool onThumb = this->Hovering && (thumbY >= thumbPos && thumbY <= thumbPos + thumbHeight);
+
+			RectangleStruct drawRect { this->X, this->Y, this->Width, this->Height };
+			ColorStruct color { 100, 100, 100 };
+			DSurface::Composite->FillRectTrans(&drawRect, &color, this->Hovering ? MessageColumnClass::MediumOpacity : MessageColumnClass::LowOpacity);
+
+			drawRect.Y += thumbPos;
+			drawRect.Height = thumbHeight;
+			color = ColorStruct { 200, 200, 200 };
+			DSurface::Composite->FillRectTrans(&drawRect, &color, onThumb ? MessageColumnClass::HighOpacity : MessageColumnClass::MediumOpacity);
+		}
 	}
 }
 
@@ -175,7 +257,7 @@ bool MessageButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 		{
 			if ((flags & GadgetFlag::LeftPress) && this->Hovering)
 			{
-				this->CheckTime = MessageColumnClass::GetSystemTime() + 60;
+				this->CheckTime = MessageColumnClass::GetSystemTime() + MessageButtonClass::HoldInitialDelay;
 				MessageColumnClass::Instance.ScrollDown();
 			}
 		}
@@ -185,7 +267,7 @@ bool MessageButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 
 			if (timeExpired > 0)
 			{
-				this->CheckTime += 30;
+				this->CheckTime += MessageButtonClass::HoldTriggerDelay;
 				MessageColumnClass::Instance.ScrollDown();
 			}
 		}
@@ -196,7 +278,7 @@ bool MessageButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 		{
 			if ((flags & GadgetFlag::LeftPress) && this->Hovering)
 			{
-				this->CheckTime = MessageColumnClass::GetSystemTime() + 60;
+				this->CheckTime = MessageColumnClass::GetSystemTime() + MessageButtonClass::HoldInitialDelay;
 				MessageColumnClass::Instance.ScrollUp();
 			}
 		}
@@ -206,7 +288,7 @@ bool MessageButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 
 			if (timeExpired > 0)
 			{
-				this->CheckTime += 30;
+				this->CheckTime += MessageButtonClass::HoldTriggerDelay;
 				MessageColumnClass::Instance.ScrollUp();
 			}
 		}
@@ -352,11 +434,18 @@ void MessageColumnClass::InitClear()
 		this->Button_Down = nullptr;
 	}
 
-	if (this->Board)
+	if (this->Scroll_Bar)
 	{
-		GScreenClass::Instance.RemoveButton(this->Board);
-		GameDelete(this->Board);
-		this->Board = nullptr;
+		GScreenClass::Instance.RemoveButton(this->Scroll_Bar);
+		GameDelete(this->Scroll_Bar);
+		this->Scroll_Bar = nullptr;
+	}
+
+	if (this->Scroll_Board)
+	{
+		GScreenClass::Instance.RemoveButton(this->Scroll_Board);
+		GameDelete(this->Scroll_Board);
+		this->Scroll_Board = nullptr;
 	}
 }
 
@@ -372,17 +461,18 @@ void MessageColumnClass::InitIO()
 	int posY = rect.Height - rect.Height / 8;
 	const int maxLines = posY / MessageToggleClass::ButtonSide - 1;
 	constexpr int maxChars = 112;
-	const int maxRecord = Math::clamp(Phobos::Config::MessageDisplayInCenter_RecordsCount, 3, maxLines);
+	const int maxRecord = Math::clamp(Phobos::Config::MessageDisplayInCenter_RecordsCount, 4, maxLines);
 	const int maxCount = Math::clamp(Phobos::Config::MessageDisplayInCenter_LabelsCount, 1, maxLines);
 
 	this->Initialize(posX, posY, maxCount, maxRecord, maxChars, width);
 
+	constexpr int buttonInterval = 2;
 	posX -= 1;
 	width += 2;
 
 	// Button_Expand
 	{
-		const int locX = posX + width - ((MessageToggleClass::ButtonSide * 2) + 2);
+		const int locX = posX + width - ((MessageToggleClass::ButtonSide * 2) + buttonInterval);
 		const int locY = posY - MessageToggleClass::ButtonSide;
 		const auto pButton = GameCreate<MessageToggleClass>(0, locX, locY, MessageToggleClass::ButtonSide, MessageToggleClass::ButtonSide);
 		pButton->Zap();
@@ -403,7 +493,7 @@ void MessageColumnClass::InitIO()
 	// Button_Up
 	{
 		const int locX = rect.Width * 5 / 12;
-		const int locY = posY - (MessageToggleClass::ButtonSide * 12) - 1 - MessageToggleClass::ButtonHeight;
+		const int locY = posY - (MessageToggleClass::ButtonSide * this->MaxRecord) - 1 - MessageToggleClass::ButtonHeight;
 		const auto pButton = GameCreate<MessageButtonClass>(0, locX, locY, sideWidth, MessageToggleClass::ButtonHeight);
 		pButton->Zap();
 		GScreenClass::Instance.AddButton(pButton);
@@ -420,12 +510,23 @@ void MessageColumnClass::InitIO()
 		this->Button_Down = pButton;
 	}
 
-	// Board
+	// Scroll_Bar
 	{
-		const auto pButton = GameCreate<MessageBoardClass>(posX, posY, width, 1);
+		const int locX = posX + width - ((MessageToggleClass::ButtonSide - MessageToggleClass::ButtonHeight) / 2 + MessageToggleClass::ButtonHeight);
+		const int locY = posY - (MessageToggleClass::ButtonSide * this->MaxRecord) - 1;
+		const int barHeight = posY - (MessageToggleClass::ButtonSide + buttonInterval) - locY;
+		const auto pButton = GameCreate<MessageScrollClass>(0, locX, locY, MessageToggleClass::ButtonHeight, barHeight);
 		pButton->Zap();
 		GScreenClass::Instance.AddButton(pButton);
-		this->Board = pButton;
+		this->Scroll_Bar = pButton;
+	}
+
+	// Scroll_Board
+	{
+		const auto pButton = GameCreate<MessageScrollClass>(1, posX, posY, width, 1);
+		pButton->Zap();
+		GScreenClass::Instance.AddButton(pButton);
+		this->Scroll_Board = pButton;
 	}
 
 	// 0x6DE0A8
@@ -630,11 +731,26 @@ void MessageColumnClass::Expand()
 	if (const auto pButton = this->Button_Down)
 		pButton->Disabled = false;
 
+	if (const auto pButton = this->Scroll_Bar)
+		pButton->Disabled = false;
+
 	this->Refresh();
 }
 
 void MessageColumnClass::PackUp(bool clear)
 {
+	if (const auto pButton = this->Scroll_Bar)
+	{
+		if (MessageColumnClass::IsStickyButton(pButton))
+			return;
+	}
+
+	if (const auto pButton = this->Scroll_Board)
+	{
+		if (MessageColumnClass::IsStickyButton(pButton))
+			return;
+	}
+
 	this->Expanded = false;
 	this->ScrollIndex = this->GetMaxScroll();
 
@@ -642,6 +758,9 @@ void MessageColumnClass::PackUp(bool clear)
 		pButton->Disabled = true;
 
 	if (const auto pButton = this->Button_Down)
+		pButton->Disabled = true;
+
+	if (const auto pButton = this->Scroll_Bar)
 		pButton->Disabled = true;
 
 	if (!clear)
@@ -679,7 +798,7 @@ void MessageColumnClass::CleanUp()
 		delete pLabel;
 	}
 
-	if (const auto pButton = this->Board)
+	if (const auto pButton = this->Scroll_Board)
 	{
 		pButton->Y = this->LabelsPos.Y - 1;
 		pButton->Height = 1;
@@ -695,7 +814,7 @@ void MessageColumnClass::CleanUp()
 
 void MessageColumnClass::Refresh()
 {
-	if (const auto pButton = this->Board)
+	if (const auto pButton = this->Scroll_Board)
 	{
 		const int count = this->IsExpanded() ? this->MaxRecord : this->GetLabelCount();
 		const int height = this->Height * count;
@@ -773,7 +892,10 @@ void MessageColumnClass::DrawAll()
 	if (const auto pButton = this->Button_Down)
 		pButton->DrawShape();
 
-	if (const auto pButton = this->Board)
+	if (const auto pButton = this->Scroll_Bar)
+		pButton->DrawShape();
+
+	if (const auto pButton = this->Scroll_Board)
 		pButton->DrawShape();
 
 	if (this->IsExpanded())

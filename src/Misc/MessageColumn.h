@@ -8,13 +8,13 @@
 
 // --------------------------------------------------
 
-class MessageBoardClass : public GadgetClass
+class MessageScrollClass : public GadgetClass
 {
 public:
-	MessageBoardClass() = default;
-	MessageBoardClass(int x, int y, int width, int height);
+	MessageScrollClass() = default;
+	MessageScrollClass(int id, int x, int y, int width, int height);
 
-	~MessageBoardClass() = default;
+	~MessageScrollClass() = default;
 
 	virtual bool Draw(bool forced) override;
 	virtual void OnMouseEnter() override;
@@ -23,6 +23,7 @@ public:
 
 	void DrawShape() const;
 
+	int ID { 0 };
 	int LastY { 0 };
 	int LastScroll { 0 };
 	bool Hovering { false };
@@ -58,6 +59,9 @@ public:
 class MessageButtonClass : public MessageToggleClass
 {
 public:
+	static constexpr int HoldInitialDelay = 40;
+	static constexpr int HoldTriggerDelay = 8;
+
 	MessageButtonClass() = default;
 	MessageButtonClass(int id, int x, int y, int width, int height);
 
@@ -140,6 +144,7 @@ public:
 	inline int GetWidth() const { return this->Width; }
 	inline size_t GetColor() const { return this->Color; }
 	inline int GetScroll() const { return this->ScrollIndex; }
+	inline int GetRecord() const { return this->MaxRecord; }
 	inline bool IsHovering() const { return this->Hovering; }
 	inline bool IsExpanded() const { return this->Expanded; }
 	inline bool IsDrawing() const { return this->Drawing; }
@@ -170,7 +175,8 @@ private:
 	MessageToggleClass* Button_Clear { nullptr };
 	MessageButtonClass* Button_Up { nullptr };
 	MessageButtonClass* Button_Down { nullptr };
-	MessageBoardClass* Board { nullptr };
+	MessageScrollClass* Scroll_Bar { nullptr };
+	MessageScrollClass* Scroll_Board { nullptr };
 
 	int ScrollIndex { 0 };
 	bool Hovering { false };
