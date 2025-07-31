@@ -3,8 +3,9 @@
 
 #include "SpawnManagerClass.h"
 
-SelectedCameoClass::SelectedCameoClass(unsigned int id, int x, int y)
-	: ControlClass(id, x, y, 60, 48, (GadgetFlag::LeftPress | GadgetFlag::RightPress), false)
+SelectedCameoClass::SelectedCameoClass(int id, int x, int y)
+	: GadgetClass(x, y, 60, 48, (GadgetFlag::LeftPress | GadgetFlag::RightPress), false)
+	, ID(id)
 {
 	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || SelectedInfoClass::Instance.SingleSelect;
 }
@@ -47,7 +48,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 
 	if (seIns.CurrentSelectCameo.size() == 1 || Phobos::Config::SelectedDisplay_Expand)
 	{
-		const auto pSelect = seCST[this->GetButtonIndex() + seIns.Current]->OwnerObject();
+		const auto pSelect = seCST[this->ID + seIns.Current]->OwnerObject();
 
 		if (flags & GadgetFlag::LeftPress)
 		{
@@ -64,7 +65,7 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 	}
 	else
 	{
-		const auto pTypeExt = seIns.CurrentSelectCameo[this->GetButtonIndex() + seIns.Current].TypeExt;
+		const auto pTypeExt = seIns.CurrentSelectCameo[this->ID + seIns.Current].TypeExt;
 		const auto groupID = pTypeExt->GetSelectionGroupID();
 
 		if (flags & GadgetFlag::LeftPress)
@@ -127,13 +128,8 @@ bool SelectedCameoClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modif
 		}
 	}
 
-	reinterpret_cast<bool(__thiscall*)(ControlClass*, GadgetFlag, DWORD*, KeyModifier)>(0x48E5A0)(this, flags, pKey, KeyModifier::None);
+	this->GadgetClass::Action(flags, pKey, KeyModifier::None);
 	return true;
-}
-
-inline int SelectedCameoClass::GetButtonIndex() const
-{
-	return this->ID - SelectedInfoClass::StartID - 10;
 }
 
 void SelectedCameoClass::DrawInfo() const
@@ -177,7 +173,7 @@ void SelectedCameoClass::DrawInfo() const
 
 	if (seIns.CurrentSelectCameo.size() == 1 || Phobos::Config::SelectedDisplay_Expand)
 	{
-		const auto pExt = seIns.CurrentSelectTechno[this->GetButtonIndex() + seIns.Current];
+		const auto pExt = seIns.CurrentSelectTechno[this->ID + seIns.Current];
 		const auto pTechno = pExt->OwnerObject();
 		const auto pType = pTechno->GetTechnoType();
 		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
@@ -219,7 +215,7 @@ void SelectedCameoClass::DrawInfo() const
 	}
 	else
 	{
-		const auto pSelect = seIns.CurrentSelectCameo[this->GetButtonIndex() + seIns.Current];
+		const auto pSelect = seIns.CurrentSelectCameo[this->ID + seIns.Current];
 		drawCameo(pSelect.TypeExt);
 		const int count = pSelect.Count;
 
@@ -238,8 +234,8 @@ void SelectedCameoClass::DrawInfo() const
 
 // ----------------------------------------
 
-SelectedMainCameoClass::SelectedMainCameoClass(unsigned int id, int x, int y)
-	: ControlClass(id, x, y, 60, 48, static_cast<GadgetFlag>(0), false)
+SelectedMainCameoClass::SelectedMainCameoClass(int x, int y)
+	: GadgetClass(x, y, 60, 48, static_cast<GadgetFlag>(0), false)
 {
 	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }

@@ -50,7 +50,6 @@ class SelectedInfoClass
 public:
 	static SelectedInfoClass Instance;
 
-	static constexpr int StartID = 2300;
 	static constexpr const wchar_t* Status[35] =
 	{
 		L"Sleep", L"Attack", L"Move", L"QueueMove", L"Retreat",

@@ -9,6 +9,7 @@
 #include <Utilities/Macro.h>
 #include "Utilities/AresHelper.h"
 #include "Utilities/Parser.h"
+#include "Misc/MessageColumn.h"
 
 #include <Phobos.ECInit.h>
 
@@ -343,6 +344,37 @@ DEFINE_HOOK(0x4F4583, GScreenClass_DrawText, 0x6)
 		Point2D location { DSurface::Composite->GetWidth() - wanted.Width - 5, 5 };
 		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x061C);
 	}
+	return 0;
+}
+
+DEFINE_HOOK(0x684AD3, UnknownClass_sub_684620_InitMessageList, 0x5)
+{
+	if (!Phobos::PoweredByEC && !Phobos::HideWarning)
+	{
+		const time_t compileTime = Phobos::GetCompile();
+		const time_t currentTime = Phobos::GetCurrent();
+		const int daysUsed = static_cast<int>(difftime(currentTime, compileTime) / (60 * 60 * 24));
+		const int daysLeft = 30 - daysUsed;
+		constexpr const wchar_t* const text = L"正在使用Phobos特别合并构建#" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L"。若在使用过程中发生问题，请按说明中的方法反馈。  — 绯红热茶";
+		wchar_t buffer[0x40];
+
+		if (daysLeft > 7)
+			swprintf_s(buffer, L"剩余试用期：%2d天", daysLeft);
+		else
+			swprintf_s(buffer, L"剩余试用期：%2d天，注意及时在群内获取最新版本。", daysLeft);
+
+		if (Phobos::Config::MessageDisplayInCenter)
+		{
+			MessageColumnClass::Instance.AddMessage(nullptr, text, 480, false);
+			MessageColumnClass::Instance.AddMessage(nullptr, buffer, 480, false, 120);
+		}
+		else
+		{
+			MessageListClass::Instance.PrintMessage(text, 480, 5, true);
+			MessageListClass::Instance.PrintMessage(buffer, 480, 5, true);
+		}
+	}
+
 	return 0;
 }
 

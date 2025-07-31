@@ -13,6 +13,7 @@
 #include <Ext/Scenario/Body.h>
 #include <Utilities/Macro.h>
 #include <Utilities/ShapeTextPrinter.h>
+#include <Misc/MessageColumn.h>
 
 DEFINE_HOOK(0x6A593E, SidebarClass_InitForHouse_AdditionalFiles, 0x5)
 {
@@ -266,7 +267,8 @@ DEFINE_HOOK(0x692419, DisplayClass_ProcessClickCoords_SkipOnNewButtons, 0x7)
 	return (SWSidebarClass::IsEnabled() && SWSidebarClass::Instance.CurrentColumn
 		|| SWSidebarClass::Instance.ToggleButton && SWSidebarClass::Instance.ToggleButton->IsHovering
 		|| UniqueTechnoColumnClass::Instance.Hovering >= 0
-		|| SelectedInfoClass::Instance.IsHovering)
+		|| SelectedInfoClass::Instance.IsHovering
+		|| MessageColumnClass::Instance.IsBlocked())
 		? DoNothing : 0;
 }
 
@@ -275,6 +277,7 @@ DEFINE_HOOK(0x6A5082, SidebarClass_InitClear_InitializeNewButtons, 0x5)
 	SWSidebarClass::Instance.InitClear();
 	UniqueTechnoColumnClass::Instance.InitClear();
 	SelectedInfoClass::Instance.InitClear();
+	MessageColumnClass::Instance.InitClear();
 	return 0;
 }
 
@@ -283,6 +286,15 @@ DEFINE_HOOK(0x6A5839, SidebarClass_InitIO_InitializeNewButtons, 0x5)
 	SWSidebarClass::Instance.InitIO();
 	UniqueTechnoColumnClass::Instance.InitIO();
 	SelectedInfoClass::Instance.InitIO();
+	MessageColumnClass::Instance.InitIO();
+	return 0;
+}
+
+DEFINE_HOOK_AGAIN(0x4E13B2, GadgetClass_DTOR_ClearCurrentOverGadget, 0x6)
+DEFINE_HOOK(0x4E1A84, GadgetClass_DTOR_ClearCurrentOverGadget, 0x6)
+{
+	GadgetClass* const pThis = (R->Origin() == 0x4E1A84) ? R->ESI<GadgetClass*>() : R->ECX<GadgetClass*>();
+	AnnounceInvalidPointer(Make_Global<GadgetClass*>(0x8B3E94), pThis);
 	return 0;
 }
 

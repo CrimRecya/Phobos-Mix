@@ -1,18 +1,19 @@
 ﻿#pragma once
-#include <ControlClass.h>
+#include <GadgetClass.h>
 
-class UniqueTechnoButtonClass : public ControlClass
+class UniqueTechnoButtonClass : public GadgetClass
 {
 public:
 	UniqueTechnoButtonClass() = default;
-	UniqueTechnoButtonClass(unsigned int id, int x, int y);
+	UniqueTechnoButtonClass(int id, int x, int y);
 
 	~UniqueTechnoButtonClass() = default;
 
 	virtual bool Draw(bool forced) override;
 	virtual void OnMouseEnter() override;
 	virtual void OnMouseLeave() override;
-	virtual bool Action(GadgetFlag fags, DWORD* pKey, KeyModifier modifier) override;
+	virtual bool Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier) override;
 
+	int ID { 0 };
 	bool Hovering { false };
 };

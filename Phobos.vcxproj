@@ -34,6 +34,8 @@
     <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedCameoClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedColumnClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedInfoClass.cpp" />
+    <ClCompile Include="src\Misc\MessageColumn.cpp" />
+    <ClCompile Include="src\Commands\ToggleMessageList.cpp" />
     <ClCompile Include="src\Ext\Infantry\Hooks.cpp" />
     <ClCompile Include="src\Ext\Infantry\Hooks.Firing.cpp" />
     <ClCompile Include="src\Ext\TechnoType\Hooks.MultiWeapon.cpp" />
@@ -241,7 +243,6 @@
     <ClCompile Include="src\Misc\Hooks.INIInheritance.cpp" />
     <ClCompile Include="src\Misc\Hooks.SkirmishColors.cpp" />
     <ClCompile Include="src\Misc\Hooks.Overlay.cpp" />
-    <ClCompile Include="src\Misc\Hooks.Message.cpp" />
     <ClCompile Include="src\New\Type\Affiliated\TypeConvertGroup.cpp" />
     <ClCompile Include="src\Ext\BuildingType\Hooks.Upgrade.cpp" />
     <ClCompile Include="src\Phobos.COM.cpp" />
@@ -282,6 +283,8 @@
     <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedCameoClass.h" />
     <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedColumnClass.h" />
     <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedInfoClass.h" />
+    <ClInclude Include="src\Misc\MessageColumn.h" />
+    <ClInclude Include="src\Commands\ToggleMessageList.h" />
     <ClInclude Include="src\Ext\EBolt\Body.h" />
     <ClInclude Include="src\New\Type\Affiliated\CreateUnitTypeClass.h" />
     <ClInclude Include="src\Blowfish\blowfish.h" />

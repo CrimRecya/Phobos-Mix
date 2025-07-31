@@ -4,8 +4,9 @@
 #include <Ext/Side/Body.h>
 #include <Ext/Event/Body.h>
 
-SelectedButtonClass::SelectedButtonClass(unsigned int id, int x, int y)
-	: ControlClass(id, x, y, 30, 30, GadgetFlag::LeftPress, false)
+SelectedButtonClass::SelectedButtonClass(int id, int x, int y)
+	: GadgetClass(x, y, 30, 30, GadgetFlag::LeftPress, false)
+	, ID(id)
 {
 	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
@@ -43,7 +44,7 @@ bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 
 	if (flags & GadgetFlag::LeftPress)
 	{
-		if (this->ID == (SelectedInfoClass::StartID + 1)) // PushButton
+		if (this->ID == 0) // PushButton
 		{
 			const auto pExt = vec[0];
 			const auto pTechno = pExt->OwnerObject();
@@ -75,7 +76,7 @@ bool SelectedButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 		}
 	}
 
-	reinterpret_cast<bool(__thiscall*)(ControlClass*, GadgetFlag, DWORD*, KeyModifier)>(0x48E5A0)(this, flags, pKey, KeyModifier::None);
+	this->GadgetClass::Action(flags, pKey, KeyModifier::None);
 	return true;
 }
 
@@ -96,7 +97,7 @@ void SelectedButtonClass::DrawInfo() const
 	DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 		pSHP, 0, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 
-	if (this->ID == (SelectedInfoClass::StartID + 1)) // PushButton
+	if (this->ID == 0) // PushButton
 	{
 		int frame = 1;
 
@@ -146,8 +147,9 @@ void SelectedButtonClass::DrawInfo() const
 
 // ----------------------------------------
 
-SelectedNotButtonClass::SelectedNotButtonClass(unsigned int id, int x, int y)
-	: ControlClass(id, x, y, 14, 14, static_cast<GadgetFlag>(0), false)
+SelectedNotButtonClass::SelectedNotButtonClass(int id, int x, int y)
+	: GadgetClass(x, y, 14, 14, static_cast<GadgetFlag>(0), false)
+	, ID(id)
 {
 	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
@@ -183,7 +185,7 @@ void SelectedNotButtonClass::DrawInfo() const
 	const auto pExt = SelectedInfoClass::Instance.CurrentSelectTechno[0];
 	const auto pTechno = pExt->OwnerObject();
 
-	if (this->ID == (SelectedInfoClass::StartID + 4)) // InfoIconA
+	if (this->ID == 0) // InfoIconA
 	{
 		const double mult = pTechno->FirepowerMultiplier * pExt->AE.FirepowerMultiplier * (pTechno->HasAbility(Ability::Firepower) ? RulesClass::Instance->VeteranCombat : 1.0);
 		int frame = 0;
@@ -211,7 +213,7 @@ void SelectedNotButtonClass::DrawInfo() const
 			DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
 		}
 	}
-	else if (this->ID == (SelectedInfoClass::StartID + 5)) // InfoIconD
+	else if (this->ID == 1) // InfoIconD
 	{
 		const auto mult = pTechno->ArmorMultiplier * pExt->AE.ArmorMultiplier * (pTechno->HasAbility(Ability::Stronger) ? RulesClass::Instance->VeteranArmor : 1.0);
 		int frame = 5;
@@ -275,10 +277,11 @@ void SelectedNotButtonClass::DrawInfo() const
 
 // ----------------------------------------
 
-SelectedToggleClass::SelectedToggleClass(unsigned int id, int x, int y)
-	: ControlClass(id, x, y, 10, 14, GadgetFlag::LeftPress, false)
+SelectedToggleClass::SelectedToggleClass(int id, int x, int y)
+	: GadgetClass(x, y, 10, 14, GadgetFlag::LeftPress, false)
+	, ID(id)
 {
-	this->Disabled = (id == (SelectedInfoClass::StartID + 9)) && (!Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect);
+	this->Disabled = (id == 1) && (!Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect);
 }
 
 bool SelectedToggleClass::Draw(bool forced)
@@ -304,13 +307,13 @@ bool SelectedToggleClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 {
 	if (flags & GadgetFlag::LeftPress)
 	{
-		if (this->ID == (SelectedInfoClass::StartID + 8)) // Toggle on/off
+		if (this->ID == 0) // Toggle on/off
 			SelectedInfoClass::Instance.SwitchVisible();
 		else // Toggle expand/storage
 			SelectedInfoClass::Instance.SwitchExpand();
 	}
 
-	reinterpret_cast<bool(__thiscall*)(ControlClass*, GadgetFlag, DWORD*, KeyModifier)>(0x48E5A0)(this, flags, pKey, KeyModifier::None);
+	this->GadgetClass::Action(flags, pKey, KeyModifier::None);
 	return true;
 }
 
@@ -324,15 +327,16 @@ void SelectedToggleClass::DrawInfo() const
 		return;
 
 	const auto position = Point2D { this->X, this->Y };
-	const auto frame = this->ID == (SelectedInfoClass::StartID + 8) ? (Phobos::Config::SelectedDisplay_Enable ? 1 : 0) : (Phobos::Config::SelectedDisplay_Expand ? 3 : 2);
+	const auto frame = this->ID == 0 ? (Phobos::Config::SelectedDisplay_Enable ? 1 : 0) : (Phobos::Config::SelectedDisplay_Expand ? 3 : 2);
 	DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 		pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 }
 
 // ----------------------------------------
 
-SelectedScrollClass::SelectedScrollClass(unsigned int id, int x, int y)
-	: ControlClass(id, x, y, 10, 14, GadgetFlag::LeftPress, false)
+SelectedScrollClass::SelectedScrollClass(int id, int x, int y)
+	: GadgetClass(x, y, 10, 14, GadgetFlag::LeftPress, false)
+	, ID(id)
 {
 	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
@@ -360,7 +364,7 @@ bool SelectedScrollClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 {
 	if (flags & GadgetFlag::LeftPress)
 	{
-		if (this->ID == (SelectedInfoClass::StartID + 30)) // Scroll left
+		if (this->ID == 0) // Scroll left
 		{
 			if (SelectedInfoClass::Instance.ScrollLeft())
 				VocClass::PlayGlobal(RulesClass::Instance->GUIMainButtonSound, 0x2000, 1.0);
@@ -372,7 +376,7 @@ bool SelectedScrollClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 		}
 	}
 
-	reinterpret_cast<bool(__thiscall*)(ControlClass*, GadgetFlag, DWORD*, KeyModifier)>(0x48E5A0)(this, flags, pKey, KeyModifier::None);
+	this->GadgetClass::Action(flags, pKey, KeyModifier::None);
 	return true;
 }
 
@@ -387,7 +391,7 @@ void SelectedScrollClass::DrawInfo() const
 
 	const auto position = Point2D { this->X, this->Y };
 	auto& seIns = SelectedInfoClass::Instance;
-	const auto frame = this->ID == (SelectedInfoClass::StartID + 30) ? (seIns.CanScrollLeft() ? 4 : 5) : (seIns.CanScrollRight() ? 6 : 7);
+	const auto frame = this->ID == 0 ? (seIns.CanScrollLeft() ? 4 : 5) : (seIns.CanScrollRight() ? 6 : 7);
 	DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 		pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 }

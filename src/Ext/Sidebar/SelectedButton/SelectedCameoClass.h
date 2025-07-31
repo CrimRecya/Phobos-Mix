@@ -1,30 +1,30 @@
 ﻿#pragma once
-#include <ControlClass.h>
+#include <GadgetClass.h>
 
-class SelectedCameoClass : public ControlClass
+class SelectedCameoClass : public GadgetClass
 {
 public:
 	SelectedCameoClass() = default;
-	SelectedCameoClass(unsigned int id, int x, int y);
+	SelectedCameoClass(int id, int x, int y);
 
 	~SelectedCameoClass() = default;
 
 	virtual bool Draw(bool forced) override;
 	virtual void OnMouseEnter() override;
 	virtual void OnMouseLeave() override;
-	virtual bool Action(GadgetFlag fags, DWORD* pKey, KeyModifier modifier) override;
+	virtual bool Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier) override;
 
-	inline int GetButtonIndex() const;
 	void DrawInfo() const;
 
+	int ID { 0 };
 	bool Hovering { false };
 };
 
-class SelectedMainCameoClass : public ControlClass
+class SelectedMainCameoClass : public GadgetClass
 {
 public:
 	SelectedMainCameoClass() = default;
-	SelectedMainCameoClass(unsigned int id, int x, int y);
+	SelectedMainCameoClass(int x, int y);
 
 	~SelectedMainCameoClass() = default;
 

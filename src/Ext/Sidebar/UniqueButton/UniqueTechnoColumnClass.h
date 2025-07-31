@@ -7,8 +7,6 @@ class UniqueTechnoColumnClass
 public:
 	static UniqueTechnoColumnClass Instance;
 
-	static constexpr int StartID = 2200;
-
 	void InitClear();
 	void InitIO();
 

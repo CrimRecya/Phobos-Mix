@@ -108,6 +108,8 @@ public:
 		static bool DigitalDisplay_Enable;
 		static bool MessageApplyHoverState;
 		static bool MessageDisplayInCenter;
+		static int MessageDisplayInCenter_LabelsCount;
+		static int MessageDisplayInCenter_RecordsCount;
 		static bool ShowBuildingStatistics;
 		static bool DrawAdjacentBoundary;
 		static bool RealTimeTimers;

@@ -16,72 +16,84 @@ void SelectedInfoClass::InitClear()
 	if (this->MainColumn)
 	{
 		GScreenClass::Instance.RemoveButton(this->MainColumn);
+		GameDelete(this->MainColumn);
 		this->MainColumn = nullptr;
 	}
 
 	if (this->PushButton)
 	{
 		GScreenClass::Instance.RemoveButton(this->PushButton);
+		GameDelete(this->PushButton);
 		this->PushButton = nullptr;
 	}
 
 	if (this->AmmoButton)
 	{
 		GScreenClass::Instance.RemoveButton(this->AmmoButton);
+		GameDelete(this->AmmoButton);
 		this->AmmoButton = nullptr;
 	}
 
 	if (this->MainCameo)
 	{
 		GScreenClass::Instance.RemoveButton(this->MainCameo);
+		GameDelete(this->MainCameo);
 		this->MainCameo = nullptr;
 	}
 
 	if (this->InfoIconA)
 	{
 		GScreenClass::Instance.RemoveButton(this->InfoIconA);
+		GameDelete(this->InfoIconA);
 		this->InfoIconA = nullptr;
 	}
 
 	if (this->InfoIconD)
 	{
 		GScreenClass::Instance.RemoveButton(this->InfoIconD);
+		GameDelete(this->InfoIconD);
 		this->InfoIconD = nullptr;
 	}
 
 	if (this->InfoIconS)
 	{
 		GScreenClass::Instance.RemoveButton(this->InfoIconS);
+		GameDelete(this->InfoIconS);
 		this->InfoIconS = nullptr;
 	}
 
 	if (this->MainBottom)
 	{
 		GScreenClass::Instance.RemoveButton(this->MainBottom);
+		GameDelete(this->MainBottom);
 		this->MainBottom = nullptr;
 	}
 
 	if (this->ToggleV)
 	{
 		GScreenClass::Instance.RemoveButton(this->ToggleV);
+		GameDelete(this->ToggleV);
 		this->ToggleV = nullptr;
 	}
 
 	if (this->ToggleE)
 	{
 		GScreenClass::Instance.RemoveButton(this->ToggleE);
+		GameDelete(this->ToggleE);
 		this->ToggleE = nullptr;
 	}
 
 	if (this->ScrollL)
 	{
 		GScreenClass::Instance.RemoveButton(this->ScrollL);
+		GameDelete(this->ScrollL);
 		this->ScrollL = nullptr;
 	}
 
 	if (this->ScrollR)
 	{
 		GScreenClass::Instance.RemoveButton(this->ScrollR);
+		GameDelete(this->ScrollR);
 		this->ScrollR = nullptr;
 	}
 
@@ -90,6 +102,7 @@ void SelectedInfoClass::InitClear()
 		if (auto& pButton = this->Cameos[i])
 		{
 			GScreenClass::Instance.RemoveButton(pButton);
+			GameDelete(pButton);
 			pButton = nullptr;
 		}
 	}
@@ -118,7 +131,7 @@ void SelectedInfoClass::InitIO()
 	if (const auto pMainSHP = pSideExt->SelectedInfo_Main.Get())
 	{
 		{
-			const auto pButton = GameCreate<SelectedColumnClass>(SelectedInfoClass::StartID, 0, bottom - 100, 203, 79);
+			const auto pButton = GameCreate<SelectedColumnClass>(0, bottom - 100, 203, 79);
 			pButton->Zap();
 			GScreenClass::Instance.AddButton(pButton);
 			this->MainColumn = pButton;
@@ -129,14 +142,14 @@ void SelectedInfoClass::InitIO()
 			if (pButtonSHP->Frames >= 7)
 			{
 				{
-					const auto pButton = GameCreate<SelectedButtonClass>(SelectedInfoClass::StartID + 1, 197, bottom - 79);
+					const auto pButton = GameCreate<SelectedButtonClass>(0, 197, bottom - 79);
 					pButton->Zap();
 					GScreenClass::Instance.AddButton(pButton);
 					this->PushButton = pButton;
 				}
 
 				{
-					const auto pButton = GameCreate<SelectedButtonClass>(SelectedInfoClass::StartID + 2, 197, bottom - 50);
+					const auto pButton = GameCreate<SelectedButtonClass>(1, 197, bottom - 50);
 					pButton->Zap();
 					GScreenClass::Instance.AddButton(pButton);
 					this->AmmoButton = pButton;
@@ -145,7 +158,7 @@ void SelectedInfoClass::InitIO()
 		}
 
 		{
-			const auto pButton = GameCreate<SelectedMainCameoClass>(SelectedInfoClass::StartID + 3, 6, bottom - 95);
+			const auto pButton = GameCreate<SelectedMainCameoClass>(6, bottom - 95);
 			pButton->Zap();
 			GScreenClass::Instance.AddButton(pButton);
 			this->MainCameo = pButton;
@@ -156,21 +169,21 @@ void SelectedInfoClass::InitIO()
 			if (pBuffSHP->Frames >= 15)
 			{
 				{
-					const auto pButton = GameCreate<SelectedNotButtonClass>(SelectedInfoClass::StartID + 4, 179, bottom - 93);
+					const auto pButton = GameCreate<SelectedNotButtonClass>(0, 179, bottom - 93);
 					pButton->Zap();
 					GScreenClass::Instance.AddButton(pButton);
 					this->InfoIconA = pButton;
 				}
 
 				{
-					const auto pButton = GameCreate<SelectedNotButtonClass>(SelectedInfoClass::StartID + 5, 179, bottom - 77);
+					const auto pButton = GameCreate<SelectedNotButtonClass>(1, 179, bottom - 77);
 					pButton->Zap();
 					GScreenClass::Instance.AddButton(pButton);
 					this->InfoIconD = pButton;
 				}
 
 				{
-					const auto pButton = GameCreate<SelectedNotButtonClass>(SelectedInfoClass::StartID + 6, 179, bottom - 61);
+					const auto pButton = GameCreate<SelectedNotButtonClass>(2, 179, bottom - 61);
 					pButton->Zap();
 					GScreenClass::Instance.AddButton(pButton);
 					this->InfoIconS = pButton;
@@ -180,35 +193,35 @@ void SelectedInfoClass::InitIO()
 	}
 
 	{
-		const auto pButton = GameCreate<SelectedBottomClass>(SelectedInfoClass::StartID + 7, 0, bottom - 21, 289, 21);
+		const auto pButton = GameCreate<SelectedBottomClass>(0, bottom - 21, 289, 21);
 		pButton->Zap();
 		GScreenClass::Instance.AddButton(pButton);
 		this->MainBottom = pButton;
 	}
 
 	{
-		const auto pButton = GameCreate<SelectedToggleClass>(SelectedInfoClass::StartID + 8, Phobos::Config::SelectedDisplay_Enable ? 238 : 2, bottom - 17);
+		const auto pButton = GameCreate<SelectedToggleClass>(0, Phobos::Config::SelectedDisplay_Enable ? 238 : 2, bottom - 17);
 		pButton->Zap();
 		GScreenClass::Instance.AddButton(pButton);
 		this->ToggleV = pButton;
 	}
 
 	{
-		const auto pButton = GameCreate<SelectedToggleClass>(SelectedInfoClass::StartID + 9, 250, bottom - 17);
+		const auto pButton = GameCreate<SelectedToggleClass>(1, 250, bottom - 17);
 		pButton->Zap();
 		GScreenClass::Instance.AddButton(pButton);
 		this->ToggleE = pButton;
 	}
 
 	{
-		const auto pButton = GameCreate<SelectedScrollClass>(SelectedInfoClass::StartID + 30, 262, bottom - 17);
+		const auto pButton = GameCreate<SelectedScrollClass>(0, 262, bottom - 17);
 		pButton->Zap();
 		GScreenClass::Instance.AddButton(pButton);
 		this->ScrollL = pButton;
 	}
 
 	{
-		const auto pButton = GameCreate<SelectedScrollClass>(SelectedInfoClass::StartID + 31, 274, bottom - 17);
+		const auto pButton = GameCreate<SelectedScrollClass>(1, 274, bottom - 17);
 		pButton->Zap();
 		GScreenClass::Instance.AddButton(pButton);
 		this->ScrollR = pButton;
@@ -218,7 +231,7 @@ void SelectedInfoClass::InitIO()
 
 	for (int i = 0; i < 20; ++i)
 	{
-		const auto pButton = GameCreate<SelectedCameoClass>(SelectedInfoClass::StartID + 10 + i, position.X, position.Y);
+		const auto pButton = GameCreate<SelectedCameoClass>(i, position.X, position.Y);
 		position.X += 60;
 
 		pButton->Zap();

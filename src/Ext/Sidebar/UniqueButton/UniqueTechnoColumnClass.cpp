@@ -9,6 +9,7 @@ void UniqueTechnoColumnClass::InitClear()
 		if (auto& pButton = this->Buttons[i])
 		{
 			GScreenClass::Instance.RemoveButton(pButton);
+			GameDelete(pButton);
 			pButton = nullptr;
 		}
 	}
@@ -25,7 +26,7 @@ void UniqueTechnoColumnClass::InitIO()
 
 	for (int i = 0; i < 8; ++i)
 	{
-		const auto pButton = GameCreate<UniqueTechnoButtonClass>(UniqueTechnoColumnClass::StartID + i, position.X, position.Y);
+		const auto pButton = GameCreate<UniqueTechnoButtonClass>(i, position.X, position.Y);
 		position.Y += 50;
 
 		pButton->Zap();

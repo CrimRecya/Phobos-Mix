@@ -1,11 +1,11 @@
 ﻿#pragma once
-#include <ControlClass.h>
+#include <GadgetClass.h>
 
-class SelectedColumnClass : public ControlClass
+class SelectedColumnClass : public GadgetClass
 {
 public:
 	SelectedColumnClass() = default;
-	SelectedColumnClass(unsigned int id, int x, int y, int width, int height);
+	SelectedColumnClass(int x, int y, int width, int height);
 
 	~SelectedColumnClass() = default;
 
@@ -16,11 +16,11 @@ public:
 	void DrawInfo() const;
 };
 
-class SelectedBottomClass : public ControlClass
+class SelectedBottomClass : public GadgetClass
 {
 public:
 	SelectedBottomClass() = default;
-	SelectedBottomClass(unsigned int id, int x, int y, int width, int height);
+	SelectedBottomClass(int x, int y, int width, int height);
 
 	~SelectedBottomClass() = default;
 

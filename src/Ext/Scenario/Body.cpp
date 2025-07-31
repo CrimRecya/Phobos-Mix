@@ -172,9 +172,9 @@ void ScenarioExt::ExtData::Serialize(T& Stm)
 		.Process(this->BaseNormalCells)
 		.Process(this->BaseNormalTechnos)
 		.Process(this->OwnedUniqueTechnos)
-//		.Process(this->NewMessageList); // Should not S/L
 		.Process(this->UndergroundTracker)
 		.Process(this->SpecialTracker)
+		.Process(this->RecordMessages)
 		;
 }
 

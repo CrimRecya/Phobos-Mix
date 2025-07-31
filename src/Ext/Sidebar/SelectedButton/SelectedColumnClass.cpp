@@ -6,8 +6,8 @@
 
 #include <Ext/Side/Body.h>
 
-SelectedColumnClass::SelectedColumnClass(unsigned int id, int x, int y, int width, int height)
-	: ControlClass(id, x, y, width, height, static_cast<GadgetFlag>(0), false)
+SelectedColumnClass::SelectedColumnClass(int x, int y, int width, int height)
+	: GadgetClass(x, y, width, height, static_cast<GadgetFlag>(0), false)
 {
 	this->Disabled = !Phobos::Config::SelectedDisplay_Enable || !SelectedInfoClass::Instance.SingleSelect || !SelectedInfoClass::Instance.ObtainSelect;
 }
@@ -320,8 +320,8 @@ void SelectedColumnClass::DrawInfo() const
 
 // ----------------------------------------
 
-SelectedBottomClass::SelectedBottomClass(unsigned int id, int x, int y, int width, int height)
-	: ControlClass(id, x, y, width, height, static_cast<GadgetFlag>(0), false)
+SelectedBottomClass::SelectedBottomClass(int x, int y, int width, int height)
+	: GadgetClass(x, y, width, height, static_cast<GadgetFlag>(0), false)
 {
 	this->Disabled = !Phobos::Config::SelectedDisplay_Enable;
 }

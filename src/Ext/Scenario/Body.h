@@ -51,10 +51,10 @@ public:
 		std::vector<TechnoExt::ExtData*> BaseNormalTechnos;
 		std::vector<TechnoExt::ExtData*> OwnedUniqueTechnos;
 
-		std::unique_ptr<MessageListClass> NewMessageList;
-
 		DynamicVectorClass<TechnoClass*> UndergroundTracker;
 		DynamicVectorClass<TechnoClass*> SpecialTracker;
+
+		std::vector<std::wstring> RecordMessages;
 
 		ExtData(ScenarioClass* OwnerObject) : Extension<ScenarioClass>(OwnerObject)
 			, ShowBriefing { false }
@@ -74,9 +74,9 @@ public:
 			, BaseNormalCells {}
 			, BaseNormalTechnos {}
 			, OwnedUniqueTechnos {}
-			, NewMessageList {}
 			, UndergroundTracker {}
 			, SpecialTracker {}
+			, RecordMessages {}
 		{ }
 
 		void SetVariableToByID(bool bIsGlobal, int nIndex, char bState);

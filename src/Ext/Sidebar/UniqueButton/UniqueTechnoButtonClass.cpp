@@ -6,8 +6,9 @@
 
 #include <Ext/Scenario/Body.h>
 
-UniqueTechnoButtonClass::UniqueTechnoButtonClass(unsigned int id, int x, int y)
-	: ControlClass(id, x, y, 60, 48, GadgetFlag::LeftPress, false)
+UniqueTechnoButtonClass::UniqueTechnoButtonClass(int id, int x, int y)
+	: GadgetClass(x, y, 60, 48, GadgetFlag::LeftPress, false)
+	, ID(id)
 {
 	this->Disabled = !UniqueTechnoColumnClass::Instance.Visible;
 }
@@ -22,7 +23,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 	if (vec.empty())
 		return false;
 
-	const int index = this->ID - UniqueTechnoColumnClass::StartID;
+	const int index = this->ID;
 
 	if (index >= static_cast<int>(vec.size()))
 		return false;
@@ -276,7 +277,7 @@ void UniqueTechnoButtonClass::OnMouseEnter()
 		return;
 
 	auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
-	const int index = this->ID - UniqueTechnoColumnClass::StartID;
+	const int index = this->ID;
 
 	if (index >= static_cast<int>(vec.size()))
 		return;
@@ -299,7 +300,7 @@ bool UniqueTechnoButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier 
 		return false;
 
 	auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
-	const int index = this->ID - UniqueTechnoColumnClass::StartID;
+	const int index = this->ID;
 
 	if (index >= static_cast<int>(vec.size()))
 		return false;
@@ -316,6 +317,6 @@ bool UniqueTechnoButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier 
 	if (!pSelect->InLimbo && !pSelect->Select())
 		TacticalClass::Instance->SetTacticalPosition(&pSelect->Location);
 
-	reinterpret_cast<bool(__thiscall*)(ControlClass*, GadgetFlag, DWORD*, KeyModifier)>(0x48E5A0)(this, flags, pKey, KeyModifier::None);
+	this->GadgetClass::Action(flags, pKey, KeyModifier::None);
 	return true;
 }
