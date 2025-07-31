@@ -729,7 +729,7 @@ CanBuildResult TechnoTypeExt::CheckAlwaysExistCameo(TechnoTypeClass* pType, CanB
 						pType->GetArrayIndex(),
 						pType->Naval
 					);
-					EventClass::AddEvent(event);
+					EventClass::OutList.Add(event);
 				}
 			}
 

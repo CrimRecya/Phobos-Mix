@@ -1034,7 +1034,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 		const int placeType = MapClass::Instance.GetCellAt(cell)->LandType == LandType::Water;
 		const auto arrayIndex = pType->GetArrayIndex();
 		const EventClass event (pHouse->ArrayIndex, EventType::Place, AbstractType::Building, arrayIndex, placeType, cell);
-		EventClass::AddEvent(event);
+		EventClass::OutList.Add(event);
 	};
 
 	if (pType->LaserFencePost || pType->Wall)
@@ -1176,7 +1176,7 @@ bool BuildingTypeExt::BuildLimboBuilding(BuildingClass* pBuilding)
 			pBuildingType->Naval,
 			CellStruct { 1, 1 }
 		);
-		EventClass::AddEvent(event);
+		EventClass::OutList.Add(event);
 
 		return true;
 	}

@@ -69,7 +69,7 @@ void AssignRallyPointCommandClass::Execute(WWKey eInput) const
 		VoxClass::Play(&Make_Global<const char>(0x818E58)); // 0x818E58 -> EVA_NewRallyPointEstablished;
 
 		for (const auto& pBuilding : buildings)
-			EventClass::AddEvent(EventClass(pBuilding->GetOwningHouseIndex(), EventType::Archive, TargetClass(pBuilding), TargetClass(pPointed)));
+			EventClass::OutList.Add(EventClass(pBuilding->GetOwningHouseIndex(), EventType::Archive, TargetClass(pBuilding), TargetClass(pPointed)));
 	}
 }
 
