@@ -5,7 +5,198 @@
 #include <MouseClass.h>
 #include <WWMouseClass.h>
 
+#include <Ext/Side/Body.h>
+
 MessageColumnClass MessageColumnClass::Instance;
+
+// --------------------------------------------------
+
+MessageToggleClass::MessageToggleClass(int x, int y, int width, int height)
+	: GadgetClass(x, y, width, height, GadgetFlag::LeftPress | GadgetFlag::LeftRelease, false)
+{
+	this->Disabled = true;
+}
+
+bool MessageToggleClass::Draw(bool forced)
+{
+	return false;
+}
+
+void MessageToggleClass::OnMouseEnter()
+{
+	this->Hovering = true;
+	MessageColumnClass::Instance.MouseEnter(true);
+}
+
+void MessageToggleClass::OnMouseLeave()
+{
+	this->Hovering = false;
+	this->Clicking = false;
+	MessageColumnClass::Instance.MouseLeave(true);
+}
+
+bool MessageToggleClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
+{
+	if (!this->Clicking)
+	{
+		if ((flags & GadgetFlag::LeftPress) && this->Hovering)
+		{
+			this->Clicking = true;
+
+			if (MessageColumnClass::Instance.IsExpanded())
+				MessageColumnClass::Instance.PackUp(true);
+			else
+				MessageColumnClass::Instance.Expand();
+		}
+	}
+	else if (flags & GadgetFlag::LeftRelease)
+	{
+		this->Clicking = false;
+	}
+
+	this->GadgetClass::Action(flags, pKey, KeyModifier::None);
+	return true;
+}
+
+void MessageToggleClass::DrawShape() const
+{
+	if (this->Disabled)
+		return;
+
+	RectangleStruct drawRect { this->X, this->Y, this->Width, this->Height };
+	ColorStruct color = MessageColumnClass::Instance.GetColor();
+	MessageColumnClass::Instance.IncreaseBrightness(color);
+	const int opacity = this->Hovering && !this->Clicking
+		? MessageColumnClass::MediumOpacity : MessageColumnClass::LowOpacity;
+
+	if (MessageColumnClass::Instance.IsExpanded())
+	{
+		DSurface::Composite->FillRectTrans(&drawRect, &color, opacity);
+
+		color = ColorStruct { 255, 0, 0 };
+
+		if (this->Hovering && !this->Clicking)
+			MessageColumnClass::Instance.IncreaseBrightness(color);
+
+		const int drawColor = Drawing::RGB_To_Int(color);
+		constexpr int offset = 4;
+		constexpr int iconSide = MessageToggleClass::ButtonSide - (offset * 2);
+		drawRect.X += offset;
+		drawRect.Y += offset;
+		drawRect.Width = iconSide;
+		drawRect.Height = iconSide;
+
+		DSurface::Composite->FillRect(&drawRect, drawColor);
+	}
+	else
+	{
+		DSurface::Composite->FillRectTrans(&drawRect, &color, opacity);
+
+		color = MessageColumnClass::Instance.GetColor();
+
+		if (this->Hovering && !this->Clicking)
+			MessageColumnClass::Instance.IncreaseBrightness(color);
+
+		const int drawColor = Drawing::RGB_To_Int(color);
+		constexpr int interval = 2;
+		constexpr int drawCount = 3;
+		constexpr int offset = (MessageToggleClass::ButtonSide - interval * (drawCount * 2 - 1)) / 2;
+		drawRect.X += offset;
+		drawRect.Y += offset;
+		drawRect.Width = MessageToggleClass::ButtonSide - (2 * offset);
+		drawRect.Height = interval;
+
+		DSurface::Composite->FillRect(&drawRect, drawColor);
+
+		drawRect.Y += (interval * 2);
+
+		DSurface::Composite->FillRect(&drawRect, drawColor);
+
+		drawRect.Y += (interval * 2);
+
+		DSurface::Composite->FillRect(&drawRect, drawColor);
+	}
+}
+
+// --------------------------------------------------
+
+MessageButtonClass::MessageButtonClass(int id, int x, int y, int width, int height)
+	: MessageToggleClass(x, y, width, height)
+	, ID(id)
+{
+	this->Disabled = true;
+	this->Flags |= GadgetFlag::LeftHeld;
+}
+
+bool MessageButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
+{
+	if (!this->Clicking)
+	{
+		if ((flags & GadgetFlag::LeftPress) && this->Hovering)
+		{
+			this->CheckTime = MessageColumnClass::GetSystemTime() + MessageButtonClass::HoldInitialDelay;
+			this->Clicking = true;
+
+			if (this->ID)
+				MessageColumnClass::Instance.ScrollDown();
+			else
+				MessageColumnClass::Instance.ScrollUp();
+		}
+	}
+	else if (flags & GadgetFlag::LeftRelease)
+	{
+		this->Clicking = false;
+	}
+	else if (flags & GadgetFlag::LeftHeld)
+	{
+		const int timeExpired = MessageColumnClass::GetSystemTime() - this->CheckTime;
+
+		if (timeExpired > 0)
+		{
+			this->CheckTime += MessageButtonClass::HoldTriggerDelay;
+
+			if (this->ID)
+				MessageColumnClass::Instance.ScrollDown();
+			else
+				MessageColumnClass::Instance.ScrollUp();
+		}
+	}
+
+	this->GadgetClass::Action(flags, pKey, KeyModifier::None);
+	return true;
+}
+
+void MessageButtonClass::DrawShape() const
+{
+	if (this->Disabled)
+		return;
+
+	constexpr int intervalX = 5;
+	constexpr int intervalY = 1;
+	RectangleStruct drawRect { this->X, this->Y, this->Width, this->Height };
+	ColorStruct color = MessageColumnClass::Instance.GetColor();
+	MessageColumnClass::Instance.IncreaseBrightness(color, 3);
+	const bool can = this->ID ? MessageColumnClass::Instance.CanScrollDown() : MessageColumnClass::Instance.CanScrollUp();
+	const bool highLight = can && this->Hovering;
+	const int opacity = highLight ? MessageColumnClass::MediumOpacity : MessageColumnClass::LowOpacity;
+
+	DSurface::Composite->FillRectTrans(&drawRect, &color, opacity);
+
+	color = can ? MessageColumnClass::Instance.GetColor() : ColorStruct { 0, 0, 0 };
+
+	if (can && this->Clicking)
+		MessageColumnClass::Instance.IncreaseBrightness(color, 2);
+	else if (highLight)
+		MessageColumnClass::Instance.IncreaseBrightness(color);
+
+	const int drawColor = Drawing::RGB_To_Int(color);
+	drawRect.X += intervalX;
+	drawRect.Y += intervalY;
+	drawRect.Width -= (intervalX * 2);
+	drawRect.Height = MessageToggleClass::ButtonIconWidth;
+
+	DSurface::Composite->FillRect(&drawRect, drawColor);
+}
 
 // --------------------------------------------------
 
@@ -43,32 +234,27 @@ bool MessageScrollClass::Clicked(DWORD* pKey, GadgetFlag flags, int x, int y, Ke
 				return false;
 
 			this->LastY = y;
-			this->LastScroll = MessageColumnClass::Instance.GetScroll();
+			this->LastScroll = MessageColumnClass::Instance.GetScrollIndex();
 		}
 		else // Scroll_Bar
 		{
 			if (!(flags & GadgetFlag::LeftPress) || !this->Hovering)
 				return false;
 
-			const int totalRecords = static_cast<int>(ScenarioExt::Global()->RecordMessages.size());
-			const int displayRecords = MessageColumnClass::Instance.GetRecord();
-			const int maxScroll = totalRecords - displayRecords;
+			int maxScroll = 0;
+			int thumbHeight = this->Height;
+			int thumbPosY = this->Y;
 
-			if (maxScroll > 0)
+			if (MessageColumnClass::Instance.GetThumbDimension(&maxScroll, &thumbHeight, &thumbPosY))
 			{
-				const int thumbHeight = Math::max((this->Height * displayRecords / totalRecords), MessageToggleClass::ButtonSide);
-				const int currentScroll = MessageColumnClass::Instance.GetScroll();
-				const int spaceHeight = this->Height - thumbHeight;
-				const int thumbPosY = spaceHeight * currentScroll / maxScroll + this->Y;
-
 				if (y >= thumbPosY && y <= thumbPosY + thumbHeight)
 				{
 					this->LastY = y;
-					this->LastScroll = currentScroll;
+					this->LastScroll = MessageColumnClass::Instance.GetScrollIndex();
 				}
 				else
 				{
-					const int newScroll = maxScroll * (y - this->Y - thumbHeight / 2) / spaceHeight;
+					const int newScroll = maxScroll * (y - this->Y - thumbHeight / 2) / (this->Height - thumbHeight);
 					MessageColumnClass::Instance.SetScroll(newScroll);
 					this->LastY = y;
 					this->LastScroll = newScroll;
@@ -85,20 +271,19 @@ bool MessageScrollClass::Clicked(DWORD* pKey, GadgetFlag flags, int x, int y, Ke
 		}
 		else // Scroll_Bar
 		{
-			const int totalRecords = static_cast<int>(ScenarioExt::Global()->RecordMessages.size());
-			const int displayRecords = MessageColumnClass::Instance.GetRecord();
-			const int maxScroll = totalRecords - displayRecords;
+			int maxScroll = 0;
+			int thumbHeight = this->Height;
 
-			if (maxScroll > 0)
+			if (MessageColumnClass::Instance.GetThumbDimension(&maxScroll, &thumbHeight))
 			{
-				const int thumbHeight = Math::max((this->Height * displayRecords / totalRecords), MessageToggleClass::ButtonSide);
 				const int indexOffset = maxScroll * (y - this->LastY) / (this->Height - thumbHeight);
 				MessageColumnClass::Instance.SetScroll(this->LastScroll + indexOffset);
 			}
 		}
 	}
 
-	return this->Action(flags, pKey, modifier);
+	this->GadgetClass::Action(flags, pKey, modifier);
+	return true;
 }
 
 void MessageScrollClass::DrawShape() const
@@ -110,7 +295,9 @@ void MessageScrollClass::DrawShape() const
 			|| ScenarioClass::Instance->UserInputLocked)
 		{
 			RectangleStruct drawRect { this->X, this->Y, this->Width, this->Height };
-			ColorStruct color { 0, 0, 0 };
+			auto color = MessageColumnClass::Instance.GetColor();
+			MessageColumnClass::Instance.DecreaseBrightness(color, 3);
+
 			DSurface::Composite->FillRectTrans(&drawRect, &color, MessageColumnClass::LowOpacity);
 		}
 	}
@@ -118,223 +305,34 @@ void MessageScrollClass::DrawShape() const
 	{
 		if (!this->Disabled)
 		{
-			const int totalRecords = static_cast<int>(ScenarioExt::Global()->RecordMessages.size());
-			const int displayRecords = MessageColumnClass::Instance.GetRecord();
-			const int maxScroll = totalRecords - displayRecords;
+			constexpr int offset = 1;
+			RectangleStruct drawRect { this->X + offset, this->Y, this->Width - (offset * 2), this->Height };
+			ColorStruct color = MessageColumnClass::Instance.GetColor();
+			MessageColumnClass::Instance.DecreaseBrightness(color);
+
 			int thumbHeight = this->Height;
 			int thumbPos = 0;
-
-			if (maxScroll > 0)
-			{
-				thumbHeight = Math::max((thumbHeight * displayRecords / totalRecords), MessageToggleClass::ButtonSide);
-				thumbPos = (this->Height - thumbHeight) * MessageColumnClass::Instance.GetScroll() / maxScroll;
-			}
-
+			MessageColumnClass::Instance.GetThumbDimension(nullptr, &thumbHeight, &thumbPos);
 			const int thumbY = WWMouseClass::Instance->XY1.Y - this->Y;
-			const bool onThumb = this->Hovering && (thumbY >= thumbPos && thumbY <= thumbPos + thumbHeight);
+			const bool onThumb = thumbY >= thumbPos && thumbY <= (thumbPos + thumbHeight);
+			const int opacity = this->Hovering && !onThumb
+				? MessageColumnClass::HighOpacity : MessageColumnClass::MediumOpacity;
 
-			RectangleStruct drawRect { this->X, this->Y, this->Width, this->Height };
-			ColorStruct color { 100, 100, 100 };
-			DSurface::Composite->FillRectTrans(&drawRect, &color, this->Hovering ? MessageColumnClass::MediumOpacity : MessageColumnClass::LowOpacity);
+			DSurface::Composite->FillRectTrans(&drawRect, &color, opacity);
 
+			color = MessageColumnClass::Instance.GetColor();
+
+			if (MessageColumnClass::IsStickyButton(this))
+				MessageColumnClass::Instance.IncreaseBrightness(color, 2);
+			else if (this->Hovering && onThumb)
+				MessageColumnClass::Instance.IncreaseBrightness(color);
+
+			const int drawColor = Drawing::RGB_To_Int(color);
 			drawRect.Y += thumbPos;
 			drawRect.Height = thumbHeight;
-			color = ColorStruct { 200, 200, 200 };
-			DSurface::Composite->FillRectTrans(&drawRect, &color, onThumb ? MessageColumnClass::HighOpacity : MessageColumnClass::MediumOpacity);
+
+			DSurface::Composite->FillRect(&drawRect, drawColor);
 		}
-	}
-}
-
-// --------------------------------------------------
-
-MessageToggleClass::MessageToggleClass(int id, int x, int y, int width, int height)
-	: GadgetClass(x, y, width, height, GadgetFlag::LeftPress, false)
-	, ID(id)
-{
-	this->Disabled = true;
-}
-
-bool MessageToggleClass::Draw(bool forced)
-{
-	return false;
-}
-
-void MessageToggleClass::OnMouseEnter()
-{
-	this->Hovering = true;
-	MessageColumnClass::Instance.MouseEnter(true);
-}
-
-void MessageToggleClass::OnMouseLeave()
-{
-	this->Hovering = false;
-	MessageColumnClass::Instance.MouseLeave(true);
-}
-
-bool MessageToggleClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
-{
-	if (flags & GadgetFlag::LeftPress)
-	{
-		if (this->ID) // Button_Clear
-			MessageColumnClass::Instance.PackUp(true);
-		else // Button_Expand
-			MessageColumnClass::Instance.Toggle();
-	}
-
-	this->GadgetClass::Action(flags, pKey, KeyModifier::None);
-	return true;
-}
-
-void MessageToggleClass::DrawShape() const
-{
-	if (this->Disabled)
-		return;
-
-	RectangleStruct drawRect { this->X, this->Y, this->Width, this->Height };
-	ColorStruct color { 255, 255, 255 };
-
-	if (this->ID) // Button_Clear
-	{
-		constexpr int offset = 4;
-		constexpr int iconSide = MessageToggleClass::ButtonSide - (offset * 2);
-
-		DSurface::Composite->FillRectTrans(&drawRect, &color, this->Hovering ? MessageColumnClass::MediumOpacity : MessageColumnClass::LowOpacity);
-
-		color.G = 0;
-		color.B = 0;
-		drawRect.X += offset;
-		drawRect.Y += offset;
-		drawRect.Width = iconSide;
-		drawRect.Height = iconSide;
-
-		DSurface::Composite->FillRectTrans(&drawRect, &color, this->Hovering ? MessageColumnClass::HighOpacity : MessageColumnClass::MediumOpacity);
-	}
-	else // Button_Expand
-	{
-		DSurface::Composite->FillRectTrans(&drawRect, &color, this->Hovering ? MessageColumnClass::MediumOpacity : MessageColumnClass::LowOpacity);
-
-		color.R = 0;
-		color.G = 0;
-		drawRect.X += 1;
-		drawRect.Y += (MessageToggleClass::ButtonSide - MessageToggleClass::ButtonIconWidth) / 2;
-		drawRect.Width = MessageToggleClass::ButtonSide - 2;
-		drawRect.Height = MessageToggleClass::ButtonIconWidth;
-		const int opacity = this->Hovering ? MessageColumnClass::HighOpacity : MessageColumnClass::MediumOpacity;
-
-		DSurface::Composite->FillRectTrans(&drawRect, &color, opacity);
-
-		if (!MessageColumnClass::Instance.IsExpanded())
-		{
-			drawRect.X = this->X + ((MessageToggleClass::ButtonSide - MessageToggleClass::ButtonIconWidth) / 2);
-			drawRect.Y = this->Y + 1;
-			drawRect.Width = MessageToggleClass::ButtonIconWidth;
-			drawRect.Height = (MessageToggleClass::ButtonSide - MessageToggleClass::ButtonIconWidth) / 2 - 1;
-
-			DSurface::Composite->FillRectTrans(&drawRect, &color, opacity);
-
-			drawRect.Y = this->Y + (((MessageToggleClass::ButtonSide - MessageToggleClass::ButtonIconWidth) / 2) + MessageToggleClass::ButtonIconWidth);
-
-			DSurface::Composite->FillRectTrans(&drawRect, &color, opacity);
-		}
-	}
-}
-
-// --------------------------------------------------
-
-MessageButtonClass::MessageButtonClass(int id, int x, int y, int width, int height)
-	: MessageToggleClass(id, x, y, width, height)
-{
-	this->IsSticky = true;
-	this->Disabled = true;
-	this->Flags |= GadgetFlag::LeftHeld | GadgetFlag::LeftRelease;
-}
-
-bool MessageButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
-{
-	if (this->ID) // Button_Down
-	{
-		if (!MessageColumnClass::IsStickyButton(this))
-		{
-			if ((flags & GadgetFlag::LeftPress) && this->Hovering)
-			{
-				this->CheckTime = MessageColumnClass::GetSystemTime() + MessageButtonClass::HoldInitialDelay;
-				MessageColumnClass::Instance.ScrollDown();
-			}
-		}
-		else if (flags & GadgetFlag::LeftHeld)
-		{
-			const int timeExpired = MessageColumnClass::GetSystemTime() - this->CheckTime;
-
-			if (timeExpired > 0)
-			{
-				this->CheckTime += MessageButtonClass::HoldTriggerDelay;
-				MessageColumnClass::Instance.ScrollDown();
-			}
-		}
-	}
-	else // Button_Up
-	{
-		if (!MessageColumnClass::IsStickyButton(this))
-		{
-			if ((flags & GadgetFlag::LeftPress) && this->Hovering)
-			{
-				this->CheckTime = MessageColumnClass::GetSystemTime() + MessageButtonClass::HoldInitialDelay;
-				MessageColumnClass::Instance.ScrollUp();
-			}
-		}
-		else if (flags & GadgetFlag::LeftHeld)
-		{
-			const int timeExpired = MessageColumnClass::GetSystemTime() - this->CheckTime;
-
-			if (timeExpired > 0)
-			{
-				this->CheckTime += MessageButtonClass::HoldTriggerDelay;
-				MessageColumnClass::Instance.ScrollUp();
-			}
-		}
-	}
-
-	this->GadgetClass::Action(flags, pKey, KeyModifier::None);
-	return true;
-}
-
-void MessageButtonClass::DrawShape() const
-{
-	if (this->Disabled)
-		return;
-
-	RectangleStruct drawRect { this->X, this->Y, this->Width, this->Height };
-	ColorStruct color { 255, 255, 255 };
-
-	if (this->ID) // Button_Down
-	{
-		const bool can = MessageColumnClass::Instance.CanScrollDown();
-		const bool ntr = can && this->Hovering;
-
-		DSurface::Composite->FillRectTrans(&drawRect, &color, ntr ? MessageColumnClass::MediumOpacity : MessageColumnClass::LowOpacity);
-
-		color = ColorStruct { 0, static_cast<BYTE>(can ? 255 : 0), 0 };
-		drawRect.X += 5;
-		drawRect.Y += 1;
-		drawRect.Width -= 10;
-		drawRect.Height = MessageToggleClass::ButtonIconWidth;
-
-		DSurface::Composite->FillRectTrans(&drawRect, &color, ntr ? MessageColumnClass::HighOpacity : MessageColumnClass::MediumOpacity);
-	}
-	else // Button_Up
-	{
-		const bool can = MessageColumnClass::Instance.CanScrollUp();
-		const bool ntr = can && this->Hovering;
-
-		DSurface::Composite->FillRectTrans(&drawRect, &color, ntr ? MessageColumnClass::MediumOpacity : MessageColumnClass::LowOpacity);
-
-		color = ColorStruct { 0, static_cast<BYTE>(can ? 255 : 0), 0 };
-		drawRect.X += 5;
-		drawRect.Y += 1;
-		drawRect.Width -= 10;
-		drawRect.Height = MessageToggleClass::ButtonIconWidth;
-
-		DSurface::Composite->FillRectTrans(&drawRect, &color, ntr ? MessageColumnClass::HighOpacity : MessageColumnClass::MediumOpacity);
 	}
 }
 
@@ -390,7 +388,7 @@ bool MessageLabelClass::Draw(bool forced)
 	}
 
 	reinterpret_cast<void(__fastcall*)(DSurface*, RectangleStruct*, const wchar_t*, size_t, BitFont*, uint32_t, size_t*, bool, bool, bool, size_t)>(0x623880)
-		(DSurface::Temp, &rect, text, textLen, pBit, MessageColumnClass::Instance.GetColor(), &this->DrawPos, this->IsFocused(), false, true, this->AnimPos);
+		(DSurface::Temp, &rect, text, textLen, pBit, MessageColumnClass::Instance.GetTextColor(), &this->DrawPos, this->IsFocused(), false, true, this->AnimPos);
 
 	return true;
 }
@@ -406,18 +404,11 @@ void MessageColumnClass::InitClear()
 {
 	this->Initialize();
 
-	if (this->Button_Expand)
+	if (this->Button_Toggle)
 	{
-		GScreenClass::Instance.RemoveButton(this->Button_Expand);
-		GameDelete(this->Button_Expand);
-		this->Button_Expand = nullptr;
-	}
-
-	if (this->Button_Clear)
-	{
-		GScreenClass::Instance.RemoveButton(this->Button_Clear);
-		GameDelete(this->Button_Clear);
-		this->Button_Clear = nullptr;
+		GScreenClass::Instance.RemoveButton(this->Button_Toggle);
+		GameDelete(this->Button_Toggle);
+		this->Button_Toggle = nullptr;
 	}
 
 	if (this->Button_Up)
@@ -461,33 +452,24 @@ void MessageColumnClass::InitIO()
 	int posY = rect.Height - rect.Height / 8;
 	const int maxLines = posY / MessageToggleClass::ButtonSide - 1;
 	constexpr int maxChars = 112;
-	const int maxRecord = Math::clamp(Phobos::Config::MessageDisplayInCenter_RecordsCount, 4, maxLines);
-	const int maxCount = Math::clamp(Phobos::Config::MessageDisplayInCenter_LabelsCount, 1, maxLines);
+	constexpr int minRecord = 4;
+	constexpr int minCount = 1;
+	const int maxRecord = Math::clamp(Phobos::Config::MessageDisplayInCenter_RecordsCount, minRecord, maxLines);
+	const int maxCount = Math::clamp(Phobos::Config::MessageDisplayInCenter_LabelsCount, minCount, maxLines);
 
 	this->Initialize(posX, posY, maxCount, maxRecord, maxChars, width);
 
-	constexpr int buttonInterval = 2;
 	posX -= 1;
 	width += 2;
 
-	// Button_Expand
-	{
-		const int locX = posX + width - ((MessageToggleClass::ButtonSide * 2) + buttonInterval);
-		const int locY = posY - MessageToggleClass::ButtonSide;
-		const auto pButton = GameCreate<MessageToggleClass>(0, locX, locY, MessageToggleClass::ButtonSide, MessageToggleClass::ButtonSide);
-		pButton->Zap();
-		GScreenClass::Instance.AddButton(pButton);
-		this->Button_Expand = pButton;
-	}
-
-	// Button_Clear
+	// Button_Toggle
 	{
 		const int locX = posX + width - MessageToggleClass::ButtonSide;
 		const int locY = posY - MessageToggleClass::ButtonSide;
-		const auto pButton = GameCreate<MessageToggleClass>(1, locX, locY, MessageToggleClass::ButtonSide, MessageToggleClass::ButtonSide);
+		const auto pButton = GameCreate<MessageToggleClass>(locX, locY, MessageToggleClass::ButtonSide, MessageToggleClass::ButtonSide);
 		pButton->Zap();
 		GScreenClass::Instance.AddButton(pButton);
-		this->Button_Clear = pButton;
+		this->Button_Toggle = pButton;
 	}
 
 	// Button_Up
@@ -512,8 +494,9 @@ void MessageColumnClass::InitIO()
 
 	// Scroll_Bar
 	{
+		constexpr int buttonInterval = 3;
 		const int locX = posX + width - ((MessageToggleClass::ButtonSide - MessageToggleClass::ButtonHeight) / 2 + MessageToggleClass::ButtonHeight);
-		const int locY = posY - (MessageToggleClass::ButtonSide * this->MaxRecord) - 1;
+		const int locY = posY - (MessageToggleClass::ButtonSide * this->MaxRecord) + (buttonInterval - 1);
 		const int barHeight = posY - (MessageToggleClass::ButtonSide + buttonInterval) - locY;
 		const auto pButton = GameCreate<MessageScrollClass>(0, locX, locY, MessageToggleClass::ButtonHeight, barHeight);
 		pButton->Zap();
@@ -529,22 +512,11 @@ void MessageColumnClass::InitIO()
 		this->Scroll_Board = pButton;
 	}
 
-	// 0x6DE0A8
-	const int sideIndex = ScenarioClass::Instance->PlayerSideIndex;
-	const int player = sideIndex ? (sideIndex != 1 ? 5 : 1) : 2;
-	int color = reinterpret_cast<int(__stdcall*)(size_t)>(0x69A310)(player);
+	const int color = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex])->MessageTextColor;
 
 	// 0x72A4C5
-	if (color < 0 || color >= ColorScheme::Array.Count)
-		color = 0;
-
-	if (const auto pScheme = ColorScheme::Array.Items[color])
-	{
-		ColorStruct adjustedColor;
-		reinterpret_cast<ColorStruct*(__thiscall*)(ColorStruct*, ColorStruct*)>(0x517440)(&pScheme->BaseColor, &adjustedColor);
-		this->Tint = Drawing::RGB_To_Int(adjustedColor);
-		this->Color = (adjustedColor.B << 16) | (adjustedColor.G << 8) | adjustedColor.R;
-	}
+	if (const auto pScheme = ColorScheme::Array.Items[(color < 0 || color >= ColorScheme::Array.Count) ? 0 : color])
+		reinterpret_cast<ColorStruct*(__thiscall*)(ColorStruct*, ColorStruct*)>(0x517440)(&pScheme->BaseColor, &this->Color);
 
 	this->Update();
 }
@@ -558,8 +530,7 @@ void MessageColumnClass::Initialize(int x, int y, int maxCount, int maxRecord, i
 	this->MaxChars = maxChars;
 	this->Height = MessageToggleClass::ButtonSide;
 	this->Width = width - MessageColumnClass::TextReservedSpace;
-	this->Color = 0;
-	this->Tint = 0;
+	this->Color = ColorStruct { 0, 0, 0 };
 	this->PackUp(true);
 	this->Hovering = false;
 	this->Drawing = false;
@@ -589,6 +560,7 @@ MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wch
 		return nullptr;
 
 	const int messageLen = static_cast<int>(wcslen(message));
+	// As vanilla
 	const int charsToCopy = reinterpret_cast<int(__thiscall*)(BitFont*, const wchar_t*, int, int, int)>(0x433F50)(pBit, message, availableWidth, 111, 1);
 
 	if (charsToCopy < 0)
@@ -606,7 +578,7 @@ MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wch
 
 	const size_t newID = ScenarioExt::Global()->RecordMessages.size();
 
-	if (!this->AddRecordString(buffer))
+	if (!MessageColumnClass::AddRecordString(buffer))
 		return nullptr;
 
 	const int currentTime = MessageColumnClass::GetSystemTime();
@@ -659,10 +631,7 @@ void MessageColumnClass::MouseEnter(bool block)
 	if (block)
 		this->Blocked = true;
 
-	if (const auto pButton = this->Button_Expand)
-		pButton->Disabled = false;
-
-	if (const auto pButton = this->Button_Clear)
+	if (const auto pButton = this->Button_Toggle)
 		pButton->Disabled = false;
 
 	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
@@ -677,10 +646,7 @@ void MessageColumnClass::MouseLeave(bool block)
 
 	if (!this->IsExpanded())
 	{
-		if (const auto pButton = this->Button_Expand)
-			pButton->Disabled = true;
-
-		if (const auto pButton = this->Button_Clear)
+		if (const auto pButton = this->Button_Toggle)
 			pButton->Disabled = true;
 	}
 
@@ -689,12 +655,12 @@ void MessageColumnClass::MouseLeave(bool block)
 
 bool MessageColumnClass::CanScrollUp()
 {
-	return this->IsExpanded() && this->ScrollIndex > 0;
+	return this->IsExpanded() && this->GetScrollIndex() > 0;
 }
 
 bool MessageColumnClass::CanScrollDown()
 {
-	return this->IsExpanded() && this->ScrollIndex < this->GetMaxScroll();
+	return this->IsExpanded() && this->GetScrollIndex() < this->GetMaxScroll();
 }
 
 void MessageColumnClass::ScrollUp()
@@ -719,10 +685,7 @@ void MessageColumnClass::Expand()
 	this->Expanded = true;
 	this->ScrollIndex = this->GetMaxScroll();
 
-	if (const auto pButton = this->Button_Expand)
-		pButton->Disabled = false;
-
-	if (const auto pButton = this->Button_Clear)
+	if (const auto pButton = this->Button_Toggle)
 		pButton->Disabled = false;
 
 	if (const auto pButton = this->Button_Up)
@@ -805,10 +768,7 @@ void MessageColumnClass::CleanUp()
 		pButton->Disabled = true;
 	}
 
-	if (const auto pButton = this->Button_Expand)
-		pButton->Disabled = true;
-
-	if (const auto pButton = this->Button_Clear)
+	if (const auto pButton = this->Button_Toggle)
 		pButton->Disabled = true;
 }
 
@@ -825,10 +785,7 @@ void MessageColumnClass::Refresh()
 
 	if (!this->IsHovering() && !this->IsExpanded())
 	{
-		if (const auto pButton = this->Button_Expand)
-			pButton->Disabled = true;
-
-		if (const auto pButton = this->Button_Clear)
+		if (const auto pButton = this->Button_Toggle)
 			pButton->Disabled = true;
 	}
 }
@@ -880,22 +837,19 @@ void MessageColumnClass::Manage()
 
 void MessageColumnClass::DrawAll()
 {
-	if (const auto pButton = this->Button_Expand)
+	if (const auto pButton = this->Scroll_Board)
 		pButton->DrawShape();
 
-	if (const auto pButton = this->Button_Clear)
+	if (const auto pButton = this->Scroll_Bar)
+		pButton->DrawShape();
+
+	if (const auto pButton = this->Button_Toggle)
 		pButton->DrawShape();
 
 	if (const auto pButton = this->Button_Up)
 		pButton->DrawShape();
 
 	if (const auto pButton = this->Button_Down)
-		pButton->DrawShape();
-
-	if (const auto pButton = this->Scroll_Bar)
-		pButton->DrawShape();
-
-	if (const auto pButton = this->Scroll_Board)
 		pButton->DrawShape();
 
 	if (this->IsExpanded())
@@ -907,15 +861,17 @@ void MessageColumnClass::DrawAll()
 
 		int startY = this->LabelsPos.Y;
 		const int maxIndex = static_cast<int>(messages.size()) - 1;
-		const int startIndex = Math::min(this->ScrollIndex + (this->MaxRecord - 1), maxIndex);
+		const int startIndex = Math::min(this->GetScrollIndex() + (this->MaxRecord - 1), maxIndex);
 		const int endIndex = Math::max(0, startIndex - this->MaxRecord + 1);
+		const int color = Drawing::RGB_To_Int(this->GetColor());
+		constexpr TextPrintType print = TextPrintType::UseGradPal | TextPrintType::FullShadow | TextPrintType::Point6Grad;
 
 		for (int i = startIndex; i >= endIndex; --i)
 		{
 			startY -= this->Height;
 			Point2D textLocation { this->LabelsPos.X, startY };
 			RectangleStruct drawRect { 0, 0, textLocation.X + this->Width, textLocation.Y + this->Height };
-			DSurface::Composite->DrawTextA(messages[i].c_str(), &drawRect, &textLocation, this->Tint, 0, (TextPrintType::FullShadow | TextPrintType::Point8));
+			DSurface::Composite->DrawTextA(messages[i].c_str(), &drawRect, &textLocation, color, 0, print);
 		}
 	}
 	else if (const auto pLabel = this->LabelList)
@@ -937,9 +893,47 @@ inline int MessageColumnClass::GetSystemTime()
 	return currentTime;
 }
 
-inline bool MessageColumnClass::IsStickyButton(GadgetClass* pButton)
+inline bool MessageColumnClass::IsStickyButton(const GadgetClass* pButton)
 {
 	return pButton == Make_Global<GadgetClass*>(0x8B3E88);
+}
+
+inline void MessageColumnClass::IncreaseBrightness(ColorStruct& color, int level)
+{
+	color.R = static_cast<BYTE>(255 - ((255 - color.R) >> level));
+	color.G = static_cast<BYTE>(255 - ((255 - color.G) >> level));
+	color.B = static_cast<BYTE>(255 - ((255 - color.B) >> level));
+}
+
+inline void MessageColumnClass::DecreaseBrightness(ColorStruct& color, int level)
+{
+	color.R = static_cast<BYTE>(color.R >> level);
+	color.G = static_cast<BYTE>(color.G >> level);
+	color.B = static_cast<BYTE>(color.B >> level);
+}
+
+inline bool MessageColumnClass::GetThumbDimension(int* pMax, int* pHeight, int* pPosY) const
+{
+	const int totalRecords = static_cast<int>(ScenarioExt::Global()->RecordMessages.size());
+	const int maxScroll = totalRecords - this->MaxRecord;
+
+	if (maxScroll <= 0)
+		return false;
+
+	if (pMax)
+		*pMax = maxScroll;
+
+	if (!pHeight)
+		return false;
+
+	const int thumbHeight = Math::max((*pHeight * this->MaxRecord / totalRecords), MessageToggleClass::ButtonSide);
+
+	if (pPosY)
+		*pPosY += (*pHeight - thumbHeight) * this->GetScrollIndex() / maxScroll;
+
+	*pHeight = thumbHeight;
+
+	return true;
 }
 
 inline bool MessageColumnClass::AddRecordString(const std::wstring& message, size_t copySize)
@@ -993,8 +987,12 @@ DEFINE_HOOK(0x4AAC92, TacticalGadgetClass_Action_ResetMessageColumnStatus, 0x5)
 {
 	GET_STACK(const GadgetFlag, flags, STACK_OFFSET(0x30, 0x4));
 
-	if ((flags & (GadgetFlag::LeftPress | GadgetFlag::RightPress)) && !MessageColumnClass::Instance.IsHovering())
+	if ((flags & (GadgetFlag::LeftPress | GadgetFlag::RightPress))
+		&& MessageColumnClass::Instance.IsExpanded()
+		&& !MessageColumnClass::Instance.IsHovering())
+	{
 		MessageColumnClass::Instance.PackUp();
+	}
 
 	return 0;
 }
@@ -1078,8 +1076,9 @@ DEFINE_HOOK(0x623A9F, DSurface_sub_623880_DrawBitFontStrings, 0x5)
 		&& !MessageColumnClass::Instance.IsExpanded()
 		&& !ScenarioClass::Instance->UserInputLocked)
 	{
-		auto black = ColorStruct { 0, 0, 0 };
-		pSurface->FillRectTrans(pRect, &black, MessageColumnClass::LowOpacity);
+		auto color = MessageColumnClass::Instance.GetColor();
+		MessageColumnClass::Instance.DecreaseBrightness(color, 3);
+		pSurface->FillRectTrans(pRect, &color, MessageColumnClass::LowOpacity);
 	}
 
 	return SkipGameCode;

@@ -600,6 +600,11 @@ DefaultDistributionSpreadMode=2   ; integer, 0 - r=0 , 1 - r=4 , 2 - r=8 , 3 - r
 DefaultDistributionFilterMode=2   ; integer, 0 - None , 1 - Auto , 2 - Type , 3 - Name
 ```
 
+### `[ ]` Toggle Message Label
+
+- Switches on/off [Task subtitles' label in the middle of the screen](#task-subtitles-display-in-the-middle-of-the-screen).
+- For localization add `TXT_TOGGLE_MESSAGE` and `TXT_TOGGLE_MESSAGE_DESC` into your `.csf` file.
+
 ## Loading screen
 
 - PCX files can now be used as loadscreen images.

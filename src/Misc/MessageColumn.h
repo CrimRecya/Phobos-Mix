@@ -8,6 +8,52 @@
 
 // --------------------------------------------------
 
+class MessageToggleClass : public GadgetClass
+{
+public:
+	static constexpr int ButtonSide = 18;
+	static constexpr int ButtonIconWidth = 4;
+	static constexpr int ButtonHeight = ButtonIconWidth + 2;
+
+	MessageToggleClass() = default;
+	MessageToggleClass(int x, int y, int width, int height);
+
+	~MessageToggleClass() = default;
+
+	virtual bool Draw(bool forced) override;
+	virtual void OnMouseEnter() override;
+	virtual void OnMouseLeave() override;
+	virtual bool Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier) override;
+
+	void DrawShape() const;
+
+	bool Hovering { false };
+	bool Clicking { false };
+};
+
+// --------------------------------------------------
+
+class MessageButtonClass : public MessageToggleClass
+{
+public:
+	static constexpr int HoldInitialDelay = 30;
+	static constexpr int HoldTriggerDelay = 5;
+
+	MessageButtonClass() = default;
+	MessageButtonClass(int id, int x, int y, int width, int height);
+
+	~MessageButtonClass() = default;
+
+	virtual bool Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier) override;
+
+	void DrawShape() const;
+
+	int ID { 0 };
+	int CheckTime { 0 };
+};
+
+// --------------------------------------------------
+
 class MessageScrollClass : public GadgetClass
 {
 public:
@@ -23,55 +69,10 @@ public:
 
 	void DrawShape() const;
 
+	bool Hovering { false };
 	int ID { 0 };
 	int LastY { 0 };
 	int LastScroll { 0 };
-	bool Hovering { false };
-};
-
-// --------------------------------------------------
-
-class MessageToggleClass : public GadgetClass
-{
-public:
-	static constexpr int ButtonSide = 18;
-	static constexpr int ButtonIconWidth = 4;
-	static constexpr int ButtonHeight = ButtonIconWidth + 2;
-
-	MessageToggleClass() = default;
-	MessageToggleClass(int id, int x, int y, int width, int height);
-
-	~MessageToggleClass() = default;
-
-	virtual bool Draw(bool forced) override;
-	virtual void OnMouseEnter() override;
-	virtual void OnMouseLeave() override;
-	virtual bool Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier) override;
-
-	void DrawShape() const;
-
-	int ID { 0 };
-	bool Hovering { false };
-};
-
-// --------------------------------------------------
-
-class MessageButtonClass : public MessageToggleClass
-{
-public:
-	static constexpr int HoldInitialDelay = 40;
-	static constexpr int HoldTriggerDelay = 8;
-
-	MessageButtonClass() = default;
-	MessageButtonClass(int id, int x, int y, int width, int height);
-
-	~MessageButtonClass() = default;
-
-	virtual bool Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier) override;
-
-	void DrawShape() const;
-
-	int CheckTime { 0 };
 };
 
 // --------------------------------------------------
@@ -142,19 +143,24 @@ public:
 	void DrawAll();
 
 	inline int GetWidth() const { return this->Width; }
-	inline size_t GetColor() const { return this->Color; }
-	inline int GetScroll() const { return this->ScrollIndex; }
-	inline int GetRecord() const { return this->MaxRecord; }
+	inline size_t GetTextColor() const { return (this->Color.B << 16) | (this->Color.G << 8) | this->Color.R; }
+	inline ColorStruct GetColor() const { return this->Color; }
+	inline int GetScrollIndex() const { return this->ScrollIndex; }
 	inline bool IsHovering() const { return this->Hovering; }
 	inline bool IsExpanded() const { return this->Expanded; }
 	inline bool IsDrawing() const { return this->Drawing; }
 	inline bool IsBlocked() const { return (this->Expanded || this->Blocked) && this->Hovering; }
 
 	static inline int GetSystemTime();
-	static inline bool IsStickyButton(GadgetClass* pButton);
+	static inline bool IsStickyButton(const GadgetClass* pButton);
+	static inline void IncreaseBrightness(ColorStruct& color, int level = 1);
+	static inline void DecreaseBrightness(ColorStruct& color, int level = 1);
+
+	inline bool GetThumbDimension(int* pMax, int* pHeight, int* pPosY = nullptr) const;
 
 private:
-	inline bool AddRecordString(const std::wstring& message, size_t copySize = std::wstring::npos);
+	static inline bool AddRecordString(const std::wstring& message, size_t copySize = std::wstring::npos);
+
 	inline void RemoveTextLabel(MessageLabelClass* pLabel);
 	inline int GetLabelCount() const;
 	inline MessageLabelClass* GetLastLabel() const;
@@ -168,11 +174,9 @@ private:
 	int MaxChars { 0 };
 	int Height { 0 };
 	int Width { 0 };
-	int Tint { 0 };
-	size_t Color { 0 };
+	ColorStruct Color { ColorStruct { 0, 0, 0 } };
 
-	MessageToggleClass* Button_Expand { nullptr };
-	MessageToggleClass* Button_Clear { nullptr };
+	MessageToggleClass* Button_Toggle { nullptr };
 	MessageButtonClass* Button_Up { nullptr };
 	MessageButtonClass* Button_Down { nullptr };
 	MessageScrollClass* Scroll_Bar { nullptr };

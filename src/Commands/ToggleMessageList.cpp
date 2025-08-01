@@ -5,12 +5,12 @@
 
 const char* ToggleMessageListCommandClass::GetName() const
 {
-	return "Toggle Message List";
+	return "Toggle Message Label";
 }
 
 const wchar_t* ToggleMessageListCommandClass::GetUIName() const
 {
-	return GeneralUtils::LoadStringUnlessMissing("TXT_TOGGLE_MESSAGE_LIST", L"Toggle Message List");
+	return GeneralUtils::LoadStringUnlessMissing("TXT_TOGGLE_MESSAGE", L"Toggle Message Label");
 }
 
 const wchar_t* ToggleMessageListCommandClass::GetUICategory() const
@@ -20,7 +20,7 @@ const wchar_t* ToggleMessageListCommandClass::GetUICategory() const
 
 const wchar_t* ToggleMessageListCommandClass::GetUIDescription() const
 {
-	return GeneralUtils::LoadStringUnlessMissing("TXT_TOGGLE_MESSAGE_LIST_DESC", L"Toggle Message List.");
+	return GeneralUtils::LoadStringUnlessMissing("TXT_TOGGLE_MESSAGE_DESC", L"Toggle message label in the middle of the screen.");
 }
 
 void ToggleMessageListCommandClass::Execute(WWKey eInput) const
