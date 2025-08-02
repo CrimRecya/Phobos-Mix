@@ -371,6 +371,7 @@ ShowTimer.Priority=0  ; integer
 ### Task subtitles display in the middle of the screen
 
 ![Message Display In Center](_static/images/messagedisplayincenter.gif)
+*Taking a campaign in [Mental Omega](https://www.mentalomega.com) as an example to display messages in center*
 
 - Now you can set `MessageApplyHoverState` to true，to make the upper left messages not disappear while mouse hovering over the top of display area.
 - You can also let task subtitles (created by trigger 11) to display directly in the middle area of the screen instead of the upper left corner, with a semi transparent background, by setting `MessageDisplayInCenter` to true. In this case, all messages within this game can be saved, even after being s/l.
