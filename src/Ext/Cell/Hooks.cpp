@@ -97,7 +97,7 @@ DEFINE_HOOK(0x6B60DE, SmudgeTypeClass_Mark_SetContext, 0x6)
 {
 	GET(CellClass* const, pCell, EAX);
 
-	ScenarioExt::Global()->Smudges.insert(pCell->MapCoords);
+	ScenarioExt::Global()->Smudges.insert(MapClass::GetCellIndex(pCell->MapCoords));
 	const auto pCellExt = CellExt::ExtMap.Find(pCell);
 	pCellExt->SmudgeGenerate = Unsorted::CurrentFrame;
 	pCellExt->SmudgeState = BlitterFlags::None;

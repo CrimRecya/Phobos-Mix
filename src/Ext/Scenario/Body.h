@@ -53,8 +53,7 @@ public:
 		std::vector<TechnoExt::ExtData*> BaseNormalTechnos;
 		std::vector<TechnoExt::ExtData*> OwnedUniqueTechnos;
 
-		struct CompCell { bool operator()(CellStruct a, CellStruct b) const { if (a.Y == b.Y) return a.X < b.X; return a.Y < b.Y; }; };
-		std::set<CellStruct, CompCell> Smudges;
+		std::set<int> Smudges;
 
 		DynamicVectorClass<TechnoClass*> UndergroundTracker;
 		DynamicVectorClass<TechnoClass*> SpecialTracker;

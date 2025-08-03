@@ -3,8 +3,10 @@
 #include <Ext/Scenario/Body.h>
 #include <Utilities/Macro.h>
 
-static bool __forceinline ShouldRemoveSmudgeCell(const CellStruct& cell, const int time, const int current)
+static bool __forceinline ShouldRemoveSmudgeCell(const int index, const int time, const int current)
 {
+	const auto cell = CellStruct{static_cast<short>(index & 511), static_cast<short>(index >> 9) };
+
 	if (const auto pCell = MapClass::Instance.TryGetCellAt(cell))
 	{
 		if (pCell->SmudgeTypeIndex != -1)
