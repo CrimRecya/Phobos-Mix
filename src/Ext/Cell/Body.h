@@ -40,11 +40,16 @@ public:
 		UnitClass* IncomingUnit;
 		UnitClass* IncomingUnitAlt;
 
+		int SmudgeGenerate;
+		BlitterFlags SmudgeState;
+
 		ExtData(CellClass* OwnerObject) : Extension<CellClass>(OwnerObject)
 			, RadSites {}
 			, RadLevels {}
 			, IncomingUnit { nullptr }
 			, IncomingUnitAlt { nullptr }
+			, SmudgeGenerate { 0 }
+			, SmudgeState { BlitterFlags::None }
 		{ }
 
 		virtual ~ExtData() = default;

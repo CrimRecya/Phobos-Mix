@@ -437,6 +437,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->InvisoBlockageFix.Read(exINI, GameStrings::General, "InvisoBlockageFix");
 
+	this->SmudgeUpdateTime.Read(exINI, GameStrings::AudioVisual, "SmudgeUpdateTime");
+
 	this->AIAdjacentMax.Read(exINI, GameStrings::AI, "AIAdjacentMax");
 	this->AIAdjacentMax_Campaign.Read(exINI, GameStrings::AI, "AIAdjacentMax.Campaign");
 
@@ -827,6 +829,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->Decloak_OnCloakingWithLowHealth)
 		.Process(this->Decloak_OnCrushing)
 		.Process(this->InvisoBlockageFix)
+		.Process(this->SmudgeUpdateTime)
 		.Process(this->AIAdjacentMax)
 		.Process(this->AIAdjacentMax_Campaign)
 		;

@@ -5,6 +5,7 @@
 #include "Savegame.h"
 #include <optional>
 #include <vector>
+#include <set>
 #include <map>
 #include <unordered_map>
 #include <bitset>
@@ -469,6 +470,49 @@ namespace Savegame
 					return false;
 			}
 
+			return true;
+		}
+	};
+
+	template <typename T>
+	struct Savegame::PhobosStreamObject<std::set<T>>
+	{
+		bool ReadFromStream(PhobosStreamReader& Stm, std::set<T>& Value, bool RegisterForChange) const
+		{
+			Value.clear();
+			static_assert(!std::is_pointer_v<T>);
+			static_assert(std::is_trivially_constructible_v<T>);
+			static_assert(std::is_trivially_destructible_v<T>);
+			size_t Count = 0;
+			if (!Stm.Load(Count))
+			{
+				return false;
+			}
+
+			for (auto ix = 0u; ix < Count; ++ix)
+			{
+				T buffer;
+				if (!Savegame::ReadPhobosStream(Stm, buffer, RegisterForChange))
+				{
+					return false;
+				}
+				Value.insert(buffer);
+			}
+
+			return true;
+		}
+
+		bool WriteToStream(PhobosStreamWriter& Stm, const std::set<T>& Value) const
+		{
+			Stm.Save(Value.size());
+
+			for (const auto& item : Value)
+			{
+				if (!Savegame::WritePhobosStream(Stm, item))
+				{
+					return false;
+				}
+			}
 			return true;
 		}
 	};

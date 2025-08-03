@@ -19,6 +19,8 @@ void CellExt::ExtData::Serialize(T& Stm)
 		.Process(this->RadLevels)
 		.Process(this->IncomingUnit)
 		.Process(this->IncomingUnitAlt)
+		.Process(this->SmudgeGenerate)
+		.Process(this->SmudgeState)
 		;
 }
 

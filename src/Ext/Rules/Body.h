@@ -393,6 +393,8 @@ public:
 
 		Valueable<bool> InvisoBlockageFix;
 
+		Valueable<int> SmudgeUpdateTime;
+
 		Valueable<int> AIAdjacentMax;
 		Nullable<int> AIAdjacentMax_Campaign;
 
@@ -736,6 +738,8 @@ public:
 			, Decloak_OnCrushing { true }
 
 			, InvisoBlockageFix { false }
+
+			, SmudgeUpdateTime { 0 }
 
 			, AIAdjacentMax { -1 }
 			, AIAdjacentMax_Campaign {}

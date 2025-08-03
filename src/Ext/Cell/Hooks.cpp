@@ -1,5 +1,6 @@
 ﻿#include "Body.h"
 
+#include <Ext/Scenario/Body.h>
 #include <Ext/Techno/Body.h>
 
 void __fastcall UnitClass_SetOccupyBit_Reimpl(UnitClass* pThis, void*, CoordStruct* pCrd)
@@ -89,6 +90,32 @@ void __fastcall UnitClass_ClearOccupyBit_Reimpl(UnitClass* pThis, void*, CoordSt
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5D64, UnitClass_ClearOccupyBit_Reimpl);
 
 // TODO ^ same for TA for non-UnitClass, not needed so cba for now
+
+#pragma region SmudgeTrans
+
+DEFINE_HOOK(0x6B60DE, SmudgeTypeClass_Mark_SetContext, 0x6)
+{
+	GET(CellClass* const, pCell, EAX);
+
+	ScenarioExt::Global()->Smudges.insert(pCell->MapCoords);
+	const auto pCellExt = CellExt::ExtMap.Find(pCell);
+	pCellExt->SmudgeGenerate = Unsorted::CurrentFrame;
+	pCellExt->SmudgeState = BlitterFlags::None;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x6B56AC, SmudgeTypeClass_DrawIt_DrawTrans, 0x5)
+{
+	GET(CellClass* const, pCell, ESI);
+	REF_STACK(BlitterFlags, flags, STACK_OFFSET(0x3C, -0x3C));
+
+	flags |= CellExt::ExtMap.Find(pCell)->SmudgeState;
+
+	return 0;
+}
+
+#pragma endregion
 
 DEFINE_HOOK(0x480E27, CellClass_DamageWall_DamageWallRecursivly, 0x5)
 {

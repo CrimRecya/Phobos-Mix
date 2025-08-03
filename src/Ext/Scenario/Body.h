@@ -7,8 +7,10 @@
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 
+#include <Ext/Cell/Body.h>
 #include <Ext/Techno/Body.h>
 
+#include <set>
 #include <map>
 
 struct ExtendedVariable
@@ -51,6 +53,9 @@ public:
 		std::vector<TechnoExt::ExtData*> BaseNormalTechnos;
 		std::vector<TechnoExt::ExtData*> OwnedUniqueTechnos;
 
+		struct CompCell { bool operator()(CellStruct a, CellStruct b) const { if (a.Y == b.Y) return a.X < b.X; return a.Y < b.Y; }; };
+		std::set<CellStruct, CompCell> Smudges;
+
 		DynamicVectorClass<TechnoClass*> UndergroundTracker;
 		DynamicVectorClass<TechnoClass*> SpecialTracker;
 
@@ -74,6 +79,7 @@ public:
 			, BaseNormalCells {}
 			, BaseNormalTechnos {}
 			, OwnedUniqueTechnos {}
+			, Smudges {}
 			, UndergroundTracker {}
 			, SpecialTracker {}
 			, RecordMessages {}
