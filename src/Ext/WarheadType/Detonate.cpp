@@ -105,7 +105,7 @@ void WarheadTypeExt::ExtData::Detonate(TechnoClass* pOwner, HouseClass* pHouse, 
 
 		if (this->SpawnsCrate_Types.size() > 0)
 		{
-			int index = GeneralUtils::ChooseOneWeighted(ScenarioClass::Instance->Random.RandomDouble(), &this->SpawnsCrate_Weights);
+			const int index = GeneralUtils::ChooseOneWeighted(ScenarioClass::Instance->Random.RandomDouble(), &this->SpawnsCrate_Weights);
 
 			if (index < static_cast<int>(this->SpawnsCrate_Types.size()))
 				MapClass::Instance.PlacePowerupCrate(CellClass::Coord2Cell(coords), this->SpawnsCrate_Types.at(index));
@@ -126,8 +126,8 @@ void WarheadTypeExt::ExtData::Detonate(TechnoClass* pOwner, HouseClass* pHouse, 
 						if (this->LaunchSW_DisplayMoney && pSWExt->Money_Amount != 0)
 							FlyingStrings::AddMoneyString(pSWExt->Money_Amount, pHouse, this->LaunchSW_DisplayMoney_Houses, coords, this->LaunchSW_DisplayMoney_Offset);
 
-						int oldstart = pSuper->RechargeTimer.StartTime;
-						int oldleft = pSuper->RechargeTimer.TimeLeft;
+						const int oldstart = pSuper->RechargeTimer.StartTime;
+						const int oldleft = pSuper->RechargeTimer.TimeLeft;
 						// If you don't set it ready, NewSWType::Active will give false in Ares if RealLaunch=false
 						// and therefore it will reuse the vanilla routine, which will crash inside of it
 						pSuper->SetReadiness(true);
@@ -156,7 +156,7 @@ void WarheadTypeExt::ExtData::Detonate(TechnoClass* pOwner, HouseClass* pHouse, 
 
 		if (this->Crit_ActiveChanceAnims.size() > 0 && this->Crit_CurrentChance > 0.0)
 		{
-			int idx = ScenarioClass::Instance->Random.RandomRanged(0, this->Crit_ActiveChanceAnims.size() - 1);
+			const int idx = ScenarioClass::Instance->Random.RandomRanged(0, this->Crit_ActiveChanceAnims.size() - 1);
 			auto const pAnim = GameCreate<AnimClass>(this->Crit_ActiveChanceAnims[idx], coords);
 			AnimExt::SetAnimOwnerHouseKind(pAnim, pHouse, nullptr, false, true);
 			AnimExt::ExtMap.Find(pAnim)->SetInvoker(pOwner, pHouse);
@@ -167,12 +167,12 @@ void WarheadTypeExt::ExtData::Detonate(TechnoClass* pOwner, HouseClass* pHouse, 
 
 		if (cellSpread)
 		{
-			for (auto pTarget : Helpers::Alex::getCellSpreadItems(coords, cellSpread, true))
+			for (auto const pTarget : Helpers::Alex::getCellSpreadItems(coords, cellSpread, true))
 				this->DetonateOnOneUnit(pHouse, pTarget, pOwner, bulletWasIntercepted);
 		}
 		else if (pBullet)
 		{
-			if (auto pTarget = abstract_cast<TechnoClass*>(pBullet->Target))
+			if (auto const pTarget = abstract_cast<TechnoClass*>(pBullet->Target))
 			{
 				double dist = 0.0;
 				auto bulletCoords = pBullet->GetCoords();
@@ -481,9 +481,9 @@ void WarheadTypeExt::ExtData::ApplyRemoveDisguise(HouseClass* pHouse, TechnoClas
 {
 	if (pTarget->IsDisguised())
 	{
-		if (auto pSpy = specific_cast<InfantryClass*, true>(pTarget))
+		if (const auto pSpy = specific_cast<InfantryClass*, true>(pTarget))
 			pSpy->Disguised = false;
-		else if (auto pMirage = specific_cast<UnitClass*, true>(pTarget))
+		else if (const auto pMirage = specific_cast<UnitClass*, true>(pTarget))
 			pMirage->ClearDisguise();
 	}
 }
@@ -492,8 +492,8 @@ void WarheadTypeExt::ExtData::ApplyRemoveMindControl(TechnoClass* pTarget, bool 
 {
 	if (OnVictim)
 	{
-		if (auto pController = pTarget->MindControlledBy)
-			pTarget->MindControlledBy->CaptureManager->FreeUnit(pTarget);
+		if (const auto pController = pTarget->MindControlledBy)
+			pController->CaptureManager->FreeUnit(pTarget);
 	}
 
 	if (OnController)
@@ -520,7 +520,7 @@ void WarheadTypeExt::ExtData::ApplyCrit(HouseClass* pHouse, TechnoClass* pTarget
 	if (pTargetExt->TypeExtData->ImmuneToCrit)
 		return;
 
-	auto pSld = pTargetExt->Shield.get();
+	auto const pSld = pTargetExt->Shield.get();
 
 	if (pSld && pSld->IsActive() && pSld->GetType()->ImmuneToCrit)
 		return;
@@ -543,7 +543,7 @@ void WarheadTypeExt::ExtData::ApplyCrit(HouseClass* pHouse, TechnoClass* pTarget
 	{
 		if (!this->Crit_AnimList_CreateAll.Get(false))
 		{
-			int idx = this->OwnerObject()->EMEffect || this->Crit_AnimList_PickRandom.Get(false)
+			const int idx = this->OwnerObject()->EMEffect || this->Crit_AnimList_PickRandom.Get(false)
 				? ScenarioClass::Instance->Random.RandomRanged(0, this->Crit_AnimList.size() - 1) : 0;
 
 			auto const pAnim = GameCreate<AnimClass>(this->Crit_AnimList[idx], pTarget->Location);
@@ -561,7 +561,7 @@ void WarheadTypeExt::ExtData::ApplyCrit(HouseClass* pHouse, TechnoClass* pTarget
 		}
 	}
 
-	auto damage = this->Crit_ExtraDamage.Get();
+	int damage = this->Crit_ExtraDamage.Get();
 
 	if (this->Crit_ExtraDamage_ApplyFirepowerMult && pOwner)
 		damage = static_cast<int>(damage * pOwner->FirepowerMultiplier * TechnoExt::ExtMap.Find(pOwner)->AE.FirepowerMultiplier);
@@ -696,7 +696,7 @@ double WarheadTypeExt::ExtData::GetCritChance(TechnoClass* pFirer) const
 	auto const pExt = TechnoExt::ExtMap.Find(pFirer);
 	double extraChance = 0.0;
 
-	for (auto& attachEffect : pExt->AttachedEffects)
+	for (auto const& attachEffect : pExt->AttachedEffects)
 	{
 		if (!attachEffect->IsActive())
 			continue;
@@ -706,10 +706,15 @@ double WarheadTypeExt::ExtData::GetCritChance(TechnoClass* pFirer) const
 		if (pType->Crit_Multiplier == 1.0 && pType->Crit_ExtraChance == 0.0)
 			continue;
 
-		if (pType->Crit_AllowWarheads.size() > 0 && !pType->Crit_AllowWarheads.Contains(this->OwnerObject()))
+		auto const& allowWarheads = pType->Crit_AllowWarheads;
+		auto const pObject = this->OwnerObject();
+
+		if (allowWarheads.size() > 0 && !allowWarheads.Contains(pObject))
 			continue;
 
-		if (pType->Crit_DisallowWarheads.size() > 0 && pType->Crit_DisallowWarheads.Contains(this->OwnerObject()))
+		auto const& disallowWarheads = pType->Crit_DisallowWarheads;
+
+		if (disallowWarheads.size() > 0 && disallowWarheads.Contains(pObject))
 			continue;
 
 		critChance = critChance * Math::max(pType->Crit_Multiplier, 0);

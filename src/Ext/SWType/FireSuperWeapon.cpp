@@ -102,8 +102,8 @@ void SWTypeExt::ExtData::ApplyLimboDelivery(HouseClass* pHouse)
 	if (this->LimboDelivery_RandomWeightsData.size())
 	{
 		int id = -1;
-		size_t idsSize = this->LimboDelivery_IDs.size();
-		auto results = this->WeightedRollsHandler(&this->LimboDelivery_RollChances, &this->LimboDelivery_RandomWeightsData, this->LimboDelivery_Types.size());
+		const size_t idsSize = this->LimboDelivery_IDs.size();
+		const auto results = this->WeightedRollsHandler(&this->LimboDelivery_RollChances, &this->LimboDelivery_RandomWeightsData, this->LimboDelivery_Types.size());
 		for (size_t result : results)
 		{
 			if (result < idsSize)
@@ -116,7 +116,8 @@ void SWTypeExt::ExtData::ApplyLimboDelivery(HouseClass* pHouse)
 	else
 	{
 		int id = -1;
-		size_t idsSize = this->LimboDelivery_IDs.size();
+		const size_t idsSize = this->LimboDelivery_IDs.size();
+
 		for (size_t i = 0; i < this->LimboDelivery_Types.size(); i++)
 		{
 			if (i < idsSize)
@@ -145,10 +146,11 @@ void SWTypeExt::ExtData::ApplyLimboKill(HouseClass* pHouse)
 					if (BuildingTypeExt::DeleteLimboBuilding(pBuilding, limboKillID))
 					{
 						it = vec.erase(it);
+						auto const pBldType = pBuilding->Type;
 
 						// Remove limbo buildings' tracking here because their are not truely InLimbo
-						if (!pBuilding->Type->Insignificant && !pBuilding->Type->DontScore)
-							HouseExt::ExtMap.Find(pBuilding->Owner)->RemoveFromLimboTracking(pBuilding->Type);
+						if (!pBldType->Insignificant && !pBldType->DontScore)
+							HouseExt::ExtMap.Find(pBuilding->Owner)->RemoveFromLimboTracking(pBldType);
 
 						pBuilding->Stun();
 						pBuilding->Limbo();
@@ -219,8 +221,8 @@ void SWTypeExt::ExtData::ApplySWNext(HouseClass* pHouse, const CellStruct& cell)
 					if ((this->SW_Next_IgnoreInhibitors || !pNextTypeExt->HasInhibitor(pHouse, cell))
 						&& (this->SW_Next_IgnoreDesignators || pNextTypeExt->HasDesignator(pHouse, cell)))
 					{
-						int oldstart = pSuper->RechargeTimer.StartTime;
-						int oldleft = pSuper->RechargeTimer.TimeLeft;
+						const int oldstart = pSuper->RechargeTimer.StartTime;
+						const int oldleft = pSuper->RechargeTimer.TimeLeft;
 						pSuper->SetReadiness(true);
 						pSuper->Launch(cell, pHouse->IsCurrentPlayer());
 						pSuper->Reset();
@@ -237,8 +239,8 @@ void SWTypeExt::ExtData::ApplySWNext(HouseClass* pHouse, const CellStruct& cell)
 	// random mode
 	if (this->SW_Next_RandomWeightsData.size())
 	{
-		auto results = this->WeightedRollsHandler(&this->SW_Next_RollChances, &this->SW_Next_RandomWeightsData, this->SW_Next.size());
-		for (int result : results)
+		const auto results = this->WeightedRollsHandler(&this->SW_Next_RollChances, &this->SW_Next_RandomWeightsData, this->SW_Next.size());
+		for (const int result : results)
 			LaunchTheSW(this->SW_Next[result]);
 	}
 	// no randomness mode
@@ -278,9 +280,10 @@ void SWTypeExt::ExtData::HandleEMPulseLaunch(SuperClass* pSW, const CellStruct& 
 
 	if (this->EMPulse_SuspendOthers)
 	{
-		auto const pHouseExt = HouseExt::ExtMap.Find(pSW->Owner);
+		auto const pHouse = pSW->Owner;
+		auto const pHouseExt = HouseExt::ExtMap.Find(pHouse);
 
-		for (auto const& pSuper : pSW->Owner->Supers)
+		for (auto const& pSuper : pHouse->Supers)
 		{
 			if (static_cast<int>(pSuper->Type->Type) != 28 || pSuper == pSW)
 				continue;
@@ -302,11 +305,12 @@ void SWTypeExt::ExtData::HandleEMPulseLaunch(SuperClass* pSW, const CellStruct& 
 			if (suspend)
 			{
 				pSuper->IsSuspended = true;
+				const int arrayIndex = pSW->Type->ArrayIndex;
 
-				if (pHouseExt->SuspendedEMPulseSWs.count(pSW->Type->ArrayIndex))
-					pHouseExt->SuspendedEMPulseSWs[pSW->Type->ArrayIndex].push_back(pSuper->Type->ArrayIndex);
+				if (pHouseExt->SuspendedEMPulseSWs.count(arrayIndex))
+					pHouseExt->SuspendedEMPulseSWs[arrayIndex].push_back(arrayIndex);
 				else
-					pHouseExt->SuspendedEMPulseSWs.insert({ pSW->Type->ArrayIndex, std::vector<int>{pSuper->Type->ArrayIndex} });
+					pHouseExt->SuspendedEMPulseSWs.insert({ arrayIndex, std::vector<int>{arrayIndex} });
 			}
 		}
 	}

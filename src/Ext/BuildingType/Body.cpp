@@ -106,11 +106,8 @@ int BuildingTypeExt::GetUpgradesAmount(BuildingTypeClass* pBuilding, HouseClass*
 			checkUpgrade(pTPowersUp);
 	}
 
-	if (auto const pBuildingExt = BuildingTypeExt::ExtMap.Find(pBuilding))
-	{
-		for (auto pTPowersUp : pBuildingExt->PowersUp_Buildings)
-			checkUpgrade(pTPowersUp);
-	}
+	for (auto const pTPowersUp : BuildingTypeExt::ExtMap.Find(pBuilding)->PowersUp_Buildings)
+		checkUpgrade(pTPowersUp);
 
 	return isUpgrade ? result : -1;
 }
@@ -1235,9 +1232,10 @@ void BuildingTypeExt::CreateLimboBuilding(BuildingClass* pBuilding, BuildingType
 
 		// Add building to list of owned limbo buildings
 		pOwnerExt->OwnedLimboDeliveredBuildings.push_back(pBuilding);
+		auto const pBldType = pBuilding->Type;
 
-		if (!pBuilding->Type->Insignificant && !pBuilding->Type->DontScore)
-			pOwnerExt->AddToLimboTracking(pBuilding->Type);
+		if (!pBldType->Insignificant && !pBldType->DontScore)
+			pOwnerExt->AddToLimboTracking(pBldType);
 
 		auto const pTechnoExt = TechnoExt::ExtMap.Find(pBuilding);
 		auto const pTechnoTypeExt = pTechnoExt->TypeExtData;
@@ -1536,6 +1534,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->BuildingRepairedSound)
 		.Process(this->Refinery_UseNormalActiveAnim)
 		.Process(this->AIBaseNormal)
+		.Process(this->HasPowerUpAnim)
 		;
 }
 

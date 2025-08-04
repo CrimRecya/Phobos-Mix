@@ -10,7 +10,7 @@ void TechnoExt::ExtData::InitializeLaserTrails()
 	if (this->LaserTrails.size())
 		return;
 
-	auto pTypeExt = this->TypeExtData;
+	auto const pTypeExt = this->TypeExtData;
 	this->LaserTrails.reserve(pTypeExt->LaserTrailData.size());
 
 	for (auto const& entry : pTypeExt->LaserTrailData)
@@ -20,14 +20,14 @@ void TechnoExt::ExtData::InitializeLaserTrails()
 void TechnoExt::ObjectKilledBy(TechnoClass* pVictim, TechnoClass* pKiller)
 {
 	auto const pKillerType = pKiller->GetTechnoType();
-	TechnoClass* pObjectKiller = ((pKillerType->Spawned || pKillerType->MissileSpawn) && pKiller->SpawnOwner)
+	auto const pObjectKiller = ((pKillerType->Spawned || pKillerType->MissileSpawn) && pKiller->SpawnOwner)
 		? pKiller->SpawnOwner : pKiller;
 
 	if (pObjectKiller && pObjectKiller->BelongsToATeam())
 	{
 		if (auto const pFootKiller = generic_cast<FootClass*, true>(pObjectKiller))
 		{
-			auto pKillerTechnoData = TechnoExt::ExtMap.Find(pObjectKiller);
+			auto const pKillerTechnoData = TechnoExt::ExtMap.Find(pObjectKiller);
 			pKillerTechnoData->LastKillWasTeamTarget = pFootKiller->Team->Focus == pVictim;
 		}
 	}
@@ -56,9 +56,9 @@ Matrix3D TechnoExt::TransformFLHForTurret(TechnoClass* pThis, Matrix3D mtx, bool
 	{
 		TechnoTypeExt::ApplyTurretOffset(pType, &mtx, factor, turIdx);
 
-		double turretRad = pThis->TurretFacing().GetRadian<32>();
+		const double turretRad = pThis->TurretFacing().GetRadian<32>();
 		// For BuildingClass turret facing is equal to primary facing
-		float angle = isFoot ? (float)(turretRad - pThis->PrimaryFacing.Current().GetRadian<32>()) : (float)(turretRad);
+		const float angle = isFoot ? (float)(turretRad - pThis->PrimaryFacing.Current().GetRadian<32>()) : (float)(turretRad);
 
 		mtx.RotateZ(angle);
 	}
@@ -84,7 +84,7 @@ CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, const CoordStruc
 
 	// apply as an offset to global object coords
 	// Resulting coords are mirrored along X axis, so we mirror it back
-	auto location = pThis->GetRenderCoords() + CoordStruct { (int)result.X, -(int)result.Y, (int)result.Z };
+	auto const location = pThis->GetRenderCoords() + CoordStruct { (int)result.X, -(int)result.Y, (int)result.Z };
 
 	return location;
 }
@@ -140,33 +140,31 @@ CoordStruct TechnoExt::GetSimpleFLH(InfantryClass* pThis, int weaponIndex, bool&
 	FLHFound = false;
 	CoordStruct FLH = CoordStruct::Empty;
 
-	if (auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type))
-	{
-		Nullable<CoordStruct> pickedFLH;
+	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type);
+	Nullable<CoordStruct> pickedFLH;
 
-		if (pThis->IsDeployed())
+	if (pThis->IsDeployed())
+	{
+		if (weaponIndex == 0)
+			pickedFLH = pTypeExt->DeployedPrimaryFireFLH;
+		else if (weaponIndex == 1)
+			pickedFLH = pTypeExt->DeployedSecondaryFireFLH;
+	}
+	else
+	{
+		if (pThis->Crawling)
 		{
 			if (weaponIndex == 0)
-				pickedFLH = pTypeExt->DeployedPrimaryFireFLH;
+				pickedFLH = pTypeExt->PronePrimaryFireFLH;
 			else if (weaponIndex == 1)
-				pickedFLH = pTypeExt->DeployedSecondaryFireFLH;
+				pickedFLH = pTypeExt->ProneSecondaryFireFLH;
 		}
-		else
-		{
-			if (pThis->Crawling)
-			{
-				if (weaponIndex == 0)
-					pickedFLH = pTypeExt->PronePrimaryFireFLH;
-				else if (weaponIndex == 1)
-					pickedFLH = pTypeExt->ProneSecondaryFireFLH;
-			}
-		}
+	}
 
-		if (pickedFLH.isset())
-		{
-			FLH = pickedFLH.Get();
-			FLHFound = true;
-		}
+	if (pickedFLH.isset())
+	{
+		FLH = pickedFLH.Get();
+		FLHFound = true;
 	}
 
 	return FLH;
@@ -238,14 +236,13 @@ void TechnoExt::ExtData::InitializeRecoilData()
 
 void TechnoExt::ExtData::InitializeAttachEffects()
 {
-	if (auto pTypeExt = this->TypeExtData)
-	{
-		if (pTypeExt->AttachEffects.AttachTypes.size() < 1)
-			return;
+	auto const pTypeExt = this->TypeExtData;
 
-		auto const pThis = this->OwnerObject();
-		AttachEffectClass::Attach(pThis, pThis->Owner, pThis, pThis, pTypeExt->AttachEffects);
-	}
+	if (pTypeExt->AttachEffects.AttachTypes.size() < 1)
+		return;
+
+	auto const pThis = this->OwnerObject();
+	AttachEffectClass::Attach(pThis, pThis->Owner, pThis, pThis, pTypeExt->AttachEffects);
 }
 
 // Gets tint colors for invulnerability, airstrike laser target and berserk, depending on parameters.
@@ -325,8 +322,9 @@ void TechnoExt::ChangeOwnerMissionFix(FootClass* pThis)
 	pThis->ShouldEnterAbsorber = false;
 	pThis->ShouldEnterOccupiable = false;
 	pThis->ShouldGarrisonStructure = false;
+	auto const pType = pThis->GetTechnoType();
 
-	if (pThis->HasAnyLink() || pThis->GetTechnoType()->ResourceGatherer) // Don't want miners to stop
+	if (pThis->HasAnyLink() || pType->ResourceGatherer) // Don't want miners to stop
 		return;
 
 	switch (pThis->GetCurrentMission())
@@ -340,7 +338,7 @@ void TechnoExt::ChangeOwnerMissionFix(FootClass* pThis)
 
 	pThis->Override_Mission(Mission::Guard, nullptr, nullptr); // I don't even know what this is
 	pThis->ShouldLoseTargetNow = TRUE;
-	pThis->QueueMission(pThis->GetTechnoType()->DefaultToGuardArea ? Mission::Area_Guard : Mission::Guard, true);
+	pThis->QueueMission(pType->DefaultToGuardArea ? Mission::Area_Guard : Mission::Guard, true);
 }
 
 // Updates layers of all animations attached to the given techno.
@@ -351,7 +349,7 @@ void TechnoExt::UpdateAttachedAnimLayers(TechnoClass* pThis)
 		return;
 
 	// Could possibly be faster to track the attached anims in TechnoExt but the profiler doesn't show this as a performance hog so whatever.
-	for (auto pAnim : AnimClass::Array)
+	for (auto const pAnim : AnimClass::Array)
 	{
 		if (pAnim->OwnerObject != pThis)
 			continue;

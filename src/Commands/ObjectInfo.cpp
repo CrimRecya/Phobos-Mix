@@ -52,7 +52,7 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 	{
 		memset(Phobos::wideBuffer, 0, sizeof Phobos::wideBuffer);
 		CRT::mbstowcs(Phobos::wideBuffer, buffer, strlen(buffer));
-		MessageListClass::Instance.PrintMessage(Phobos::wideBuffer, 600, 5, true);
+		MessageListClass::Instance.PrintMessage(Phobos::wideBuffer, 600, -1, true);
 		Debug::Log("%s\n", buffer);
 		buffer[0] = 0;
 	};
@@ -92,7 +92,7 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 	{
 		// Basic Status
 		append("Dump ObjectInfo runs. Current Frame: %d\n", Unsorted::CurrentFrame);
-		auto pType = pFoot->GetTechnoType();
+		const auto pType = pFoot->GetTechnoType();
 		append("ID = %s, UniqueID = %d, ", pType->ID, pFoot->UniqueID);
 		append("Owner = %s (%s), ", pFoot->Owner->get_ID(), pFoot->Owner->PlainName);
 		const auto cell = pFoot->GetMapCoords();
@@ -131,15 +131,15 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 		// Team Status
 		if (pFoot->BelongsToATeam())
 		{
-			auto pTeam = pFoot->Team;
-			auto pTeamType = pTeam->Type;
+			const auto pTeam = pFoot->Team;
+			const auto pTeamType = pTeam->Type;
 			bool found = false;
 
 			for (int i = 0; i < AITriggerTypeClass::Array.Count && !found; i++)
 			{
-				auto pTriggerType = AITriggerTypeClass::Array.GetItem(i);
-				auto pTriggerTeam1Type = pTriggerType->Team1;
-				auto pTriggerTeam2Type = pTriggerType->Team2;
+				const auto pTriggerType = AITriggerTypeClass::Array.GetItem(i);
+				const auto pTriggerTeam1Type = pTriggerType->Team1;
+				const auto pTriggerTeam2Type = pTriggerType->Team2;
 
 				if (pTeamType && ((pTriggerTeam1Type && pTriggerTeam1Type == pTeamType) || (pTriggerTeam2Type && pTriggerTeam2Type == pTeamType)))
 				{
@@ -259,7 +259,7 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 	{
 		// Basic Status
 		append("Dump ObjectInfo runs. Current Frame: %d\n", Unsorted::CurrentFrame);
-		auto pType = pBuilding->Type;
+		const auto pType = pBuilding->Type;
 		append("ID = %s, UniqueID = %d, ", pType->ID, pBuilding->UniqueID);
 		append("Owner = %s (%s), ", pBuilding->Owner->get_ID(), pBuilding->Owner->PlainName);
 		const auto cell = pBuilding->GetMapCoords();
@@ -430,7 +430,7 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 		dumped = true;
 	};
 
-	for (auto pTechno : TechnoClass::Array)
+	for (auto const pTechno : TechnoClass::Array)
 	{
 		if (dumped) break;
 		if (pTechno->IsMouseHovering)
@@ -442,7 +442,7 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 		if (ObjectClass::CurrentObjects.Count > 0)
 		{
 			if (ObjectClass::CurrentObjects.Count != 1)
-				MessageListClass::Instance.PrintMessage(L"This command will only dump one of these selected object", 600, 5, true);
+				MessageListClass::Instance.PrintMessage(L"This command will only dump one of these selected object", 600, -1, true);
 
 			dumpInfo(ObjectClass::CurrentObjects.GetItem(ObjectClass::CurrentObjects.Count - 1));
 		}

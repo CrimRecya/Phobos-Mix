@@ -31,8 +31,8 @@ void AnimTypeExt::ProcessDestroyAnims(UnitClass* pThis, TechnoClass* pKiller)
 
 			if (pType->DestroyAnim.Count >= 8)
 			{
-				idxAnim = pThis->Type->DestroyAnim.Count - 1;
-				if (pThis->Type->DestroyAnim.Count % 2 == 0)
+				idxAnim = pType->DestroyAnim.Count - 1;
+				if (pType->DestroyAnim.Count % 2 == 0)
 					idxAnim = static_cast<int>(static_cast<unsigned char>(facing) / 256.0 * idxAnim);
 			}
 
@@ -43,7 +43,6 @@ void AnimTypeExt::ProcessDestroyAnims(UnitClass* pThis, TechnoClass* pKiller)
 			int const nIDx_Rand = pType->DestroyAnim.Count == 1
 				? 0 : ScenarioClass::Instance->Random.RandomRanged(0, (pType->DestroyAnim.Count - 1));
 			pAnimType = pType->DestroyAnim[nIDx_Rand];
-
 		}
 
 		if (pAnimType)
