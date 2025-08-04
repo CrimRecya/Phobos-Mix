@@ -14,7 +14,7 @@ DEFINE_HOOK(0x740A93, UnitClass_Mission_Move_DisallowMoving, 0x6)
 	if (TechnoExt::HasAttachmentLoco(pThis))
 	{
 		auto const pExt = TechnoExt::ExtMap.Find(pThis);
-		if (pExt && pExt->ParentAttachment)
+		if (pExt->ParentAttachment)
 		{
 			auto const& pParent = pExt->ParentAttachment->Parent;
 			if (pThis->PlanningToken && pThis->PlanningToken->PlanningNodes.Count

@@ -60,7 +60,7 @@ DEFINE_HOOK(0x489430, MapClass_DamageArea_Cylinder_1, 0x7)
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	if (pWHExt && pWHExt->CellSpread_Cylinder)
+	if (pWHExt->CellSpread_Cylinder)
 		R->EDX(nVictimCrdZ);
 
 	return 0;
@@ -74,7 +74,7 @@ DEFINE_HOOK(0x4894C1, MapClass_DamageArea_Cylinder_2, 0x5)
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	if (pWHExt && pWHExt->CellSpread_Cylinder)
+	if (pWHExt->CellSpread_Cylinder)
 		R->EDX(nVictimCrdZ);
 
 	return 0;
@@ -90,7 +90,7 @@ DEFINE_HOOK(0x48979C, MapClass_DamageArea_Cylinder_3, 0x8)
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	if (pWHExt && pWHExt->CellSpread_Cylinder)
+	if (pWHExt->CellSpread_Cylinder)
 		R->ECX(nVictimCrdZ);
 
 	return 0;
@@ -104,7 +104,7 @@ DEFINE_HOOK(0x4898BF, MapClass_DamageArea_Cylinder_4, 0x5)
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	if (pWHExt && pWHExt->CellSpread_Cylinder)
+	if (pWHExt->CellSpread_Cylinder)
 		R->EDX(nVictimCrdZ);
 
 	return 0;

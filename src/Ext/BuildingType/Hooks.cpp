@@ -124,7 +124,7 @@ DEFINE_HOOK(0x6D528A, TacticalClass_DrawPlacement_PlacementPreview, 0x6)
 
 	// DrawType
 	const auto pType = abstract_cast<BuildingTypeClass*>(pDisplay->CurrentBuildingType);
-	const auto pTypeExt = pType ? BuildingTypeExt::ExtMap.Find(pType) : nullptr;
+	const auto pTypeExt = BuildingTypeExt::ExtMap.TryFind(pType);
 
 	if (pTypeExt && pTypeExt->PlacementPreview)
 	{

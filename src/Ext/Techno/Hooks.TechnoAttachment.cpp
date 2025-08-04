@@ -486,7 +486,7 @@ void ParentClickedWaypoint(TechnoClass* pThis, int idxPath, signed char idxWP)
 		pThis->unknown_bool_430 = false;
 
 	// Children handling
-	if (const auto& pExt = TechnoExt::ExtMap.Find(pThis))
+	if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -502,7 +502,7 @@ void ParentClickedTargetAction(TechnoClass* pThis, Action action, ObjectClass* p
 	Unsorted::MoveFeedback = false;
 
 	// Children handling
-	if (const auto& pExt = TechnoExt::ExtMap.Find(pThis))
+	if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -518,7 +518,7 @@ void ParentClickedCellAction(TechnoClass* pThis, Action action, CellStruct* pCel
 	Unsorted::MoveFeedback = false;
 
 	// Children handling
-	if (const auto& pExt = TechnoExt::ExtMap.Find(pThis))
+	if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -534,7 +534,7 @@ void ParentAreaGuardAction(TechnoClass* pThis)
 	Unsorted::MoveFeedback = false;
 
 	// Children handling
-	if (const auto& pExt = TechnoExt::ExtMap.Find(pThis))
+	if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -757,7 +757,7 @@ DEFINE_HOOK(0x6FFE4F, TechnoClass_ClickedEvent_HandleChildren, 0x6)
 {
 	if ((TechnoAttachmentTemp::stopPressed || TechnoAttachmentTemp::deployPressed) && TechnoAttachmentTemp::pParent)
 	{
-		if (auto const& pExt = TechnoExt::ExtMap.Find(TechnoAttachmentTemp::pParent))
+		if (auto const pExt = TechnoExt::ExtMap.TryFind(TechnoAttachmentTemp::pParent))
 		{
 			for (auto const& pAttachment : pExt->ChildAttachments)
 			{
@@ -819,9 +819,7 @@ DEFINE_HOOK(0x6F3283, TechnoClass_CanScatter_CheckIfAttached, 0x8)
 
 	GET(TechnoClass*, pThis, ECX);
 
-	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
-
-	return pExt->ParentAttachment ? ReturnFalse : ContinueCheck;
+	return TechnoExt::ExtMap.Find(pThis)->ParentAttachment ? ReturnFalse : ContinueCheck;
 }
 
 DEFINE_HOOK(0x4817A8, CellClass_Incoming_CheckIfTechnoOccupies, 0x6)
@@ -830,7 +828,7 @@ DEFINE_HOOK(0x4817A8, CellClass_Incoming_CheckIfTechnoOccupies, 0x6)
 
 	GET(TechnoClass*, pTechno, ESI);
 
-	auto const& pExt = TechnoExt::ExtMap.Find(pTechno);
+	auto const pExt = TechnoExt::ExtMap.Find(pTechno);
 
 	return pExt->ParentAttachment && pExt->ParentAttachment->GetType()->OccupiesCell ? ConditionIsTrue : ContinueCheck;
 }

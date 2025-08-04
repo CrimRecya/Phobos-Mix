@@ -405,8 +405,7 @@ DEFINE_HOOK(0x707E84, TechnoClass_GetGuardRange_Engineer, 0x6)
 {
 	GET(TechnoClass* const, pThis, ESI);
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
-	R->AL(pThis->IsEngineer() && !(pTypeExt && pTypeExt->Engineer_CanAutoFire));
+	R->AL(pThis->IsEngineer() && !TechnoExt::ExtMap.Find(pThis)->TypeExtData->Engineer_CanAutoFire);
 	return 0;
 }
 
@@ -416,9 +415,7 @@ DEFINE_HOOK(0x6F8EF1, TechnoClass_SelectAutoTarget_Engineer, 0x6)
 
 	GET(InfantryTypeClass* const, pType, EAX);
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-
-	R->CL(pType->Engineer && !(pTypeExt && pTypeExt->Engineer_CanAutoFire));
+	R->CL(pType->Engineer && !TechnoTypeExt::ExtMap.Find(pType)->Engineer_CanAutoFire);
 	return SkipGameCode;
 }
 
@@ -428,9 +425,7 @@ DEFINE_HOOK(0x709249, TechnoClass_CanPassiveAcquireNow_Engineer1, 0xA)
 
 	GET(TechnoClass* const, pThis, ESI);
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
-
-	R->AL(pThis->IsEngineer() && !(pTypeExt && pTypeExt->Engineer_CanAutoFire));
+	R->AL(pThis->IsEngineer() && !TechnoExt::ExtMap.Find(pThis)->TypeExtData->Engineer_CanAutoFire);
 	return SkipGameCode;
 }
 
@@ -440,9 +435,7 @@ DEFINE_HOOK(0x6F8AEC, TechnoClass_TryAutoTargetObject_Engineer1, 0x6)
 
 	GET(TechnoClass* const, pThis, ESI);
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
-
-	R->AL(pThis->IsEngineer() && !(pTypeExt && pTypeExt->Engineer_CanAutoFire));
+	R->AL(pThis->IsEngineer() && !TechnoExt::ExtMap.Find(pThis)->TypeExtData->Engineer_CanAutoFire);
 	return SkipGameCode;
 }
 
@@ -452,9 +445,7 @@ DEFINE_HOOK(0x6F8BB2, TechnoClass_TryAutoTargetObject_Engineer2, 0x6)
 
 	GET(TechnoClass* const, pThis, ESI);
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
-
-	R->AL(pThis->IsEngineer() && !(pTypeExt && pTypeExt->Engineer_CanAutoFire));
+	R->AL(pThis->IsEngineer() && !TechnoExt::ExtMap.Find(pThis)->TypeExtData->Engineer_CanAutoFire);
 	return SkipGameCode;
 }
 
@@ -542,9 +533,7 @@ DEFINE_HOOK(0x6F9B64, TechnoClass_SelectAutoTarget_RecordAttackWall, 0x7)
 	GET(TechnoClass*, pThis, ESI);
 	GET(CellClass*, pCell, EAX);
 
-	if (auto pExt = TechnoExt::ExtMap.Find(pThis))
-		pExt->AutoTargetedWallCell = pCell;
-
+	TechnoExt::ExtMap.Find(pThis)->AutoTargetedWallCell = pCell;
 	return 0;
 }
 
@@ -616,7 +605,7 @@ DEFINE_HOOK(0x6FC22A, TechnoClass_GetFireError_TargetingIronCurtain, 0x6)
 	if ((pOwner->IsHumanPlayer || pOwner->IsInPlayerControl) ? pRules->PlayerAttackIronCurtain : pRules->AIAttackIronCurtain)
 		return GoOtherChecks;
 
-	auto pWpExt = WeaponTypeExt::ExtMap.Find(pThis->GetWeapon(wpIdx)->WeaponType);
+	auto pWpExt = WeaponTypeExt::ExtMap.TryFind(pThis->GetWeapon(wpIdx)->WeaponType);
 	bool isHealing = pThis->CombatDamage(wpIdx) < 0;
 
 	return (pWpExt && pWpExt->AttackIronCurtain.Get(isHealing)) ? GoOtherChecks : CantFire;
@@ -633,12 +622,7 @@ DEFINE_HOOK(0x6F50A9, TechnoClass_UpdatePosition_TemporalLetGo, 0x7)
 	GET(TechnoClass* const, pThis, ESI);
 	GET(TemporalClass* const, pTemporal, ECX);
 
-	if (!pTemporal || !pTemporal->Target)
-		return SkipLetGo;
-
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
-
-	return (!pTypeExt || !pTypeExt->KeepWarping) ? LetGo : SkipLetGo;
+	return pTemporal && pTemporal->Target && !TechnoExt::ExtMap.Find(pThis)->TypeExtData->KeepWarping ? LetGo : SkipLetGo;
 }
 
 DEFINE_HOOK(0x709A43, TechnoClass_EnterIdleMode_TemporalLetGo, 0x7)
@@ -648,12 +632,7 @@ DEFINE_HOOK(0x709A43, TechnoClass_EnterIdleMode_TemporalLetGo, 0x7)
 	GET(TechnoClass* const, pThis, ESI);
 	GET(TemporalClass* const, pTemporal, ECX);
 
-	if (!pTemporal || !pTemporal->Target)
-		return SkipLetGo;
-
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
-
-	return (!pTypeExt || !pTypeExt->KeepWarping) ? LetGo : SkipLetGo;
+	return pTemporal && pTemporal->Target && !TechnoExt::ExtMap.Find(pThis)->TypeExtData->KeepWarping ? LetGo : SkipLetGo;
 }
 
 // This is a fix to KeepWarping.
@@ -679,9 +658,7 @@ DEFINE_HOOK(0x71A7A8, TemporalClass_Update_CheckRange, 0x6)
 	if (pTechno->InOpenToppedTransport)
 		return CheckRange;
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
-
-	return (pTypeExt && pTypeExt->KeepWarping) ? CheckRange : DontCheckRange;
+	return TechnoExt::ExtMap.Find(pTechno)->TypeExtData->KeepWarping ? CheckRange : DontCheckRange;
 }
 
 #pragma endregion
@@ -700,9 +677,8 @@ DEFINE_HOOK(0x70023B, TechnoClass_MouseOverObject_AttackUnderGround, 0x5)
 		return FireIsOK;
 
 	auto const pWeapon = pThis->GetWeapon(wpIdx)->WeaponType;
-	auto const pProjExt = pWeapon ? BulletTypeExt::ExtMap.Find(pWeapon->Projectile) : nullptr;
 
-	return (!pProjExt || !pProjExt->AU) ? FireIsNotOK : FireIsOK;
+	return (!pWeapon || !BulletTypeExt::ExtMap.Find(pWeapon->Projectile)->AU) ? FireIsNotOK : FireIsOK;
 }
 
 DEFINE_HOOK_AGAIN(0x729029, TunnelLocomotionClass_Process_Track, 0x7);
@@ -856,7 +832,7 @@ DEFINE_HOOK(0x4D6E83, FootClass_MissionAreaGuard_FollowStray, 0x6)
 
 	int range = RulesClass::Instance->GuardModeStray;
 
-	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType()))
+	if (auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData)
 		range = pThis->Owner->IsControlledByHuman() ? pTypeExt->PlayerGuardModeStray.Get(Leptons(range)) : pTypeExt->AIGuardModeStray.Get(Leptons(range));
 
 	R->EDI(range);
@@ -871,7 +847,7 @@ DEFINE_HOOK(0x4D6E97, FootClass_MissionAreaGuard_Pursuit, 0x6)
 	GET(int, range, EDI);
 	GET(AbstractClass* const, pFocus, EAX);
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
 
 	bool isPlayer = pThis->Owner->IsControlledByHuman();
 	bool pursuit = true;
@@ -914,7 +890,7 @@ DEFINE_HOOK(0x707F08, TechnoClass_GetGuardRange_AreaGuardRange, 0x5)
 	double multiplier = pRulesExt->PlayerGuardModeGuardRangeMultiplier;
 	Leptons addend = pRulesExt->PlayerGuardModeGuardRangeAddend;
 
-	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType()))
+	if (auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData)
 	{
 		multiplier = isPlayer ? pTypeExt->PlayerGuardModeGuardRangeMultiplier.Get(pRulesExt->PlayerGuardModeGuardRangeMultiplier) : pTypeExt->AIGuardModeGuardRangeMultiplier.Get(pRulesExt->AIGuardModeGuardRangeMultiplier);
 		addend = isPlayer ? pTypeExt->PlayerGuardModeGuardRangeAddend.Get(pRulesExt->PlayerGuardModeGuardRangeAddend) : pTypeExt->AIGuardModeGuardRangeAddend.Get(pRulesExt->AIGuardModeGuardRangeAddend);
@@ -951,9 +927,8 @@ DEFINE_HOOK(0x6B73EA, SpawnManagerClass_Update_MissileSpawnFLH2, 0x5)
 	GET(int, idx, EBX);
 
 	auto const pSpawner = pThis->Owner;
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pSpawner->GetTechnoType());
 
-	if (pTypeExt && pTypeExt->MissileSpawnUseOtherFLHs)
+	if (TechnoExt::ExtMap.Find(pSpawner)->TypeExtData->MissileSpawnUseOtherFLHs)
 	{
 		int burst = pWeaponType->Burst;
 		pSpawner->CurrentBurstIndex = idx % burst;
@@ -1126,10 +1101,10 @@ DEFINE_HOOK(0x4448B0, BuildingClass_KickOutUnit_ExitCoords, 0x6)
 	GET(CoordStruct*, pCrd, ECX);
 	REF_STACK(DirType, dir, STACK_OFFSET(0x144,-0x100));
 
-	auto const isJJ = pProduct->GetTechnoType()->Locomotor == LocomotionClass::CLSIDs::Jumpjet;
 	auto const pProductType = pProduct->GetTechnoType();
+	auto const isJJ = pProductType->Locomotor == LocomotionClass::CLSIDs::Jumpjet;
 	auto const buildingExitCrd = isJJ ? BuildingTypeExt::ExtMap.Find(pThis->Type)->JumpjetExitCoord.Get(pThis->Type->ExitCoord)
-		: TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->ExitCoord.Get(pThis->Type->ExitCoord);
+		: TechnoExt::ExtMap.Find(pThis)->TypeExtData->ExitCoord.Get(pThis->Type->ExitCoord);
 	auto const exitCrd = TechnoTypeExt::ExtMap.Find(pProductType)->ExitCoord.Get(buildingExitCrd);
 
 	pCrd->X += exitCrd.X;
@@ -1188,9 +1163,7 @@ DEFINE_HOOK(0x444061, BuildingClass_KickOutUnit_RallyPointAreaGuard4, 0x6)
 	if (!pProduct->Owner->IsControlledByHuman())
 		return 0;
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pProduct->GetTechnoType());
-
-	if (pTypeExt && pTypeExt->IgnoreRallyPoint)
+	if (TechnoExt::ExtMap.Find(pProduct)->TypeExtData->IgnoreRallyPoint)
 		return SkipQueueMove;
 
 	if (RulesExt::Global()->RallyPointAreaGuard)
@@ -1216,9 +1189,7 @@ DEFINE_HOOK(0x443EB8, BuildingClass_KickOutUnit_RallyPointAreaGuard5, 0x5)
 	if (!pProduct->Owner->IsControlledByHuman())
 		return 0;
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pProduct->GetTechnoType());
-
-	if (pTypeExt && pTypeExt->IgnoreRallyPoint)
+	if (TechnoExt::ExtMap.Find(pProduct)->TypeExtData->IgnoreRallyPoint)
 		return SkipQueueMove;
 
 	if (RulesExt::Global()->RallyPointAreaGuard)
@@ -1281,7 +1252,7 @@ void __fastcall KickOutClones(const BuildingExt::ExtData* const pThis, const Tec
 	if (!pProductionTypeExt->Cloneable)
 		return;
 
-	if (const auto clonedAs = pProductionTypeExt->ClonedAs)
+	if (const auto clonedAs = pProductionTypeExt->ClonedAs.Get())
 	{
 		pProductionType = clonedAs;
 		pProductionTypeExt = TechnoTypeExt::ExtMap.Find(pProductionType);
@@ -1393,7 +1364,7 @@ DEFINE_HOOK(0x54B36A, JumpjetLocomotionClass_MoveTo_JumpjetSpeedType, 0x5)
 
 	__assume(iloco != nullptr);
 	const auto pLoco = static_cast<JumpjetLocomotionClass*>(iloco);
-	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pLoco->LinkedTo->GetTechnoType());
+	const auto pTypeExt = TechnoExt::ExtMap.Find(pLoco->LinkedTo)->TypeExtData;
 	speedType = static_cast<SpeedType>(pTypeExt->JumpjetSpeedType.Get());
 
 	return 0;
@@ -1681,7 +1652,7 @@ DEFINE_HOOK(0x703B0B, TechnoClass_VisualCharacter_Normal, 0x5)
 	if (const HouseClass* const pWatcher = VisualCharacterContext::specificOwner ? VisualCharacterContext::pWatcher : HouseClass::CurrentPlayer)
 	{
 		const auto pThis = VisualCharacterContext::pThis;
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+		const auto pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
 		const auto pOwner = pThis->Owner;
 		const auto defaultValue = pTypeExt->DefaultVisualCharacter;
 
@@ -1711,10 +1682,9 @@ static inline bool ShouldIgnoreByMouse(ObjectClass* pObject)
 	if (!pType)
 		return true;
 
-	if (pObject->AbstractFlags & AbstractFlags::Techno)
+	if (const auto pTechno = abstract_cast<TechnoClass*, true>(pObject))
 	{
-		const auto pTechno = static_cast<TechnoClass*>(pObject);
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
+		const auto pTypeExt = TechnoExt::ExtMap.Find(pTechno)->TypeExtData;
 		const auto pOwner = pTechno->Owner;
 		const auto defaultValue = pTypeExt->IgnoredByMouse;
 
@@ -1767,7 +1737,7 @@ DEFINE_HOOK(0x6DA4FB, TacticalClass_GetObjectOnCrd_IgnoredByMouse2, 0x6)
 			continue;
 
 		// find first non-transparent to mouse techno and return it
-		if (const auto pExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*, true>(pOccupier)))
+		if (const auto pExt = TechnoExt::ExtMap.TryFind(abstract_cast<TechnoClass*, true>(pOccupier)))
 		{
 			if (pExt->ParentAttachment && pExt->ParentAttachment->GetType()->TransparentToMouse)
 				continue;

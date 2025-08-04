@@ -66,7 +66,7 @@ AttachmentClass::~AttachmentClass()
 	// clean up non-owning references
 	if (this->Child)
 	{
-		auto const& pChildExt = TechnoExt::ExtMap.Find(Child);
+		auto const pChildExt = TechnoExt::ExtMap.Find(this->Child);
 		pChildExt->ParentAttachment = nullptr;
 	}
 
@@ -289,19 +289,19 @@ bool AttachmentClass::AttachChild(TechnoClass* pChild)
 
 	this->Child = pChild;
 
-	auto pChildExt = TechnoExt::ExtMap.Find(this->Child);
+	auto pChildExt = TechnoExt::ExtMap.Find(pChild);
 	pChildExt->ParentAttachment = this;
 
 	// bandaid for jitterless drawing. TODO fix properly
-	// this->Child->GetTechnoType()->DisableVoxelCache = true;
-	// this->Child->GetTechnoType()->DisableShadowCache = true;
+	// pChild->GetTechnoType()->DisableVoxelCache = true;
+	// pChild->GetTechnoType()->DisableShadowCache = true;
 
 	AttachmentTypeClass* pType = this->GetType();
 
 	if (pType->InheritOwner)
 	{
-		if (auto pController = this->Child->MindControlledBy)
-			pController->CaptureManager->FreeUnit(this->Child);
+		if (auto pController = pChild->MindControlledBy)
+			pController->CaptureManager->FreeUnit(pChild);
 	}
 
 	return true;

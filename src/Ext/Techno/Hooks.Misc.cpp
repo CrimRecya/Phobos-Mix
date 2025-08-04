@@ -498,7 +498,7 @@ DEFINE_HOOK(0x728FF2, TunnelLocomotionClass_Process_SubterraneanHeight3, 0x6)
 	enum { SkipGameCode = 0x72900C };
 
 	GET(TechnoClass*, pLinkedTo, ECX);
-	GET(const int, heightOffset, EAX);
+	GET(int, heightOffset, EAX);
 	REF_STACK(int, height, 0x14);
 
 	auto const pTypeExt = TechnoExt::ExtMap.Find(pLinkedTo)->TypeExtData;
@@ -534,13 +534,11 @@ DEFINE_HOOK(0x7292BF, TunnelLocomotionClass_ProcessPreDigIn_DigStartROT, 0x6)
 	GET(TunnelLocomotionClass* const, pThis, ESI);
 	GET(int, time, EAX);
 
-	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->LinkedTo->GetTechnoType()))
-	{
-		const int rot = pTypeExt->DigStartROT;
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis->LinkedTo)->TypeExtData;
+	const int rot = pTypeExt->DigStartROT;
 
-		if (rot > 0)
-			time = (int)(64 / (double)rot);
-	}
+	if (rot > 0)
+		time = (int)(64 / (double)rot);
 
 	R->EAX(time);
 	return 0;
@@ -551,13 +549,11 @@ DEFINE_HOOK(0x729A65, TunnelLocomotionClass_ProcessPreDigOut_DigEndROT, 0x6)
 	GET(TunnelLocomotionClass* const, pThis, ESI);
 	GET(int, time, EAX);
 
-	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->LinkedTo->GetTechnoType()))
-	{
-		const int rot = pTypeExt->DigEndROT;
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis->LinkedTo)->TypeExtData;
+	const int rot = pTypeExt->DigEndROT;
 
-		if (rot > 0)
-			time = (int)(64 / (double)rot);
-	}
+	if (rot > 0)
+		time = (int)(64 / (double)rot);
 
 	R->EAX(time);
 	return 0;
@@ -569,14 +565,11 @@ DEFINE_HOOK(0x729969, TunnelLocomotionClass_ProcessPreDigOut_DigOutSpeed, 0x6)
 	GET(int, speed, EAX);
 
 	auto const pTechno = pThis->LinkedTo;
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pTechno)->TypeExtData;
+	const int digOutSpeed = pTypeExt->DigOutSpeed;
 
-	if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType()))
-	{
-		const int digOutSpeed = pTypeExt->DigOutSpeed;
-
-		if (digOutSpeed > 0)
-			speed = (int)(digOutSpeed * TechnoExt::GetCurrentSpeedMultiplier(pTechno));
-	}
+	if (digOutSpeed > 0)
+		speed = (int)(digOutSpeed * TechnoExt::GetCurrentSpeedMultiplier(pTechno));
 
 	R->EAX(speed);
 	return 0;

@@ -136,7 +136,7 @@ DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
 	if (greyCameo && frameSize > 2) // Only draw extras over grey cameos
 	{
 		auto frame = frames[2];
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+		const auto pTypeExt = TechnoTypeExt::ExtMap.TryFind(pType);
 
 		if (frameSize > 3 && pTypeExt && pTypeExt->IsGreyCameoForCurrentPlayer)
 		{

@@ -757,15 +757,12 @@ DEFINE_HOOK(0x7418D4, UnitClass_CrushCell_FireDeathWeapon, 0x6)
 {
 	GET(ObjectClass*, pThis, ESI);
 
-	if ((pThis->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
+	if (auto const pTechno = abstract_cast<TechnoClass*, true>(pThis))
 	{
-		auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+		auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType());
 
-		if (pTypeExt && pTypeExt->FireDeathWeaponOnCrushed.Get(RulesExt::Global()->FireDeathWeaponOnCrushed))
-		{
-			auto const pTechno = static_cast<TechnoClass*>(pThis);
+		if (pTypeExt->FireDeathWeaponOnCrushed.Get(RulesExt::Global()->FireDeathWeaponOnCrushed))
 			pTechno->FireDeathWeapon(0);
-		}
 	}
 
 	return 0;

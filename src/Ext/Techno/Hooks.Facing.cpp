@@ -20,7 +20,7 @@ DEFINE_HOOK(0x7369D6, UnitClass_UpdateRotation_StopUnitIdleAction, 0xA)
 	if (const auto pWeaponStruct = pThis->GetTurretWeapon())
 	{
 		const auto pWeapon = pWeaponStruct->WeaponType;
-		const auto pWeaponTypeExt = WeaponTypeExt::ExtMap.Find(pWeapon);
+		const auto pWeaponTypeExt = WeaponTypeExt::ExtMap.TryFind(pWeapon);
 
 		if (pWeapon && (!pWeapon->OmniFire || (pWeaponTypeExt && pWeaponTypeExt->OmniFire_TurnToTarget)))
 		{

@@ -1256,15 +1256,15 @@ DEFINE_HOOK(0x73946C, UnitClass_TryToDeploy_CleanUpDeploySpace, 0x6)
 {
 	enum { CanDeploy = 0x73958A, TemporarilyCanNotDeploy = 0x73953B, CanNotDeploy = 0x7394E0 };
 
-	GET(UnitClass* const, pUnit, EBP);
+	GET(UnitClass* const, pThis, EBP);
 	GET(CellStruct, topLeftCell, ESI);
 
 	if (!RulesExt::Global()->ExtendedBuildingPlacing)
 		return 0;
 
-	const auto pTechnoExt = TechnoExt::ExtMap.Find(pUnit);
-	const auto pBuildingType = pUnit->Type->DeploysInto;
-	const auto pHouseExt = HouseExt::ExtMap.Find(pUnit->Owner);
+	const auto pTechnoExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pBuildingType = pThis->Type->DeploysInto;
+	const auto pHouseExt = HouseExt::ExtMap.Find(pThis->Owner);
 	auto& vec = pHouseExt->OwnedDeployingUnits;
 
 	if (pBuildingType->GetFoundationWidth() > 2 || pBuildingType->GetFoundationHeight(false) > 2)
@@ -1275,7 +1275,7 @@ DEFINE_HOOK(0x73946C, UnitClass_TryToDeploy_CleanUpDeploySpace, 0x6)
 	if (!pBuildingType->PlaceAnywhere)
 	{
 		bool noOccupy = true;
-		bool canBuild = CheckBuildingFoundation(pBuildingType, topLeftCell, pUnit->Owner, noOccupy);
+		bool canBuild = CheckBuildingFoundation(pBuildingType, topLeftCell, pThis->Owner, noOccupy);
 
 		do
 		{
@@ -1286,13 +1286,13 @@ DEFINE_HOOK(0x73946C, UnitClass_TryToDeploy_CleanUpDeploySpace, 0x6)
 
 				do
 				{
-					if (pTechnoExt && !pTechnoExt->UnitAutoDeployTimer.InProgress())
+					if (!pTechnoExt->UnitAutoDeployTimer.InProgress())
 					{
-						if (BuildingTypeExt::CleanUpBuildingSpace(pBuildingType, topLeftCell, pUnit->Owner, pUnit))
+						if (BuildingTypeExt::CleanUpBuildingSpace(pBuildingType, topLeftCell, pThis->Owner, pThis))
 							break; // No place for cleaning
 
-						if (vec.size() == 0 || std::find(vec.begin(), vec.end(), pUnit) == vec.end())
-							vec.push_back(pUnit);
+						if (vec.size() == 0 || std::find(vec.begin(), vec.end(), pThis) == vec.end())
+							vec.push_back(pThis);
 
 						pTechnoExt->UnitAutoDeployTimer.Start(40);
 					}
@@ -1303,10 +1303,9 @@ DEFINE_HOOK(0x73946C, UnitClass_TryToDeploy_CleanUpDeploySpace, 0x6)
 			}
 
 			if (vec.size() > 0)
-				vec.erase(std::remove(vec.begin(), vec.end(), pUnit), vec.end());
+				vec.erase(std::remove(vec.begin(), vec.end(), pThis), vec.end());
 
-			if (pTechnoExt)
-				pTechnoExt->UnitAutoDeployTimer.Stop();
+			pTechnoExt->UnitAutoDeployTimer.Stop();
 
 			return CanNotDeploy;
 		}
@@ -1314,10 +1313,9 @@ DEFINE_HOOK(0x73946C, UnitClass_TryToDeploy_CleanUpDeploySpace, 0x6)
 	}
 
 	if (vec.size() > 0)
-		vec.erase(std::remove(vec.begin(), vec.end(), pUnit), vec.end());
+		vec.erase(std::remove(vec.begin(), vec.end(), pThis), vec.end());
 
-	if (pTechnoExt)
-		pTechnoExt->UnitAutoDeployTimer.Stop();
+	pTechnoExt->UnitAutoDeployTimer.Stop();
 
 	return CanDeploy;
 }
@@ -1348,7 +1346,7 @@ DEFINE_HOOK(0x4C7665, EventClass_RespondToEvent_StopDeployInIdleEvent, 0x6)
 
 			if (mission == Mission::Guard || mission == Mission::Unload)
 			{
-				if (const auto pHouseExt = HouseExt::ExtMap.Find(pUnit->Owner))
+				if (const auto pHouseExt = HouseExt::ExtMap.TryFind(pUnit->Owner))
 				{
 					auto& vec = pHouseExt->OwnedDeployingUnits;
 
@@ -1462,8 +1460,15 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 		{
 			const auto pUnit = *it;
 
-			if (!pUnit->InLimbo && pUnit->IsOnMap && !pUnit->IsSinking && pUnit->Owner == pHouse && !pUnit->Destination && pUnit->CurrentMission == Mission::Guard
-				&& !pUnit->ParasiteEatingMe && !pUnit->TemporalTargetingMe && pUnit->Type->DeploysInto)
+			if (!pUnit->InLimbo
+				&& pUnit->IsOnMap
+				&& !pUnit->IsSinking
+				&& pUnit->Owner == pHouse
+				&& !pUnit->Destination
+				&& pUnit->CurrentMission == Mission::Guard
+				&& !pUnit->ParasiteEatingMe
+				&& !pUnit->TemporalTargetingMe
+				&& pUnit->Type->DeploysInto)
 			{
 				if (const auto pExt = TechnoExt::ExtMap.Find(pUnit))
 				{
@@ -1605,16 +1610,13 @@ DEFINE_HOOK(0x452E2C, BuildingClass_CreateLaserFence_FindSpecificIndex, 0x5)
 
 	GET(BuildingClass* const, pThis, EDI);
 
-	if (const auto pExt = BuildingTypeExt::ExtMap.Find(pThis->Type))
+	if (const auto pFenceType = BuildingTypeExt::ExtMap.Find(pThis->Type)->LaserFencePost_Fence.Get())
 	{
-		if (const auto pFenceType = pExt->LaserFencePost_Fence.Get())
+		if (pFenceType->LaserFence)
 		{
-			if (pFenceType->LaserFence)
-			{
-				R->EBP(pFenceType->ArrayIndex);
-				R->EAX(BuildingTypeClass::Array.Count);
-				return SkipGameCode;
-			}
+			R->EBP(pFenceType->ArrayIndex);
+			R->EAX(BuildingTypeClass::Array.Count);
+			return SkipGameCode;
 		}
 	}
 
@@ -1634,16 +1636,10 @@ DEFINE_HOOK(0x440AE9, BuildingClass_Unlimbo_SkipUninitFence, 0x7)
 
 static inline bool IsMatchedPostType(const BuildingTypeClass* const pThisType, const BuildingTypeClass* const pPostType)
 {
-	if (const auto pThisTypeExt = BuildingTypeExt::ExtMap.Find(pThisType))
-	{
-		if (const auto pPostTypeExt = BuildingTypeExt::ExtMap.Find(pPostType))
-		{
-			if (pThisTypeExt->LaserFencePost_Fence.Get() != pPostTypeExt->LaserFencePost_Fence.Get())
-				return false;
-		}
-	}
+	const auto pThisTypeExt = BuildingTypeExt::ExtMap.Find(pThisType);
+	const auto pPostTypeExt = BuildingTypeExt::ExtMap.Find(pPostType);
 
-	return true;
+	return pThisTypeExt->LaserFencePost_Fence.Get() != pPostTypeExt->LaserFencePost_Fence.Get();
 }
 
 // Customized Laser Fence Hook #4 -> sub_452BB0 - Only accept specific fence post

@@ -26,7 +26,7 @@ DEFINE_HOOK(0x466556, BulletClass_Init, 0x6)
 
 	if (RulesExt::Global()->VHPScan_Enhanced)
 	{
-		if (auto pTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pThis->Target)))
+		if (auto pTargetExt = TechnoExt::ExtMap.TryFind(abstract_cast<TechnoClass*>(pThis->Target)))
 			pTargetExt->BulletsTargetingMe.AddItem(pThis);
 	}
 

@@ -530,9 +530,7 @@ DEFINE_HOOK(0x5F4B7A, ObjectClass_DrawIfVisible_OnScreenCheck, 0x5)
 
 	if (auto pAnim = abstract_cast<AnimClass*>(pThis))
 	{
-		auto pTypeExt = AnimTypeExt::ExtMap.Find(pAnim->Type);
-
-		if (pTypeExt && pTypeExt->RenderIfOutOfScreen)
+		if (AnimTypeExt::ExtMap.Find(pAnim->Type)->RenderIfOutOfScreen)
 			return Draw;
 	}
 

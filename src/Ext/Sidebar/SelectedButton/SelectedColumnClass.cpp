@@ -55,7 +55,7 @@ void SelectedColumnClass::DrawInfo() const
 		{
 			if (pThis->IsDisguisedAs(HouseClass::CurrentPlayer))
 			{
-				if (const auto pDisguiseTypeExt = TechnoTypeExt::ExtMap.Find(TechnoTypeExt::GetTechnoType(pThis->Disguise)))
+				if (const auto pDisguiseTypeExt = TechnoTypeExt::ExtMap.TryFind(TechnoTypeExt::GetTechnoType(pThis->Disguise)))
 				{
 					if (const auto pFakeType = pDisguiseTypeExt->FakeOf.Get())
 						return pFakeType;
@@ -72,7 +72,7 @@ void SelectedColumnClass::DrawInfo() const
 	};
 
 	const auto pDisplayType = getDisplayType();
-	const auto pDisplayTypeExt = TechnoTypeExt::ExtMap.Find(TechnoTypeExt::GetTechnoType(pDisplayType));
+	const auto pDisplayTypeExt = TechnoTypeExt::ExtMap.TryFind(TechnoTypeExt::GetTechnoType(pDisplayType));
 
 	TextPrintType printType = TextPrintType::Center | TextPrintType::Point8;
 	COLORREF color = Drawing::RGB_To_Int(Drawing::TooltipColor);

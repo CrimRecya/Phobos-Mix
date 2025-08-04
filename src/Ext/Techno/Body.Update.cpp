@@ -630,8 +630,8 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 
 	// Cache the new type data
 	this->PreviousType = pOldType;
-	this->TypeExtData = TechnoTypeExt::ExtMap.Find(pCurrentType);
-	auto const pNewTypeExt = this->TypeExtData;
+	auto const pNewTypeExt = TechnoTypeExt::ExtMap.Find(pCurrentType);
+	this->TypeExtData = pNewTypeExt;
 
 	this->UpdateSelfOwnedAttachEffects();
 

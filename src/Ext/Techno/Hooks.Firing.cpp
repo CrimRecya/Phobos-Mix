@@ -237,7 +237,7 @@ DEFINE_HOOK(0x6F3432, TechnoClass_WhatWeaponShouldIUse_Gattling, 0xA)
 			}
 			else if (pTargetTechno->InWhichLayer() == Layer::Underground)
 			{
-				if (BulletTypeExt::ExtMap.Find(pWeaponEven->Projectile)->AU && !BulletTypeExt::ExtMap.Find(pWeaponOdd->Projectile))
+				if (BulletTypeExt::ExtMap.Find(pWeaponEven->Projectile)->AU && !BulletTypeExt::ExtMap.Find(pWeaponOdd->Projectile)->AU)
 					chosenWeaponIndex = evenWeaponIndex;
 			}
 			else if (pTargetTechno->IsInAir())
@@ -462,7 +462,7 @@ DEFINE_HOOK(0x51C9B8, InfantryClass_CanFire_OnMoving1, 0x17)
 
 	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type);
 
-	return (pTypeExt && pTypeExt->FiringByPassMovingCheck || pThis->SpeedPercentage <= 0.1) ? CheckPass : CheckNotPass;
+	return (pTypeExt->FiringByPassMovingCheck || pThis->SpeedPercentage <= 0.1) ? CheckPass : CheckNotPass;
 }
 
 DEFINE_HOOK(0x51CAAC, InfantryClass_CanFire_OnMoving2, 0x13)
@@ -473,7 +473,7 @@ DEFINE_HOOK(0x51CAAC, InfantryClass_CanFire_OnMoving2, 0x13)
 
 	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type);
 
-	return (pTypeExt && pTypeExt->FiringByPassMovingCheck || !pThis->Locomotor->Is_Moving_Now()) ? CheckPass : CheckNotPass;
+	return (pTypeExt->FiringByPassMovingCheck || !pThis->Locomotor->Is_Moving_Now()) ? CheckPass : CheckNotPass;
 }
 
 // Skips bridge-related coord checks to allow AA to target air units while both are on a bridge.
@@ -500,7 +500,7 @@ DEFINE_HOOK(0x6FC749, TechnoClass_GetFireError_AntiUnderground, 0x5)
 	auto const pProj = pWeapon->Projectile;
 	auto const pProjExt = BulletTypeExt::ExtMap.Find(pProj);
 
-	if (layer == Layer::Underground && !(pProjExt && pProjExt->AU))
+	if (layer == Layer::Underground && !pProjExt->AU)
 		return Illegal;
 
 	if ((layer == Layer::Air || layer == Layer::Top) && !pProj->AA)
@@ -557,7 +557,7 @@ DEFINE_HOOK(0x6FE312, TechnoClass_FireAt_InitialDamage, 0x6)
 
 	auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
 
-	if (pWeaponExt && pWeaponExt->AddtionalDamage_GattlingValue)
+	if (pWeaponExt->AddtionalDamage_GattlingValue)
 		damage += static_cast<int>(pThis->GattlingValue * pWeaponExt->AddtionalDamage_GattlingValue_Mult);
 
 	R->EDI(damage);
@@ -573,7 +573,7 @@ DEFINE_HOOK(0x6FF8F1, TechnoClass_FireAt_AfterFire, 0x6)
 	{
 		auto const pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
 
-		if (pWeaponExt && pWeaponExt->ResetGattlingValue)
+		if (pWeaponExt->ResetGattlingValue)
 		{
 			pThis->CurrentGattlingStage = 0;
 			pThis->GattlingRateDown(0);
@@ -1009,6 +1009,7 @@ DEFINE_HOOK(0x6F3AEB, TechnoClass_GetFLH, 0x6)
 	{
 		bool found = false;
 		flh = TechnoExt::GetBurstFLH(pThis, weaponIndex, found);
+
 		if (!found)
 		{
 			if (auto const pInf = abstract_cast<InfantryClass*>(pThis))

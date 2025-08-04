@@ -454,7 +454,7 @@ Action __fastcall UnitClass__WhatAction_Wrapper(UnitClass* pThis, void* _, Objec
 	auto result = pThis->UnitClass::MouseOverObject(pObj, ignoreForce);
 	AresScheme::Suffix();
 
-	auto const& pExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 	if (!pExt->ParentAttachment)
 		return result;
 
