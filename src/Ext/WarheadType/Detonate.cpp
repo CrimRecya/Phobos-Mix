@@ -429,8 +429,11 @@ void WarheadTypeExt::ExtData::ApplyShieldModifiers(TechnoClass* pTarget)
 
 		if (shieldType)
 		{
-			if (shieldType->Strength && (!pShield || (this->Shield_ReplaceNonRespawning && pShield->IsBrokenAndNonRespawning()
-				&& pShield->GetFramesSinceLastBroken() >= this->Shield_MinimumReplaceDelay)))
+			if (shieldType->Strength
+				&& (!pShield
+					|| (this->Shield_ReplaceNonRespawning
+						&& pShield->IsBrokenAndNonRespawning()
+						&& pShield->GetFramesSinceLastBroken() >= this->Shield_MinimumReplaceDelay)))
 			{
 				pTargetExt->CurrentShieldType = shieldType;
 				pShield = std::make_unique<ShieldClass>(pTarget, true);

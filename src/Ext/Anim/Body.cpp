@@ -245,7 +245,6 @@ void AnimExt::HandleDebrisImpact(AnimTypeClass* pExpireAnim, AnimTypeClass* pWak
 			auto const animIndex = splashAnimsPickRandom
 				? ScenarioClass::Instance->Random.RandomRanged(0, lastIndex)
 				: defaultIndex;
-
 			pSplashAnimToUse = splashAnims.at(animIndex);
 		}
 	}

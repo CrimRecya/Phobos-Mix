@@ -797,8 +797,8 @@ DEFINE_HOOK(0x469EC0, BulletClass_Logics_AirburstWeapon, 0x6)
 				if (pTechno->IsInPlayfield && pTechno->IsOnMap && pTechno->IsAlive && pTechno->Health > 0 && !pTechno->InLimbo
 					&& (retargetSelf || pTechno != pSource))
 				{
-					if ((isAA || !pTechno->IsInAir()) &&
-						IsAllowedSplitsTarget(pSource, pOwner, pWeapon, pTechno, useWeaponTargeting))
+					if ((isAA || !pTechno->IsInAir())
+						&& IsAllowedSplitsTarget(pSource, pOwner, pWeapon, pTechno, useWeaponTargeting))
 					{
 						targets.AddItem(pTechno);
 					}

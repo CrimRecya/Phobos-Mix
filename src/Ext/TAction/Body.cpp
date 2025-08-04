@@ -433,7 +433,7 @@ bool TActionExt::EditAngerNode(TActionClass* pThis, HouseClass* pHouse, ObjectCl
 
 	if (value >= 0)
 	{
-		auto const pTargetHouse = HouseClass::Index_IsMP(value)
+		HouseClass* pTargetHouse = HouseClass::Index_IsMP(value)
 			? HouseClass::FindByIndex(value)
 			: HouseClass::FindByCountryIndex(value);
 
@@ -462,7 +462,7 @@ bool TActionExt::ClearAngerNode(TActionClass* pThis, HouseClass* pHouse, ObjectC
 
 	if (value >= 0)
 	{
-		auto const pTargetHouse = HouseClass::Index_IsMP(value)
+		const HouseClass* pTargetHouse = HouseClass::Index_IsMP(value)
 			? HouseClass::FindByIndex(value)
 			: HouseClass::FindByCountryIndex(value);
 
@@ -501,11 +501,12 @@ bool TActionExt::SetForceEnemy(TActionClass* pThis, HouseClass* pHouse, ObjectCl
 	{
 		if (value != -2)
 		{
-			auto const pTargetHouse = HouseClass::Index_IsMP(value)
+			const HouseClass* pTargetHouse = HouseClass::Index_IsMP(value)
 				? HouseClass::FindByIndex(value)
 				: HouseClass::FindByCountryIndex(value);
 
-			if (pTargetHouse && pHouse != pTargetHouse
+			if (pTargetHouse
+				&& pHouse != pTargetHouse
 				&& !pHouse->IsAlliedWith(pTargetHouse))
 			{
 				pHouseExt->SetForceEnemyIndex(pTargetHouse->GetArrayIndex());

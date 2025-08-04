@@ -628,7 +628,7 @@ DEFINE_HOOK(0x4DEAEE, FootClass_IronCurtain_Organics, 0x6)
 		return MakeInvulnerable;
 
 	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-	IronCurtainEffect icEffect = !isForceShield
+	const IronCurtainEffect icEffect = !isForceShield
 		? pTypeExt->IronCurtain_Effect.Get(RulesExt::Global()->IronCurtain_EffectOnOrganics)
 		: pTypeExt->ForceShield_Effect.Get(RulesExt::Global()->ForceShield_EffectOnOrganics);
 

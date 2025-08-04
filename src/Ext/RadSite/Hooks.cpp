@@ -84,8 +84,7 @@ DEFINE_HOOK(0x5213B4, InfantryClass_AIDeployment_CheckRad, 0x7)
 	}
 
 	return (!radLevel || (radLevel < weaponRadLevel / 3))
-		? FireCheck
-		: SetMissionRate;
+		? FireCheck : SetMissionRate;
 }
 
 // Fix for desolator unable to fire his deploy weapon when cloaked
@@ -221,7 +220,8 @@ DEFINE_HOOK(0x4DA59F, FootClass_AI_Radiation, 0x5)
 	GET(FootClass* const, pFoot, ESI);
 
 	if (pFoot->IsInPlayfield && !pFoot->TemporalTargetingMe
-		&& (!RulesExt::Global()->UseGlobalRadApplicationDelay || Unsorted::CurrentFrame % RulesClass::Instance->RadApplicationDelay == 0))
+		&& (!RulesExt::Global()->UseGlobalRadApplicationDelay
+			|| Unsorted::CurrentFrame % RulesClass::Instance->RadApplicationDelay == 0))
 	{
 		const auto pCell = pFoot->GetCell();
 		const auto pCellExt = CellExt::ExtMap.Find(pCell);
