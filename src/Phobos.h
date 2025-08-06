@@ -139,9 +139,6 @@ public:
 		static bool SelectedDisplay_Enable;
 		static bool SelectedDisplay_Expand;
 		static int SelectedDisplay_MaxCameo;
-		static bool AllowDistributionCommand;
-		static int DistributionSpreadMode;
-		static int DistributionFilterMode;
 		static bool ScrollSidebarStripInTactical;
 		static bool ScrollSidebarStripWhenHoldAlt;
 		static bool ScrollSidebarStripWhenHoldCtrl;

@@ -527,12 +527,14 @@ PlacementGrid.WaterFrames=1,0,0  ; integer, zero-based frame index - have techno
   - The save should be looks like `Allied Mission 25: Esther's Money - QuickSaved`.
 
 ### `[ ]` Exclusive SW Sidebar Shortcuts
+
 - Switches visible/invisible [this](#Exclusive-sidebar-for-superweapons).
 - For localization add `TXT_EX_SW_SWITCH` and `TXT_EX_SW_SWITCH_DESC` into your `.csf` file.
 - And Select the SWs in this exclusive sidebar.
 - For localization add `TXT_EX_SW_BUTTON_XX` and `TXT_EX_SW_BUTTON_XX_DESC` into your `.csf` file. (`XX` -> `03`, `10` .etc)
 
 ### `[ ]` Toggle Aggressive Stance
+
 - Switches on/off aggressive stance for selected units and structures.
   - Much like how the deploy command work on G.I.s. If all selected technos that may toggle aggressive stance are already aggressive stance, they will exit it, otherwise they will enter it.
 - Under aggressive stance, units and structures will target unarmed enemy buildings if no enemy units or defensive structures can be targeted.
@@ -606,7 +608,7 @@ In `ra2md.ini`:
 ```ini
 [Phobos]
 DefaultDistributionSpreadMode=2                 ; integer, 0 - r=0 , 1 - r=4 , 2 - r=8 , 3 - r=16
-DefaultDistributionFilterMode=0                 ; integer, 0 - None , 1 - Auto , 2 - Type , 3 - Name
+DefaultDistributionFilterMode=2                 ; integer, 0 - None , 1 - Auto , 2 - Type , 3 - Name
 ```
 
 ### `[ ]` Toggle Message Label

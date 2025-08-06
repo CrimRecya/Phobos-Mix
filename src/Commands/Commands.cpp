@@ -51,14 +51,6 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<AutoBuildingCommandClass>();
 	MakeCommand<AutoBuildingCombatCommandClass>();
 	MakeCommand<UnifiedTechnoColorCommandClass>();
-
-	if (Phobos::Config::AllowDistributionCommand)
-	{
-		MakeCommand<DistributionModeSpreadCommandClass>();
-		MakeCommand<DistributionModeFilterCommandClass>();
-		MakeCommand<DistributionModeHoldDownCommandClass>();
-	}
-
 	MakeCommand<ManualReloadAmmoCommandClass>();
 	MakeCommand<AggressiveStanceClass>();
 	MakeCommand<CeaseFireStanceClass>();
