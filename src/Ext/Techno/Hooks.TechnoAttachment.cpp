@@ -476,7 +476,7 @@ DEFINE_HOOK(0x6CC763, SuperClass_Place_ChronoWarp_SkipChildren, 0x6)
 }
 
 #pragma region Command inheritance
-
+/*
 void ParentClickedWaypoint(TechnoClass* pThis, int idxPath, signed char idxWP)
 {
 	// Rewrite of the original code
@@ -561,13 +561,13 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 
 	if (pTarget)
 	{
-		const auto count = ObjectClass::CurrentObjects.Count;
+		const int count = ObjectClass::CurrentObjects.Count;
 
 		if (count > 0)
 		{
-			const auto mode1 = Phobos::Config::DistributionSpreadMode;
-			const auto mode2 = Phobos::Config::DistributionFilterMode;
-			const auto pTechno = abstract_cast<TechnoClass*, true>(pTarget);
+			const int mode1 = Phobos::Config::DistributionSpreadMode;
+			const int mode2 = Phobos::Config::DistributionFilterMode;
+			const auto pTargetTechno = abstract_cast<TechnoClass*, true>(pTarget);
 
 			// Distribution mode main
 			if (DistributionModeHoldDownCommandClass::Enabled
@@ -575,21 +575,21 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 				&& count > 1
 				&& action != Action::NoMove
 				&& !PlanningNodeClass::PlanningModeActive
-				&& pTechno
+				&& pTargetTechno
 				&& !pTarget->IsInAir()
-				&& (HouseClass::CurrentPlayer->IsAlliedWith(pTechno->Owner)
+				&& (HouseClass::CurrentPlayer->IsAlliedWith(pTargetTechno->Owner)
 					? Phobos::Config::AllowDistributionCommand_AffectsAllies
 					: Phobos::Config::AllowDistributionCommand_AffectsEnemies))
 			{
 				VocClass::PlayGlobal(RulesExt::Global()->AddDistributionModeCommandSound, 0x2000, 1.0);
-				const bool targetIsNeutral = pTechno->Owner->IsNeutral();
+				const bool targetIsNeutral = pTargetTechno->Owner->IsNeutral();
 
-				const auto range = (2 << mode1);
+				const int range = (2 << mode1);
 				const auto center = pTarget->GetCoords();
 				const auto pItems = Helpers::Alex::getCellSpreadItems(center, range);
 
 				std::vector<std::pair<TechnoClass*, int>> record;
-				const auto maxSize = pItems.size();
+				const size_t maxSize = pItems.size();
 				record.reserve(maxSize);
 
 				int current = 1;
@@ -616,14 +616,14 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 						record.emplace_back(pItem, 0);
 				}
 
-				const auto recordSize = record.size();
+				const size_t recordSize = record.size();
 				std::sort(&record[0], &record[recordSize],[&center](const auto& pairA, const auto& pairB)
 				{
 					const auto coordsA = pairA.first->GetCoords();
-					const auto distanceA = Point2D{coordsA.X, coordsA.Y}.DistanceFromSquared(Point2D{center.X, center.Y});
+					const double distanceA = Point2D{coordsA.X, coordsA.Y}.DistanceFromSquared(Point2D{center.X, center.Y});
 
 					const auto coordsB = pairB.first->GetCoords();
-					const auto distanceB = Point2D{coordsB.X, coordsB.Y}.DistanceFromSquared(Point2D{center.X, center.Y});
+					const double distanceB = Point2D{coordsB.X, coordsB.Y}.DistanceFromSquared(Point2D{center.X, center.Y});
 
 					return distanceA < distanceB;
 				});
@@ -642,7 +642,7 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 					{
 						const auto& [pItem, num] = record[i];
 
-						if (pTechno->MouseOverObject(pItem) != action)
+						if (pSelect->MouseOverObject(pItem) != action)
 							continue;
 
 						if (!targetIsNeutral && pItem->Owner->IsNeutral())
@@ -724,7 +724,7 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 
 	return 0x4AE99B;
 }
-
+*/
 namespace TechnoAttachmentTemp
 {
 	bool stopPressed = false;
