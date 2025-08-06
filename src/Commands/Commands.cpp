@@ -79,6 +79,17 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 		SWSidebarClass::Commands[9] = MakeCommand<FireTacticalSWCommandClass<9>>();
 	}
 
+	if (Phobos::Config::AllowDistributionCommand)
+	{
+		if (Phobos::Config::AllowDistributionCommand_SpreadMode)
+			MakeCommand<DistributionModeSpreadCommandClass>();
+
+		if (Phobos::Config::AllowDistributionCommand_FilterMode)
+			MakeCommand<DistributionModeFilterCommandClass>();
+
+		MakeCommand<DistributionModeHoldDownCommandClass>();
+	}
+
 	if (Phobos::Config::DevelopmentCommands)
 	{
 		MakeCommand<DamageDisplayCommandClass>();
@@ -101,7 +112,7 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 
 static void MouseWheelDownCommand()
 {
-	if (DistributionModeHoldDownCommandClass::Enabled)
+	if (DistributionModeHoldDownCommandClass::Enabled && Phobos::Config::AllowDistributionCommand_SpreadModeScroll)
 		DistributionModeHoldDownCommandClass::DistributionSpreadModeReduce();
 
 	if (SelectedInfoClass::Instance.IsHovering)
@@ -113,7 +124,7 @@ static void MouseWheelDownCommand()
 
 static void MouseWheelUpCommand()
 {
-	if (DistributionModeHoldDownCommandClass::Enabled)
+	if (DistributionModeHoldDownCommandClass::Enabled && Phobos::Config::AllowDistributionCommand_SpreadModeScroll)
 		DistributionModeHoldDownCommandClass::DistributionSpreadModeExpand();
 
 	if (SelectedInfoClass::Instance.IsHovering)
