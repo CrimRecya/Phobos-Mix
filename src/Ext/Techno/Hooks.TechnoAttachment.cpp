@@ -567,6 +567,7 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 		{
 			const auto mode1 = Phobos::Config::DistributionSpreadMode;
 			const auto mode2 = Phobos::Config::DistributionFilterMode;
+			const auto pTechno = abstract_cast<TechnoClass*, true>(pTarget);
 
 			// Distribution mode main
 			if (DistributionModeHoldDownCommandClass::Enabled
@@ -574,13 +575,14 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 				&& count > 1
 				&& action != Action::NoMove
 				&& !PlanningNodeClass::PlanningModeActive
-				&& (pTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None
-				&& !pTarget->IsInAir())
+				&& pTechno
+				&& !pTarget->IsInAir()
+				&& (HouseClass::CurrentPlayer->IsAlliedWith(pTechno->Owner)
+					? Phobos::Config::AllowDistributionCommand_AffectsAllies
+					: Phobos::Config::AllowDistributionCommand_AffectsEnemies))
 			{
 				VocClass::PlayGlobal(RulesExt::Global()->AddDistributionModeCommandSound, 0x2000, 1.0);
-
-				const auto pTargetHouse = static_cast<TechnoClass*>(pTarget)->Owner;
-				const bool targetIsNeutral = pTargetHouse->IsNeutral();
+				const bool targetIsNeutral = pTechno->Owner->IsNeutral();
 
 				const auto range = (2 << mode1);
 				const auto center = pTarget->GetCoords();
