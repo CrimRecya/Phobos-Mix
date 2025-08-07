@@ -187,7 +187,7 @@ void SelectedNotButtonClass::DrawInfo() const
 
 	if (this->ID == 0) // InfoIconA
 	{
-		const double mult = pTechno->FirepowerMultiplier * pExt->AE.FirepowerMultiplier * (pTechno->HasAbility(Ability::Firepower) ? RulesClass::Instance->VeteranCombat : 1.0);
+		const double mult = TechnoExt::GetCurrentFirepowerMultiplier(pTechno);
 		int frame = 0;
 
 		if (mult - 1.0 > 1e-10)
