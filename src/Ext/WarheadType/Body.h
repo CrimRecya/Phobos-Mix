@@ -163,6 +163,7 @@ public:
 		Valueable<bool> ReduceTiberium;
 
 		Valueable<AffectedTarget> Parasite_CullingTarget;
+		NullableIdx<AnimTypeClass> Parasite_GrappleAnim;
 
 		Valueable<bool> Nonprovocative;
 
@@ -390,6 +391,7 @@ public:
 			, ReduceTiberium { false }
 
 			, Parasite_CullingTarget { AffectedTarget::Infantry }
+			, Parasite_GrappleAnim {}
 
 			, Nonprovocative { false }
 

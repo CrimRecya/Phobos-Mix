@@ -695,6 +695,19 @@ BuildingWaypoints=false  ; boolean
 
 ## Infantry
 
+### Auto deploy for GI-like infantry
+
+- In RA2, the GI-like infantry controlled by the AI will automatically deploy to use their more powerful secondary weapons when engaging the enemy. This feature was broken in Yuri’s Revenge. Now you can use the following flags to re-enable this feature.
+
+In `rulesmd.ini`:
+```ini
+[General]
+InfantryAutoDeploy=false      ; boolean
+
+[SOMEINFANTRY]                ; InfantryType
+InfantryAutoDeploy=           ; boolean, default to [General] -> InfantryAutoDeploy
+```
+
 ### Prone speed customization
 
 - In vanilla, infantry has hardcoded prone speed. Now you can customize it.
@@ -2089,14 +2102,19 @@ In `rulesmd.ini`:
 DecloakDamagedTargets=true  ; boolean
 ```
 
-### Customizing parasite culling targets
+### Customizing parasite
 
 - Now you can specify which targets the parasite will culling them.
+- Squid grapple anim is hardcoded to use `SQDG` in vanilla, Now you can choose it.
 
 In `rulesmd.ini`:
 ```ini
+[AudioVisual]
+Parasite.GrappleAnim=             ; animation
+
 [SOMEWARHEAD]                     ; WarheadType
 Parasite.CullingTarget=infantry   ; List of Affected Target Enumeration (none|aircraft|infantry|units|all)
+Parasite.GrappleAnim=             ; animation
 ```
 
 ### Delay automatic attack on the controlled unit

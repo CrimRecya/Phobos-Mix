@@ -442,6 +442,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->AIAdjacentMax.Read(exINI, GameStrings::AI, "AIAdjacentMax");
 	this->AIAdjacentMax_Campaign.Read(exINI, GameStrings::AI, "AIAdjacentMax.Campaign");
 
+	this->Parasite_GrappleAnim.Read(exINI, GameStrings::AudioVisual, "Parasite.GrappleAnim");
+
 	this->AINormalTargetingDelay.Read(exINI, GameStrings::General, "AINormalTargetingDelay");
 	this->PlayerNormalTargetingDelay.Read(exINI, GameStrings::General, "PlayerNormalTargetingDelay");
 	this->AIGuardAreaTargetingDelay.Read(exINI, GameStrings::General, "AIGuardAreaTargetingDelay");
@@ -450,6 +452,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->PlayerAttackMoveTargetingDelay.Read(exINI, GameStrings::General, "PlayerAttackMoveTargetingDelay");
 	this->DistributeTargetingFrame.Read(exINI, GameStrings::General, "DistributeTargetingFrame");
 	this->DistributeTargetingFrame_AIOnly.Read(exINI, GameStrings::General, "DistributeTargetingFrame.AIOnly");
+
+	this->InfantryAutoDeploy.Read(exINI, GameStrings::General, "InfantryAutoDeploy");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -832,6 +836,8 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->SmudgeUpdateTime)
 		.Process(this->AIAdjacentMax)
 		.Process(this->AIAdjacentMax_Campaign)
+		.Process(this->Parasite_GrappleAnim)
+		.Process(this->InfantryAutoDeploy)
 		;
 }
 

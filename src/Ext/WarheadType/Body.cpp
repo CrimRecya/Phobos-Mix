@@ -270,6 +270,7 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->ReduceTiberium.Read(exINI, pSection, "ReduceTiberium");
 
 	this->Parasite_CullingTarget.Read(exINI, pSection, "Parasite.CullingTarget");
+	this->Parasite_GrappleAnim.Read(exINI, pSection, "Parasite.GrappleAnim");
 
 	this->Nonprovocative.Read(exINI, pSection, "Nonprovocative");
 
@@ -600,6 +601,7 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->DamageTargetHealthMultiplier)
 
 		.Process(this->Parasite_CullingTarget)
+		.Process(this->Parasite_GrappleAnim)
 
 		.Process(this->Nonprovocative)
 

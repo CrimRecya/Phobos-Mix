@@ -398,6 +398,10 @@ public:
 		Valueable<int> AIAdjacentMax;
 		Nullable<int> AIAdjacentMax_Campaign;
 
+		NullableIdx<AnimTypeClass> Parasite_GrappleAnim;
+
+		Valueable<bool> InfantryAutoDeploy;
+
 		// cache tint color
 		int TintColorIronCurtain;
 		int TintColorForceShield;
@@ -743,6 +747,9 @@ public:
 
 			, AIAdjacentMax { -1 }
 			, AIAdjacentMax_Campaign {}
+
+			, Parasite_GrappleAnim {}
+			, InfantryAutoDeploy { false }
 		{ }
 
 		virtual ~ExtData() = default;
