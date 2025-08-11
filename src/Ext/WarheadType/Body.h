@@ -192,6 +192,10 @@ public:
 
 		Valueable<bool> ReverseEngineer;
 
+		Valueable<bool> ForceTrack;
+		Valueable<int> ForceTrack_Index;
+		Valueable<CoordStruct> ForceTrack_Coord;
+
 		Nullable<bool> CombatAlert_Suppress;
 
 		Valueable<bool> NoCellSpread;
@@ -205,6 +209,8 @@ public:
 		Valueable<AffectedTarget> KillWeapon_OnFirer_Affects;
 
 		Valueable<int> ElectricAssaultLevel;
+
+		Valueable<bool> CanKill;
 
 		Valueable<bool> SuppressWreckage;
 		Valueable<bool> ActivateWreckage;
@@ -235,8 +241,6 @@ public:
 		bool PossibleCellSpreadDetonate;
 		bool HealthCheck;
 		TechnoClass* DamageAreaTarget;
-
-		Valueable<bool> CanKill;
 
 	private:
 		Valueable<double> Shield_Respawn_Rate_InMinutes;
@@ -415,6 +419,10 @@ public:
 
 			, ReverseEngineer { false }
 
+			, ForceTrack { false }
+			, ForceTrack_Index { 0 }
+			, ForceTrack_Coord { CoordStruct::Empty }
+
 			, CombatAlert_Suppress {}
 
 			, NoCellSpread { false }
@@ -495,6 +503,7 @@ public:
 		void ApplyAttachEffects(TechnoClass* pTarget, HouseClass* pInvokerHouse, TechnoClass* pInvoker);
 		void ApplyBuildingUndeploy(TechnoClass* pTarget);
 		void ApplyReverseEngineer(HouseClass* pHouse, TechnoClass* pTarget);
+		void ApplyForceTrack(TechnoClass* pTarget);
 		double GetCritChance(TechnoClass* pFirer) const;
 	};
 

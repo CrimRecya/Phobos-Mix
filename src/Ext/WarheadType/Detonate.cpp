@@ -270,6 +270,9 @@ void WarheadTypeExt::ExtData::DetonateOnOneUnit(HouseClass* pHouse, TechnoClass*
 	if (this->ReverseEngineer)
 		this->ApplyReverseEngineer(pHouse, pTarget);
 
+	if (this->ForceTrack)
+		this->ApplyForceTrack(pTarget);
+
 #ifdef LOCO_TEST_WARHEADS
 	if (this->InflictLocomotor)
 		this->ApplyLocomotorInfliction(pTarget);
@@ -278,6 +281,17 @@ void WarheadTypeExt::ExtData::DetonateOnOneUnit(HouseClass* pHouse, TechnoClass*
 		this->ApplyLocomotorInflictionReset(pTarget);
 #endif
 
+}
+
+void WarheadTypeExt::ExtData::ApplyForceTrack(TechnoClass* pTarget)
+{
+	if (const auto pFoot = abstract_cast<FootClass*, true>(pTarget))
+	{
+		const auto pLoco = pFoot->Locomotor;
+
+		if (!pLoco->Is_Moving())
+			pLoco->Force_Track(this->ForceTrack_Index, pFoot->Location + this->ForceTrack_Coord);
+	}
 }
 
 void WarheadTypeExt::ExtData::ApplyReverseEngineer(HouseClass* pHouse, TechnoClass* pTarget)

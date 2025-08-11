@@ -299,6 +299,10 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->ReverseEngineer.Read(exINI, pSection, "ReverseEngineer");
 
+	this->ForceTrack.Read(exINI, pSection, "ForceTrack");
+	this->ForceTrack_Index.Read(exINI, pSection, "ForceTrack.Index");
+	this->ForceTrack_Coord.Read(exINI, pSection, "ForceTrack.Coord");
+
 	this->CombatAlert_Suppress.Read(exINI, pSection, "CombatAlert.Suppress");
 
 	this->NoCellSpread.Read(exINI, pSection, "NoCellSpread");
@@ -390,6 +394,7 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		|| this->BuildingSell
 		|| this->BuildingUndeploy
 		|| this->ReverseEngineer
+		|| this->ForceTrack
 	);
 
 	char tempBuffer[32];
@@ -609,6 +614,10 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->BuildingUndeploy_Leave)
 
 		.Process(this->ReverseEngineer)
+
+		.Process(this->ForceTrack)
+		.Process(this->ForceTrack_Index)
+		.Process(this->ForceTrack_Coord)
 
 		.Process(this->CombatAlert_Suppress)
 
