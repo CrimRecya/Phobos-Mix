@@ -235,9 +235,12 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 	{
 		const auto pType = pThis->GetTechnoType();
 		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+		const auto& vec = pTypeExt->WreckageType;
 
-		if (const auto pWreckageType = pTypeExt->WreckageType)
+		if (!vec.empty())
 		{
+			const auto pWreckageType = vec[ScenarioClass::Instance->Random.RandomRanged(0, (vec.size() - 1))];
+
 			if ((pThis->GetCell()->LandType != LandType::Water || pTypeExt->WreckageLeaveOnWater)
 				&& (!pThis->IsInAir() || pTypeExt->WreckageLeaveInAir)
 				&& (pWreckageType != pType || !TechnoExt::ExtMap.Find(pThis)->IsWreckage))

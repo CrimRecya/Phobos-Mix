@@ -489,7 +489,7 @@ public:
 		Nullable<AnimTypeClass*> Promote_VeteranAnimation;
 		Nullable<AnimTypeClass*> Promote_EliteAnimation;
 
-		Valueable<TechnoTypeClass*> WreckageType;
+		ValueableVector<TechnoTypeClass*> WreckageType;
 		Nullable<double> WreckageInitialHealthPercent;
 		Valueable<bool> WreckageDeactive;
 		Valueable<bool> WreckageMarkUp;
@@ -1042,7 +1042,7 @@ public:
 			, Promote_VeteranAnimation { }
 			, Promote_EliteAnimation { }
 
-			, WreckageType { nullptr }
+			, WreckageType { }
 			, WreckageInitialHealthPercent { }
 			, WreckageDeactive { true }
 			, WreckageMarkUp { true }
