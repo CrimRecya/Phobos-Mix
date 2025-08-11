@@ -618,7 +618,7 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 						if (newDistanceSquared < distanceSquared)
 						{
 							startCell = mapCell;
-							extraOffset = CellStruct { pBaseType->GetFoundationWidth(), pBaseType->GetFoundationHeight(true) };
+							extraOffset = CellStruct { pBaseType->GetFoundationWidth(), pBaseType->GetFoundationHeight(false) };
 							distanceSquared = newDistanceSquared;
 						}
 					}
@@ -657,7 +657,7 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 		return CellStruct::Empty;
 
 	// Calculate the nearest expandable cell to the rally point
-	const auto foundation = CellStruct { pType->GetFoundationWidth(), pType->GetFoundationHeight(true) };
+	const auto foundation = CellStruct { pType->GetFoundationWidth(), pType->GetFoundationHeight(false) };
 	const auto topLeftOffset = CellStruct { static_cast<short>(foundation.X / 2), static_cast<short>(foundation.Y / 2) };
 	const auto difference = rallyCell - startCell;
 	const auto absDifference = CellStruct { static_cast<short>(std::abs(difference.X)), static_cast<short>(std::abs(difference.Y)) };
@@ -1048,7 +1048,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 				continue;
 
 			const auto width = pOwnedType->GetFoundationWidth();
-			const auto height = pOwnedType->GetFoundationHeight(true);
+			const auto height = pOwnedType->GetFoundationHeight(false);
 			auto cell = CellStruct::Empty;
 			int index = 0, check = width + 1, count = 0;
 

@@ -822,7 +822,7 @@ DEFINE_HOOK(0x6D9781, Tactical_RenderLayers_DrawInfoTipAndSpiedSelection, 0x5)
 	if (pBuilding->IsSelected && pBuilding->IsOnMap && pBuilding->WhatAmI() == AbstractType::Building)
 	{
 		const auto pType = pBuilding->Type;
-		const int foundationHeight = pType->GetFoundationHeight(0);
+		const int foundationHeight = pType->GetFoundationHeight(false);
 		const int typeHeight = pType->Height;
 		const int yOffest = (Unsorted::CellHeightInPixels * (foundationHeight + typeHeight)) >> 2;
 
