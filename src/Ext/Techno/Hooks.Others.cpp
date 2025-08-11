@@ -2206,6 +2206,88 @@ DEFINE_PATCH(0x7B853C, 0x01);
 
 #pragma endregion
 */
+#pragma region WeaponFactory
+
+static inline void GetWeaponFactoryDoor(CoordStruct& coords, BuildingClass* pThis)
+{
+	auto cell = pThis->GetMapCoords();
+	auto buffer = CoordStruct::Empty;
+	pThis->GetExitCoords(&buffer, 0);
+	cell.X += pThis->Type->GetFoundationWidth() - 1;
+	cell.Y = CellClass::Coord2Cell(buffer).Y;
+	coords = CellClass::Cell2Coord(cell);
+}
+
+DEFINE_HOOK(0x44955D, BuildingClass_WeaponFactoryOutsideBusy_WeaponFactoryCell, 0x6)
+{
+	enum { SkipGameCode = 0x4495DF };
+
+	GET(BuildingClass* const, pThis, ESI);
+	REF_STACK(CoordStruct, coords, STACK_OFFSET(0x30, -0xC));
+
+	GetWeaponFactoryDoor(coords, pThis);
+	R->EAX(MapClass::Instance.GetCellAt(coords));
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x44DCDD, BuildingClass_Mission_Unload_WeaponFactoryCell, 0x6)
+{
+	enum { SkipGameCode = 0x44DD3C };
+
+	GET(BuildingClass* const, pThis, EBP);
+	REF_STACK(CoordStruct, coords, STACK_OFFSET(0x50, -0x1C));
+
+	GetWeaponFactoryDoor(coords, pThis);
+
+	return SkipGameCode;
+}
+/*
+DEFINE_HOOK(0x44E131, BuildingClass_Mission_Unload_WeaponFactoryFix1, 0x5)
+{
+	enum { SkipGameCode = 0x44E191 };
+
+	GET(FootClass* const, pLink, EDI);
+
+	auto coords = pLink->Location;
+	const auto& adj = Unsorted::AdjacentCoord[2];
+	coords.X += adj.X;
+	coords.Y += adj.Y;
+
+	pLink->Locomotor->Force_Track(18, coords);
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x44DF72, BuildingClass_Mission_Unload_WeaponFactoryFix2, 0x5)
+{
+	enum { SkipGameCode = 0x44E1AD };
+
+	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x50, -0x1C));
+	GET_STACK(FootClass* const, pLink, STACK_OFFSET(0x50, -0x30));
+
+	pLink->SetDestination(MapClass::Instance.GetCellAt(coords), true);
+	R->EDI(pLink);
+
+	return SkipGameCode;
+}
+*/
+DEFINE_HOOK(0x44DF1C, BuildingClass_Mission_Unload_WeaponFactoryFix3, 0x7)
+{
+	enum { SkipGameCode = 0x44DF47 };
+
+	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x50, -0x1C));
+	GET_STACK(FootClass* const, pLink, STACK_OFFSET(0x50, -0x30));
+	REF_STACK(CellStruct, cell, STACK_OFFSET(0x50, -0x34));
+
+	cell = CellClass::Coord2Cell(coords);
+	R->ESI(pLink);
+
+	return SkipGameCode;
+}
+
+#pragma endregion
+
 // TODO Self-made impl
 
 
