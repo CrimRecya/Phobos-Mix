@@ -322,6 +322,9 @@ DEFINE_HOOK(0x55B4E1, LogicClass_Update_UnmarkCellOccupationFlags, 0x5)
 
 #pragma region WeaponFactory
 
+#define USE_SET_DESTINATION_INSTEAD
+#define DONT_SET_TYPE_NOT_SUBTERRANEAN
+
 static inline void GetWeaponFactoryDoor(CoordStruct& coords, BuildingClass* pThis)
 {
 	auto cell = pThis->GetMapCoords();
@@ -340,6 +343,7 @@ DEFINE_HOOK(0x44955D, BuildingClass_WeaponFactoryOutsideBusy_WeaponFactoryCell, 
 	REF_STACK(CoordStruct, coords, STACK_OFFSET(0x30, -0xC));
 
 	GetWeaponFactoryDoor(coords, pThis);
+
 	R->EAX(MapClass::Instance.GetCellAt(coords));
 
 	return SkipGameCode;
@@ -364,11 +368,19 @@ DEFINE_HOOK(0x44E131, BuildingClass_Mission_Unload_WeaponFactoryFix1, 0x5)
 	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x50, -0x1C));
 	GET(FootClass* const, pLink, EDI);
 
-//	const auto pType = pLink->GetTechnoType();
-//	const bool isSubterranean = pType->IsSubterranean;
-//	pType->IsSubterranean = false;
+#ifdef USE_SET_DESTINATION_INSTEAD
+#ifndef DONT_SET_TYPE_NOT_SUBTERRANEAN
+	const auto pType = pLink->GetTechnoType();
+	const bool isSubterranean = pType->IsSubterranean;
+	pType->IsSubterranean = false;
+#endif
 	pLink->SetDestination(MapClass::Instance.GetCellAt(coords), true);
-//	pType->IsSubterranean = isSubterranean;
+#ifndef DONT_SET_TYPE_NOT_SUBTERRANEAN
+	pType->IsSubterranean = isSubterranean;
+#endif
+#else
+	pLink->Locomotor->Force_Track(66, coords);
+#endif
 
 	return SkipGameCode;
 }
@@ -380,7 +392,12 @@ DEFINE_HOOK(0x44DF72, BuildingClass_Mission_Unload_WeaponFactoryFix2, 0x5)
 	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x50, -0x1C));
 	GET_STACK(FootClass* const, pLink, STACK_OFFSET(0x50, -0x30));
 
+#ifdef USE_SET_DESTINATION_INSTEAD
 	pLink->SetDestination(MapClass::Instance.GetCellAt(coords), true);
+#else
+	pLink->Locomotor->Force_Track(66, coords);
+#endif
+
 	R->EDI(pLink);
 
 	return SkipGameCode;
@@ -395,10 +412,14 @@ DEFINE_HOOK(0x44DF1C, BuildingClass_Mission_Unload_WeaponFactoryFix3, 0x7)
 	REF_STACK(CellStruct, cell, STACK_OFFSET(0x50, -0x34));
 
 	cell = CellClass::Coord2Cell(coords);
+
 	R->ESI(pLink);
 
 	return SkipGameCode;
 }
+
+#undef DONT_SET_TYPE_NOT_SUBTERRANEAN
+#undef USE_SET_DESTINATION_INSTEAD
 
 #pragma endregion
 
