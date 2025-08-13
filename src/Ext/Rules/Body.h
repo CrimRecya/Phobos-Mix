@@ -135,8 +135,8 @@ public:
 		ValueableVector<int> Cameo_OverlayFrames;
 		CustomPalette Cameo_OverlayPalette;
 		Valueable<bool> ExtendedBuildingPlacing;
+		Valueable<bool> ExtendedWeaponsFactory;
 		Valueable<bool> AutoBuilding;
-
 		Valueable<bool> BuildingProductionQueue;
 		Valueable<bool> PlacementGrid_Expand;
 		Valueable<Vector3D<int>> PlacementGrid_LandFrames;
@@ -507,8 +507,8 @@ public:
 			, Cameo_OverlayFrames {}
 			, Cameo_OverlayPalette {}
 			, ExtendedBuildingPlacing { false }
+			, ExtendedWeaponsFactory { false }
 			, AutoBuilding { false }
-
 			, BuildingProductionQueue { false }
 			, PlacementGrid_Expand { false }
 			, PlacementGrid_LandFrames { { 1, 0, 0 } }

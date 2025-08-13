@@ -129,6 +129,10 @@ public:
 
 		ValueableVector<bool> HasPowerUpAnim;
 
+		Valueable<int> Bib_Dir;
+		Valueable<int> NumberImpassableRows_Dir;
+		Valueable<int> WeaponsFactory_Dir;
+
 		ExtData(BuildingTypeClass* OwnerObject) : Extension<BuildingTypeClass>(OwnerObject)
 			, PowersUp_Owner { AffectedHouse::Owner }
 			, PowersUp_Buildings {}
@@ -214,6 +218,9 @@ public:
 			, Refinery_UseNormalActiveAnim { false }
 			, AIBaseNormal {}
 			, HasPowerUpAnim {}
+			, Bib_Dir { 2 }
+			, NumberImpassableRows_Dir { 2 }
+			, WeaponsFactory_Dir { 2 }
 		{ }
 
 		BuildingTypeClass* GetAnotherPlacingType(size_t direction, bool onWater);

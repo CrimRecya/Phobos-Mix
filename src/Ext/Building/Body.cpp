@@ -386,7 +386,45 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 
 	auto cell = CellClass::Coord2Cell(buffer);
 	auto pCell = MapClass::Instance.GetCellAt(cell);
-	const int max = pThis->Location.X / Unsorted::LeptonsPerCell + pThis->Type->GetFoundationWidth() - 1;
+
+	int max = 0;
+	const auto pType = pThis->Type;
+	const int dir = BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get();
+
+	switch (dir)
+	{
+
+	case 0:
+	{
+		max = pThis->Location.Y / Unsorted::LeptonsPerCell;
+		break;
+	}
+
+	case 2:
+	{
+		max = pThis->Location.X / Unsorted::LeptonsPerCell + pType->GetFoundationWidth() - 1;
+		break;
+	}
+
+	case 4:
+	{
+		max = pThis->Location.Y / Unsorted::LeptonsPerCell + pType->GetFoundationHeight(false) - 1;
+		break;
+	}
+
+	case 6:
+	{
+		max = pThis->Location.X / Unsorted::LeptonsPerCell;
+		break;
+	}
+
+	default:
+	{
+		max = cell.X;
+		break;
+	}
+
+	}
 
 	while (true)
 	{
@@ -414,8 +452,47 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 			}
 		}
 
-		if (++cell.X >= max)
-			return; // no stuck
+		switch (dir)
+		{
+
+		case 0:
+		{
+			if (--cell.Y <= max)
+				return; // no stuck
+
+			break;
+		}
+
+		case 2:
+		{
+			if (++cell.X >= max)
+				return; // no stuck
+
+			break;
+		}
+
+		case 4:
+		{
+			if (++cell.Y >= max)
+				return; // no stuck
+
+			break;
+		}
+
+		case 6:
+		{
+			if (--cell.X <= max)
+				return; // no stuck
+
+			break;
+		}
+
+		default:
+		{
+			return;
+		}
+
+		}
 
 		// Continue checking towards the bottom right corner
 		pCell = MapClass::Instance.GetCellAt(cell);
