@@ -111,6 +111,8 @@ public:
 		static bool MessageDisplayInCenter;
 		static int MessageDisplayInCenter_LabelsCount;
 		static int MessageDisplayInCenter_RecordsCount;
+		static size_t DefaultPlacingDirection;
+		static size_t CurrentPlacingDirection;
 		static bool ShowBuildingStatistics;
 		static bool DrawAdjacentBoundary;
 		static bool RealTimeTimers;

@@ -758,13 +758,13 @@ DEFINE_HOOK(0x4FB1EA, HouseClass_UnitFromFactory_HangUpPlaceEvent, 0x5)
 			{
 				if (!pDisplay->CurrentBuilding)
 				{
-					ScenarioExt::Global()->PlacingDirection = 0;
+					Phobos::Config::CurrentPlacingDirection = Phobos::Config::DefaultPlacingDirection;
 				}
 				else if (pDisplay->CurrentBuilding == pBufferBuilding)
 				{
 					pDisplay->CurrentBuilding = pBuilding;
 
-					ScenarioExt::Global()->PlacingDirection = 0;
+					Phobos::Config::CurrentPlacingDirection = Phobos::Config::DefaultPlacingDirection;
 				}
 
 				if (pDisplay->CurrentBuildingType == pBufferType)
@@ -791,7 +791,7 @@ DEFINE_HOOK(0x4FB1EA, HouseClass_UnitFromFactory_HangUpPlaceEvent, 0x5)
 			&& (!pDisplay->CurrentBuilding
 				|| pDisplay->CurrentBuilding == pBuilding))
 		{
-			ScenarioExt::Global()->PlacingDirection = 0;
+			Phobos::Config::CurrentPlacingDirection = Phobos::Config::DefaultPlacingDirection;
 		}
 
 		return CanBuild;
@@ -852,7 +852,7 @@ DEFINE_HOOK(0x4A937D, DisplayClass_CallBuildingPlaceCheck_ReplaceBuildingType, 0
 		const auto delta = cell - pDisplay->CurrentFoundation_CenterCell;
 
 		if (delta.Y || delta.X)
-			ScenarioExt::Global()->PlacingDirection = DirStruct(Math::atan2(-delta.Y, delta.X)).GetFacing<32>();
+			Phobos::Config::CurrentPlacingDirection = DirStruct(Math::atan2(-delta.Y, delta.X)).GetFacing<32>();
 
 		auto getAnotherPlacingType = [pDisplay, pTypeExt]() -> BuildingTypeClass*
 			{
@@ -860,7 +860,7 @@ DEFINE_HOOK(0x4A937D, DisplayClass_CallBuildingPlaceCheck_ReplaceBuildingType, 0
 				{
 					const auto pCenterCell = MapClass::Instance.GetCellAt(pDisplay->CurrentFoundation_CenterCell);
 					const bool onWater = pCenterCell->LandType == LandType::Water;
-					return pTypeExt->GetAnotherPlacingType(ScenarioExt::Global()->PlacingDirection, onWater);
+					return pTypeExt->GetAnotherPlacingType(Phobos::Config::CurrentPlacingDirection, onWater);
 				}
 
 				return nullptr;
@@ -935,7 +935,7 @@ DEFINE_HOOK(0x4ABAC0, DisplayClass_LeftMouseButtonUp_ReplaceBuildingType, 0x6)
 	{
 		const auto pCenterCell = MapClass::Instance.GetCellAt(centerCell);
 		placeType |= pCenterCell->LandType == LandType::Water;
-		placeType |= (ScenarioExt::Global()->PlacingDirection << 1);
+		placeType |= (Phobos::Config::CurrentPlacingDirection << 1);
 	}
 	else
 	{

@@ -48,7 +48,6 @@ public:
 		DWORD OwnerBitfield_NavyType;
 		DWORD OwnerBitfield_AircraftType;
 
-		size_t PlacingDirection;
 		std::vector<CellStruct> BaseNormalCells;
 		std::vector<TechnoExt::ExtData*> BaseNormalTechnos;
 		std::vector<TechnoExt::ExtData*> OwnedUniqueTechnos;
@@ -74,7 +73,6 @@ public:
 			, OwnerBitfield_VehicleType { 0 }
 			, OwnerBitfield_NavyType { 0 }
 			, OwnerBitfield_AircraftType { 0 }
-			, PlacingDirection { 0 }
 			, BaseNormalCells {}
 			, BaseNormalTechnos {}
 			, OwnedUniqueTechnos {}
