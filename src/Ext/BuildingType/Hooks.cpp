@@ -427,7 +427,7 @@ static inline CellStruct GetWeaponFactoryDoor(BuildingClass* pThis)
 	pThis->GetExitCoords(&buffer, 0);
 	const auto pType = pThis->Type;
 
-	switch (BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get())
+	switch (RulesExt::Global()->ExtendedWeaponsFactory ? BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get() : 2)
 	{
 
 	case 0:

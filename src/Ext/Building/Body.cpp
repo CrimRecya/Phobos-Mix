@@ -393,7 +393,7 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 
 	const auto pType = pThis->Type;
 
-	switch (const int dir = BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get())
+	switch (RulesExt::Global()->ExtendedWeaponsFactory ? BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get() : 2)
 	{
 
 	case 0: // North -> left+down/++Y
