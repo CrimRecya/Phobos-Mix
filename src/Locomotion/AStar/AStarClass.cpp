@@ -691,11 +691,6 @@ bool AStarClass::PlotStraightPath(
 DEFINE_FUNCTION_JUMP(CALL, 0x42A415, AStarClass::ProcessFinalPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A41E, AStarClass::OptimizeFinalPath);
 
-// Buffer doubled
-DEFINE_PATCH(0x42A752, 0x08);
-DEFINE_PATCH(0x42A765, 0x02);
-DEFINE_PATCH(0x42A7E3, 0x20);
-
 #pragma endregion
 
 #endif
