@@ -385,7 +385,6 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 	pThis->GetExitCoords(&buffer, 0);
 
 	auto cell = CellClass::Coord2Cell(buffer);
-	auto pCell = MapClass::Instance.GetCellAt(cell);
 
 	bool upward = false;
 	short* pCur = nullptr;
@@ -437,6 +436,7 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 
 	const short end = *pCur; // exit
 	*pCur = start;
+	auto pCell = MapClass::Instance.GetCellAt(cell);
 
 	while (true)
 	{
@@ -465,7 +465,7 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 		}
 
 		if (upward ? (--(*pCur) < end) : (++(*pCur) > end))
-			return;
+			return; // no stuck
 
 		pCell = MapClass::Instance.GetCellAt(cell);
 	}
