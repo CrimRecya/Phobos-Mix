@@ -122,15 +122,6 @@ DEFINE_HOOK(0x4495DF, BuildingClass_CheckWeaponFactoryOutsideBusy_ScatterEntranc
 	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x30, -0xC));
 
 	const auto pLink = pThis->GetNthLink();
-
-	if (!pLink)
-		return NotBusy;
-
-	const auto pLinkType = pLink->GetTechnoType();
-
-	if (pLinkType->JumpJet && pLinkType->BalloonHover)
-		return NotBusy;
-
 	const auto pTechno = TechnoExt::FindOccupyTechno(pCell, pThis);
 
 	if (!pTechno || pTechno == pLink || TechnoExt::IsChildOf(pTechno, pLink))
