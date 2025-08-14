@@ -405,6 +405,40 @@ DEFINE_HOOK(0x44E85F, BuildingClass_Power_DamageFactor, 0x7)
 	return Handled;
 }
 
+#pragma region WeaponFactoryPath
+
+DEFINE_HOOK(0x73F5A7, UnitClass_IsCellOccupied_UnlimboDirection, 0x8)
+{
+	enum { NextObject = 0x73FA87, ContinueCheck = 0x73F5AF };
+
+	GET(const bool, notPassable, EAX);
+
+	if (notPassable)
+		return ContinueCheck;
+
+	GET(BuildingClass* const, pBuilding, ESI);
+
+	const auto pType = pBuilding->Type;
+
+	if (!pType->WeaponsFactory)
+		return NextObject;
+
+	GET(CellClass* const, pCell, EDI);
+
+	if (!RulesExt::Global()->ExtendedWeaponsFactory)
+		return pCell->MapCoords.Y == pType->FoundationOutside[10].Y ? NextObject : ContinueCheck;
+
+	auto buffer = CoordStruct::Empty;
+	pBuilding->GetExitCoords(&buffer, 0);
+	const auto cell = CellClass::Coord2Cell(buffer);
+	const bool pathX = (BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get() & 2) != 0; // 2,6/0,4
+	const bool onPath = pathX ? pCell->MapCoords.Y == cell.Y : pCell->MapCoords.X == cell.X;
+
+	return onPath ? NextObject : ContinueCheck;
+}
+
+#pragma endregion
+
 #pragma region WeaponFactoryDirection
 
 DEFINE_HOOK(0x44457B, BuildingClass_KickOutUnit_UnlimboDirection, 0x5)
