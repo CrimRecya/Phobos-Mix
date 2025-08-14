@@ -1323,9 +1323,9 @@ bool TechnoExt::CannotMove(UnitClass* pThis)
 			landType = LandType::Road;
 		}
 
-		if (movementRestrictedTo != LandType::None &&
-			movementRestrictedTo != landType &&
-			landType != LandType::Tunnel)
+		if (static_cast<int>(movementRestrictedTo) != -1
+			&& movementRestrictedTo != landType
+			&& landType != LandType::Tunnel)
 		{
 			return true;
 		}
