@@ -387,44 +387,56 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 	auto cell = CellClass::Coord2Cell(buffer);
 	auto pCell = MapClass::Instance.GetCellAt(cell);
 
-	int max = 0;
+	bool upward = false;
+	short* pCur = nullptr;
+	short start = 0; // door
+
 	const auto pType = pThis->Type;
-	const int dir = BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get();
 
-	switch (dir)
+	switch (const int dir = BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get())
 	{
 
-	case 0:
+	case 0: // North -> left+down/++Y
 	{
-		max = pThis->Location.Y / Unsorted::LeptonsPerCell;
+		upward = false;
+		pCur = &cell.Y;
+		start = static_cast<short>(pThis->Location.Y / Unsorted::LeptonsPerCell + 1);
 		break;
 	}
 
-	case 2:
+	case 2: // East -> left+up/--X
 	{
-		max = pThis->Location.X / Unsorted::LeptonsPerCell + pType->GetFoundationWidth() - 1;
+		upward = true;
+		pCur = &cell.X;
+		start = static_cast<short>(pThis->Location.X / Unsorted::LeptonsPerCell + pType->GetFoundationWidth() - 2);
 		break;
 	}
 
-	case 4:
+	case 4: // South -> right+up/--Y
 	{
-		max = pThis->Location.Y / Unsorted::LeptonsPerCell + pType->GetFoundationHeight(false) - 1;
+		upward = true;
+		pCur = &cell.Y;
+		start = static_cast<short>(pThis->Location.Y / Unsorted::LeptonsPerCell + pType->GetFoundationHeight(false) - 2);
 		break;
 	}
 
-	case 6:
+	case 6: // West -> right+down/++X
 	{
-		max = pThis->Location.X / Unsorted::LeptonsPerCell;
+		upward = false;
+		pCur = &cell.X;
+		start = static_cast<short>(pThis->Location.X / Unsorted::LeptonsPerCell + 1);
 		break;
 	}
 
-	default:
+	default: // Invalid direction
 	{
-		max = cell.X;
-		break;
+		return;
 	}
 
 	}
+
+	const short end = *pCur; // exit
+	*pCur = start;
 
 	while (true)
 	{
@@ -452,49 +464,9 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 			}
 		}
 
-		switch (dir)
-		{
-
-		case 0:
-		{
-			if (--cell.Y <= max)
-				return; // no stuck
-
-			break;
-		}
-
-		case 2:
-		{
-			if (++cell.X >= max)
-				return; // no stuck
-
-			break;
-		}
-
-		case 4:
-		{
-			if (++cell.Y >= max)
-				return; // no stuck
-
-			break;
-		}
-
-		case 6:
-		{
-			if (--cell.X <= max)
-				return; // no stuck
-
-			break;
-		}
-
-		default:
-		{
+		if (upward ? (--(*pCur) < end) : (++(*pCur) > end))
 			return;
-		}
 
-		}
-
-		// Continue checking towards the bottom right corner
 		pCell = MapClass::Instance.GetCellAt(cell);
 	}
 }
