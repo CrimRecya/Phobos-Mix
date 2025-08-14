@@ -421,6 +421,7 @@ public:
 	static bool IsHealthInThreshold(TechnoClass* pObject, double min, double max);
 	static UnitTypeClass* GetUnitTypeExtra(UnitClass* pUnit);
 	static AircraftTypeClass* GetAircraftTypeExtra(AircraftClass* pAircraft);
+	static bool CannotMove(UnitClass* pThis);
 
 	static void DrawExtraImage(TechnoClass* pThis, CellClass* pCell, const CoordStruct& coords, DirStruct dir = DirStruct(0));
 	static void DrawExtraImage(TechnoClass* pThis, const Point2D& location, const RectangleStruct& bounds, DirStruct dir = DirStruct(0), bool transparent = false, Sequence action = Sequence::Nothing, int tilt = -1);
