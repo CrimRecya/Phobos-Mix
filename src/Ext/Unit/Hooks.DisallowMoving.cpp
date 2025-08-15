@@ -30,7 +30,7 @@ DEFINE_HOOK(0x740A93, UnitClass_Mission_Move_DisallowMoving, 0x6)
 	}
 
 	// skips this->IsHarvesting = 0, may backfire somewhere - Kerbiter
-	return TechnoExt::TechnoExt::CannotMove(pThis)
+	return TechnoExt::CannotMove(pThis)
 		? QueueGuardInstead
 		: ContinueCheck;
 }
