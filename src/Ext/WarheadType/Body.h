@@ -191,8 +191,6 @@ public:
 		Valueable<bool> BuildingUndeploy;
 		Valueable<bool> BuildingUndeploy_Leave;
 
-		Valueable<bool> ReverseEngineer;
-
 		Valueable<bool> ForceTrack;
 		Valueable<int> ForceTrack_Index;
 		Valueable<CoordStruct> ForceTrack_Coord;
@@ -223,6 +221,8 @@ public:
 		Valueable<bool> AffectsNeutral;
 
 		Nullable<bool> AutoTargetWalls;
+
+		Valueable<bool> ReverseEngineer;
 
 		// Ares tags
 		// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
@@ -419,8 +419,6 @@ public:
 			, BuildingUndeploy { false }
 			, BuildingUndeploy_Leave { false }
 
-			, ReverseEngineer { false }
-
 			, ForceTrack { false }
 			, ForceTrack_Index { 0 }
 			, ForceTrack_Coord { CoordStruct::Empty }
@@ -468,6 +466,8 @@ public:
 			, KillWeapon_OnFirer_Affects { AffectedTarget::All }
 
 			, AutoTargetWalls {}
+
+			, ReverseEngineer { false }
 		{ }
 
 		void ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget);

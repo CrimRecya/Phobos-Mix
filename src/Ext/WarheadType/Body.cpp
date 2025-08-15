@@ -336,6 +336,8 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	if (this->AffectsAbovePercent > this->AffectsBelowPercent)
 		Debug::Log("[Developer warning][%s] AffectsAbovePercent is bigger than AffectsBelowPercent, the warhead will never activate!\n", pSection);
 
+	this->ReverseEngineer.Read(exINI, pSection, "ReverseEngineer");
+
 	// Convert.From & Convert.To
 	TypeConvertGroup::Parse(this->Convert_Pairs, exINI, pSection, AffectedHouse::All);
 
@@ -615,8 +617,6 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->BuildingUndeploy)
 		.Process(this->BuildingUndeploy_Leave)
 
-		.Process(this->ReverseEngineer)
-
 		.Process(this->ForceTrack)
 		.Process(this->ForceTrack_Index)
 		.Process(this->ForceTrack_Coord)
@@ -642,6 +642,10 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->AutoTargetWalls)
 
+		.Process(this->CanKill)
+
+		.Process(this->ReverseEngineer)
+
 		// Ares tags
 		.Process(this->AffectsEnemies)
 		.Process(this->AffectsOwner)
@@ -653,8 +657,6 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->PossibleCellSpreadDetonate)
 		.Process(this->Reflected)
 		.Process(this->DamageAreaTarget)
-
-		.Process(this->CanKill)
 		;
 }
 
