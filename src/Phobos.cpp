@@ -405,12 +405,7 @@ void Phobos::ApplyOptimizations()
 		Patch::Apply_RAW(0x6B60DE, { 0x8B, 0x96, 0x94, 0x02, 0x00, 0x00 });
 	}
 
-	if (SessionClass::IsMultiplayer())
-	{
-		// Disable MainLoop_SaveGame
-		Patch::Apply_LJMP(0x55DBCD, 0x55DC99);
-	}
-	else
+	if (!SessionClass::IsMultiplayer())
 	{
 		// Disable Random2Class_Random_SyncLog
 		Patch::Apply_RAW(0x65C7D0, { 0xC3, 0x90, 0x90, 0x90, 0x90, 0x90 });

@@ -258,6 +258,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fixed the bug that hover vehicle will sink if destroyed on bridge.
 - Fixed the fact that when the selected unit is in a rearmed state, it can unconditionally use attack mouse on the target.
 - When `Speed=0` or the TechnoTypes cell cannot move due to `MovementRestrictedTo`, vehicles cannot attack targets beyond the weapon's range. `Area Guard` and `Hunt` missions will also become ineffective.
+- Fixed an issue that barrel anim data will be incorrectly overwritten by turret anim data if the techno's section exists in the map file.
 
 ## Fixes / interactions with other extensions
 
@@ -705,6 +706,27 @@ In `rulesmd.ini`:
 ```ini
 [General]
 BuildingWaypoints=false  ; boolean
+```
+
+### AI base construction modification
+
+- AI can now have some new behaviors.
+  - `AIAutoDeployMCV` controls whether AI will still automatically deploy the mcv after owning a construction yard.
+  - `AISetBaseCenter` controls whether AI will still set the newly deployed construction yard as the base center after owning a construction yard.
+  - `AIBiasSpawnCell` controls whether AI will preferentially select the construction yard close to the birth point as the base center (useless in campaign).
+  - `AIForbidConYard` controls whether AI cannot place buildings with `ConstructionYard=true`. AI will try to build one after a construction yard is destroyed but will not put it down. After that, it will continue to build other buildings. Building a construction yard will still take some time. You can try to reduce the build time of it.
+  - `AINodeWallsOnly` controls whether AI can only automatically connect adjacent walls when there are wall base nodes around.
+  - `AICleanWallNode` controls whether AI cannot place walls when there are no `ProtectWithWall` buildings around. If it cannot be placed, this base node will also be removed.
+
+In `rulesmd.ini`:
+```ini
+[AI]
+AIAutoDeployMCV=true   ; boolean
+AISetBaseCenter=true   ; boolean
+AIBiasSpawnCell=false  ; boolean
+AIForbidConYard=false  ; boolean
+AINodeWallsOnly=false  ; boolean
+AICleanWallNode=false  ; boolean
 ```
 
 ## Infantry
@@ -1880,6 +1902,33 @@ In `artmd.ini`:
 ```ini
 [SOMEVEHICLE]   ; VehicleType
 TurretShadow=   ; boolean
+```
+
+### Turret recoil
+
+- Now you can use `TurretRecoil` to control units’ turret/barrel recoil effect when firing.
+  - `TurretTravel` and `BarrelTravel` control the maximum recoil distance.
+  - `TurretRecoil.Suppress` can prevent the weapon from producing this effect when firing.
+
+In `rulesmd.ini`:
+```ini
+[SOMEVEHICLE]             ; VehicleType
+TurretRecoil=no           ; boolean
+TurretTravel=2            ; integer, pixels
+TurretCompressFrames=1    ; integer, game frames
+TurretHoldFrames=1        ; integer, game frames
+TurretRecoverFrames=1     ; integer, game frames
+BarrelTravel=2            ; integer, pixels
+BarrelCompressFrames=1    ; integer, game frames
+BarrelHoldFrames=1        ; integer, game frames
+BarrelRecoverFrames=1     ; integer, game frames
+
+[SOMEWEAPON]              ; WeaponType
+TurretRecoil.Suppress=no  ; boolean
+```
+
+```{note}
+The logic below was not reverse-engineered but reimplemented to achieve the same effect, hence there might be some differences in behavior compared to Tiberian Sun version.
 ```
 
 ### Customize harvester dump amount

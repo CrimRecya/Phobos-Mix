@@ -292,6 +292,13 @@ public:
 		// Nullable<Vector3D<float>> VoxelShadowLightSource;
 		Valueable<bool> UseFixedVoxelLighting;
 
+		Valueable<bool> AIAutoDeployMCV;
+		Valueable<bool> AISetBaseCenter;
+		Valueable<bool> AIBiasSpawnCell;
+		Valueable<bool> AIForbidConYard;
+		Valueable<bool> AINodeWallsOnly;
+		Valueable<bool> AICleanWallNode;
+
 		Valueable<bool> AttackMove_Aggressive;
 		Valueable<bool> AttackMove_UpdateTarget;
 
@@ -651,6 +658,12 @@ public:
 			, EndDistributionModeSound { -1 }
 			, AddDistributionModeCommandSound { -1 }
 			, UseFixedVoxelLighting { false }
+			, AIAutoDeployMCV { true }
+			, AISetBaseCenter { true }
+			, AIBiasSpawnCell { false }
+			, AIForbidConYard { false }
+			, AINodeWallsOnly { false }
+			, AICleanWallNode { false }
 			, AttackMove_Aggressive { false }
 			, AttackMove_UpdateTarget { false }
 			, MindControl_ThreatDelay { 0 }
