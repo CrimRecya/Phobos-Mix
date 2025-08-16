@@ -145,12 +145,6 @@ public:
 		PhobosPCXFile SelectedVehicleMissingPCX;
 		PhobosPCXFile SelectedAircraftMissingPCX;
 		PhobosPCXFile SelectedBuildingMissingPCX;
-		Valueable<bool> AIAutoDeployMCV;
-		Valueable<bool> AISetBaseCenter;
-		Valueable<bool> AIBiasSpawnCell;
-		Valueable<bool> AIForbidConYard;
-		Valueable<bool> AINodeWallsOnly;
-		Valueable<bool> AICleanWallNode;
 		Valueable<int> CleanUpAirBarrier;
 		Valueable<bool> ExtendedScatterAction;
 		Valueable<bool> MergeBuildingDamage;
@@ -520,12 +514,6 @@ public:
 			, PlacementGrid_Expand { false }
 			, PlacementGrid_LandFrames { { 1, 0, 0 } }
 			, PlacementGrid_WaterFrames { { 1, 0, 0 } }
-			, AIAutoDeployMCV { true }
-			, AISetBaseCenter { true }
-			, AIBiasSpawnCell { false }
-			, AIForbidConYard { false }
-			, AINodeWallsOnly { false }
-			, AICleanWallNode { false }
 			, SelectedInfantryMissingPCX {}
 			, SelectedVehicleMissingPCX {}
 			, SelectedAircraftMissingPCX {}
