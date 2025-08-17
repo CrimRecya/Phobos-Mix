@@ -149,7 +149,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				const int distance = pFoot->DistanceFrom(pDestination);
 				const int checkLength = (pFace->IsRotating() || !pDestination) ? 256 : Math::min((256 * 12), distance);
 				const double angle = -pFace->Current().GetRadian<65536>();
-				const auto checkCoord = Point2D { static_cast<int>(checkLength * cos(angle) + 0.5), static_cast<int>(checkLength * sin(angle) + 0.5) };
+				const auto checkCoord = Point2D { static_cast<int>(checkLength * cos(angle)), static_cast<int>(checkLength * sin(angle)) };
 				const int largeStep = Math::max(abs(checkCoord.X), abs(checkCoord.Y));
 				const int checkSteps = (largeStep > 256) ? (largeStep / 256 + 1) : 1;
 				const auto stepCoord = Point2D { (checkCoord.X / checkSteps), (checkCoord.Y / checkSteps) };
