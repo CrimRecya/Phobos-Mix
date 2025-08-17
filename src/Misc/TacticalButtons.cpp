@@ -8,6 +8,7 @@
 #include <AITriggerTypeClass.h>
 #include <JumpjetLocomotionClass.h>
 #include <HoverLocomotionClass.h>
+#include <InputManagerClass.h>
 
 #include <Ext/WarheadType/Body.h>
 #include <Utilities/TemplateDef.h>
@@ -269,13 +270,42 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		{
 			const auto pType = pBuilding->Type;
 
-			if (pType->ConstructionYard)
+			if (InputManagerClass::Instance->IsForceFireKeyPressed())
 			{
 				const auto pBase = &pBuilding->Owner->Base;
 
 				for (const auto& baseCell : pBase->Cells_24)
 				{
+					if (baseCell == CellStruct::Empty)
+						continue;
+
 					const auto pBaseCell = MapClass::Instance.GetCellAt(baseCell);
+					pathCells.emplace_back(pBaseCell, pBaseCell->GetLevel());
+				}
+			}
+			else if (InputManagerClass::Instance->IsForceMoveKeyPressed())
+			{
+				const auto pBase = &pBuilding->Owner->Base;
+
+				for (const auto& baseCell : pBase->Cells_38)
+				{
+					if (baseCell == CellStruct::Empty)
+						continue;
+
+					const auto pBaseCell = MapClass::Instance.GetCellAt(baseCell);
+					pathCells.emplace_back(pBaseCell, pBaseCell->GetLevel());
+				}
+			}
+			else if (InputManagerClass::Instance->IsForceSelectKeyPressed())
+			{
+				const auto pBase = &pBuilding->Owner->Base;
+
+				for (const auto& baseNode : pBase->BaseNodes)
+				{
+					if (baseNode.MapCoords == CellStruct::Empty)
+						continue;
+
+					const auto pBaseCell = MapClass::Instance.GetCellAt(baseNode.MapCoords);
 					pathCells.emplace_back(pBaseCell, pBaseCell->GetLevel());
 				}
 			}
@@ -346,7 +376,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			const auto location = CoordStruct { (int)result.X, -(int)result.Y, (int)result.Z };
 			auto point1 = point;
 			auto point2 = pTactical->CoordsToScreen(technoCoord + location) - pTactical->TacticalPos;
-			DSurface::Composite->DrawLine(&point1, &point2, color);
+			auto rect = DSurface::ViewBounds;
+			rect.Height -= 32;
+			DSurface::Composite->DrawLineEx(&rect, &point1, &point2, color);
 		};
 
 		const auto thisPoint = TacticalClass::Instance->CoordsToClient(pTechno->GetCoords()).first;
