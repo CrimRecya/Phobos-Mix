@@ -366,7 +366,7 @@ DEFINE_HOOK(0x684AD3, UnknownClass_sub_684620_InitMessageList, 0x5)
 		if (Phobos::Config::MessageDisplayInCenter)
 		{
 			MessageColumnClass::Instance.AddMessage(nullptr, text, 480, false);
-			MessageColumnClass::Instance.AddMessage(nullptr, buffer, 480, false, 120);
+			MessageColumnClass::Instance.AddMessage(nullptr, buffer, 480, false, 100);
 		}
 		else
 		{
