@@ -1543,7 +1543,7 @@ DEFINE_HOOK(0x468670, BulletClass_Unlimbo_Start_InvisoBlockageFix, 0x6)
 	if (auto pTechno = pThis->Owner)
 	{
 		CoordStruct technoCrd = pTechno->GetCoords();
-		pSrcCrd = &technoCrd;
+		pSrcCrd = &technoCrd; // TODO Fix undefined behavior
 	}
 
 	return 0;
