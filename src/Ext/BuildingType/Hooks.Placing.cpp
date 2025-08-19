@@ -1574,6 +1574,14 @@ DEFINE_HOOK(0x73946C, UnitClass_TryToDeploy_CleanUpDeploySpace, 0x6)
 						pTechnoExt->UnitAutoDeployTimer.Start(40);
 					}
 
+					if (pThis->PrimaryFacing.Current().GetFacing<256>() != static_cast<size_t>(pBuildingType->DeployFacing))
+					{
+						const auto pLoco = pThis->Locomotor;
+
+						if (!pLoco->Is_Moving_Now())
+							pLoco->Do_Turn(DirStruct(static_cast<DirType>(pBuildingType->DeployFacing)));
+					}
+
 					return TemporarilyCanNotDeploy;
 				}
 				while (false);
@@ -1680,7 +1688,7 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 		}
 	}
 
-	if (RulesExt::Global()->ExtendedBuildingPlacing)
+	if (!RulesExt::Global()->ExtendedBuildingPlacing)
 		return 0;
 
 	const auto pHouseExt = HouseExt::ExtMap.Find(pHouse);
@@ -1756,18 +1764,27 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 				&& !pUnit->IsSinking
 				&& pUnit->Owner == pHouse
 				&& !pUnit->Destination
-				&& pUnit->CurrentMission == Mission::Guard
 				&& !pUnit->ParasiteEatingMe
 				&& !pUnit->TemporalTargetingMe
 				&& pUnit->Type->DeploysInto)
 			{
-				if (const auto pExt = TechnoExt::ExtMap.Find(pUnit))
-				{
-					if (!(pExt->UnitAutoDeployTimer.GetTimeLeft() % 8))
-						pUnit->QueueMission(Mission::Unload, true);
+				const auto mission = pUnit->CurrentMission;
 
+				if (mission == Mission::Unload)
+				{
 					++it;
 					continue;
+				}
+				else if (mission == Mission::Guard)
+				{
+					if (const auto pExt = TechnoExt::ExtMap.Find(pUnit))
+					{
+						if (!(pExt->UnitAutoDeployTimer.GetTimeLeft() % 8))
+							pUnit->QueueMission(Mission::Unload, true);
+
+						++it;
+						continue;
+					}
 				}
 			}
 
