@@ -11,11 +11,6 @@
 #include <Ext/TerrainType/Body.h>
 #include <Ext/Scenario/Body.h>
 #include <Utilities/EnumFunctions.h>
-#include "Body.h"
-
-#include <HouseClass.h>
-
-#include "Ext/Rules/Body.h"
 
 /*
 	In sub_740810
@@ -1657,7 +1652,7 @@ DEFINE_HOOK(0x4C7665, EventClass_RespondToEvent_StopDeployInIdleEvent, 0x6)
 	In sub_4F8440
 
 	- Buildable-upon TechnoTypes Hook #11 -> Check whether can place again in each house
-	- Auto Build Hook #2 -> Automatic place buildings
+	- Auto Build Hook #1 -> Automatic place buildings
 */
 DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 {
