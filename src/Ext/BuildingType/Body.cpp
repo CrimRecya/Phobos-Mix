@@ -221,6 +221,9 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 				{
 					const auto pFoot = static_cast<FootClass*>(pObject);
 
+					if (TechnoExt::DoesntOccupyCellAsChild(pFoot))
+						continue;
+
 					if (!TechnoTypeExt::ExtMap.Find(pFoot->GetTechnoType())->CanBeBuiltOn && pFoot != pExceptTechno) // No need to check house
 					{
 						if (pFoot->GetCurrentSpeed() <= 0 || !pFoot->Locomotor->Is_Moving())
