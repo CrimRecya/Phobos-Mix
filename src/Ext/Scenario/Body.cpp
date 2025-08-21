@@ -175,6 +175,9 @@ void ScenarioExt::ExtData::Serialize(T& Stm)
 		.Process(this->UndergroundTracker)
 		.Process(this->SpecialTracker)
 		.Process(this->RecordMessages)
+		.Process(this->DefaultLS640BkgdName)
+		.Process(this->DefaultLS800BkgdName)
+		.Process(this->DefaultLS800BkgdPal)
 		;
 }
 

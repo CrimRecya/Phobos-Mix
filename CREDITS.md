@@ -280,6 +280,7 @@ This page lists all the individual contributions to the project by their author.
   - Airstrike flare visual customizations & fixes
   - Restored parabombs
   - Delayed fire weapons
+  - Changes / fixes to `Vertical` projectile logic and customizing projectile initial facing behavior
 - **Morton (MortonPL)**:
   - `XDrawOffset` for animations
   - Shield passthrough & absorption
@@ -392,6 +393,7 @@ This page lists all the individual contributions to the project by their author.
   - Units can customize the attack voice that plays when using more weapons
   - When `Speed=0` or the TechnoTypes cell cannot move due to `MovementRestrictedTo`, vehicles cannot attack targets beyond the weapon's range. `Area Guard` and `Hunt` missions will also become ineffective
   - When the vehicle loses its target, you can customize whether to align the turret direction with the vehicle body
+  - Health bar permanently displayed
 - **NetsuNegi**:
   - Forbidding parallel AI queues by type
   - Jumpjet crash speed fix when crashing onto building
@@ -542,6 +544,7 @@ This page lists all the individual contributions to the project by their author.
   - Fix an issue that `FireAngle` was not taken into account when drawing barrel in `TurretShadow`
   - Fix an issue that barrel anim data will be incorrectly overwritten by turret anim data if the techno's section exists in the map file
   - Jumpjet Climbing Logic Enhancement
+  - Fix for pathfinding crashes on big maps due to too small pathfinding node buffer
 - **Ollerus**:
   - Build limit group enhancement
   - Customizable rocker amplitude
@@ -621,7 +624,7 @@ This page lists all the individual contributions to the project by their author.
   - Superweapon launch site & availability code
   - AI vehicle production update code
   - parts of TechnoType conversion placeholder code
-- **ststl, FlyStar, NaotoYuuki, Saigyouji, JunJacobYoung** - Digital Display
+- **ststl, FlyStar, NaotoYuuki, Saigyouji, JunJacobYoung, CrimRecya** - Digital Display
 - **SukaHati (Erzoid)** - Minimum interceptor guard range
 - **E1 Elite** - TileSet 255 and above bridge repair fix
 - **AutoGavy** - interceptor logic, Warhead critical hit logic
