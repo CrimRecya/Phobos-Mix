@@ -113,10 +113,21 @@ DEFINE_HOOK(0x737D57, UnitClass_ReceiveDamage_DyingFix, 0x7)
 	if (result == DamageState::NowDead && pThis->IsAttackedByLocomotor && pThis->Type->Crashable)
 		pThis->IsAttackedByLocomotor = false;
 
-	if (result != DamageState::PostMortem && pThis->DeathFrameCounter > 0)
+	if (result != DamageState::PostMortem && pThis->DeathFrameCounter >= 0)
 		R->EAX(DamageState::PostMortem);
 
 	return 0;
+}
+
+DEFINE_HOOK(0x4D3787, FootClass_Mark_DyingMarkDownFix, 0x5)
+{
+	enum { CannotMarkDown = 0x4D3802 };
+
+	GET(FootClass* const, pThis, ECX);
+	GET(const MarkType, mark, EDI);
+
+	// Should not mark down when the object is dying
+	return mark == MarkType::Down && (pThis->IsSinking || (!pThis->IsAttackedByLocomotor && pThis->IsCrashing)) ? CannotMarkDown : 0;
 }
 
 // Restore DebrisMaximums logic (issue #109)
