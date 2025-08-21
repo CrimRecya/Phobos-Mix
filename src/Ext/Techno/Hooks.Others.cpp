@@ -1142,12 +1142,12 @@ void __fastcall KickOutClones(const BuildingExt::ExtData* const pThis, const Tec
 	auto const pFactoryOwner = pFactory->Owner;
 	auto const& pCloningSources = pProductionTypeExt->ClonedAt;
 	auto kickOutClone = [pProductionType, pFactoryOwner](BuildingClass* pBuilding) -> void
-		{
-			auto pClone = static_cast<TechnoClass*>(pProductionType->CreateObject(pFactoryOwner));
+	{
+		auto pClone = static_cast<TechnoClass*>(pProductionType->CreateObject(pFactoryOwner));
 
-			if (pBuilding->KickOutUnit(pClone, CellStruct::Empty) != KickOutResult::Succeeded)
-				pClone->UnInit();
-		};
+		if (pBuilding->KickOutUnit(pClone, CellStruct::Empty) != KickOutResult::Succeeded)
+			pClone->UnInit();
+	};
 
 	auto const isUnit = (pFactoryType->Factory != InfantryTypeClass::AbsID);
 	// keep cloning vats for backward compat, unless explicit sources are defined
@@ -2080,13 +2080,7 @@ DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
 }
 
 #pragma endregion
-/*
-#pragma region SmoothMouseMoving
 
-DEFINE_PATCH(0x7B853C, 0x01);
-
-#pragma endregion
-*/
 // TODO Self-made impl
 
 
@@ -2282,7 +2276,13 @@ DEFINE_HOOK(0x737BBE, UnitClass_Unlimbo_CreatePassengerSquad, 0x6)
 }
 
 #pragma endregion
+/*
+#pragma region SmoothMouseMoving
 
+DEFINE_PATCH(0x7B853C, 0x01);
+
+#pragma endregion
+*/
 // TODO Other contributors' impl
 
 
