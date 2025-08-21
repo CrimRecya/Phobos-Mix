@@ -1373,20 +1373,20 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	const auto pShLoco = locomotion_cast<ShipLocomotionClass*>(iLoco);
 	const auto pAdLoco = locomotion_cast<AdvancedDriveLocomotionClass*>(iLoco);
 	const auto pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(iLoco);
-	const auto rampTemp = (pDrLoco ? LocomotionRampTemp(pDrLoco->PreviousRamp, pDrLoco->SlopeTimer.Rate)
-		: (pShLoco ? LocomotionRampTemp(pShLoco->PreviousRamp, pShLoco->SlopeTimer.Rate)
+	const auto rampTemp = (pDrLoco ? LocomotionRampTemp(pDrLoco->CurrentRamp, pDrLoco->SlopeTimer.Rate)
+		: (pShLoco ? LocomotionRampTemp(pShLoco->CurrentRamp, pShLoco->SlopeTimer.Rate)
 		: (pAdLoco ? LocomotionRampTemp(pAdLoco->CurrentRamp, pAdLoco->SlopeTimer.Rate) : LocomotionRampTemp())));
 	const auto faceTemp = pJjLoco
 		? LocomotionFaceTemp(pJjLoco->LocomotionFacing.DesiredFacing, pJjLoco->LocomotionFacing.ROT, pJjLoco->CurrentSpeed)
 		: LocomotionFaceTemp();
 	if (pDrLoco)
 	{
-		pDrLoco->PreviousRamp = tilt;
+		pDrLoco->CurrentRamp = tilt;
 		pDrLoco->SlopeTimer.Rate = 0;
 	}
 	else if (pShLoco)
 	{
-		pShLoco->PreviousRamp = tilt;
+		pShLoco->CurrentRamp = tilt;
 		pShLoco->SlopeTimer.Rate = 0;
 	}
 	else if (pAdLoco)
@@ -1419,12 +1419,12 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 
 	if (pDrLoco)
 	{
-		pDrLoco->PreviousRamp = rampTemp.CurrentRamp;
+		pDrLoco->CurrentRamp = rampTemp.CurrentRamp;
 		pDrLoco->SlopeTimer.Rate = rampTemp.Rate;
 	}
 	else if (pShLoco)
 	{
-		pShLoco->PreviousRamp = rampTemp.CurrentRamp;
+		pShLoco->CurrentRamp = rampTemp.CurrentRamp;
 		pShLoco->SlopeTimer.Rate = rampTemp.Rate;
 	}
 	else if (pAdLoco)
