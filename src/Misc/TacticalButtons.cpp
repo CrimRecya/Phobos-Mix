@@ -198,7 +198,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 						}
 					}
 
-					if (InputManagerClass::Instance->IsForceSelectKeyPressed() && pCurCell && checkSteps > 1)
+					if (pCurCell && checkSteps > 1)
 					{
 						const int height = pJjLoco ? pJjLoco->Height : pFoot->GetTechnoType()->GetFlightLevel();
 						CoordStruct drawCoords { curCoord.X, curCoord.Y, (height + pCurCell->Level * 104) };
@@ -268,17 +268,14 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 							pathCells.emplace_back(pCell, cellLevel);
 						}
 
-						if (InputManagerClass::Instance->IsForceSelectKeyPressed())
-						{
-							int height = (pCell->ContainsBridge() && cellLevel == (pCell->Level + 4)) ? CellClass::BridgeHeight : 0;
+						int height = (pCell->ContainsBridge() && cellLevel == (pCell->Level + 4)) ? CellClass::BridgeHeight : 0;
 
-							if (locomotion_cast<HoverLocomotionClass*>(pFoot->Locomotor))
-								height += RulesClass::Instance->HoverHeight;
+						if (locomotion_cast<HoverLocomotionClass*>(pFoot->Locomotor))
+							height += RulesClass::Instance->HoverHeight;
 
-							CoordStruct drawCoords = pCell->GetCoords();
-							drawCoords.Z += height;
-							TechnoExt::DrawExtraImage(pFoot, pCell, drawCoords, DirStruct(face << 13));
-						}
+						CoordStruct drawCoords = pCell->GetCoords();
+						drawCoords.Z += height;
+						TechnoExt::DrawExtraImage(pFoot, pCell, drawCoords, DirStruct(face << 13));
 					}
 				}
 				else if (!InputManagerClass::Instance->IsForceMoveKeyPressed())
@@ -565,49 +562,52 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawDashLine(pFoot->MegaTarget, COLOR_CYAN);
 			drawDashLine(pFoot->MegaDestination, COLOR_CYAN);
 
-			const auto mtxBase = pFoot->Locomotor ? pFoot->Locomotor->Draw_Matrix(nullptr) : Matrix3D::GetIdentity();
-			const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
-
-			auto mtx = mtxBase;
-			mtx.RotateZ((float)(pTechno->PrimaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
-			mtx.TranslateX(512.0f);
-			drawMtxLine(mtx, point, COLOR_PURPLE);
-
-			mtx = mtxBase;
-			mtx.RotateZ((float)(pTechno->PrimaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
-			mtx.TranslateX(512.0f);
-			drawMtxLine(mtx, point, COLOR_RED);
-
-			mtx = mtxBase;
-			// mtx.RotateZ((float)rotateRadian); // No need to rotate again
-			mtx.TranslateX(512.0f);
-			drawMtxLine(mtx, point, COLOR_GREEN);
-
-			const auto absType = pTechno->WhatAmI();
-			const auto pTechnoType = pTechno->GetTechnoType();
-
-			if (absType == AbstractType::Unit && pTechnoType->Turret || absType == AbstractType::Aircraft)
+			if (InputManagerClass::Instance->IsForceSelectKeyPressed())
 			{
-				auto mtxTur = mtxBase;
-				TechnoTypeExt::ApplyTurretOffset(pTechnoType, &mtxTur, 1.0);
+				const auto mtxBase = pFoot->Locomotor ? pFoot->Locomotor->Draw_Matrix(nullptr) : Matrix3D::GetIdentity();
+				const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
 
-				const auto turret = mtxTur.GetTranslation();
-				const auto turretPoint = pTactical->CoordsToScreen(technoCoord + CoordStruct{(int)turret.X,-(int)turret.Y,(int)turret.Z}) - pTactical->TacticalPos;
-
-				mtx = mtxTur;
-				mtx.RotateZ((float)(pTechno->SecondaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
+				auto mtx = mtxBase;
+				mtx.RotateZ((float)(pTechno->PrimaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
 				mtx.TranslateX(512.0f);
-				drawMtxLine(mtx, turretPoint, COLOR_BLUE);
+				drawMtxLine(mtx, point, COLOR_PURPLE);
 
-				mtx = mtxTur;
-				mtx.RotateZ((float)(pTechno->SecondaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
+				mtx = mtxBase;
+				mtx.RotateZ((float)(pTechno->PrimaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
 				mtx.TranslateX(512.0f);
-				drawMtxLine(mtx, turretPoint, COLOR_YELLOW);
+				drawMtxLine(mtx, point, COLOR_RED);
 
-				mtx = mtxTur;
-				mtx.RotateZ((float)(pTechno->SecondaryFacing.Current().GetRadian<32>() - rotateRadian));
+				mtx = mtxBase;
+				// mtx.RotateZ((float)rotateRadian); // No need to rotate again
 				mtx.TranslateX(512.0f);
-				drawMtxLine(mtx, turretPoint, COLOR_WHITE);
+				drawMtxLine(mtx, point, COLOR_GREEN);
+
+				const auto absType = pTechno->WhatAmI();
+				const auto pTechnoType = pTechno->GetTechnoType();
+
+				if (absType == AbstractType::Unit && pTechnoType->Turret || absType == AbstractType::Aircraft)
+				{
+					auto mtxTur = mtxBase;
+					TechnoTypeExt::ApplyTurretOffset(pTechnoType, &mtxTur, 1.0);
+
+					const auto turret = mtxTur.GetTranslation();
+					const auto turretPoint = pTactical->CoordsToScreen(technoCoord + CoordStruct{(int)turret.X,-(int)turret.Y,(int)turret.Z}) - pTactical->TacticalPos;
+
+					mtx = mtxTur;
+					mtx.RotateZ((float)(pTechno->SecondaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
+					mtx.TranslateX(512.0f);
+					drawMtxLine(mtx, turretPoint, COLOR_BLUE);
+
+					mtx = mtxTur;
+					mtx.RotateZ((float)(pTechno->SecondaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
+					mtx.TranslateX(512.0f);
+					drawMtxLine(mtx, turretPoint, COLOR_YELLOW);
+
+					mtx = mtxTur;
+					mtx.RotateZ((float)(pTechno->SecondaryFacing.Current().GetRadian<32>() - rotateRadian));
+					mtx.TranslateX(512.0f);
+					drawMtxLine(mtx, turretPoint, COLOR_WHITE);
+				}
 			}
 		}
 		else
@@ -617,23 +617,26 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawDashLine(pTechno->GetNthLink(), COLOR_WHITE);
 			drawDashLine(pTechno->QueueUpToEnter, COLOR_BLUE);
 
-			const auto mtxBase = Matrix3D::GetIdentity();
-			const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
+			if (InputManagerClass::Instance->IsForceSelectKeyPressed())
+			{
+				const auto mtxBase = Matrix3D::GetIdentity();
+				const auto rotateRadian = pTechno->PrimaryFacing.Current().GetRadian<32>();
 
-			auto mtx = mtxBase;
-			mtx.RotateZ((float)rotateRadian);
-			mtx.TranslateX(512.0f);
-			drawMtxLine(mtx, point, COLOR_WHITE);
+				auto mtx = mtxBase;
+				mtx.RotateZ((float)rotateRadian);
+				mtx.TranslateX(512.0f);
+				drawMtxLine(mtx, point, COLOR_WHITE);
 
-			mtx = mtxBase;
-			mtx.RotateZ((float)(pTechno->PrimaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
-			mtx.TranslateX(512.0f);
-			drawMtxLine(mtx, point, COLOR_BLUE);
+				mtx = mtxBase;
+				mtx.RotateZ((float)(pTechno->PrimaryFacing.StartFacing.GetRadian<32>() - rotateRadian));
+				mtx.TranslateX(512.0f);
+				drawMtxLine(mtx, point, COLOR_BLUE);
 
-			mtx = mtxBase;
-			mtx.RotateZ((float)(pTechno->PrimaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
-			mtx.TranslateX(512.0f);
-			drawMtxLine(mtx, point, COLOR_YELLOW);
+				mtx = mtxBase;
+				mtx.RotateZ((float)(pTechno->PrimaryFacing.DesiredFacing.GetRadian<32>() - rotateRadian));
+				mtx.TranslateX(512.0f);
+				drawMtxLine(mtx, point, COLOR_YELLOW);
+			}
 		}
 	}
 
