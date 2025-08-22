@@ -124,8 +124,8 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		struct TempCellData { const CellClass* Cell; int Level; };
 		auto compare = [](const TempCellData DataA, const TempCellData DataB)
 			{
-				if (DataA.Cell->Level != DataB.Cell->Level)
-					return DataA.Cell->Level < DataB.Cell->Level;
+				if (DataA.Level != DataB.Level)
+					return DataA.Level < DataB.Level;
 
 				if (DataA.Cell->MapCoords.X != DataB.Cell->MapCoords.X)
 					return DataA.Cell->MapCoords.X < DataB.Cell->MapCoords.X;
@@ -285,20 +285,18 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			}
 			else if (InputManagerClass::Instance->IsForceMoveKeyPressed())
 			{
-				const auto pBase = &pBuilding->Owner->Base;
+				const auto baseCell = pBuilding->GetMapCoords();
 
-				for (const auto& baseCell : pBase->Cells_38)
+				for (auto pFoundation = pType->GetFoundationData(true); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
 				{
-					if (baseCell == CellStruct::Empty)
-						continue;
-
-					const auto pBaseCell = MapClass::Instance.GetCellAt(baseCell);
+					const auto pBaseCell = MapClass::Instance.GetCellAt(baseCell + *pFoundation);
 					pathCells.emplace_back(pBaseCell, pBaseCell->GetLevel());
 				}
 			}
 			else if (InputManagerClass::Instance->IsForceSelectKeyPressed())
 			{
-				const auto pBase = &pBuilding->Owner->Base;
+				const auto pHouse = pBuilding->Owner;
+				const auto pBase = &pHouse->Base;
 
 				for (const auto& baseNode : pBase->BaseNodes)
 				{
@@ -307,6 +305,38 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 					const auto pBaseCell = MapClass::Instance.GetCellAt(baseNode.MapCoords);
 					pathCells.emplace_back(pBaseCell, pBaseCell->GetLevel());
+
+					const auto pBaseType = BuildingTypeClass::Array.GetItemOrDefault(baseNode.BuildingTypeIndex, nullptr);
+
+					if (!pBaseType)
+						continue;
+
+					const auto pCellBuilding = pBaseCell->GetBuilding();
+
+					if (pCellBuilding && pCellBuilding->Type == pBaseType)
+						continue;
+
+					auto pImage = pBaseType->LoadBuildup();
+					int frame = 0;
+
+					if (pImage)
+						frame = ((pImage->Frames / 2) - 1);
+					else if (pImage = pBaseType->GetImage(), !pImage)
+						continue;
+
+					const int height = 1 + (pBaseCell->Level * Unsorted::LevelHeight);
+					const auto pair = TacticalClass::Instance->CoordsToClient(CellClass::Cell2Coord(pBaseCell->MapCoords, height));
+
+					if (!pair.second)
+						continue;
+
+					auto point = pair.first - Point2D { 0, 15 };
+					constexpr auto blitFlags = BlitterFlags::TransLucent50 | BlitterFlags::Centered | BlitterFlags::Nonzero | BlitterFlags::MultiPass;
+
+					const int index = pHouse->ColorSchemeIndex;
+					const auto pPalette = pBaseType->Palette ? pBaseType->Palette->GetItem(index)->LightConvert : ColorScheme::Array.GetItem(index)->LightConvert;
+
+					DSurface::Temp->DrawSHP(pPalette, pImage, frame, &point, &DSurface::ViewBounds, blitFlags, 0, 0, ZGradient::Ground, 1000, 0, nullptr, 0, 0, 0);
 				}
 			}
 			else
@@ -344,25 +374,115 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 	const auto pCell = MapClass::Instance.GetCellAt(DisplayClass::Instance.CurrentFoundation_CenterCell);
 	{
-		const auto location = CoordStruct { (pCell->MapCoords.X << 8), (pCell->MapCoords.Y << 8), 0 };
-
-		if (pCell->ContainsBridge())
+		auto centerCell = pCell->MapCoords;
 		{
-			const int height = (pCell->Level + 4) * 15;
+			const auto location = CoordStruct { (centerCell.X << 8), (centerCell.Y << 8), 0 };
+
+			if (pCell->ContainsBridge())
+			{
+				const int height = (pCell->Level + 4) * 15;
+				const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
+				const int zAdjust = -height - (pCell->SlopeIndex ? 12 : 2) - 16384;
+
+				DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC), 2, &position,
+					&DSurface::ViewBounds, blit, 0, zAdjust, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+			}
+
+			const int height = pCell->Level * 15;
 			const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
+			const int frameIndex = pCell->SlopeIndex ? (pCell->SlopeIndex + 2) : ((pCell->FirstObject || (pCell->OccupationFlags & 0xFF)) ? 1 : 0);
 			const int zAdjust = -height - (pCell->SlopeIndex ? 12 : 2) - 16384;
 
-			DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC), 2, &position,
+			DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC), frameIndex, &position,
 				&DSurface::ViewBounds, blit, 0, zAdjust, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 		}
 
-		const int height = pCell->Level * 15;
-		const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
-		const int frameIndex = pCell->SlopeIndex ? (pCell->SlopeIndex + 2) : ((pCell->FirstObject || (pCell->OccupationFlags & 0xFF)) ? 1 : 0);
-		const int zAdjust = -height - (pCell->SlopeIndex ? 12 : 2) - 16384;
+		if (InputManagerClass::Instance->IsForceMoveKeyPressed())
+		{
+			struct TempCellData { const CellClass* Cell; int Level; };
+			auto compare = [](const TempCellData DataA, const TempCellData DataB)
+				{
+					if (DataA.Level != DataB.Level)
+						return DataA.Level < DataB.Level;
 
-		DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC), frameIndex, &position,
-			&DSurface::ViewBounds, blit, 0, zAdjust, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+					if (DataA.Cell->MapCoords.X != DataB.Cell->MapCoords.X)
+						return DataA.Cell->MapCoords.X < DataB.Cell->MapCoords.X;
+
+					return DataA.Cell->MapCoords.Y < DataB.Cell->MapCoords.Y;
+				};
+			std::vector<TempCellData> checkCells;
+			checkCells.reserve(30);
+
+			centerCell += CellStruct { 12, 12 };
+
+			auto checkInvisibleBarrier = [](CellClass* pCheckCell, bool alt) -> bool
+			{
+				if (alt ? pCheckCell->AltObject : pCheckCell->FirstObject)
+					return false;
+
+				const DWORD flags = alt ? pCheckCell->AltOccupationFlags : pCheckCell->OccupationFlags;
+
+				if (!(0xFF & flags))
+					return false;
+
+				if (0xC0 & flags)
+					return true;
+
+				auto checkCell = pCheckCell->MapCoords + CellStruct { 2, 2 };
+
+				for (short checkX = checkCell.X - 4; checkX <= checkCell.X; ++checkX)
+				{
+					for (short checkY = checkCell.Y - 4; checkY <= checkCell.Y; ++checkY)
+					{
+						const auto pAdjCheckCell = MapClass::Instance.GetCellAt(CellStruct { checkX, checkY });
+
+						for (auto pObject = alt ? pAdjCheckCell->AltObject : pAdjCheckCell->FirstObject; pObject; pObject = pObject->NextObject)
+						{
+							const auto absType = pObject->WhatAmI();
+
+							if (absType == AbstractType::Infantry || absType == AbstractType::Unit)
+							{
+								if (CellClass::Coord2Cell(static_cast<FootClass*>(pObject)->Locomotor->Head_To_Coord()) == pCheckCell->MapCoords)
+									return false;
+							}
+						}
+					}
+				}
+
+				return true;
+			};
+
+			for (short checkX = centerCell.X - 24; checkX <= centerCell.X; ++checkX)
+			{
+				for (short checkY = centerCell.Y - 24; checkY <= centerCell.Y; ++checkY)
+				{
+					const auto pCheckCell = MapClass::Instance.GetCellAt(CellStruct { checkX, checkY });
+
+					if (checkInvisibleBarrier(pCheckCell, false))
+						checkCells.emplace_back(pCheckCell, pCheckCell->Level);
+
+					if (pCheckCell->ContainsBridge() && checkInvisibleBarrier(pCheckCell, true))
+						checkCells.emplace_back(pCheckCell, pCheckCell->Level + CellClass::BridgeLevels);
+				}
+			}
+
+			if (const auto cellsSize = checkCells.size())
+			{
+				std::sort(&checkCells[0], &checkCells[cellsSize], compare);
+
+				for (const auto& data : checkCells)
+				{
+					const auto location = CoordStruct { (data.Cell->MapCoords.X << 8), (data.Cell->MapCoords.Y << 8), 0 };
+					const int height = data.Level * 15;
+					const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
+					const int frameIndex = data.Cell->SlopeIndex ? (data.Cell->SlopeIndex + 2) : 1;
+					const int zAdjust = -height - (data.Cell->SlopeIndex ? 12 : 2) - 16384;
+
+					DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC), frameIndex, &position,
+						&DSurface::ViewBounds, blit, 0, zAdjust, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+				}
+			}
+		}
 	}
 
 	if (pTechno)

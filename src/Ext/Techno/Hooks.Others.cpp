@@ -31,17 +31,21 @@ void __fastcall FindMovingInfOrVeh(CellClass* const pCell, const AbstractType fi
 {
 	const auto flag = pCell->OccupationFlags;
 	pCell->OccupationFlags = 0;
+	auto checkCell = pCell->MapCoords + CellStruct { 2, 2 };
 
-	for (int i = 0; i < 8; ++i)
+	for (short checkX = checkCell.X - 4; checkX <= checkCell.X; ++checkX)
 	{
-		for (auto pObject = pCell->GetNeighbourCell(static_cast<FacingType>(i))->FirstObject; pObject; pObject = pObject->NextObject)
+		for (short checkY = checkCell.Y - 4; checkY <= checkCell.Y; ++checkY)
 		{
-			const auto absType = pObject->WhatAmI();
+			const auto pAdjCheckCell = MapClass::Instance.GetCellAt(CellStruct { checkX, checkY });
 
-			if (absType == findType && static_cast<FootClass*>(pObject)->Locomotor->Is_Moving_Now())
+			for (auto pObject = pAdjCheckCell->FirstObject; pObject; pObject = pObject->NextObject)
 			{
-				pCell->OccupationFlags = flag;
-				return;
+				if (pObject->WhatAmI() == findType && CellClass::Coord2Cell(static_cast<FootClass*>(pObject)->Locomotor->Head_To_Coord()) == pCell->MapCoords)
+				{
+					pCell->OccupationFlags = flag;
+					return;
+				}
 			}
 		}
 	}
@@ -53,35 +57,41 @@ void __fastcall FindMovingInfAndVeh(CellClass* const pCell)
 	pCell->OccupationFlags = 0;
 	bool inf = false;
 	bool veh = false;
+	auto checkCell = pCell->MapCoords + CellStruct { 2, 2 };
 
-	for (int i = 0; i < 8; ++i)
+	for (short checkX = checkCell.X - 4; checkX <= checkCell.X; ++checkX)
 	{
-		for (auto pObject = pCell->GetNeighbourCell(static_cast<FacingType>(i))->FirstObject; pObject; pObject = pObject->NextObject)
+		for (short checkY = checkCell.Y - 4; checkY <= checkCell.Y; ++checkY)
 		{
-			const auto absType = pObject->WhatAmI();
+			const auto pAdjCheckCell = MapClass::Instance.GetCellAt(CellStruct { checkX, checkY });
 
-			if (absType == AbstractType::Infantry)
+			for (auto pObject = pAdjCheckCell->FirstObject; pObject; pObject = pObject->NextObject)
 			{
-				if (!inf && static_cast<InfantryClass*>(pObject)->Locomotor->Is_Moving_Now())
+				const auto absType = pObject->WhatAmI();
+
+				if (absType == AbstractType::Infantry)
 				{
-					pCell->OccupationFlags |= (flag & 0x1F);
+					if (!inf && CellClass::Coord2Cell(static_cast<FootClass*>(pObject)->Locomotor->Head_To_Coord()) == pCell->MapCoords)
+					{
+						pCell->OccupationFlags |= (flag & 0x1F);
 
-					if (veh)
-						return;
+						if (veh)
+							return;
 
-					inf = true;
+						inf = true;
+					}
 				}
-			}
-			else if (absType == AbstractType::Unit)
-			{
-				if (!veh && static_cast<UnitClass*>(pObject)->Locomotor->Is_Moving_Now())
+				else if (absType == AbstractType::Unit)
 				{
-					pCell->OccupationFlags |= (flag & 0x20);
+					if (!veh && CellClass::Coord2Cell(static_cast<FootClass*>(pObject)->Locomotor->Head_To_Coord()) == pCell->MapCoords)
+					{
+						pCell->OccupationFlags |= (flag & 0x20);
 
-					if (inf)
-						return;
+						if (inf)
+							return;
 
-					veh = true;
+						veh = true;
+					}
 				}
 			}
 		}
@@ -92,17 +102,21 @@ void __fastcall FindAltMovingInfOrVeh(CellClass* const pCell, const AbstractType
 {
 	const auto flag = pCell->AltOccupationFlags;
 	pCell->AltOccupationFlags = 0;
+	auto checkCell = pCell->MapCoords + CellStruct { 2, 2 };
 
-	for (int i = 0; i < 8; ++i)
+	for (short checkX = checkCell.X - 4; checkX <= checkCell.X; ++checkX)
 	{
-		for (auto pObject = pCell->GetNeighbourCell(static_cast<FacingType>(i))->AltObject; pObject; pObject = pObject->NextObject)
+		for (short checkY = checkCell.Y - 4; checkY <= checkCell.Y; ++checkY)
 		{
-			const auto absType = pObject->WhatAmI();
+			const auto pAdjCheckCell = MapClass::Instance.GetCellAt(CellStruct { checkX, checkY });
 
-			if (absType == findType && static_cast<FootClass*>(pObject)->Locomotor->Is_Moving_Now())
+			for (auto pObject = pAdjCheckCell->AltObject; pObject; pObject = pObject->NextObject)
 			{
-				pCell->AltOccupationFlags = flag;
-				return;
+				if (pObject->WhatAmI() == findType && CellClass::Coord2Cell(static_cast<FootClass*>(pObject)->Locomotor->Head_To_Coord()) == pCell->MapCoords)
+				{
+					pCell->AltOccupationFlags = flag;
+					return;
+				}
 			}
 		}
 	}
@@ -114,35 +128,41 @@ void __fastcall FindAltMovingInfAndVeh(CellClass* const pCell)
 	pCell->AltOccupationFlags = 0;
 	bool inf = false;
 	bool veh = false;
+	auto checkCell = pCell->MapCoords + CellStruct { 2, 2 };
 
-	for (int i = 0; i < 8; ++i)
+	for (short checkX = checkCell.X - 4; checkX <= checkCell.X; ++checkX)
 	{
-		for (auto pObject = pCell->GetNeighbourCell(static_cast<FacingType>(i))->AltObject; pObject; pObject = pObject->NextObject)
+		for (short checkY = checkCell.Y - 4; checkY <= checkCell.Y; ++checkY)
 		{
-			const auto absType = pObject->WhatAmI();
+			const auto pAdjCheckCell = MapClass::Instance.GetCellAt(CellStruct { checkX, checkY });
 
-			if (absType == AbstractType::Infantry)
+			for (auto pObject = pAdjCheckCell->AltObject; pObject; pObject = pObject->NextObject)
 			{
-				if (!inf && static_cast<InfantryClass*>(pObject)->Locomotor->Is_Moving_Now())
+				const auto absType = pObject->WhatAmI();
+
+				if (absType == AbstractType::Infantry)
 				{
-					pCell->AltOccupationFlags |= (flag & 0x1F);
+					if (!inf && CellClass::Coord2Cell(static_cast<FootClass*>(pObject)->Locomotor->Head_To_Coord()) == pCell->MapCoords)
+					{
+						pCell->AltOccupationFlags |= (flag & 0x1F);
 
-					if (veh)
-						return;
+						if (veh)
+							return;
 
-					inf = true;
+						inf = true;
+					}
 				}
-			}
-			else if (absType == AbstractType::Unit)
-			{
-				if (!veh && static_cast<UnitClass*>(pObject)->Locomotor->Is_Moving_Now())
+				else if (absType == AbstractType::Unit)
 				{
-					pCell->AltOccupationFlags |= (flag & 0x20);
+					if (!veh && CellClass::Coord2Cell(static_cast<FootClass*>(pObject)->Locomotor->Head_To_Coord()) == pCell->MapCoords)
+					{
+						pCell->AltOccupationFlags |= (flag & 0x20);
 
-					if (inf)
-						return;
+						if (inf)
+							return;
 
-					veh = true;
+						veh = true;
+					}
 				}
 			}
 		}
