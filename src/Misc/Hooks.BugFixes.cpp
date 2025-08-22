@@ -113,7 +113,7 @@ DEFINE_HOOK(0x737D57, UnitClass_ReceiveDamage_DyingFix, 0x7)
 	if (result == DamageState::NowDead && pThis->IsAttackedByLocomotor && pThis->Type->Crashable)
 		pThis->IsAttackedByLocomotor = false;
 
-	if (result != DamageState::PostMortem && pThis->DeathFrameCounter >= 0)
+	if (result != DamageState::PostMortem && pThis->DeathFrameCounter > 0)
 		R->EAX(DamageState::PostMortem);
 
 	return 0;
