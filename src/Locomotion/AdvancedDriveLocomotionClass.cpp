@@ -56,7 +56,7 @@ Matrix3D AdvancedDriveLocomotionClass::Draw_Matrix(VoxelIndexKey* key)
 	const auto locoMtx = LocomotionClass::Draw_Matrix(key);
 	const auto rampMtx = rate >= 1.0 ? Matrix3D::VoxelRampMatrix[this->CurrentRamp] : getLerpVoxelRampMatrix(this->PreviousRamp, this->CurrentRamp);
 
-	return ((baseMtx * rampMtx) * locoMtx) * extraMtx;
+	return baseMtx * rampMtx * locoMtx * extraMtx;
 }
 
 Matrix3D AdvancedDriveLocomotionClass::Shadow_Matrix(VoxelIndexKey* key)
