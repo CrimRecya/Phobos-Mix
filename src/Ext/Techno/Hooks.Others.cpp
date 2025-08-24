@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
@@ -1975,6 +1975,7 @@ DEFINE_HOOK(0x6F9F7B, TechnoClass_Update_EstimateHealth, 0x7)
 		{
 			const auto pBullet = vec[0];
 
+			// TODO fix access violation
 			if (VTable::Get(pBullet) != 0x7E46E4) // BulletClass::VTable
 				vec.RemoveItem(0);
 			else
