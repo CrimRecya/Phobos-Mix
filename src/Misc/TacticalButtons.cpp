@@ -271,7 +271,16 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 						int height = (pCell->ContainsBridge() && cellLevel == (pCell->Level + 4)) ? CellClass::BridgeHeight : 0;
 
 						if (locomotion_cast<HoverLocomotionClass*>(pFoot->Locomotor))
+						{
 							height += RulesClass::Instance->HoverHeight;
+						}
+						else if (locomotion_cast<AdvancedDriveLocomotionClass*>(pFoot->Locomotor))
+						{
+							const auto pTypeExt = TechnoExt::ExtMap.Find(pFoot)->TypeExtData;
+
+							if (pTypeExt->AdvancedDrive_Hover)
+								height += pTypeExt->AdvancedDrive_Hover_Height.Get(RulesClass::Instance->HoverHeight);
+						}
 
 						CoordStruct drawCoords = pCell->GetCoords();
 						drawCoords.Z += height;
