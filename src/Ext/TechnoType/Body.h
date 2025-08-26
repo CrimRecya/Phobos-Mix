@@ -187,6 +187,7 @@ public:
 		Valueable<bool> DeployingAnim_UseUnitDrawer;
 
 		Valueable<CSFText> EnemyUIName;
+		Valueable<TechnoTypeClass*> FakeOf;
 
 		bool ForceWeapon_Check;
 		Valueable<int> ForceWeapon_Naval_Decloaked;
@@ -342,6 +343,7 @@ public:
 		bool IsGreyCameoAbandonedProduct; // Not read from ini
 		Valueable<CSFText> UIDescription_Unbuildable;
 
+		CustomPalette CameoPal;
 		PhobosPCXFile CameoPCX;
 		PhobosPCXFile GreyCameoPCX;
 
@@ -357,9 +359,6 @@ public:
 		Valueable<int> SelectedInfo_CameoIndex;
 		Nullable<SHPStruct*> SelectedInfo_Button;
 		Nullable<CSFText> UIDescription_HoveredInfo;
-
-		Valueable<TechnoTypeClass*> FakeOf;
-		CustomPalette CameoPal;
 
 		Nullable<bool> AmphibiousEnter;
 		Nullable<bool> AmphibiousUnload;
@@ -736,6 +735,7 @@ public:
 			, CombatAlert_EVA {}
 
 			, EnemyUIName {}
+			, FakeOf {}
 
 			, VoiceCreated {}
 			, VoicePickup {}
@@ -904,6 +904,7 @@ public:
 			, IsGreyCameoAbandonedProduct { true }
 			, UIDescription_Unbuildable {}
 
+			, CameoPal {}
 			, CameoPCX {}
 			, GreyCameoPCX {}
 
@@ -919,9 +920,6 @@ public:
 			, SelectedInfo_CameoIndex { 0 }
 			, SelectedInfo_Button {}
 			, UIDescription_HoveredInfo {}
-
-			, FakeOf {}
-			, CameoPal {}
 
 			, AmphibiousEnter {}
 			, AmphibiousUnload {}

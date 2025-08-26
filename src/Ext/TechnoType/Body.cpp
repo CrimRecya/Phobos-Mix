@@ -1810,6 +1810,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->DeployingAnim_UseUnitDrawer)
 
 		.Process(this->EnemyUIName)
+		.Process(this->FakeOf)
 
 		.Process(this->ForceWeapon_Check)
 		.Process(this->ForceWeapon_Naval_Decloaked)
@@ -1979,6 +1980,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->IsGreyCameoAbandonedProduct)
 		.Process(this->UIDescription_Unbuildable)
 
+		.Process(this->CameoPal)
 		.Process(this->CameoPCX)
 		.Process(this->GreyCameoPCX)
 
@@ -1994,9 +1996,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->SelectedInfo_CameoIndex)
 		.Process(this->SelectedInfo_Button)
 		.Process(this->UIDescription_HoveredInfo)
-
-		.Process(this->FakeOf)
-		.Process(this->CameoPal)
 
 		.Process(this->AmphibiousEnter)
 		.Process(this->AmphibiousUnload)
