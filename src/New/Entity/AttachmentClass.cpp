@@ -236,6 +236,21 @@ void AttachmentClass::Destroy(TechnoClass* pSource)
 	}
 }
 
+void AttachmentClass::UnInit()
+{
+	if (const auto pChild = this->Child)
+	{
+		auto const pChildExt = TechnoExt::ExtMap.Find(pChild);
+		pChildExt->ParentAttachment = nullptr;
+
+		pChild->KillPassengers(nullptr);
+		pChild->Limbo();
+		pChild->UnInit();
+
+		this->Child = nullptr;
+	}
+}
+
 void AttachmentClass::ChildDestroyed()
 {
 	if (this->Child)

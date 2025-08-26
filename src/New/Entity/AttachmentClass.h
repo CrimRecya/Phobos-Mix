@@ -73,6 +73,7 @@ public:
 	void CreateChild();
 	void AI();
 	void Destroy(TechnoClass* pSource);
+	void UnInit();
 	void ChildDestroyed();
 
 	void Unlimbo();

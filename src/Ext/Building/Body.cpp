@@ -7,6 +7,20 @@
 
 BuildingExt::ExtContainer BuildingExt::ExtMap;
 
+BuildingExt::ExtData::~ExtData()
+{
+	// Should remove children before removing type
+	auto const pTechnoExt = this->TechnoExtData;
+
+	if (!pTechnoExt->ChildAttachments.empty())
+	{
+		for (auto const& pAttachment : pTechnoExt->ChildAttachments)
+			pAttachment->UnInit();
+
+		pTechnoExt->ChildAttachments.clear();
+	}
+}
+
 void BuildingExt::ExtData::DisplayIncomeString()
 {
 	if (this->AccumulatedIncome && Unsorted::CurrentFrame % 15 == 0)

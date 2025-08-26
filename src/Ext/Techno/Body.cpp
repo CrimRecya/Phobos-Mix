@@ -71,7 +71,7 @@ TechnoExt::ExtData::~ExtData()
 	if (!this->ChildAttachments.empty())
 	{
 		for (auto const& pAttachment : this->ChildAttachments)
-			pAttachment->Destroy(nullptr);
+			pAttachment->UnInit();
 
 		this->ChildAttachments.clear();
 	}
