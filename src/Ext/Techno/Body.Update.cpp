@@ -1971,6 +1971,15 @@ void TechnoExt::ExtData::UpdateRearmInEMPState()
 
 	if (pThis->ReloadTimer.InProgress() && pTypeExt->NoReload_UnderEMP.Get(RulesExt::Global()->NoReload_UnderEMP))
 		pThis->ReloadTimer.StartTime++;
+
+	if (const auto pBuilding = abstract_cast<BuildingClass*, true>(pThis))
+	{
+		const auto pFactory = pBuilding->Factory;
+		const auto pOwner = pBuilding->Owner;
+
+		if (pFactory && pOwner && !pOwner->IsControlledByHuman() && pFactory->Object && pFactory->Production.Rate > 0)
+			pFactory->Production.Timer.StartTime++;
+	}
 }
 
 void TechnoExt::ExtData::UpdateRearmInTemporal()
