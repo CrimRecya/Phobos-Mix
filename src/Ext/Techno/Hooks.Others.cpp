@@ -221,6 +221,13 @@ DEFINE_HOOK(0x55B4E1, LogicClass_Update_UnmarkCellOccupationFlags, 0x5)
 
 #pragma endregion
 
+#pragma region FixRepairDistance
+
+DEFINE_PATCH(0x44C70B, 0xC8);
+DEFINE_JUMP(LJMP, 0x44C75E, 0x44C793);
+
+#pragma endregion
+
 #pragma region HardLoco
 /*
 DEFINE_HOOK_AGAIN(0x742A8C, UnitClass_SetDestination_PiggyBack, 0x8)
