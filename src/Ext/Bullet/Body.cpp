@@ -330,7 +330,7 @@ bool BulletExt::CheckExceededCapacity(TechnoClass* pTechno, BulletTypeClass* pBu
 	const auto size = static_cast<int>(group.size());
 
 	if (!pBulletExt)
-		return size >= pBulletExt->TypeExtData->CreateCapacity;
+		return size >= BulletTypeExt::ExtMap.Find(pBulletType)->CreateCapacity;
 
 	pBulletExt->TrajectoryGroup = pTechnoExt->TrajectoryGroup;
 

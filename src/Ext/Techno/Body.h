@@ -64,7 +64,7 @@ public:
 		CDTimerClass UnitAutoDeployTimer;
 		WeaponTypeClass* LastWeaponType;
 		CoordStruct LastWeaponFLH;
-		std::shared_ptr<PhobosMap<BulletTypeClass*, BulletGroupData>> TrajectoryGroup; // <Type, Data>, for capacity count
+		std::shared_ptr<PhobosMap<BulletTypeClass*, BulletGroupData>> TrajectoryGroup;
 		std::vector<RecoilData> ExtraTurretRecoil;
 		std::vector<RecoilData> ExtraBarrelRecoil;
 		int ScatteringStopFrame;
