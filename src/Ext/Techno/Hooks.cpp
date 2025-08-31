@@ -1348,15 +1348,19 @@ DEFINE_HOOK(0x4DF4DB, FootClass_RefreshMegaMission_CheckMissionFix, 0xA)
 	auto const pType = pThis->GetTechnoType();
 	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 	auto const mission = pThis->GetCurrentMission();
+	bool stopWhenTargetAcquired = pTypeExt->AttackMove_StopWhenTargetAcquired.Get(RulesExt::Global()->AttackMove_StopWhenTargetAcquired.Get(!pType->OpportunityFire));
+	bool clearMegaMission = mission != Mission::Guard;
 
-	return (pTypeExt->AttackMove_StopWhenTargetAcquired.Get(RulesExt::Global()->AttackMove_StopWhenTargetAcquired.Get(!pType->OpportunityFire))
-		? (!(mission == Mission::Move && pThis->MegaDestination && pThis->DistanceFrom(pThis->MegaDestination) > 256) && mission != Mission::Guard) : mission != Mission::Guard)
-		? ClearMegaMission : ContinueMegaMission;
+	if (stopWhenTargetAcquired && clearMegaMission)
+		clearMegaMission = !(mission == Mission::Move && pThis->MegaDestination && pThis->DistanceFrom(pThis->MegaDestination) > 256);
+
+	return clearMegaMission ? ClearMegaMission : ContinueMegaMission;
 }
 
 DEFINE_HOOK(0x711E90, TechnoTypeClass_CanAttackMove_IgnoreWeapon, 0x6)
 {
 	enum { SkipGameCode = 0x711E9A };
+
 	return RulesExt::Global()->AttackMove_IgnoreWeaponCheck ? SkipGameCode : 0;
 }
 
@@ -1370,7 +1374,24 @@ DEFINE_HOOK(0x4DF3A6, FootClass_UpdateAttackMove_Follow, 0x6)
 
 	// Refresh mega mission if mission is somehow changed to incorrect missions.
 	if (mission != Mission::Attack && mission != Mission::Move)
-		pThis->ContinueMegaMission();
+	{
+		bool continueMission = true;
+
+		// Aug 30, 2025 - Starkku: SimpleDeployer needs special handling here.
+		// Without this if you interrupt waypoint mode path with deploy command
+		// it will not execute properly as it interrupts it with movement.
+		if (mission == Mission::Unload)
+		{
+			if (auto const pUnit = abstract_cast<UnitClass*>(pThis))
+			{
+				if (pUnit->Type->IsSimpleDeployer)
+					continueMission = false;
+			}
+		}
+
+		if (continueMission)
+			pThis->ContinueMegaMission();
+	}
 
 	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
 
