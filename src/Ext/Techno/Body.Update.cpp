@@ -1154,7 +1154,7 @@ void TechnoExt::ExtData::UpdateTypeData_Foot()
 	//auto const pOldTypeExt = TechnoTypeExt::ExtMap.Find(pOldType);
 
 	// Update movement sound if still moving while type changed.
-	if (pThis->Locomotor->Is_Moving_Now() && pThis->IsMoveSoundPlaying)
+	if (pThis->IsMoveSoundPlaying && pThis->Locomotor->Is_Moving())
 	{
 		if (pCurrentType->MoveSound != pOldType->MoveSound)
 		{
@@ -2295,7 +2295,12 @@ void TechnoExt::ExtData::RecalculateStatMultipliers()
 		auto const type = attachEffect->GetType();
 		firepower *= type->FirepowerMultiplier;
 		speed *= type->SpeedMultiplier;
-		armor *= type->ArmorMultiplier;
+
+		if (type->ArmorMultiplier != 1.0 && (type->ArmorMultiplier_AllowWarheads.size() > 0 || type->ArmorMultiplier_DisallowWarheads.size() > 0))
+			hasRestrictedArmorMultipliers = true;
+		else
+			armor *= type->ArmorMultiplier;
+
 		ROF *= type->ROFMultiplier;
 		cloak |= type->Cloakable;
 		forceDecloak |= type->ForceDecloak;
@@ -2305,7 +2310,6 @@ void TechnoExt::ExtData::RecalculateStatMultipliers()
 		hasTint |= type->HasTint();
 		reflectsDamage |= type->ReflectDamage;
 		hasOnFireDiscardables |= (type->DiscardOn & DiscardCondition::Firing) != DiscardCondition::None;
-		hasRestrictedArmorMultipliers |= (type->ArmorMultiplier != 1.0 && (type->ArmorMultiplier_AllowWarheads.size() > 0 || type->ArmorMultiplier_DisallowWarheads.size() > 0));
 	}
 
 	pAE.FirepowerMultiplier = firepower;

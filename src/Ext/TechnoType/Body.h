@@ -181,7 +181,8 @@ public:
 		Valueable<bool> JumpjetRotateOnCrash;
 		Nullable<int> ShadowSizeCharacteristicHeight;
 
-		Valueable<bool> DeployingAnim_AllowAnyDirection;
+		Nullable<FacingType> DeployDir;
+		ValueableVector<AnimTypeClass*> DeployingAnims;
 		Valueable<bool> DeployingAnim_KeepUnitVisible;
 		Valueable<bool> DeployingAnim_ReverseForUndeploy;
 		Valueable<bool> DeployingAnim_UseUnitDrawer;
@@ -275,6 +276,7 @@ public:
 		Nullable<int> SpawnHeight;
 		Nullable<int> LandingDir;
 
+		Valueable<TechnoTypeClass*> Convert_Deploy; // Ares
 		Valueable<TechnoTypeClass*> Convert_HumanToComputer;
 		Valueable<TechnoTypeClass*> Convert_ComputerToHuman;
 		Valueable<bool> Convert_ResetMindControl;
@@ -696,7 +698,8 @@ public:
 			, NoAmmoAmount { 0 }
 			, JumpjetRotateOnCrash { true }
 			, ShadowSizeCharacteristicHeight { }
-			, DeployingAnim_AllowAnyDirection { false }
+			, DeployDir {}
+			, DeployingAnims {}
 			, DeployingAnim_KeepUnitVisible { false }
 			, DeployingAnim_ReverseForUndeploy { true }
 			, DeployingAnim_UseUnitDrawer { true }
@@ -836,6 +839,7 @@ public:
 			, DroppodType {}
 			, TiberiumEaterType {}
 
+			, Convert_Deploy { }
 			, Convert_HumanToComputer { }
 			, Convert_ComputerToHuman { }
 			, Convert_ResetMindControl { false }

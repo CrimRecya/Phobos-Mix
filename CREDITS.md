@@ -168,7 +168,7 @@ This page lists all the individual contributions to the project by their author.
   - `AreaFire` targeting customization
   - `CreateUnit` improvements
   - Attached animation & jumpjet unit layer customization
-  - `IsSimpleDeployer` improvements
+  - `IsSimpleDeployer` improvements & additions
   - Shield modification warheads
   - Warhead decloaking toggle
   - `Warp(In/Out)Weapon`
@@ -447,6 +447,7 @@ This page lists all the individual contributions to the project by their author.
   - Fix the bug that Locomotor warhead won't stop working when firer (except for vehicle) stop firing
   - Fix the bug that hover vehicle will sink if destroyed on bridge
   - Customize squid grapple animation
+  - Fix the bug that armor multiplier of new attacheffect will have extra take effect once if restricted warheads
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**:
   - Customizable `ShowTimer` priority of superweapons
