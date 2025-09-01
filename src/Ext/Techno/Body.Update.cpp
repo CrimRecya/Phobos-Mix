@@ -1981,9 +1981,8 @@ void TechnoExt::ExtData::UpdateRearmInEMPState()
 	if (const auto pBuilding = abstract_cast<BuildingClass*, true>(pThis))
 	{
 		const auto pFactory = pBuilding->Factory;
-		const auto pOwner = pBuilding->Owner;
 
-		if (pFactory && pOwner && !pOwner->IsControlledByHuman() && pFactory->Object && pFactory->Production.Rate > 0)
+		if (pFactory && pFactory->Object && pFactory->Production.Rate > 0 && pFactory->Production.Timer.InProgress())
 			pFactory->Production.Timer.StartTime++;
 	}
 }
