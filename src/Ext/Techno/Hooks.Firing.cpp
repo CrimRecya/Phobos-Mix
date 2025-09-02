@@ -1031,7 +1031,7 @@ DEFINE_HOOK(0x6F3AEB, TechnoClass_GetFLH, 0x6)
 		if (!pTypeExt->AlternateFLH_OnTurret)
 			allowOnTurret = false;
 
-		auto pCurrentPassenger = pThis->Passengers.FirstPassenger;
+		auto pCurrentPassenger = pThis->Passengers.GetFirstPassenger();
 
 		for (int i = 0; i < index && pCurrentPassenger; i++)
 			pCurrentPassenger = abstract_cast<FootClass*>(pCurrentPassenger->NextObject);
