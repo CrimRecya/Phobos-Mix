@@ -272,7 +272,7 @@ void SWTypeExt::ExtData::HandleEMPulseLaunch(SuperClass* pSW, const CellStruct& 
 	{
 		auto const pBuilding = pBuildings[i];
 		auto const pExt = BuildingExt::ExtMap.Find(pBuilding);
-		pExt->EMPulseSW = pSW;
+		pExt->CurrentEMPulseSW = pSW;
 
 		if (i + 1 == count)
 			break;
@@ -288,7 +288,7 @@ void SWTypeExt::ExtData::HandleEMPulseLaunch(SuperClass* pSW, const CellStruct& 
 			if (static_cast<int>(pSuper->Type->Type) != 28 || pSuper == pSW)
 				continue;
 
-			auto const pTypeExt = SWTypeExt::ExtMap.Find(pSW->Type);
+			auto const pTypeExt = SWTypeExt::ExtMap.Find(pSuper->Type);
 			bool suspend = false;
 
 			if (this->EMPulse_Cannons.empty() && pTypeExt->EMPulse_Cannons.empty())
@@ -310,7 +310,7 @@ void SWTypeExt::ExtData::HandleEMPulseLaunch(SuperClass* pSW, const CellStruct& 
 				if (pHouseExt->SuspendedEMPulseSWs.count(arrayIndex))
 					pHouseExt->SuspendedEMPulseSWs[arrayIndex].push_back(arrayIndex);
 				else
-					pHouseExt->SuspendedEMPulseSWs.insert({ arrayIndex, std::vector<int>{arrayIndex} });
+					pHouseExt->SuspendedEMPulseSWs.insert({ arrayIndex, std::vector<int>{pSuper->Type->ArrayIndex} });
 			}
 		}
 	}
