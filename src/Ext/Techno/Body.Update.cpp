@@ -226,11 +226,12 @@ void TechnoExt::ExtData::DepletedAmmoActions()
 	bool canDeploy = TechnoExt::HasAmmoToDeploy(pThis) && (min < 0 || ammo >= min) && (max < 0 || ammo <= max);
 	bool isDeploying = pThis->CurrentMission == Mission::Unload || pThis->QueuedMission == Mission::Unload;
 
-	if (canDeploy && !isDeploying)
+	if (canDeploy)
 	{
-		pThis->QueueMission(Mission::Unload, true);
+		if (!isDeploying)
+			pThis->QueueMission(Mission::Unload, true);
 	}
-	else if (!canDeploy && isDeploying)
+	else if (isDeploying)
 	{
 		pThis->QueueMission(Mission::Guard, true);
 
