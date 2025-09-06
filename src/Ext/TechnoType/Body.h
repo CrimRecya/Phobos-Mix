@@ -558,6 +558,8 @@ public:
 		Nullable<bool> ExtendedAircraftMissions_SmoothMoving;
 		Nullable<bool> ExtendedAircraftMissions_EarlyDescend;
 		Nullable<bool> ExtendedAircraftMissions_RearApproach;
+		Nullable<bool> ExtendedAircraftMissions_FastScramble;
+		Nullable<int> ExtendedAircraftMissions_UnlandDamage;
 
 		ValueableVector<InfantryTypeClass*> Squad_Members;
 		Valueable<bool> Squad_IsInitAsTeam;
@@ -1102,6 +1104,8 @@ public:
 			, ExtendedAircraftMissions_SmoothMoving {}
 			, ExtendedAircraftMissions_EarlyDescend {}
 			, ExtendedAircraftMissions_RearApproach {}
+			, ExtendedAircraftMissions_FastScramble {}
+			, ExtendedAircraftMissions_UnlandDamage {}
 
 			, Squad_Members {}
 			, Squad_IsInitAsTeam { false }

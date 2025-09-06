@@ -1325,6 +1325,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->ExtendedAircraftMissions_SmoothMoving.Read(exINI, pSection, "ExtendedAircraftMissions.SmoothMoving");
 	this->ExtendedAircraftMissions_EarlyDescend.Read(exINI, pSection, "ExtendedAircraftMissions.EarlyDescend");
 	this->ExtendedAircraftMissions_RearApproach.Read(exINI, pSection, "ExtendedAircraftMissions.RearApproach");
+	this->ExtendedAircraftMissions_FastScramble.Read(exINI, pSection, "ExtendedAircraftMissions.FastScramble");
+	this->ExtendedAircraftMissions_UnlandDamage.Read(exINI, pSection, "ExtendedAircraftMissions.UnlandDamage");
 
 	this->Squad_Members.Read(exINI, pSection, "Squad.Members");
 	this->Squad_IsInitAsTeam.Read(exINI, pSection, "Squad.IsInitAsTeam");
@@ -2178,6 +2180,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->ExtendedAircraftMissions_SmoothMoving)
 		.Process(this->ExtendedAircraftMissions_EarlyDescend)
 		.Process(this->ExtendedAircraftMissions_RearApproach)
+		.Process(this->ExtendedAircraftMissions_FastScramble)
+		.Process(this->ExtendedAircraftMissions_UnlandDamage)
 
 		.Process(this->Squad_Members)
 		.Process(this->Squad_IsInitAsTeam)
