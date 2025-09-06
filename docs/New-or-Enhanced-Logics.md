@@ -3335,46 +3335,19 @@ AmphibiousEnter=         ; boolean, default to [General] -> AmphibiousEnter
 AmphibiousUnload=        ; boolean, default to [General] -> AmphibiousUnload
 ```
 
-### Customized Vehicle Turret Rotation
+### Automatic deploy and blocking deploying based on ammo
 
-- When `ExpandTurretRotation` is set to true, the following functions will be enabled.
-- Units with turret without `TurretSpins=true` can looks more vivid when it is in idle.
-  - `Turret.IdleRotate` controls whether units can rotate their turrets when in idle.
-  - `Turret.PointToMouse` controls whether units will turn their turrets to your mouse when in idle.
-    - At the present moment, this only functions in singleplayer.
-  - `Turret.IdleRestartMin` and `Turret.IdleRestartMax` control the delay from idle to action occurrence together.
-  - `Turret.IdleIntervalMin` and `Turret.IdleIntervalMax` control the delay between every idle actions together.
-- The turret and body of the units can now be rotated under control.
-  - `Turret.Restriction` defines the angle at which the turret can be turned to both sides.
-  - `Turret.ExtraAngle` defines the additional rotation angle of the turret, and `Turret.Restriction` will also rotate with this value. The positive number is clockwise and the negative number is counterclockwise, that is, what angle the turret should use by default or face the target.
-  - `Turret.BodyFoundation` controls whether the unit's turret will rotate in the direction of body rotation.
-  - `Turret.BodyOrientation` controls whether the body needs to aim at the target when firing.
-  - `Turret.BodyOrientationAngle` defines the additional rotation angle of the body when aiming at the target. The positive number is clockwise and the negative number is counterclockwise, that is, what angle the body should use to face the target.
-  - `Turret.BodyOrientationSymmetric` controls whether both sides of the additional body rotation angle can be used.
+- It is now possible for deployable vehicles (`DeploysInto`, `DeployFire`, `IsSimpleDeployer` and those that have passengers) to automatically deploy or prevent deploying based on their current ammo.
+  - `Ammo.AutoDeployMinimumAmount` & `Ammo.AutoDeployMaximumAmount` determine minimum and maximum ammo the vehicle should have for it to automatically deploy. Negative values disable the check.
+  - `Ammo.DeployUnlockMinimumAmount` & `Ammo.AutoDeployMaximumAmount` determine minimum and maximum ammo the vehicle should have for deploying to be available in general. Negative values disable the check.
 
 In `rulesmd.ini`:
 ```ini
-[General]
-ExpandTurretRotation=false            ; boolean
-
-[AudioVisual]
-Turret.IdleRotate=false               ; boolean
-Turret.PointToMouse=false             ; boolean
-Turret.BodyFoundation=false           ; boolean
-Turret.IdleRestartMin=150             ; integer, number of frames
-Turret.IdleRestartMax=300             ; integer, number of frames
-Turret.IdleIntervalMin=150            ; integer, number of frames
-Turret.IdleIntervalMax=450            ; integer, number of frames
-
-[SOMEVEHICLE]                         ; VehicleType, with `Turret=yes`
-Turret.IdleRotate=                    ; boolean, default to [AudioVisual] -> Turret.IdleRotate
-Turret.PointToMouse=                  ; boolean, default to [AudioVisual] -> Turret.PointToMouse
-Turret.Restriction=180.0              ; floating point value
-Turret.ExtraAngle=0                   ; floating point value
-Turret.BodyFoundation=                ; boolean, default to [AudioVisual] -> Turret.BodyFoundation
-Turret.BodyOrientation=false          ; boolean
-Turret.BodyOrientationAngle=0         ; floating point value
-Turret.BodyOrientationSymmetric=true  ; boolean
+[SOMEVEHICLE]                      ; VehicleType
+Ammo.AutoDeployMinimumAmount=-1    ; integer
+Ammo.AutoDeployMaximumAmount=-1    ; integer
+Ammo.DeployUnlockMinimumAmount=-1  ; integer
+Ammo.DeployUnlockMaximumAmount=-1  ; integer
 ```
 
 ### Damaged unit image changes

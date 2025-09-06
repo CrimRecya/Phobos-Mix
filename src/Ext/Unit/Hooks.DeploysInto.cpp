@@ -1,5 +1,6 @@
 ﻿#include <Ext/CaptureManager/Body.h>
 #include <Ext/WarheadType/Body.h>
+#include <Ext/Building/Body.h>
 
 static void TransferMindControlOnDeploy(TechnoClass* pTechnoFrom, TechnoClass* pTechnoTo)
 {
@@ -140,3 +141,17 @@ DEFINE_HOOK(0x73FEC1, UnitClass_WhatAction_DeploysIntoDesyncFix, 0x6)
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x7396D2, UnitClass_TryToDeploy_Transfer, 0x5)
+{
+	GET(UnitClass*, pUnit, EBP);
+	GET(BuildingClass*, pStructure, EBX);
+
+	if (pUnit->Type->DeployToFire && pUnit->Target)
+		pStructure->LastTarget = pUnit->Target;
+
+	const auto pStructureExt = BuildingExt::ExtMap.Find(pStructure);
+	pStructureExt->DeployedTechno = true;
+
+	return 0;
+}

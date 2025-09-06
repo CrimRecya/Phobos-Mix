@@ -864,32 +864,19 @@ DEFINE_HOOK(0x730D1F, DeployCommandClass_Execute_VoiceDeploy, 0x5)
 
 #pragma endregion
 
-// issue #112 Make FireOnce=yes work on other TechnoTypes
-// Author: Starkku
-DEFINE_HOOK(0x4C7512, EventClass_Execute_StopCommand, 0x6)
+// Prevent subterranean units from deploying while underground.
+DEFINE_HOOK(0x73D6E6, UnitClass_Unload_Subterranean, 0x6)
 {
-	GET(TechnoClass* const, pThis, ESI);
+	enum { ReturnFromFunction = 0x73DFB0 };
 
-	auto const pUnit = abstract_cast<UnitClass*>(pThis);
+	GET(UnitClass*, pThis, ESI);
 
-	if (pUnit)
+	if (pThis->Type->Locomotor == LocomotionClass::CLSIDs::Tunnel)
 	{
-		// Reset target for deploy weapons.
-		if (pUnit->CurrentMission == Mission::Unload && pUnit->Type->DeployFire && !pUnit->Type->IsSimpleDeployer)
-		{
-			pUnit->SetTarget(nullptr);
-			pThis->QueueMission(Mission::Guard, true);
-		}
+		auto const pLoco = static_cast<TunnelLocomotionClass*>(pThis->Locomotor.GetInterfacePtr());
 
-		auto const pType = pUnit->Type;
-
-		// Reset subterranean harvester rally point info.
-		if ((pType->Harvester || pType->Weeder) && pType->MovementZone == MovementZone::Subterrannean)
-		{
-			auto const pExt = TechnoExt::ExtMap.Find(pUnit);
-			pExt->SubterraneanHarvFreshFromFactory = false;
-			pExt->SubterraneanHarvRallyDest = nullptr;
-		}
+		if (pLoco->State != TunnelLocomotionClass::State::Idle)
+			return ReturnFromFunction;
 	}
 
 	return 0;
