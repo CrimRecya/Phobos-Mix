@@ -389,7 +389,7 @@ public:
 	static TechnoClass* GetTopLevelParent(TechnoClass* pThis);
 
 	static void ChangeOwnerMissionFix(FootClass* pThis);
-	static void KillSelf(TechnoClass* pThis, AutoDeathBehavior deathOption, AnimTypeClass* pVanishAnimation, bool isInLimbo = false);
+	static void KillSelf(TechnoClass* pThis, AutoDeathBehavior deathOption, const std::vector<AnimTypeClass*>& pVanishAnimation, bool isInLimbo = false);
 	static void Kill(TechnoClass* pThis, ObjectClass* pAttacker, HouseClass* pAttackingHouse);
 	static void Kill(TechnoClass* pThis, TechnoClass* pAttacker);
 	static void ObjectKilledBy(TechnoClass* pThis, TechnoClass* pKiller);

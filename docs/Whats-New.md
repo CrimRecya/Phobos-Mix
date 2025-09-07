@@ -443,6 +443,8 @@ New:
 - Health bar permanently displayed (by FlyStar)
 - [`IsSimpleDeployer` facing customization & directional deploy animations](Fixed-or-Improved-Logics.md#issimpleDeployer-facing-and-animation-customization) (by Starkku)
 - [Ammo-based deploy customizations for vehicles expanded to non-IsSimpleDeployer deploy functions](New-or-Enhancerd-Logics.md#Automatic-deploy-and-blocking-deploying-based on-ammo) (by Starkku)
+- Randomized anims for several behaviors (by Ollerus)
+- Shield respawn animation and weapon (by Ollerus)
 
 Vanilla fixes:
 - Fixed sidebar not updating queued unit numbers when adding or removing units when the production is on hold (by CrimRecya)
@@ -462,6 +464,7 @@ Vanilla fixes:
 - If `DeployingAnim` with `Shadow=true` is played for unit currently in air its shadow will now be drawn on ground (by Starkku)
 - `DeployingAnim` now supports both `Normalized=true` and `Reverse=true` (by Starkku)
 - `DeployingAnim` using unit drawer now also tint accordingly with the unit (by Starkku)
+- Jumpjets in air now can correctly spawn missiles (by TaranDahl)
 
 Phobos fixes:
 - Fixed the bug that `AllowAirstrike=no` cannot completely prevent air strikes from being launched against it (by NetsuNegi)
@@ -469,6 +472,7 @@ Phobos fixes:
 - Fixed a bug that sometimes caused weapon/warhead detonations from features such as `ExtraWarheads`, animation damage or `Crit.Warhead` to unintentionally move from its intended position (by Starkku)
 - Fixed the bug that armor multiplier of new attacheffect will have extra take effect once if restricted warheads (by NetsuNegi)
 - Fixed an issue that units' `LaserTrails` will always lags behind by one frame (by CrimRecya)
+- Fixed customized `WarpAway` anim's wrong definition (by Ollerus)
 
 Fixes / interactions with other extensions:
 - `Convert.Deploy` displays 'no deploy' cursor if the new type is not allowed to move to the cell due to `SpeedType` etc. (by Starkku)

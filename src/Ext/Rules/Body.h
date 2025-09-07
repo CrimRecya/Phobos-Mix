@@ -213,8 +213,8 @@ public:
 		Nullable<BuildingSelectBracketPosition> DrawInsignia_AdjustPos_BuildingsAnchor;
 		Valueable<Point2D> DrawInsignia_AdjustPos_Units;
 		Valueable<bool> DrawInsignia_UsePixelSelectionBracketDelta;
-		Valueable<AnimTypeClass*> Promote_VeteranAnimation;
-		Valueable<AnimTypeClass*> Promote_EliteAnimation;
+		ValueableVector<AnimTypeClass*> Promote_VeteranAnimation;
+		ValueableVector<AnimTypeClass*> Promote_EliteAnimation;
 
 		Valueable<bool> CylinderRangefinding;
 		Valueable<bool> StopPlanningOnEnter;
