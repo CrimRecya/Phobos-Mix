@@ -51,8 +51,8 @@ public:
 
 	struct PathNode
 	{
-		// 指向单元格的指针
-		CellClass **CellItems;
+		// 指向单元格组的指针
+		CellClass** CellItems;
 
 		// 单元格高度
 		int Level;
