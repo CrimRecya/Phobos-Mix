@@ -122,7 +122,7 @@ DEFINE_HOOK(0x736AEA, UnitClass_UpdateRotation_ApplyUnitIdleAction, 0x6)
 	const auto pDestination = pThis->Destination;
 	const auto pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor);
 
-	if (pDestination && !pJumpjetLoco)
+	if (pDestination && !pJumpjetLoco && !AdvancedDriveLocomotionClass::IsReversing(pThis))
 	{
 		pExt->CheckIdleAction();
 
