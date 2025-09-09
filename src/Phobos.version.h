@@ -23,7 +23,7 @@
 #pragma endregion
 
 // Build number. Incremented on each released build.
-#define BUILD_NUMBER 47
+#define BUILD_NUMBER 48
 
 // Merge number. Counted main merge contributors.
 #define MERGE_NUMBER 6
