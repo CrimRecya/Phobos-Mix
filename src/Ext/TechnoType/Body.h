@@ -183,6 +183,8 @@ public:
 		Valueable<bool> JumpjetRotateOnCrash;
 		Nullable<int> ShadowSizeCharacteristicHeight;
 
+		Valueable<bool> IsSimpleDeployer_ConsiderPathfinding;
+		Nullable<LandTypeFlags> IsSimpleDeployer_DisallowedLandTypes;
 		Nullable<FacingType> DeployDir;
 		ValueableVector<AnimTypeClass*> DeployingAnims;
 		Valueable<bool> DeployingAnim_KeepUnitVisible;
@@ -704,6 +706,9 @@ public:
 			, NoAmmoAmount { 0 }
 			, JumpjetRotateOnCrash { true }
 			, ShadowSizeCharacteristicHeight { }
+
+			, IsSimpleDeployer_ConsiderPathfinding { false }
+			, IsSimpleDeployer_DisallowedLandTypes {}
 			, DeployDir {}
 			, DeployingAnims {}
 			, DeployingAnim_KeepUnitVisible { false }
