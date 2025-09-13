@@ -186,6 +186,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->ProgressDisplay_Others_PipsShape.Read(exINI, GameStrings::AudioVisual, "ProgressDisplay.Others.PipsShape");
 	this->ProgressDisplay_Buildings_PipsShape.Read(exINI, GameStrings::AudioVisual, "ProgressDisplay.Buildings.PipsShape");
 	this->ExtendedAircraftMissions.Read(exINI, GameStrings::General, "ExtendedAircraftMissions");
+	this->ExtendedAircraftMissions_UnlandDamage.Read(exINI, GameStrings::General, "ExtendedAircraftMissions.UnlandDamage");
 	this->AmphibiousEnter.Read(exINI, GameStrings::General, "AmphibiousEnter");
 	this->AmphibiousUnload.Read(exINI, GameStrings::General, "AmphibiousUnload");
 	this->NoQueueUpToEnter.Read(exINI, GameStrings::General, "NoQueueUpToEnter");
@@ -621,6 +622,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->ProgressDisplay_Others_PipsShape)
 		.Process(this->ProgressDisplay_Buildings_PipsShape)
 		.Process(this->ExtendedAircraftMissions)
+		.Process(this->ExtendedAircraftMissions_UnlandDamage)
 		.Process(this->AmphibiousEnter)
 		.Process(this->AmphibiousUnload)
 		.Process(this->NoQueueUpToEnter)

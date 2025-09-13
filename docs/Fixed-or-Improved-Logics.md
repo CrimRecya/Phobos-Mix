@@ -343,14 +343,15 @@ FiringForceScatter=true   ; boolean
 In `rulesmd.ini`:
 ```ini
 [General]
-ExtendedAircraftMissions=false          ; boolean
+ExtendedAircraftMissions=false            ; boolean
+ExtendedAircraftMissions.UnlandDamage=-1  ; integer
 
-[SOMEAIRCRAFT]                          ; AircraftType
-ExtendedAircraftMissions.SmoothMoving=  ; boolean, default to [General] -> ExtendedAircraftMissions
-ExtendedAircraftMissions.EarlyDescend=  ; boolean, default to [General] -> ExtendedAircraftMissions
-ExtendedAircraftMissions.RearApproach=  ; boolean, default to [General] -> ExtendedAircraftMissions
-ExtendedAircraftMissions.FastScramble=  ; boolean, default to [General] -> ExtendedAircraftMissions
-ExtendedAircraftMissions.UnlandDamage=  ; integer, default to 1 if [General] -> ExtendedAircraftMissions = true, otherwise -1
+[SOMEAIRCRAFT]                            ; AircraftType
+ExtendedAircraftMissions.SmoothMoving=    ; boolean, default to [General] -> ExtendedAircraftMissions
+ExtendedAircraftMissions.EarlyDescend=    ; boolean, default to [General] -> ExtendedAircraftMissions
+ExtendedAircraftMissions.RearApproach=    ; boolean, default to [General] -> ExtendedAircraftMissions
+ExtendedAircraftMissions.FastScramble=    ; boolean, default to [General] -> ExtendedAircraftMissions
+ExtendedAircraftMissions.UnlandDamage=    ; integer, default to [General] -> ExtendedAircraftMissions.UnlandDamage
 ```
 
 ### Fixed spawn distance & spawn height for airstrike / SpyPlane aircraft
@@ -776,7 +777,7 @@ ProneSpeed=                   ; floating point value, multiplier, by default, us
 
 ### Customize the chained damage of the wall
 
-- In vanilla, when the wall is damaged, it will deal 200 damage to the walls in the 4 nearby cells. This makes connected walls more vulnerable to damage compared to single walls. 
+- In vanilla, when the wall is damaged, it will deal 200 damage to the walls in the 4 nearby cells. This makes connected walls more vulnerable to damage compared to single walls.
 - Now you can customize that damage by using the following flag.
 
 In `rulesmd.ini`:
