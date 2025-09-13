@@ -432,8 +432,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->AttackMove_IgnoreWeaponCheck.Read(exINI, GameStrings::General, "AttackMove.IgnoreWeaponCheck");
 	this->AttackMove_StopWhenTargetAcquired.Read(exINI, GameStrings::General, "AttackMove.StopWhenTargetAcquired");
 
-	this->DamageWallRecursivly.Read(exINI, GameStrings::CombatDamage, "DamageWallRecursivly");
-
 	this->DecloakDamagedTargets.Read(exINI, GameStrings::General, "DecloakDamagedTargets");
 	this->Decloak_OnBlockingMovement.Read(exINI, GameStrings::General, "Decloak.OnBlockingMovement");
 	this->Decloak_OnCloakingWithLowHealth.Read(exINI, GameStrings::General, "Decloak.OnCloakingWithLowHealth");
@@ -456,7 +454,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->PlayerAttackMoveTargetingDelay.Read(exINI, GameStrings::General, "PlayerAttackMoveTargetingDelay");
 	this->DistributeTargetingFrame.Read(exINI, GameStrings::General, "DistributeTargetingFrame");
 	this->DistributeTargetingFrame_AIOnly.Read(exINI, GameStrings::General, "DistributeTargetingFrame.AIOnly");
-	
+
 	this->InfantryAutoDeploy.Read(exINI, GameStrings::General, "InfantryAutoDeploy");
 
 	this->AdjacentWallDamage.Read(exINI, GameStrings::CombatDamage, "AdjacentWallDamage");
@@ -832,7 +830,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->VHPScan_Enhanced)
 		.Process(this->AnimCraterDestroyTiberium)
 		.Process(this->BerzerkTargeting)
-		.Process(this->DamageWallRecursivly)
 		.Process(this->TintColorIronCurtain)
 		.Process(this->TintColorForceShield)
 		.Process(this->TintColorBerserk)

@@ -1041,55 +1041,6 @@ DEFINE_HOOK(0x5B11DD, MechLocomotionClass_ProcessMoving_SlowdownDistance, 0x9)
 	return distance >= pLinkedTo->GetCurrentSpeed() ? KeepMoving : CloseEnough;
 }
 
-// Jumpjet infantry will no longer acts stupid when assigned a attack mission.
-DEFINE_HOOK(0x51AB5C, InfantryClass_SetDestination_JJInfFix, 0x6)
-{
-	enum { FuncRet = 0x51B1D7 };
-
-	GET(InfantryClass* const, pThis, EBP);
-	GET(AbstractClass* const, pDest, EBX);
-
-	auto pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor);
-
-	if (pThis->Type->BalloonHover && !pDest && pThis->Destination && pJumpjetLoco && pThis->Target)
-	{
-		if (pThis->IsCloseEnoughToAttack(pThis->Target))
-		{
-			auto crd = pThis->GetCoords();
-			pJumpjetLoco->DestinationCoords.X = crd.X;
-			pJumpjetLoco->DestinationCoords.Y = crd.Y;
-			pJumpjetLoco->CurrentSpeed = 0;
-			pJumpjetLoco->MaxSpeed = 0;
-			pThis->AbortMotion();
-		}
-
-		pThis->ForceMission(Mission::Attack);
-		return FuncRet;
-	}
-
-	return 0;
-}
-
-// For vehicles. If in range, then stop.
-DEFINE_HOOK(0x741A66, UnitClass_SetDestination_JJVehFix, 0x5)
-{
-	GET(UnitClass* const, pThis, EBP);
-
-	auto pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor);
-
-	if (pThis->IsCloseEnough(pThis->Target, pThis->SelectWeapon(pThis->Target)) && pJumpjetLoco)
-	{
-		auto crd = pThis->GetCoords();
-		pJumpjetLoco->DestinationCoords.X = crd.X;
-		pJumpjetLoco->DestinationCoords.Y = crd.Y;
-		pJumpjetLoco->CurrentSpeed = 0;
-		pJumpjetLoco->MaxSpeed = 0;
-		pThis->AbortMotion();
-	}
-
-	return 0;
-}
-
 DEFINE_JUMP(LJMP, 0x517FF5, 0x518016); // Warhead with InfDeath=9 versus infantry in air
 
 // Fixes docks not repairing docked aircraft unless they enter the dock first e.g just built ones.
