@@ -27,6 +27,11 @@ const wchar_t* ManualReloadAmmoCommandClass::GetUIDescription() const
 
 void ManualReloadAmmoCommandClass::Execute(WWKey eInput) const
 {
+	ManualReloadAmmoCommandClass::ManualReloadExecute();
+}
+
+void ManualReloadAmmoCommandClass::ManualReloadExecute()
+{
 	for (const auto& pObj : ObjectClass::CurrentObjects)
 	{
 		if (const auto pTechno = abstract_cast<TechnoClass*>(pObj))

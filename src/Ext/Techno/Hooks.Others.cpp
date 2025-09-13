@@ -228,33 +228,6 @@ DEFINE_JUMP(LJMP, 0x44C75E, 0x44C793);
 
 #pragma endregion
 
-#pragma region ShapeButton
-
-// Max: 25
-//  1. Team01
-//  2. Team02
-//  3. Team03
-//  4. TypeSelect
-//  5. Deploy
-//  6. AttackMove
-//  7. Guard
-//  8. Beacon
-//  9. Stop
-// 10. PlanningMode
-// 11. Cheer
-// Hook
-// 0x6CFD08 find index
-// 0x6D0233 tab init
-// 0x6D0838 tab update
-// 0x6D10DF init io
-// 0x6D14DD init tool tip
-// Func
-// 0x6CFCC0 ShapeButtonClass::FindIndex
-// 0x6CFD40 ShapeButtonClass::GetButton
-// 0x6D09C0 ShapeButtonClass::SetToolTip
-
-#pragma endregion
-
 #pragma region HardLoco
 /*
 DEFINE_HOOK_AGAIN(0x742A8C, UnitClass_SetDestination_PiggyBack, 0x8)

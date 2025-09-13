@@ -25,6 +25,11 @@ const wchar_t* CeaseFireStanceClass::GetUIDescription() const
 
 void CeaseFireStanceClass::Execute(WWKey eInput) const
 {
+	CeaseFireStanceClass::CeaseFireExecute();
+}
+
+void CeaseFireStanceClass::CeaseFireExecute()
+{
 	std::vector<TechnoClass*> TechnoVectorCeaseFire;
 	std::vector<TechnoClass*> TechnoVectorNonCeaseFire;
 

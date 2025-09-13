@@ -25,6 +25,11 @@ const wchar_t* AggressiveStanceClass::GetUIDescription() const
 
 void AggressiveStanceClass::Execute(WWKey eInput) const
 {
+	AggressiveStanceClass::AggressiveExecute();
+}
+
+void AggressiveStanceClass::AggressiveExecute()
+{
 	std::vector<TechnoClass*> TechnoVectorAggressive;
 	std::vector<TechnoClass*> TechnoVectorNonAggressive;
 
