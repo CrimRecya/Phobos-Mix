@@ -1713,15 +1713,15 @@ DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
 
 #pragma region ExtraTargeting
 
-static inline bool ExtraTargeting_Range(TechnoClass* pThis)
+static inline bool ExtraTargeting(TechnoClass* pThis, bool area = false)
 {
 	if (!RulesExt::Global()->ExtraTargeting || pThis->Spawned || pThis->SpawnOwner)
 		return false;
 
-	auto coord = pThis->GetCoords();
+	auto coord = (area && pThis->ArchiveTarget ? pThis->ArchiveTarget : pThis)->GetCoords();
 
 	pThis->ShouldLoseTargetNow = true;
-	bool HasTarget = pThis->TargetAndEstimateDamage(coord, ThreatType::Range);
+	bool HasTarget = pThis->TargetAndEstimateDamage(coord, area ? ThreatType::Area : ThreatType::Range);
 	pThis->ShouldLoseTargetNow = HasTarget;
 
 	return HasTarget;
@@ -1733,7 +1733,7 @@ DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting_Idle, 0x7)
 
 	GET(TechnoClass*, pTechno, ESI);
 
-	ExtraTargeting_Range(pTechno);
+	ExtraTargeting(pTechno);
 
 	R->EAX(pTechno->WhatAmI());
 	return SkipGameCode;
@@ -1745,7 +1745,7 @@ DEFINE_HOOK(0x4D4E72, FootClass_MissionAttack_ExtraTargeting, 0x6)
 
 	GET(FootClass*, pThis, ESI);
 
-	return pThis->MegaMissionIsAttackMove() && ExtraTargeting_Range(pThis) ? ApproachTarget : 0;
+	return pThis->MegaMissionIsAttackMove() && ExtraTargeting(pThis) ? ApproachTarget : 0;
 }
 
 DEFINE_HOOK(0x44AF90, BuildingClass_MissionAttack_ExtraTargeting, 0x5)
@@ -1754,7 +1754,7 @@ DEFINE_HOOK(0x44AF90, BuildingClass_MissionAttack_ExtraTargeting, 0x5)
 
 	GET(BuildingClass*, pThis, ESI);
 
-	return ExtraTargeting_Range(pThis) ? AttackTarget : 0;
+	return ExtraTargeting(pThis) ? AttackTarget : 0;
 }
 
 DEFINE_HOOK(0x417FE0, AircraftClass_MissionAttack_ExtraTargeting, 0x6)
@@ -1762,7 +1762,7 @@ DEFINE_HOOK(0x417FE0, AircraftClass_MissionAttack_ExtraTargeting, 0x6)
 	GET(AircraftClass*, pThis, ECX);
 
 	if (!pThis->Target && pThis->MegaMissionIsAttackMove())
-		ExtraTargeting_Range(pThis);
+		ExtraTargeting(pThis);
 
 	return 0;
 }
@@ -1796,7 +1796,22 @@ DEFINE_HOOK(0x4C7462, EventClass_RespondToEvent_ExtraTargeting_MegaMission, 0x5)
 		pExt->KeepTargetOnMove = false;
 	}
 
-	return (!pTarget && pTechno->GetTechnoType()->OpportunityFire && ExtraTargeting_Range(pTechno)) ? SkipSetTarget : 0;
+	if (pTarget || !pTechno->GetTechnoType()->OpportunityFire)
+		return 0;
+
+	auto currentMission = pTechno->GetCurrentMission();
+
+	if (currentMission == Mission::Attack || currentMission == Mission::Area_Guard)
+	{
+		// These missions won't change to the queued mission if the techno has target.
+		pTechno->TargetingTimer.Stop();
+		return 0;
+	}
+	else
+	{
+		ExtraTargeting(pTechno);
+		return SkipSetTarget;
+	}
 }
 
 // Current target may hurt me.
@@ -1860,7 +1875,7 @@ DEFINE_HOOK(0x7079D1, TechnoClass_PointerExpired_TargetExpired, 0x6)
 	GET(TechnoClass*, pThis, ESI);
 
 	if(RulesExt::Global()->ExtraTargeting)
-		pThis->TargetingTimer.TimeLeft = 0;
+		pThis->TargetingTimer.Stop();
 
 	return 0;
 }
@@ -1873,8 +1888,23 @@ DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_DoRetaliate, 0x7)
 
 	if (RulesExt::Global()->ExtraTargeting && pThis->Owner->IsControlledByHuman())
 	{
-		if (pThis->GetTechnoType()->OpportunityFire || pThis->CurrentMission == Mission::Guard)
-			ExtraTargeting_Range(pThis);
+		auto mission = pThis->GetCurrentMission();
+
+		// AttackMove
+		if (mission == Mission::Attack)
+		{
+			if (pThis->MegaMissionIsAttackMove())
+				ExtraTargeting(pThis);
+		}
+		// Other auto-target-able missions
+		else if (mission == Mission::Harvest || mission == Mission::Move || mission == Mission::Guard || mission == Mission::Area_Guard)
+		{
+			// If pThis has target, do targeting, else reset timer and it will do targeting next frame.
+			if (pThis->Target)
+				ExtraTargeting(pThis, mission == Mission::Area_Guard);
+			else
+				pThis->TargetingTimer.Stop();
+		}
 
 		return SkipGameCode;
 	}
@@ -1909,7 +1939,7 @@ static inline void CheckVHPScanAndRetarget(TechnoClass* pThis)
 	if (pThis->CurrentMission == Mission::Attack)
 		pThis->QueueMission(pThis->MegaMissionIsAttackMove() ? Mission::Attack : (pType->DefaultToGuardArea ? Mission::Area_Guard : Mission::Guard), true);
 
-	ExtraTargeting_Range(pThis);
+	ExtraTargeting(pThis);
 }
 
 DEFINE_HOOK(0x5206B7, InfantryClass_UpdateFiring_Start, 0x6)
