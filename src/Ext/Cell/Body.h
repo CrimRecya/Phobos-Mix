@@ -2,6 +2,7 @@
 
 #include <CellClass.h>
 
+#include <Helpers/Macro.h>
 #include <Utilities/Container.h>
 #include <Utilities/Constructs.h>
 #include <Utilities/Template.h>

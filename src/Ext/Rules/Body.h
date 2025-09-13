@@ -385,8 +385,6 @@ public:
 		Valueable<bool> AttackMove_IgnoreWeaponCheck;
 		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 
-		Valueable<bool> DamageWallRecursivly;
-
 		Valueable<bool> DecloakDamagedTargets;
 		Valueable<bool> Decloak_OnBlockingMovement;
 		Valueable<bool> Decloak_OnCloakingWithLowHealth;
@@ -407,6 +405,8 @@ public:
 		int TintColorIronCurtain;
 		int TintColorForceShield;
 		int TintColorBerserk;
+
+		Valueable<int> AdjacentWallDamage;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -728,8 +728,6 @@ public:
 
 			, BerzerkTargeting { AffectedHouse::All }
 
-			, DamageWallRecursivly { true }
-
 			, TintColorIronCurtain { 0 }
 			, TintColorForceShield { 0 }
 			, TintColorBerserk { 0 }
@@ -751,6 +749,7 @@ public:
 
 			, Parasite_GrappleAnim {}
 			, InfantryAutoDeploy { false }
+			, AdjacentWallDamage { 200 }
 		{ }
 
 		virtual ~ExtData() = default;
