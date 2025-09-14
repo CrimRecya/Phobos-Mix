@@ -143,8 +143,6 @@ void WeaponTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->KeepRange_EarlyStopFrame.Read(exINI, pSection, "KeepRange.EarlyStopFrame");
 	this->CylinderRangefinding.Read(exINI, pSection, "CylinderRangefinding");
 	this->AttackIronCurtain.Read(exINI, pSection, "AttackIronCurtain");
-	this->UnlimboDetonate.Read(exINI, pSection, "UnlimboDetonate");
-	this->UnlimboDetonate_Force.Read(exINI, pSection, "UnlimboDetonate.Force");
 	this->ResetGattlingValue.Read(exINI, pSection, "ResetGattlingValue");
 	this->AddtionalDamage_GattlingValue.Read(exINI, pSection, "AddtionalDamage.GattlingValue");
 	this->AddtionalDamage_GattlingValue_Mult.Read(exINI, pSection, "AddtionalDamage.GattlingValue.Mult");
@@ -236,8 +234,6 @@ void WeaponTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->KeepRange_EarlyStopFrame)
 		.Process(this->CylinderRangefinding)
 		.Process(this->AttackIronCurtain)
-		.Process(this->UnlimboDetonate)
-		.Process(this->UnlimboDetonate_Force)
 		.Process(this->ResetGattlingValue)
 		.Process(this->AddtionalDamage_GattlingValue)
 		.Process(this->AddtionalDamage_GattlingValue_Mult)

@@ -45,8 +45,6 @@ public:
 		std::vector<std::unique_ptr<LaserTrailClass>> LaserTrails;
 		bool SnappedToTarget; // Used for custom trajectory projectile target snap checks
 		int DamageNumberOffset;
-		TechnoClass* LimboedLauncher;
-		DirType LimboedDir;
 		int ParabombFallRate;
 
 		TrajectoryPointer Trajectory;
@@ -84,8 +82,6 @@ public:
 			, LaserTrails {}
 			, SnappedToTarget { false }
 			, DamageNumberOffset { INT32_MIN }
-			, LimboedLauncher { nullptr }
-			, LimboedDir { 0 }
 			, ParabombFallRate { 0 }
 
 			, Trajectory { nullptr }

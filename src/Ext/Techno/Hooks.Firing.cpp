@@ -890,50 +890,6 @@ DEFINE_HOOK(0x6FE821, TechnoClass_Fire_BallisticScatterPhobos, 0x6)
 	return 0;
 }
 
-DEFINE_HOOK(0x6FF78F, TechnoClass_Fire_ReselectIfLimboedCheck, 0xA)
-{
-	enum { SkipGameCode = 0x6FF79C };
-
-	GET(WeaponTypeClass* const, pWeapon, EBX);
-	GET_BASE(AbstractClass* const, pTarget, 0x8);
-
-	if (WeaponTypeExt::ExtMap.Find(pWeapon)->UnlimboDetonate || pTarget->WhatAmI() == AbstractType::Infantry)
-	{
-		GET(TechnoClass* const, pThis, ESI);
-
-		pThis->ShouldBeReselectOnUnlimbo = false;
-	}
-
-	return SkipGameCode;
-}
-
-DEFINE_HOOK(0x6FF7EF, TechnoClass_Fire_LimboLaunchRecord, 0xA)
-{
-	enum { SkipGameCode = 0x6FF7F9 };
-
-	GET(TechnoClass* const, pThis, ESI);
-	GET_STACK(BulletClass* const, pBullet, STACK_OFFSET(0xB0, -0x74));
-
-	if (!pThis->InLimbo && pBullet)
-	{
-		auto const pBulletExt = BulletExt::ExtMap.Find(pBullet);
-		pBulletExt->LimboedLauncher = pThis;
-		pBulletExt->LimboedDir = pThis->PrimaryFacing.Current().GetDir();
-
-		GET(WeaponTypeClass* const, pWeapon, EBX);
-
-		if (WeaponTypeExt::ExtMap.Find(pWeapon)->UnlimboDetonate)
-		{
-			if (auto const pFoot = abstract_cast<FootClass*>(pThis))
-				pThis->OldTeam = pFoot->Team;
-		}
-	}
-
-	pThis->Limbo();
-
-	return SkipGameCode;
-}
-
 static inline void SetChargeTurretDelay(TechnoClass* pThis, int rearmDelay, WeaponTypeClass* pWeapon)
 {
 	pThis->ChargeTurretDelay = rearmDelay;

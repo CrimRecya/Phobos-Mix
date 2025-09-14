@@ -498,57 +498,6 @@ DEFINE_HOOK(0x469AA4, BulletClass_Logics_Extras, 0x5)
 			else
 				pWHExt->DamageAreaWithTarget(*coords, damage, pTechno, pWH, true, pOwner, pTarget);
 		}
-
-		// Unlimbo the launcher
-		if (!pThis->WH->Parasite && pWeaponExt->UnlimboDetonate)
-		{
-			auto const pExt = BulletExt::ExtMap.Find(pThis);
-
-			if (auto const pFirer = pExt->LimboedLauncher)
-			{
-				bool unlimboResult = false;
-
-				if (pWeaponExt->UnlimboDetonate_Force)
-				{
-					++Unsorted::ScenarioInit;
-					unlimboResult = pFirer->Unlimbo(*coords, pExt->LimboedDir);
-					--Unsorted::ScenarioInit;
-				}
-				else
-				{
-					auto const pFirerType = pFirer->GetTechnoType();
-					auto const isBridge = MapClass::Instance.GetCellAt(*coords)->ContainsBridge();
-					auto const nearByCell = MapClass::Instance.NearByLocation(CellClass::Coord2Cell(*coords),
-						pFirerType->SpeedType, -1, pFirerType->MovementZone, isBridge, 1, 1, false,
-						false, false, isBridge, CellStruct::Empty, false, false);
-
-					if (nearByCell != CellStruct::Empty)
-						unlimboResult = pFirer->Unlimbo(CellClass::Cell2Coord(nearByCell), pExt->LimboedDir);
-				}
-
-				if (unlimboResult)
-				{
-					if (pFirer->ShouldBeReselectOnUnlimbo && pFirer->Owner->IsControlledByCurrentPlayer())
-					{
-						pFirer->ShouldBeReselectOnUnlimbo = false;
-						pFirer->Select();
-					}
-
-					if (auto const pTeam = pFirer->OldTeam)
-					{
-						if (auto const pFoot = abstract_cast<FootClass*>(pFirer))
-							pTeam->AddMember(pFoot, 0);
-					}
-
-					pFirer->UpdateSight(0, 0, 0, 0, 0);
-				}
-				else
-				{
-					pFirer->Health = 0;
-					pFirer->UnInit();
-				}
-			}
-		}
 	}
 
 	// Return to sender

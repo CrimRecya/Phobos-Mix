@@ -78,8 +78,6 @@ public:
 		Valueable<int> KeepRange_EarlyStopFrame;
 		Nullable<bool> CylinderRangefinding;
 		Nullable<bool> AttackIronCurtain;
-		Valueable<bool> UnlimboDetonate;
-		Valueable<bool> UnlimboDetonate_Force;
 		Valueable<bool> ResetGattlingValue;
 		Valueable<bool> AddtionalDamage_GattlingValue;
 		Valueable<double> AddtionalDamage_GattlingValue_Mult;
@@ -160,8 +158,6 @@ public:
 			, KeepRange_EarlyStopFrame { 0 }
 			, CylinderRangefinding {}
 			, AttackIronCurtain {}
-			, UnlimboDetonate { false }
-			, UnlimboDetonate_Force { false }
 			, ResetGattlingValue { false }
 			, AddtionalDamage_GattlingValue { false }
 			, AddtionalDamage_GattlingValue_Mult { 1.0 }
