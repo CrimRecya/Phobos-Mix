@@ -26,7 +26,7 @@
 #define BUILD_NUMBER 48
 
 // Merge number. Counted main merge contributors.
-#define MERGE_NUMBER 6
+#define MERGE_NUMBER 4
 
 // Indicates Merge-related bugfixes only.
 #define MERGE_PATCH 0

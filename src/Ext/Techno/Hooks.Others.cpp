@@ -740,7 +740,7 @@ DEFINE_HOOK(0x4D6E83, FootClass_MissionAreaGuard_FollowStray, 0x6)
 
 	int range = RulesClass::Instance->GuardModeStray;
 
-	if (auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData)
+	if (const auto pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData)
 		range = pThis->Owner->IsControlledByHuman() ? pTypeExt->PlayerGuardModeStray.Get(Leptons(range)) : pTypeExt->AIGuardModeStray.Get(Leptons(range));
 
 	R->EDI(range);
@@ -755,33 +755,22 @@ DEFINE_HOOK(0x4D6E97, FootClass_MissionAreaGuard_Pursuit, 0x6)
 	GET(int, range, EDI);
 	GET(AbstractClass* const, pFocus, EAX);
 
-	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
+	const auto pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
+	const bool isPlayer = pThis->Owner->IsControlledByHuman();
 
-	bool isPlayer = pThis->Owner->IsControlledByHuman();
-	bool pursuit = true;
-
-	if (pTypeExt)
-		pursuit = isPlayer ? pTypeExt->PlayerGuardModePursuit.Get(RulesExt::Global()->PlayerGuardModePursuit) : pTypeExt->AIGuardModePursuit.Get(RulesExt::Global()->AIGuardModePursuit);
-
-	if ((pFocus->AbstractFlags & AbstractFlags::Foot) == AbstractFlags::None && pTypeExt)
+	if ((pFocus->AbstractFlags & AbstractFlags::Foot) == AbstractFlags::None)
 	{
-		Leptons stationaryStray = isPlayer ? pTypeExt->PlayerGuardStationaryStray.Get(RulesExt::Global()->PlayerGuardStationaryStray) : pTypeExt->AIGuardStationaryStray.Get(RulesExt::Global()->AIGuardStationaryStray);
+		const Leptons stationaryStray = isPlayer ? pTypeExt->PlayerGuardStationaryStray.Get(RulesExt::Global()->PlayerGuardStationaryStray) : pTypeExt->AIGuardStationaryStray.Get(RulesExt::Global()->AIGuardStationaryStray);
 
 		if (stationaryStray != Leptons(-256))
 			range = stationaryStray;
 	}
 
-	if (pursuit)
-	{
-		if (!pThis->IsFiring && !pThis->Destination && pThis->DistanceFrom(pFocus) > range)
-			return RemoveTarget;
-	}
-	else if (pThis->DistanceFrom(pFocus) > range)
-	{
-		return RemoveTarget;
-	}
-
-	return KeepTarget;
+	return ((!(isPlayer ? pTypeExt->PlayerGuardModePursuit.Get(RulesExt::Global()->PlayerGuardModePursuit) : pTypeExt->AIGuardModePursuit.Get(RulesExt::Global()->AIGuardModePursuit))
+			|| (!pThis->IsFiring && !pThis->Destination))
+		&& pThis->DistanceFrom(pFocus) > range)
+		? RemoveTarget
+		: KeepTarget;
 }
 
 DEFINE_HOOK(0x707F08, TechnoClass_GetGuardRange_AreaGuardRange, 0x5)
@@ -793,20 +782,15 @@ DEFINE_HOOK(0x707F08, TechnoClass_GetGuardRange_AreaGuardRange, 0x5)
 	GET(TechnoClass* const, pThis, ESI);
 
 	const bool isPlayer = pThis->Owner->IsControlledByHuman();
-	auto const pRulesExt = RulesExt::Global();
+	const auto pRulesExt = RulesExt::Global();
+	const auto pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
 
-	double multiplier = pRulesExt->PlayerGuardModeGuardRangeMultiplier;
-	Leptons addend = pRulesExt->PlayerGuardModeGuardRangeAddend;
+	const auto& [multiplier, addend, max] = isPlayer
+		? std::make_tuple(pTypeExt->PlayerGuardModeGuardRangeMultiplier.Get(pRulesExt->PlayerGuardModeGuardRangeMultiplier), pTypeExt->PlayerGuardModeGuardRangeAddend.Get(pRulesExt->PlayerGuardModeGuardRangeAddend), pRulesExt->PlayerGuardModeGuardRangeMax.Get())
+		: std::make_tuple(pTypeExt->AIGuardModeGuardRangeMultiplier.Get(pRulesExt->AIGuardModeGuardRangeMultiplier), pTypeExt->AIGuardModeGuardRangeAddend.Get(pRulesExt->AIGuardModeGuardRangeAddend), pRulesExt->AIGuardModeGuardRangeMax.Get());
 
-	if (auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData)
-	{
-		multiplier = isPlayer ? pTypeExt->PlayerGuardModeGuardRangeMultiplier.Get(pRulesExt->PlayerGuardModeGuardRangeMultiplier) : pTypeExt->AIGuardModeGuardRangeMultiplier.Get(pRulesExt->AIGuardModeGuardRangeMultiplier);
-		addend = isPlayer ? pTypeExt->PlayerGuardModeGuardRangeAddend.Get(pRulesExt->PlayerGuardModeGuardRangeAddend) : pTypeExt->AIGuardModeGuardRangeAddend.Get(pRulesExt->AIGuardModeGuardRangeAddend);
-	}
-
+	const Leptons min = Leptons((mode == 2) ? (7 / Unsorted::LeptonsPerCell) : 0);
 	const Leptons areaGuardRange = Leptons(static_cast<int>(static_cast<int>(guardRange) * multiplier + static_cast<int>(addend)));
-	const Leptons min = Leptons((mode == 2) ? 1792 : 0);
-	const Leptons max = isPlayer ? pRulesExt->PlayerGuardModeGuardRangeMax : pRulesExt->AIGuardModeGuardRangeMax;
 
 	R->EAX(Math::clamp(areaGuardRange, min, max));
 

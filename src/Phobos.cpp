@@ -62,7 +62,7 @@ void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
 		{
 			Phobos::AppIconPath = ppArgs[++i];
 		}
-		if (_stricmp(pArg, "-SPB=" _STR(BUILD_NUMBER) "+" _STR(MERGE_NUMBER) "_" _STR(MERGE_PATCH)) == 0)
+		if (_stricmp(pArg, "-SPBS=" _STR(BUILD_NUMBER) "+" _STR(MERGE_NUMBER) "_" _STR(MERGE_PATCH)) == 0)
 		{
 			Phobos::HideWarning = true;
 		}
