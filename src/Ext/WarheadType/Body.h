@@ -228,6 +228,11 @@ public:
 
 		Valueable<bool> ReverseEngineer;
 
+		Valueable<bool> UnlimboDetonate;
+		Valueable<bool> UnlimboDetonate_ForceLocation;
+		Valueable<bool> UnlimboDetonate_KeepTarget;
+		Valueable<bool> UnlimboDetonate_KeepSelected;
+
 		// Ares tags
 		// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
 		Valueable<bool> AffectsEnemies;
@@ -476,6 +481,11 @@ public:
 			, AutoTargetWalls {}
 
 			, ReverseEngineer { false }
+
+			, UnlimboDetonate { false }
+			, UnlimboDetonate_ForceLocation { false }
+			, UnlimboDetonate_KeepTarget { true }
+			, UnlimboDetonate_KeepSelected { true }
 		{ }
 
 		void ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget);

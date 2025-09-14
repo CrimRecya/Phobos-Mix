@@ -126,6 +126,12 @@ TechnoExt::ExtData::~ExtData()
 		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
 	}
 
+	if (this->IsSelected)
+	{
+		auto& vec = ScenarioExt::Global()->LimboLaunchers;
+		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
+	}
+
 	if (this->AnimRefCount > 0)
 		AnimExt::InvalidateTechnoPointers(pThis);
 
@@ -1523,6 +1529,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->DelayedFireWeaponIndex)
 		.Process(this->CurrentDelayedFireAnim)
 		.Process(this->AttachedEffectInvokerCount)
+		.Process(this->IsSelected)
 		.Process(this->TintColorOwner)
 		.Process(this->TintColorAllies)
 		.Process(this->TintColorEnemies)
