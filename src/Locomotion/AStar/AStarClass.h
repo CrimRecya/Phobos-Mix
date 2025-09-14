@@ -91,6 +91,15 @@ public:
 		int NodeCount;
 	};
 
+	struct PathQueueNodeBuffer
+	{
+		// 节点缓冲区
+		PathQueueNode Nodes[131072]; // [65536] => [131072]
+
+		// 当前节点数量
+		int Count;
+	};
+
 	struct HierarchicalNode
 	{
 		// 节点索引
@@ -104,6 +113,12 @@ public:
 
 		// 计数
 		int Count;
+	};
+
+	struct HierarchicalNodeBuffer
+	{
+		// 节点缓冲区
+		HierarchicalNode Nodes[10000];
 	};
 
 	// 实体引用
@@ -273,32 +288,32 @@ public:
 
 	// 成员变量（分层：大区块、子区域、单元格）
 
-	// 是否已初始化
-	bool Initialized;
+	// 不明
+	char unknown_char_0; // false
 
 	// 是否查找桥梁所有者
-	bool FindBridgeOwner;
+	bool FindBridgeOwner; // false
 
 	// 不明
-	char unknown_char_2;
+	char unknown_char_2; // false
 
 	// 是否能找到路径
-	bool CanFindPath;
+	bool CanFindPath; // true
 
 	// 路径成本因子
-	float PathCostFactor;
+	float PathCostFactor; // 1.0
 
 	// 是否是桥梁路径
-	bool IsAlt;
+	bool IsAlt; // true
 
 	// 路径节点缓冲区
-	PathNodeBuffer* PathNodeBuffer; // -> [131072]
+	PathNodeBuffer* PathNodeBuffer;
 
 	// 路径队列缓冲区
-	PathQueueNode** PathQueueBuffer; // -> [65536]
+	PathQueueNodeBuffer* PathQueueBuffer;
 
 	// 路径优先级队列
-	PriorityQueueClass<PathQueueNode>* PathQueue; // Count = 65537
+	PriorityQueueClass<PathQueueNode>* PathQueue; // Count = 65537 => 131073
 
 	// 桥梁路径访问计数数组
 	int* AltVisitCounts;
@@ -325,10 +340,10 @@ public:
 	int EndLevel;
 
 	// 是否正在搜索
-	bool IsSearching;
+	bool IsSearching; // true
 
 	// 搜索模式
-	int FindMode;
+	int FindMode; // 0
 
 	// 双向通行计数
 	int* TwoWayPassCounts[3];
@@ -340,7 +355,7 @@ public:
 	float* OneWayPassFactors[3];
 
 	// 分层节点缓冲区
-	HierarchicalNode** HierarchyBuffer; // -> [10000]
+	HierarchicalNodeBuffer* HierarchyBuffer;
 
 	// 分层优先级队列
 	PriorityQueueClass<HierarchicalNode>* HierarchyQueue; // Count = 10001
