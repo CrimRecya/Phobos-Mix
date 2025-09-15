@@ -21,7 +21,86 @@ CellStruct AStarClass::NextPathCell(
 
 #pragma endregion
 
+#pragma region CalculateMoveCost
+
+double AStarClass::CalculateMoveCost(
+	const CellClass* const* const pFromCellPtr,
+	const CellClass* const* const pToCellPtr,
+	const bool isAlternate,
+	const Move moveType,
+	const FootClass* const pFoot
+) const
+{
+	const auto pToCell = *pToCellPtr;
+	const auto pFromCell = *pFromCellPtr;
+	float moveCost = AStarClass::MoveCosts[static_cast<int>(moveType)];
+
+	if (moveType == Move::MovingBlock)
+	{
+		if (const int mode = this->FindMode)
+		{
+			moveCost = (mode == 2) ? 1000.0f : 4.0f;
+		}
+		else
+		{
+			auto pCellObj = isAlternate ? pToCell->AltObject : pToCell->FirstObject;
+
+			for (int step = 0; pCellObj; )
+			{
+				if (const auto pCellFoot = abstract_cast<FootClass*, true>(pCellObj))
+				{
+					int dir = 0;
+
+					if (pCellFoot->SpeedPercentage == 0.0)
+					{
+						dir = pCellFoot->PathDirections[0];
+
+						if (dir == -1)
+							break;
+					}
+					else
+					{
+						dir = pCellFoot->PrimaryFacing.Current().GetFacing<8>();
+					}
+
+					const auto pAdjCell = MapClass::Instance.GetCellAt(Unsorted::AdjacentCell[dir & 7] + pCellObj->GetMapCoords());
+					pCellObj = (pAdjCell->ContainsBridge() && (pCellObj->OnBridge || (pCellObj->GetCell()->Level - pAdjCell->Level) > 2))
+						? pAdjCell->AltObject
+						: pAdjCell->FirstObject;
+
+					if (++step < 10)
+						continue;
+				}
+
+				moveCost = 4.0f;
+				break;
+			}
+		}
+	}
+
+	const auto flags = pToCell->Flags;
+
+	if (flags & CellFlags::Tube)
+		moveCost *= 4.0f;
+
+	if (!isAlternate || !this->FindBridgeDir)
+		return moveCost;
+
+	const auto deltaCell = pToCell->MapCoords - pFromCell->MapCoords;
+	const int dirOffsetIndex = AStarClass::BridgeDirOffsets[4 + (3 * deltaCell.Y) + deltaCell.X];
+	const auto& [pBridgeCheckCell, pBridgeReverseCheckCell] = (flags & CellFlags::BridgeDir)
+		? std::make_pair(pToCellPtr[AStarClass::BridgeDir1OffsetIndexes[dirOffsetIndex]], pToCellPtr[AStarClass::BridgeDir1OffsetIndexes[(dirOffsetIndex - 4) & 7]])
+		: std::make_pair(pToCellPtr[AStarClass::BridgeDir0OffsetIndexes[dirOffsetIndex]], pToCellPtr[AStarClass::BridgeDir0OffsetIndexes[(dirOffsetIndex - 4) & 7]]);
+
+	if (!pBridgeCheckCell->ContainsBridge())
+		return 10.0f * moveCost;
+
+	return pBridgeReverseCheckCell->ContainsBridge() ? 2.0f * moveCost : moveCost;
+}
+
 #pragma region ProcessFinalPath
+
+#pragma endregion
 
 void AStarClass::ProcessFinalPath(
 	PathFinderData* const pPath,
@@ -688,6 +767,7 @@ bool AStarClass::PlotStraightPath(
 
 #pragma region Hooks
 
+DEFINE_FUNCTION_JUMP(CALL, 0x429F8A, AStarClass::CalculateMoveCost);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A415, AStarClass::ProcessFinalPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A41E, AStarClass::OptimizeFinalPath);
 

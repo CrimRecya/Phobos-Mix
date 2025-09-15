@@ -52,7 +52,7 @@ public:
 	struct PathNode
 	{
 		// 指向单元格组的指针
-		CellClass** CellItems;
+		const CellClass* const* CellItems;
 
 		// 单元格高度
 		int Level;
@@ -126,6 +126,16 @@ public:
 	DEFINE_REFERENCE(AStarClass, Instance, 0x87E8B8u)
 	DEFINE_REFERENCE(AStarClass::PathFinderData, PathData, 0x89A2D8u)
 
+	// 数组引用
+
+	DEFINE_ARRAY_REFERENCE(const int, [8], BridgeDir0OffsetIndexes, 0x7E3710)
+	DEFINE_ARRAY_REFERENCE(const int, [8], BridgeDir1OffsetIndexes, 0x7E3730)
+	DEFINE_ARRAY_REFERENCE(const int, [9], BridgeDirOffsets, 0x7E3750)
+	DEFINE_ARRAY_REFERENCE(const int, [8], DirCellOffsets, 0x7E3774)
+	DEFINE_ARRAY_REFERENCE(const float, [8], DirCoefficients, 0x7E3794)
+	DEFINE_ARRAY_REFERENCE(const float, [8], MoveCosts, 0x81870C)
+	DEFINE_ARRAY_REFERENCE(const float, [8], DirPathCosts, 0x81872C)
+
 	// 构造/析构函数
 
 	AStarClass()
@@ -143,18 +153,18 @@ public:
 		JMP_THIS(0x42C1C0);
 
 	void ReinitCostArrays(
-		RectangleStruct* pMapRect
+		const RectangleStruct* const pMapRect
 	) JMP_THIS(0x42AC00);
 
 	// 记录函数
 
 	void RecordCellIndex(
-		FootClass* pFoot
+		const FootClass* const pFoot
 	) JMP_THIS(0x42CCD0);
 
 	void RegisterCellIndex(
-		int index,
-		int dataIndex
+		const int index,
+		const int dataIndex
 	) JMP_THIS(0x42CF80);
 
 	// 静态函数
@@ -169,22 +179,22 @@ public:
 
 	// 主要路径查找接口
 	PathFinderData* FindPath(
-		CellStruct* pStart,
-		CellStruct* pEnd,
-		FootClass* pFoot,
-		int* pDirs,
+		const CellStruct* const pStart,
+		const CellStruct* const pEnd,
+		const FootClass* const pFoot,
+		int* const pDirs,
 		int maxSteps,
 		MovementZone movementZone,
-		int mode
+		const int mode
 	) JMP_THIS(0x42C900);
 
 	// 轻量级路径检查接口
 	int AttemptPath(
-		CellStruct* pStart,
-		CellStruct* pEnd,
-		FootClass* pFoot,
-		bool checkStartBridge,
-		bool checkEndBridge,
+		const CellStruct* const pStart,
+		const CellStruct* const pEnd,
+		const FootClass* const pFoot,
+		const bool checkStartBridge,
+		const bool checkEndBridge,
 		MovementZone movementZone
 	) JMP_THIS(0x42D170);
 
@@ -192,56 +202,56 @@ public:
 
 	// 常规路径查找
 	PathFinderData* FindRegularPath(
-		CellStruct* pStart,
-		CellStruct* pEnd,
-		FootClass* pFoot,
-		int* pDirs,
+		const CellStruct* const pStart,
+		const CellStruct* const pEnd,
+		const FootClass* const pFoot,
+		int* const pDirs,
 		int maxSteps,
-		bool useHierarchical
+		const bool useHierarchical
 	) JMP_THIS(0x429A90);
 
 	// 分层快速查找
 	bool FindHierarchicalPath(
-		CellStruct* pStart,
-		CellStruct* pEnd,
-		MovementZone movementZone,
-		FootClass* pFoot
+		const CellStruct* const pStart,
+		const CellStruct* const pEnd,
+		const MovementZone movementZone,
+		const FootClass* const pFoot
 	) JMP_THIS(0x42C290);
 
 	// 辅助函数
 
 	// 创建路径节点 ∈ FindRegularPath
 	PathQueueNode* CreatePathNode(
-		PathQueueNode* pPrevNode,
-		CellClass** pCellPtr,
-		CellStruct* pCoords,
-		float cost
+		const PathQueueNode* const pPrevNode,
+		const CellClass* const* const pCellPtr,
+		const CellStruct* const pCoords,
+		const float cost
 	) JMP_THIS(0x42A460);
 
 	// 后处理单元格 ∈ FindRegularPath
 	void PostProcessCells(
-		FootClass* pFoot
+		const FootClass* const pFoot
 	) JMP_THIS(0x42ACF0);
 
 	// 获取单元格占用者 ∈ PostProcessCells
 	FootClass* GetOccupier(
-		CellStruct* pCell,
-		int level
+		const CellStruct* const pCell,
+		const int level
 	) const JMP_THIS(0x42B080);
 
 	// 计算移动成本 ∈ FindRegularPath
 	double CalculateMoveCost(
-		CellClass** pFromCellPtr,
-		CellClass** pToCellPtr,
-		bool isAlternate,
-		Move moveType,
-		FootClass* pFoot
-	) const JMP_THIS(0x429830);
+		const CellClass* const* const pFromCellPtr,
+		const CellClass* const* const pToCellPtr,
+		const bool isAlternate,
+		const Move moveType,
+		const FootClass* const pFoot
+	) const; // JMP_THIS(0x429830)
 
 	// 构建最终路径 ∈ FindRegularPath
 	PathFinderData* BuildFinalPath(
-		PathQueueNode* pEndNode,
-		int* pDirs
+		PathQueueNode* const pEndNode,
+		int* const pDirs
 	) const JMP_THIS(0x42AA90);
 
 	// 处理最终路径 ∈ FindRegularPath
@@ -273,7 +283,7 @@ public:
 		const int segmentStartIdx,
 		int* const pOutIdx,
 		CellStruct* const pAdjacent
-	) const; // JMP_THIS(0x42BCA0);
+	) const; // JMP_THIS(0x42BCA0)
 
 	// 绘制直线路径 ∈ OptimizeFinalPath
 	bool PlotStraightPath(
@@ -361,7 +371,7 @@ public:
 	PriorityQueueClass<HierarchicalNode>* HierarchyQueue; // Count = 10001
 
 	// 单元格计数
-	int CellStructCount;
+	int PathLength;
 
 	// 单元格缓冲区
 	CellStruct CellStructBuffer;
