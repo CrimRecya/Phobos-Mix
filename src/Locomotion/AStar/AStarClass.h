@@ -289,13 +289,13 @@ public:
 	// 成员变量（分层：大区块、子区域、单元格）
 
 	// 不明
-	char unknown_char_0; // false
+	char unknown_byte_0; // false
 
-	// 是否查找桥梁所有者
-	bool FindBridgeOwner; // false
+	// 是否检查桥梁方向
+	bool FindBridgeDir; // false
 
 	// 不明
-	char unknown_char_2; // false
+	char unknown_byte_2; // false
 
 	// 是否能找到路径
 	bool CanFindPath; // true
