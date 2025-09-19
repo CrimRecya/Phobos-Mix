@@ -428,22 +428,22 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				&DSurface::ViewBounds, blit, 0, zAdjust, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 		}
 
+		struct TempCellData { const CellClass* Cell; int Level; };
+		auto compare = [](const TempCellData DataA, const TempCellData DataB)
+		{
+			if (DataA.Level != DataB.Level)
+				return DataA.Level < DataB.Level;
+
+			if (DataA.Cell->MapCoords.X != DataB.Cell->MapCoords.X)
+				return DataA.Cell->MapCoords.X < DataB.Cell->MapCoords.X;
+
+			return DataA.Cell->MapCoords.Y < DataB.Cell->MapCoords.Y;
+		};
+		std::vector<TempCellData> checkCells;
+		checkCells.reserve(30);
+
 		if (InputManagerClass::Instance->IsForceMoveKeyPressed())
 		{
-			struct TempCellData { const CellClass* Cell; int Level; };
-			auto compare = [](const TempCellData DataA, const TempCellData DataB)
-				{
-					if (DataA.Level != DataB.Level)
-						return DataA.Level < DataB.Level;
-
-					if (DataA.Cell->MapCoords.X != DataB.Cell->MapCoords.X)
-						return DataA.Cell->MapCoords.X < DataB.Cell->MapCoords.X;
-
-					return DataA.Cell->MapCoords.Y < DataB.Cell->MapCoords.Y;
-				};
-			std::vector<TempCellData> checkCells;
-			checkCells.reserve(30);
-
 			centerCell += CellStruct { 12, 12 };
 
 			auto checkInvisibleBarrier = [](CellClass* pCheckCell, bool alt) -> bool
@@ -487,31 +487,32 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			{
 				for (short checkY = centerCell.Y - 24; checkY <= centerCell.Y; ++checkY)
 				{
-					const auto pCheckCell = MapClass::Instance.GetCellAt(CellStruct { checkX, checkY });
+					if (const auto pCheckCell = MapClass::Instance.TryGetCellAt(CellStruct { checkX, checkY }))
+					{
+						if (checkInvisibleBarrier(pCheckCell, false))
+							checkCells.emplace_back(pCheckCell, pCheckCell->Level);
 
-					if (checkInvisibleBarrier(pCheckCell, false))
-						checkCells.emplace_back(pCheckCell, pCheckCell->Level);
-
-					if (pCheckCell->ContainsBridge() && checkInvisibleBarrier(pCheckCell, true))
-						checkCells.emplace_back(pCheckCell, pCheckCell->Level + CellClass::BridgeLevels);
+						if (pCheckCell->ContainsBridge() && checkInvisibleBarrier(pCheckCell, true))
+							checkCells.emplace_back(pCheckCell, pCheckCell->Level + CellClass::BridgeLevels);
+					}
 				}
 			}
+		}
 
-			if (const auto cellsSize = checkCells.size())
+		if (const auto cellsSize = checkCells.size())
+		{
+			std::sort(&checkCells[0], &checkCells[cellsSize], compare);
+
+			for (const auto& data : checkCells)
 			{
-				std::sort(&checkCells[0], &checkCells[cellsSize], compare);
+				const auto location = CoordStruct { (data.Cell->MapCoords.X << 8), (data.Cell->MapCoords.Y << 8), 0 };
+				const int height = data.Level * 15;
+				const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
+				const int frameIndex = data.Cell->SlopeIndex ? (data.Cell->SlopeIndex + 2) : 1;
+				const int zAdjust = -height - (data.Cell->SlopeIndex ? 12 : 2) - 16384;
 
-				for (const auto& data : checkCells)
-				{
-					const auto location = CoordStruct { (data.Cell->MapCoords.X << 8), (data.Cell->MapCoords.Y << 8), 0 };
-					const int height = data.Level * 15;
-					const auto position = TacticalClass::Instance->CoordsToScreen(location) - TacticalClass::Instance->TacticalPos - Point2D { 0, (1 + height) };
-					const int frameIndex = data.Cell->SlopeIndex ? (data.Cell->SlopeIndex + 2) : 1;
-					const int zAdjust = -height - (data.Cell->SlopeIndex ? 12 : 2) - 16384;
-
-					DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC), frameIndex, &position,
-						&DSurface::ViewBounds, blit, 0, zAdjust, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
-				}
+				DSurface::Temp->DrawSHP(FileSystem::PALETTE_PAL, Make_Global<SHPStruct*>(0x8A03FC), frameIndex, &position,
+					&DSurface::ViewBounds, blit, 0, zAdjust, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 			}
 		}
 	}
@@ -757,6 +758,20 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		}
 
 		drawText(COLOR_WHITE, "TubeIndex: %d", pCell->TubeIndex);
+		drawText(COLOR_WHITE, "Passability: %d", static_cast<int>(pCell->Passability));
+
+		{
+			const int pathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, CellStruct*)>(0x56D3F0)(&MapClass::Instance, &pCell->MapCoords);
+			const auto& passabilityData1 = MapClass::Instance.LevelAndPassability[pathIndex];
+			const auto& passabilityData2 = MapClass::Instance.LevelAndPassabilityStruct2pointer_70[pathIndex];
+
+			drawText(COLOR_WHITE, "PathData: %d", pathIndex);
+			drawText(COLOR_WHITE, "PathZoneIndex: %d", passabilityData1.ZoneArrayIndex);
+			drawText(COLOR_WHITE, "PathIndexes: %d,%d,%d", passabilityData2.word_0[0], passabilityData2.word_0[1], passabilityData2.word_0[2]);
+		}
+
+		drawText(COLOR_WHITE, "BlockedNearby: %d", pCell->BlockedNeighbours);
+		drawText(COLOR_WHITE, "OccupyHeights: %d", pCell->OccupyHeightsCoveringMe);
 		drawText(COLOR_WHITE, "RadLevel: %.2f", pCell->RadLevel);
 
 		{
