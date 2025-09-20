@@ -968,11 +968,14 @@ DEFINE_HOOK(0x46B5A4, BulletClass_SetTarget_SetTrajectoryTarget, 0x6)
 	GET(BulletClass*, pThis, ECX);
 	GET(AbstractClass*, pTarget, EAX);
 
-	if (const auto pOldTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pThis->Target)))
-		pOldTargetExt->BulletsTargetingMeCount--;
+	if (RulesExt::Global()->VHPScan_Enhanced)
+	{
+		if (const auto pOldTarget = abstract_cast<TechnoClass*>(pThis->Target))
+			TechnoExt::ExtMap.Find(pOldTarget)->BulletsTargetingMeCount--;
 
-	if (const auto pNewTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pTarget)))
-		pNewTargetExt->BulletsTargetingMeCount++;
+		if (const auto pNewTarget = abstract_cast<TechnoClass*>(pTarget))
+			TechnoExt::ExtMap.Find(pNewTarget)->BulletsTargetingMeCount++;
+	}
 
 	if (const auto pTraj = BulletExt::ExtMap.Find(pThis)->Trajectory.get())
 	{

@@ -27,8 +27,8 @@ DEFINE_HOOK(0x466556, BulletClass_Init, 0x6)
 
 	if (RulesExt::Global()->VHPScan_Enhanced)
 	{
-		if (auto pTargetExt = TechnoExt::ExtMap.TryFind(abstract_cast<TechnoClass*>(pThis->Target)))
-			pTargetExt->BulletsTargetingMeCount++;
+		if (const auto pTarget = abstract_cast<TechnoClass*>(pThis->Target))
+			TechnoExt::ExtMap.Find(pTarget)->BulletsTargetingMeCount++;
 	}
 
 	return 0;
@@ -38,8 +38,11 @@ DEFINE_HOOK(0x468430, BulletClass_ClearTarget_Start, 0x6)
 {
 	GET(BulletClass*, pThis, ECX);
 
-	if (const auto pOldTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pThis->Target)))
-		pOldTargetExt->BulletsTargetingMeCount--;
+	if (RulesExt::Global()->VHPScan_Enhanced)
+	{
+		if (const auto pTarget = abstract_cast<TechnoClass*>(pThis->Target))
+			TechnoExt::ExtMap.Find(pTarget)->BulletsTargetingMeCount--;
+	}
 
 	return 0;
 }

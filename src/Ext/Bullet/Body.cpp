@@ -16,6 +16,12 @@ BulletExt::ExtContainer BulletExt::ExtMap;
 
 BulletExt::ExtData::~ExtData()
 {
+	if (RulesExt::Global()->VHPScan_Enhanced)
+	{
+		if (const auto pTarget = abstract_cast<TechnoClass*>(this->OwnerObject()->Target))
+			TechnoExt::ExtMap.Find(pTarget)->BulletsTargetingMeCount--;
+	}
+
 	if (this->GroupIndex != -1)
 	{
 		if (const auto pMap = this->TrajectoryGroup)
@@ -874,11 +880,6 @@ DEFINE_HOOK(0x4665E9, BulletClass_DTOR, 0xA)
 	GET(BulletClass*, pItem, ESI);
 
 	BulletExt::ExtMap.Remove(pItem);
-
-	auto pTarget = pItem->Target;
-
-	if ((pTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
-		TechnoExt::ExtMap.Find((TechnoClass*)pTarget)->BulletsTargetingMeCount--;
 
 	return 0;
 }
