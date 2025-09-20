@@ -1988,23 +1988,8 @@ DEFINE_HOOK(0x6F9F7B, TechnoClass_Update_EstimateHealth, 0x7)
 
 	GET(TechnoClass*, pThis, ESI);
 
-	if (pThis->EstimatedHealth < pThis->Health)
-	{
-		auto& vec = TechnoExt::ExtMap.Find(pThis)->BulletsTargetingMe;
-
-		while (vec.Count > 0)
-		{
-			const auto pBullet = vec[0];
-
-			// TODO fix access violation
-			if (VTable::Get(pBullet) != 0x7E46E4) // BulletClass::VTable
-				vec.RemoveItem(0);
-			else
-				return SkipGameCode;
-		}
-
+	if (pThis->EstimatedHealth < pThis->Health && !TechnoExt::ExtMap.Find(pThis)->BulletsTargetingMeCount)
 		pThis->EstimatedHealth = pThis->Health;
-	}
 
 	return SkipGameCode;
 }
