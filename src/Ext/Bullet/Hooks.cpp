@@ -38,26 +38,8 @@ DEFINE_HOOK(0x468430, BulletClass_ClearTarget_Start, 0x6)
 {
 	GET(BulletClass*, pThis, ECX);
 
-	auto pTarget = pThis->Target;
-
-	if ((pTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
-		TechnoExt::ExtMap.Find((TechnoClass*)pTarget)->BulletsTargetingMeCount--;
-
-	return 0;
-}
-
-DEFINE_HOOK(0x46B5A0, BulletClass_SetTarget_Start, 0xA)
-{
-	GET(BulletClass*, pThis, ECX);
-	GET_STACK(AbstractClass*, pNewTarget, 0x4);
-
-	auto pTarget = pThis->Target;
-
-	if ((pTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
-		TechnoExt::ExtMap.Find((TechnoClass*)pTarget)->BulletsTargetingMeCount--;
-
-	if ((pNewTarget->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
-		TechnoExt::ExtMap.Find((TechnoClass*)pNewTarget)->BulletsTargetingMeCount++;
+	if (const auto pOldTargetExt = TechnoExt::ExtMap.Find(abstract_cast<TechnoClass*>(pThis->Target)))
+		pOldTargetExt->BulletsTargetingMeCount--;
 
 	return 0;
 }
