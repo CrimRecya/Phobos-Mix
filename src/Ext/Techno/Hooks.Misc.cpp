@@ -288,13 +288,16 @@ DEFINE_HOOK(0x4D962B, FootClass_SetDestination_RecycleFLH, 0x5)
 			*pDestCrd += TechnoExt::GetFLHAbsoluteCoords(pCarrier, FLH, pCarrierTypeExt->Spawner_RecycleOnTurret) - pCarrier->GetCoords();
 		}
 	}
-	else if (RulesExt::Global()->FollowTargetSelf)
+	else if ((pDestination->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None
+		&& (((pDestination->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None)
+		? RulesExt::Global()->FollowTargetSelf.Get()
+		: (pThis->SendCommand(RadioCommand::QueryCanEnter, static_cast<BuildingClass*>(pDestination)) != RadioCommand::AnswerPositive)))
 	{
-		if (const auto pFoot = abstract_cast<FootClass*>(pDestination))
-		{
-			GET(CoordStruct* const, pDestCrd, EAX);
-			*pDestCrd = pFoot->GetCell()->GetCoords();
-		}
+		GET(CoordStruct*, pDestCrd, EAX);
+		auto crd = pDestination->GetCoords();
+		crd.X = ((crd.X >> 8) << 8) + 128;
+		crd.Y = ((crd.Y >> 8) << 8) + 128;
+		*pDestCrd = crd;
 	}
 
 	return 0;
