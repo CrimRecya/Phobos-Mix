@@ -21,6 +21,438 @@ CellStruct AStarClass::NextPathCell(
 
 #pragma endregion
 
+AStarClass::PathFinderData* AStarClass::FindRegularPath(
+	const CellStruct* const pStart,
+	const CellStruct* const pEnd,
+	const FootClass* const pFoot,
+	int* const pDirs,
+	int maxSteps,
+	const bool useHierarchical
+)
+{
+	int step = 0;
+
+	// 获取终点和起点的地图单元格
+	const auto pCellsFromEnd = &MapClass::Instance.Cells.Items[MapClass::GetCellIndex(*pEnd)];
+	const auto pEndCell = *pCellsFromEnd;
+	const auto pCellsFromStart = &MapClass::Instance.Cells.Items[MapClass::GetCellIndex(*pStart)];
+	const auto pStartCell = *pCellsFromStart;
+
+	if (!pStartCell || !pEndCell)
+		return nullptr;
+
+	// 确定起点和终点的高度
+	const auto absType = pFoot->WhatAmI();
+	this->EndLevel = (absType == AbstractType::Aircraft || !pEndCell->ContainsBridge()) ? pEndCell->Level : pEndCell->Level + 4;
+	this->StartLevel = (absType == AbstractType::Aircraft || !pFoot->OnBridge) ? pStartCell->Level : pStartCell->Level + 4;
+	const auto pType = pFoot->GetTechnoType();
+	this->FinderSpeedType = pType->SpeedType;
+	const bool isTrain = pType->IsTrain;
+
+	if (isTrain && pStartCell->ContainsBridge() && std::abs(pFoot->Location.Z / Unsorted::LevelHeight - this->StartLevel) > 2)
+		this->StartLevel += 4;
+
+	// 初始化寻路数据
+	const auto pCount = this->TwoWayPassCounts[0];
+	this->PathLength = 0;
+	this->CellStructBuffer = *pStart;
+
+	// 创建起始路径节点
+	auto pPathNode = this->CreatePathNode(0, pCellsFromStart, pEnd, 0.0);
+
+	do
+	{
+		// 起点和终点相同则直接退出
+		if (pStart->X == pEnd->X && pStart->Y == pEnd->Y && this->StartLevel == this->EndLevel)
+			return nullptr;
+
+		if (this->FindMode)
+			this->AStarClass::PostProcessCells(pFoot);
+
+		const int astarStartIndex = pStartCell->MapCoords.X + AStarClass::MapSides * pStartCell->MapCoords.Y;
+
+		// 标记起点为已访问，并设置初始距离
+		if (this->StartLevel <= pStartCell->Level)
+		{
+			this->VisitCounts[astarStartIndex] = this->SearchID;
+			this->Distances[astarStartIndex] = 0.0;
+		}
+		else
+		{
+			this->AltVisitCounts[astarStartIndex] = this->SearchID;
+			this->AltDistances[astarStartIndex] = 0.0;
+		}
+
+		// 火车根据朝向预标记非前方单元格
+		if (isTrain)
+		{
+			int dirOffset = 0;
+
+			for (const auto dirCellOffset : AStarClass::DirCellOffsets)
+			{
+				const int absFace = std::abs(static_cast<int>(pFoot->PrimaryFacing.Current().GetFacing<8>()) - dirOffset);
+
+				if (absFace > 2 && absFace < 6)
+				{
+					const auto pAdjCell = pCellsFromStart[dirCellOffset];
+					const int astarAdjIndex = pAdjCell->MapCoords.X + AStarClass::MapSides * pAdjCell->MapCoords.Y;
+
+					if (this->StartLevel <= pAdjCell->Level + 1)
+					{
+						this->VisitCounts[astarAdjIndex] = this->SearchID;
+						this->Distances[astarAdjIndex] = 0.0;
+					}
+					else
+					{
+						this->AltVisitCounts[astarAdjIndex] = this->SearchID;
+						this->AltDistances[astarAdjIndex] = 0.0;
+					}
+				}
+
+				++dirOffset;
+			}
+		}
+
+		const bool isPassiveUnit = absType == AbstractType::Unit && static_cast<const UnitClass*>(pFoot)->Type->Passive;
+
+		// 最大步数默认值
+		if (maxSteps < 0)
+			maxSteps = 65527;
+
+		if (pPathNode)
+		{
+			// 主寻路循环
+			do
+			{
+				// 是否达到步数限制
+				if (step >= maxSteps)
+					break;
+
+				const auto pCellsInChecking = pPathNode->NodeData->CellItems;
+
+				// 是否已到达目标单元格
+				if (pCellsInChecking == pCellsFromEnd && pPathNode->NodeData->Level == this->EndLevel)
+					break;
+
+				AStarClass::PathQueueNode* pBestCandidateNode = nullptr;
+				int astarCheckCellIndex = (*pCellsInChecking)->MapCoords.X + AStarClass::MapSides * (*pCellsInChecking)->MapCoords.Y;
+
+				// 遍历周围的方向和当前隧道
+				for (int dir = 0; dir <= 8; ++dir)
+				{
+					const CellClass* const* pCellsPtr = nullptr;
+
+					// 获取方向上连接的格子
+					if (dir == 8)
+					{
+						const int tubeIndex = (*pCellsInChecking)->TubeIndex;
+
+						if (tubeIndex == -1)
+							pCellsPtr = &AStarClass::InvalidCell;
+						else
+							pCellsPtr = &MapClass::Instance.Cells.Items[MapClass::GetCellIndex(TubeClass::Array.Items[tubeIndex]->ExitCell)];
+					}
+					else
+					{
+						pCellsPtr = &pCellsInChecking[AStarClass::DirCellOffsets[dir]];
+					}
+
+					const auto pCell = *pCellsPtr;
+
+					if (!pCell)
+						continue;
+
+					// 计算连接的格子的索引
+					const auto& checkCell = pCell->MapCoords;
+					const int astarCheckNextIndex = (dir == 8) ? (checkCell.X + AStarClass::MapSides * checkCell.Y) : (astarCheckCellIndex + AStarClass::DirSides[dir]);
+					const bool notAlternate = !pCell->ContainsBridge() || std::abs(this->StartLevel - pCell->Level) <= 1;
+					const int pathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, const CellStruct*)>(0x56D3F0)(&MapClass::Instance, &checkCell);
+					const int cellPassabilityIndex = static_cast<unsigned short>(MapClass::Instance.LevelAndPassabilityStruct2pointer_70[pathIndex].word_0[0]);
+
+					// 检查是否已被更优路径访问
+					if (notAlternate
+						? (pCount[cellPassabilityIndex] != this->SearchID && !pCell->BlockedNeighbours && useHierarchical
+							|| this->VisitCounts[astarCheckNextIndex] == this->SearchID && this->Distances[astarCheckNextIndex] < (pPathNode->PathCost + 1.009f))
+						: (this->AltVisitCounts[astarCheckNextIndex] == this->SearchID && this->AltDistances[astarCheckNextIndex] < (pPathNode->PathCost + 1.009f)))
+					{
+						continue;
+					}
+
+					// 检查格子占用情况
+					auto moveType = pFoot->IsCellOccupied(const_cast<CellClass*>(pCell), static_cast<FacingType>(dir), this->StartLevel, const_cast<CellClass*>(*pCellsInChecking), this->IsAlt);
+
+					if (isTrain && moveType < Move::No)
+						moveType = Move::OK;
+
+					// 计算格子移动成本
+					const float cost = static_cast<float>((dir == 8)
+						? Math::max(std::abs((*pCellsInChecking)->MapCoords.X - checkCell.X), std::abs((*pCellsInChecking)->MapCoords.Y - checkCell.Y))
+						: this->CalculateMoveCost(pCellsInChecking, pCellsPtr, !notAlternate, moveType, pFoot) * this->PathCostFactor + AStarClass::DirPathCosts[dir]);
+
+					if (moveType >= Move::No)
+					{
+						// 终点不可到达，跳出循环
+						if (pCellsPtr == pCellsFromEnd && !isPassiveUnit && std::abs(this->StartLevel - this->EndLevel) <= 1)
+							goto BREAK_STEP_LOOP;
+					}
+					else
+					{
+						// 检查是否已访问过该单元格
+						if (notAlternate ? (this->VisitCounts[astarCheckNextIndex] == this->SearchID) : (this->AltVisitCounts[astarCheckNextIndex] == this->SearchID))
+							continue;
+
+						// 创建新的路径节点
+						const auto pNewPathNode = this->CreatePathNode(pPathNode, pCellsPtr, pEnd, cost);
+
+						do
+						{
+							// 将新节点加入优先队列（堆）
+							if (pBestCandidateNode)
+							{
+								// 堆插入
+								const auto pPathQueue = this->PathQueue;
+								const int count = pPathQueue->Count;
+								int newCount = count + 1;
+
+								if (newCount < pPathQueue->Capacity)
+								{
+									if (count == -1)
+									{
+										int harfNewCount = newCount >> 1;
+										const float newCost = pNewPathNode->TotalCost;
+
+										for ( ; newCount > 1; harfNewCount >>= 1)
+										{
+											const auto pQueueNodes = pPathQueue->Nodes;
+											const auto pParentNode = pQueueNodes[harfNewCount];
+
+											if (pParentNode->TotalCost <= newCost)
+												break;
+
+											pQueueNodes[newCount] = pParentNode;
+											newCount = harfNewCount;
+										}
+
+										pPathQueue->Nodes[newCount] = pNewPathNode;
+										pPathQueue->Count = newCount;
+
+										// 更新队列边界
+										if (pNewPathNode > pPathQueue->LMost)
+											pPathQueue->LMost = pNewPathNode;
+
+										if (pNewPathNode < pPathQueue->RMost)
+											pPathQueue->RMost = pNewPathNode;
+
+										break;
+									}
+									else
+									{
+										int harfNewCount = newCount >> 1;
+										const float newCost = pBestCandidateNode->TotalCost;
+
+										for ( ; newCount > 1; harfNewCount >>= 1)
+										{
+											const auto pQueueNodes = pPathQueue->Nodes;
+											const auto pParentNode = pQueueNodes[harfNewCount];
+
+											if (pParentNode->TotalCost <= newCost)
+												break;
+
+											pQueueNodes[newCount] = pParentNode;
+											newCount = harfNewCount;
+										}
+
+										pPathQueue->Nodes[newCount] = pBestCandidateNode;
+										pPathQueue->Count = newCount;
+
+										// 更新队列边界
+										if (pBestCandidateNode > pPathQueue->LMost)
+											pPathQueue->LMost = pBestCandidateNode;
+
+										if (pBestCandidateNode < pPathQueue->RMost)
+											pPathQueue->RMost = pBestCandidateNode;
+									}
+								}
+							}
+
+							// 设置新的最佳节点
+							pBestCandidateNode = pNewPathNode;
+						}
+						while (false);
+
+						// 标记单元格为已访问
+						if (notAlternate)
+						{
+							this->VisitCounts[astarCheckNextIndex] = this->SearchID;
+							this->Distances[astarCheckNextIndex] = pNewPathNode->PathCost;
+						}
+						else
+						{
+							this->AltVisitCounts[astarCheckNextIndex] = this->SearchID;
+							this->AltDistances[astarCheckNextIndex] = pNewPathNode->PathCost;
+						}
+
+						// 更新路径长度和缓冲区
+						const int pathLength = this->PathLength;
+
+						if (cellPassabilityIndex == this->PassabilityData[0].Indices[pathLength + 1])
+						{
+							this->PathLength = pathLength + 1;
+							this->CellStructBuffer = checkCell;
+						}
+					}
+				}
+
+				// 从优先队列中获取下一个最佳节点
+				const auto pPathQueue = this->PathQueue;
+
+				if (!pBestCandidateNode)
+				{
+					if (const int count = pPathQueue->Count)
+					{
+						// 堆提取
+						const auto pQueueNodes = pPathQueue->Nodes;
+						const auto pExtractedNode = pQueueNodes[1];
+						pQueueNodes[1] = pQueueNodes[count];
+						pQueueNodes[count] = nullptr;
+						const int newCount = count - 1;
+						pPathQueue->Count = newCount;
+						int heapIndex = 1;
+						int childIndex = (newCount < 2 || pQueueNodes[1]->TotalCost <= pQueueNodes[2]->TotalCost) ? 1 : 2;
+
+						do
+						{
+							// 堆下沉
+							if (newCount < 3 || pQueueNodes[childIndex]->TotalCost <= pQueueNodes[3]->TotalCost)
+							{
+								if (childIndex == 1)
+									break;
+							}
+							else
+							{
+								childIndex = 3;
+							}
+
+							do
+							{
+								std::swap(pQueueNodes[heapIndex], pQueueNodes[childIndex]);
+								heapIndex = childIndex;
+								const int leftChildIndex = 2 * childIndex;
+								const int rightChildIndex = leftChildIndex + 1;
+
+								if (leftChildIndex <= newCount && pQueueNodes[childIndex]->TotalCost > pQueueNodes[leftChildIndex]->TotalCost)
+									childIndex = leftChildIndex;
+
+								if (rightChildIndex <= newCount && pQueueNodes[childIndex]->TotalCost > pQueueNodes[rightChildIndex]->TotalCost)
+									childIndex = rightChildIndex;
+							}
+							while (childIndex != heapIndex);
+						}
+						while (false);
+
+						// 更新新的起点节点为提取的节点
+						pPathNode = pExtractedNode;
+					}
+					else
+					{
+						// 无可提取节点，退出循环
+						pPathNode = nullptr;
+						++step;
+						break;
+					}
+				}
+				else
+				{
+					do
+					{
+						if (const int count = pPathQueue->Count)
+						{
+							const auto pQueueNodes = pPathQueue->Nodes;
+							const auto pExtractedNode = pQueueNodes[1];
+
+							// 比较最佳候选节点和队列顶部节点
+							if (pExtractedNode->TotalCost <= pBestCandidateNode->TotalCost)
+							{
+								// 用候选节点替换顶部节点
+								pQueueNodes[1] = pBestCandidateNode;
+								int heapIndex = 1;
+								int childIndex = (count < 2 || pQueueNodes[1]->TotalCost <= pQueueNodes[2]->TotalCost) ? 1 : 2;
+
+								// 堆下沉
+								do
+								{
+									if (count < 3 || pQueueNodes[childIndex]->TotalCost <= pQueueNodes[3]->TotalCost)
+									{
+										if (childIndex == 1)
+											break;
+									}
+									else
+									{
+										childIndex = 3;
+									}
+
+									do
+									{
+										std::swap(pQueueNodes[heapIndex], pQueueNodes[childIndex]);
+										heapIndex = childIndex;
+										const int leftChildIndex = 2 * childIndex;
+										const int rightChildIndex = leftChildIndex + 1;
+
+										if (leftChildIndex <= count && pQueueNodes[childIndex]->TotalCost > pQueueNodes[leftChildIndex]->TotalCost)
+											childIndex = leftChildIndex;
+
+										if (rightChildIndex <= count && pQueueNodes[childIndex]->TotalCost > pQueueNodes[rightChildIndex]->TotalCost)
+											childIndex = rightChildIndex;
+									}
+									while (childIndex != heapIndex);
+								}
+								while (false);
+
+								// 更新新的起点节点为提取的节点
+								pPathNode = pExtractedNode;
+								break;
+							}
+						}
+
+						// 更新新的起点节点为当前最佳节点
+						pPathNode = pBestCandidateNode;
+					}
+					while (false);
+				}
+
+				// 更新当前高度
+				if (pPathNode)
+					this->StartLevel = pPathNode->NodeData->Level;
+
+				++step;
+			}
+			while (pPathNode);
+
+BREAK_STEP_LOOP:
+			if (step != 10000 && pPathNode && step != maxSteps && pPathNode->NodeCount >= 2)
+				break;
+		}
+
+		if (this->FindMode)
+			this->PostProcessCells(pFoot);
+
+		return nullptr;
+	}
+	while (false);
+
+	// 构建最终路径
+	const auto pData = this->BuildFinalPath(pPathNode, pDirs);
+
+	// 处理和优化最终路径
+	this->ProcessFinalPath(pData, pFoot);
+	this->OptimizeFinalPath(pData, pFoot);
+
+	if (this->FindMode)
+		this->PostProcessCells(pFoot);
+
+	return pData;
+}
+
 #pragma region CalculateMoveCost
 
 double AStarClass::CalculateMoveCost(
@@ -612,6 +1044,7 @@ void AStarClass::GetFinalStepCell(
 				{
 					// 找到更好的路径，计算最终方向
 					*pOutIdx = searchIndex + 1;
+
 					// 因为有特殊值存在，所以保留两次反向的逻辑
 					*pAdjacent = newCell + Unsorted::AdjacentCell[(oppDir - 4) & 7];
 					return;
@@ -767,6 +1200,7 @@ bool AStarClass::PlotStraightPath(
 
 #pragma region Hooks
 
+// DEFINE_FUNCTION_JUMP(CALL, 0x42CC02, AStarClass::FindRegularPath); // 有时会卡住，暂时没空细看，先放着
 DEFINE_FUNCTION_JUMP(CALL, 0x429F8A, AStarClass::CalculateMoveCost);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A415, AStarClass::ProcessFinalPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A41E, AStarClass::OptimizeFinalPath);

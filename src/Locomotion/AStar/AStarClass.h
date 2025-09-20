@@ -73,7 +73,7 @@ public:
 	struct PassabilityData
 	{
 		// 可通行性索引
-		short Indices[500];
+		unsigned short Indices[500];
 	};
 
 	struct PathQueueNode
@@ -125,6 +125,8 @@ public:
 
 	DEFINE_REFERENCE(AStarClass, Instance, 0x87E8B8u)
 	DEFINE_REFERENCE(AStarClass::PathFinderData, PathData, 0x89A2D8u)
+	DEFINE_REFERENCE(const int, MapSides, 0x89C2DCu)
+	DEFINE_REFERENCE(const CellClass*, InvalidCell, 0x89C2E0u)
 
 	// 数组引用
 
@@ -135,6 +137,7 @@ public:
 	DEFINE_ARRAY_REFERENCE(const float, [8], DirCoefficients, 0x7E3794)
 	DEFINE_ARRAY_REFERENCE(const float, [8], MoveCosts, 0x81870C)
 	DEFINE_ARRAY_REFERENCE(const float, [8], DirPathCosts, 0x81872C)
+	DEFINE_ARRAY_REFERENCE(const int, [8], DirSides, 0x89A304)
 
 	// 构造/析构函数
 
@@ -208,7 +211,7 @@ public:
 		int* const pDirs,
 		int maxSteps,
 		const bool useHierarchical
-	) JMP_THIS(0x429A90);
+	); // JMP_THIS(0x429A90)
 
 	// 分层快速查找
 	bool FindHierarchicalPath(
@@ -325,19 +328,19 @@ public:
 	// 路径优先级队列
 	PriorityQueueClass<PathQueueNode>* PathQueue; // Count = 65537 => 131073
 
-	// 桥梁路径访问计数数组
-	int* AltVisitCounts;
-
-	// 访问计数数组
+	// 访问标志数组
 	int* VisitCounts;
 
-	// 距离数组
-	float* Distances;
+	// 桥梁路径访问标志数组
+	int* AltVisitCounts;
 
 	// 桥梁路径距离数组
 	float* AltDistances;
 
-	// 标记访问号
+	// 距离数组
+	float* Distances;
+
+	// 访问标记
 	int SearchID;
 
 	// 单位速度类型
