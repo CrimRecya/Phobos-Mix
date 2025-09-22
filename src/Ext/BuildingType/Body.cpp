@@ -711,7 +711,7 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 	cell += difference * Math::min(Math::min(dXRatio, dYRatio), 1.0);
 
 	// Calculate building spacing
-	auto buildGap = BuildingTypeExt::ExtMap.Find(pType)->AutoBuilding_Gap.Get();
+	auto buildGap = BuildingTypeExt::ExtMap.Find(pType)->AutoBuilding_Gap.Get(RulesExt::Global()->AutoBuilding_Gap);
 
 	if (pType->ProtectWithWall)
 		++buildGap;

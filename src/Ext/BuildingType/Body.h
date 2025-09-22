@@ -73,7 +73,7 @@ public:
 
 		Nullable<bool> Cameo_ShouldCount;
 		Nullable<bool> AutoBuilding;
-		Valueable<int> AutoBuilding_Gap;
+		Nullable<int> AutoBuilding_Gap;
 		Valueable<bool> LimboBuild;
 		Valueable<int> LimboBuildID;
 		Valueable<BuildingTypeClass*> LaserFencePost_Fence;
@@ -177,7 +177,7 @@ public:
 			, RallyMovementZone { }
 			, Cameo_ShouldCount {}
 			, AutoBuilding {}
-			, AutoBuilding_Gap { 1 }
+			, AutoBuilding_Gap {}
 			, LimboBuild { false }
 			, LimboBuildID { -1 }
 			, LaserFencePost_Fence {}
