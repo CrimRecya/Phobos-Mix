@@ -199,6 +199,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->ExtendedBuildingPlacing.Read(exINI, GameStrings::General, "ExtendedBuildingPlacing");
 	this->ExtendedWeaponsFactory.Read(exINI, GameStrings::General, "ExtendedWeaponsFactory");
 	this->AutoBuilding.Read(exINI, GameStrings::General, "AutoBuilding");
+	this->AutoBuilding_Gap.Read(exINI, GameStrings::General, "AutoBuilding.Gap");
 	this->BuildingProductionQueue.Read(exINI, GameStrings::General, "BuildingProductionQueue");
 	this->PlacementGrid_Expand.Read(exINI, GameStrings::AudioVisual, "PlacementGrid.Expand");
 	this->PlacementGrid_LandFrames.Read(exINI, GameStrings::AudioVisual, "PlacementGrid.LandFrames");
@@ -635,6 +636,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->ExtendedBuildingPlacing)
 		.Process(this->ExtendedWeaponsFactory)
 		.Process(this->AutoBuilding)
+		.Process(this->AutoBuilding_Gap)
 		.Process(this->BuildingProductionQueue)
 		.Process(this->PlacementGrid_Expand)
 		.Process(this->PlacementGrid_LandFrames)

@@ -138,6 +138,7 @@ public:
 		Valueable<bool> ExtendedBuildingPlacing;
 		Valueable<bool> ExtendedWeaponsFactory;
 		Valueable<bool> AutoBuilding;
+		Valueable<int> AutoBuilding_Gap;
 		Valueable<bool> BuildingProductionQueue;
 		Valueable<bool> PlacementGrid_Expand;
 		Valueable<Vector3D<int>> PlacementGrid_LandFrames;
@@ -512,6 +513,7 @@ public:
 			, ExtendedBuildingPlacing { false }
 			, ExtendedWeaponsFactory { false }
 			, AutoBuilding { false }
+			, AutoBuilding_Gap { 1 }
 			, BuildingProductionQueue { false }
 			, PlacementGrid_Expand { false }
 			, PlacementGrid_LandFrames { { 1, 0, 0 } }
