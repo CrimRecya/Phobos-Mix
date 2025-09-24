@@ -838,32 +838,42 @@ DEFINE_HOOK(0x44368D, BuildingClass_ObjectClickedAction_RallyPoint, 0x7)
 {
 	enum { OnTechno = 0x44363C };
 
-	return RulesExt::Global()->RallyPointOnTechno ? OnTechno : 0;
+	return RulesExt::Global()->RallyPointIgnoreReachability ? OnTechno : 0;
 }
 
 DEFINE_HOOK(0x4473F4, BuildingClass_MouseOverObject_JustHasRallyPoint, 0x6)
 {
-	enum { JustRally = 0x447413 };
+	enum { SkipFactoryCheck = 0x447413, SkipAllCheck = 0x44752C };
 
 	GET(BuildingClass* const, pThis, ESI);
 
-	return BuildingTypeExt::ExtMap.Find(pThis->Type)->JustHasRallyPoint ? JustRally : 0;
+	if (RulesExt::Global()->RallyPointIgnoreReachability)
+		return SkipAllCheck;
+	return BuildingTypeExt::ExtMap.Find(pThis->Type)->JustHasRallyPoint ? SkipFactoryCheck : 0;
 }
 
-DEFINE_HOOK(0x447413, BuildingClass_MouseOverObject_RallyPointForceMove, 0x5)
+DEFINE_HOOK(0x447643, BuildingClass_MouseOverCell_IgnoreReachability, 0x5)
 {
-	enum { AlwaysAlt = 0x44744E };
+	enum { SkipGameCode = 0x44774B };
 
-	return RulesExt::Global()->RallyPointForceMove ? AlwaysAlt : 0;
+	return RulesExt::Global()->RallyPointIgnoreReachability ? SkipGameCode : 0;
 }
 
-DEFINE_HOOK(0x70000E, TechnoClass_MouseOverObject_RallyPointForceMove, 0x5)
+DEFINE_HOOK(0x44398C, BuildingClass_SetRallyPoint_IgnoreReachability, 0x5)
+{
+	GET_STACK(CellStruct*, pTarget, STACK_OFFSET(0xA4, 0x4));
+	if (RulesExt::Global()->RallyPointIgnoreReachability)
+		R->EAX(MapClass::Instance.GetCellAt(*pTarget));
+	return 0;
+}
+
+DEFINE_HOOK(0x70000E, TechnoClass_MouseOverObject_RallyPointIgnoreReachability, 0x5)
 {
 	enum { AlwaysAlt = 0x700038 };
 
 	GET(TechnoClass* const, pThis, ESI);
 
-	if (pThis->WhatAmI() == AbstractType::Building && RulesExt::Global()->RallyPointForceMove)
+	if (pThis->WhatAmI() == AbstractType::Building && RulesExt::Global()->RallyPointIgnoreReachability)
 	{
 		auto const pType = static_cast<BuildingClass*>(pThis)->Type;
 		auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
