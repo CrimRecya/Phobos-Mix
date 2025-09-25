@@ -67,7 +67,17 @@ DEFINE_HOOK(0x6F7248, TechnoClass_InRange_WeaponRange, 0x6)
 	if (const auto keepRange = WeaponTypeExt::GetTechnoKeepRange(pWeapon, pThis, false))
 		range = keepRange;
 	else
+	{
 		range = WeaponTypeExt::GetRangeWithModifiers(pWeapon, pThis);
+
+		if (auto pInfantry = abstract_cast<InfantryClass*>(pThis))
+		{
+			auto sequence = pInfantry->SequenceAnim;
+
+			if (sequence == Sequence::FireFly || sequence == Sequence::FireUp || sequence == Sequence::FireProne || sequence == Sequence::DeployedFire || sequence == Sequence::SecondaryFire)
+				range += RulesExt::Global()->InSequenceExtraRange.Get();
+		}
+	}
 
 	R->EDI(range);
 
