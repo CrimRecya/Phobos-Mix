@@ -849,6 +849,7 @@ DEFINE_HOOK(0x4473F4, BuildingClass_MouseOverObject_JustHasRallyPoint, 0x6)
 
 	if (RulesExt::Global()->RallyPointIgnoreReachability)
 		return SkipAllCheck;
+
 	return BuildingTypeExt::ExtMap.Find(pThis->Type)->JustHasRallyPoint ? SkipFactoryCheck : 0;
 }
 
@@ -862,8 +863,10 @@ DEFINE_HOOK(0x447643, BuildingClass_MouseOverCell_IgnoreReachability, 0x5)
 DEFINE_HOOK(0x44398C, BuildingClass_SetRallyPoint_IgnoreReachability, 0x5)
 {
 	GET_STACK(CellStruct*, pTarget, STACK_OFFSET(0xA4, 0x4));
+
 	if (RulesExt::Global()->RallyPointIgnoreReachability)
 		R->EAX(MapClass::Instance.GetCellAt(*pTarget));
+
 	return 0;
 }
 
