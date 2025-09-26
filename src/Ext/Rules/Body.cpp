@@ -460,6 +460,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->AdjacentWallDamage.Read(exINI, GameStrings::CombatDamage, "AdjacentWallDamage");
 
+	this->InSequenceExtraRange.Read(exINI, GameStrings::CombatDamage, "InSequenceExtraRange");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -848,6 +850,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->Parasite_GrappleAnim)
 		.Process(this->InfantryAutoDeploy)
 		.Process(this->AdjacentWallDamage)
+		.Process(this->InSequenceExtraRange)
 		;
 }
 
