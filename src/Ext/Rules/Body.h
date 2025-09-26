@@ -240,8 +240,7 @@ public:
 		Valueable<bool> NonVehExplodeOnDestroy;
 		Valueable<bool> FireDeathWeaponOnCrushed;
 		Valueable<bool> CrushBuildingOnAnyCell;
-		Valueable<bool> RallyPointOnTechno;
-		Valueable<bool> RallyPointForceMove;
+		Valueable<bool> RallyPointIgnoreReachability;
 		Valueable<bool> RallyPointAreaGuard;
 		Valueable<bool> PlayerDestroyWalls;
 		Valueable<int> AutoTargetWalls;
@@ -409,6 +408,8 @@ public:
 		int TintColorBerserk;
 
 		Valueable<int> AdjacentWallDamage;
+
+		Valueable<Leptons> InSequenceExtraRange;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -605,8 +606,7 @@ public:
 			, NonVehExplodeOnDestroy { false }
 			, FireDeathWeaponOnCrushed { false }
 			, CrushBuildingOnAnyCell { false }
-			, RallyPointOnTechno { false }
-			, RallyPointForceMove { false }
+			, RallyPointIgnoreReachability { false }
 			, RallyPointAreaGuard { false }
 			, PlayerDestroyWalls { false }
 			, AutoTargetWalls { 1 }
@@ -754,6 +754,8 @@ public:
 			, Parasite_GrappleAnim {}
 			, InfantryAutoDeploy { false }
 			, AdjacentWallDamage { 200 }
+
+			, InSequenceExtraRange { Leptons(0) }
 		{ }
 
 		virtual ~ExtData() = default;

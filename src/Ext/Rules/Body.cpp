@@ -296,8 +296,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->NonVehExplodeOnDestroy.Read(exINI, GameStrings::AudioVisual, "NonVehExplodeOnDestroy");
 	this->FireDeathWeaponOnCrushed.Read(exINI, GameStrings::CombatDamage, "FireDeathWeaponOnCrushed");
 	this->CrushBuildingOnAnyCell.Read(exINI, GameStrings::General, "CrushBuildingOnAnyCell");
-	this->RallyPointOnTechno.Read(exINI, GameStrings::General, "RallyPointOnTechno");
-	this->RallyPointForceMove.Read(exINI, GameStrings::General, "RallyPointForceMove");
+	this->RallyPointIgnoreReachability.Read(exINI, GameStrings::General, "RallyPointIgnoreReachability");
 	this->RallyPointAreaGuard.Read(exINI, GameStrings::General, "RallyPointAreaGuard");
 	this->PlayerDestroyWalls.Read(exINI, GameStrings::General, "PlayerDestroyWalls");
 	this->AutoTargetWalls.Read(exINI, GameStrings::General, "AutoTargetWalls");
@@ -460,6 +459,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->InfantryAutoDeploy.Read(exINI, GameStrings::General, "InfantryAutoDeploy");
 
 	this->AdjacentWallDamage.Read(exINI, GameStrings::CombatDamage, "AdjacentWallDamage");
+
+	this->InSequenceExtraRange.Read(exINI, GameStrings::CombatDamage, "InSequenceExtraRange");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -725,8 +726,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->NonVehExplodeOnDestroy)
 		.Process(this->FireDeathWeaponOnCrushed)
 		.Process(this->CrushBuildingOnAnyCell)
-		.Process(this->RallyPointOnTechno)
-		.Process(this->RallyPointForceMove)
+		.Process(this->RallyPointIgnoreReachability)
 		.Process(this->RallyPointAreaGuard)
 		.Process(this->PlayerDestroyWalls)
 		.Process(this->AutoTargetWalls)
@@ -850,6 +850,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->Parasite_GrappleAnim)
 		.Process(this->InfantryAutoDeploy)
 		.Process(this->AdjacentWallDamage)
+		.Process(this->InSequenceExtraRange)
 		;
 }
 
