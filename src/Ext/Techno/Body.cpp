@@ -400,6 +400,7 @@ bool ConvertToType_Foot(FootClass* pThis, TechnoTypeClass* pToType)
 			auto const pExt = TechnoExt::ExtMap.Find(pThis);
 			pExt->UpdateTypeData(pToType);
 			pExt->UpdateTypeData_Foot();
+			pExt->UpdateTintValues();
 			return true;
 		}
 
@@ -499,6 +500,7 @@ bool ConvertToType_Foot(FootClass* pThis, TechnoTypeClass* pToType)
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 	pExt->UpdateTypeData(pToType);
 	pExt->UpdateTypeData_Foot();
+	pExt->UpdateTintValues();
 	return true;
 }
 
