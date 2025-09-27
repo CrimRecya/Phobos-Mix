@@ -58,7 +58,7 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 	this->CellStructBuffer = *pStart;
 
 	// 创建起始路径节点
-	auto pPathNode = this->CreatePathNode(0, pCellsFromStart, pEnd, 0.0);
+	auto pPathNode = this->CreatePathNode(0, pCellsFromStart, pEnd, 0.0f);
 
 	do
 	{
@@ -167,13 +167,13 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 					const int astarCheckNextIndex = (dir == 8) ? (checkCell.X + AStarClass::MapSides * checkCell.Y) : (astarCheckCellIndex + AStarClass::DirSides[dir]);
 					const bool notAlternate = !pCell->ContainsBridge() || std::abs(this->StartLevel - pCell->Level) <= 1;
 					const int pathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, const CellStruct*)>(0x56D3F0)(&MapClass::Instance, &checkCell);
-					const int cellPassabilityIndex = static_cast<unsigned short>(MapClass::Instance.LevelAndPassabilityStruct2pointer_70[pathIndex].word_0[0]);
+					const unsigned int cellPassabilityIndex = static_cast<unsigned short>(MapClass::Instance.LevelAndPassabilityStruct2pointer_70[pathIndex].word_0[0]);
 
-					// 检查是否已被更优路径访问
+					// 检查是否已被更优路径访问，或被分层寻路跳过
 					if (notAlternate
-						? (pCount[cellPassabilityIndex] != this->SearchID && !pCell->BlockedNeighbours && useHierarchical
-							|| this->VisitCounts[astarCheckNextIndex] == this->SearchID && this->Distances[astarCheckNextIndex] < (pPathNode->PathCost + 1.009f))
-						: (this->AltVisitCounts[astarCheckNextIndex] == this->SearchID && this->AltDistances[astarCheckNextIndex] < (pPathNode->PathCost + 1.009f)))
+						? (pCount[cellPassabilityIndex] != this->SearchID && !pCell->BlockedNeighbours && useHierarchical // TODO pCount[cellPassabilityIndex] 不知为何和原版总是不一样
+							|| this->VisitCounts[astarCheckNextIndex] == this->SearchID && this->Distances[astarCheckNextIndex] < (pPathNode->PathCost + 1.009))
+						: (this->AltVisitCounts[astarCheckNextIndex] == this->SearchID && this->AltDistances[astarCheckNextIndex] < (pPathNode->PathCost + 1.009)))
 					{
 						continue;
 					}
@@ -194,112 +194,112 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 						// 终点不可到达，跳出循环
 						if (pCellsPtr == pCellsFromEnd && !isPassiveUnit && std::abs(this->StartLevel - this->EndLevel) <= 1)
 							goto BREAK_STEP_LOOP;
+
+						continue;
+					}
+
+					// 检查是否已访问过该单元格
+					if (notAlternate ? (this->VisitCounts[astarCheckNextIndex] == this->SearchID) : (this->AltVisitCounts[astarCheckNextIndex] == this->SearchID))
+						continue;
+
+					// 创建新的路径节点
+					const auto pNewPathNode = this->CreatePathNode(pPathNode, pCellsPtr, pEnd, cost);
+
+					do
+					{
+						// 将新节点加入优先队列（堆）
+						if (pBestCandidateNode)
+						{
+							// 堆插入
+							const auto pPathQueue = this->PathQueue;
+							const int count = pPathQueue->Count;
+							int newCount = count + 1;
+
+							if (newCount < pPathQueue->Capacity)
+							{
+								if (count == -1)
+								{
+									int harfNewCount = newCount >> 1;
+									const float newCost = pNewPathNode->TotalCost;
+
+									for ( ; newCount > 1; harfNewCount >>= 1)
+									{
+										const auto pQueueNodes = pPathQueue->Nodes;
+										const auto pParentNode = pQueueNodes[harfNewCount];
+
+										if (pParentNode->TotalCost <= newCost)
+											break;
+
+										pQueueNodes[newCount] = pParentNode;
+										newCount = harfNewCount;
+									}
+
+									pPathQueue->Nodes[newCount] = pNewPathNode;
+									pPathQueue->Count = newCount;
+
+									// 更新队列边界
+									if (pNewPathNode > pPathQueue->LMost)
+										pPathQueue->LMost = pNewPathNode;
+
+									if (pNewPathNode < pPathQueue->RMost)
+										pPathQueue->RMost = pNewPathNode;
+
+									break;
+								}
+								else
+								{
+									int harfNewCount = newCount >> 1;
+									const float newCost = pBestCandidateNode->TotalCost;
+
+									for ( ; newCount > 1; harfNewCount >>= 1)
+									{
+										const auto pQueueNodes = pPathQueue->Nodes;
+										const auto pParentNode = pQueueNodes[harfNewCount];
+
+										if (pParentNode->TotalCost <= newCost)
+											break;
+
+										pQueueNodes[newCount] = pParentNode;
+										newCount = harfNewCount;
+									}
+
+									pPathQueue->Nodes[newCount] = pBestCandidateNode;
+									pPathQueue->Count = newCount;
+
+									// 更新队列边界
+									if (pBestCandidateNode > pPathQueue->LMost)
+										pPathQueue->LMost = pBestCandidateNode;
+
+									if (pBestCandidateNode < pPathQueue->RMost)
+										pPathQueue->RMost = pBestCandidateNode;
+								}
+							}
+						}
+
+						// 设置新的最佳节点
+						pBestCandidateNode = pNewPathNode;
+					}
+					while (false);
+
+					// 标记单元格为已访问
+					if (notAlternate)
+					{
+						this->VisitCounts[astarCheckNextIndex] = this->SearchID;
+						this->Distances[astarCheckNextIndex] = pNewPathNode->PathCost;
 					}
 					else
 					{
-						// 检查是否已访问过该单元格
-						if (notAlternate ? (this->VisitCounts[astarCheckNextIndex] == this->SearchID) : (this->AltVisitCounts[astarCheckNextIndex] == this->SearchID))
-							continue;
+						this->AltVisitCounts[astarCheckNextIndex] = this->SearchID;
+						this->AltDistances[astarCheckNextIndex] = pNewPathNode->PathCost;
+					}
 
-						// 创建新的路径节点
-						const auto pNewPathNode = this->CreatePathNode(pPathNode, pCellsPtr, pEnd, cost);
+					// 更新路径长度和缓冲区
+					const int pathLength = this->PathLength;
 
-						do
-						{
-							// 将新节点加入优先队列（堆）
-							if (pBestCandidateNode)
-							{
-								// 堆插入
-								const auto pPathQueue = this->PathQueue;
-								const int count = pPathQueue->Count;
-								int newCount = count + 1;
-
-								if (newCount < pPathQueue->Capacity)
-								{
-									if (count == -1)
-									{
-										int harfNewCount = newCount >> 1;
-										const float newCost = pNewPathNode->TotalCost;
-
-										for ( ; newCount > 1; harfNewCount >>= 1)
-										{
-											const auto pQueueNodes = pPathQueue->Nodes;
-											const auto pParentNode = pQueueNodes[harfNewCount];
-
-											if (pParentNode->TotalCost <= newCost)
-												break;
-
-											pQueueNodes[newCount] = pParentNode;
-											newCount = harfNewCount;
-										}
-
-										pPathQueue->Nodes[newCount] = pNewPathNode;
-										pPathQueue->Count = newCount;
-
-										// 更新队列边界
-										if (pNewPathNode > pPathQueue->LMost)
-											pPathQueue->LMost = pNewPathNode;
-
-										if (pNewPathNode < pPathQueue->RMost)
-											pPathQueue->RMost = pNewPathNode;
-
-										break;
-									}
-									else
-									{
-										int harfNewCount = newCount >> 1;
-										const float newCost = pBestCandidateNode->TotalCost;
-
-										for ( ; newCount > 1; harfNewCount >>= 1)
-										{
-											const auto pQueueNodes = pPathQueue->Nodes;
-											const auto pParentNode = pQueueNodes[harfNewCount];
-
-											if (pParentNode->TotalCost <= newCost)
-												break;
-
-											pQueueNodes[newCount] = pParentNode;
-											newCount = harfNewCount;
-										}
-
-										pPathQueue->Nodes[newCount] = pBestCandidateNode;
-										pPathQueue->Count = newCount;
-
-										// 更新队列边界
-										if (pBestCandidateNode > pPathQueue->LMost)
-											pPathQueue->LMost = pBestCandidateNode;
-
-										if (pBestCandidateNode < pPathQueue->RMost)
-											pPathQueue->RMost = pBestCandidateNode;
-									}
-								}
-							}
-
-							// 设置新的最佳节点
-							pBestCandidateNode = pNewPathNode;
-						}
-						while (false);
-
-						// 标记单元格为已访问
-						if (notAlternate)
-						{
-							this->VisitCounts[astarCheckNextIndex] = this->SearchID;
-							this->Distances[astarCheckNextIndex] = pNewPathNode->PathCost;
-						}
-						else
-						{
-							this->AltVisitCounts[astarCheckNextIndex] = this->SearchID;
-							this->AltDistances[astarCheckNextIndex] = pNewPathNode->PathCost;
-						}
-
-						// 更新路径长度和缓冲区
-						const int pathLength = this->PathLength;
-
-						if (cellPassabilityIndex == this->PassabilityData[0].Indices[pathLength + 1])
-						{
-							this->PathLength = pathLength + 1;
-							this->CellStructBuffer = checkCell;
-						}
+					if (cellPassabilityIndex == static_cast<unsigned int>(this->PassabilityData[0].Indices[pathLength + 1]))
+					{
+						this->PathLength = pathLength + 1;
+						this->CellStructBuffer = checkCell;
 					}
 				}
 
@@ -1200,7 +1200,8 @@ bool AStarClass::PlotStraightPath(
 
 #pragma region Hooks
 
-// DEFINE_FUNCTION_JUMP(CALL, 0x42CC02, AStarClass::FindRegularPath); // 有时会卡住，暂时没空细看，先放着
+// 在重写的函数中，检查分层寻路时，会和原版结果不同，导致单位卡住，暂时搞不懂，先放着
+// DEFINE_FUNCTION_JUMP(CALL, 0x42CC02, AStarClass::FindRegularPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x429F8A, AStarClass::CalculateMoveCost);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A415, AStarClass::ProcessFinalPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A41E, AStarClass::OptimizeFinalPath);
