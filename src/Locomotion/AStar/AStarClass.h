@@ -105,7 +105,7 @@ public:
 		// 节点索引
 		int NodeIndex;
 
-		// 查找器索引
+		// 查找节点索引
 		int FinderIndex;
 
 		// 节点成本
@@ -219,7 +219,7 @@ public:
 		const CellStruct* const pEnd,
 		const MovementZone movementZone,
 		const FootClass* const pFoot
-	) JMP_THIS(0x42C290);
+	); // JMP_THIS(0x42C290)
 
 	// 辅助函数
 
@@ -340,7 +340,7 @@ public:
 	// 距离数组
 	float* Distances;
 
-	// 访问标记
+	// 访问标记（每进行一次寻路，递增一次）
 	int SearchID;
 
 	// 单位速度类型
@@ -358,14 +358,14 @@ public:
 	// 搜索模式
 	int FindMode; // 0
 
-	// 双向通行计数
-	int* TwoWayPassCounts[3];
+	// 分层已访问节点
+	int* LevelVisitedMarkers[3];
 
-	// 单向通行计数
-	int* OneWayPassCounts[3];
+	// 分层待探索队列
+	int* OpenSetMarkers[3];
 
-	// 单向通行因子
-	float* OneWayPassFactors[3];
+	// 分层实际代价队列
+	float* GCostArray[3];
 
 	// 分层节点缓冲区
 	HierarchicalNodeBuffer* HierarchyBuffer;

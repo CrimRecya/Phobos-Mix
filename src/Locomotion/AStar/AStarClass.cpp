@@ -21,6 +21,8 @@ CellStruct AStarClass::NextPathCell(
 
 #pragma endregion
 
+#pragma region FindRegularPath
+
 AStarClass::PathFinderData* AStarClass::FindRegularPath(
 	const CellStruct* const pStart,
 	const CellStruct* const pEnd,
@@ -53,7 +55,7 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 		this->StartLevel += 4;
 
 	// 初始化寻路数据
-	const auto pCount = this->TwoWayPassCounts[0];
+	const auto pCount = this->LevelVisitedMarkers[0];
 	this->PathLength = 0;
 	this->CellStructBuffer = *pStart;
 
@@ -167,11 +169,11 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 					const int astarCheckNextIndex = (dir == 8) ? (checkCell.X + AStarClass::MapSides * checkCell.Y) : (astarCheckCellIndex + AStarClass::DirSides[dir]);
 					const bool notAlternate = !pCell->ContainsBridge() || std::abs(this->StartLevel - pCell->Level) <= 1;
 					const int pathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, const CellStruct*)>(0x56D3F0)(&MapClass::Instance, &checkCell);
-					const unsigned int cellPassabilityIndex = static_cast<unsigned short>(MapClass::Instance.LevelAndPassabilityStruct2pointer_70[pathIndex].word_0[0]);
+					const unsigned short cellPassabilityIndex = static_cast<unsigned short>(MapClass::Instance.LevelAndPassabilityStruct2pointer_70[pathIndex].word_0[0]);
 
 					// 检查是否已被更优路径访问，或被分层寻路跳过
 					if (notAlternate
-						? (pCount[cellPassabilityIndex] != this->SearchID && !pCell->BlockedNeighbours && useHierarchical // TODO pCount[cellPassabilityIndex] 不知为何和原版总是不一样
+						? (pCount[cellPassabilityIndex] != this->SearchID && !pCell->BlockedNeighbours && useHierarchical
 							|| this->VisitCounts[astarCheckNextIndex] == this->SearchID && this->Distances[astarCheckNextIndex] < (pPathNode->PathCost + 1.009))
 						: (this->AltVisitCounts[astarCheckNextIndex] == this->SearchID && this->AltDistances[astarCheckNextIndex] < (pPathNode->PathCost + 1.009)))
 					{
@@ -235,7 +237,7 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 									}
 
 									pPathQueue->Nodes[newCount] = pNewPathNode;
-									pPathQueue->Count = newCount;
+									++pPathQueue->Count;
 
 									// 更新队列边界
 									if (pNewPathNode > pPathQueue->LMost)
@@ -264,7 +266,7 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 									}
 
 									pPathQueue->Nodes[newCount] = pBestCandidateNode;
-									pPathQueue->Count = newCount;
+									++pPathQueue->Count;
 
 									// 更新队列边界
 									if (pBestCandidateNode > pPathQueue->LMost)
@@ -296,7 +298,7 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 					// 更新路径长度和缓冲区
 					const int pathLength = this->PathLength;
 
-					if (cellPassabilityIndex == static_cast<unsigned int>(this->PassabilityData[0].Indices[pathLength + 1]))
+					if (cellPassabilityIndex == static_cast<unsigned short>(this->PassabilityData[0].Indices[pathLength + 1]))
 					{
 						this->PathLength = pathLength + 1;
 						this->CellStructBuffer = checkCell;
@@ -317,12 +319,13 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 						pQueueNodes[count] = nullptr;
 						const int newCount = count - 1;
 						pPathQueue->Count = newCount;
+
+						// 堆下沉
 						int heapIndex = 1;
 						int childIndex = (newCount < 2 || pQueueNodes[1]->TotalCost <= pQueueNodes[2]->TotalCost) ? 1 : 2;
 
 						do
 						{
-							// 堆下沉
 							if (newCount < 3 || pQueueNodes[childIndex]->TotalCost <= pQueueNodes[3]->TotalCost)
 							{
 								if (childIndex == 1)
@@ -375,10 +378,11 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 							{
 								// 用候选节点替换顶部节点
 								pQueueNodes[1] = pBestCandidateNode;
+
+								// 堆下沉
 								int heapIndex = 1;
 								int childIndex = (count < 2 || pQueueNodes[1]->TotalCost <= pQueueNodes[2]->TotalCost) ? 1 : 2;
 
-								// 堆下沉
 								do
 								{
 									if (count < 3 || pQueueNodes[childIndex]->TotalCost <= pQueueNodes[3]->TotalCost)
@@ -452,6 +456,368 @@ BREAK_STEP_LOOP:
 
 	return pData;
 }
+
+#pragma endregion
+
+#pragma region FindHierarchicalPath
+
+bool AStarClass::FindHierarchicalPath(
+	const CellStruct* const pStart,
+	const CellStruct* const pEnd,
+	const MovementZone movementZone,
+	const FootClass* const pFoot
+)
+{
+	// TODO 修
+	double threatAvoidanceCoefficient = 0.0;
+	HouseClass* pOwner = nullptr;
+	bool calculateThreat = false;
+
+	if (pFoot)
+	{
+		threatAvoidanceCoefficient = reinterpret_cast<double(__thiscall*)(const FootClass*)>(0x4DC760)(pFoot);
+		pOwner = pFoot->Owner;
+		calculateThreat = true;
+
+		if (threatAvoidanceCoefficient <= 0.00001)
+			threatAvoidanceCoefficient = 0.0;
+	}
+
+	int level = 2;
+
+	while (true)
+	{
+		const auto pHierarchyQueue = this->HierarchyQueue;
+
+		for (int i = 0; i <= pHierarchyQueue->Count; pHierarchyQueue->Nodes[i - 1] = nullptr)
+			++i;
+
+		pHierarchyQueue->Count = 0;
+
+		const int sourcePathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, const CellStruct*)>(0x56D3F0)(&MapClass::Instance, pStart);
+		const unsigned short sourcePassabilityIndex = static_cast<unsigned short>(MapClass::Instance.LevelAndPassabilityStruct2pointer_70[sourcePathIndex].word_0[level]);
+		const int destinationPathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, const CellStruct*)>(0x56D3F0)(&MapClass::Instance, pStart);
+		const unsigned short destinationPassabilityIndex = static_cast<unsigned short>(MapClass::Instance.LevelAndPassabilityStruct2pointer_70[destinationPathIndex].word_0[level]);
+
+		const bool isMaxLevel = level == 2;
+		const auto pNextLevelLevelVisitedMarkers = isMaxLevel ? nullptr : this->LevelVisitedMarkers[level + 1];
+
+		const auto pLevelVisitedMarkers = this->LevelVisitedMarkers[level];
+		const auto pOpenSetMarkers = this->OpenSetMarkers[level];
+		const auto pGCostArray = this->GCostArray[level];
+
+		pLevelVisitedMarkers[sourcePassabilityIndex] = this->SearchID;
+		pLevelVisitedMarkers[destinationPassabilityIndex] = this->SearchID;
+
+		if (sourcePassabilityIndex == destinationPassabilityIndex)
+		{
+			if (!level)
+			{
+				const auto pBufferNodes = this->HierarchyBuffer->Nodes;
+				pBufferNodes->Count = 0;
+				pBufferNodes->FinderIndex = sourcePassabilityIndex;
+			}
+
+			this->PassabilityData[level].Indices[0] = sourcePassabilityIndex;
+			this->PassabilityCounts[level] = 1;
+		}
+		else
+		{
+			const auto pHierarchicalNodes = this->HierarchyBuffer->Nodes;
+			pHierarchicalNodes->NodeIndex = -1;
+			pHierarchicalNodes->FinderIndex = sourcePassabilityIndex;
+			pHierarchicalNodes->Cost = 0.0;
+			pHierarchicalNodes->Count = 0;
+
+			// 堆插入
+			{
+				int newCount = pHierarchyQueue->Count + 1;
+
+				if (newCount < pHierarchyQueue->Capacity)
+				{
+					int harfNewCount = newCount >> 1;
+
+					for ( ; newCount > 1; harfNewCount >>= 1)
+					{
+						const auto pQueueNodes = pHierarchyQueue->Nodes;
+						const auto pParentNode = pQueueNodes[harfNewCount];
+
+						if (pParentNode->Cost <= 0.0)
+							break;
+
+						pQueueNodes[newCount] = pParentNode;
+						newCount = harfNewCount;
+					}
+
+					pHierarchyQueue->Nodes[newCount] = pHierarchicalNodes;
+					++pHierarchyQueue->Count;
+
+					// 更新队列边界
+					if (pHierarchicalNodes > pHierarchyQueue->LMost)
+						pHierarchyQueue->LMost = pHierarchicalNodes;
+
+					if (pHierarchicalNodes < pHierarchyQueue->RMost)
+						pHierarchyQueue->RMost = pHierarchicalNodes;
+				}
+			}
+
+			pOpenSetMarkers[sourcePassabilityIndex] = this->SearchID;
+			pGCostArray[sourcePassabilityIndex] = 0.0;
+			int bufferIndex = 1;
+			AStarClass::HierarchicalNode* pCheckNode = nullptr;
+
+			if (const int count = pHierarchyQueue->Count)
+			{
+				// 堆提取
+				const auto pQueueNodes = pHierarchyQueue->Nodes;
+				const auto pExtractedNode = pQueueNodes[1];
+				pQueueNodes[1] = pQueueNodes[count];
+				pQueueNodes[count] = nullptr;
+				const int newCount = count - 1;
+				pHierarchyQueue->Count = newCount;
+
+				// 堆下沉
+				int heapIndex = 1;
+				int childIndex = (newCount < 2 || pQueueNodes[1]->Cost <= pQueueNodes[2]->Cost) ? 1 : 2;
+
+				do
+				{
+					if (newCount < 3 || pQueueNodes[childIndex]->Cost <= pQueueNodes[3]->Cost)
+					{
+						if (childIndex == 1)
+							break;
+					}
+					else
+					{
+						childIndex = 3;
+					}
+
+					do
+					{
+						std::swap(pQueueNodes[heapIndex], pQueueNodes[childIndex]);
+						heapIndex = childIndex;
+						const int leftChildIndex = 2 * childIndex;
+						const int rightChildIndex = leftChildIndex + 1;
+
+						if (leftChildIndex <= newCount && pQueueNodes[childIndex]->Cost > pQueueNodes[leftChildIndex]->Cost)
+							childIndex = leftChildIndex;
+
+						if (rightChildIndex <= newCount && pQueueNodes[childIndex]->Cost > pQueueNodes[rightChildIndex]->Cost)
+							childIndex = rightChildIndex;
+					}
+					while (childIndex != heapIndex);
+				}
+				while (false);
+
+				pCheckNode = pExtractedNode;
+			}
+
+			if (!pCheckNode)
+				return false;
+
+			const bool noZoneIndices = this->ZoneIndices[level].Count == 0;
+
+			while (true)
+			{
+				const unsigned short finderNodeIndex = static_cast<unsigned short>(pCheckNode->FinderIndex);
+
+				if (finderNodeIndex == destinationPassabilityIndex)
+					break;
+
+				const auto pSubzoneTracking = MapClass::Instance.SubzoneTracking[level].Items;
+				auto pSubzoneTrackingConnectionsItems = pSubzoneTracking[finderNodeIndex].SubzoneConnections.Items;
+				int subzoneTrackingConnectionsCount = pSubzoneTracking[finderNodeIndex].SubzoneConnections.Count;
+
+				if (subzoneTrackingConnectionsCount > 0)
+				{
+					do
+					{
+						const unsigned int sourceSubzoneIndex = pSubzoneTrackingConnectionsItems->unknown_dword_0;
+						const bool sourceSubzoneSupplement = pSubzoneTrackingConnectionsItems->unknown_byte_4;
+						const unsigned int sourceSubzoneTrackingIndex = pSubzoneTracking[pSubzoneTrackingConnectionsItems->unknown_dword_0].unknown_word_18;
+						const unsigned int sourceSubzoneCoefficientIndex = pSubzoneTracking[pSubzoneTrackingConnectionsItems->unknown_dword_0].unknown_dword_1C;
+						int threat = 0;
+
+						if (calculateThreat)
+						{
+							const int threatPosedEstimates = reinterpret_cast<int(__thiscall*)(MapClass*, HouseClass*, int, int, int)>
+								(0x585F40)(&MapClass::Instance, pOwner, level, finderNodeIndex, sourceSubzoneIndex); // GetThreatPosedEstimates
+							threat = static_cast<int>(threatPosedEstimates * threatAvoidanceCoefficient);
+						}
+
+						const float extraThreat = sourceSubzoneSupplement ? 0.001f : 0.0f;
+						const int searchID = this->SearchID;
+						const float cost = static_cast<float>(AStarClass::DirCoefficients[sourceSubzoneCoefficientIndex] + pCheckNode->Cost + threat + extraThreat);
+
+						if ((pOpenSetMarkers[sourceSubzoneIndex] != searchID || pGCostArray[sourceSubzoneIndex] > cost)
+							&& (isMaxLevel
+								|| pNextLevelLevelVisitedMarkers[sourceSubzoneTrackingIndex] == searchID
+								|| sourceSubzoneCoefficientIndex == 1)
+							&& MapClass::MovementAdjustArray[static_cast<int>(movementZone)][sourceSubzoneCoefficientIndex] == 1)
+						{
+							const unsigned int mixIndex = static_cast<unsigned short>(sourceSubzoneIndex) < static_cast<unsigned short>(finderNodeIndex)
+								? finderNodeIndex | (sourceSubzoneIndex << 16)
+								: sourceSubzoneIndex | (finderNodeIndex << 16);
+							int zoneIndicesNewCount = this->ZoneIndices[level].Count - 1;
+
+							if (noZoneIndices || zoneIndicesNewCount < 0)
+							{
+LABEL_49:
+								const auto pHierarchyBuffer = this->HierarchyBuffer;
+								pHierarchyBuffer->Nodes[bufferIndex].FinderIndex = sourceSubzoneIndex;
+								const auto pHierarchicalNode = &pHierarchyBuffer->Nodes[bufferIndex];
+								pHierarchicalNode->NodeIndex = ((char *)pCheckNode - (char *)pHierarchyBuffer) >> 4;// sizeof=0x10
+								pHierarchicalNode->Cost = cost;
+								pHierarchicalNode->Count = pCheckNode->Count + 1;
+
+								// 堆插入
+								int newCount = pHierarchyQueue->Count + 1;
+								int harfNewCount = newCount >> 1;
+
+								if (newCount < pHierarchyQueue->Capacity)
+								{
+									for ( ; newCount > 1; harfNewCount >>= 1)
+									{
+										const auto pQueueNodes = pHierarchyQueue->Nodes;
+										const auto pParentNode = pQueueNodes[harfNewCount];
+
+										if (pParentNode->Cost <= cost)
+											break;
+
+										pQueueNodes[newCount] = pParentNode;
+										newCount = harfNewCount;
+									}
+
+									pHierarchyQueue->Nodes[newCount] = pHierarchicalNode;
+									++pHierarchyQueue->Count;
+
+									// 更新队列边界
+									if (pHierarchicalNode > pHierarchyQueue->LMost)
+										pHierarchyQueue->LMost = pHierarchicalNode;
+
+									if (pHierarchicalNode < pHierarchyQueue->RMost)
+										pHierarchyQueue->RMost = pHierarchicalNode;
+								}
+
+								pOpenSetMarkers[sourceSubzoneIndex] = this->SearchID;
+								pGCostArray[sourceSubzoneIndex] = cost;
+								++bufferIndex;
+							}
+							else
+							{
+								auto pZoneIndex = &this->ZoneIndices[level].Items[zoneIndicesNewCount];
+
+								while ( *pZoneIndex != mixIndex )
+								{
+									--zoneIndicesNewCount;
+									--pZoneIndex;
+
+									if (zoneIndicesNewCount < 0)
+										goto LABEL_49;
+								}
+							}
+						}
+
+						++pSubzoneTrackingConnectionsItems;
+						--subzoneTrackingConnectionsCount;
+					}
+					while (!subzoneTrackingConnectionsCount);
+				}
+
+				const int count = pHierarchyQueue->Count;
+
+				if (!count)
+					return false;
+
+				// 堆提取
+				const auto pQueueNodes = pHierarchyQueue->Nodes;
+				const auto pExtractedNode = pQueueNodes[1];
+				pQueueNodes[1] = pQueueNodes[count];
+				pQueueNodes[count] = nullptr;
+				const int newCount = count - 1;
+				pHierarchyQueue->Count = newCount;
+
+				// 堆下沉
+				int heapIndex = 1;
+				int childIndex = (newCount < 2 || pQueueNodes[1]->Cost <= pQueueNodes[2]->Cost) ? 1 : 2;
+
+				do
+				{
+					if (newCount < 3 || pQueueNodes[childIndex]->Cost <= pQueueNodes[3]->Cost)
+					{
+						if (childIndex == 1)
+							break;
+					}
+					else
+					{
+						childIndex = 3;
+					}
+
+					do
+					{
+						std::swap(pQueueNodes[heapIndex], pQueueNodes[childIndex]);
+						heapIndex = childIndex;
+						const int leftChildIndex = 2 * childIndex;
+						const int rightChildIndex = leftChildIndex + 1;
+
+						if (leftChildIndex <= newCount && pQueueNodes[childIndex]->Cost > pQueueNodes[leftChildIndex]->Cost)
+							childIndex = leftChildIndex;
+
+						if (rightChildIndex <= newCount && pQueueNodes[childIndex]->Cost > pQueueNodes[rightChildIndex]->Cost)
+							childIndex = rightChildIndex;
+					}
+					while (childIndex != heapIndex);
+				}
+				while (false);
+
+				pCheckNode = pExtractedNode;
+
+				if (!pExtractedNode)
+					return false;
+			}
+
+			if (!pCheckNode)
+				return false;
+
+			auto pCheckedNode = pCheckNode;
+
+			if (pCheckNode->NodeIndex != -1)
+			{
+				do
+				{
+					pLevelVisitedMarkers[pCheckNode->FinderIndex] = this->SearchID;
+					pCheckNode = &this->HierarchyBuffer->Nodes[pCheckNode->NodeIndex];
+				}
+				while (pCheckNode->NodeIndex != -1);
+			}
+
+			int passabilityIndex = pCheckedNode->Count;
+			this->PassabilityCounts[level] = passabilityIndex + 1;
+
+			if (passabilityIndex > 0)
+			{
+				auto pDataIndex = &this->PassabilityData[level].Indices[passabilityIndex];
+
+				do
+				{
+					*pDataIndex-- = static_cast<unsigned short>(pCheckedNode->FinderIndex);
+					pCheckedNode = &this->HierarchyBuffer->Nodes[pCheckedNode->NodeIndex];
+					--passabilityIndex;
+				}
+				while (passabilityIndex);
+			}
+
+			this->PassabilityData[level].Indices[0] = static_cast<unsigned short>(pCheckedNode->FinderIndex);
+		}
+
+		if (--level >= 0)
+			continue;
+
+		return true;
+	}
+}
+
+#pragma endregion
 
 #pragma region CalculateMoveCost
 
@@ -1200,8 +1566,10 @@ bool AStarClass::PlotStraightPath(
 
 #pragma region Hooks
 
-// 在重写的函数中，检查分层寻路时，会和原版结果不同，导致单位卡住，暂时搞不懂，先放着
-// DEFINE_FUNCTION_JUMP(CALL, 0x42CC02, AStarClass::FindRegularPath);
+DEFINE_FUNCTION_JUMP(CALL, 0x42CC02, AStarClass::FindRegularPath);
+// DEFINE_FUNCTION_JUMP(CALL, 0x42CB58, AStarClass::FindHierarchicalPath);
+// DEFINE_FUNCTION_JUMP(CALL, 0x42CCB3, AStarClass::FindHierarchicalPath);
+// DEFINE_FUNCTION_JUMP(CALL, 0x42D222, AStarClass::FindHierarchicalPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x429F8A, AStarClass::CalculateMoveCost);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A415, AStarClass::ProcessFinalPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A41E, AStarClass::OptimizeFinalPath);
