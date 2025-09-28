@@ -224,6 +224,7 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 									int harfNewCount = newCount >> 1;
 									const float newCost = pNewPathNode->TotalCost;
 
+									// 堆上浮
 									for ( ; newCount > 1; harfNewCount >>= 1)
 									{
 										const auto pQueueNodes = pPathQueue->Nodes;
@@ -253,6 +254,7 @@ AStarClass::PathFinderData* AStarClass::FindRegularPath(
 									int harfNewCount = newCount >> 1;
 									const float newCost = pBestCandidateNode->TotalCost;
 
+									// 堆上浮
 									for ( ; newCount > 1; harfNewCount >>= 1)
 									{
 										const auto pQueueNodes = pPathQueue->Nodes;
@@ -468,49 +470,54 @@ bool AStarClass::FindHierarchicalPath(
 	const FootClass* const pFoot
 )
 {
-	// TODO 修
 	double threatAvoidanceCoefficient = 0.0;
 	HouseClass* pOwner = nullptr;
 	bool calculateThreat = false;
 
+	// 如果有单位传入，计算威胁避免系数
 	if (pFoot)
 	{
 		threatAvoidanceCoefficient = reinterpret_cast<double(__thiscall*)(const FootClass*)>(0x4DC760)(pFoot);
 		pOwner = pFoot->Owner;
-		calculateThreat = true;
-
-		if (threatAvoidanceCoefficient <= 0.00001)
-			threatAvoidanceCoefficient = 0.0;
+		calculateThreat = threatAvoidanceCoefficient > 0.00001;
 	}
 
+	// 层级按区域范围从大到小搜索
 	int level = 2;
 
 	while (true)
 	{
 		const auto pHierarchyQueue = this->HierarchyQueue;
 
+		// 清空队列，将所有节点指针置为空
 		for (int i = 0; i <= pHierarchyQueue->Count; pHierarchyQueue->Nodes[i - 1] = nullptr)
 			++i;
 
 		pHierarchyQueue->Count = 0;
 
+		// 计算起点和终点在当前层级的通行性索引
 		const int sourcePathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, const CellStruct*)>(0x56D3F0)(&MapClass::Instance, pStart);
-		const unsigned short sourcePassabilityIndex = static_cast<unsigned short>(MapClass::Instance.LevelAndPassabilityStruct2pointer_70[sourcePathIndex].word_0[level]);
-		const int destinationPathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, const CellStruct*)>(0x56D3F0)(&MapClass::Instance, pStart);
-		const unsigned short destinationPassabilityIndex = static_cast<unsigned short>(MapClass::Instance.LevelAndPassabilityStruct2pointer_70[destinationPathIndex].word_0[level]);
+		const int sourcePassabilityIndex = static_cast<unsigned short>(MapClass::Instance.LevelAndPassabilityStruct2pointer_70[sourcePathIndex].word_0[level]);
+		const int destinationPathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, const CellStruct*)>(0x56D3F0)(&MapClass::Instance, pEnd);
+		const int destinationPassabilityIndex = static_cast<unsigned short>(MapClass::Instance.LevelAndPassabilityStruct2pointer_70[destinationPathIndex].word_0[level]);
 
+		// 获取下一层级的访问标记，用于层级间连通性检查
 		const bool isMaxLevel = level == 2;
 		const auto pNextLevelLevelVisitedMarkers = isMaxLevel ? nullptr : this->LevelVisitedMarkers[level + 1];
 
+		// 获取当前层级的各种数据数组
 		const auto pLevelVisitedMarkers = this->LevelVisitedMarkers[level];
 		const auto pOpenSetMarkers = this->OpenSetMarkers[level];
 		const auto pGCostArray = this->GCostArray[level];
 
+		// 标记起点和终点为已访问
 		pLevelVisitedMarkers[sourcePassabilityIndex] = this->SearchID;
 		pLevelVisitedMarkers[destinationPassabilityIndex] = this->SearchID;
 
+		// 如果起点和终点在同一位置，直接处理
 		if (sourcePassabilityIndex == destinationPassabilityIndex)
 		{
+			// 在最低层级需要特殊处理缓冲区
 			if (!level)
 			{
 				const auto pBufferNodes = this->HierarchyBuffer->Nodes;
@@ -518,11 +525,13 @@ bool AStarClass::FindHierarchicalPath(
 				pBufferNodes->FinderIndex = sourcePassabilityIndex;
 			}
 
-			this->PassabilityData[level].Indices[0] = sourcePassabilityIndex;
+			// 设置通行性数据
+			this->PassabilityData[level].Indices[0] = static_cast<unsigned short>(sourcePassabilityIndex);
 			this->PassabilityCounts[level] = 1;
 		}
 		else
 		{
+			// 初始化起点节点，-1表示根节点
 			const auto pHierarchicalNodes = this->HierarchyBuffer->Nodes;
 			pHierarchicalNodes->NodeIndex = -1;
 			pHierarchicalNodes->FinderIndex = sourcePassabilityIndex;
@@ -537,6 +546,7 @@ bool AStarClass::FindHierarchicalPath(
 				{
 					int harfNewCount = newCount >> 1;
 
+					// 堆上浮
 					for ( ; newCount > 1; harfNewCount >>= 1)
 					{
 						const auto pQueueNodes = pHierarchyQueue->Nodes;
@@ -561,11 +571,15 @@ bool AStarClass::FindHierarchicalPath(
 				}
 			}
 
+			// 标记起点为在开放集中，并设置初始代价
 			pOpenSetMarkers[sourcePassabilityIndex] = this->SearchID;
 			pGCostArray[sourcePassabilityIndex] = 0.0;
+
+			// 缓冲区索引，用于分配新节点
 			int bufferIndex = 1;
 			AStarClass::HierarchicalNode* pCheckNode = nullptr;
 
+			// 从堆中提取代价最小的节点
 			if (const int count = pHierarchyQueue->Count)
 			{
 				// 堆提取
@@ -612,32 +626,40 @@ bool AStarClass::FindHierarchicalPath(
 				pCheckNode = pExtractedNode;
 			}
 
+			// 如果没有可检查的节点，搜索失败
 			if (!pCheckNode)
 				return false;
 
+			// 检查区域索引是否为空
 			const bool noZoneIndices = this->ZoneIndices[level].Count == 0;
 
+			// 主搜索循环
 			while (true)
 			{
-				const unsigned short finderNodeIndex = static_cast<unsigned short>(pCheckNode->FinderIndex);
+				const int finderNodeIndex = pCheckNode->FinderIndex;
 
+				// 如果找到目标节点，跳出搜索循环
 				if (finderNodeIndex == destinationPassabilityIndex)
 					break;
 
+				// 获取当前节点的子区域连接信息
 				const auto pSubzoneTracking = MapClass::Instance.SubzoneTracking[level].Items;
 				auto pSubzoneTrackingConnectionsItems = pSubzoneTracking[finderNodeIndex].SubzoneConnections.Items;
 				int subzoneTrackingConnectionsCount = pSubzoneTracking[finderNodeIndex].SubzoneConnections.Count;
 
+				// 遍历所有相邻节点
 				if (subzoneTrackingConnectionsCount > 0)
 				{
 					do
 					{
-						const unsigned int sourceSubzoneIndex = pSubzoneTrackingConnectionsItems->unknown_dword_0;
+						// 获取相邻节点信息
+						const int sourceSubzoneIndex = static_cast<int>(pSubzoneTrackingConnectionsItems->unknown_dword_0);
 						const bool sourceSubzoneSupplement = pSubzoneTrackingConnectionsItems->unknown_byte_4;
-						const unsigned int sourceSubzoneTrackingIndex = pSubzoneTracking[pSubzoneTrackingConnectionsItems->unknown_dword_0].unknown_word_18;
-						const unsigned int sourceSubzoneCoefficientIndex = pSubzoneTracking[pSubzoneTrackingConnectionsItems->unknown_dword_0].unknown_dword_1C;
+						const int sourceSubzoneTrackingIndex = pSubzoneTracking[pSubzoneTrackingConnectionsItems->unknown_dword_0].unknown_word_18;
+						const int sourceSubzoneCoefficientIndex = static_cast<int>(pSubzoneTracking[pSubzoneTrackingConnectionsItems->unknown_dword_0].unknown_dword_1C);
 						int threat = 0;
 
+						// 计算威胁代价
 						if (calculateThreat)
 						{
 							const int threatPosedEstimates = reinterpret_cast<int(__thiscall*)(MapClass*, HouseClass*, int, int, int)>
@@ -645,28 +667,39 @@ bool AStarClass::FindHierarchicalPath(
 							threat = static_cast<int>(threatPosedEstimates * threatAvoidanceCoefficient);
 						}
 
+						// 补充威胁代价
 						const float extraThreat = sourceSubzoneSupplement ? 0.001f : 0.0f;
-						const int searchID = this->SearchID;
+
+						// 计算总代价，即方向系数+父节点代价+威胁代价+补充代价
 						const float cost = static_cast<float>(AStarClass::DirCoefficients[sourceSubzoneCoefficientIndex] + pCheckNode->Cost + threat + extraThreat);
 
-						if ((pOpenSetMarkers[sourceSubzoneIndex] != searchID || pGCostArray[sourceSubzoneIndex] > cost)
-							&& (isMaxLevel
-								|| pNextLevelLevelVisitedMarkers[sourceSubzoneTrackingIndex] == searchID
-								|| sourceSubzoneCoefficientIndex == 1)
-							&& MapClass::MovementAdjustArray[static_cast<int>(movementZone)][sourceSubzoneCoefficientIndex] == 1)
+						const int searchID = this->SearchID;
+
+						// 检查是否应该探索该相邻节点
+						if ((pOpenSetMarkers[sourceSubzoneIndex] != searchID // 不在开放集中
+								|| pGCostArray[sourceSubzoneIndex] > cost) // 找到了更优路径
+							&& (isMaxLevel // 是最高层级
+								|| pNextLevelLevelVisitedMarkers[sourceSubzoneTrackingIndex] == searchID // 在下一层级已访问
+								|| sourceSubzoneCoefficientIndex == 1) // 允许通行
+							&& MapClass::MovementAdjustArray[static_cast<int>(movementZone)][sourceSubzoneCoefficientIndex] == 1) // 允许该移动方式通行
 						{
+							// 计算连接索引
 							const unsigned int mixIndex = static_cast<unsigned short>(sourceSubzoneIndex) < static_cast<unsigned short>(finderNodeIndex)
 								? finderNodeIndex | (sourceSubzoneIndex << 16)
 								: sourceSubzoneIndex | (finderNodeIndex << 16);
 							int zoneIndicesNewCount = this->ZoneIndices[level].Count - 1;
 
+							// 如果区域索引为空或者连接键不在区域索引中，则处理该节点
 							if (noZoneIndices || zoneIndicesNewCount < 0)
 							{
-LABEL_49:
+PROCESS_NODE:
+								// 创建新节点
 								const auto pHierarchyBuffer = this->HierarchyBuffer;
 								pHierarchyBuffer->Nodes[bufferIndex].FinderIndex = sourceSubzoneIndex;
 								const auto pHierarchicalNode = &pHierarchyBuffer->Nodes[bufferIndex];
-								pHierarchicalNode->NodeIndex = ((char *)pCheckNode - (char *)pHierarchyBuffer) >> 4;// sizeof=0x10
+
+								// 计算父节点索引
+								pHierarchicalNode->NodeIndex = ((char *)pCheckNode - (char *)pHierarchyBuffer) >> 4; // sizeof=0x10
 								pHierarchicalNode->Cost = cost;
 								pHierarchicalNode->Count = pCheckNode->Count + 1;
 
@@ -676,6 +709,7 @@ LABEL_49:
 
 								if (newCount < pHierarchyQueue->Capacity)
 								{
+									// 堆上浮
 									for ( ; newCount > 1; harfNewCount >>= 1)
 									{
 										const auto pQueueNodes = pHierarchyQueue->Nodes;
@@ -699,25 +733,31 @@ LABEL_49:
 										pHierarchyQueue->RMost = pHierarchicalNode;
 								}
 
+								// 标记节点在开放集中，并记录G代价
 								pOpenSetMarkers[sourceSubzoneIndex] = this->SearchID;
 								pGCostArray[sourceSubzoneIndex] = cost;
 								++bufferIndex;
 							}
 							else
 							{
+								// 去重检查
 								auto pZoneIndex = &this->ZoneIndices[level].Items[zoneIndicesNewCount];
 
-								while ( *pZoneIndex != mixIndex )
+								while (*pZoneIndex != mixIndex)
 								{
 									--zoneIndicesNewCount;
 									--pZoneIndex;
 
+									// 不在区域索引中，处理该节点
 									if (zoneIndicesNewCount < 0)
-										goto LABEL_49;
+										goto PROCESS_NODE;
 								}
+
+								// 如果在区域索引中找到，跳过该节点
 							}
 						}
 
+						// 处理下一个相邻节点，直到处理完所有相邻节点
 						++pSubzoneTrackingConnectionsItems;
 						--subzoneTrackingConnectionsCount;
 					}
@@ -726,6 +766,7 @@ LABEL_49:
 
 				const int count = pHierarchyQueue->Count;
 
+				// 堆为空则搜索失败
 				if (!count)
 					return false;
 
@@ -770,30 +811,38 @@ LABEL_49:
 				}
 				while (false);
 
+				// 设置下一个要检查的节点
 				pCheckNode = pExtractedNode;
 
 				if (!pExtractedNode)
 					return false;
 			}
 
+			// 确保找到有效路径
 			if (!pCheckNode)
 				return false;
 
 			auto pCheckedNode = pCheckNode;
 
+			// 如果不是根节点，回溯到根节点
 			if (pCheckNode->NodeIndex != -1)
 			{
 				do
 				{
+					// 标记路径上的节点为已访问
 					pLevelVisitedMarkers[pCheckNode->FinderIndex] = this->SearchID;
+
+					// 移动到父节点
 					pCheckNode = &this->HierarchyBuffer->Nodes[pCheckNode->NodeIndex];
 				}
 				while (pCheckNode->NodeIndex != -1);
 			}
 
+			// 存储路径索引
 			int passabilityIndex = pCheckedNode->Count;
 			this->PassabilityCounts[level] = passabilityIndex + 1;
 
+			// 从终点向起点填充路径索引
 			if (passabilityIndex > 0)
 			{
 				auto pDataIndex = &this->PassabilityData[level].Indices[passabilityIndex];
@@ -807,9 +856,11 @@ LABEL_49:
 				while (passabilityIndex);
 			}
 
+			// 存储起点索引
 			this->PassabilityData[level].Indices[0] = static_cast<unsigned short>(pCheckedNode->FinderIndex);
 		}
 
+		// 进入下一层级搜索，如果所有层级都完成，返回成功
 		if (--level >= 0)
 			continue;
 
@@ -1567,9 +1618,9 @@ bool AStarClass::PlotStraightPath(
 #pragma region Hooks
 
 DEFINE_FUNCTION_JUMP(CALL, 0x42CC02, AStarClass::FindRegularPath);
-// DEFINE_FUNCTION_JUMP(CALL, 0x42CB58, AStarClass::FindHierarchicalPath);
-// DEFINE_FUNCTION_JUMP(CALL, 0x42CCB3, AStarClass::FindHierarchicalPath);
-// DEFINE_FUNCTION_JUMP(CALL, 0x42D222, AStarClass::FindHierarchicalPath);
+DEFINE_FUNCTION_JUMP(CALL, 0x42CB58, AStarClass::FindHierarchicalPath);
+DEFINE_FUNCTION_JUMP(CALL, 0x42CCB3, AStarClass::FindHierarchicalPath);
+DEFINE_FUNCTION_JUMP(CALL, 0x42D222, AStarClass::FindHierarchicalPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x429F8A, AStarClass::CalculateMoveCost);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A415, AStarClass::ProcessFinalPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A41E, AStarClass::OptimizeFinalPath);
