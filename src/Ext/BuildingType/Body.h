@@ -133,6 +133,10 @@ public:
 		Valueable<int> NumberImpassableRows_Dir;
 		Valueable<int> WeaponsFactory_Dir;
 
+		// Ares 0.A
+		Valueable<BuildingTypeClass*> RubbleIntact;
+		Valueable<bool> RubbleIntactRemove;
+
 		ExtData(BuildingTypeClass* OwnerObject) : Extension<BuildingTypeClass>(OwnerObject)
 			, PowersUp_Owner { AffectedHouse::Owner }
 			, PowersUp_Buildings {}
@@ -221,6 +225,10 @@ public:
 			, Bib_Dir { 2 }
 			, NumberImpassableRows_Dir { 2 }
 			, WeaponsFactory_Dir { 2 }
+
+			// Ares 0.A
+			, RubbleIntact { nullptr }
+			, RubbleIntactRemove { false }
 		{ }
 
 		BuildingTypeClass* GetAnotherPlacingType(size_t direction, bool onWater);
