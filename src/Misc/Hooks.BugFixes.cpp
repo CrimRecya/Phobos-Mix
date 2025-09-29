@@ -2657,3 +2657,29 @@ DEFINE_HOOK(0x741A66, UnitClass_SetDestination_JJVehFix, 0x5)
 }
 
 #pragma endregion
+
+// Cleart target for managers when the target is changing owner.
+DEFINE_HOOK(0x701681, TechnoClass_SetOwningHouse_ClearManagerTarget, 0x6)
+{
+	GET(TechnoClass*, pThis, ESI);
+	
+	for (auto pTemporal : TemporalClass::Array)
+	{
+		if (pTemporal->Target == pThis)
+			pTemporal->LetGo();
+	}
+
+	for (auto pAirstrike : AirstrikeClass::Array)
+	{
+		if (pAirstrike->Target == pThis)
+			pAirstrike->ResetTarget();
+	}
+
+	for (auto pSpawn : SpawnManagerClass::Array)
+	{
+		if (pSpawn->Target == pThis)
+			pSpawn->ResetTarget();
+	}
+
+	return 0;
+}
