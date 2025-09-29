@@ -99,6 +99,8 @@ public:
 
 		ValueableVector<bool> HasPowerUpAnim;
 
+		Nullable<bool> AISellCapturedBuilding;
+
 		// Ares 0.A
 		Valueable<BuildingTypeClass*> RubbleIntact;
 		Valueable<bool> RubbleIntactRemove;
@@ -165,6 +167,7 @@ public:
 			, BuildingRepairedSound {}
 			, Refinery_UseNormalActiveAnim { false }
 			, HasPowerUpAnim {}
+			, AISellCapturedBuilding {}
 
 			// Ares 0.A
 			, RubbleIntact { nullptr }

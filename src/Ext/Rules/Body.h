@@ -266,6 +266,8 @@ public:
 		Valueable<bool> InfantryAutoDeploy;
 
 		Valueable<int> AdjacentWallDamage;
+
+		Valueable<bool> AISellCapturedBuilding;
 		
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -473,6 +475,8 @@ public:
 			, Parasite_GrappleAnim {}
 			, InfantryAutoDeploy { false }
 			, AdjacentWallDamage { 200 }
+
+			, AISellCapturedBuilding { true }
 		{ }
 
 		virtual ~ExtData() = default;

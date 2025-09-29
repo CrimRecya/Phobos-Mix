@@ -909,3 +909,10 @@ DEFINE_HOOK(0x4555E4, BuildingClass_IsPowerOnline_Overpower, 0x6)
 
 	return overPower < keepOnline ? LowPower : (R->Origin() == 0x4555E4 ? Continue1 : Continue2);
 }
+
+DEFINE_HOOK(0x449306, BuildingClass_SetOwningHouse_Sell, 0x6)
+{
+	enum { NoSell = 0x44936E };
+	GET(BuildingClass*, pThis, ESI);
+	return BuildingTypeExt::ExtMap.Find(pThis->Type)->AISellCapturedBuilding.Get(RulesExt::Global()->AISellCapturedBuilding) ? 0 : NoSell;
+}
