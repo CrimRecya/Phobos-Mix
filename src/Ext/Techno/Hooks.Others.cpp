@@ -2141,7 +2141,7 @@ DEFINE_HOOK(0x68758D, INIClass_ReadScenario_AfterLoadProgressMgrDraw, 0x5)
 {
 	// Get the text to draw.
 	GET(CCINIClass*, pMapINI, EBP);
-	auto pRulesINI = CCINIClass::INI_Rules;
+	auto pRulesINI = CCINIClass::INI_Rules; // The RulesExt has not been read yet. Thus we manually read the ini here.
 	auto pText = L"";
 	DynamicVectorClass<CSFText> availableTexts;
 	bool UseMapTipsOnly = pMapINI->ReadBool(GameStrings::Basic, "UseMapTipsOnly", false);
