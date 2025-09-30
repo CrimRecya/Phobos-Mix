@@ -134,7 +134,7 @@ public:
 	DEFINE_ARRAY_REFERENCE(const int, [8], BridgeDir1OffsetIndexes, 0x7E3730)
 	DEFINE_ARRAY_REFERENCE(const int, [9], BridgeDirOffsets, 0x7E3750)
 	DEFINE_ARRAY_REFERENCE(const int, [8], DirCellOffsets, 0x7E3774)
-	DEFINE_ARRAY_REFERENCE(const float, [8], DirCoefficients, 0x7E3794)
+	DEFINE_ARRAY_REFERENCE(const float, [8], PassabilityCoefficients, 0x7E3794)
 	DEFINE_ARRAY_REFERENCE(const float, [8], MoveCosts, 0x81870C)
 	DEFINE_ARRAY_REFERENCE(const float, [8], DirPathCosts, 0x81872C)
 	DEFINE_ARRAY_REFERENCE(const int, [8], DirSides, 0x89A304)
