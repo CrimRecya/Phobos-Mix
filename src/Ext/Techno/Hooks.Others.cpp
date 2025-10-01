@@ -1962,7 +1962,72 @@ DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
 
 #pragma endregion
 
-inline void LoadTips(INI_EX exINI, const char* pSection, DynamicVectorClass<CSFText>* pDest)
+#pragma region AILATimeFix
+
+// Skip the LATime set code in wrong place.
+DEFINE_JUMP(LJMP, 0x44227E, 0x4422C1);
+
+// Set the LATime when the building is actually damaged.
+DEFINE_HOOK(0x44242A, BuildingClass_ReceiveDamage_SetLATime, 0x8)
+{
+	GET(BuildingClass* const, pThis, ESI);
+	GET(const DamageState, state, EAX);
+	GET(TechnoClass* const, pAttacker, EBP);
+	GET_STACK(HouseClass* const, pAttackerHouse, STACK_OFFSET(0x9C, 0x1C));
+
+	const auto pFromHouse = pAttacker ? pAttacker->GetOwningHouse() : pAttackerHouse;
+
+	if (pFromHouse
+		&& !pThis->IsStrange()
+		&& state != DamageState::Unaffected
+		&& !pThis->Owner->IsAlliedWith(pFromHouse))
+	{
+		const auto pOwner = pThis->Owner;
+		pOwner->LATime = Unsorted::CurrentFrame;
+		pOwner->LAEnemy = pFromHouse->ArrayIndex;
+
+		if (pAttacker)
+			pThis->BaseIsAttacked(pAttacker);
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
+#pragma region ManagerTargetFix
+
+// Cleart target for managers when the target is changing owner.
+DEFINE_HOOK(0x701681, TechnoClass_SetOwningHouse_ClearManagerTarget, 0x6)
+{
+	GET(TechnoClass*, pThis, ESI);
+
+	for (const auto pTemporal : TemporalClass::Array)
+	{
+		if (pTemporal->Target == pThis)
+			pTemporal->LetGo();
+	}
+
+	for (const auto pAirstrike : AirstrikeClass::Array)
+	{
+		if (pAirstrike->Target == pThis)
+			pAirstrike->ResetTarget();
+	}
+
+	for (const auto pSpawn : SpawnManagerClass::Array)
+	{
+		if (pSpawn->Target == pThis)
+			pSpawn->ResetTarget();
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
+#pragma region LoadGameTips
+
+static inline void LoadTips(INI_EX exINI, const char* pSection, DynamicVectorClass<CSFText>& dest)
 {
     char tempBuffer[32];
     for (size_t i = 0; i < 1024; ++i)
@@ -1973,8 +2038,8 @@ inline void LoadTips(INI_EX exINI, const char* pSection, DynamicVectorClass<CSFT
 
         if (!tip.Get())
             return;
-        
-        pDest->AddUnique(tip);
+
+        dest.AddUnique(tip);
     }
 }
 
@@ -1982,99 +2047,103 @@ DEFINE_HOOK(0x68758D, INIClass_ReadScenario_AfterLoadProgressMgrDraw, 0x5)
 {
 	// Get the text to draw.
 	GET(CCINIClass*, pMapINI, EBP);
-	auto pRulesINI = CCINIClass::INI_Rules; // The RulesExt has not been read yet. Thus we manually read the ini here.
+
+	// The RulesExt has not been read yet. Thus we manually read the ini here.
+	const auto pRulesINI = CCINIClass::INI_Rules;
 	auto pText = L"";
 	DynamicVectorClass<CSFText> availableTexts;
-	bool UseMapTipsOnly = pMapINI->ReadBool(GameStrings::Basic, "UseMapTipsOnly", false);
+	const bool useMapTipsOnly = pMapINI->ReadBool(GameStrings::Basic, "UseMapTipsOnly", false);
 	INI_EX exMapINI(pMapINI);
-	LoadTips(exMapINI, GameStrings::Basic, &availableTexts);
+	LoadTips(exMapINI, GameStrings::Basic, availableTexts);
 
-	if (!UseMapTipsOnly)
+	if (!useMapTipsOnly)
 	{
 		INI_EX exINI(pRulesINI);
-		LoadTips(exINI, GameStrings::General, &availableTexts);
+		LoadTips(exINI, GameStrings::General, availableTexts);
 
 		if (SessionClass::Instance.GameMode != GameMode::Campaign)
 		{
-			int countryIdx = NodeNameType::Array[0]->Country;
+			const int countryIdx = NodeNameType::Array[0]->Country;
 
 			if (countryIdx >= 0 && countryIdx < HouseTypeClass::Array.Count)
 			{
-				auto pCountryName = HouseTypeClass::Array.GetItem(countryIdx)->ID;
-				LoadTips(exINI, pCountryName, &availableTexts);
+				const auto pCountryName = HouseTypeClass::Array.GetItem(countryIdx)->ID;
+				LoadTips(exINI, pCountryName, availableTexts);
 			}
 		}
 	}
 
-	if (availableTexts.Count > 0)
-	{
-		srand((int)time(0));
-		pText = availableTexts.GetItem(rand() % availableTexts.Count).Text;
-	}
-	else
+	if (availableTexts.Count <= 0)
 		return 0;
 
+	srand(static_cast<unsigned int>(time(NULL)));
+	pText = availableTexts.GetItem(rand() % availableTexts.Count).Text;
+
 	// Calculate the rect.
-	int assumedTextHeight = 15;
-	int gapToBorder = 8;
-	int gapToAnotherLine = 5;
-	int TipBarWidth = pRulesINI->ReadInteger(GameStrings::General, "TipBarWidth", 700);
-	bool TipBarTwoLines = pRulesINI->ReadBool(GameStrings::General, "TipBarTwoLines", false);
-	int width = TipBarWidth;
-	int height = TipBarTwoLines ? (assumedTextHeight * 2 + gapToBorder * 2 + gapToAnotherLine) : (assumedTextHeight + gapToBorder * 2);
-	auto barRect = LoadProgressManager::Instance->LoadBarSHPRect;
-	int x = barRect.X + (barRect.Width - width) / 2;
-	int y = barRect.Y + barRect.Height - height - 5;
-	auto rect = RectangleStruct{ x, y, width, height };
+	constexpr int assumedTextHeight = 15;
+	constexpr int gapToBorder = 8;
+	constexpr int gapToAnotherLine = 5;
+	const int tipBarWidth = pRulesINI->ReadInteger(GameStrings::General, "TipBarWidth", 700);
+	const bool tipBarTwoLines = pRulesINI->ReadBool(GameStrings::General, "TipBarTwoLines", false);
+	const int width = tipBarWidth;
+	const int height = tipBarTwoLines ? (assumedTextHeight * 2 + gapToBorder * 2 + gapToAnotherLine) : (assumedTextHeight + gapToBorder * 2);
+	const auto barRect = LoadProgressManager::Instance->LoadBarSHPRect;
+	const int x = barRect.X + (barRect.Width - width) / 2;
+	const int y = barRect.Y + barRect.Height - height - 5;
+	auto rect = RectangleStruct { x, y, width, height };
 
 	// Draw background.
-	auto pSurface = LoadProgressManager::Instance->ProgressSurface;
+	const auto pSurface = LoadProgressManager::Instance->ProgressSurface;
 	pSurface->FillRect(&rect, COLOR_BLACK);
 	pSurface->DrawRect(&rect, COLOR_WHITE);
 
 	// Draw the text.
-	TextPrintType printType = TextPrintType::Center | TextPrintType::Point8;
+	constexpr TextPrintType printType = TextPrintType::Center | TextPrintType::Point8;
 
-	if (TipBarTwoLines)
+	if (tipBarTwoLines)
 	{
 		// Split text at first newline.
 		// Only support one or two lines.
-		const wchar_t* firstPart = pText;
-		const wchar_t* secondPart = nullptr;
+		const wchar_t* pFirstPart = pText;
+		const wchar_t* pSecondPart = nullptr;
+		std::unique_ptr<wchar_t[]> pFirstBuffer;
 
-		if (const wchar_t* newline = wcschr(pText, L'\n')) {
+		if (const wchar_t* pNewline = wcschr(pText, L'\n'))
+		{
 			// Create temporary buffer for first part
-			size_t firstLen = newline - pText;
-			wchar_t* firstBuffer = new wchar_t[firstLen + 1];
-			wcsncpy(firstBuffer, pText, firstLen);
-			firstBuffer[firstLen] = L'\0';
+			size_t firstLen = pNewline - pText;
+			pFirstBuffer = std::make_unique<wchar_t[]>(firstLen + 1);
+			wcsncpy(pFirstBuffer.get(), pText, firstLen);
+			pFirstBuffer[firstLen] = L'\0';
 
-			firstPart = firstBuffer;
-			secondPart = newline + 1;
+			pFirstPart = pFirstBuffer.get();
+			pSecondPart = pNewline + 1;
 		}
 
-		if (secondPart)
+		if (pSecondPart)
 		{
-			auto location = Point2D{ rect.Width / 2, gapToBorder };
-			pSurface->DrawTextA(firstPart, &rect, &location, (COLORREF)COLOR_WHITE, (COLORREF)0, printType);
-			location = Point2D{ rect.Width / 2, gapToBorder + assumedTextHeight + gapToAnotherLine };
-			pSurface->DrawTextA(secondPart, &rect, &location, (COLORREF)COLOR_WHITE, (COLORREF)0, printType);
+			auto location = Point2D { rect.Width / 2, gapToBorder };
+			pSurface->DrawTextA(pFirstPart, &rect, &location, COLOR_WHITE, 0, printType);
+			location = Point2D { rect.Width / 2, gapToBorder + assumedTextHeight + gapToAnotherLine };
+			pSurface->DrawTextA(pSecondPart, &rect, &location, COLOR_WHITE, 0, printType);
 		}
 		else
 		{
-			int gapToBorderOneLine = (height - assumedTextHeight) / 2;
-			auto location = Point2D{ rect.Width / 2, gapToBorderOneLine };
-			pSurface->DrawTextA(pText, &rect, &location, (COLORREF)COLOR_WHITE, (COLORREF)0, printType);
+			const int gapToBorderOneLine = (height - assumedTextHeight) / 2;
+			auto location = Point2D { rect.Width / 2, gapToBorderOneLine };
+			pSurface->DrawTextA(pText, &rect, &location, COLOR_WHITE, 0, printType);
 		}
 	}
 	else
 	{
-		auto location = Point2D{ rect.Width / 2, gapToBorder };
-		pSurface->DrawTextA(pText, &rect, &location, (COLORREF)COLOR_WHITE, (COLORREF)0, printType);
+		auto location = Point2D { rect.Width / 2, gapToBorder };
+		pSurface->DrawTextA(pText, &rect, &location, COLOR_WHITE, 0, printType);
 	}
 
 	return 0;
 }
+
+#pragma endregion
 
 // TODO Self-made impl
 
