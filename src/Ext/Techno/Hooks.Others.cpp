@@ -1553,7 +1553,7 @@ DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
 
 static inline bool ExtraTargeting(TechnoClass* pThis, bool area = false)
 {
-	if (!RulesExt::Global()->ExtraTargeting || pThis->Spawned || pThis->SpawnOwner)
+	if (!RulesExt::Global()->ExtraTargeting || pThis->Spawned || pThis->SpawnOwner || !pThis->Owner->IsControlledByHuman())
 		return false;
 
 	auto coord = (area && pThis->ArchiveTarget ? pThis->ArchiveTarget : pThis)->GetCoords();
@@ -1685,7 +1685,7 @@ DEFINE_HOOK(0x70CE85, TechnoClass_ThreatCoefficient_CanAttackMeThreatBonus, 0x5)
 
 static inline bool CanExtraTargetingNow(TechnoClass* const pTechno)
 {
-	return RulesExt::Global()->ExtraTargeting && !TechnoExt::ExtMap.Find(pTechno)->KeepTargetOnMove;
+	return RulesExt::Global()->ExtraTargeting && !TechnoExt::ExtMap.Find(pTechno)->KeepTargetOnMove && pTechno->Owner->IsControlledByHuman();
 }
 
 DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
@@ -1712,7 +1712,7 @@ DEFINE_HOOK(0x7079D1, TechnoClass_PointerExpired_TargetExpired, 0x6)
 {
 	GET(TechnoClass*, pThis, ESI);
 
-	if(RulesExt::Global()->ExtraTargeting)
+	if(RulesExt::Global()->ExtraTargeting && pThis->Owner->IsControlledByHuman())
 		pThis->TargetingTimer.Stop();
 
 	return 0;
@@ -1771,7 +1771,7 @@ static inline void CheckVHPScanAndRetarget(TechnoClass* pThis)
 
 	pThis->SetTarget(nullptr);
 
-	if (!RulesExt::Global()->ExtraTargeting)
+	if (!RulesExt::Global()->ExtraTargeting || !pThis->Owner->IsControlledByHuman())
 		return;
 
 	if (pThis->CurrentMission == Mission::Attack)
