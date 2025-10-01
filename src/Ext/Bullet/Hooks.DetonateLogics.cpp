@@ -347,8 +347,8 @@ DEFINE_HOOK(0x469C46, BulletClass_Logics_DamageAnimSelected, 0x8)
 	if (pAnimType)
 	{
 		auto const pWHExt = WarheadTypeExt::ExtMap.Find(pThis->WH);
-		int cellHeight = MapClass::Instance.GetCellFloorHeight(*coords);
-		auto newCrds = pWHExt->PlayAnimAboveSurface ? CoordStruct { coords->X, coords->Y, Math::max(cellHeight, coords->Z) } : *coords;
+		const int cellHeight = MapClass::Instance.GetCellFloorHeight(*coords);
+		auto const newCrds = pWHExt->PlayAnimAboveSurface ? CoordStruct { coords->X, coords->Y, Math::max(cellHeight, coords->Z) } : *coords;
 
 		if (cellHeight > newCrds.Z && !pWHExt->PlayAnimUnderground)
 		{
@@ -617,6 +617,8 @@ DEFINE_HOOK(0x469AA4, BulletClass_Logics_Extras, 0x5)
 	return 0;
 }
 
+#pragma region AffectsUnderground
+
 // In vanilla, only ground is allowed, and Ares added air and top.
 // But it seems that underground and surface is also working fine?
 DEFINE_HOOK(0x469453, BulletClass_Logics_TemporalUnderGround, 0x6)
@@ -625,18 +627,15 @@ DEFINE_HOOK(0x469453, BulletClass_Logics_TemporalUnderGround, 0x6)
 
 	GET(FootClass*, pTarget, EAX);
 
-	Layer layer = pTarget->InWhichLayer();
-
-	if (layer != Layer::None)
+	if (pTarget->InWhichLayer() != Layer::None)
 		return OK;
 
 	return NotOK;
 }
 
-// TODO : auto target related impl.
 DEFINE_HOOK(0x4899DA, MapClass_DamageArea_DamageUnderGround, 0x7)
 {
-	GET_STACK(bool, isNullified, STACK_OFFSET(0xE0, -0xC9));
+	GET_STACK(const bool, isNullified, STACK_OFFSET(0xE0, -0xC9));
 	GET_STACK(int, damage, STACK_OFFSET(0xE0, -0xBC));
 	GET_STACK(CoordStruct*, pCrd, STACK_OFFSET(0xE0, -0xB8));
 	GET_BASE(WarheadTypeClass*, pWH, 0xC);
@@ -644,15 +643,18 @@ DEFINE_HOOK(0x4899DA, MapClass_DamageArea_DamageUnderGround, 0x7)
 	GET_BASE(HouseClass*, pSrcHouse, 0x14);
 	GET_STACK(bool, hitted, STACK_OFFSET(0xE0, -0xC1)); // bHitted = true
 
-	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
-
-	if (isNullified || !pWHExt || !pWHExt->AffectsUnderground)
+	if (isNullified)
 		return 0;
 
-	bool cylinder = pWHExt->CellSpread_Cylinder;
-	float spread = pWH->CellSpread;
+	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	for (auto const& pTechno : TechnoClass::Array)
+	if (!pWHExt || !pWHExt->AffectsUnderground)
+		return 0;
+
+	const bool cylinder = pWHExt->CellSpread_Cylinder;
+	const float spread = pWH->CellSpread;
+
+	for (auto const& pTechno : ScenarioExt::Global()->UndergroundTracker)
 	{
 		if (pTechno->InWhichLayer() == Layer::Underground // Layer.
 			&& pTechno->IsAlive && !pTechno->IsIronCurtained()
@@ -660,14 +662,14 @@ DEFINE_HOOK(0x4899DA, MapClass_DamageArea_DamageUnderGround, 0x7)
 			&& !pTechno->InLimbo)
 		{
 			double dist = 0.0;
-			auto technoCoords = pTechno->GetCoords();
+			auto const technoCoords = pTechno->GetCoords();
 
 			if (cylinder)
 				dist = CoordStruct { technoCoords.X - pCrd->X, technoCoords.Y - pCrd->Y, 0 }.Magnitude();
 			else
 				dist = technoCoords.DistanceFrom(*pCrd);
 
-			if (dist <= spread * 256)
+			if (dist <= spread * Unsorted::LeptonsPerCell)
 			{
 				pTechno->ReceiveDamage(&damage, (int)dist, pWH, pSrcTechno, false, false, pSrcHouse);
 				hitted = true;
@@ -678,6 +680,8 @@ DEFINE_HOOK(0x4899DA, MapClass_DamageArea_DamageUnderGround, 0x7)
 	R->Stack8(STACK_OFFSET(0xE0, -0xC1), true);
 	return 0;
 }
+
+#pragma endregion
 
 #pragma region Airburst
 
