@@ -18,7 +18,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Ext\Cell\Hooks.cpp" />
+    <ClCompile Include="ECSDK\cJSON.cpp" />
+    <ClCompile Include="ECSDK\EC.cpp" />
+    <ClCompile Include="ECSDK\EC.Misc.cpp" />
+    <ClCompile Include="ECSDK\ExtJson.cpp" />
+    <ClCompile Include="ECSDK\IH.Ext.cpp" />
+    <ClCompile Include="ECSDK\IH.File.cpp" />
+    <ClCompile Include="ECSDK\IH.Initial.cpp" />
+    <ClCompile Include="ECSDK\IH.Loader.cpp" />
+    <ClCompile Include="ECSDK\SyringeEx.cpp" />
+    <ClCompile Include="src\Commands\CeaseFireStance.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoButtonClass.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoColumnClass.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedButtonClass.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedCameoClass.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedColumnClass.cpp" />
+    <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedInfoClass.cpp" />
     <ClCompile Include="src\Ext\Infantry\Hooks.cpp" />
     <ClCompile Include="src\Ext\Infantry\Hooks.Firing.cpp" />
     <ClCompile Include="src\Ext\TechnoType\Hooks.MultiWeapon.cpp" />
@@ -30,7 +45,6 @@
     <ClCompile Include="src\New\Type\Affiliated\CreateUnitTypeClass.cpp" />
     <ClCompile Include="src\Blowfish\blowfish.cpp" />
     <ClCompile Include="src\Blowfish\Hooks.Blowfish.cpp" />
-    <ClCompile Include="src\Ext\Cell\Body.cpp" />
     <ClCompile Include="src\Ext\House\Hooks.ForceEnemy.cpp" />
     <ClCompile Include="src\Commands\ToggleSWSidebar.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SWSidebar\SWColumnClass.cpp" />
@@ -43,17 +57,28 @@
     <ClCompile Include="src\Ext\Unit\Hooks.Sinking.cpp" />
     <ClCompile Include="src\Misc\Hooks.AlphaImage.cpp" />
     <ClCompile Include="src\New\Entity\AttachEffectClass.cpp" />
+    <ClCompile Include="src\New\Entity\SquadManagerClass.cpp" />
     <ClCompile Include="src\New\Type\Affiliated\TiberiumEaterTypeClass.cpp" />
     <ClCompile Include="src\New\Type\AttachEffectTypeClass.cpp" />
     <ClCompile Include="src\Misc\MessageColumn.cpp" />
     <ClCompile Include="src\Commands\ToggleMessageList.cpp" />
+    <ClCompile Include="src\Commands\AggressiveStance.cpp" />
     <ClCompile Include="src\Commands\Commands.cpp" />
+    <ClCompile Include="src\Commands\SelectCaptured.cpp" />
     <ClCompile Include="src\Commands\DamageDisplay.cpp" />
     <ClCompile Include="src\Commands\FrameByFrame.cpp" />
     <ClCompile Include="src\Commands\FrameStep.cpp" />
     <ClCompile Include="src\Commands\NextIdleHarvester.cpp" />
     <ClCompile Include="src\Commands\ObjectInfo.cpp" />
     <ClCompile Include="src\Commands\QuickSave.cpp" />
+    <ClCompile Include="src\Commands\SelectedInfo.cpp" />
+    <ClCompile Include="src\Commands\HerosInfo.cpp" />
+    <ClCompile Include="src\Commands\AutoBuilding.cpp" />
+    <ClCompile Include="src\Commands\AssignRallyPoint.cpp" />
+    <ClCompile Include="src\Commands\UnifiedTechnoColor.cpp" />
+    <ClCompile Include="src\Commands\DistributionMode.cpp" />
+    <ClCompile Include="src\Commands\ShowCurrentInfo.cpp" />
+    <ClCompile Include="src\Commands\ManualReloadAmmo.cpp" />
     <ClCompile Include="src\Commands\ToggleDesignatorRange.cpp" />
     <ClCompile Include="src\Commands\ToggleDigitalDisplay.cpp" />
     <ClCompile Include="src\Commands\SaveVariablesToFile.cpp" />
@@ -61,12 +86,22 @@
     <ClCompile Include="src\Ext\Anim\Hooks.cpp" />
     <ClCompile Include="src\Ext\Anim\Hooks.AnimCreateUnit.cpp" />
     <ClCompile Include="src\Ext\Bullet\Hooks.DetonateLogics.cpp" />
-    <ClCompile Include="src\Ext\Bullet\Trajectories\BombardTrajectory.cpp" />
+    <ClCompile Include="src\Ext\Bullet\AdditionalWeapons.cpp" />
+    <ClCompile Include="src\Ext\Bullet\AdditionalWarheads.cpp" />
     <ClCompile Include="src\Ext\Bullet\Trajectories\PhobosTrajectory.cpp" />
-    <ClCompile Include="src\Ext\Bullet\Trajectories\StraightTrajectory.cpp" />
-    <ClCompile Include="src\Ext\Bullet\Trajectories\ParabolaTrajectory.cpp" />
+    <ClCompile Include="src\Ext\Bullet\Trajectories\PhobosActualTrajectory.cpp" />
+    <ClCompile Include="src\Ext\Bullet\Trajectories\PhobosVirtualTrajectory.cpp" />
+    <ClCompile Include="src\Ext\Bullet\Trajectories\ActualTrajectories\StraightTrajectory.cpp" />
+    <ClCompile Include="src\Ext\Bullet\Trajectories\ActualTrajectories\BombardTrajectory.cpp" />
+    <ClCompile Include="src\Ext\Bullet\Trajectories\ActualTrajectories\MissileTrajectory.cpp" />
+    <ClCompile Include="src\Ext\Bullet\Trajectories\VirtualTrajectories\EngraveTrajectory.cpp" />
+    <ClCompile Include="src\Ext\Bullet\Trajectories\ActualTrajectories\ParabolaTrajectory.cpp" />
+    <ClCompile Include="src\Ext\Bullet\Trajectories\VirtualTrajectories\TracingTrajectory.cpp" />
     <ClCompile Include="src\Ext\CaptureManager\Hooks.cpp" />
     <ClCompile Include="src\Ext\CaptureManager\Body.cpp" />
+    <ClCompile Include="src\Ext\Event\Body.cpp" />
+    <ClCompile Include="src\Ext\Cell\Hooks.cpp" />
+    <ClCompile Include="src\Ext\Cell\Body.cpp" />
     <ClCompile Include="src\Ext\OverlayType\Body.cpp" />
     <ClCompile Include="src\Ext\OverlayType\Hooks.cpp" />
     <ClCompile Include="src\Ext\ParticleType\Body.cpp" />
@@ -90,7 +125,10 @@
     <ClCompile Include="src\Ext\TEvent\Body.cpp" />
     <ClCompile Include="src\Ext\Trigger\Hooks.cpp" />
     <ClCompile Include="src\Ext\Unit\Hooks.Crushing.cpp" />
+    <ClCompile Include="src\Locomotion\AStar\AStarClass.cpp" />
     <ClCompile Include="src\Locomotion\TestLocomotionClass.cpp" />
+    <ClCompile Include="src\Locomotion\AdvancedDriveLocomotionClass.cpp" />
+    <ClCompile Include="src\Locomotion\AttachmentLocomotionClass.cpp" />
     <ClCompile Include="src\Misc\Hooks.Gamespeed.cpp" />
     <ClCompile Include="src\Misc\Hooks.Ares.cpp" />
     <ClCompile Include="src\Misc\Hooks.Crates.cpp" />
@@ -111,7 +149,9 @@
     <ClCompile Include="src\New\Type\LaserTrailTypeClass.cpp" />
     <ClCompile Include="src\New\Type\Affiliated\InterceptorTypeClass.cpp" />
     <ClCompile Include="src\New\Type\Affiliated\PassengerDeletionTypeClass.cpp" />
+    <ClCompile Include="src\New\Type\AttachmentTypeClass.cpp" />
     <ClCompile Include="src\New\Entity\LaserTrailClass.cpp" />
+    <ClCompile Include="src\New\Entity\AttachmentClass.cpp" />
     <ClCompile Include="src\Ext\Aircraft\Body.cpp" />
     <ClCompile Include="src\Ext\Aircraft\Hooks.cpp" />
     <ClCompile Include="src\Ext\AnimType\Body.cpp" />
@@ -121,6 +161,7 @@
     <ClCompile Include="src\Ext\Building\Hooks.Refinery.cpp" />
     <ClCompile Include="src\Ext\Building\Hooks.Production.cpp" />
     <ClCompile Include="src\Ext\Building\Hooks.Selling.cpp" />
+    <ClCompile Include="src\Ext\Building\Hooks.SecondaryArchive.cpp" />
     <ClCompile Include="src\Ext\BulletType\Body.cpp" />
     <ClCompile Include="src\Ext\Bullet\Body.cpp" />
     <ClCompile Include="src\Ext\Bullet\Hooks.cpp" />
@@ -146,6 +187,7 @@
     <ClCompile Include="src\Ext\Side\Hooks.SidebarGDIPositions.cpp" />
     <ClCompile Include="src\Ext\TechnoType\Body.cpp" />
     <ClCompile Include="src\Ext\TechnoType\Hooks.Teleport.cpp" />
+    <ClCompile Include="src\Ext\TechnoType\Hooks.Production.cpp" />
     <ClCompile Include="src\Ext\TechnoType\Hooks.cpp" />
     <ClCompile Include="src\Ext\Techno\Body.cpp" />
     <ClCompile Include="src\Ext\Techno\Body.Internal.cpp" />
@@ -158,6 +200,10 @@
     <ClCompile Include="src\Ext\Techno\Hooks.ReceiveDamage.cpp" />
     <ClCompile Include="src\Ext\Techno\Hooks.TargetEvaluation.cpp" />
     <ClCompile Include="src\Ext\Techno\Hooks.Transport.cpp" />
+    <ClCompile Include="src\Ext\Techno\Hooks.Facing.cpp" />
+    <ClCompile Include="src\Ext\Techno\Hooks.Others.cpp" />
+    <ClCompile Include="src\Ext\Techno\Hooks.Scatter.cpp" />
+    <ClCompile Include="src\Ext\Techno\Hooks.TechnoAttachment.cpp" />
     <ClCompile Include="src\Ext\TerrainType\Body.cpp" />
     <ClCompile Include="src\Ext\TerrainType\Hooks.cpp" />
     <ClCompile Include="src\Ext\TerrainType\Hooks.Passable.cpp" />
@@ -178,7 +224,9 @@
     <ClCompile Include="src\Ext\WeaponType\Hooks.cpp" />
     <ClCompile Include="src\Ext\WeaponType\Hooks.DiskLaserRadius.cpp" />
     <ClCompile Include="src\Misc\BlittersFix.cpp" />
+    <ClCompile Include="src\Misc\Hooks.AI.cpp" />
     <ClCompile Include="src\Misc\Selection.cpp" />
+    <ClCompile Include="src\Misc\TacticalButtons.cpp" />
     <ClCompile Include="src\Utilities\Anchor.cpp" />
     <ClCompile Include="src\Utilities\Debug.cpp" />
     <ClCompile Include="src\Ext\BuildingType\Body.cpp" />
@@ -215,6 +263,27 @@
     <ClCompile Include="YRpp\StaticInits.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ECSDK\cJSON.h" />
+    <ClInclude Include="ECSDK\EC.h" />
+    <ClInclude Include="ECSDK\EC.Listener.h" />
+    <ClInclude Include="ECSDK\EC.Misc.h" />
+    <ClInclude Include="ECSDK\ExtJson.h" />
+    <ClInclude Include="ECSDK\IH.Config.h" />
+    <ClInclude Include="ECSDK\IH.Ext.h" />
+    <ClInclude Include="ECSDK\IH.File.h" />
+    <ClInclude Include="ECSDK\IH.h" />
+    <ClInclude Include="ECSDK\IH.Initial.h" />
+    <ClInclude Include="ECSDK\IH.InitialService.h" />
+    <ClInclude Include="ECSDK\IH.Loader.h" />
+    <ClInclude Include="ECSDK\Phobos.ECInit.h" />
+    <ClInclude Include="ECSDK\SyringeEx.h" />
+    <ClInclude Include="src\Commands\CeaseFireStance.h" />
+    <ClInclude Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoButtonClass.h" />
+    <ClInclude Include="src\Ext\Sidebar\UniqueButton\UniqueTechnoColumnClass.h" />
+    <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedButtonClass.h" />
+    <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedCameoClass.h" />
+    <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedColumnClass.h" />
+    <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedInfoClass.h" />
     <ClInclude Include="src\Ext\EBolt\Body.h" />
     <ClInclude Include="src\New\Type\Affiliated\CreateUnitTypeClass.h" />
     <ClInclude Include="src\Blowfish\blowfish.h" />
@@ -226,10 +295,13 @@
     <ClInclude Include="src\Ext\Sidebar\SWSidebar\SWButtonClass.h" />
     <ClInclude Include="src\Ext\Sidebar\SWSidebar\ToggleSWButtonClass.h" />
     <ClInclude Include="src\New\Entity\AttachEffectClass.h" />
+    <ClInclude Include="src\New\Entity\SquadManagerClass.h" />
     <ClInclude Include="src\New\Type\Affiliated\TiberiumEaterTypeClass.h" />
     <ClInclude Include="src\New\Type\AttachEffectTypeClass.h" />
     <ClInclude Include="src\Misc\MessageColumn.h" />
     <ClInclude Include="src\Commands\ToggleMessageList.h" />
+    <ClInclude Include="src\Commands\SelectCaptured.h" />
+    <ClInclude Include="src\Commands\AggressiveStance.h" />
     <ClInclude Include="src\Commands\FrameByFrame.h" />
     <ClInclude Include="src\Commands\FrameStep.h" />
     <ClInclude Include="src\Commands\NextIdleHarvester.h" />
@@ -238,13 +310,27 @@
     <ClInclude Include="src\Commands\Commands.h" />
     <ClInclude Include="src\Commands\DamageDisplay.h" />
     <ClInclude Include="src\Commands\QuickSave.h" />
+    <ClInclude Include="src\Commands\SelectedInfo.h" />
+    <ClInclude Include="src\Commands\HerosInfo.h" />
+    <ClInclude Include="src\Commands\AutoBuilding.h" />
+    <ClInclude Include="src\Commands\AssignRallyPoint.h" />
+    <ClInclude Include="src\Commands\UnifiedTechnoColor.h" />
+    <ClInclude Include="src\Commands\DistributionMode.h" />
+    <ClInclude Include="src\Commands\ShowCurrentInfo.h" />
+    <ClInclude Include="src\Commands\ManualReloadAmmo.h" />
     <ClInclude Include="src\Commands\ToggleDesignatorRange.h" />
     <ClInclude Include="src\Commands\ToggleDigitalDisplay.h" />
     <ClInclude Include="src\Commands\SaveVariablesToFile.h" />
-    <ClInclude Include="src\Ext\Bullet\Trajectories\BombardTrajectory.h" />
     <ClInclude Include="src\Ext\Bullet\Trajectories\PhobosTrajectory.h" />
-    <ClInclude Include="src\Ext\Bullet\Trajectories\StraightTrajectory.h" />
-    <ClInclude Include="src\Ext\Bullet\Trajectories\ParabolaTrajectory.h" />
+    <ClInclude Include="src\Ext\Bullet\Trajectories\PhobosActualTrajectory.h" />
+    <ClInclude Include="src\Ext\Bullet\Trajectories\PhobosVirtualTrajectory.h" />
+    <ClInclude Include="src\Ext\Bullet\Trajectories\ActualTrajectories\StraightTrajectory.h" />
+    <ClInclude Include="src\Ext\Bullet\Trajectories\ActualTrajectories\BombardTrajectory.h" />
+    <ClInclude Include="src\Ext\Bullet\Trajectories\ActualTrajectories\MissileTrajectory.h" />
+    <ClInclude Include="src\Ext\Bullet\Trajectories\VirtualTrajectories\EngraveTrajectory.h" />
+    <ClInclude Include="src\Ext\Bullet\Trajectories\ActualTrajectories\ParabolaTrajectory.h" />
+    <ClInclude Include="src\Ext\Bullet\Trajectories\VirtualTrajectories\TracingTrajectory.h" />
+    <ClInclude Include="src\Ext\Event\Body.h" />
     <ClInclude Include="src\Ext\OverlayType\Body.h" />
     <ClInclude Include="src\Ext\ParticleType\Body.h" />
     <ClInclude Include="src\Ext\Sidebar\Body.h" />
@@ -254,12 +340,16 @@
     <ClInclude Include="src\Ext\TAction\Body.h" />
     <ClInclude Include="src\Ext\Team\Body.h" />
     <ClInclude Include="src\Ext\TEvent\Body.h" />
+    <ClInclude Include="src\Locomotion\AStar\AStarClass.h" />
     <ClInclude Include="src\Locomotion\TestLocomotionClass.h" />
+    <ClInclude Include="src\Locomotion\AdvancedDriveLocomotionClass.h" />
+    <ClInclude Include="src\Locomotion\AttachmentLocomotionClass.h" />
     <ClInclude Include="src\Misc\BlittersFix.h" />
     <ClInclude Include="src\Ext\CaptureManager\Body.h" />
     <ClInclude Include="src\Misc\FlyingStrings.h" />
     <ClInclude Include="src\Misc\PhobosToolTip.h" />
     <ClInclude Include="src\Misc\SyncLogging.h" />
+    <ClInclude Include="src\Misc\TacticalButtons.h" />
     <ClInclude Include="src\New\Entity\BannerClass.h" />
     <ClInclude Include="src\New\Type\BannerTypeClass.h" />
     <ClInclude Include="src\New\Type\Affiliated\TypeConvertGroup.h" />
@@ -272,10 +362,13 @@
     <ClInclude Include="src\New\Type\LaserTrailTypeClass.h" />
     <ClInclude Include="src\New\Type\Affiliated\InterceptorTypeClass.h" />
     <ClInclude Include="src\New\Type\Affiliated\PassengerDeletionTypeClass.h" />
+    <ClInclude Include="src\New\Type\AttachmentTypeClass.h" />
     <ClInclude Include="src\New\Entity\LaserTrailClass.h" />
     <ClInclude Include="src\New\Entity\ShieldClass.h" />
+    <ClInclude Include="src\New\Entity\AttachmentClass.h" />
     <ClInclude Include="src\Utilities\Anchor.h" />
     <ClInclude Include="src\Utilities\Enumerable.h" />
+    <ClInclude Include="src\Utilities\EnumerableEntity.h" />
     <ClInclude Include="src\Ext\Aircraft\Body.h" />
     <ClInclude Include="src\Ext\AnimType\Body.h" />
     <ClInclude Include="src\Ext\Building\Body.h" />
@@ -376,14 +469,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <GenerateManifest>false</GenerateManifest>
-    <IncludePath>$(SolutionDir)src\;$(SolutionDir)src\ExtraHeaders;$(SolutionDir)yrpp;$(SolutionDir)lib;$(VC_IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)src\;$(SolutionDir)src\ExtraHeaders;$(SolutionDir)yrpp;$(SolutionDir)ecsdk;$(SolutionDir)lib;$(VC_IncludePath)</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\IntDir\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DevBuild|Win32'">
     <GenerateManifest>false</GenerateManifest>
-    <IncludePath>$(SolutionDir)src\;$(SolutionDir)src\ExtraHeaders;$(SolutionDir)yrpp;$(SolutionDir)lib;$(VC_IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)src\;$(SolutionDir)src\ExtraHeaders;$(SolutionDir)yrpp;$(SolutionDir)ecsdk;$(SolutionDir)lib;$(VC_IncludePath)</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\IntDir\</IntDir>
@@ -419,7 +512,7 @@
       <ObjectFileName>$(IntDir)\%(RelativeDir)</ObjectFileName>
       <CallingConvention>StdCall</CallingConvention>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
-      <DisableSpecificWarnings>4100;4201;4530;4731;4740;4458;4819;5103;5105</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4100;4201;4530;4731;4740;4458;4819;5103;5105;26495</DisableSpecificWarnings>
       <EnableModules>true</EnableModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OpenMPSupport>true</OpenMPSupport>
@@ -463,8 +556,8 @@
       <AssemblerListingLocation>$(IntDir)\%(RelativeDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)\%(RelativeDir)</ObjectFileName>
       <CallingConvention>StdCall</CallingConvention>
-      <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
-      <DisableSpecificWarnings>4100;4201;4530;4731;4740;4458;4819;5103;5105</DisableSpecificWarnings>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>4100;4201;4530;4731;4740;4458;4819;5103;5105;26495</DisableSpecificWarnings>
       <EnableModules>true</EnableModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OpenMPSupport>true</OpenMPSupport>

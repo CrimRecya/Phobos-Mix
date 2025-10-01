@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <functional>
 #include "Constructs.h"
 
@@ -31,6 +31,8 @@ public:
 	static EBolt* (__stdcall* CreateAresEBolt)(WeaponTypeClass* pWeapon);
 
 	static void(__stdcall* SpawnSurvivors)(FootClass* pThis, TechnoClass* pKiller, bool Select, bool IgnoreDefenses);
+
+	static int(__thiscall* RequirementsMet)(void* pAresHouseExt, TechnoTypeClass* pType);
 
 	static bool(__thiscall* ReverseEngineer)(void* pAresHouseExt, TechnoTypeClass* pType);
 

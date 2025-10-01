@@ -1,4 +1,6 @@
-#include "Body.h"
+﻿#include "Body.h"
+
+#include <Ext/BuildingType/Body.h>
 
 // Cursor & target acquisition stuff not directly tied to other features can go here.
 
@@ -145,6 +147,87 @@ DEFINE_FUNCTION_JUMP(CALL6, 0x6F8DD2, TechnoClass_EvaluateCellGetWeaponRangeWrap
 
 #pragma endregion
 
+#pragma region AutoTargetAndRetaliate
+
+bool __fastcall CanAttackMindControlled(TechnoClass* pControlled, TechnoClass* pRetaliator)
+{
+	const auto pMind = pControlled->MindControlledBy;
+
+	if (!pMind || pRetaliator->Berzerk)
+		return true;
+
+	const auto pManager = pMind->CaptureManager;
+
+	if (!pManager || !pRetaliator->Owner->IsAlliedWith(pManager->GetOriginalOwner(pControlled)))
+		return true;
+
+	return TechnoExt::ExtMap.Find(pControlled)->BeControlledThreatFrame <= Unsorted::CurrentFrame;
+}
+
+DEFINE_HOOK(0x7089E8, TechnoClass_AllowedToRetaliate_AttackMindControlledDelay, 0x6)
+{
+	enum { CannotRetaliate = 0x708B17 };
+
+	GET(TechnoClass* const, pThis, ESI);
+	GET(TechnoClass* const, pAttacker, EBP);
+
+	return CanAttackMindControlled(pAttacker, pThis) ? 0 : CannotRetaliate;
+}
+
+static inline int CalculateExtraThreat(TechnoClass* pThis, ObjectClass* pTarget, int threat)
+{
+	const auto pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
+
+	if (!pTypeExt->TargetExtraThreat)
+		return threat;
+
+	const auto& vec = pTypeExt->TargetExtraThreat_Multipliers;
+	const size_t multsCount = vec.size();
+
+	if (multsCount <= 0)
+		return threat;
+
+	const size_t angleCount = pTypeExt->TargetExtraThreat_Angles.size();
+
+	if (angleCount <= 0)
+		return static_cast<int>(threat * vec[0]);
+
+	const auto absType = pThis->WhatAmI();
+	const auto tgtDir = pThis->GetTargetDirection(pTarget);
+	const bool useSec = pTypeExt->TargetExtraThreat_Turret && absType == AbstractType::Unit && pTypeExt->OwnerObject()->Turret;
+	const auto curDir = (useSec || absType == AbstractType::Aircraft ? pThis->SecondaryFacing : pThis->PrimaryFacing).Current();
+	const int difference = std::abs(static_cast<short>(static_cast<short>(tgtDir.Raw) - static_cast<short>(curDir.Raw)));
+
+	for (size_t i = 0; i < angleCount; ++i)
+	{
+		if (difference <= static_cast<int>(pTypeExt->TargetExtraThreat_Angles[i].Raw))
+			return static_cast<int>(threat * vec[Math::min(i, (multsCount - 1))]);
+	}
+
+	return static_cast<int>(threat * vec[Math::min(angleCount, (multsCount - 1))]);
+}
+
+DEFINE_HOOK(0x6F88BF, TechnoClass_CanAutoTargetObject_AttackMindControlledDelay, 0x6)
+{
+	enum { CannotSelect = 0x6F894F };
+
+	GET(TechnoClass* const, pThis, EDI);
+	GET(ObjectClass* const, pTarget, ESI);
+	GET(int* const, pThreat, EBP);
+
+	if (const auto pTechno = abstract_cast<TechnoClass*, true>(pTarget))
+	{
+		if (!CanAttackMindControlled(pTechno, pThis))
+			return CannotSelect;
+	}
+
+	*pThreat = CalculateExtraThreat(pThis, pTarget, *pThreat);
+
+	return 0;
+}
+
+#pragma endregion
+
 #pragma region AggressiveAttackMove
 
 static inline bool CheckAttackMoveCanResetTarget(FootClass* pThis)
@@ -206,17 +289,28 @@ DEFINE_HOOK(0x6F85AB, TechnoClass_CanAutoTargetObject_AggressiveAttackMove, 0x6)
 	if (!pThis->Owner->IsControlledByHuman())
 		return CanTarget;
 
-	if (!pThis->MegaMissionIsAttackMove())
-		return ContinueCheck;
+	GET(TechnoClass*, pTarget, ESI);
 
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	if (pTarget->WhatAmI() == AbstractType::Building)
+	{
+		// Fallback to unmodded behavior if the building is an exempt of aggressive stance.
+		if (BuildingTypeExt::ExtMap.Find(static_cast<BuildingClass*>(pTarget)->Type)->AggressiveStance_Exempt)
+			return ContinueCheck;
 
-	return pExt->TypeExtData->AttackMove_Aggressive.Get(RulesExt::Global()->AttackMove_Aggressive) ? CanTarget : ContinueCheck;
+		if (TechnoExt::ExtMap.Find(pThis)->GetAggressiveStance())
+			return CanTarget;
+	}
+
+	if (pThis->MegaMissionIsAttackMove())
+	{
+		if (TechnoExt::ExtMap.Find(pThis)->TypeExtData->AttackMove_Aggressive.Get(RulesExt::Global()->AttackMove_Aggressive))
+			return CanTarget;
+	}
+
+	return ContinueCheck;
 }
 
 #pragma endregion
-
-#pragma region HealingWeapons
 
 #pragma region TechnoClass_EvaluateObject
 
@@ -339,6 +433,7 @@ private:
 	}
 };
 
+
 FireError __fastcall UnitClass__GetFireError_Wrapper(UnitClass* pThis, void* _, ObjectClass* pObj, int nWeaponIndex, bool ignoreRange)
 {
 	AresScheme::Prefix(pThis, pObj, nWeaponIndex, false);
@@ -360,8 +455,37 @@ DEFINE_FUNCTION_JUMP(VTABLE, 0x7EB418, InfantryClass__GetFireError_Wrapper)
 Action __fastcall UnitClass__WhatAction_Wrapper(UnitClass* pThis, void* _, ObjectClass* pObj, bool ignoreForce)
 {
 	AresScheme::Prefix(pThis, pObj, -1, false);
-	auto const result = pThis->UnitClass::MouseOverObject(pObj, ignoreForce);
+	auto result = pThis->UnitClass::MouseOverObject(pObj, ignoreForce);
 	AresScheme::Suffix();
+
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+	if (!pExt->ParentAttachment)
+		return result;
+
+	switch (result)
+	{
+	case Action::Repair:
+		result = Action::NoRepair;
+		break;
+
+	case Action::Self_Deploy:
+		if (pThis->Type->DeploysInto)
+			result = Action::NoDeploy;
+		break;
+
+	case Action::Sabotage:
+	case Action::Capture:
+	case Action::Enter:
+		result = Action::NoEnter;
+		break;
+
+	case Action::GuardArea:
+	case Action::AttackMoveNav:
+	case Action::Move:
+		result = Action::NoMove;
+		break;
+	}
+
 	return result;
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5CE4, UnitClass__WhatAction_Wrapper)
@@ -371,8 +495,28 @@ Action __fastcall InfantryClass__WhatAction_Wrapper(InfantryClass* pThis, void* 
 	AresScheme::Prefix(pThis, pObj, -1, pThis->Type->Engineer);
 	auto const result = pThis->InfantryClass::MouseOverObject(pObj, ignoreForce);
 	AresScheme::Suffix();
+
 	return result;
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7EB0CC, InfantryClass__WhatAction_Wrapper)
+
+#pragma region CeaseFireStance
+
+DEFINE_HOOK(0x6F8DFD, TechnoClass_SelectAutoTarget_CeaseFireStance, 0x5)
+{
+	enum { FuncReturn = 0x6F8E38 };
+	GET(TechnoClass*, pThis, ESI);
+	GET_STACK(ThreatType, flags, STACK_OFFSET(0x6C, 0x4));
+	return TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance()
+		&& (((flags & ThreatType::Range) != ThreatType::Normal) || ((flags & ThreatType::Area) != ThreatType::Normal)) // Cease fire don't work for script auto targeting.
+		? FuncReturn : 0;
+}
+
+DEFINE_HOOK(0x708AC5, TechnoClass_CanRetaliateToAttacker_CeaseFireStance, 0x5)
+{
+	enum { FuncReturn = 0x708B17 };
+	GET(TechnoClass*, pThis, ESI);
+	return TechnoExt::ExtMap.Find(pThis)->GetCeaseFireStance() ? FuncReturn : 0;
+}
 
 #pragma endregion

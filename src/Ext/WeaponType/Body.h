@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <BulletClass.h>
 #include <WeaponTypeClass.h>
 #include <DiskLaserClass.h>
@@ -60,6 +60,8 @@ public:
 		ValueableVector<bool> ExtraWarheads_FullDetonation;
 		Nullable<WarheadTypeClass*> AmbientDamage_Warhead;
 		Valueable<bool> AmbientDamage_IgnoreTarget;
+		AEAttachInfoTypeClass AttachEffects;
+		Valueable<bool> AttachEffect_Enable;
 		ValueableVector<AttachEffectTypeClass*> AttachEffect_RequiredTypes;
 		ValueableVector<AttachEffectTypeClass*> AttachEffect_DisallowedTypes;
 		std::vector<std::string> AttachEffect_RequiredGroups;
@@ -74,12 +76,18 @@ public:
 		Valueable<bool> KeepRange_AllowAI;
 		Valueable<bool> KeepRange_AllowPlayer;
 		Valueable<int> KeepRange_EarlyStopFrame;
+		Nullable<bool> CylinderRangefinding;
+		Nullable<bool> AttackIronCurtain;
+		Valueable<bool> ResetGattlingValue;
+		Valueable<bool> AddtionalDamage_GattlingValue;
+		Valueable<double> AddtionalDamage_GattlingValue_Mult;
 		Valueable<bool> KickOutPassengers;
 		Nullable<ColorStruct> Beam_Color;
 		Valueable<int> Beam_Duration;
 		Valueable<double> Beam_Amplitude;
 		Valueable<bool> Beam_IsHouseColor;
 		Valueable<int> LaserThickness;
+		Valueable<bool> Laser_IsTracking;
 		Nullable<PartialVector2D<int>> DelayedFire_Duration;
 		Valueable<bool> DelayedFire_SkipInTransport;
 		Valueable<AnimTypeClass*> DelayedFire_Animation;
@@ -132,6 +140,8 @@ public:
 			, ExtraWarheads_FullDetonation {}
 			, AmbientDamage_Warhead {}
 			, AmbientDamage_IgnoreTarget { false }
+			, AttachEffects {}
+			, AttachEffect_Enable { false }
 			, AttachEffect_RequiredTypes {}
 			, AttachEffect_DisallowedTypes {}
 			, AttachEffect_RequiredGroups {}
@@ -146,12 +156,18 @@ public:
 			, KeepRange_AllowAI { false }
 			, KeepRange_AllowPlayer { false }
 			, KeepRange_EarlyStopFrame { 0 }
+			, CylinderRangefinding {}
+			, AttackIronCurtain {}
+			, ResetGattlingValue { false }
+			, AddtionalDamage_GattlingValue { false }
+			, AddtionalDamage_GattlingValue_Mult { 1.0 }
 			, KickOutPassengers { true }
 			, Beam_Color {}
 			, Beam_Duration { 15 }
 			, Beam_Amplitude { 40.0 }
 			, Beam_IsHouseColor { false }
 			, LaserThickness { 3 }
+			, Laser_IsTracking { false }
 			, SkipWeaponPicking { true }
 			, DelayedFire_Duration {}
 			, DelayedFire_SkipInTransport { false }

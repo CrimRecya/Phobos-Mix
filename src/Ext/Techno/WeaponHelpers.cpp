@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <OverlayTypeClass.h>
 
@@ -24,8 +24,8 @@ int TechnoExt::PickWeaponIndex(TechnoClass* pThis, TechnoClass* pTargetTechno, A
 
 	CellClass* pTargetCell = nullptr;
 
-	// Ignore target cell for airborne target technos.
-	if (pTarget && (!pTargetTechno || !pTargetTechno->IsInAir()))
+	// Ignore target cell for airborne and underground target technos.
+	if (pTarget && (!pTargetTechno || (!pTargetTechno->IsInAir() && pTargetTechno->InWhichLayer() != Layer::Underground)))
 	{
 		if (auto const pObject = abstract_cast<ObjectClass*, true>(pTarget))
 			pTargetCell = pObject->GetCell();
@@ -50,13 +50,30 @@ int TechnoExt::PickWeaponIndex(TechnoClass* pThis, TechnoClass* pTargetTechno, A
 		}
 	}
 
-	const bool secondIsAA = pTargetTechno && pTargetTechno->IsInAir() && pWeaponTwo->Projectile->AA;
+	bool secondIsAA = false;
+	bool secondIsAU = false;
+
+	if (pTargetTechno)
+	{
+		if (pTargetTechno->IsInAir())
+		{
+			if (pWeaponTwo->Projectile->AA)
+				secondIsAA = true;
+		}
+		else if (pTargetTechno->InWhichLayer() == Layer::Underground)
+		{
+			if (BulletTypeExt::ExtMap.Find(pWeaponTwo->Projectile)->AU)
+				secondIsAU = true;
+		}
+	}
+
 	auto const pFirstExt = WeaponTypeExt::ExtMap.Find(pWeaponStructOne->WeaponType);
 	const bool skipPrimaryPicking = pFirstExt->SkipWeaponPicking;
 	const bool firstAllowedAE = skipPrimaryPicking || pFirstExt->HasRequiredAttachedEffects(pTargetTechno, pThis);
 
 	if (!allowFallback
 		&& (!allowAAFallback || !secondIsAA)
+		&& !secondIsAU
 		&& !TechnoExt::CanFireNoAmmoWeapon(pThis, 1)
 		&& firstAllowedAE)
 	{

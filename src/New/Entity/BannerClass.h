@@ -1,46 +1,49 @@
 #pragma once
 
-#include <vector>
-
 #include <GeneralStructures.h>
 
-#include <Utilities/Savegame.h>
+#include <Ext/Scenario/Body.h>
+#include <New/Type/BannerTypeClass.h>
+#include <Utilities/EnumerableEntity.h>
 
-class BannerTypeClass;
-
-class BannerClass
+class BannerClass final : public EnumerableEntity<BannerClass>
 {
 public:
-	static std::vector<std::unique_ptr<BannerClass>> Array;
+	BannerTypeClass* Type;
+	int ID;
+	Point2D Position;
+	int Variable;
+	int ShapeFrameIndex;
+	bool IsGlobalVariable;
+	int Duration;
+	int Delay;
 
-	BannerTypeClass* Type {};
-	int ID {};
-	Point2D Position {};
-	int Variable {};
-	int ShapeFrameIndex {};
-	bool IsGlobalVariable {};
-	int Duration { -1 };
-	int Delay { -1 };
+	BannerClass()
+		: Type {}
+		, ID {}
+		, Position {}
+		, Variable {}
+		, ShapeFrameIndex {}
+		, IsGlobalVariable {}
+		, Duration {}
+		, Delay {}
+	{ };
 
-	BannerClass() = default;
-
-	BannerClass
-	(
-		BannerTypeClass* pBannerType,
-		int id,
-		Point2D position,
-		int variable,
-		bool isGlobalVariable
-	);
+	BannerClass(BannerTypeClass* pBannerType, int id, Point2D position, int variable, bool isGlobalVariable)
+		: Type { pBannerType }
+		, ID { id }
+		, Position { static_cast<int>(position.X / 100.0 * DSurface::ViewBounds.Width), static_cast<int>(position.Y / 100.0 * DSurface::ViewBounds.Height) }
+		, Variable { variable }
+		, ShapeFrameIndex { 0 }
+		, IsGlobalVariable { isGlobalVariable }
+		, Duration { pBannerType->Duration }
+		, Delay { pBannerType->Delay }
+	{ };
 
 	void Render();
 
-	static void Clear();
 	bool Load(PhobosStreamReader& Stm, bool RegisterForChange);
 	bool Save(PhobosStreamWriter& Stm) const;
-
-	static bool LoadGlobals(PhobosStreamReader& Stm);
-	static bool SaveGlobals(PhobosStreamWriter& Stm);
 
 private:
 	template <typename T>

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Commands.h"
 
 #include <Ext/Sidebar/Body.h>

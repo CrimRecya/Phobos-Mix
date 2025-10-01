@@ -1,10 +1,25 @@
-#include "Body.h"
+﻿#include "Body.h"
+#include "Ext/House/Body.h"
 
 #include <BitFont.h>
 
 #include <Utilities/EnumFunctions.h>
 
 BuildingExt::ExtContainer BuildingExt::ExtMap;
+
+BuildingExt::ExtData::~ExtData()
+{
+	// Should remove children before removing type
+	auto const pTechnoExt = this->TechnoExtData;
+
+	if (!pTechnoExt->ChildAttachments.empty())
+	{
+		for (auto const& pAttachment : pTechnoExt->ChildAttachments)
+			pAttachment->UnInit();
+
+		pTechnoExt->ChildAttachments.clear();
+	}
+}
 
 void BuildingExt::ExtData::DisplayIncomeString()
 {
@@ -347,6 +362,18 @@ bool BuildingExt::ExtData::HandleInfiltrate(HouseClass* pInfiltratorHouse, int m
 		const int idx2 = pTypeExt->SpyEffect_InfiltratorSuperWeapon;
 		if (idx2 >= 0)
 			launchTheSWHere(pInfiltratorHouse->Supers.Items[idx2], pInfiltratorHouse);
+
+		const int jamTime = pTypeExt->SpyEffect_RadarJamDuration;
+		if (jamTime > 0)
+		{
+			pVictimHouse->RecheckRadar = true;
+			auto pVictimExt = HouseExt::ExtMap.Find(pVictimHouse);
+			if (pVictimExt->SpyEffect_RadarJamTimer.TimeLeft < jamTime)
+			{
+				pVictimExt->SpyEffect_RadarJamTimer.Stop();
+				pVictimExt->SpyEffect_RadarJamTimer.Start(jamTime);
+			}
+		}
 	}
 
 	return true;
@@ -360,10 +387,56 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 
 	auto cell = CellClass::Coord2Cell(buffer);
 
+	bool upward = false;
+	short* pCur = nullptr;
+	short start = 0; // door
+
 	const auto pType = pThis->Type;
-	const short start = static_cast<short>(pThis->Location.X / Unsorted::LeptonsPerCell + pType->GetFoundationWidth() - 2); // door
-	const short end = cell.X; // exit
-	cell.X = start;
+
+	switch (RulesExt::Global()->ExtendedWeaponsFactory ? BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get() : 2)
+	{
+
+	case 0: // North -> left+down/++Y
+	{
+		upward = false;
+		pCur = &cell.Y;
+		start = static_cast<short>(pThis->Location.Y / Unsorted::LeptonsPerCell + 1);
+		break;
+	}
+
+	case 2: // East -> left+up/--X
+	{
+		upward = true;
+		pCur = &cell.X;
+		start = static_cast<short>(pThis->Location.X / Unsorted::LeptonsPerCell + pType->GetFoundationWidth() - 2);
+		break;
+	}
+
+	case 4: // South -> right+up/--Y
+	{
+		upward = true;
+		pCur = &cell.Y;
+		start = static_cast<short>(pThis->Location.Y / Unsorted::LeptonsPerCell + pType->GetFoundationHeight(false) - 2);
+		break;
+	}
+
+	case 6: // West -> right+down/++X
+	{
+		upward = false;
+		pCur = &cell.X;
+		start = static_cast<short>(pThis->Location.X / Unsorted::LeptonsPerCell + 1);
+		break;
+	}
+
+	default: // Invalid direction
+	{
+		return;
+	}
+
+	}
+
+	const short end = *pCur; // exit
+	*pCur = start;
 	auto pCell = MapClass::Instance.GetCellAt(cell);
 
 	while (true)
@@ -372,7 +445,15 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 		{
 			if (const auto pUnit = abstract_cast<UnitClass*, true>(pObject))
 			{
-				if (pThis->Owner != pUnit->Owner || pUnit->Locomotor->Destination() != CoordStruct::Empty)
+				if (pThis->Owner != pUnit->Owner)
+					continue;
+
+				const auto pLocoDest = pUnit->Locomotor->Destination();
+
+				if (pLocoDest != CoordStruct::Empty && pLocoDest != pUnit->Location)
+					continue;
+
+				if (TechnoExt::IsAttached(pUnit))
 					continue;
 
 				const auto height = pUnit->GetHeight();
@@ -386,7 +467,7 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 			}
 		}
 
-		if (--cell.X < end)
+		if (upward ? (--(*pCur) < end) : (++(*pCur) > end))
 			return; // no stuck
 
 		pCell = MapClass::Instance.GetCellAt(cell);
@@ -457,6 +538,7 @@ void BuildingExt::ExtData::Serialize(T& Stm)
 		.Process(this->CurrentLaserWeaponIndex)
 		.Process(this->PoweredUpToLevel)
 		.Process(this->CurrentEMPulseSW)
+		.Process(this->SecondaryArchiveTarget)
 		;
 }
 

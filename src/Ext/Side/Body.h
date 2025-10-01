@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <SideClass.h>
 
 #include <Helpers/Macro.h>
@@ -42,6 +42,12 @@ public:
 		PhobosPCXFile SuperWeaponSidebar_TopPCX;
 		PhobosPCXFile SuperWeaponSidebar_CenterPCX;
 		PhobosPCXFile SuperWeaponSidebar_BottomPCX;
+		Valueable<SHPStruct*> SelectedInfo_Main;
+		Valueable<SHPStruct*> SelectedInfo_Buff;
+		Valueable<SHPStruct*> SelectedInfo_Button;
+		Valueable<SHPStruct*> SelectedInfo_Bottom;
+		Valueable<SHPStruct*> SelectedInfo_Toggle;
+		CustomPalette SelectedInfo_Palette;
 
 		ExtData(SideClass* OwnerObject) : Extension<SideClass>(OwnerObject)
 			, ArrayIndex { -1 }
@@ -70,6 +76,12 @@ public:
 			, SuperWeaponSidebar_TopPCX {}
 			, SuperWeaponSidebar_CenterPCX {}
 			, SuperWeaponSidebar_BottomPCX {}
+			, SelectedInfo_Main { nullptr }
+			, SelectedInfo_Buff { nullptr }
+			, SelectedInfo_Button { nullptr }
+			, SelectedInfo_Bottom { nullptr }
+			, SelectedInfo_Toggle { nullptr }
+			, SelectedInfo_Palette {}
 		{ }
 
 		virtual ~ExtData() = default;

@@ -1,4 +1,5 @@
-#include "Body.h"
+﻿#include "Body.h"
+#include <EBolt.h>
 #include <ParticleSystemClass.h>
 
 #include <Ext/Techno/Body.h>

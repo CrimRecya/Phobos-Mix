@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <ThemeClass.h>
 
@@ -54,6 +54,12 @@ void SideExt::ExtData::LoadFromINIFile(CCINIClass* pINI)
 	this->SuperWeaponSidebar_TopPCX.Read(pINI, pSection, "SuperWeaponSidebar.TopPCX");
 	this->SuperWeaponSidebar_CenterPCX.Read(pINI, pSection, "SuperWeaponSidebar.CenterPCX");
 	this->SuperWeaponSidebar_BottomPCX.Read(pINI, pSection, "SuperWeaponSidebar.BottomPCX");
+	this->SelectedInfo_Main.Read(exINI, pSection, "SelectedInfo.Main");
+	this->SelectedInfo_Buff.Read(exINI, pSection, "SelectedInfo.Buff");
+	this->SelectedInfo_Button.Read(exINI, pSection, "SelectedInfo.Button");
+	this->SelectedInfo_Bottom.Read(exINI, pSection, "SelectedInfo.Bottom");
+	this->SelectedInfo_Toggle.Read(exINI, pSection, "SelectedInfo.Toggle");
+	this->SelectedInfo_Palette.LoadFromINI(pINI, pSection, "SelectedInfo.Palette");
 }
 
 // =============================
@@ -89,6 +95,12 @@ void SideExt::ExtData::Serialize(T& Stm)
 		.Process(this->SuperWeaponSidebar_TopPCX)
 		.Process(this->SuperWeaponSidebar_CenterPCX)
 		.Process(this->SuperWeaponSidebar_BottomPCX)
+		.Process(this->SelectedInfo_Main)
+		.Process(this->SelectedInfo_Buff)
+		.Process(this->SelectedInfo_Button)
+		.Process(this->SelectedInfo_Bottom)
+		.Process(this->SelectedInfo_Toggle)
+		.Process(this->SelectedInfo_Palette)
 		;
 }
 

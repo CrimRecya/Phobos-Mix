@@ -1,4 +1,4 @@
-#include <AircraftClass.h>
+﻿#include <AircraftClass.h>
 #include <EventClass.h>
 #include <FlyLocomotionClass.h>
 
@@ -634,7 +634,7 @@ DEFINE_HOOK(0x4CF190, FlyLocomotionClass_FlightUpdate_SetPrimaryFacing, 0x6) // 
 				// When the direction is opposite, moving to the side first, then automatically shorten based on the current distance
 				if (std::abs(difference) >= 12288) // 12288 -> 3/16 * 65536 (1/8 < 3/16 < 1/4, so the landing can begin at the appropriate location)
 					cellOffset = (cellOffset + Unsorted::AdjacentCoord[((difference > 0) ? (landingFace + 2) : (landingFace - 2)) & 7]) * cellCounts;
-				else // 724 -> 512√2
+				else // 724 -> 512 * (2^0.5)
 					cellOffset *= Math::min(cellCounts, ((landingFace & 1) ? (horizontalDistance(footCoords) / 724) : (horizontalDistance(footCoords) / 512)));
 
 				// On the way back, increase the offset value of the destination so that it looks like a real airplane
@@ -947,7 +947,13 @@ DEFINE_HOOK(0x4DF3BA, FootClass_UpdateAttackMove_AircraftHoldAttackMoveTarget1, 
 	if (RulesExt::Global()->ExtendedAircraftMissions && pThis->WhatAmI() == AbstractType::Aircraft)
 		return HoldTarget;
 
-	return pThis->InAuxiliarySearchRange(pThis->Target) ? HoldTarget : LoseTarget;
+	const auto inSearchRange = pThis->InAuxiliarySearchRange(pThis->Target);
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+
+	if (pTypeExt->AttackMove_PursuitTarget && inSearchRange)
+		pThis->SetDestination(pThis->Target, true);
+
+	return inSearchRange ? HoldTarget : LoseTarget;
 }
 
 DEFINE_HOOK(0x4DF42A, FootClass_UpdateAttackMove_AircraftHoldAttackMoveTarget2, 0x6) // When it have MegaTarget
@@ -1134,7 +1140,39 @@ DEFINE_HOOK(0x418CF3, AircraftClass_Mission_Attack_PlanningFix, 0x5)
 
 	GET(AircraftClass*, pThis, ESI);
 
-	return pThis->Ammo <= 0 || !pThis->TryNextPlanningTokenNode() ? 0 : SkipIdle;
+	return (pThis->Ammo <= 0) || !pThis->TryNextPlanningTokenNode() ? 0 : SkipIdle;
+}
+
+#pragma endregion
+
+#pragma region AircraftFlight
+
+DEFINE_HOOK(0x4CDF84, FlyLocomotionClass_UpdateLoaction_FlightCrash, 0x5)
+{
+	GET(FootClass* const, pLinkedTo, EAX);
+
+	const int crashSpeed = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType())->FlightCrash;
+
+	if (crashSpeed >= 0)
+		R->ECX(crashSpeed);
+
+	return 0;
+}
+
+DEFINE_HOOK(0x4CDE96, FlyLocomotionClass_UpdateLoaction_FlightClimb, 0x6)
+{
+	GET(int, vZ, EAX);
+	GET(const int, height, EDI);
+	GET(FlyLocomotionClass* const, pThis, ESI);
+	GET(FootClass* const, pLinkedTo, ECX);
+
+	const int climbSpeed = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType())->FlightClimb;
+
+	if (climbSpeed >= 0)
+		vZ = climbSpeed;
+
+	R->EAX(Math::min(vZ, (pThis->FlightLevel - height)));
+	return 0;
 }
 
 #pragma endregion

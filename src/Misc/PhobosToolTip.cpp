@@ -1,4 +1,4 @@
-#include <Helpers/Macro.h>
+﻿#include <Helpers/Macro.h>
 
 #include "PhobosToolTip.h"
 
@@ -17,7 +17,10 @@
 #include <Ext/Side/Body.h>
 #include <Ext/Surface/Body.h>
 #include <Ext/House/Body.h>
+#include <Ext/Scenario/Body.h>
 #include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
+#include <Ext/Sidebar/UniqueButton/UniqueTechnoColumnClass.h>
+#include <Ext/Sidebar/SelectedButton/SelectedInfoClass.h>
 
 #include <sstream>
 #include <iomanip>
@@ -33,6 +36,13 @@ inline const wchar_t* PhobosToolTip::GetUIDescription(TechnoTypeExt::ExtData* pD
 {
 	return Phobos::Config::ToolTipDescriptions && !pData->UIDescription.Get().empty()
 		? pData->UIDescription.Get().Text
+		: nullptr;
+}
+
+inline const wchar_t* PhobosToolTip::GetUnbuildableUIDescription(TechnoTypeExt::ExtData* pData) const
+{
+	return Phobos::Config::ToolTipDescriptions && !pData->UIDescription_Unbuildable.Get().empty()
+		? pData->UIDescription_Unbuildable.Get().Text
 		: nullptr;
 }
 
@@ -159,6 +169,12 @@ void PhobosToolTip::HelpText_Techno(TechnoTypeClass* pType)
 	if (auto const pDesc = this->GetUIDescription(pData))
 		oss << L"\n" << pDesc;
 
+	if (pData->IsGreyCameoForCurrentPlayer)
+	{
+		if (auto pExDesc = this->GetUnbuildableUIDescription(pData))
+			oss << L"\n" << pExDesc;
+	}
+
 	this->TextBuffer = oss.str();
 }
 
@@ -262,6 +278,25 @@ DEFINE_HOOK(0x4AE51E, DisplayClass_GetToolTip_HelpText, 0x6)
 			R->EAX(0);
 			return ApplyToolTip;
 		}
+	}
+
+	const auto uniqueIndex = UniqueTechnoColumnClass::Instance.Hovering;
+
+	if (uniqueIndex >= 0)
+	{
+		auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
+
+		if (uniqueIndex < static_cast<int>(vec.size()))
+		{
+			R->EAX(vec[uniqueIndex]->TypeExtData->OwnerObject()->UIName);
+			return ApplyToolTip;
+		}
+	}
+
+	if (SelectedInfoClass::Instance.IsHovering)
+	{
+		R->EAX(0);
+		return ApplyToolTip;
 	}
 
 	return 0;

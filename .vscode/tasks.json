@@ -84,6 +84,16 @@
         "panel": "shared",
         "showReuseMessage": false
       }
+    },
+    {
+        "label": "Convert to UTF-8 with BOM",
+        "type": "shell",
+        "command": "powershell",
+        "args": [
+            "-Command",
+            "Get-ChildItem -Recurse -Include *.cpp,*.h,*.hpp,*.c | ForEach-Object { $content = Get-Content $_.FullName -Raw; [System.IO.File]::WriteAllText($_.FullName, $content, [System.Text.Encoding]::UTF8) }"
+        ],
+        "problemMatcher": []
     }
   ]
 }

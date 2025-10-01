@@ -1,4 +1,4 @@
-#include <FactoryClass.h>
+﻿#include <FactoryClass.h>
 
 #include <Ext/Techno/Body.h>
 #include <Ext/TechnoType/Body.h>

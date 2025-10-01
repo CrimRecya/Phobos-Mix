@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // This header contains simple wraps for C++20 coroutine
 // Before C++23 we probably needs it

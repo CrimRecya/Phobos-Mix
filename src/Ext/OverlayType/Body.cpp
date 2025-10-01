@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <OverlayTypeClass.h>
 #include <TacticalClass.h>
@@ -15,6 +15,7 @@ void OverlayTypeExt::ExtData::Serialize(T& Stm)
 {
 	Stm
 		.Process(this->PaletteFile)
+		.Process(this->IgnoredByMouse)
 		;
 }
 
@@ -22,12 +23,14 @@ void OverlayTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 {
 	auto pThis = this->OwnerObject();
 
-	//const char* pSection = pThis->ID;
-	//
-	//if (!pINI->GetSection(pSection))
-	//	return;
-	//
-	//INI_EX exINI(pINI);
+	const char* pSection = pThis->ID;
+
+	if (!pINI->GetSection(pSection))
+		return;
+
+	INI_EX exINI(pINI);
+
+	this->IgnoredByMouse.Read(exINI, pSection, "IgnoredByMouse");
 
 	auto pArtSection = pThis->ImageFile;
 	INI_EX exArtINI(&CCINIClass::INI_Art);

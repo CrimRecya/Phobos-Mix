@@ -1,4 +1,4 @@
-#include "ToggleSWSidebar.h"
+﻿#include "ToggleSWSidebar.h"
 #include <HouseClass.h>
 
 #include <Utilities/GeneralUtils.h>

@@ -1,4 +1,4 @@
-#include "DroppodTypeClass.h"
+﻿#include "DroppodTypeClass.h"
 #include <DropPodLocomotionClass.h>
 
 #include <Ext/Anim/Body.h>

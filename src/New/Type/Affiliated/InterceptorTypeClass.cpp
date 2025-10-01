@@ -1,4 +1,4 @@
-#include "InterceptorTypeClass.h"
+﻿#include "InterceptorTypeClass.h"
 
 #include <Utilities/SavegameDef.h>
 #include <Utilities/TemplateDef.h>

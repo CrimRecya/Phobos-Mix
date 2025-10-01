@@ -39,6 +39,7 @@ This page lists all the individual contributions to the project by their author.
   - Recursive transport killer fix
   - Custom locomotors example implementation and piggybacking test warheads
   - Initial jumpjet facing fix
+  - Techno Attachment logic
   - Migration utility
   - GitHub Actions setup
   - Official docs
@@ -51,6 +52,7 @@ This page lists all the individual contributions to the project by their author.
   - Warhead activation target health thresholds
   - MP saves support for quicksave command and savegame trigger action
   - Ported XNA CnCNet Client MP save handling
+  - Retint fix toggle
 - **Uranusian (Thrifinesma)**:
   - Mind Control enhancement
   - Custom warhead splash list
@@ -145,6 +147,7 @@ This page lists all the individual contributions to the project by their author.
   - Shared ammo logic
   - Customizable FLH when infantry is prone or deployed
   - Initial strength for cloned infantry
+  - Grant new superweapons in superweapons
   - Map Events 604 & 605 for checking if a specific Techno enters in a cell
   - Warhead that can not kill
   - `Pips.HideIfNoStrength` and `SelfHealing.EnabledBy` additions for shields
@@ -258,6 +261,8 @@ This page lists all the individual contributions to the project by their author.
   - Customizable ChronoSphere teleport delays for units
   - Allowed and disallowed types for `FactoryPlant`
   - Forbidding parallel AI queues for specific TechnoTypes
+  - Vehicles keeping target on move command
+  - Reimplemented `Airburst` & `Splits` logic with more customization options
   - Nonprovocative Warheads
   - Customizing effect of level lighting on air units
   - Reimplemented `Airburst` & `Splits` logic with more customization options
@@ -491,7 +496,7 @@ This page lists all the individual contributions to the project by their author.
   - Use 2D distance instead of 3D to check whether in air team members have arrived destination
   - No rearm and reload in EMP or temporal
   - Enhanced Straight trajectory
-  - Enable Building Production Queue
+  - Enable building production queue
   - Fix for sidebar not updating queued unit numbers when on hold
   - New Parabola trajectory
   - Enhanced Bombard trajectory
@@ -616,13 +621,16 @@ This page lists all the individual contributions to the project by their author.
   - Customize the chained damage of the wall
   - Fix an issue that jumpjet vehicles can not stop correctly when assigned a target in range
   - Fix an issue that jumpjet infantries stop incorrectly when assigned a target out of range
+  - Fix an issue that jumpjet infantries' shadow is always drawn even if they are cloaked
 - **solar-III (凤九歌)**
   - Target scanning delay customization (documentation)
   - Skip target scanning function calling for unarmed technos (documentation)
 - **tyuah8**:
   - Drive/Jumpjet/Ship/Teleport locomotor did not power on when it is un-piggybacked bugfix
   - Destroyed unit leaves sensors bugfix
-- **Aephiex** - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
+- **Aephiex**:
+  - initial fix for Ares academy not working on the initial payloads of vehicles built from a war factory
+  - Aggressive stance toggle command (auto target unarmed enemy buildings)
 - **Multfinite** - Allow to toggle main exception handler via command line argument `-ExceptionHandler=boolean`
 - **hejiajun107, Xkein** - Fix a jumpjet crash related to voxel shadow drawing
 - **Ares developers**:

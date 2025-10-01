@@ -1,4 +1,4 @@
-#include "QuickSave.h"
+﻿#include "QuickSave.h"
 
 #include <ScenarioClass.h>
 #include <HouseClass.h>
