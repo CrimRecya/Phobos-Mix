@@ -680,6 +680,24 @@ bool AStarClass::FindHierarchicalPath(
 						const float cost = static_cast<float>(AStarClass::PassabilityCoefficients[static_cast<int>(checkSubzonePassability)] + pCheckNode->Cost + threat + (atZoneXEdge ? 0.001f : 0.0f));
 						const int searchID = this->SearchID;
 
+						/*
+						TODO 修复两栖单位沿岸绕路问题
+						注：地图总共可以分为5层：
+							(1) 由 ZoneArrayIndex 划分的地块区域（由悬崖、水面等地形划分）
+							(2) 由 SubzoneArrayLevel2Index 划分的子区域（8*8 单元格的子区域，会被 ZoneArrayIndex 的边界再次划分）
+							(3) 由 SubzoneArrayLevel1Index 划分的子区域（4*4 单元格的子区域，会被 ZoneArrayIndex 的边界再次划分）
+							(4) 由 SubzoneArrayLevel0Index 划分的子区域（2*2 单元格的子区域，会被 ZoneArrayIndex 的边界再次划分）
+							(5) 由 CellStruct 定义的独立单元格
+							评估威胁值时，使用了 4*4 单元格的固定区块（不受 ZoneArrayIndex 影响）进行计算
+							这导致 WW 此处对两栖单位这类能够跨地形（由 ZoneArrayIndex 划分的地块）移动的单位的成本计算非常抽象，
+							在子区域之间移动时，移动方向不会作为成本计算的一环，这意味着走斜线和轴线会被认为是一样的，更抽象的是
+							在跨越地形时，由于三层的子区域都会被 ZoneArrayIndex 再次划分，这会导致子区域的数量变多，而成本计算又
+							依赖于子区域的数量，这会使得威胁值计算和移动成本计算可能会因这种再次划分而翻倍，如果还有多一层海岸还
+							能再多一倍，而如果地形边界刚好能和某个子区域的边界重合，那么这条路相比别的路就少了一个节点，成本就比
+							其它路径更少了，此时单位就会偏向于走这条路，尽管这条路实际上可能走了各种斜线、会绕不少路
+							而目前这些结构体根本没有记录这些信息，导致修改起来会非常麻烦，如果令其跳过分层寻路，直接常规寻路，则
+							会导致其在进行远距离寻路时性能消耗相当高，不能真正作为解决手段
+						*/
 						// 检查是否应该探索该相邻节点
 						if ((pOpenSetMarkers[checkSubzoneIndex] != searchID // 不在开放集中
 								|| pGCostArray[checkSubzoneIndex] > cost) // 成本低于记录值
