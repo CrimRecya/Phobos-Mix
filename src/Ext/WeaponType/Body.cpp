@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 #include <Ext/Bullet/Body.h>
 #include <Ext/Techno/Body.h>
 #include <SpawnManagerClass.h>
@@ -122,6 +122,11 @@ void WeaponTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->ExtraWarheads_FullDetonation.Read(exINI, pSection, "ExtraWarheads.FullDetonation");
 	this->AmbientDamage_Warhead.Read<true>(exINI, pSection, "AmbientDamage.Warhead");
 	this->AmbientDamage_IgnoreTarget.Read(exINI, pSection, "AmbientDamage.IgnoreTarget");
+
+	// AttachEffect
+	this->AttachEffects.LoadFromINI(pINI, pSection);
+	this->AttachEffect_Enable = (this->AttachEffects.AttachTypes.size() > 0 || this->AttachEffects.RemoveTypes.size() > 0 || this->AttachEffects.RemoveGroups.size() > 0);
+
 	this->AttachEffect_RequiredTypes.Read(exINI, pSection, "AttachEffect.RequiredTypes");
 	this->AttachEffect_DisallowedTypes.Read(exINI, pSection, "AttachEffect.DisallowedTypes");
 	exINI.ParseStringList(this->AttachEffect_RequiredGroups, pSection, "AttachEffect.RequiredGroups");
@@ -136,12 +141,18 @@ void WeaponTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->KeepRange_AllowAI.Read(exINI, pSection, "KeepRange.AllowAI");
 	this->KeepRange_AllowPlayer.Read(exINI, pSection, "KeepRange.AllowPlayer");
 	this->KeepRange_EarlyStopFrame.Read(exINI, pSection, "KeepRange.EarlyStopFrame");
+	this->CylinderRangefinding.Read(exINI, pSection, "CylinderRangefinding");
+	this->AttackIronCurtain.Read(exINI, pSection, "AttackIronCurtain");
+	this->ResetGattlingValue.Read(exINI, pSection, "ResetGattlingValue");
+	this->AddtionalDamage_GattlingValue.Read(exINI, pSection, "AddtionalDamage.GattlingValue");
+	this->AddtionalDamage_GattlingValue_Mult.Read(exINI, pSection, "AddtionalDamage.GattlingValue.Mult");
 	this->KickOutPassengers.Read(exINI, pSection, "KickOutPassengers");
 	this->Beam_Color.Read(exINI, pSection, "Beam.Color");
 	this->Beam_Duration.Read(exINI, pSection, "Beam.Duration");
 	this->Beam_Amplitude.Read(exINI, pSection, "Beam.Amplitude");
 	this->Beam_IsHouseColor.Read(exINI, pSection, "Beam.IsHouseColor");
 	this->LaserThickness.Read(exINI, pSection, "LaserThickness");
+	this->Laser_IsTracking.Read(exINI, pSection, "Laser.IsTracking");
 	this->DelayedFire_Duration.Read(exINI, pSection, "DelayedFire.Duration");
 	this->DelayedFire_SkipInTransport.Read(exINI, pSection, "DelayedFire.SkipInTransport");
 	this->DelayedFire_Animation.Read(exINI, pSection, "DelayedFire.Animation");
@@ -205,6 +216,8 @@ void WeaponTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->ExtraWarheads_FullDetonation)
 		.Process(this->AmbientDamage_Warhead)
 		.Process(this->AmbientDamage_IgnoreTarget)
+		.Process(this->AttachEffects)
+		.Process(this->AttachEffect_Enable)
 		.Process(this->AttachEffect_RequiredTypes)
 		.Process(this->AttachEffect_DisallowedTypes)
 		.Process(this->AttachEffect_RequiredGroups)
@@ -219,12 +232,18 @@ void WeaponTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->KeepRange_AllowAI)
 		.Process(this->KeepRange_AllowPlayer)
 		.Process(this->KeepRange_EarlyStopFrame)
+		.Process(this->CylinderRangefinding)
+		.Process(this->AttackIronCurtain)
+		.Process(this->ResetGattlingValue)
+		.Process(this->AddtionalDamage_GattlingValue)
+		.Process(this->AddtionalDamage_GattlingValue_Mult)
 		.Process(this->KickOutPassengers)
 		.Process(this->Beam_Color)
 		.Process(this->Beam_Duration)
 		.Process(this->Beam_Amplitude)
 		.Process(this->Beam_IsHouseColor)
 		.Process(this->LaserThickness)
+		.Process(this->Laser_IsTracking)
 		.Process(this->SkipWeaponPicking)
 		.Process(this->DelayedFire_Duration)
 		.Process(this->DelayedFire_SkipInTransport)

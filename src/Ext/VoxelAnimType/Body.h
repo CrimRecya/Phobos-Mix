@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <VoxelAnimTypeClass.h>
 
 #include <Utilities/Container.h>

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // This file (and the corresponding .cpp one) contains an example implementation
 // of a custom locomotor that goes in circles around the target. It's intended to

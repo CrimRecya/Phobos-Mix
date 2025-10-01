@@ -1,7 +1,6 @@
-#include "Body.h"
-
+﻿#include "Body.h"
 #include <AirstrikeClass.h>
-
+#include <SpawnManagerClass.h>
 #include <Utilities/EnumFunctions.h>
 
 // Unsorted methods
@@ -34,37 +33,56 @@ void TechnoExt::ObjectKilledBy(TechnoClass* pVictim, TechnoClass* pKiller)
 	}
 }
 
-// reversed from 6F3D60
-CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct pCoord, bool isOnTurret)
+Matrix3D TechnoExt::GetTransform(TechnoClass* pThis, VoxelIndexKey* pKey, bool isShadow)
 {
-	auto const pType = pThis->GetTechnoType();
-	auto const pFoot = abstract_cast<FootClass*, true>(pThis);
 	Matrix3D mtx;
+	auto const pFoot = abstract_cast<FootClass*, true>(pThis);
 
-	// Step 1: get body transform matrix
 	if (pFoot && pFoot->Locomotor)
-		mtx = pFoot->Locomotor->Draw_Matrix(nullptr);
+		mtx = isShadow ? pFoot->Locomotor->Shadow_Matrix(pKey) : pFoot->Locomotor->Draw_Matrix(pKey);
 	else // no locomotor means no rotation or transform of any kind (f.ex. buildings) - Kerbiter
 		mtx.MakeIdentity();
 
-	// Steps 2-3: turret offset and rotation
-	if (isOnTurret && (pType->Turret || !pFoot)) // If building has no turret, it's TurretFacing is TargetDirection
+	return mtx;
+}
+
+Matrix3D TechnoExt::TransformFLHForTurret(TechnoClass* pThis, Matrix3D mtx, bool isOnTurret, double factor, int turIdx)
+{
+	auto const pType = pThis->GetTechnoType();
+	const bool isFoot = (pThis->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None;
+
+	// turret offset and rotation
+	if (isOnTurret && (pType->Turret || !isFoot)) // If building has no turret, it's TurretFacing is TargetDirection
 	{
-		TechnoTypeExt::ApplyTurretOffset(pType, &mtx);
+		TechnoTypeExt::ApplyTurretOffset(pType, &mtx, factor, turIdx);
 
 		const double turretRad = pThis->TurretFacing().GetRadian<32>();
 		// For BuildingClass turret facing is equal to primary facing
-		const float angle = pFoot ? (float)(turretRad - pThis->PrimaryFacing.Current().GetRadian<32>()) : (float)(turretRad);
+		const float angle = isFoot ? (float)(turretRad - pThis->PrimaryFacing.Current().GetRadian<32>()) : (float)(turretRad);
 
 		mtx.RotateZ(angle);
 	}
 
-	// Step 4: apply FLH offset
-	mtx.Translate((float)pCoord.X, (float)pCoord.Y, (float)pCoord.Z);
+	return mtx;
+}
 
-	auto const result = mtx.GetTranslation();
+Matrix3D TechnoExt::GetFLHMatrix(TechnoClass* pThis, const CoordStruct& flh, bool isOnTurret, double factor, bool isShadow, int turIdx)
+{
+	Matrix3D transform = TechnoExt::GetTransform(pThis, nullptr, isShadow);
+	Matrix3D mtx = TechnoExt::TransformFLHForTurret(pThis, transform, isOnTurret, factor, turIdx);
 
-	// Step 5: apply as an offset to global object coords
+	// apply FLH offset
+	mtx.Translate((float)(flh.X * factor), (float)(flh.Y * factor), (float)(flh.Z * factor));
+
+	return mtx;
+}
+
+// reversed from 6F3D60
+CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, const CoordStruct& flh, bool isOnTurret, int turIdx)
+{
+	auto result = TechnoExt::GetFLHMatrix(pThis, flh, isOnTurret, 1.0, false, turIdx).GetTranslation();
+
+	// apply as an offset to global object coords
 	// Resulting coords are mirrored along X axis, so we mirror it back
 	auto const location = pThis->GetRenderCoords() + CoordStruct { (int)result.X, -(int)result.Y, (int)result.Z };
 
@@ -74,43 +92,47 @@ CoordStruct TechnoExt::GetFLHAbsoluteCoords(TechnoClass* pThis, CoordStruct pCoo
 CoordStruct TechnoExt::GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FLHFound)
 {
 	FLHFound = false;
-	CoordStruct FLH = CoordStruct::Empty;
 
-	auto const pExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
-
-	auto const pInf = abstract_cast<InfantryClass*, true>(pThis);
-	std::span<std::vector<CoordStruct>> pickedFLHs = pExt->WeaponBurstFLHs;
-
-	if (pThis->Veterancy.IsElite())
+	auto getFLHs = [pThis]() -> const std::span<const std::vector<CoordStruct>>
 	{
-		if (pInf)
+		auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
+		auto const pInf = abstract_cast<InfantryClass*, true>(pThis);
+
+		if (pThis->Veterancy.IsElite())
 		{
-			if (pInf->IsDeployed() && pExt->EliteDeployedWeaponBurstFLHs.size() > 0)
-				pickedFLHs = pExt->EliteDeployedWeaponBurstFLHs;
-			else if (pInf->Crawling && pExt->EliteCrouchedWeaponBurstFLHs.size() > 0)
-				pickedFLHs = pExt->EliteCrouchedWeaponBurstFLHs;
-			else
-				pickedFLHs = pExt->EliteWeaponBurstFLHs;
+			if (pInf)
+			{
+				if (pInf->IsDeployed() && !pTypeExt->EliteDeployedWeaponBurstFLHs.empty())
+					return pTypeExt->EliteDeployedWeaponBurstFLHs;
+				else if (pInf->Crawling && !pTypeExt->EliteCrouchedWeaponBurstFLHs.empty())
+					return pTypeExt->EliteCrouchedWeaponBurstFLHs;
+			}
+
+			return pTypeExt->EliteWeaponBurstFLHs;
 		}
 		else
 		{
-			pickedFLHs = pExt->EliteWeaponBurstFLHs;
+			if (pInf)
+			{
+				if (pInf->IsDeployed() && !pTypeExt->DeployedWeaponBurstFLHs.empty())
+					return pTypeExt->DeployedWeaponBurstFLHs;
+				else if (pInf->Crawling && !pTypeExt->CrouchedWeaponBurstFLHs.empty())
+					return pTypeExt->CrouchedWeaponBurstFLHs;
+			}
+
+			return pTypeExt->WeaponBurstFLHs;
 		}
-	}
-	else if (pInf)
-	{
-		if (pInf->IsDeployed() && pExt->DeployedWeaponBurstFLHs.size() > 0)
-			pickedFLHs = pExt->DeployedWeaponBurstFLHs;
-		else if (pInf->Crawling && pExt->CrouchedWeaponBurstFLHs.size() > 0)
-			pickedFLHs = pExt->CrouchedWeaponBurstFLHs;
-	}
-	if ((int)pickedFLHs[weaponIndex].size() > pThis->CurrentBurstIndex)
+	};
+	auto const pickedFLHs = getFLHs();
+
+	if (pickedFLHs.size() > static_cast<size_t>(weaponIndex) // weaponIndex >= 0 has been confirmed before call
+		&& pickedFLHs[weaponIndex].size() > static_cast<size_t>(pThis->CurrentBurstIndex))
 	{
 		FLHFound = true;
-		FLH = pickedFLHs[weaponIndex][pThis->CurrentBurstIndex];
+		return pickedFLHs[weaponIndex][pThis->CurrentBurstIndex];
 	}
 
-	return FLH;
+	return CoordStruct::Empty;
 }
 
 CoordStruct TechnoExt::GetSimpleFLH(InfantryClass* pThis, int weaponIndex, bool& FLHFound)
@@ -159,6 +181,57 @@ void TechnoExt::ExtData::InitializeDisplayInfo()
 		pThis->RearmTimer.TimeLeft = pSecondary->ROF;
 
 	pThis->RearmTimer.StartTime = Math::min(-2, -pThis->RearmTimer.TimeLeft);
+}
+
+void TechnoExt::ExtData::InitializeRecoilData()
+{
+	const auto pTypeExt = this->TypeExtData;
+	const auto pType = pTypeExt->OwnerObject();
+
+	if (!pType->TurretRecoil)
+		return;
+
+	if (pTypeExt->ExtraTurretCount)
+	{
+		if (static_cast<int>(this->ExtraTurretRecoil.size()) < pTypeExt->ExtraTurretCount)
+			this->ExtraTurretRecoil.resize(pTypeExt->ExtraTurretCount);
+
+		const auto& refData = pType->TurretAnimData;
+
+		for (auto& data : this->ExtraTurretRecoil)
+		{
+			data.Turret.Travel = refData.Travel;
+			data.Turret.CompressFrames = refData.CompressFrames;
+			data.Turret.RecoverFrames = refData.RecoverFrames;
+			data.Turret.HoldFrames = refData.HoldFrames;
+			data.TravelPerFrame = 0.0;
+			data.TravelSoFar = 0.0;
+			data.State = RecoilData::RecoilState::Inactive;
+			data.TravelFramesLeft = 0;
+		}
+	}
+
+	if (pTypeExt->ExtraTurretCount || pTypeExt->ExtraBarrelCount)
+	{
+		const auto dataCount = (pTypeExt->ExtraBarrelCount + 1) * (pTypeExt->ExtraTurretCount + 1) - 1;
+
+		if (static_cast<int>(this->ExtraBarrelRecoil.size()) < dataCount)
+			this->ExtraBarrelRecoil.resize(dataCount);
+
+		const auto& refData = pType->BarrelAnimData;
+
+		for (auto& data : this->ExtraBarrelRecoil)
+		{
+			data.Turret.Travel = refData.Travel;
+			data.Turret.CompressFrames = refData.CompressFrames;
+			data.Turret.RecoverFrames = refData.RecoverFrames;
+			data.Turret.HoldFrames = refData.HoldFrames;
+			data.TravelPerFrame = 0.0;
+			data.TravelSoFar = 0.0;
+			data.State = RecoilData::RecoilState::Inactive;
+			data.TravelFramesLeft = 0;
+		}
+	}
 }
 
 void TechnoExt::ExtData::InitializeAttachEffects()

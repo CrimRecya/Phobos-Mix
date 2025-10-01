@@ -1,14 +1,26 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <AircraftClass.h>
 #include <HouseClass.h>
 #include <ScenarioClass.h>
+#include <SpawnManagerClass.h>
+#include <SlaveManagerClass.h>
+#include <ParasiteClass.h>
+#include <TemporalClass.h>
+#include <AirstrikeClass.h>
+#include <BombListClass.h>
+#include <TacticalClass.h>
+#include <OverlayTypeClass.h>
 #include <JumpjetLocomotionClass.h>
 
 #include <Ext/Anim/Body.h>
+#include <Ext/BulletType/Body.h>
 #include <Ext/House/Body.h>
 #include <Ext/Scenario/Body.h>
 #include <Ext/WeaponType/Body.h>
+#include <Ext/WarheadType/Body.h>
+#include <Ext/House/Body.h>
+#include <Ext/Cell/Body.h>
 
 #include <Utilities/AresFunctions.h>
 
@@ -23,9 +35,85 @@ TechnoExt::ExtData::~ExtData()
 	// Besides BuildingClass, calling pThis->WhatAmI() here will only result in AbstractType::None
 	auto const whatAmI = pType->WhatAmI();
 
+	if (whatAmI == AbstractType::UnitType)
+	{
+		auto invalidateCellPointer = [pThis, pType](CellClass* pCell, bool last)
+			{
+				auto const pCellExt = CellExt::ExtMap.Find(pCell);
+
+				if (pCellExt->IncomingUnitAlt == pThis)
+				{
+					pCellExt->IncomingUnitAlt = nullptr;
+					pCell->AltOccupationFlags &= ~0x20;
+				}
+
+				if (pCellExt->IncomingUnit == pThis)
+				{
+					pCellExt->IncomingUnit = nullptr;
+					pCell->OccupationFlags &= ~0x20;
+				}
+			};
+
+		if (auto const pCell = this->LastOccupationCell)
+			invalidateCellPointer(pCell, true);
+
+		if (auto const pCell = this->ThisOccupationCell)
+			invalidateCellPointer(pCell, false);
+	}
+
+	if (const auto pSquad = this->SquadManager)
+	{
+		pSquad->RemoveMember(pThis);
+
+		if (pSquad->Members.empty())
+			SquadManagerClass::Remove(pSquad);
+	}
+
+	if (!this->ChildAttachments.empty())
+	{
+		for (auto const& pAttachment : this->ChildAttachments)
+			pAttachment->UnInit();
+
+		this->ChildAttachments.clear();
+	}
+
+	const size_t size = this->MyTrackingLasers.size();
+
+	if (size > 0)
+	{
+		for (size_t i = 0; i < size; ++i)
+			this->MyTrackingLasers[i].Laser->Duration = 0;
+
+		this->MyTrackingLasers.clear();
+	}
+
+	if (this->UndergroundTracked)
+		ScenarioExt::Global()->UndergroundTracker.Remove(pThis);
+
+	if (this->SpecialTracked)
+		ScenarioExt::Global()->SpecialTracker.Remove(pThis);
+
 	if (pTypeExt->AutoDeath_Behavior.isset())
 	{
 		auto& vec = ScenarioExt::Global()->AutoDeathObjects;
+		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
+	}
+
+	if (RulesExt::Global()->ExtendedBuildingPlacing && whatAmI == AbstractType::UnitType && pType->DeploysInto)
+	{
+		auto& vec = HouseExt::ExtMap.Find(pThis->Owner)->OwnedDeployingUnits;
+		vec.erase(std::remove(vec.begin(), vec.end(), pThis), vec.end());
+	}
+
+	if (RulesExt::Global()->CheckExtraBaseNormal && pTypeExt->ExtraBaseNormal)
+	{
+		auto& vec = ScenarioExt::Global()->BaseNormalTechnos;
+		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
+	}
+
+	if (pTypeExt->UniqueTechno)
+	{
+		auto& vec = ScenarioExt::Global()->OwnedUniqueTechnos;
 		vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
 	}
 
@@ -303,33 +391,16 @@ bool TechnoExt::AllowedTargetByZone(TechnoClass* pThis, TechnoClass* pTarget, Ta
 	return true;
 }
 
-// Feature for common usage : TechnoType conversion -- Trsdy
-// BTW, who said it was merely a Type pointer replacement and he could make a better one than Ares?
-bool TechnoExt::ConvertToType(FootClass* pThis, TechnoTypeClass* pToType)
+bool ConvertToType_Foot(FootClass* pThis, TechnoTypeClass* pToType)
 {
-	const auto pType = pThis->GetTechnoType();
-
-	// It really should be at the beginning.
-	if (pType == pToType || pType->WhatAmI() != pToType->WhatAmI())
-	{
-		Debug::Log("Incompatible types between %s and %s\n", pThis->get_ID(), pToType->get_ID());
-		return false;
-	}
-
 	if (AresFunctions::ConvertTypeTo)
 	{
-		const int oldHealth = pThis->Health;
-
 		if (AresFunctions::ConvertTypeTo(pThis, pToType))
 		{
-			// Fixed an issue where morphing could result in -1 health.
-			const double ratio = static_cast<double>(pToType->Strength) / pType->Strength;
-			pThis->Health = static_cast<int>(oldHealth * ratio + 0.5);
-
-			auto const pTypeExt = TechnoExt::ExtMap.Find(pThis);
-			pTypeExt->UpdateTypeData(pToType);
-			pTypeExt->UpdateTypeData_Foot();
-			pTypeExt->UpdateTintValues();
+			auto const pExt = TechnoExt::ExtMap.Find(pThis);
+			pExt->UpdateTypeData(pToType);
+			pExt->UpdateTypeData_Foot();
+			pExt->UpdateTintValues();
 			return true;
 		}
 
@@ -337,6 +408,7 @@ bool TechnoExt::ConvertToType(FootClass* pThis, TechnoTypeClass* pToType)
 	}
 
 	// In case not using Ares 3.0. Only update necessary vanilla properties
+
 	AbstractType rtti;
 	TechnoTypeClass** nowTypePtr;
 
@@ -425,10 +497,112 @@ bool TechnoExt::ConvertToType(FootClass* pThis, TechnoTypeClass* pToType)
 	if (pToType->BalloonHover && pToType->DeployToLand && prevType->Locomotor != jjLoco && toLoco == jjLoco)
 		pThis->Locomotor->Move_To(pThis->Location);
 
-	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis);
-	pTypeExt->UpdateTypeData(pToType);
-	pTypeExt->UpdateTypeData_Foot();
-	pTypeExt->UpdateTintValues();
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+	pExt->UpdateTypeData(pToType);
+	pExt->UpdateTypeData_Foot();
+	pExt->UpdateTintValues();
+	return true;
+}
+
+// Feature for common usage : TechnoType conversion -- Trsdy
+// BTW, who said it was merely a Type pointer replacement and he could make a better one than Ares?
+bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
+{
+	const auto pPrevType = pThis->GetTechnoType();
+
+	// Different types prohibited
+	if (pPrevType->WhatAmI() != pToType->WhatAmI())
+	{
+		Debug::Log("Incompatible types between %s and %s\n", pPrevType->get_ID(), pToType->get_ID());
+		return false;
+	}
+
+	if (const auto pFoot = abstract_cast<FootClass*, true>(pThis))
+		return ConvertToType_Foot(pFoot, pToType);
+
+	if (pPrevType->GapGenerator)
+		pThis->DestroyGap();
+
+	if (pToType->GapGenerator)
+	{
+		const auto temp = pPrevType->GapRadiusInCells;
+		pThis->GapRadius = pToType->GapRadiusInCells;
+		pPrevType->GapRadiusInCells = pToType->GapRadiusInCells;
+		pThis->CreateGap();
+		pPrevType->GapRadiusInCells = temp;
+	}
+
+	const auto pBuilding = static_cast<BuildingClass*>(pThis);
+	const auto pToBuildingType = static_cast<BuildingTypeClass*>(pToType);
+	const auto pPrevBuildingType = static_cast<BuildingTypeClass*>(pPrevType);
+
+	// Maybe buggy
+	for (int i = 0; i < 21; ++i)
+	{
+		if (const auto pAnim = pBuilding->Anims[i])
+			GameDelete(pAnim);
+	}
+
+	// Skip audio related
+
+	// Maybe buggy
+	pBuilding->SetLinkCount(std::max(pToBuildingType->NumberOfDocks, 1));
+
+	if (pToBuildingType->LoadBuildup())
+		pBuilding->HasBuildUp = true;
+	else
+		pBuilding->AI_Sellable = false;
+
+	// Skip SecretLab related
+
+	// Same as foot
+
+	const auto tempUsing = pThis->TemporalImUsing;
+
+	if (tempUsing && tempUsing->Target)
+		tempUsing->LetGo();
+
+	const auto pOwner = pThis->Owner;
+	pOwner->RemoveTracking(pThis);
+
+	// Maybe buggy
+	const auto coord = pBuilding->Location;
+
+	pBuilding->Limbo();
+	pBuilding->ActuallyPlacedOnMap = false;
+
+	pBuilding->Type = pToBuildingType;
+	TechnoExt::ExtMap.Find(pThis)->UpdateTypeData(pToType);
+
+	pThis->SetHealthPercentage(static_cast<double>(pThis->Health) / pPrevBuildingType->Strength);
+	pThis->EstimatedHealth = pThis->Health;
+
+	pThis->Ammo = Math::min(pThis->Ammo, pToType->Ammo);
+
+	pThis->SecondaryFacing.SetROT(pToType->ROT);
+	pThis->PrimaryFacing.SetROT(pToType->ROT);
+
+	if (pPrevBuildingType->Turret != pToBuildingType->Turret)
+		pThis->PrimaryFacing.SetCurrent(DirStruct(0));
+
+	pBuilding->unknown_coord_64C = CoordStruct::Empty;
+	pOwner->RecheckTechTree = true;
+
+	// ++Unsorted::ScenarioInit;
+
+	if (!pBuilding->Unlimbo(coord, DirType::North))
+	{
+		pBuilding->UnInit();
+
+		Debug::Log("Failed to place %s with new building type %s, its place has already been occupied.\n", pPrevType->get_ID(), pToType->get_ID());
+		return false;
+	}
+
+	// --Unsorted::ScenarioInit;
+
+	pBuilding->Place(false);
+	pOwner->AddTracking(pThis);
+
 	return true;
 }
 
@@ -613,6 +787,405 @@ UnitTypeClass* TechnoExt::GetUnitTypeExtra(UnitClass* pUnit)
 	return nullptr;
 }
 
+void TechnoExt::ExtData::InitAggressiveStance()
+{
+	this->AggressiveStance = this->TypeExtData->AggressiveStance.Get();
+}
+
+bool TechnoExt::ExtData::GetAggressiveStance() const
+{
+	// If this is a passenger then obey the configuration of the transport
+	if (auto pTransport = this->OwnerObject()->Transporter)
+		return TechnoExt::ExtMap.Find(pTransport)->GetAggressiveStance();
+
+	// If this is a child then obey the configuration of the parent
+	if (const auto pAttachment = this->ParentAttachment)
+		return TechnoExt::ExtMap.Find(pAttachment->Parent)->GetAggressiveStance();
+
+	return this->AggressiveStance;
+}
+
+void TechnoExt::ExtData::ToggleAggressiveStance()
+{
+	this->AggressiveStance = !this->AggressiveStance;
+	const auto pThis = this->OwnerObject();
+
+	if (!this->AggressiveStance)
+	{
+		pThis->QueueVoice(this->TypeExtData->VoiceExitAggressiveStance.Get());
+		pThis->QueueMission(Mission::Guard, false);
+		pThis->SetTarget(nullptr);
+	}
+	else
+	{
+		const auto pTechnoType = this->TypeExtData->OwnerObject();
+		int voiceIndex = this->TypeExtData->VoiceEnterAggressiveStance.Get();
+
+		if (voiceIndex < 0)
+		{
+			const auto& voiceList = pTechnoType->VoiceAttack.Count ? pTechnoType->VoiceAttack : pTechnoType->VoiceMove;
+
+			if (const auto count = voiceList.Count)
+				voiceIndex = voiceList.GetItem(Randomizer::Global.Random() % count);
+		}
+
+		pThis->QueueVoice(voiceIndex);
+	}
+}
+
+bool TechnoExt::ExtData::CanToggleAggressiveStance()
+{
+	if (!RulesExt::Global()->EnableAggressiveStance)
+		return false;
+
+	const auto pTypeExt = this->TypeExtData;
+
+	if (!pTypeExt->AggressiveStance_Togglable.isset())
+	{
+		const auto pType = pTypeExt->OwnerObject();
+
+		// Only techno that are armed and open-topped can be aggressive stance.
+		if (!this->OwnerObject()->IsArmed() && !pType->OpenTopped)
+		{
+			pTypeExt->AggressiveStance_Togglable = false;
+			return false;
+		}
+
+		const auto absType = pType->WhatAmI();
+
+		// Engineers and Agents are default to not allow aggressive stance.
+		if (absType == AbstractType::InfantryType)
+		{
+			const auto pInfantryType = static_cast<InfantryTypeClass*>(pType);
+
+			if (pInfantryType->Engineer || pInfantryType->Agent)
+			{
+				pTypeExt->AggressiveStance_Togglable = false;
+				return false;
+			}
+		}
+		else if (absType == AbstractType::BuildingType)
+		{
+			const auto pBuildingType = static_cast<BuildingTypeClass*>(pType);
+
+			if (pBuildingType->EMPulseCannon)
+			{
+				pTypeExt->AggressiveStance_Togglable = false;
+				return false;
+			}
+		}
+
+		pTypeExt->AggressiveStance_Togglable = true;
+		return true;
+	}
+
+	return pTypeExt->AggressiveStance_Togglable.Get(true);
+}
+
+void TechnoExt::ExtData::InitCeaseFireStance()
+{
+	this->CeaseFireStance = this->TypeExtData->CeaseFireStance.Get();
+}
+
+bool TechnoExt::ExtData::GetCeaseFireStance() const
+{
+	// If this is a passenger then obey the configuration of the transport
+	if (const auto pTransport = this->OwnerObject()->Transporter)
+		return TechnoExt::ExtMap.Find(pTransport)->GetCeaseFireStance();
+
+	// If this is a child then obey the configuration of the parent
+	if (const auto pAttachment = this->ParentAttachment)
+		return TechnoExt::ExtMap.Find(pAttachment->Parent)->GetCeaseFireStance();
+
+	return this->CeaseFireStance;
+}
+
+void TechnoExt::ExtData::ToggleCeaseFireStance()
+{
+	this->CeaseFireStance = !this->CeaseFireStance;
+	const auto pThis = this->OwnerObject();
+	const auto pTechnoType = this->TypeExtData->OwnerObject();
+	int voiceIndex;
+
+	if (!this->CeaseFireStance)
+	{
+		voiceIndex = this->TypeExtData->VoiceExitCeaseFireStance.Get();
+
+		if (voiceIndex < 0)
+		{
+			const auto& voiceList = pTechnoType->VoiceAttack.Count ? pTechnoType->VoiceAttack : pTechnoType->VoiceMove;
+
+			if (const auto count = voiceList.Count)
+				voiceIndex = voiceList.GetItem(Randomizer::Global.Random() % count);
+		}
+	}
+	else
+	{
+		pThis->SetTarget(nullptr);
+		voiceIndex = this->TypeExtData->VoiceEnterCeaseFireStance.Get();
+
+		if (voiceIndex < 0)
+		{
+			const auto& voiceList = pTechnoType->VoiceSelect.Count ? pTechnoType->VoiceSelect : pTechnoType->VoiceMove;
+
+			if (const auto count = voiceList.Count)
+				voiceIndex = voiceList.GetItem(Randomizer::Global.Random() % count);
+		}
+	}
+
+	pThis->QueueVoice(voiceIndex);
+}
+
+bool TechnoExt::ExtData::CanToggleCeaseFireStance()
+{
+	if (!RulesExt::Global()->EnableCeaseFireStance)
+		return false;
+
+	const auto pTypeExt = this->TypeExtData;
+
+	if (!pTypeExt->CeaseFireStance_Togglable.isset())
+	{
+		const auto pType = pTypeExt->OwnerObject();
+
+		// Only techno that are armed and open-topped can be CeaseFire stance.
+		if (!this->OwnerObject()->IsArmed() && !pType->OpenTopped)
+		{
+			pTypeExt->CeaseFireStance_Togglable = false;
+			return false;
+		}
+
+		const auto absType = pType->WhatAmI();
+
+		// Engineers and Agents are default to not allow CeaseFire stance.
+		if (absType == AbstractType::InfantryType)
+		{
+			const auto pInfantryType = static_cast<InfantryTypeClass*>(pType);
+
+			if (pInfantryType->Engineer || pInfantryType->Agent)
+			{
+				pTypeExt->CeaseFireStance_Togglable = false;
+				return false;
+			}
+		}
+		else if (absType == AbstractType::BuildingType)
+		{
+			const auto pBuildingType = static_cast<BuildingTypeClass*>(pType);
+
+			if (pBuildingType->EMPulseCannon)
+			{
+				pTypeExt->CeaseFireStance_Togglable = false;
+				return false;
+			}
+		}
+
+		pTypeExt->CeaseFireStance_Togglable = true;
+		return true;
+	}
+
+	return pTypeExt->CeaseFireStance_Togglable.Get(true);
+}
+
+void TechnoExt::ExtData::UpdateTrackingLasers()
+{
+	const auto pThis = this->OwnerObject();
+	const auto pTarget = pThis->Target;
+
+	if (pTarget && pTarget == this->MyTrackingLasersTarget && pThis->IsCloseEnoughToAttack(pTarget))
+	{
+		const size_t size = this->MyTrackingLasers.size();
+		const auto coords = pTarget->GetCoords();
+
+		for (size_t i = 0; i < size; ++i)
+		{
+			const auto& data = this->MyTrackingLasers[i];
+			// Refresh the laser state to keep it alive.
+			data.Laser->Progress.Value = 0;
+			// Change the end point.
+			data.Laser->Target = coords;
+			// Change the start point.
+			const int burstIdx = pThis->CurrentBurstIndex;
+			pThis->CurrentBurstIndex = data.BurstIdx;
+			data.Laser->Source = pThis->GetFLH(data.WeaponIdx, CoordStruct::Empty);
+			pThis->CurrentBurstIndex = burstIdx;
+		}
+	}
+	else
+	{
+		// Stop tracking and delete all lasers if target changed.
+		const size_t size = this->MyTrackingLasers.size();
+
+		if (size > 0)
+		{
+			for (size_t i = 0; i < size; ++i)
+				this->MyTrackingLasers[i].Laser->Duration = 0;
+
+			this->MyTrackingLasers.clear();
+		}
+
+		this->MyTrackingLasersTarget = nullptr;
+	}
+}
+
+// Attaches this techno in a first available attachment "slot".
+// Returns true if the attachment is successful.
+bool TechnoExt::AttachTo(TechnoClass* pThis, TechnoClass* pParent)
+{
+	auto const pParentExt = TechnoExt::ExtMap.Find(pParent);
+
+	for (auto const& pAttachment : pParentExt->ChildAttachments)
+	{
+		if (pAttachment->AttachChild(pThis))
+			return true;
+	}
+
+	return false;
+}
+
+bool TechnoExt::DetachFromParent(TechnoClass* pThis)
+{
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+
+	return pExt->ParentAttachment->DetachChild();
+}
+
+void TechnoExt::ExtData::InitializeAttachments()
+{
+	const auto& types = this->TypeExtData->AttachmentTypes;
+	const auto pThis = this->OwnerObject();
+
+	for (const auto& type : types)
+	{
+		this->ChildAttachments.emplace_back(std::make_unique<AttachmentClass>(type, pThis, nullptr));
+		this->ChildAttachments.back()->Initialize();
+	}
+}
+
+void TechnoExt::DestroyAttachments(TechnoClass* pThis, TechnoClass* pSource)
+{
+	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+
+	if (!pExt)
+		return;
+
+	for (auto const& pAttachment : pExt->ChildAttachments)
+		pAttachment->Destroy(pSource);
+
+	// TODO I am not sure, without clearing the attachments it sometimes crashes under
+	// weird circumstances, like if the techno exists but the parent attachment isn't,
+	// in particular in can enter cell hook, this may be a bandaid fix for something
+	// way worse like improper occupation clearance or whatever - Kerbiter
+	pExt->ChildAttachments.clear();
+}
+
+void TechnoExt::HandleDestructionAsChild(TechnoClass* pThis)
+{
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+
+	if (pExt->ParentAttachment)
+		pExt->ParentAttachment->ChildDestroyed();
+}
+
+void TechnoExt::UnlimboAttachments(TechnoClass* pThis)
+{
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+
+	for (auto const& pAttachment : pExt->ChildAttachments)
+		pAttachment->Unlimbo();
+}
+
+void TechnoExt::LimboAttachments(TechnoClass* pThis)
+{
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+
+	for (auto const& pAttachment : pExt->ChildAttachments)
+		pAttachment->Limbo();
+}
+
+void TechnoExt::TransferAttachments(TechnoClass* pThis, TechnoClass* pThat)
+{
+	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pThatExt = TechnoExt::ExtMap.Find(pThat);
+
+	for (auto& pAttachment : pExt->ChildAttachments)
+	{
+		pAttachment->Parent = pThat;
+		pThatExt->ChildAttachments.push_back(std::move(pAttachment));
+	}
+
+	pExt->ChildAttachments.clear();
+}
+
+bool TechnoExt::ShouldInheritTarget(TechnoClass* pThis)
+{
+	if (auto const pExt = TechnoExt::ExtMap.TryFind(pThis))
+	{
+		if (auto const pAttachment = pExt->ParentAttachment)
+		{
+			auto const pType = pAttachment->GetType();
+
+			return pType->InheritTarget && pType->InheritTarget_Force;
+		}
+	}
+
+	return false;
+}
+
+TechnoClass* TechnoExt::GetTrainParent(TechnoClass* pThis)
+{
+	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+
+	return pExt && pExt->ParentAttachment
+		&& pExt->ParentAttachment->GetType()->InheritExperience
+		? TechnoExt::GetTrainParent(pExt->ParentAttachment->Parent)
+		: pThis;
+}
+
+bool TechnoExt::IsAttached(TechnoClass* pThis)
+{
+	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+
+	return pExt && pExt->ParentAttachment;
+}
+
+bool TechnoExt::HasAttachmentLoco(FootClass* pThis)
+{
+	return locomotion_cast<AttachmentLocomotionClass*>(pThis->Locomotor) != nullptr;
+}
+
+bool TechnoExt::DoesntOccupyCellAsChild(TechnoClass* pThis)
+{
+	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+
+	return pExt && pExt->ParentAttachment
+		&& !pExt->ParentAttachment->GetType()->OccupiesCell;
+}
+
+bool TechnoExt::IsChildOf(TechnoClass* pThis, TechnoClass* pParent, bool deep)
+{
+	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+
+	return pExt && pParent  // sanity check, sometimes crashes because ext is null - Kerbiter
+		&& pExt->ParentAttachment
+		&& (pExt->ParentAttachment->Parent == pParent
+			|| (deep && TechnoExt::IsChildOf(pExt->ParentAttachment->Parent, pParent)));
+}
+
+bool TechnoExt::AreRelatives(TechnoClass* pThis, TechnoClass* pThat)
+{
+	return TechnoExt::GetTopLevelParent(pThis) == TechnoExt::GetTopLevelParent(pThat);
+}
+
+// Returns this if no parent.
+TechnoClass* TechnoExt::GetTopLevelParent(TechnoClass* pThis)
+{
+	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+
+	return pExt  // sanity check, sometimes crashes because ext is null - Kerbiter
+		&& pExt->ParentAttachment
+		? TechnoExt::GetTopLevelParent(pExt->ParentAttachment->Parent)
+		: pThis;
+}
+
 AircraftTypeClass* TechnoExt::GetAircraftTypeExtra(AircraftClass* pAircraft)
 {
 	if (pAircraft->IsGreenHP())
@@ -638,7 +1211,6 @@ AircraftTypeClass* TechnoExt::GetAircraftTypeExtra(AircraftClass* pAircraft)
 	}
 
 	return pAircraft->Type;
-
 }
 
 void TechnoExt::ExtData::ResetDelayedFireTimer()
@@ -879,7 +1451,10 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->AttachedEffects)
 		.Process(this->AE)
 		.Process(this->PreviousType)
+		//.Process(this->ElectricBolts)
 		.Process(this->AnimRefCount)
+		.Process(this->SubterraneanHarvFreshFromFactory)
+		.Process(this->SubterraneanHarvRallyDest)
 		.Process(this->ReceiveDamage)
 		.Process(this->LastKillWasTeamTarget)
 		.Process(this->PassengerDeletionTimer)
@@ -901,10 +1476,28 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->LastRearmWasFullDelay)
 		.Process(this->CanCloakDuringRearm)
 		.Process(this->WHAnimRemainingCreationInterval)
+		.Process(this->UnitIdleIsSelected)
+		.Process(this->UnitIdleActionTimer)
+		.Process(this->UnitIdleActionGapTimer)
+		.Process(this->UnitAutoDeployTimer)
 		.Process(this->LastWeaponType)
+		.Process(this->LastWeaponFLH)
+		.Process(this->TrajectoryGroup)
+		.Process(this->ExtraTurretRecoil)
+		.Process(this->ExtraBarrelRecoil)
+		.Process(this->ScatteringStopFrame)
+		.Process(this->MyTargetingFrame)
+		.Process(this->AutoTargetedWallCell)
+		.Process(this->HasCachedClickMission)
+		.Process(this->CachedMission)
+		.Process(this->CachedCell)
+		.Process(this->CachedTarget)
+		.Process(this->HasCachedClickEvent)
+		.Process(this->CachedEventType)
 		.Process(this->FiringObstacleCell)
 		.Process(this->IsDetachingForCloak)
 		.Process(this->BeControlledThreatFrame)
+		.Process(this->LastHurtFrame)
 		.Process(this->LastTargetID)
 		.Process(this->AccumulatedGattlingValue)
 		.Process(this->ShouldUpdateGattlingValue)
@@ -912,10 +1505,23 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->HasRemainingWarpInDelay)
 		.Process(this->LastWarpInDelay)
 		.Process(this->IsBeingChronoSphered)
+		.Process(this->AggressiveStance)
+		.Process(this->CeaseFireStance)
 		.Process(this->KeepTargetOnMove)
 		.Process(this->LastSensorsMapCoords)
+		.Process(this->IsWreckage)
+		.Process(this->JumpjetFromAirport)
+		.Process(this->BuildingOccupying)
 		.Process(this->TiberiumEater_Timer)
 		.Process(this->AirstrikeTargetingMe)
+		//.Process(this->MyTrackingLasers)
+		.Process(this->MyTrackingLasersTarget)
+		.Process(this->SquadManager)
+		.Process(this->ParentAttachment)
+		.Process(this->ChildAttachments)
+		.Process(this->ThisOccupationCell)
+		.Process(this->LastOccupationCell)
+		.Process(this->AltOccupation)
 		.Process(this->FiringAnimationTimer)
 		.Process(this->SimpleDeployerAnimationTimer)
 		.Process(this->DelayedFireSequencePaused)
@@ -931,12 +1537,29 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->TintIntensityAllies)
 		.Process(this->TintIntensityEnemies)
 		.Process(this->AttackMoveFollowerTempCount)
+		.Process(this->UndergroundTracked)
+		.Process(this->SpecialTracked)
+		.Process(this->BulletsTargetingMeCount)
 		;
 }
 
 void TechnoExt::ExtData::InvalidatePointer(void* ptr, bool bRemoved)
 {
 	AnnounceInvalidPointer(this->AirstrikeTargetingMe, ptr);
+	AnnounceInvalidPointer(this->MyTrackingLasersTarget, ptr);
+
+/* Clearing in advance can cause the game to crash
+	for (auto const& pAttachment : ChildAttachments)
+		pAttachment->InvalidatePointer(ptr);
+*/
+
+	if (this->HasCachedClickMission && this->CachedTarget == ptr)
+	{
+		this->HasCachedClickMission = false;
+		this->CachedMission = Mission::None;
+		this->CachedCell = nullptr;
+		this->CachedTarget = nullptr;
+	}
 }
 
 void TechnoExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)
@@ -967,9 +1590,26 @@ bool TechnoExt::SaveGlobals(PhobosStreamWriter& Stm)
 // container
 
 TechnoExt::ExtContainer::ExtContainer() : Container("TechnoClass") { }
-
 TechnoExt::ExtContainer::~ExtContainer() = default;
 
+bool TechnoExt::ExtContainer::InvalidateExtDataIgnorable(void* const ptr) const
+{
+	auto const abs = static_cast<AbstractClass*>(ptr)->WhatAmI();
+
+	switch (abs)
+	{
+	case AbstractType::Airstrike:
+	case AbstractType::Aircraft:
+	case AbstractType::Building:
+	case AbstractType::Infantry:
+	case AbstractType::Unit:
+	case AbstractType::Terrain:
+	case AbstractType::Bullet:
+		return false;
+	}
+
+	return true;
+}
 
 // =============================
 // container hooks

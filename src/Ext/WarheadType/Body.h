@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <WarheadTypeClass.h>
 #include <SuperWeaponTypeClass.h>
 #include <Helpers/Macro.h>
@@ -43,8 +43,10 @@ public:
 		Valueable<bool> Conventional_IgnoreUnits;
 		Valueable<bool> RemoveDisguise;
 		Valueable<bool> RemoveMindControl;
+		Valueable<bool> RemoveMindControl_OnVictim;
+		Valueable<bool> RemoveMindControl_OnController;
 		Nullable<bool> RemoveParasite;
-		Valueable<bool> DecloakDamagedTargets;
+		Nullable<bool> DecloakDamagedTargets;
 		Valueable<bool> ShakeIsLocal;
 		Valueable<bool> ApplyModifiersOnNegativeDamage;
 		Valueable<bool> PenetratesIronCurtain;
@@ -118,6 +120,9 @@ public:
 		NullableVector<ShieldTypeClass*> Shield_Respawn_Types;
 		NullableVector<ShieldTypeClass*> Shield_SelfHealing_Types;
 
+		Valueable<bool> Directional;
+		Valueable<double> Directional_Multiplier;
+
 		Valueable<int> NotHuman_DeathSequence;
 		ValueableIdxVector<SuperWeaponTypeClass> LaunchSW;
 		Valueable<bool> LaunchSW_RealLaunch;
@@ -141,11 +146,25 @@ public:
 		ValueableVector<TechnoTypeClass*> DetonateOnAllMapObjects_AffectTypes;
 		ValueableVector<TechnoTypeClass*> DetonateOnAllMapObjects_IgnoreTypes;
 
+		std::vector<AttachmentTransformGroup> Attachment_Transform;
 		std::vector<TypeConvertGroup> Convert_Pairs;
 		AEAttachInfoTypeClass AttachEffects;
 
 		Valueable<bool> InflictLocomotor;
 		Valueable<bool> RemoveInflictedLocomotor;
+
+		Valueable<bool> AffectsOnFloor;
+		Valueable<bool> AffectsInAir;
+		Valueable<bool> AffectsUnderground;
+		Valueable<bool> PlayAnimUnderground;
+		Valueable<bool> PlayAnimAboveSurface;
+		Valueable<bool> CellSpread_Cylinder;
+		Valueable<bool> LightChanging;
+		Valueable<int> SetAmbientLight;
+		Valueable<int> SetAmbientRed;
+		Valueable<int> SetAmbientGreen;
+		Valueable<int> SetAmbientBlue;
+		Valueable<bool> ReduceTiberium;
 
 		Valueable<AffectedTarget> Parasite_CullingTarget;
 		NullableIdx<AnimTypeClass> Parasite_GrappleAnim;
@@ -156,6 +175,8 @@ public:
 		Valueable<double> CombatLightChance;
 		Valueable<bool> CLIsBlack;
 		Nullable<bool> Particle_AlphaImageIsLightFlash;
+
+		Nullable<bool> MergeBuildingDamage;
 
 		Nullable<double> DamageOwnerMultiplier;
 		Nullable<double> DamageAlliesMultiplier;
@@ -174,7 +195,14 @@ public:
 		Valueable<bool> BuildingUndeploy;
 		Valueable<bool> BuildingUndeploy_Leave;
 
+		Valueable<bool> ForceTrack;
+		Valueable<int> ForceTrack_Index;
+		Valueable<CoordStruct> ForceTrack_Coord;
+
 		Nullable<bool> CombatAlert_Suppress;
+
+		Valueable<bool> NoCellSpread;
+		Valueable<Leptons> NoCellSpread_SnapDistance;
 
 		Valueable<WeaponTypeClass*> KillWeapon;
 		Valueable<WeaponTypeClass*> KillWeapon_OnFirer;
@@ -185,15 +213,20 @@ public:
 
 		Valueable<int> ElectricAssaultLevel;
 
+		Valueable<bool> CanKill;
+
+		Valueable<bool> SuppressWreckage;
+		Valueable<bool> ActivateWreckage;
+
 		Valueable<AffectedTarget> AirstrikeTargets;
 
 		Valueable<double> AffectsBelowPercent;
 		Valueable<double> AffectsAbovePercent;
 		Valueable<bool> AffectsNeutral;
 
-		Valueable<bool> ReverseEngineer;
+		Nullable<bool> AutoTargetWalls;
 
-		Valueable<bool> CanKill;
+		Valueable<bool> ReverseEngineer;
 
 		Valueable<bool> UnlimboDetonate;
 		Valueable<bool> UnlimboDetonate_ForceLocation;
@@ -247,8 +280,10 @@ public:
 			, Conventional_IgnoreUnits { false }
 			, RemoveDisguise { false }
 			, RemoveMindControl { false }
+			, RemoveMindControl_OnVictim { true }
+			, RemoveMindControl_OnController { false }
 			, RemoveParasite {}
-			, DecloakDamagedTargets { true }
+			, DecloakDamagedTargets {}
 			, ShakeIsLocal { false }
 			, ApplyModifiersOnNegativeDamage { false }
 			, PenetratesIronCurtain { false }
@@ -322,6 +357,9 @@ public:
 			, SpawnsCrate_Types {}
 			, SpawnsCrate_Weights {}
 
+			, Directional { false }
+			, Directional_Multiplier { 1.0 }
+
 			, NotHuman_DeathSequence { -1 }
 			, LaunchSW {}
 			, LaunchSW_RealLaunch { true }
@@ -345,11 +383,25 @@ public:
 			, DetonateOnAllMapObjects_AffectTypes {}
 			, DetonateOnAllMapObjects_IgnoreTypes {}
 
+			, Attachment_Transform {}
 			, Convert_Pairs {}
 			, AttachEffects {}
 
 			, InflictLocomotor { false }
 			, RemoveInflictedLocomotor { false }
+
+			, AffectsOnFloor { true }
+			, AffectsInAir { true }
+			, AffectsUnderground { false }
+			, PlayAnimUnderground { true }
+			, PlayAnimAboveSurface { false }
+			, CellSpread_Cylinder { false }
+			, LightChanging { false }
+			, SetAmbientLight { -1 }
+			, SetAmbientRed { -1 }
+			, SetAmbientGreen { -1 }
+			, SetAmbientBlue { -1 }
+			, ReduceTiberium { false }
 
 			, Parasite_CullingTarget { AffectedTarget::Infantry }
 			, Parasite_GrappleAnim {}
@@ -360,6 +412,8 @@ public:
 			, CombatLightChance { 1.0 }
 			, CLIsBlack { false }
 			, Particle_AlphaImageIsLightFlash {}
+
+			, MergeBuildingDamage {}
 
 			, DamageOwnerMultiplier {}
 			, DamageAlliesMultiplier {}
@@ -378,9 +432,19 @@ public:
 			, BuildingUndeploy { false }
 			, BuildingUndeploy_Leave { false }
 
+			, ForceTrack { false }
+			, ForceTrack_Index { 0 }
+			, ForceTrack_Coord { CoordStruct::Empty }
+
 			, CombatAlert_Suppress {}
 
+			, NoCellSpread { false }
+			, NoCellSpread_SnapDistance { Leptons(128) }
+
 			, ElectricAssaultLevel { 1 }
+
+			, SuppressWreckage { false }
+			, ActivateWreckage { false }
 
 			, AirstrikeTargets { AffectedTarget::Building }
 
@@ -414,6 +478,8 @@ public:
 			, KillWeapon_Affects { AffectedTarget::All }
 			, KillWeapon_OnFirer_Affects { AffectedTarget::All }
 
+			, AutoTargetWalls {}
+
 			, ReverseEngineer { false }
 
 			, UnlimboDetonate { false }
@@ -422,6 +488,7 @@ public:
 			, UnlimboDetonate_KeepSelected { true }
 		{ }
 
+		void ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget);
 		void ApplyConvert(HouseClass* pHouse, TechnoClass* pTarget);
 		void ApplyLocomotorInfliction(TechnoClass* pTarget);
 		void ApplyLocomotorInflictionReset(TechnoClass* pTarget);
@@ -450,12 +517,13 @@ public:
 	private:
 		void DetonateOnOneUnit(HouseClass* pHouse, TechnoClass* pTarget, TechnoClass* pOwner = nullptr, bool bulletWasIntercepted = false);
 		void ApplyRemoveDisguise(HouseClass* pHouse, TechnoClass* pTarget);
-		void ApplyRemoveMindControl(TechnoClass* pTarget);
+		void ApplyRemoveMindControl(TechnoClass* pTarget, bool OnVictim, bool OnController);
 		void ApplyCrit(HouseClass* pHouse, TechnoClass* pTarget, TechnoClass* Owner);
 		void ApplyShieldModifiers(TechnoClass* pTarget);
 		void ApplyAttachEffects(TechnoClass* pTarget, HouseClass* pInvokerHouse, TechnoClass* pInvoker);
 		void ApplyBuildingUndeploy(TechnoClass* pTarget);
 		void ApplyReverseEngineer(HouseClass* pHouse, TechnoClass* pTarget);
+		void ApplyForceTrack(TechnoClass* pTarget);
 		double GetCritChance(TechnoClass* pFirer) const;
 	};
 
@@ -467,8 +535,11 @@ public:
 	};
 
 	static ExtContainer ExtMap;
+
 	static bool LoadGlobals(PhobosStreamReader& Stm);
 	static bool SaveGlobals(PhobosStreamWriter& Stm);
+
+	static int HitDirection;
 
 	static void DetonateAt(WarheadTypeClass* pThis, AbstractClass* pTarget, TechnoClass* pOwner, int damage, HouseClass* pFiringHouse = nullptr);
 	static void DetonateAt(WarheadTypeClass* pThis, const CoordStruct& coords, TechnoClass* pOwner, int damage, HouseClass* pFiringHouse = nullptr, AbstractClass* pTarget = nullptr);

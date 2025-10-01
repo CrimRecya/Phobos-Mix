@@ -1,4 +1,4 @@
-#include <Misc/SyncLogging.h>
+﻿#include <Misc/SyncLogging.h>
 
 #include <AircraftClass.h>
 #include <InfantryClass.h>

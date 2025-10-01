@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 #include <Phobos.h>
 #include <Helpers/Macro.h>
 #include <Utilities/TemplateDef.h>
@@ -17,7 +17,7 @@ void AnimTypeExt::ProcessDestroyAnims(UnitClass* pThis, TechnoClass* pKiller)
 	if (!pThis)
 		return;
 
-	auto const pType = pThis->Type;
+	auto const pType = pThis->GetTechnoType(); // Redirect I/A/BClass::Explode(TechnoClass::Explode) to UnitClass::Explode
 
 	if (pType->DestroyAnim.Count > 0)
 	{
@@ -120,6 +120,7 @@ void AnimTypeExt::ExtData::LoadFromINIFile(CCINIClass* pINI)
 	this->LargeFireAnims.Read(exINI, pID, "LargeFireAnims");
 	this->LargeFireChances.Read(exINI, pID, "LargeFireChances");
 	this->LargeFireDistances.Read(exINI, pID, "LargeFireDistances");
+	this->RenderIfOutOfScreen.Read(exINI, pID, "RenderIfOutOfScreen");
 	this->Crater_DestroyTiberium.Read(exINI, pID, "Crater.DestroyTiberium");
 
 	// Parasitic types
@@ -179,6 +180,7 @@ void AnimTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->LargeFireAnims)
 		.Process(this->LargeFireChances)
 		.Process(this->LargeFireDistances)
+		.Process(this->RenderIfOutOfScreen)
 		.Process(this->Crater_DestroyTiberium)
 		;
 }

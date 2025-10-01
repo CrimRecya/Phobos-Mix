@@ -1,4 +1,4 @@
-#include <Helpers/Macro.h>
+﻿#include <Helpers/Macro.h>
 #include <WWMessageBox.h>
 #include <LoadOptionsClass.h>
 #include <ThemeClass.h>

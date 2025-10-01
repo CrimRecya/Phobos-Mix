@@ -1,4 +1,4 @@
-#include "BlittersFix.h"
+﻿#include "BlittersFix.h"
 #include <Utilities/Macro.h>
 // Author: Apollo
 

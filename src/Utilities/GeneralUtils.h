@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <StringTable.h>
 #include <CCINIClass.h>
 #include <CellSpread.h>

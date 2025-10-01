@@ -1,4 +1,4 @@
-#include "ShieldTypeClass.h"
+﻿#include "ShieldTypeClass.h"
 
 template<>
 const char* Enumerable<ShieldTypeClass>::GetMainSection()

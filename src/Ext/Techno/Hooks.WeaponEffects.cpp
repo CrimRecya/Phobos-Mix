@@ -1,4 +1,4 @@
-#include <BuildingClass.h>
+﻿#include <BuildingClass.h>
 #include <CellClass.h>
 #include <MapClass.h>
 #include <ParticleSystemClass.h>
@@ -295,20 +295,105 @@ DEFINE_HOOK(0x6FF660, TechnoClass_FireAt_ObstacleCellUnset, 0x6)
 	return 0;
 }
 
+namespace LaserZapContext
+{
+	TechnoClass* pThis = nullptr;
+}
+
+DEFINE_HOOK(0x6FD210, TechnoClass_LaserZap_SetContext, 0x7)
+{
+	GET(TechnoClass*, pThis, ECX);
+	LaserZapContext::pThis = pThis;
+	return 0;
+}
+
+static void __fastcall AttachLaser(WeaponTypeClass* pWeapon, LaserDrawClass* pLaser, AbstractClass* pTarget, int wpIdx)
+{
+	// Fixes drawing thick lasers for non-PrismSupport building-fired lasers.
+	pLaser->IsSupported = pLaser->Thickness > 3;
+
+	const auto pWeaponExt = WeaponTypeExt::ExtMap.Find(pWeapon);
+
+	if (pWeaponExt->Laser_IsSingleColor)
+		pLaser->IsHouseColor = true;
+
+	if (!pWeaponExt->Laser_IsTracking)
+		return;
+
+	const auto pThis = LaserZapContext::pThis;
+	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+
+	// Target changed. Stop tracking current lasers.
+	if (!pTarget || pExt->MyTrackingLasersTarget != pTarget)
+	{
+		const size_t size = pExt->MyTrackingLasers.size();
+
+		if (size > 0)
+		{
+			for (size_t i = 0; i < size; ++i)
+				pExt->MyTrackingLasers[i].Laser->Duration = 0;
+
+			pExt->MyTrackingLasers.clear();
+		}
+
+		if (!pTarget)
+			return;
+	}
+	else
+	{
+		const size_t size = pExt->MyTrackingLasers.size();
+
+		for (size_t i = 0; i < size; ++i)
+		{
+			auto& data = pExt->MyTrackingLasers[i];
+
+			if (data.WeaponIdx == wpIdx && data.BurstIdx == pThis->CurrentBurstIndex)
+			{
+				// Same flh and same weapon, delete the new laser.
+				if (data.CreatorWeapon == pWeapon)
+				{
+					pLaser->Duration = 0;
+					return;
+				}
+
+				// Same flh different weapon, delete the old laser.
+				data.Laser->Duration = 0;
+
+				data.Laser = pLaser;
+				data.CreatorWeapon = pWeapon;
+
+				// Track the firer.
+				pExt->MyTrackingLasersTarget = pTarget;
+
+				// Hardcoded these properties for tracking lasers.
+				pLaser->Fades = false;
+				pLaser->Duration = INT_MAX;
+				pLaser->Progress.Value = 0;
+				return;
+			}
+		}
+	}
+
+	// Track the firer.
+	pExt->MyTrackingLasers.emplace_back(pLaser, wpIdx, pThis->CurrentBurstIndex, pWeapon);
+	pExt->MyTrackingLasersTarget = pTarget;
+
+	// Hardcoded these properties for tracking lasers.
+	pLaser->Fades = false;
+	pLaser->Duration = INT_MAX;
+	pLaser->Progress.Value = 0;
+}
+
 // Allow drawing single color lasers with thickness.
 DEFINE_HOOK(0x6FD446, TechnoClass_LaserZap_IsSingleColor, 0x7)
 {
 	GET(WeaponTypeClass* const, pWeapon, ECX);
 	GET(LaserDrawClass* const, pLaser, EAX);
+	GET_STACK(AbstractClass* const, pTarget, STACK_OFFSET(0x48, 0x4));
+	GET_STACK(const int, wpIdx, STACK_OFFSET(0x48, 0x8));
+//	GET_STACK(CoordStruct*, pCrd, STACK_OFFSET(0x48, 0x10));
 
-	if (auto const pWeaponExt = WeaponTypeExt::ExtMap.TryFind(pWeapon))
-	{
-		if (!pLaser->IsHouseColor && pWeaponExt->Laser_IsSingleColor)
-			pLaser->IsHouseColor = true;
-	}
-
-	// Fixes drawing thick lasers for non-PrismSupport building-fired lasers.
-	pLaser->IsSupported = pLaser->Thickness > 3;
+	AttachLaser(pWeapon, pLaser, pTarget, wpIdx);
 
 	return 0;
 }

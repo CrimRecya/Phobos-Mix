@@ -1,4 +1,4 @@
-#include "AresHelper.h"
+﻿#include "AresHelper.h"
 #include "AresFunctions.h"
 #include <Phobos.h>
 #include <Utilities/Debug.h>

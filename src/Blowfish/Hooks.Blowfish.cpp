@@ -1,4 +1,4 @@
-#include "blowfish.h"
+﻿#include "blowfish.h"
 #include <Utilities/Macro.h>
 #include <Memory.h>
 

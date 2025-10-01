@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 #include <Ext/House/Body.h>
 #include <Ext/AnimType/Body.h>
 
@@ -110,7 +110,6 @@ DEFINE_HOOK(0x711FDF, TechnoTypeClass_RefundAmount_FactoryPlant, 0x8)
 
 	return 0;
 }
-
 
 DEFINE_HOOK(0x71464A, TechnoTypeClass_ReadINI_Speed, 0x7)
 {

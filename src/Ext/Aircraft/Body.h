@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <AircraftClass.h>
 
 // TODO: Implement proper extended AircraftClass.

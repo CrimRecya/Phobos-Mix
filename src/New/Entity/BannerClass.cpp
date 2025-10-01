@@ -1,31 +1,5 @@
 #include "BannerClass.h"
 
-#include <Ext/Scenario/Body.h>
-
-#include <New/Type/BannerTypeClass.h>
-
-#include <Utilities/SavegameDef.h>
-
-std::vector<std::unique_ptr<BannerClass>> BannerClass::Array;
-
-BannerClass::BannerClass
-(
-	BannerTypeClass* pBannerType,
-	int id,
-	Point2D position,
-	int variable,
-	bool isGlobalVariable
-)
-	: Type(pBannerType)
-	, ID(id)
-	, Position(static_cast<int>(position.X / 100.0 * DSurface::ViewBounds.Width), static_cast<int>(position.Y / 100.0 * DSurface::ViewBounds.Height))
-	, Variable(variable)
-	, IsGlobalVariable(isGlobalVariable)
-{
-	this->Duration = pBannerType->Duration;
-	this->Delay = pBannerType->Delay;
-}
-
 void BannerClass::Render()
 {
 	const auto pType = this->Type;
@@ -36,22 +10,20 @@ void BannerClass::Render()
 	}
 	else if (this->Duration == 0)
 	{
-		if (this->Delay < 0)
-		{
-			return;
-		}
-		else if (this->Delay > 0)
-		{
-			this->Delay--;
-			return;
-		}
-		else if (this->Delay == 0)
+		if (this->Delay == 0)
 		{
 			this->Duration = pType->Duration;
 			this->Delay = pType->Delay;
 
 			if (pType->Shape_RefreshAfterDelay)
 				this->ShapeFrameIndex = 0;
+		}
+		else
+		{
+			if (this->Delay > 0)
+				this->Delay--;
+
+			return;
 		}
 	}
 
@@ -170,31 +142,12 @@ bool BannerClass::Serialize(T& Stm)
 		.Success();
 }
 
-bool BannerClass::Load(PhobosStreamReader& stm, bool registerForChange)
+bool BannerClass::Load(PhobosStreamReader& Stm, bool registerForChange)
 {
-	return Serialize(stm);
+	return Serialize(Stm);
 }
 
-bool BannerClass::Save(PhobosStreamWriter& stm) const
+bool BannerClass::Save(PhobosStreamWriter& Stm) const
 {
-	return const_cast<BannerClass*>(this)->Serialize(stm);
-}
-
-void BannerClass::Clear()
-{
-	Array.clear();
-}
-
-bool BannerClass::LoadGlobals(PhobosStreamReader& stm)
-{
-	return stm
-		.Process(Array)
-		.Success();
-}
-
-bool BannerClass::SaveGlobals(PhobosStreamWriter& stm)
-{
-	return stm
-		.Process(Array)
-		.Success();
+	return const_cast<BannerClass*>(this)->Serialize(Stm);
 }

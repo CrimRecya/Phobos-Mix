@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <GameOptionsClass.h>
 
@@ -443,7 +443,7 @@ void AnimExt::InvalidateTechnoPointers(TechnoClass* pTechno)
 		auto const pExt = AnimExt::ExtMap.TryFind(pAnim);
 
 		if (!pExt)
-			continue; // Skip animation, chances are it is a null type anim in process of being removed.
+			continue;
 
 		if (pExt->Invoker == pTechno)
 			pExt->Invoker = nullptr;
@@ -460,7 +460,7 @@ void AnimExt::InvalidateParticleSystemPointers(ParticleSystemClass* pParticleSys
 		auto const pExt = AnimExt::ExtMap.TryFind(pAnim);
 
 		if (!pExt)
-			continue; // Skip animation, chances are it is a null type anim in process of being removed.
+			continue;
 
 		if (pExt->AttachedSystem == pParticleSystem)
 		{

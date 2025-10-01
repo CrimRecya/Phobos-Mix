@@ -1,4 +1,4 @@
-#include "AttachEffectClass.h"
+﻿#include "AttachEffectClass.h"
 #include "Memory.h"
 
 #include <AnimClass.h>

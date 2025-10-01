@@ -1,4 +1,4 @@
-#pragma region Ares Copyrights
+﻿#pragma region Ares Copyrights
 /*
  *Copyright (c) 2008+, All Ares Contributors
  *All rights reserved.
@@ -54,6 +54,8 @@
 #include <CRT.h>
 #include <LocomotionClass.h>
 #include <Locomotion/TestLocomotionClass.h>
+#include <Locomotion/AdvancedDriveLocomotionClass.h>
+#include <Locomotion/AttachmentLocomotionClass.h>
 
 namespace detail
 {
@@ -514,20 +516,38 @@ namespace detail
 	}
 
 	template <>
+	inline bool read<DirStruct>(DirStruct& value, INI_EX& parser, const char* pSection, const char* pKey)
+	{
+		double buffer;
+
+		if (parser.ReadDouble(pSection, pKey, &buffer))
+		{
+			const int raw = static_cast<int>(buffer * (65536.0 / 360.0) + 0.5);
+			value = DirStruct(std::clamp(raw, -65535, 65535));
+			return true;
+		}
+
+		return false;
+	}
+
+	template <>
 	inline bool read<DirType>(DirType& value, INI_EX& parser, const char* pSection, const char* pKey)
 	{
 		int buffer;
 
 		if (parser.ReadInteger(pSection, pKey, &buffer))
 		{
-			if (buffer <= (int)DirType::NorthWest && buffer >= (int)DirType::North)
+			unsigned int absValue = abs(buffer);
+			bool isNegative = buffer < 0;
+
+			if ((int)DirType::North <= absValue && absValue <= (int)DirType::Max)
 			{
-				value = static_cast<DirType>(buffer);
+				value = static_cast<DirType>(!isNegative ? absValue : (int)DirType::Max + 1 - absValue);
 				return true;
 			}
 			else
 			{
-				Debug::INIParseFailed(pSection, pKey, parser.value(), "Expected a valid DirType (0-255).");
+				Debug::INIParseFailed(pSection, pKey, parser.value(), "Expected a valid DirType (0-255 abs. value).");
 			}
 		}
 
@@ -1118,6 +1138,8 @@ if(_strcmpi(parser.value(), #name) == 0){ value = __uuidof(name ## LocomotionCla
 #ifdef CUSTOM_LOCO_EXAMPLE_ENABLED // Add semantic parsing for loco
 			PARSE_IF_IS_PHOBOS_LOCO(Test);
 #endif
+			PARSE_IF_IS_PHOBOS_LOCO(AdvancedDrive);
+			PARSE_IF_IS_PHOBOS_LOCO(Attachment);
 
 #undef PARSE_IF_IS_PHOBOS_LOCO
 
@@ -1334,6 +1356,34 @@ if(_strcmpi(parser.value(), #name) == 0){ value = __uuidof(name ## LocomotionCla
 			}
 			return true;
 		}
+		return false;
+	}
+
+	template <>
+	inline bool read<AttachmentYSortPosition>(AttachmentYSortPosition& value, INI_EX& parser, const char* pSection, const char* pKey)
+	{
+		if (parser.ReadString(pSection, pKey))
+		{
+			if (_strcmpi(parser.value(), "default") == 0)
+			{
+				value = AttachmentYSortPosition::Default;
+			}
+			else if (_strcmpi(parser.value(), "underparent") == 0)
+			{
+				value = AttachmentYSortPosition::UnderParent;
+			}
+			else if (_strcmpi(parser.value(), "overparent") == 0)
+			{
+				value = AttachmentYSortPosition::OverParent;
+			}
+			else
+			{
+				Debug::INIParseFailed(pSection, pKey, parser.value(), "Expected an attachment YSort position");
+				return false;
+			}
+			return true;
+		}
+
 		return false;
 	}
 

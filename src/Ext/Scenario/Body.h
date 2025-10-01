@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <ScenarioClass.h>
 #include <MessageListClass.h>
@@ -7,8 +7,10 @@
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 
+#include <Ext/Cell/Body.h>
 #include <Ext/Techno/Body.h>
 
+#include <set>
 #include <map>
 
 struct ExtendedVariable
@@ -40,6 +42,21 @@ public:
 		bool SWSidebar_Enable;
 		std::vector<int> SWSidebar_Indices;
 
+		DWORD OwnerBitfield_BuildingType;
+		DWORD OwnerBitfield_InfantryType;
+		DWORD OwnerBitfield_VehicleType;
+		DWORD OwnerBitfield_NavyType;
+		DWORD OwnerBitfield_AircraftType;
+
+		std::vector<CellStruct> BaseNormalCells;
+		std::vector<TechnoExt::ExtData*> BaseNormalTechnos;
+		std::vector<TechnoExt::ExtData*> OwnedUniqueTechnos;
+
+		std::set<int> Smudges;
+
+		DynamicVectorClass<TechnoClass*> UndergroundTracker;
+		DynamicVectorClass<TechnoClass*> SpecialTracker;
+
 		std::vector<std::wstring> RecordMessages;
 
 		PhobosFixedString<64u> DefaultLS640BkgdName;
@@ -58,6 +75,17 @@ public:
 			, TransportReloaders {}
 			, SWSidebar_Enable { true }
 			, SWSidebar_Indices {}
+			, OwnerBitfield_BuildingType { 0 }
+			, OwnerBitfield_InfantryType { 0 }
+			, OwnerBitfield_VehicleType { 0 }
+			, OwnerBitfield_NavyType { 0 }
+			, OwnerBitfield_AircraftType { 0 }
+			, BaseNormalCells {}
+			, BaseNormalTechnos {}
+			, OwnedUniqueTechnos {}
+			, Smudges {}
+			, UndergroundTracker {}
+			, SpecialTracker {}
 			, RecordMessages {}
 			, DefaultLS640BkgdName {}
 			, DefaultLS800BkgdName {}
@@ -114,5 +142,4 @@ public:
 	{
 		Global()->InvalidatePointer(ptr, removed);
 	}
-
 };

@@ -1,4 +1,4 @@
-#include "ToggleMessageList.h"
+﻿#include "ToggleMessageList.h"
 
 #include <Utilities/GeneralUtils.h>
 #include <Misc/MessageColumn.h>
