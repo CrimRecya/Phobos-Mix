@@ -411,6 +411,8 @@ public:
 
 		Valueable<int> AdjacentWallDamage;
 
+		Valueable<bool> AISellCapturedBuilding;
+
 		Valueable<Leptons> InSequenceExtraRange;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
@@ -757,6 +759,8 @@ public:
 			, Parasite_GrappleAnim {}
 			, InfantryAutoDeploy { false }
 			, AdjacentWallDamage { 200 }
+
+			, AISellCapturedBuilding { true }
 
 			, InSequenceExtraRange { Leptons(0) }
 		{ }

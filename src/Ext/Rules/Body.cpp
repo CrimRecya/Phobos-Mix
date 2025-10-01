@@ -462,6 +462,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->AdjacentWallDamage.Read(exINI, GameStrings::CombatDamage, "AdjacentWallDamage");
 
+	this->AISellCapturedBuilding.Read(exINI, GameStrings::General, "AISellCapturedBuilding");
+
 	this->InSequenceExtraRange.Read(exINI, GameStrings::CombatDamage, "InSequenceExtraRange");
 
 	// Section AITargetTypes
@@ -853,6 +855,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->Parasite_GrappleAnim)
 		.Process(this->InfantryAutoDeploy)
 		.Process(this->AdjacentWallDamage)
+		.Process(this->AISellCapturedBuilding)
 		.Process(this->InSequenceExtraRange)
 		;
 }

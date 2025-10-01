@@ -1405,6 +1405,8 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->BunkerWallsDownSound.Read(exINI, pSection, "BunkerWallsDownSound");
 	this->BuildingRepairedSound.Read(exINI, pSection, "BuildingRepairedSound");
 
+	this->AISellCapturedBuilding.Read(exINI, pSection, "AISellCapturedBuilding");
+
 	if (pThis->NumberOfDocks > 0)
 	{
 		this->AircraftDockingDirs.clear();
@@ -1580,6 +1582,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Refinery_UseNormalActiveAnim)
 		.Process(this->AIBaseNormal)
 		.Process(this->HasPowerUpAnim)
+		.Process(this->AISellCapturedBuilding)
 		.Process(this->Bib_Dir)
 		.Process(this->NumberImpassableRows_Dir)
 		.Process(this->WeaponsFactory_Dir)

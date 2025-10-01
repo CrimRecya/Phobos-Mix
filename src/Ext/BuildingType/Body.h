@@ -129,6 +129,8 @@ public:
 
 		ValueableVector<bool> HasPowerUpAnim;
 
+		Nullable<bool> AISellCapturedBuilding;
+
 		Valueable<int> Bib_Dir;
 		Valueable<int> NumberImpassableRows_Dir;
 		Valueable<int> WeaponsFactory_Dir;
@@ -222,6 +224,7 @@ public:
 			, Refinery_UseNormalActiveAnim { false }
 			, AIBaseNormal {}
 			, HasPowerUpAnim {}
+			, AISellCapturedBuilding {}
 			, Bib_Dir { 2 }
 			, NumberImpassableRows_Dir { 2 }
 			, WeaponsFactory_Dir { 2 }
