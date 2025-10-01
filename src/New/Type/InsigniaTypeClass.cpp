@@ -1,4 +1,4 @@
-#include "InsigniaTypeClass.h"
+﻿#include "InsigniaTypeClass.h"
 
 template<>
 const char* Enumerable<InsigniaTypeClass>::GetMainSection()

@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include "NewSWType/NewSWType.h"
 
@@ -51,6 +51,7 @@ void SWTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Message_FirerColor)
 		.Process(this->UIDescription)
 		.Process(this->CameoPriority)
+		.Process(this->CameoPriority_Houses)
 		.Process(this->LimboDelivery_Types)
 		.Process(this->LimboDelivery_IDs)
 		.Process(this->LimboDelivery_RandomWeightsData)
@@ -70,6 +71,7 @@ void SWTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->SW_Next_RandomWeightsData)
 		.Process(this->SW_Next_RollChances)
 		.Process(this->ShowTimer_Priority)
+		.Process(this->Attachment_Transform)
 		.Process(this->Convert_Pairs)
 		.Process(this->ShowDesignatorRange)
 		.Process(this->TabIndex)
@@ -140,6 +142,7 @@ void SWTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->UIDescription.Read(exINI, pSection, "UIDescription");
 	this->CameoPriority.Read(exINI, pSection, "CameoPriority");
+	this->CameoPriority_Houses = pINI->ReadHouseTypesList(pSection, "CameoPriority.Houses", this->CameoPriority_Houses);
 	this->LimboDelivery_Types.Read(exINI, pSection, "LimboDelivery.Types");
 	this->LimboDelivery_IDs.Read(exINI, pSection, "LimboDelivery.IDs");
 	this->LimboDelivery_RollChances.Read(exINI, pSection, "LimboDelivery.RollChances");
@@ -247,6 +250,9 @@ void SWTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Detonate_Warhead_Full.Read(exINI, pSection, "Detonate.Warhead.Full");
 	this->Detonate_AtFirer.Read(exINI, pSection, "Detonate.AtFirer");
 
+	// AttachmentTransform.Types
+	AttachmentTransformGroup::Parse(this->Attachment_Transform, exINI, pSection, AffectedHouse::Owner);
+
 	// Convert.From & Convert.To
 	TypeConvertGroup::Parse(this->Convert_Pairs, exINI, pSection, AffectedHouse::Owner);
 
@@ -259,9 +265,6 @@ void SWTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->SuperWeaponSidebar_PriorityHouses = pINI->ReadHouseTypesList(pSection, "SuperWeaponSidebar.PriorityHouses", this->SuperWeaponSidebar_PriorityHouses);
 	this->SuperWeaponSidebar_RequiredHouses = pINI->ReadHouseTypesList(pSection, "SuperWeaponSidebar.RequiredHouses", this->SuperWeaponSidebar_RequiredHouses);
 	this->SuperWeaponSidebar_Significance.Read(exINI, pSection, "SuperWeaponSidebar.Significance");
-
-	this->SidebarPal.LoadFromINI(pINI, pSection, "SidebarPalette");
-	this->SidebarPCX.Read(pINI, pSection, "SidebarPCX");
 
 	this->UseWeeds.Read(exINI, pSection, "UseWeeds");
 	this->UseWeeds_Amount.Read(exINI, pSection, "UseWeeds.Amount");
@@ -276,6 +279,12 @@ void SWTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		pNewSWType->Initialize(const_cast<SWTypeExt::ExtData*>(this), OwnerObject());
 		pNewSWType->LoadFromINI(const_cast<SWTypeExt::ExtData*>(this), OwnerObject(), pINI);
 	}
+
+	// Ares 0.1
+	this->SidebarPal.LoadFromINI(pINI, pSection, "SidebarPalette");
+
+	// Ares 0.2
+	this->SidebarPCX.Read(pINI, pSection, "SidebarPCX");
 }
 
 void SWTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)

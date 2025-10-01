@@ -1,7 +1,9 @@
-#include "Phobos.h"
-#include "Utilities/Macro.h"
-#include "Ext/Techno/Body.h"
-#include "Ext/TechnoType/Body.h"
+﻿#include "Phobos.h"
+
+#include <Ext/Techno/Body.h>
+#include <Utilities/Macro.h>
+#include <New/Entity/AttachmentClass.h>
+#include <New/Type/AttachmentTypeClass.h>
 
 #include <TacticalClass.h>
 #include <HouseClass.h>
@@ -53,6 +55,8 @@ public:
 			{
 				return true;
 			}
+			return (nLocalX >= pRect->Left && nLocalX < pRect->Right + pRect->Left)
+				&& (nLocalY >= pRect->Top && nLocalY < pRect->Bottom + pRect->Top);
 		}
 		return false;
 	}
@@ -60,20 +64,29 @@ public:
 	static bool Tactical_IsHighPriorityInRect(TacticalClass* pThis, LTRBStruct* rect)
 	{
 		for (const auto& selected : Array)
+		{
 			if (Tactical_IsInSelectionRect(pThis, rect, selected) && ObjectClass_IsSelectable(selected.Object))
 			{
-				if ((selected.Object->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
+				if (const auto pTechno = abstract_cast<TechnoClass*, true>(selected.Object))
 				{
-					if (!TechnoExt::ExtMap.Find(static_cast<TechnoClass*>(selected.Object))->TypeExtData->LowSelectionPriority)
-						return true;
+					const auto pExt = TechnoExt::ExtMap.Find(pTechno);
+
+					if (!pExt->TypeExtData->LowSelectionPriority)
+					{
+						const auto pParent = pExt->ParentAttachment;
+
+						if (!pParent || !pParent->GetType()->LowSelectionPriority)
+							return true;
+					}
 				}
 			}
+		}
 
 		return false;
 	}
 
-	// Reversed from Tactical::Select
-	static void Tactical_SelectFiltered(TacticalClass* pThis, LTRBStruct* pRect, callback_type check_callback, bool bPriorityFiltering)
+	static // Reversed from Tactical::Select
+	void Tactical_SelectFiltered(TacticalClass* pThis, LTRBStruct* pRect, callback_type check_callback, bool priorityFiltering)
 	{
 		Unsorted::MoveFeedback = true;
 
@@ -89,8 +102,14 @@ public:
 
 				if (auto const pTypeExt = TechnoTypeExt::ExtMap.TryFind(pTechnoType)) // If pTechnoType is nullptr so will be pTypeExt
 				{
-					if (bPriorityFiltering && pTypeExt->LowSelectionPriority)
+					const auto pExt = TechnoExt::ExtMap.Find(static_cast<TechnoClass*>(pObject));
+
+					if (priorityFiltering // Attached units shouldn't be selected regardless of the setting
+						&& (pExt->ParentAttachment && pExt->ParentAttachment->GetType()->LowSelectionPriority
+							|| Phobos::Config::PrioritySelectionFiltering && pTypeExt->LowSelectionPriority))
+					{
 						continue;
+					}
 
 					if (Game::IsTypeSelecting())
 					{
@@ -105,7 +124,7 @@ public:
 				}
 				else
 				{
-					const auto pBldType = abstract_cast<BuildingTypeClass*, true>(pTechnoType);
+					const auto pBldType = abstract_cast<BuildingTypeClass*>(pTechnoType);
 					const auto pOwner = pObject->GetOwningHouse();
 
 					if (pOwner && pOwner->IsControlledByCurrentPlayer() && pObject->CanBeSelected()
@@ -120,8 +139,8 @@ public:
 		Unsorted::MoveFeedback = true;
 	}
 
-	// Reversed from Tactical::MakeSelection
-	static void __fastcall Tactical_MakeFilteredSelection(TacticalClass* pThis, void* _, callback_type check_callback)
+	static // Reversed from Tactical::MakeSelection
+	void __fastcall Tactical_MakeFilteredSelection(TacticalClass* pThis, void* _, callback_type check_callback)
 	{
 		if (pThis->Band.Left || pThis->Band.Top)
 		{
@@ -137,8 +156,8 @@ public:
 
 			LTRBStruct rect { nLeft , nTop, nRight - nLeft + 1, nBottom - nTop + 1 };
 
-			const bool bPriorityFiltering = Phobos::Config::PrioritySelectionFiltering && Tactical_IsHighPriorityInRect(pThis, &rect);
-			Tactical_SelectFiltered(pThis, &rect, check_callback, bPriorityFiltering);
+			Tactical_SelectFiltered(pThis, &rect, check_callback,
+				Phobos::Config::PrioritySelectionFiltering && Tactical_IsHighPriorityInRect(pThis, &rect));
 
 			pThis->Band.Left = 0;
 			pThis->Band.Top = 0;

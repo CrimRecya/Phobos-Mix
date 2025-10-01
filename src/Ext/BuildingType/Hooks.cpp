@@ -1,7 +1,8 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <TacticalClass.h>
 #include <Ext/Rules/Body.h>
+#include <Ext/Scenario/Body.h>
 
 #include <Utilities/Macro.h>
 #include <Utilities/EnumFunctions.h>
@@ -70,32 +71,75 @@ DEFINE_HOOK(0x458623, BuildingClass_KillOccupiers_Replace_MuzzleFix, 0x7)
 
 DEFINE_HOOK(0x6D528A, TacticalClass_DrawPlacement_PlacementPreview, 0x6)
 {
-	if (!RulesExt::Global()->PlacementPreview || !Phobos::Config::ShowPlacementPreview)
+	if (Phobos::Config::DrawAdjacentBoundary)
+		BuildingTypeExt::DrawAdjacentLines();
+
+	const auto pDisplay = &DisplayClass::Instance;
+	const auto pBuilding = abstract_cast<BuildingClass*>(pDisplay->CurrentBuilding);
+
+	if (!pBuilding)
 		return 0;
 
-	const auto pBuilding = specific_cast<BuildingClass*>(DisplayClass::Instance.CurrentBuilding);
-	const auto pType = pBuilding ? pBuilding->Type : nullptr;
-	const auto pTypeExt = BuildingTypeExt::ExtMap.TryFind(pType);
-	const bool isShow = pTypeExt && pTypeExt->PlacementPreview;
+	const auto pRulesExt = RulesExt::Global();
+	const auto pTactical = TacticalClass::Instance;
 
-	if (isShow)
+	do
 	{
-		CellClass* pCell = nullptr;
-		{
-			const CellStruct nDisplayCell = Make_Global<CellStruct>(0x88095C);
-			const CellStruct nDisplayCell_Offset = Make_Global<CellStruct>(0x880960);
+		const auto pType = pBuilding->Type;
+		const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
 
-			pCell = MapClass::Instance.TryGetCellAt(nDisplayCell + nDisplayCell_Offset);
-			if (!pCell)
-				return 0;
-		}
+		if (!pTypeExt->PlaceBuilding_Extra)
+			break;
+
+		const auto pShape = pTypeExt->PlaceBuilding_DirectionShape.Get();
+
+		if (!pShape || pShape->Frames <= 0)
+			break;
+
+		const auto pCell = MapClass::Instance.GetCellAt(pDisplay->CurrentFoundation_CenterCell);
+		const auto& types = pCell->LandType == LandType::Water ? pTypeExt->PlaceBuilding_OnWater : pTypeExt->PlaceBuilding_OnLand;
+		const size_t size = types.size();
+
+		if (!size)
+			break;
+
+		constexpr BlitterFlags blit = BlitterFlags::Centered | BlitterFlags::TransLucent50 | BlitterFlags::bf_400 | BlitterFlags::Zero;
+		const auto pPalette = pTypeExt->PlaceBuilding_DirectionPalette.GetOrDefaultConvert(FileSystem::PALETTE_PAL);
+
+		const auto location = CoordStruct { (pCell->MapCoords.X << 8), (pCell->MapCoords.Y << 8), 0 };
+		const int height = pCell->Level * 15;
+		const int zAdjust = -height - (pCell->SlopeIndex ? 12 : 2);
+		const auto position = pTactical->CoordsToScreen(location) - pTactical->TacticalPos - Point2D { 0, (1 + height) };
+
+		const auto direction = (Phobos::Config::CurrentPlacingDirection + (16u / size)) & 0x1Fu;
+		const int frameIndex = Math::min(static_cast<int>(pShape->Frames - 1), static_cast<int>(direction * size / 32u));
+
+		DSurface::Temp->DrawSHP(pPalette, pShape, frameIndex, &position,
+			&DSurface::ViewBounds, blit, 0, zAdjust, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+	}
+	while (false);
+
+	if (!pRulesExt->PlacementPreview || !Phobos::Config::ShowPlacementPreview)
+		return 0;
+
+	// DrawType
+	const auto pType = abstract_cast<BuildingTypeClass*>(pDisplay->CurrentBuildingType);
+	const auto pTypeExt = BuildingTypeExt::ExtMap.TryFind(pType);
+
+	if (pTypeExt && pTypeExt->PlacementPreview)
+	{
+		const auto pCell = MapClass::Instance.TryGetCellAt(pDisplay->CurrentFoundation_CenterCell + pDisplay->CurrentFoundation_TopLeftOffset);
+
+		if (!pCell)
+			return 0;
 
 		int nImageFrame = 0;
-		SHPStruct* pImage = pTypeExt->PlacementPreview_Shape.GetSHP();
+		auto pImage = pTypeExt->PlacementPreview_Shape.GetSHP();
 		{
 			if (!pImage)
 			{
 				pImage = pType->LoadBuildup();
+
 				if (pImage)
 					nImageFrame = ((pImage->Frames / 2) - 1);
 				else
@@ -108,30 +152,29 @@ DEFINE_HOOK(0x6D528A, TacticalClass_DrawPlacement_PlacementPreview, 0x6)
 			nImageFrame = Math::clamp(pTypeExt->PlacementPreview_ShapeFrame.Get(nImageFrame), 0, (int)pImage->Frames);
 		}
 
-
 		Point2D point;
 		{
 			const CoordStruct offset = pTypeExt->PlacementPreview_Offset;
-			const int nHeight = offset.Z + pCell->GetFloorHeight({ 0, 0 });
-			const CoordStruct coords = CellClass::Cell2Coord(pCell->MapCoords, nHeight);
+			const int height = offset.Z + pCell->GetFloorHeight({ 0, 0 });
+			const CoordStruct coords = CellClass::Cell2Coord(pCell->MapCoords, height);
 
-			point = TacticalClass::Instance->CoordsToClient(coords).first;
+			point = pTactical->CoordsToClient(coords).first;
 			point.X += offset.X;
 			point.Y += offset.Y;
 		}
 
-		const BlitterFlags blitFlags = pTypeExt->PlacementPreview_Translucency.Get(RulesExt::Global()->PlacementPreview_Translucency) |
-			BlitterFlags::Centered | BlitterFlags::Nonzero | BlitterFlags::MultiPass;
+		const BlitterFlags blitFlags = pTypeExt->PlacementPreview_Translucency.Get(pRulesExt->PlacementPreview_Translucency)
+			| BlitterFlags::Centered | BlitterFlags::Nonzero | BlitterFlags::MultiPass;
 
-		ConvertClass* pPalette = pTypeExt->PlacementPreview_Remap.Get()
+		const auto pPalette = pTypeExt->PlacementPreview_Remap.Get()
 			? pBuilding->GetDrawer()
 			: pTypeExt->PlacementPreview_Palette.GetOrDefaultConvert(FileSystem::UNITx_PAL);
 
-		DSurface* pSurface = DSurface::Temp;
-		RectangleStruct rect = pSurface->GetRect();
+		const auto pSurface = DSurface::Temp;
+		auto rect = pSurface->GetRect();
 		rect.Height -= 32; // account for bottom bar
 
-		CC_Draw_Shape(pSurface, pPalette, pImage, nImageFrame, &point, &rect, blitFlags,
+		pSurface->DrawSHP(pPalette, pImage, nImageFrame, &point, &rect, blitFlags,
 			0, 0, ZGradient::Ground, 1000, 0, nullptr, 0, 0, 0);
 	}
 
@@ -193,49 +236,6 @@ DEFINE_HOOK(0x5F5416, ObjectClass_ReceiveDamage_CanC4DamageRounding, 0x6)
 
 	return SkipGameCode;
 }
-
-#pragma region BuildingProximity
-
-namespace ProximityTemp
-{
-	BuildingTypeClass* pType = nullptr;
-}
-
-DEFINE_HOOK(0x4A8F20, DisplayClass_BuildingProximityCheck_SetContext, 0x5)
-{
-	GET(BuildingTypeClass*, pType, ESI);
-
-	ProximityTemp::pType = pType;
-
-	return 0;
-}
-
-DEFINE_HOOK(0x4A8FD7, DisplayClass_BuildingProximityCheck_BuildArea, 0x6)
-{
-	enum { SkipBuilding = 0x4A902C };
-
-	GET(BuildingClass*, pCellBuilding, ESI);
-
-	auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pCellBuilding->Type);
-
-	if (pTypeExt->NoBuildAreaOnBuildup && pCellBuilding->CurrentMission == Mission::Construction)
-		return SkipBuilding;
-
-	auto const pTmpTypeExt = BuildingTypeExt::ExtMap.Find(ProximityTemp::pType);
-	auto const& pBuildingsAllowed = pTmpTypeExt->Adjacent_Allowed;
-
-	if (pBuildingsAllowed.size() > 0 && !pBuildingsAllowed.Contains(pCellBuilding->Type))
-		return SkipBuilding;
-
-	auto const& pBuildingsDisallowed = pTmpTypeExt->Adjacent_Disallowed;
-
-	if (pBuildingsDisallowed.size() > 0 && pBuildingsDisallowed.Contains(pCellBuilding->Type))
-		return SkipBuilding;
-
-	return 0;
-}
-
-#pragma endregion
 
 DEFINE_HOOK(0x6FE3F1, TechnoClass_FireAt_OccupyDamageBonus, 0xB)
 {
@@ -425,7 +425,304 @@ DEFINE_HOOK(0x73F5A7, UnitClass_IsCellOccupied_UnlimboDirection, 0x8)
 
 	GET(CellClass* const, pCell, EDI);
 
-	return pCell->MapCoords.Y == pBuilding->Location.Y / Unsorted::LeptonsPerCell + pType->FoundationOutside[10].Y ? NextObject : ContinueCheck;
+	if (!RulesExt::Global()->ExtendedWeaponsFactory)
+		return pCell->MapCoords.Y == pBuilding->Location.Y / Unsorted::LeptonsPerCell + pType->FoundationOutside[10].Y ? NextObject : ContinueCheck;
+
+	auto buffer = CoordStruct::Empty;
+	pBuilding->GetExitCoords(&buffer, 0);
+	const auto cell = CellClass::Coord2Cell(buffer);
+	const bool pathX = (BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get() & 2) != 0; // 2,6/0,4
+	const bool onPath = pathX ? pCell->MapCoords.Y == cell.Y : pCell->MapCoords.X == cell.X;
+
+	return onPath ? NextObject : ContinueCheck;
+}
+
+#pragma endregion
+
+#pragma region WeaponFactoryDirection
+
+DEFINE_HOOK(0x44457B, BuildingClass_KickOutUnit_UnlimboDirection, 0x5)
+{
+	if (!RulesExt::Global()->ExtendedWeaponsFactory)
+		return 0;
+
+	GET(BuildingClass* const, pThis, ESI);
+	REF_STACK(DirType, dir, STACK_OFFSET(0x144, -0x144));
+
+	dir = static_cast<DirType>(BuildingTypeExt::ExtMap.Find(pThis->Type)->WeaponsFactory_Dir.Get() << 5);
+
+	return 0;
+}
+
+DEFINE_HOOK(0x44955D, BuildingClass_WeaponFactoryOutsideBusy_WeaponFactoryCell, 0x6)
+{
+	enum { StartCheck = 0x4495DF, NotBusy = 0x44969B };
+
+	GET(BuildingClass* const, pThis, ESI);
+
+	const auto pLink = pThis->GetNthLink();
+
+	if (!pLink)
+		return NotBusy;
+
+	const auto pLinkType = pLink->GetTechnoType();
+
+	if (pLinkType->JumpJet && pLinkType->BalloonHover)
+		return NotBusy;
+
+	if (!RulesExt::Global()->ExtendedWeaponsFactory)
+		return 0;
+
+	REF_STACK(CoordStruct, coords, STACK_OFFSET(0x30, -0xC));
+
+	const auto cell = BuildingTypeExt::GetWeaponFactoryDoor(pThis);
+	coords = CellClass::Cell2Coord(cell);
+
+	R->EAX(MapClass::Instance.GetCellAt(cell));
+
+	return StartCheck;
+}
+
+DEFINE_JUMP(LJMP, 0x44DCC7, 0x44DD3C);
+
+DEFINE_HOOK(0x44E131, BuildingClass_Mission_Unload_WeaponFactoryFix1, 0x5)
+{
+	enum { SkipGameCode = 0x44E191 };
+
+	GET(BuildingClass* const, pThis, EBP);
+	GET(FootClass* const, pLink, EDI);
+//	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x50, -0x1C));
+
+	const auto cell = BuildingTypeExt::GetWeaponFactoryDoor(pThis);
+	const auto coords = CellClass::Cell2Coord(cell);
+
+	if (RulesExt::Global()->ExtendedWeaponsFactory)
+	{
+//		const auto pType = pLink->GetTechnoType();
+//		const bool isSubterranean = pType->IsSubterranean;
+//		pType->IsSubterranean = false;
+		pLink->SetDestination(MapClass::Instance.GetCellAt(cell), true);
+//		pType->IsSubterranean = isSubterranean;
+	}
+	else
+	{
+		pLink->Locomotor->Force_Track(66, coords);
+	}
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x44DF72, BuildingClass_Mission_Unload_WeaponFactoryFix2, 0x5)
+{
+	enum { SkipGameCode = 0x44E1AD };
+
+	GET(BuildingClass* const, pThis, EBP);
+	GET_STACK(FootClass* const, pLink, STACK_OFFSET(0x50, -0x30));
+//	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x50, -0x1C));
+
+	const auto cell = BuildingTypeExt::GetWeaponFactoryDoor(pThis);
+	const auto coords = CellClass::Cell2Coord(cell);
+
+	if (RulesExt::Global()->ExtendedWeaponsFactory)
+		pLink->SetDestination(MapClass::Instance.GetCellAt(cell), true);
+	else
+		pLink->Locomotor->Force_Track(66, coords);
+
+	R->EDI(pLink);
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x44DF1C, BuildingClass_Mission_Unload_WeaponFactoryFix3, 0x7)
+{
+	if (!RulesExt::Global()->ExtendedWeaponsFactory)
+		return 0;
+
+	enum { SkipGameCode = 0x44DF47 };
+
+	GET(BuildingClass* const, pThis, EBP);
+	GET_STACK(FootClass* const, pLink, STACK_OFFSET(0x50, -0x30));
+	REF_STACK(CellStruct, cell, STACK_OFFSET(0x50, -0x34));
+//	REF_STACK(const CoordStruct, coords, STACK_OFFSET(0x50, -0x1C));
+
+	cell = BuildingTypeExt::GetWeaponFactoryDoor(pThis);
+
+	R->ESI(pLink);
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x742D98, UnitClass_SetDestination_WeaponFactoryCell, 0x6)
+{
+	if (!RulesExt::Global()->ExtendedWeaponsFactory)
+		return 0;
+
+	enum { SkipGameCode = 0x742DFB };
+
+	GET(BuildingClass* const, pLink, ESI);
+
+	const auto cell = BuildingTypeExt::GetWeaponFactoryDoor(pLink);
+
+	R->EAX(MapClass::Instance.GetCellAt(cell));
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x516D3C, HoverLocomotionClass_IsIonSensitive_WeaponFactoryCell, 0x5)
+{
+	if (!RulesExt::Global()->ExtendedWeaponsFactory)
+		return 0;
+
+	enum { Right = 0x516DFF, IsNot = 0x516DF6 };
+
+	GET(BuildingClass* const, pBuilding, EAX);
+	GET(ILocomotion* const, iLoco, ESI);
+
+	const auto location = CellClass::Coord2Cell(static_cast<LocomotionClass*>(iLoco)->LinkedTo->Location);
+	bool notIon = false;
+	auto buffer = CoordStruct::Empty;
+	pBuilding->GetExitCoords(&buffer, 0);
+	const auto cell = CellClass::Coord2Cell(buffer);
+	const auto pType = pBuilding->Type;
+
+	switch (BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get())
+	{
+
+	case 0:
+	{
+		notIon |= (cell.X == location.X
+			&& cell.Y != location.Y
+			&& (pBuilding->Location.Y / Unsorted::LeptonsPerCell) != location.Y);
+
+		break;
+	}
+
+	case 2:
+	{
+		notIon |= (cell.Y == location.Y
+			&& cell.X != location.X
+			&& (pBuilding->Location.X / Unsorted::LeptonsPerCell + pType->GetFoundationWidth() - 1) != location.X);
+
+		break;
+	}
+
+	case 4:
+	{
+		notIon |= (cell.X == location.X
+			&& cell.Y != location.Y
+			&& (pBuilding->Location.Y / Unsorted::LeptonsPerCell + pType->GetFoundationHeight(false) - 1) != location.Y);
+
+		break;
+	}
+
+	case 6:
+	{
+		notIon |= (cell.Y == location.Y
+			&& cell.X != location.X
+			&& (pBuilding->Location.X / Unsorted::LeptonsPerCell) != location.X);
+
+		break;
+	}
+
+	default:
+	{
+		break;
+	}
+
+	}
+
+	return notIon ? IsNot : Right;
+}
+
+DEFINE_HOOK(0x7443D9, UnitClass_ReadyToNextMission_WeaponFactoryCell, 0x5)
+{
+	enum { SkipGameCode = 0x744463 };
+	return RulesExt::Global()->ExtendedWeaponsFactory ? SkipGameCode : 0;
+}
+
+#pragma endregion
+
+#pragma region ImpassableRowsDirection
+
+DEFINE_HOOK(0x458A00, BuildingClass_IsCellNotPassable_ImpassableRowsDirection, 0x6)
+{
+	enum { SkipGameCode = 0x458A76 };
+
+	GET(BuildingClass* const, pThis, ECX);
+	GET_STACK(CellClass* const, pCell, STACK_OFFSET(0x0, 0x4));
+
+	auto isCellNotPassable = [pThis, pCell]() -> bool
+	{
+		if (pCell->GetBuilding() != pThis)
+			return false;
+
+		const auto pType = pThis->Type;
+
+		if (pType->NumberImpassableRows == -1)
+			return true;
+
+		if (pType->Bunker && pThis->BunkerLinkedItem)
+			return true;
+
+		switch (BuildingTypeExt::ExtMap.Find(pType)->NumberImpassableRows_Dir.Get())
+		{
+
+		case 0:
+		{
+			const int y = pThis->Location.Y / Unsorted::LeptonsPerCell;
+			const int maxPassableY = y + pType->GetFoundationHeight(false) - 1 - pType->NumberImpassableRows;
+			return pCell->MapCoords.Y > maxPassableY;
+		}
+
+		case 2:
+		{
+			const int x = pThis->Location.X / Unsorted::LeptonsPerCell;
+			const int minPassableX = x + pType->NumberImpassableRows;
+			return pCell->MapCoords.X < minPassableX;
+		}
+
+		case 4:
+		{
+			const int y = pThis->Location.Y / Unsorted::LeptonsPerCell;
+			const int minPassableY = y + pType->NumberImpassableRows;
+			return pCell->MapCoords.Y < minPassableY;
+		}
+
+		case 6:
+		{
+			const int x = pThis->Location.X / Unsorted::LeptonsPerCell;
+			const int maxPassableX = x + pType->GetFoundationWidth() - 1 - pType->NumberImpassableRows;
+			return pCell->MapCoords.X > maxPassableX;
+		}
+
+		default:
+		{
+			return true;
+		}
+
+		}
+	};
+
+	R->EAX(isCellNotPassable());
+
+	return SkipGameCode;
+}
+
+#pragma endregion
+
+#pragma region BibDirection
+
+// The input parameter of GetFoundationHeight is incorrect, and there is no call to input the incorrect parameter, so no need to consider it
+DEFINE_HOOK(0x73F7DD, BuildingClass_IsCellNotPassable_BibDirection, 0x8)
+{
+	enum { SkipGameCode = 0x73F816 };
+
+	GET(CellClass* const, pCell, EDI);
+	GET(BuildingTypeClass* const, pType, EAX);
+
+	R->ECX(MapClass::Instance.GetCellAt(Unsorted::AdjacentCell[BuildingTypeExt::ExtMap.Find(pType)->Bib_Dir.Get()] + pCell->MapCoords));
+
+	return SkipGameCode;
 }
 
 #pragma endregion

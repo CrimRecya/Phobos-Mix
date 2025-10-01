@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 #include <LightSourceClass.h>
 #include <Notifications.h>
 
@@ -93,20 +93,19 @@ void RadSiteExt::ExtData::CreateLight()
 	//=========Blue
 	const double blue = Math::min(((1000 * radcolor.B) / 255) * tintFactor, 2000.0);
 
-	TintStruct nTintBuffer { Game::F2I(red) ,Game::F2I(green) ,Game::F2I(blue) };
+	const TintStruct nTintBuffer { Game::F2I(red) ,Game::F2I(green) ,Game::F2I(blue) };
 	pThis->Tint = nTintBuffer;
-	bool update = false;
 
 	if (pThis->LightSource)
 	{
-		pThis->LightSource->ChangeLevels(Game::F2I(lightFactor), nTintBuffer, update);
+		pThis->LightSource->ChangeLevels(Game::F2I(lightFactor), nTintBuffer, 0);
 	}
 	else if (const auto pCell = MapClass::Instance.TryGetCellAt(pThis->BaseCell))
 	{
 		const auto pLight = GameCreate<LightSourceClass>(pCell->GetCoords(), pThis->SpreadInLeptons, Game::F2I(lightFactor), nTintBuffer);
 		pThis->LightSource = pLight;
 		pLight->DetailLevel = 0;
-		pLight->Activate(update);
+		pLight->Activate();
 	}
 
 	pThis->Radiate();

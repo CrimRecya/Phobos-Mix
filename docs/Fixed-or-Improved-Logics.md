@@ -8,6 +8,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fixed the bug that light tint created by buildings can never be removed (light tint persists even if the building is destroyed/sold) after loading a game
 - Fixed the bug when reading a map which puts `Preview(Pack)` after `Map` lead to the game fail to draw the preview
 - Fixed the bug when retinting map lighting with a map action corrupted light sources.
+  - Due to performance considerations, this fix may be disabled by setting `[AudioVisual] -> UseRetintFix=no` in `rulesmd.ini`.
 - Fixed the bug when deploying mindcontrolled vehicle into a building permanently transferred the control to the house which mindcontrolled it.
 - Fixed the bug when capturing a mind-controlled building with an engineer fail to break the mind-control link.
 - Removed the `EVA_BuildingCaptured` event when capturing a building considered as a vehicle.
@@ -150,9 +151,11 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - OverlayTypes now read and use `ZAdjust` if specified in their `artmd.ini` entry.
 - Setting `[AudioVisual] -> ColorAddUse8BitRGB` to true makes game treat values from `[ColorAdd]` as 8-bit RGB (0-255) instead of RGB565 (0-31 for red & blue, 0-63 for green). This works for `LaserTargetColor`, `IronCurtainColor`, `BerserkColor` and `ForceShieldColor`.
 - Weapons with `AA=true` Projectile can now correctly fire at air units when both firer and target are over a bridge.
+- Buildings with foundation bigger than 1x1 can now recycle spawned correctly.
 - Fixed disguised units not using the correct palette if target has custom palette.
 - Building upgrades now consistently use building's `PowerUpN` animation settings corresponding to the upgrade's `PowersUpToLevel` where possible.
 - Subterranean units are no longer allowed to perform deploy functions like firing weapons or `IsSimpleDeployer` while burrowed or burrowing, they will instead emerge first like they do for transport unloading.
+- Enable the observer data panel, which could only be displayed in multiplayer games, to also be displayed in skirmish games.
 - The otherwise unused setting `[AI] -> PowerSurplus` (defaults to 50) which determines how much surplus power AI players will strive to have can be restored by setting `[AI] -> EnablePowerSurplus` to true.
 - Planning paths are now shown for all units under player control or when `[GlobalControls] -> DebugPlanningPaths=yes` in singleplayer game modes.
 - Fixed `Temporal=true` Warheads potentially crashing game if used to attack `Slaved=true` infantry.
@@ -163,6 +166,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Skip target scanning function calling for unarmed technos.
 - Projectiles created from `AirburstWeapon` now remember the WeaponType and can apply radiation etc.
 - Fixed damaged aircraft not repairing on `UnitReload=true` docks unless they land on the dock first.
+- Enable the observer data panel, which could only be displayed in multiplayer games, to also be displayed in skirmish games.
 - Certain global tileset indices (`ShorePieces`, `WaterSet`, `CliffSet`, `WaterCliffs`, `WaterBridge`, `BridgeSet` and `WoodBridgeSet`) can now be toggled to be parsed for lunar theater by setting `[General] -> ApplyLunarFixes` to true in `lunarmd.ini`. Do note that enabling this without fixing f.ex `WoodBridgeTileSet` pointing to a tileset with `TilesInSet=0` will cause issues in-game.
 - Fixed infantry `SecondaryFire` / `SecondaryProne` sequences being displayed in water instead of `WetAttack`.
 - Fixed objects with ally target and `AttackFriendlies=true` having their target reset every frame, particularly AI-owned buildings.
@@ -186,6 +190,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Allowed `AuxBuilding` to count building upgrades.
 - Fixed the bug that parasite will vanish if it missed its target when its previous cell is occupied.
 - Prevent the units with locomotors that cause problems from entering the tank bunker.
+- Fixed `MovementZone=Subterannean` harvesters being unable to find docks if in area enclosed by water, cliffs etc.
 - Fixed an issue where a unit will leave an impassable invisible barrier in its original position when it is teleported by ChronoSphere onto an uncrushable unit and self destruct.
 - Fixed the bug that destroyed unit may leaves sensors.
 - `FreeUnit` uses the unit's own `SpeedType` to find the spawn location.
@@ -291,6 +296,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fixed an issue that Ares' Type Conversion not resetting barrel's direction by `FireAngle`.
 - Fixed an issue that jumpjet vehicles can not stop correctly when assigned a target in range.
 - Fixed an issue that jumpjet infantries stop incorrectly when assigned a target out of range.
+- Fixed an issue that jumpjet infantries' shadow is always drawn even if they are cloaked.
 
 ```{note}
 The described behavior is a replica of and is compliant with XNA CnCNet Client's multiplayer save game support.
@@ -1260,6 +1266,20 @@ Explodes.KillPassengers=true ; boolean
 Explodes.DuringBuildup=true  ; boolean
 ```
 
+### Infantry firing while moving
+
+- In vanilla, there is a hardcoded behavior that the infantries can not fire until they stop, even if they have `OpportunityFire=yes` set. Now you can bypass this restriction by using the following flag.
+  - Mind that you still need `OpportunityFire=yes` to make them acquire target when moving. However, if `OpportunityFire=no` is set, they can still do that if you use the "ctrl+shift" command, just like the units on the ground do.
+  - Additionally, the behavior that "rocketeers can not fire when they have buildings beneath them" is also caused by this hardcode. You can use the flag to bypass this behavior as well.
+  - The vanilla flag `JumpJetTurn` will affect the visual behavior when the infantry is firing while moving. You need to set it to **no** if you want to make the infantry always facing the target during the attack.
+  - Setting this flag on types except infantry is useless.
+
+In `rulesmd.ini`:
+```ini
+[SOMETECHNO]                 ; InfantryType
+FiringByPassMovingCheck=true ; boolean
+```
+
 ### Forbid parallel AI queues
 
 - You can now set if specific types of factories do not have AI production cloning issue instead of Ares' indiscriminate behavior of `AllowParallelAIQueues=no`.
@@ -1575,6 +1595,40 @@ HeightShadowScaling.MinScale=0.0  ; floating point value
 
 [SOMETECHNO]                      ; TechnoType
 ShadowSizeCharacteristicHeight=   ; integer, height in leptons
+```
+
+### Check building adjacent by all technos
+
+- You can now set `CheckExtraBaseNormal` to true to use every technos to expand the construction scope of the base.
+  - `ExtraBaseNormal` controls whether our own buildings can be place around it like vanilla `BaseNormal` do.
+  - `ExtraBaseForAllyBuilding` controls whether ally buildings can be place around it like vanilla `EligibileForAllyBuilding` do.
+
+In `rulesmd.ini`:
+```ini
+[General]
+CheckExtraBaseNormal=false      ; boolean
+
+[SOMETECHNO]                    ; TechnoType
+ExtraBaseNormal=false           ; boolean
+ExtraBaseForAllyBuilding=false  ; boolean
+```
+
+```{note}
+- Do not assign this to too many technos.
+```
+
+### Buildable-upon TechnoTypes
+
+- Now technos have `CanBeBuiltOn=true` can simply removed when building is placed on them.
+- Buildings like land mines can be placed in positions already occupied by infantry, vehicles, or aircraft after setting `CanBuildUnderUnits` to true.
+
+In `rulesmd.ini`:
+```ini
+[SOMETECHNO]         ; TechnoType
+CanBeBuiltOn=false   ; boolean
+
+[SOMEBUILDING]             ; BuildingType
+CanBuildUnderUnits=false   ; boolean
 ```
 
 ## Terrains

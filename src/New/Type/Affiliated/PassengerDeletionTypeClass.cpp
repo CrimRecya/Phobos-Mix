@@ -1,4 +1,4 @@
-#include "PassengerDeletionTypeClass.h"
+﻿#include "PassengerDeletionTypeClass.h"
 
 #include <Utilities/SavegameDef.h>
 #include <Utilities/TemplateDef.h>

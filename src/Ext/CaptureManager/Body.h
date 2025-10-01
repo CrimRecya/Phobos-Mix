@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <CaptureManagerClass.h>
 #include <AnimTypeClass.h>

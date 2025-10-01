@@ -1,4 +1,4 @@
-#include "MessageColumn.h"
+﻿#include "MessageColumn.h"
 
 #include <BitFont.h>
 #include <MessageListClass.h>

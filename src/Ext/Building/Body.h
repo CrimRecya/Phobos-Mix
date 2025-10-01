@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <BuildingClass.h>
 #include <HouseClass.h>
 #include <TiberiumClass.h>
@@ -38,6 +38,7 @@ public:
 		std::optional<int> CurrentLaserWeaponIndex;
 		int PoweredUpToLevel; // Distinct from UpgradeLevel, and set to highest PowersUpToLevel out of applied upgrades regardless of how many are currently applied to this building.
 		SuperClass* CurrentEMPulseSW;
+		AbstractClass* SecondaryArchiveTarget;
 
 		ExtData(BuildingClass* OwnerObject) : Extension<BuildingClass>(OwnerObject)
 			, TypeExtData { nullptr }
@@ -52,6 +53,7 @@ public:
 			, CurrentLaserWeaponIndex {}
 			, PoweredUpToLevel { 0 }
 			, CurrentEMPulseSW {}
+			, SecondaryArchiveTarget { nullptr }
 		{ }
 
 		void DisplayIncomeString();
@@ -59,13 +61,14 @@ public:
 		bool HasSuperWeapon(int index, bool withUpgrades) const;
 		bool HandleInfiltrate(HouseClass* pInfiltratorHouse, int moneybefore);
 		void UpdatePrimaryFactoryAI();
-		virtual ~ExtData() = default;
+		virtual ~ExtData() override;
 
 		// virtual void LoadFromINIFile(CCINIClass* pINI) override;
 
 		virtual void InvalidatePointer(void* ptr, bool bRemoved) override
 		{
 			AnnounceInvalidPointer(CurrentAirFactory, ptr);
+			AnnounceInvalidPointer(SecondaryArchiveTarget, ptr);
 		}
 
 		virtual void LoadFromStream(PhobosStreamReader& Stm) override;
@@ -88,7 +91,11 @@ public:
 
 			switch (abs)
 			{
+			case AbstractType::Aircraft:
 			case AbstractType::Building:
+			case AbstractType::Infantry:
+			case AbstractType::Unit:
+			case AbstractType::Terrain:
 				return false;
 			default:
 				return true;

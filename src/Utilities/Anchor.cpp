@@ -1,4 +1,4 @@
-#include "Anchor.h"
+﻿#include "Anchor.h"
 
 #include <GeneralDefinitions.h>
 

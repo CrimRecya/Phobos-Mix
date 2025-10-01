@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <Ext/Techno/Body.h>
 
@@ -237,7 +237,7 @@ void ScriptExt::Mission_Move(TeamClass* pTeam, int calcThreatMode, bool pickAlli
 	}
 }
 
-TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int calcThreatMode, bool pickAllies, int attackAITargetType, int idxAITargetTypeItem)
+TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int calcThreatMode, bool pickAllies, int attackAITargetType, int idxAITargetTypeItem, bool needAttackableByLeader)
 {
 	TechnoClass* pBestObject = nullptr;
 	double bestVal = -1;
@@ -322,6 +322,9 @@ TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int cal
 		if (!ScriptExt::IsUnitAvailable(pTarget, true))
 			continue;
 
+		if (needAttackableByLeader && pTechno->GetFireErrorWithoutRange(pTarget, pTechno->SelectWeapon(pTarget)) == FireError::ILLEGAL)
+			continue;
+
 		double value = 0;
 		bool isGoodTarget = false;
 
@@ -388,6 +391,42 @@ TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int cal
 				if (value > bestVal || bestVal < 0)
 					isGoodTarget = true;
 			}
+
+			break;
+		}
+		case 4:
+		{
+			// Sorted by "KeepAlivability".
+			auto getFinalBuildingType = [pTargetType, pTargetBuildingType]() -> BuildingTypeClass*
+			{
+				if (pTargetBuildingType)
+					return pTargetBuildingType;
+
+				if (const auto pTargetUnitType = abstract_cast<UnitTypeClass*, true>(pTargetType))
+					return pTargetUnitType->DeploysInto;
+
+				return nullptr;
+			};
+			const auto pFinalBuildingType = getFinalBuildingType();
+
+			// ConYards and MCVs are the highest priority
+			// Factorys of UnitType then
+			// Other factorys then
+			// Other KeepAlives then
+			// Other units then
+			if (pFinalBuildingType && pFinalBuildingType->ConstructionYard)
+				value = 1024 * 256 * 4;
+			else if (pFinalBuildingType && pFinalBuildingType->Factory == AbstractType::Unit)
+				value = 1024 * 256 * 3;
+			else if (pFinalBuildingType && pFinalBuildingType->Factory != AbstractType::None)
+				value = 1024 * 256 * 2;
+			else if (TechnoTypeExt::ExtMap.Find(pTargetType)->KeepAlive.Get(pTargetBuildingType && !pTargetBuildingType->Insignificant && !pTargetBuildingType->DontScore))
+				value = 1024 * 256 * 1;
+
+			value -= pTechno->DistanceFrom(pTarget); // Note: distance is in leptons (*256)
+
+			if (value > bestVal || bestVal < 0)
+				isGoodTarget = true;
 
 			break;
 		}

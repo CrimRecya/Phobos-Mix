@@ -1,9 +1,10 @@
-#include <Phobos.h>
+﻿#include <Phobos.h>
 
 #include <Helpers/Macro.h>
 #include <PreviewClass.h>
 #include <Surface.h>
 #include <ThemeClass.h>
+#include <FPSCounter.h>
 
 #include <Ext/House/Body.h>
 #include <Ext/Side/Body.h>
@@ -200,6 +201,7 @@ DEFINE_HOOK(0x6A8463, StripClass_OperatorLessThan_CameoPriority, 0x5)
 	GET_STACK(const int, idxRight, STACK_OFFSET(0x1C, 0x10));
 	GET_STACK(AbstractType, rttiLeft, STACK_OFFSET(0x1C, 0x4));
 	GET_STACK(AbstractType, rttiRight, STACK_OFFSET(0x1C, 0xC));
+
 	const auto pLeftTechnoExt = TechnoTypeExt::ExtMap.TryFind(pLeft);
 	const auto pRightTechnoExt = TechnoTypeExt::ExtMap.TryFind(pRight);
 	const auto pLeftSWExt = (rttiLeft == AbstractType::Special || rttiLeft == AbstractType::Super || rttiLeft == AbstractType::SuperWeaponType)
@@ -209,9 +211,19 @@ DEFINE_HOOK(0x6A8463, StripClass_OperatorLessThan_CameoPriority, 0x5)
 
 	if ((pLeftTechnoExt || pLeftSWExt) && (pRightTechnoExt || pRightSWExt))
 	{
-		const int leftPriority = pLeftTechnoExt ? pLeftTechnoExt->CameoPriority : pLeftSWExt->CameoPriority;
-		const int rightPriority = pRightTechnoExt ? pRightTechnoExt->CameoPriority : pRightSWExt->CameoPriority;
 		enum { rTrue = 0x6A8692, rFalse = 0x6A86A0 };
+
+		const auto ownerBits = 1u << HouseClass::CurrentPlayer->Type->ArrayIndex2;
+		const auto leftBits = pLeftTechnoExt ? pLeftTechnoExt->CameoPriority_Houses : pLeftSWExt->CameoPriority_Houses;
+		const auto rightBits = pRightTechnoExt ? pRightTechnoExt->CameoPriority_Houses : pRightSWExt->CameoPriority_Houses;
+
+		if ((leftBits & ownerBits) && (!(rightBits & ownerBits)))
+			return rTrue;
+		else if ((!(leftBits & ownerBits)) && (rightBits & ownerBits))
+			return rFalse;
+
+		const auto leftPriority = pLeftTechnoExt ? pLeftTechnoExt->CameoPriority : pLeftSWExt->CameoPriority;
+		const auto rightPriority = pRightTechnoExt ? pRightTechnoExt->CameoPriority : pRightSWExt->CameoPriority;
 
 		if (leftPriority > rightPriority)
 			return rTrue;
@@ -221,6 +233,7 @@ DEFINE_HOOK(0x6A8463, StripClass_OperatorLessThan_CameoPriority, 0x5)
 
 	// Restore overridden instructions
 	GET(AbstractType, rtti1, ESI);
+
 	return rtti1 == AbstractType::Special ? 0x6A8477 : 0x6A8468;
 }
 
@@ -400,6 +413,20 @@ DEFINE_FUNCTION_JUMP(CALL, 0x63B100, Fake_HouseIsAlliedWith);
 DEFINE_FUNCTION_JUMP(CALL, 0x63B17F, Fake_HouseIsAlliedWith);
 DEFINE_FUNCTION_JUMP(CALL, 0x63B1BA, Fake_HouseIsAlliedWith);
 DEFINE_FUNCTION_JUMP(CALL, 0x63B2CE, Fake_HouseIsAlliedWith);
+
+DEFINE_HOOK(0x4F4480, GScreenClass_DrawOnTop_Start, 0x8)
+{
+	enum { SkipDraw = 0x4F45A8 };
+
+	auto shouldSkipDraw = []() -> bool
+		{
+			return Phobos::Config::SkipFrameDelay
+				&& FPSCounter::CurrentFrameRate < static_cast<size_t>(RulesClass::Instance->DetailMinFrameRateNormal)
+				&& !(Unsorted::CurrentFrame % Phobos::Config::SkipFrameDelay);
+		};
+
+	return shouldSkipDraw() ? SkipDraw : 0;
+}
 
 DEFINE_HOOK(0x69A317, SessionClass_PlayerColorIndexToColorSchemeIndex, 0x0)
 {

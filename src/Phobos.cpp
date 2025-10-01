@@ -1,4 +1,4 @@
-#include "Phobos.h"
+﻿#include "Phobos.h"
 
 #include <Drawing.h>
 #include <SessionClass.h>
@@ -9,10 +9,12 @@
 #include <Utilities/Macro.h>
 #include "Utilities/AresHelper.h"
 #include "Utilities/Parser.h"
+#include "Misc/MessageColumn.h"
 
-#ifndef IS_RELEASE_VER
-bool HideWarning = false;
-#endif
+#include <Phobos.ECInit.h>
+
+bool Phobos::HideWarning = false;
+bool Phobos::PoweredByEC = false;
 
 HANDLE Phobos::hInstance = 0;
 
@@ -21,6 +23,7 @@ wchar_t Phobos::wideBuffer[Phobos::readLength];
 
 const char* Phobos::AppIconPath = nullptr;
 
+bool Phobos::ShowCurrentInfo = false;
 bool Phobos::DisplayDamageNumbers = false;
 bool Phobos::IsLoadingSaveGame = false;
 
@@ -29,11 +32,11 @@ bool Phobos::Optimizations::DisableRadDamageOnBuildings = true;
 bool Phobos::Optimizations::DisableSyncLogging = false;
 
 #ifdef STR_GIT_COMMIT
-const wchar_t* Phobos::VersionDescription = L"Phobos nightly build (" STR_GIT_COMMIT L" @ " STR_GIT_BRANCH L"). DO NOT SHIP IN MODS!";
+const wchar_t* Phobos::VersionDescription = L"Phobos sp nightly #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"(" STR_GIT_COMMIT L")    ";
 #elif !defined(IS_RELEASE_VER)
-const wchar_t* Phobos::VersionDescription = L"Phobos development build #" _STR(BUILD_NUMBER) L". Please test the build before shipping.";
+const wchar_t* Phobos::VersionDescription = L"Phobos sp build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L"    ";
 #else
-//const wchar_t* Phobos::VersionDescription = L"Phobos release build v" FILE_VERSION_STR L".";
+const wchar_t* Phobos::VersionDescription = L"Phobos sp release v" FILE_VERSION_STR L"    ";
 #endif
 
 
@@ -59,12 +62,10 @@ void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
 		{
 			Phobos::AppIconPath = ppArgs[++i];
 		}
-#ifndef IS_RELEASE_VER
-		if (_stricmp(pArg, "-b=" _STR(BUILD_NUMBER)) == 0)
+		if (_stricmp(pArg, "-SPBS=" _STR(BUILD_NUMBER) "+" _STR(MERGE_NUMBER) "_" _STR(MERGE_PATCH)) == 0)
 		{
-			HideWarning = true;
+			Phobos::HideWarning = true;
 		}
-#endif
 		if (_stricmp(pArg, "-Inheritance") == 0)
 		{
 			foundInheritance = true;
@@ -164,7 +165,96 @@ void Phobos::ExeRun()
 
 void Phobos::ExeTerminate()
 {
+	Phobos::UpdateTrialFile(Phobos::GetCurrent());
 	Console::Release();
+}
+
+std::filesystem::path Phobos::GetProgramDirectory()
+{
+	wchar_t buffer[MAX_PATH];
+	GetModuleFileNameW(NULL, buffer, MAX_PATH);
+	return std::filesystem::path(buffer).parent_path();
+}
+
+std::string Phobos::XorEncryptDecrypt(const std::string& data)
+{
+	std::string result = data;
+
+	for (size_t i = 0; i < data.size(); ++i)
+		result[i] = data[i] ^ ((0x55AA1234 >> (8 * (i % 4))) & 0xFF);
+
+	return result;
+}
+
+std::string Phobos::TimeToString(time_t t)
+{
+    const std::tm* tm = std::localtime(&t);
+    char buffer[30];
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tm);
+    return buffer;
+}
+
+time_t Phobos::StringToTime(const std::string& s)
+{
+    std::tm tm = {};
+    std::istringstream iss(s);
+    iss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    return mktime(&tm);
+}
+
+time_t Phobos::GetCurrent()
+{
+	return time(nullptr);
+}
+
+time_t Phobos::GetCompile()
+{
+    std::string dateStr = __DATE__;
+    std::string timeStr = __TIME__;
+    std::tm tm = {};
+    std::istringstream(dateStr + " " + timeStr) >> std::get_time(&tm, "%b %d %Y %H:%M:%S");
+    return mktime(&tm);
+}
+
+bool Phobos::IsTrialValid()
+{
+	std::filesystem::path recordFile = Phobos::GetProgramDirectory() / "ra2.dat";
+	const time_t currentTime = Phobos::GetCurrent();
+	const time_t compileTime = Phobos::GetCompile();
+
+	if (currentTime < compileTime)
+		return false;
+
+	const double daysPassed = difftime(currentTime, compileTime) / (60 * 60 * 24);
+
+	if (daysPassed > 30)
+		return false;
+
+	if (std::filesystem::exists(recordFile))
+	{
+		std::ifstream inFile(recordFile, std::ios::binary);
+		std::string encryptedData((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
+
+		if (!encryptedData.empty())
+		{
+			std::string lastTimeStr = Phobos::XorEncryptDecrypt(encryptedData);
+			time_t lastTime = Phobos::StringToTime(lastTimeStr);
+
+			if (currentTime < lastTime)
+				return false;
+		}
+	}
+
+	Phobos::UpdateTrialFile(currentTime);
+	return true;
+}
+
+void Phobos::UpdateTrialFile(time_t t)
+{
+	std::filesystem::path recordFile = Phobos::GetProgramDirectory() / "ra2.dat";
+	std::ofstream outFile(recordFile, std::ios::binary);
+	std::string currentTimeStr = Phobos::TimeToString(t);
+	outFile << Phobos::XorEncryptDecrypt(currentTimeStr);
 }
 
 // =============================
@@ -175,6 +265,7 @@ bool __stdcall DllMain(HANDLE hInstance, DWORD dwReason, LPVOID v)
 	if (dwReason == DLL_PROCESS_ATTACH)
 	{
 		Phobos::hInstance = hInstance;
+		ECInitialize();
 	}
 	return true;
 }
@@ -186,6 +277,19 @@ DEFINE_HOOK(0x7CD810, ExeRun, 0x9)
 
 	return 0;
 }
+
+DEFINE_HOOK(0x6BC0D2, AfterECInit, 0x5)
+{
+	if (!Phobos::HideWarning && !Phobos::IsTrialValid() && !Phobos::PoweredByEC)
+	{
+		Debug::Log("Initialized version: " PRODUCT_VERSION " failed! \n");
+		MessageBoxExW(NULL, L"试用期已结束，且未检测到授权！", Phobos::VersionDescription, MB_ICONERROR, 0);
+		FatalExit(0xDEAD);
+	}
+
+	return 0;
+}
+
 // Avoid confusing the profiler unless really necessary
 #ifdef DEBUG
 DEFINE_NAKED_HOOK(0x7CD8EA, _ExeTerminate)
@@ -232,30 +336,47 @@ DEFINE_HOOK(0x683E7F, ScenarioClass_Start_Optimizations, 0x7)
 	return 0;
 }
 
-#ifndef IS_RELEASE_VER
 DEFINE_HOOK(0x4F4583, GScreenClass_DrawText, 0x6)
 {
-#ifndef STR_GIT_COMMIT
-	if (!HideWarning)
-#endif // !STR_GIT_COMMIT
+	if (!Phobos::HideWarning && !Phobos::PoweredByEC)
 	{
-		auto wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, { 0,0 }, 0, 2, 0);
-
-		RectangleStruct rect = {
-			DSurface::Composite->GetWidth() - wanted.Width - 10,
-			0,
-			wanted.Width + 10,
-			wanted.Height + 10
-		};
-
-		Point2D location { rect.X + 5,5 };
-
-		DSurface::Composite->FillRect(&rect, COLOR_BLACK);
-		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, COLOR_RED);
+		RectangleStruct wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0);
+		Point2D location { DSurface::Composite->GetWidth() - wanted.Width - 5, 5 };
+		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x061C);
 	}
 	return 0;
 }
-#endif
+
+DEFINE_HOOK(0x684AD3, UnknownClass_sub_684620_InitMessageList, 0x5)
+{
+	if (!Phobos::PoweredByEC && !Phobos::HideWarning)
+	{
+		const time_t compileTime = Phobos::GetCompile();
+		const time_t currentTime = Phobos::GetCurrent();
+		const int daysUsed = static_cast<int>(difftime(currentTime, compileTime) / (60 * 60 * 24));
+		const int daysLeft = 30 - daysUsed;
+		constexpr const wchar_t* const text = L"正在使用Phobos特别合并构建#" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L"。若在使用过程中发生问题，请按说明中的方法反馈。  — 绯红热茶";
+		wchar_t buffer[0x40];
+
+		if (daysLeft > 7)
+			swprintf_s(buffer, L"剩余试用期：%2d天", daysLeft);
+		else
+			swprintf_s(buffer, L"剩余试用期：%2d天，注意及时在群内获取最新版本。", daysLeft);
+
+		if (Phobos::Config::MessageDisplayInCenter)
+		{
+			MessageColumnClass::Instance.AddMessage(nullptr, text, 480, false);
+			MessageColumnClass::Instance.AddMessage(nullptr, buffer, 480, false, 100);
+		}
+		else
+		{
+			MessageListClass::Instance.PrintMessage(text, 480, 5, true);
+			MessageListClass::Instance.PrintMessage(buffer, 480, 5, true);
+		}
+	}
+
+	return 0;
+}
 
 // Mainly used to disable hooks for optimization.
 // Called after loading saved game and at end of scenario start after all INI data etc has been initialized.
@@ -268,6 +389,21 @@ void Phobos::ApplyOptimizations()
 	// Disable BuildingClass_AI_Radiation
 	if (Phobos::Optimizations::DisableRadDamageOnBuildings)
 		Patch::Apply_RAW(0x43FB23, { 0x53, 0x55, 0x56, 0x8B, 0xF1 });
+
+	if (!Phobos::Config::DebugToolEnable)
+	{
+		Patch::Apply_RAW(0x6F9C80, { 0x8B, 0x8E, 0x1C, 0x02, 0x00, 0x00 });
+		Patch::Apply_RAW(0x6F91EC, { 0x8B, 0x8E, 0x1C, 0x02, 0x00, 0x00 });
+		Patch::Apply_RAW(0x7043B9, { 0x8B, 0xF8, 0x8B, 0xCF, 0x8B, 0x17 });
+		Patch::Apply_RAW(0x73B0C5, { 0x8B, 0xF0, 0x8B, 0xCE, 0x8B, 0x06 });
+		Patch::Apply_RAW(0x7410D6, { 0x8B, 0x10, 0x8B, 0xC8, 0xFF, 0x52, 0x2C });
+	}
+
+	if (RulesExt::Global()->SmudgeUpdateTime <= 0)
+	{
+		Patch::Apply_RAW(0x6B56AC, { 0x52, 0x8B, 0x56, 0x34, 0x50 });
+		Patch::Apply_RAW(0x6B60DE, { 0x8B, 0x96, 0x94, 0x02, 0x00, 0x00 });
+	}
 
 	if (!SessionClass::IsMultiplayer())
 	{

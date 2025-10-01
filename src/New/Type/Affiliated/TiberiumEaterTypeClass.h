@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Utilities/Constructs.h>
 #include <Utilities/Enum.h>

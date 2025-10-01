@@ -1,4 +1,4 @@
-#include "SWButtonClass.h"
+﻿#include "SWButtonClass.h"
 #include "SWSidebarClass.h"
 #include <EventClass.h>
 #include <CCToolTip.h>

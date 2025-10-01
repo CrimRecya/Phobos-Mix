@@ -1,6 +1,7 @@
-#include <Ext/Techno/Body.h>
+﻿#include <Ext/Techno/Body.h>
 #include <Ext/WeaponType/Body.h>
 
+DEFINE_JUMP(LJMP, 0x741376, 0x7413B0)
 DEFINE_JUMP(LJMP, 0x741406, 0x741427)
 
 DEFINE_HOOK(0x736F61, UnitClass_UpdateFiring_FireUp, 0x6)
@@ -69,12 +70,12 @@ DEFINE_HOOK(0x736F61, UnitClass_UpdateFiring_FireUp, 0x6)
 		if (TechnoExt::HandleDelayedFireWithPauseSequence(pThis, weaponIndex, fireUp + cumulativeDelay))
 			return SkipFiring;
 
-		int frame = (timer.TimeLeft - timer.GetTimeLeft());
+		const int frame = (timer.TimeLeft - timer.GetTimeLeft());
 
-		if (frame % 2 != 0)
+		if ((frame % 2) != 0)
 			return SkipFiring;
 
-		if (frame / 2 != fireUp + cumulativeDelay)
+		if ((frame / 2) != (fireUp + cumulativeDelay))
 		{
 			return SkipFiring;
 		}

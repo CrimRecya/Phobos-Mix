@@ -1,4 +1,4 @@
-#include "RadTypeClass.h"
+﻿#include "RadTypeClass.h"
 
 #include <Utilities/TemplateDef.h>
 #include <WarheadTypeClass.h>

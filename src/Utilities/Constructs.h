@@ -1,4 +1,4 @@
-#pragma region Ares Copyrights
+﻿#pragma region Ares Copyrights
 /*
  *Copyright (c) 2008+, All Ares Contributors
  *All rights reserved.

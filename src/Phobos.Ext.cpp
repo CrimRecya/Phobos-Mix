@@ -1,4 +1,4 @@
-#include <Phobos.h>
+﻿#include <Phobos.h>
 
 #include <LoadOptionsClass.h>
 
@@ -242,7 +242,10 @@ using PhobosTypeRegistry = TypeRegistry <
 	AttachEffectTypeClass,
 	AttachEffectClass,
 	NewSWType,
-	SelectBoxTypeClass
+	SelectBoxTypeClass,
+	AttachmentClass,
+	AttachmentTypeClass,
+	SquadManagerClass
 	// other classes
 > ;
 
@@ -277,6 +280,14 @@ DEFINE_HOOK(0x67E826, LoadGame_Phobos, 0x6)
 {
 	GET(IStream*, pStm, ESI);
 	PhobosTypeRegistry::LoadGlobals(pStm);
+	return 0;
+}
+
+std::unordered_map<void*, std::weak_ptr<void>> SavegameGlobal::GlobalSharedRegistry;
+
+DEFINE_HOOK(0x67F7C8, LoadGame_Phobos_End, 0x5)
+{
+	SavegameGlobal::ClearSharedRegistry();
 	return 0;
 }
 

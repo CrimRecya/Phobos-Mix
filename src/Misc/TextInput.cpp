@@ -1,4 +1,4 @@
-#include <Utilities\Macro.h>
+﻿#include <Utilities\Macro.h>
 
 // Allow message entry in Skirmish
 // DEFINE_JUMP(LJMP, 0x55E484, 0x55E48D);

@@ -1,4 +1,4 @@
-#include <AircraftClass.h>
+﻿#include <AircraftClass.h>
 #include <AircraftTrackerClass.h>
 #include <AnimClass.h>
 #include <BuildingClass.h>
@@ -98,7 +98,7 @@ DEFINE_HOOK(0x4D7431, FootClass_ReceiveDamage_DyingFix, 0x5)
 	GET(FootClass*, pThis, ESI);
 	GET(DamageState, result, EAX);
 
-	if (result != DamageState::PostMortem && (pThis->IsSinking || (!pThis->IsAttackedByLocomotor && pThis->IsCrashing)))
+	if (result != DamageState::PostMortem && (pThis->IsSinking || (pThis->IsCrashing && !pThis->IsAttackedByLocomotor)))
 		R->EAX(DamageState::PostMortem);
 
 	return 0;
@@ -305,14 +305,6 @@ DEFINE_HOOK(0x4438B4, BuildingClass_SetRallyPoint_Naval, 0x6)
 		return IsNaval;
 
 	return NotNaval;
-}
-
-DEFINE_HOOK(0x6DAAB2, TacticalClass_DrawRallyPointLines_NoUndeployBlyat, 0x6)
-{
-	GET(BuildingClass*, pBld, EDI);
-	if (pBld->ArchiveTarget && pBld->CurrentMission != Mission::Selling)
-		return 0x6DAAC0;
-	return 0x6DAD45;
 }
 
 // bugfix: DeathWeapon not properly detonates
@@ -830,7 +822,7 @@ DEFINE_HOOK(0x6D9781, Tactical_RenderLayers_DrawInfoTipAndSpiedSelection, 0x5)
 	if (pBuilding->IsSelected && pBuilding->IsOnMap && pBuilding->WhatAmI() == AbstractType::Building)
 	{
 		const auto pType = pBuilding->Type;
-		const int foundationHeight = pType->GetFoundationHeight(0);
+		const int foundationHeight = pType->GetFoundationHeight(false);
 		const int typeHeight = pType->Height;
 		const int yOffest = (Unsorted::CellHeightInPixels * (foundationHeight + typeHeight)) >> 2;
 
@@ -1434,6 +1426,8 @@ DEFINE_HOOK(0x6FC617, TechnoClass_GetFireError_Spawner, 0x8)
 DEFINE_JUMP(LJMP, 0x715326, 0x715333); // TechnoTypeClass::LoadFromINI
 // Then EDI is BarrelAnimData now, not incorrect TurretAnimData
 
+DEFINE_JUMP(LJMP, 0x6FA4D1, 0x6FA4FB); // Skip vanilla update
+
 #pragma endregion
 
 #pragma region TeamCloseRangeFix
@@ -1477,6 +1471,41 @@ size_t __fastcall HexStr2Int_replacement(const char* str)
 
 DEFINE_FUNCTION_JUMP(CALL, 0x6E8305, HexStr2Int_replacement); // TaskForce
 DEFINE_FUNCTION_JUMP(CALL, 0x6E5FA6, HexStr2Int_replacement); // TagType
+
+// In theory, a projectile with Inviso=yes should detonate at the center of the target the next frame after firing, assuming it is not intercepted.
+// In fact, when the target is moving at high speed, the projectile may have to delay multiple frames to hit, or even fail and hit the ground.
+// I didn't study the specific reasons for this, but this hook does solve the problem.
+// Netsu_Negi told me this method, and I verified it.
+DEFINE_HOOK(0x467C1C, BulletClass_Update_InvisoLatencyFix, 0x6)
+{
+	GET(BulletTypeClass*, pType, EAX);
+	R->CL(RulesExt::Global()->InvisoLatencyFix ? (pType->Inviso || pType->Ranged) : pType->Ranged);
+	return 0x467C22;
+}
+
+namespace InvisoBlockageFix
+{
+	CoordStruct srcCrd = { 0, 0, 0 };
+}
+
+DEFINE_HOOK(0x468670, BulletClass_Unlimbo_Start_InvisoBlockageFix, 0x6)
+{
+	GET_STACK(int, returnAddress, 0);
+	GET(BulletClass*, pThis, ECX);
+
+	if (!RulesExt::Global()->InvisoBlockageFix || returnAddress != 0x6FF01A || !pThis->Type->Inviso)
+		return 0;
+
+	REF_STACK(CoordStruct*, pSrcCrd, 0x4);
+
+	if (auto pTechno = pThis->Owner)
+	{
+		InvisoBlockageFix::srcCrd = pTechno->GetCoords();
+		pSrcCrd = &InvisoBlockageFix::srcCrd;
+	}
+
+	return 0;
+}
 
 #pragma region Sensors
 
@@ -1883,39 +1912,28 @@ DEFINE_HOOK(0x4DFC39, FootClass_FindBioReactor_CheckValid, 0x6)
 {
 	GET(FootClass*, pThis, ESI);
 	GET(BuildingClass*, pBuilding, EDI);
-
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x6;
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4DFC3F;
 }
 
 DEFINE_HOOK(0x4DFED2, FootClass_FindGarrisonStructure_CheckValid, 0x6)
 {
 	GET(FootClass*, pThis, ESI);
 	GET(BuildingClass*, pBuilding, EBX);
-
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x6;
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4DFED8;
 }
 
 DEFINE_HOOK(0x4E0024, FootClass_FindTankBunker_CheckValid, 0x8)
 {
 	GET(FootClass*, pThis, EDI);
 	GET(BuildingClass*, pBuilding, ESI);
-
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x8;
+	return pThis->IsInSameZoneAs(pBuilding) ? 0 : 0x4E002C;
 }
 
-DEFINE_HOOK(0x4DFD92, FootClass_FindBattleBunker_CheckValid, 0x8)
+DEFINE_HOOK_AGAIN(0x4DFB28, FootClass_FindXXX_CheckValid, 0x8) // FindGrinder
+DEFINE_HOOK(0x4DFD92, FootClass_FindXXX_CheckValid, 0x8) // FindBattleBunker
 {
 	GET(FootClass*, pThis, ESI);
 	GET(BuildingClass*, pBuilding, EBX);
-
-	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x8;
-}
-
-DEFINE_HOOK(0x4DFB28, FootClass_FindGrinder_CheckValid, 0x8)
-{
-	GET(FootClass*, pThis, ESI);
-	GET(BuildingClass*, pBuilding, EBX);
-
 	return pThis->IsInSameZoneAs(pBuilding) ? 0 : R->Origin() + 0x8;
 }
 
@@ -2086,6 +2104,72 @@ DEFINE_HOOK(0x737E2A, UnitClass_ReceiveDamage_Sinkable_Bridge, 0x6)
 //	return ContinueCheck;
 //}
 
+#pragma region BalloonHoverPathingFix
+
+DEFINE_HOOK_AGAIN(0x64D575, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal1, 0x6)
+DEFINE_HOOK(0x64D592, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal1, 0x6)
+{
+	enum { SkipTargetCrdRecal = 0x64D598 };
+	GET(TechnoClass*, pTechno, EBP);
+	return pTechno->GetTechnoType()->BalloonHover && RulesExt::Global()->BalloonHoverPathingFix ? SkipTargetCrdRecal : 0;
+}
+
+DEFINE_HOOK(0x64D5C5, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal2, 0x6)
+{
+	enum { SkipTargetCrdRecal = 0x64D659 };
+	GET(TechnoClass*, pTechno, EBP);
+	return pTechno->GetTechnoType()->BalloonHover && RulesExt::Global()->BalloonHoverPathingFix ? SkipTargetCrdRecal : 0;
+}
+
+DEFINE_HOOK(0x51BFA2, InfantryClass_IsCellOccupied_Start, 0x6)
+{
+	enum { MoveOK = 0x51C02D };
+	GET(InfantryClass*, pThis, EBP);
+	return pThis->IsInAir() && pThis->Type->BalloonHover && RulesExt::Global()->BalloonHoverPathingFix ? MoveOK : 0;
+}
+
+DEFINE_HOOK(0x73F0A7, UnitClass_IsCellOccupied_Start, 0x9)
+{
+	enum { MoveOK = 0x73F23F };
+	GET(UnitClass*, pThis, ECX);
+	return pThis->IsInAir() && pThis->Type->BalloonHover && RulesExt::Global()->BalloonHoverPathingFix ? MoveOK : 0;
+}
+
+namespace ApproachTargetContext
+{
+	bool IsBalloonHover = false;
+}
+
+DEFINE_HOOK(0x4D5690, FootClass_ApproachTarget_SetContext, 0x6)
+{
+	GET(FootClass*, pThis, ECX);
+	ApproachTargetContext::IsBalloonHover = pThis->GetTechnoType()->BalloonHover && RulesExt::Global()->BalloonHoverPathingFix;
+	return 0;
+}
+
+DEFINE_HOOK_AGAIN(0x4D5A42, FootClass_ApproachTarget_ResetContext, 0x5);
+DEFINE_HOOK_AGAIN(0x4D5AB5, FootClass_ApproachTarget_ResetContext, 0x5);
+DEFINE_HOOK_AGAIN(0x4D68DE, FootClass_ApproachTarget_ResetContext, 0x5);
+DEFINE_HOOK_AGAIN(0x4D6A8B, FootClass_ApproachTarget_ResetContext, 0x5);
+DEFINE_HOOK(0x4D5744, FootClass_ApproachTarget_ResetContext, 0x5)
+{
+	ApproachTargetContext::IsBalloonHover = false;
+	return 0;
+}
+
+DEFINE_HOOK(0x4834A0, CellClass_IsClearToMove_Start, 0x5)
+{
+	if (ApproachTargetContext::IsBalloonHover)
+	{
+		R->AL(true);
+		return 0x483605;
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
 DEFINE_HOOK(0x481778, CellClass_ScatterContent_Scatter, 0x6)
 {
 	enum { NextTechno = 0x4817D9 };
@@ -2099,10 +2183,11 @@ DEFINE_HOOK(0x481778, CellClass_ScatterContent_Scatter, 0x6)
 	GET_STACK(const bool, ignoreMission, STACK_OFFSET(0x2C, 0x8));
 	GET_STACK(const bool, ignoreDestination, STACK_OFFSET(0x2C, 0xC));
 
-	if (ignoreDestination || pTechno->HasAbility(Ability::Scatter)
+	if (ignoreDestination
+		|| pTechno->HasAbility(Ability::Scatter)
 		|| (pTechno->Owner->IsControlledByHuman()
-		? RulesClass::Instance->PlayerScatter
-		: pTechno->Owner->IQLevel2 >= RulesClass::Instance->Scatter))
+			? RulesClass::Instance->PlayerScatter
+			: pTechno->Owner->IQLevel2 >= RulesClass::Instance->Scatter))
 	{
 		pTechno->Scatter(coords, ignoreMission, ignoreDestination);
 	}
@@ -2154,6 +2239,12 @@ DEFINE_HOOK(0x489416, MapClass_DamageArea_AirDamageSelfFix, 0x6)
 
 	GET(TechnoClass*, pAirTechno, EBX);
 	GET_BASE(TechnoClass*, pSourceTechno, 0x8);
+	GET_BASE(WarheadTypeClass*, pWarhead, 0xC);
+
+	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWarhead);
+
+	if (pAirTechno->IsInAir() ? !pWHExt->AffectsInAir : !pWHExt->AffectsOnFloor)
+		return NextTechno;
 
 	if (pAirTechno != pSourceTechno)
 		return 0;
@@ -2161,9 +2252,7 @@ DEFINE_HOOK(0x489416, MapClass_DamageArea_AirDamageSelfFix, 0x6)
 	if (pSourceTechno->GetTechnoType()->DamageSelf)
 		return 0;
 
-	GET_BASE(WarheadTypeClass*, pWarhead, 0xC);
-
-	if (WarheadTypeExt::ExtMap.Find(pWarhead)->AllowDamageOnSelf)
+	if (pWHExt->AllowDamageOnSelf)
 		return 0;
 
 	return NextTechno;
@@ -2183,6 +2272,76 @@ namespace DamageAreaTemp
 // Note: Ares hook at 0x489562(0x6) and return 0
 DEFINE_JUMP(LJMP, 0x489568, 0x489592);
 
+DEFINE_NAKED_HOOK(0x4896BF, DamageArea_DamageItemsFix1)
+{
+	// Use:
+	// ebx -> pCell , no change
+	// esi -> pObject , CHECK_THIS_OBJECT: change , CHECK_NEXT_CELL: will be covered later
+	// eax -> returnAddress , will be covered later
+	__asm
+	{
+		mov dword ptr [DamageAreaTemp::CheckingCell], ebx
+
+		mov esi, [ebx]CellClass.FirstObject
+		test esi, esi
+		jnz CHECK_THIS_OBJECT
+
+		mov esi, [ebx]CellClass.AltObject
+		test esi, esi
+		jz CHECK_NEXT_CELL
+
+		mov byte ptr [DamageAreaTemp::CheckingCellAlt], 1
+
+	CHECK_THIS_OBJECT:
+
+		mov eax, 0x4896DD
+		jmp eax
+
+	CHECK_NEXT_CELL:
+
+		mov eax, 0x4899BE
+		jmp eax
+	}
+}
+
+DEFINE_NAKED_HOOK(0x4899B3, DamageArea_DamageItemsFix2)
+{
+	// Use:
+	// esi -> pObject , CHECK_THIS_OBJECT: change , CHECK_NEXT_CELL: will be covered later
+	// eax -> returnAddress , will be covered later
+	__asm
+	{
+		mov esi, [esi]ObjectClass.NextObject
+		test esi, esi
+		jnz CHECK_THIS_OBJECT
+
+		mov al, [DamageAreaTemp::CheckingCellAlt]
+		test al, al
+		jnz CHECK_NEXT_CELL_RESET
+
+		mov esi, [DamageAreaTemp::CheckingCell]
+		mov esi, [esi]CellClass.AltObject
+		test esi, esi
+		jz CHECK_NEXT_CELL
+
+		mov byte ptr [DamageAreaTemp::CheckingCellAlt], 1
+
+	CHECK_THIS_OBJECT:
+
+		mov eax, 0x4896DD
+		jmp eax
+
+	CHECK_NEXT_CELL_RESET:
+
+		mov byte ptr [DamageAreaTemp::CheckingCellAlt], 0
+
+	CHECK_NEXT_CELL:
+
+		mov eax, 0x4899BE
+		jmp eax
+	}
+}
+/*
 DEFINE_HOOK(0x4896BF, DamageArea_DamageItemsFix1, 0x6)
 {
 	enum { CheckNextCell = 0x4899BE, CheckThisObject = 0x4896DD };
@@ -2239,7 +2398,7 @@ DEFINE_HOOK(0x4899B3, DamageArea_DamageItemsFix2, 0x5)
 	R->ESI(pObject);
 	return CheckThisObject;
 }
-
+*/
 DEFINE_HOOK(0x489BDB, DamageArea_RockerItemsFix1, 0x6)
 {
 	enum { SkipGameCode = 0x489C29 };
@@ -2309,9 +2468,7 @@ DEFINE_HOOK(0x71B151, TemporalClass_Fire_ReleaseTargetTarget, 0x6)
 	if (pTarget->LocomotorTarget)
 		pTarget->ReleaseLocomotor(true);
 
-	const auto pTargetType = pTarget->GetTechnoType();
-
-	if (pTargetType->OpenTopped)
+	if (pTarget->GetTechnoType()->OpenTopped)
 	{
 		for (auto pPassenger = pTarget->Passengers.GetFirstPassenger(); pPassenger; pPassenger = abstract_cast<FootClass*>(pPassenger->NextObject))
 		{
@@ -2685,4 +2842,37 @@ DEFINE_HOOK(0x44242A, BuildingClass_ReceiveDamage_SetLATime, 0x8)
 	}
 
 	return 0;
+}
+
+// Cleart target for managers when the target is changing owner.
+DEFINE_HOOK(0x701681, TechnoClass_SetOwningHouse_ClearManagerTarget, 0x6)
+{
+	GET(TechnoClass*, pThis, ESI);
+	
+	for (auto pTemporal : TemporalClass::Array)
+	{
+		if (pTemporal->Target == pThis)
+			pTemporal->LetGo();
+	}
+
+	for (auto pAirstrike : AirstrikeClass::Array)
+	{
+		if (pAirstrike->Target == pThis)
+			pAirstrike->ResetTarget();
+	}
+
+	for (auto pSpawn : SpawnManagerClass::Array)
+	{
+		if (pSpawn->Target == pThis)
+			pSpawn->ResetTarget();
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x5194EF, InfantryClass_DrawIt_DrawShadow, 0x5)
+{
+	enum { SkipDraw = 0x51958A };
+	GET(InfantryClass*, pThis, EBP);
+	return pThis->CloakState != CloakState::Uncloaked ? SkipDraw : 0;
 }

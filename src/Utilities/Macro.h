@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Helpers/Macro.h>
 #include <ASMMacros.h>
 #include "Patch.h"

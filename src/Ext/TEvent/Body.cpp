@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <Utilities/SavegameDef.h>
 #include <New/Entity/ShieldClass.h>
@@ -214,7 +214,11 @@ bool TEventExt::HouseOwnsTechnoTypeTEvent(TEventClass* pThis)
 	if (!pHouse)
 		return false;
 
-	return pHouse->CountOwnedNow(pType) > 0;
+	int count = pHouse->CountOwnedNow(pType);
+	if (const auto pJumpjetType = TechnoTypeExt::ExtMap.Find(pType)->ThisIsAJumpjet)
+		count += pHouse->CountOwnedNow(pJumpjetType);
+
+	return count > 0;
 }
 
 bool TEventExt::HouseDoesntOwnTechnoTypeTEvent(TEventClass* pThis)

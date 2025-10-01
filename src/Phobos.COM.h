@@ -1,4 +1,4 @@
-#include <Utilities/Debug.h>
+﻿#include <Utilities/Debug.h>
 #include <YRCom.h>
 
 // Registers a manually created factory for a class.
@@ -13,7 +13,7 @@ void RegisterFactoryForClass(IClassFactory* pFactory)
 	else
 		Debug::Log("Class factory for %s registered.\n", typeid(T).name());
 
-	Game::COMClasses->AddItem((ULONG)dwRegister);
+	Game::COMClasses.AddItem((ULONG)dwRegister);
 }
 
 // Registers an automatically created factory for a class.

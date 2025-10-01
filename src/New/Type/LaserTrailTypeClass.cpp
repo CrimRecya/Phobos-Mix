@@ -1,4 +1,4 @@
-#include "LaserTrailTypeClass.h"
+﻿#include "LaserTrailTypeClass.h"
 
 #include <Utilities/TemplateDef.h>
 #include <HouseClass.h>
