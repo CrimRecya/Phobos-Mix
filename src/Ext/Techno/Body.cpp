@@ -990,7 +990,7 @@ void TechnoExt::ExtData::UpdateTrackingLasers()
 	const auto pThis = this->OwnerObject();
 	const auto pTarget = pThis->Target;
 
-	if (pTarget && pTarget == this->MyTrackingLasersTarget)
+	if (pTarget && pTarget == this->MyTrackingLasersTarget && pThis->IsCloseEnoughToAttack(pTarget))
 	{
 		const size_t size = this->MyTrackingLasers.size();
 		const auto coords = pTarget->GetCoords();
