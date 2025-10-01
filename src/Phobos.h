@@ -109,6 +109,7 @@ public:
 		static bool DigitalDisplay_Enable;
 		static bool MessageApplyHoverState;
 		static bool MessageDisplayInCenter;
+		static int MessageDisplayInCenter_BoardOpacity;
 		static int MessageDisplayInCenter_LabelsCount;
 		static int MessageDisplayInCenter_RecordsCount;
 		static size_t DefaultPlacingDirection;
