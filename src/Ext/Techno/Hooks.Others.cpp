@@ -12,9 +12,9 @@
 
 #include <Ext/Anim/Body.h>
 #include <Ext/Building/Body.h>
-#include "Ext/BulletType/Body.h"
+#include <Ext/BulletType/Body.h>
 #include <Ext/WeaponType/Body.h>
-#include "Ext/WarheadType/Body.h"
+#include <Ext/WarheadType/Body.h>
 #include <Ext/OverlayType/Body.h>
 #include <Ext/TerrainType/Body.h>
 #include <Ext/Scenario/Body.h>
@@ -1961,6 +1961,120 @@ DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
 }
 
 #pragma endregion
+
+inline void LoadTips(INI_EX exINI, const char* pSection, DynamicVectorClass<CSFText>* pDest)
+{
+    char tempBuffer[32];
+    for (size_t i = 0; i < 1024; ++i)
+    {
+        Valueable<CSFText> tip;
+        _snprintf_s(tempBuffer, sizeof(tempBuffer), "Tip%d", i);
+        tip.Read(exINI, pSection, tempBuffer);
+
+        if (!tip.Get())
+            return;
+        
+        pDest->AddUnique(tip);
+    }
+}
+
+DEFINE_HOOK(0x68758D, INIClass_ReadScenario_AfterLoadProgressMgrDraw, 0x5)
+{
+	// Get the text to draw.
+	GET(CCINIClass*, pMapINI, EBP);
+	auto pRulesINI = CCINIClass::INI_Rules; // The RulesExt has not been read yet. Thus we manually read the ini here.
+	auto pText = L"";
+	DynamicVectorClass<CSFText> availableTexts;
+	bool UseMapTipsOnly = pMapINI->ReadBool(GameStrings::Basic, "UseMapTipsOnly", false);
+	INI_EX exMapINI(pMapINI);
+	LoadTips(exMapINI, GameStrings::Basic, &availableTexts);
+
+	if (!UseMapTipsOnly)
+	{
+		INI_EX exINI(pRulesINI);
+		LoadTips(exINI, GameStrings::General, &availableTexts);
+
+		if (SessionClass::Instance.GameMode != GameMode::Campaign)
+		{
+			int countryIdx = NodeNameType::Array[0]->Country;
+
+			if (countryIdx >= 0 && countryIdx < HouseTypeClass::Array.Count)
+			{
+				auto pCountryName = HouseTypeClass::Array.GetItem(countryIdx)->ID;
+				LoadTips(exINI, pCountryName, &availableTexts);
+			}
+		}
+	}
+
+	if (availableTexts.Count > 0)
+	{
+		srand((int)time(0));
+		pText = availableTexts.GetItem(rand() % availableTexts.Count).Text;
+	}
+	else
+		return 0;
+
+	// Calculate the rect.
+	int assumedTextHeight = 15;
+	int gapToBorder = 8;
+	int gapToAnotherLine = 5;
+	int TipBarWidth = pRulesINI->ReadInteger(GameStrings::General, "TipBarWidth", 700);
+	bool TipBarTwoLines = pRulesINI->ReadBool(GameStrings::General, "TipBarTwoLines", false);
+	int width = TipBarWidth;
+	int height = TipBarTwoLines ? (assumedTextHeight * 2 + gapToBorder * 2 + gapToAnotherLine) : (assumedTextHeight + gapToBorder * 2);
+	auto barRect = LoadProgressManager::Instance->LoadBarSHPRect;
+	int x = barRect.X + (barRect.Width - width) / 2;
+	int y = barRect.Y + barRect.Height - height - 5;
+	auto rect = RectangleStruct{ x, y, width, height };
+
+	// Draw background.
+	auto pSurface = LoadProgressManager::Instance->ProgressSurface;
+	pSurface->FillRect(&rect, COLOR_BLACK);
+	pSurface->DrawRect(&rect, COLOR_WHITE);
+
+	// Draw the text.
+	TextPrintType printType = TextPrintType::Center | TextPrintType::Point8;
+
+	if (TipBarTwoLines)
+	{
+		// Split text at first newline.
+		// Only support one or two lines.
+		const wchar_t* firstPart = pText;
+		const wchar_t* secondPart = nullptr;
+
+		if (const wchar_t* newline = wcschr(pText, L'\n')) {
+			// Create temporary buffer for first part
+			size_t firstLen = newline - pText;
+			wchar_t* firstBuffer = new wchar_t[firstLen + 1];
+			wcsncpy(firstBuffer, pText, firstLen);
+			firstBuffer[firstLen] = L'\0';
+
+			firstPart = firstBuffer;
+			secondPart = newline + 1;
+		}
+
+		if (secondPart)
+		{
+			auto location = Point2D{ rect.Width / 2, gapToBorder };
+			pSurface->DrawTextA(firstPart, &rect, &location, (COLORREF)COLOR_WHITE, (COLORREF)0, printType);
+			location = Point2D{ rect.Width / 2, gapToBorder + assumedTextHeight + gapToAnotherLine };
+			pSurface->DrawTextA(secondPart, &rect, &location, (COLORREF)COLOR_WHITE, (COLORREF)0, printType);
+		}
+		else
+		{
+			int gapToBorderOneLine = (height - assumedTextHeight) / 2;
+			auto location = Point2D{ rect.Width / 2, gapToBorderOneLine };
+			pSurface->DrawTextA(pText, &rect, &location, (COLORREF)COLOR_WHITE, (COLORREF)0, printType);
+		}
+	}
+	else
+	{
+		auto location = Point2D{ rect.Width / 2, gapToBorder };
+		pSurface->DrawTextA(pText, &rect, &location, (COLORREF)COLOR_WHITE, (COLORREF)0, printType);
+	}
+
+	return 0;
+}
 
 // TODO Self-made impl
 
