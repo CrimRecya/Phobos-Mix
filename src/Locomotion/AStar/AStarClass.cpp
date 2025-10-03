@@ -1651,6 +1651,39 @@ DEFINE_FUNCTION_JUMP(CALL, 0x429F8A, AStarClass::CalculateMoveCost);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A415, AStarClass::ProcessFinalPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A41E, AStarClass::OptimizeFinalPath);
 
+namespace FixFloodFillDiagonalFlagHelper
+{
+	bool IsDiagonal = false;
+}
+
+DEFINE_HOOK(0x5829C2, MapClass_FloodFillMap_CheckUpwardZoneIndex, 0x5)
+{
+	GET(LevelAndPassabilityStruct2*, pBasePathData, EBP);
+	GET(LevelAndPassabilityStruct2*, pCheckPathData, EAX);
+	FixFloodFillDiagonalFlagHelper::IsDiagonal = pBasePathData->word_0[3] != pCheckPathData->word_0[3];
+	return 0;
+}
+
+DEFINE_HOOK(0x582A30, MapClass_FloodFillMap_SetUpwardDiagonalFlag, 0x5)
+{
+	enum { SetDiagonalFlag = 0x582A39 };
+	return FixFloodFillDiagonalFlagHelper::IsDiagonal ? SetDiagonalFlag : 0;
+}
+
+DEFINE_HOOK(0x582C0C, MapClass_FloodFillMap_CheckDownwardZoneIndex, 0x5)
+{
+	GET(LevelAndPassabilityStruct2*, pBasePathData, EDX);
+	GET(LevelAndPassabilityStruct2*, pCheckPathData, EAX);
+	FixFloodFillDiagonalFlagHelper::IsDiagonal = pBasePathData->word_0[3] != pCheckPathData->word_0[3];
+	return 0;
+}
+
+DEFINE_HOOK(0x582C78, MapClass_FloodFillMap_SetDownwardDiagonalFlag, 0x5)
+{
+	enum { SetDiagonalFlag = 0x582C81 };
+	return FixFloodFillDiagonalFlagHelper::IsDiagonal ? SetDiagonalFlag : 0;
+}
+
 #pragma endregion
 
 #endif
