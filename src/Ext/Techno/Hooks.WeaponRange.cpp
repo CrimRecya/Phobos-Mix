@@ -71,8 +71,9 @@ DEFINE_HOOK(0x6F7248, TechnoClass_InRange_WeaponRange, 0x6)
 	else
 	{
 		range = WeaponTypeExt::GetRangeWithModifiers(pWeapon, pThis);
+		auto pInfantry = abstract_cast<InfantryClass*>(pThis);
 
-		if (const auto pInfantry = abstract_cast<InfantryClass*, true>(pThis))
+		if (pInfantry && range != -512)
 		{
 			const auto sequence = pInfantry->SequenceAnim;
 
