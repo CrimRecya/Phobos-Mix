@@ -812,37 +812,6 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				((AStarClass::Instance.OpenSetMarkers[1][level1SubzoneIndex] == searchID) ? 1 : 0), AStarClass::Instance.GCostArray[1][level1SubzoneIndex],
 				((AStarClass::Instance.OpenSetMarkers[2][level2SubzoneIndex] == searchID) ? 1 : 0), AStarClass::Instance.GCostArray[2][level2SubzoneIndex]);
 			updateLine();
-
-			for (int subzoneLevel = 2; subzoneLevel >= 0; --subzoneLevel)
-			{
-				const auto pSubzoneTracking = &MapClass::Instance.SubzoneTracking[subzoneLevel];
-
-				if (pSubzoneTracking->Count > 0)
-				{
-					const auto pSubzoneTrackingItems = pSubzoneTracking->Items;
-					const auto pSubzoneConnections = &pSubzoneTrackingItems[passabilityData2.word_0[subzoneLevel]].SubzoneConnections;
-					int subzoneTrackingConnectionsCount = pSubzoneConnections->Count;
-
-					if (subzoneTrackingConnectionsCount > 0)
-					{
-						auto pSubzoneTrackingConnectionsItem = pSubzoneConnections->Items;
-
-						do
-						{
-							const int checkSubzoneIndex = static_cast<int>(pSubzoneTrackingConnectionsItem->unknown_dword_0);
-							const bool unknownBool = pSubzoneTrackingConnectionsItem->unknown_byte_4;
-							drawText(COLOR_WHITE, "Level[%d]: To{%d}(%d)", subzoneLevel, checkSubzoneIndex, unknownBool);
-
-							++pSubzoneTrackingConnectionsItem;
-							--subzoneTrackingConnectionsCount;
-						}
-						while (subzoneTrackingConnectionsCount);
-					}
-				}
-
-				if (loc)
-					updateLine();
-			}
 		}
 
 		drawText(COLOR_WHITE, "OccupyHeights: %d", pCell->OccupyHeightsCoveringMe);
