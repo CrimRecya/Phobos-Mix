@@ -12,6 +12,7 @@
 
 #include <Ext/WarheadType/Body.h>
 #include <Utilities/TemplateDef.h>
+#include <Locomotion/AStar/AStarClass.h>
 
 // TacticalButtonsClass TacticalButtonsClass::Instance;
 
@@ -498,6 +499,36 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				}
 			}
 		}
+		else if (InputManagerClass::Instance->IsForceSelectKeyPressed())
+		{
+			const int baseIndex = reinterpret_cast<int(__thiscall*)(MapClass*, CellStruct*)>(0x56D3F0)(&MapClass::Instance, &centerCell);
+			const auto& baseData = MapClass::Instance.LevelAndPassabilityStruct2pointer_70[baseIndex];
+			centerCell += CellStruct { 7, 7 };
+
+			auto checkSameSubzoneIndex = [&baseData](CellClass* pCheckCell, int level) -> bool
+			{
+				const int pathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, CellStruct*)>(0x56D3F0)(&MapClass::Instance, &pCheckCell->MapCoords);
+				return baseData.word_0[level] == MapClass::Instance.LevelAndPassabilityStruct2pointer_70[pathIndex].word_0[level];
+			};
+
+			for (short checkX = centerCell.X - 14; checkX <= centerCell.X; ++checkX)
+			{
+				for (short checkY = centerCell.Y - 14; checkY <= centerCell.Y; ++checkY)
+				{
+					if (const auto pCheckCell = MapClass::Instance.TryGetCellAt(CellStruct { checkX, checkY }))
+					{
+						if (checkSameSubzoneIndex(pCheckCell, 0))
+							checkCells.emplace_back(pCheckCell, pCheckCell->Level);
+
+						if (checkSameSubzoneIndex(pCheckCell, 1))
+							checkCells.emplace_back(pCheckCell, pCheckCell->Level);
+
+						if (checkSameSubzoneIndex(pCheckCell, 2))
+							checkCells.emplace_back(pCheckCell, pCheckCell->Level);
+					}
+				}
+			}
+		}
 
 		if (const auto cellsSize = checkCells.size())
 		{
@@ -759,18 +790,61 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 		drawText(COLOR_WHITE, "TubeIndex: %d", pCell->TubeIndex);
 		drawText(COLOR_WHITE, "Passability: %d", static_cast<int>(pCell->Passability));
+		drawText(COLOR_WHITE, "BlockedNearby: %d", pCell->BlockedNeighbours);
 
 		{
 			const int pathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, CellStruct*)>(0x56D3F0)(&MapClass::Instance, &pCell->MapCoords);
 			const auto& passabilityData1 = MapClass::Instance.LevelAndPassability[pathIndex];
 			const auto& passabilityData2 = MapClass::Instance.LevelAndPassabilityStruct2pointer_70[pathIndex];
+			const int level0SubzoneIndex = static_cast<unsigned short>(passabilityData2.word_0[0]);
+			const int level1SubzoneIndex = static_cast<unsigned short>(passabilityData2.word_0[1]);
+			const int level2SubzoneIndex = static_cast<unsigned short>(passabilityData2.word_0[2]);
+			const int zoneIndex = passabilityData1.ZoneArrayIndex;
 
 			drawText(COLOR_WHITE, "PathData: %d", pathIndex);
-			drawText(COLOR_WHITE, "PathZoneIndex: %d", passabilityData1.ZoneArrayIndex);
-			drawText(COLOR_WHITE, "PathIndexes: %d,%d,%d", passabilityData2.word_0[0], passabilityData2.word_0[1], passabilityData2.word_0[2]);
+			drawText(COLOR_WHITE, "PathIndexes: {%d},{%d},{%d},{%d}", level0SubzoneIndex, level1SubzoneIndex, level2SubzoneIndex, zoneIndex);
+			updateLine();
+
+			const int searchID = AStarClass::Instance.SearchID;
+
+			drawText(COLOR_WHITE, "PathSearchCost: [%d]%.4f , [%d]%.4f , [%d]%.4f",
+				((AStarClass::Instance.OpenSetMarkers[0][level0SubzoneIndex] == searchID) ? 1 : 0), AStarClass::Instance.GCostArray[0][level0SubzoneIndex],
+				((AStarClass::Instance.OpenSetMarkers[1][level1SubzoneIndex] == searchID) ? 1 : 0), AStarClass::Instance.GCostArray[1][level1SubzoneIndex],
+				((AStarClass::Instance.OpenSetMarkers[2][level2SubzoneIndex] == searchID) ? 1 : 0), AStarClass::Instance.GCostArray[2][level2SubzoneIndex]);
+			updateLine();
+
+			for (int subzoneLevel = 2; subzoneLevel >= 0; --subzoneLevel)
+			{
+				const auto pSubzoneTracking = &MapClass::Instance.SubzoneTracking[subzoneLevel];
+
+				if (pSubzoneTracking->Count > 0)
+				{
+					const auto pSubzoneTrackingItems = pSubzoneTracking->Items;
+					const auto pSubzoneConnections = &pSubzoneTrackingItems[passabilityData2.word_0[subzoneLevel]].SubzoneConnections;
+					int subzoneTrackingConnectionsCount = pSubzoneConnections->Count;
+
+					if (subzoneTrackingConnectionsCount > 0)
+					{
+						auto pSubzoneTrackingConnectionsItem = pSubzoneConnections->Items;
+
+						do
+						{
+							const int checkSubzoneIndex = static_cast<int>(pSubzoneTrackingConnectionsItem->unknown_dword_0);
+							const bool unknownBool = pSubzoneTrackingConnectionsItem->unknown_byte_4;
+							drawText(COLOR_WHITE, "Level[%d]: To{%d}(%d)", subzoneLevel, checkSubzoneIndex, unknownBool);
+
+							++pSubzoneTrackingConnectionsItem;
+							--subzoneTrackingConnectionsCount;
+						}
+						while (subzoneTrackingConnectionsCount);
+					}
+				}
+
+				if (loc)
+					updateLine();
+			}
 		}
 
-		drawText(COLOR_WHITE, "BlockedNearby: %d", pCell->BlockedNeighbours);
 		drawText(COLOR_WHITE, "OccupyHeights: %d", pCell->OccupyHeightsCoveringMe);
 		drawText(COLOR_WHITE, "RadLevel: %.2f", pCell->RadLevel);
 
