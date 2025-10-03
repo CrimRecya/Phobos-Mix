@@ -840,13 +840,9 @@ PROCESS_NODE:
 				// 设置下一个要检查的节点
 				pCheckNode = pExtractedNode;
 
-				if (!pExtractedNode)
+				if (!pCheckNode)
 					return false;
 			}
-
-			// 确保找到有效路径
-			if (!pCheckNode)
-				return false;
 
 			auto pCheckedNode = pCheckNode;
 
