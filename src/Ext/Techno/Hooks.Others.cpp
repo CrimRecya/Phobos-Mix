@@ -1553,7 +1553,7 @@ DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
 
 static inline bool ExtraTargeting(TechnoClass* pThis, bool area = false)
 {
-	if (!RulesExt::Global()->ExtraTargeting || pThis->Spawned || pThis->SpawnOwner || !pThis->Owner->IsControlledByHuman())
+	if (!RulesExt::Global()->ExtraTargeting || pThis->Spawned || pThis->SpawnOwner || !pThis->Owner->IsControlledByHuman() || pThis->PlanningToken)
 		return false;
 
 	auto coord = (area && pThis->ArchiveTarget ? pThis->ArchiveTarget : pThis)->GetCoords();
