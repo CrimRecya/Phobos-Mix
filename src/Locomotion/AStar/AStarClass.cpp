@@ -637,7 +637,8 @@ bool AStarClass::FindHierarchicalPath(
 				return false;
 
 			// 检查区域索引是否为空
-			const bool noZoneIndices = this->ZoneIndices[level].Count == 0;
+			const auto pZoneIndices = &this->ZoneIndices[level];
+			const bool noZoneIndices = pZoneIndices->Count <= 0;
 
 			// 主搜索循环
 			while (true)
@@ -662,7 +663,7 @@ bool AStarClass::FindHierarchicalPath(
 					{
 						// 获取相邻节点信息
 						const int checkSubzoneIndex = static_cast<int>(pSubzoneTrackingConnectionsItem->unknown_dword_0);
-						const bool atZoneXEdge = pSubzoneTrackingConnectionsItem->unknown_byte_4;
+						const bool isDiagonalConnection = pSubzoneTrackingConnectionsItem->unknown_byte_4;
 						const auto pCheckSubzoneTracking = &pSubzoneTracking[checkSubzoneIndex];
 						const int checkSubzoneTrackingIndex = pCheckSubzoneTracking->unknown_word_18;
 						const auto checkSubzonePassability = static_cast<PassabilityType>(pCheckSubzoneTracking->unknown_dword_1C);
@@ -677,7 +678,7 @@ bool AStarClass::FindHierarchicalPath(
 						}
 
 						// 计算总代价，即通行性系数+父节点代价+威胁代价+补充代价
-						const float cost = static_cast<float>(AStarClass::PassabilityCoefficients[static_cast<int>(checkSubzonePassability)] + pCheckNode->Cost + threat + (atZoneXEdge ? 0.001f : 0.0f));
+						const float cost = static_cast<float>(AStarClass::PassabilityCoefficients[static_cast<int>(checkSubzonePassability)] + pCheckNode->Cost + threat + (isDiagonalConnection ? 0.001f : 0.0f));
 						const int searchID = this->SearchID;
 
 						/*
@@ -706,14 +707,8 @@ bool AStarClass::FindHierarchicalPath(
 								|| checkSubzonePassability == PassabilityType::Crushable) // ？？
 							&& MapClass::MovementAdjustArray[static_cast<int>(movementZone)][static_cast<int>(checkSubzonePassability)] == 1) // 允许该移动方式通行
 						{
-							// 计算连接索引
-							const unsigned int mixIndex = static_cast<unsigned short>(checkSubzoneIndex) < static_cast<unsigned short>(finderSubzoneIndex)
-								? static_cast<unsigned short>(finderSubzoneIndex) | (static_cast<unsigned short>(checkSubzoneIndex) << 16)
-								: static_cast<unsigned short>(checkSubzoneIndex) | (static_cast<unsigned short>(finderSubzoneIndex) << 16);
-							int zoneIndicesNewCount = this->ZoneIndices[level].Count - 1;
-
-							// 如果区域索引为空或者连接键不在区域索引中，则处理该节点
-							if (noZoneIndices || zoneIndicesNewCount < 0)
+							// 如果区域索引为空则处理该节点
+							if (noZoneIndices)
 							{
 PROCESS_NODE:
 								// 创建新节点
@@ -764,8 +759,14 @@ PROCESS_NODE:
 							}
 							else
 							{
+								// 计算连接索引
+								const unsigned int mixIndex = static_cast<unsigned short>(checkSubzoneIndex) < static_cast<unsigned short>(finderSubzoneIndex)
+									? static_cast<unsigned short>(finderSubzoneIndex) | (static_cast<unsigned short>(checkSubzoneIndex) << 16)
+									: static_cast<unsigned short>(checkSubzoneIndex) | (static_cast<unsigned short>(finderSubzoneIndex) << 16);
+								int zoneIndicesNewCount = pZoneIndices->Count - 1;
+
 								// 去重检查
-								auto pZoneIndex = &this->ZoneIndices[level].Items[zoneIndicesNewCount];
+								auto pZoneIndex = &pZoneIndices->Items[zoneIndicesNewCount];
 
 								while (*pZoneIndex != mixIndex)
 								{
