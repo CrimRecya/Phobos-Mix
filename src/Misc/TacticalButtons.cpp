@@ -807,10 +807,10 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 			const int searchID = AStarClass::Instance.SearchID;
 
-			drawText(COLOR_WHITE, "PathSearchCost: [%d]%.4f , [%d]%.4f , [%d]%.4f",
-				((AStarClass::Instance.OpenSetMarkers[0][level0SubzoneIndex] == searchID) ? 1 : 0), AStarClass::Instance.GCostArray[0][level0SubzoneIndex],
-				((AStarClass::Instance.OpenSetMarkers[1][level1SubzoneIndex] == searchID) ? 1 : 0), AStarClass::Instance.GCostArray[1][level1SubzoneIndex],
-				((AStarClass::Instance.OpenSetMarkers[2][level2SubzoneIndex] == searchID) ? 1 : 0), AStarClass::Instance.GCostArray[2][level2SubzoneIndex]);
+			drawText(COLOR_WHITE, "PathSearchCost: [%d,%d]%.4f , [%d,%d]%.4f , [%d,%d]%.4f",
+				((AStarClass::Instance.LevelVisitedMarkers[0][level0SubzoneIndex] == searchID) ? 1 : 0), ((AStarClass::Instance.OpenSetMarkers[0][level0SubzoneIndex] == searchID) ? 1 : 0), AStarClass::Instance.GCostArray[0][level0SubzoneIndex],
+				((AStarClass::Instance.LevelVisitedMarkers[1][level1SubzoneIndex] == searchID) ? 1 : 0), ((AStarClass::Instance.OpenSetMarkers[1][level1SubzoneIndex] == searchID) ? 1 : 0), AStarClass::Instance.GCostArray[1][level1SubzoneIndex],
+				((AStarClass::Instance.LevelVisitedMarkers[2][level2SubzoneIndex] == searchID) ? 1 : 0), ((AStarClass::Instance.OpenSetMarkers[2][level2SubzoneIndex] == searchID) ? 1 : 0), AStarClass::Instance.GCostArray[2][level2SubzoneIndex]);
 			updateLine();
 		}
 
