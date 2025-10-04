@@ -102,11 +102,11 @@ public:
 
 	struct HierarchicalNode
 	{
-		// 节点索引
-		int NodeIndex;
+		// 上个节点的缓存索引
+		int PreviousNodeIndex;
 
-		// 查找节点索引
-		int FinderIndex;
+		// 上个节点的子区域索引
+		int PreviousSubzoneIndex;
 
 		// 节点成本
 		float Cost;
