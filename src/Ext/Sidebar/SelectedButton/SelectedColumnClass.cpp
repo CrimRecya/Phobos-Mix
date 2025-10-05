@@ -395,13 +395,23 @@ void SelectedBottomClass::DrawInfo() const
 
 	location.X += 80;
 	{
-		const auto& timer = ScenarioClass::Instance->ElapsedTimer;
-		auto time = timer.TimeLeft;
+		auto second = 0;
 
-		if (timer.StartTime != -1)
-			time += SystemTimer::GetTime() - timer.StartTime;
+		if (RulesExt::Global()->SelectedIngameTimer)
+		{
+			second = Unsorted::CurrentFrame / 15;
+		}
+		else
+		{
+			const auto& timer = ScenarioClass::Instance->ElapsedTimer;
+			auto time = timer.TimeLeft;
 
-		const auto second = time / 60;
+			if (timer.StartTime != -1)
+				time += SystemTimer::GetTime() - timer.StartTime;
+
+			second = time / 60;
+		}
+
 		const auto minute = second / 60;
 
 		wchar_t buffer[0x20];

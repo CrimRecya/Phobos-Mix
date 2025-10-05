@@ -147,6 +147,7 @@ public:
 		PhobosPCXFile SelectedVehicleMissingPCX;
 		PhobosPCXFile SelectedAircraftMissingPCX;
 		PhobosPCXFile SelectedBuildingMissingPCX;
+		Valueable<bool> SelectedIngameTimer;
 		Valueable<int> CleanUpAirBarrier;
 		Valueable<bool> ExtendedScatterAction;
 		Valueable<bool> MergeBuildingDamage;
@@ -527,6 +528,7 @@ public:
 			, SelectedVehicleMissingPCX {}
 			, SelectedAircraftMissingPCX {}
 			, SelectedBuildingMissingPCX {}
+			, SelectedIngameTimer { false }
 			, CleanUpAirBarrier { 0 }
 			, ExtendedScatterAction { false }
 			, MergeBuildingDamage { false }
