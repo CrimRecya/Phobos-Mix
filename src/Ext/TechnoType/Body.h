@@ -601,6 +601,8 @@ public:
 
 		Nullable<bool> TurretResponse;
 
+		Valueable<bool> ExtraTargeting_Excluded;
+
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
 			, HealthBar_HidePips { false }
@@ -1151,6 +1153,8 @@ public:
 			, InfantryAutoDeploy {}
 
 			, TurretResponse {}
+
+			, ExtraTargeting_Excluded { false }
 		{ }
 
 		virtual ~ExtData() = default;
