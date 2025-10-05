@@ -1553,8 +1553,15 @@ DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
 
 static inline bool ExtraTargeting(TechnoClass* pThis, bool area = false)
 {
-	if (!RulesExt::Global()->ExtraTargeting || pThis->Spawned || pThis->SpawnOwner || !pThis->Owner->IsControlledByHuman() || pThis->PlanningToken || TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->ExtraTargeting_Excluded)
+	if (!RulesExt::Global()->ExtraTargeting
+		|| pThis->Spawned
+		|| pThis->SpawnOwner
+		|| !pThis->Owner->IsControlledByHuman()
+		|| pThis->PlanningToken
+		|| TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->ExtraTargeting_Excluded)
+	{
 		return false;
+	}
 
 	auto coord = (area && pThis->ArchiveTarget ? pThis->ArchiveTarget : pThis)->GetCoords();
 
@@ -2163,7 +2170,7 @@ DEFINE_HOOK(0x701DAE, TechnoClass_ReceiveDamage_Berzerk, 0x6)
 
 	if (!RulesExt::Global()->EnhancedBerzerk)
 		return 0;
-	
+
 	pThis->SetDestination(0, false);
 	pThis->QueueMission(Mission::Area_Guard, false);
 
