@@ -1345,6 +1345,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->InfantryAutoDeploy.Read(exINI, pSection, "InfantryAutoDeploy");
 
+	this->ExtraTargeting_Excluded.Read(exINI, pSection, "ExtraTargeting.Excluded");
+
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
 	this->Cloneable.Read(exINI, pSection, "Cloneable");
@@ -2219,6 +2221,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->InfantryAutoDeploy)
 
 		.Process(this->TurretResponse)
+
+		.Process(this->ExtraTargeting_Excluded)
 		;
 }
 

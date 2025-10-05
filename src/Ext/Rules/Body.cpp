@@ -208,6 +208,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->SelectedVehicleMissingPCX.Read(pINI, GameStrings::AudioVisual, "SelectedVehicleMissingPCX");
 	this->SelectedAircraftMissingPCX.Read(pINI, GameStrings::AudioVisual, "SelectedAircraftMissingPCX");
 	this->SelectedBuildingMissingPCX.Read(pINI, GameStrings::AudioVisual, "SelectedBuildingMissingPCX");
+	this->SelectedIngameTimer.Read(exINI, GameStrings::AudioVisual, "SelectedIngameTimer");
 
 	this->CleanUpAirBarrier.Read(exINI, GameStrings::General, "CleanUpAirBarrier");
 	this->ExtendedScatterAction.Read(exINI, GameStrings::General, "ExtendedScatterAction");
@@ -466,6 +467,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->InSequenceExtraRange.Read(exINI, GameStrings::CombatDamage, "InSequenceExtraRange");
 
+	this->EnhancedBerzerk.Read(exINI, GameStrings::CombatDamage, "EnhancedBerzerk");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -650,6 +653,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->SelectedVehicleMissingPCX)
 		.Process(this->SelectedAircraftMissingPCX)
 		.Process(this->SelectedBuildingMissingPCX)
+		.Process(this->SelectedIngameTimer)
 		.Process(this->CleanUpAirBarrier)
 		.Process(this->ExtendedScatterAction)
 		.Process(this->MergeBuildingDamage)
@@ -857,6 +861,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AdjacentWallDamage)
 		.Process(this->AISellCapturedBuilding)
 		.Process(this->InSequenceExtraRange)
+		.Process(this->EnhancedBerzerk)
 		;
 }
 

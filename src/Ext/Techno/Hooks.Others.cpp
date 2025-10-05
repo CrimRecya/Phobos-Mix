@@ -1553,7 +1553,7 @@ DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
 
 static inline bool ExtraTargeting(TechnoClass* pThis, bool area = false)
 {
-	if (!RulesExt::Global()->ExtraTargeting || pThis->Spawned || pThis->SpawnOwner || !pThis->Owner->IsControlledByHuman())
+	if (!RulesExt::Global()->ExtraTargeting || pThis->Spawned || pThis->SpawnOwner || !pThis->Owner->IsControlledByHuman() || pThis->PlanningToken || TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->ExtraTargeting_Excluded)
 		return false;
 
 	auto coord = (area && pThis->ArchiveTarget ? pThis->ArchiveTarget : pThis)->GetCoords();
@@ -1565,6 +1565,7 @@ static inline bool ExtraTargeting(TechnoClass* pThis, bool area = false)
 	return HasTarget;
 }
 
+// 按s时
 DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting_Idle, 0x7)
 {
 	enum { SkipGameCode = 0x4C765C };
@@ -1577,6 +1578,7 @@ DEFINE_HOOK(0x4C7655, EventClass_RespondToEvent_ExtraTargeting_Idle, 0x7)
 	return SkipGameCode;
 }
 
+// 步兵载具执行AttackMove的攻击任务且目标死亡时
 DEFINE_HOOK(0x4D4E72, FootClass_MissionAttack_ExtraTargeting, 0x6)
 {
 	enum { ApproachTarget = 0x4D4E64 };
@@ -1586,6 +1588,7 @@ DEFINE_HOOK(0x4D4E72, FootClass_MissionAttack_ExtraTargeting, 0x6)
 	return pThis->MegaMissionIsAttackMove() && ExtraTargeting(pThis) ? ApproachTarget : 0;
 }
 
+// 建筑开火中且目标死亡时
 DEFINE_HOOK(0x44AF90, BuildingClass_MissionAttack_ExtraTargeting, 0x5)
 {
 	enum { AttackTarget = 0x44AFED };
@@ -1595,6 +1598,7 @@ DEFINE_HOOK(0x44AF90, BuildingClass_MissionAttack_ExtraTargeting, 0x5)
 	return ExtraTargeting(pThis) ? AttackTarget : 0;
 }
 
+// 飞机执行AttackMove的攻击任务且目标死亡时
 DEFINE_HOOK(0x417FE0, AircraftClass_MissionAttack_ExtraTargeting, 0x6)
 {
 	GET(AircraftClass*, pThis, ECX);
@@ -1605,6 +1609,7 @@ DEFINE_HOOK(0x417FE0, AircraftClass_MissionAttack_ExtraTargeting, 0x6)
 	return 0;
 }
 
+// 具有OpportunityFire的单位在接收到攻击和区域警戒之外的鼠标指令时
 DEFINE_HOOK(0x4C7462, EventClass_RespondToEvent_ExtraTargeting_MegaMission, 0x5)
 {
 	enum { SkipGameCode = 0x4C74C0, SkipSetTarget = 0x4C746D };
@@ -1708,6 +1713,7 @@ DEFINE_HOOK(0x709957, TechnoClass_TargetAndEstimateDamage_SetTarget, 0x6)
 	return RulesExt::Global()->VHPScan_Enhanced ? SkipSetTargetAndEstimateHealth : SkipSetTarget;
 }
 
+// 目标死亡时
 DEFINE_HOOK(0x7079D1, TechnoClass_PointerExpired_TargetExpired, 0x6)
 {
 	GET(TechnoClass*, pThis, ESI);
@@ -1718,6 +1724,7 @@ DEFINE_HOOK(0x7079D1, TechnoClass_PointerExpired_TargetExpired, 0x6)
 	return 0;
 }
 
+// 受到伤害时
 DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_DoRetaliate, 0x7)
 {
 	enum { SkipGameCode = 0x702B47 };
@@ -1754,6 +1761,7 @@ DEFINE_HOOK(0x702B31, TechnoClass_ReceiveDamage_DoRetaliate, 0x7)
 
 #pragma region VHPScan
 
+// 具有VHPScan=Strong的单位目标死亡时
 static inline void CheckVHPScanAndRetarget(TechnoClass* pThis)
 {
 	if (!RulesExt::Global()->VHPScan_Enhanced)
@@ -2141,6 +2149,25 @@ DEFINE_HOOK(0x68758D, INIClass_ReadScenario_AfterLoadProgressMgrDraw, 0x5)
 	}
 
 	return 0;
+}
+
+#pragma endregion
+
+#pragma region BerzerkBehavior
+
+DEFINE_HOOK(0x701DAE, TechnoClass_ReceiveDamage_Berzerk, 0x6)
+{
+	enum { SkipQueueMission = 0x701DBA };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	if (!RulesExt::Global()->EnhancedBerzerk)
+		return 0;
+	
+	pThis->SetDestination(0, false);
+	pThis->QueueMission(Mission::Area_Guard, false);
+
+	return SkipQueueMission;
 }
 
 #pragma endregion

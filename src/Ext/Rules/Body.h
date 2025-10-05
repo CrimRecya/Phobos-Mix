@@ -147,6 +147,7 @@ public:
 		PhobosPCXFile SelectedVehicleMissingPCX;
 		PhobosPCXFile SelectedAircraftMissingPCX;
 		PhobosPCXFile SelectedBuildingMissingPCX;
+		Valueable<bool> SelectedIngameTimer;
 		Valueable<int> CleanUpAirBarrier;
 		Valueable<bool> ExtendedScatterAction;
 		Valueable<bool> MergeBuildingDamage;
@@ -415,6 +416,8 @@ public:
 
 		Valueable<Leptons> InSequenceExtraRange;
 
+		Valueable<bool> EnhancedBerzerk;
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, HarvesterDumpAmount { 0.0f }
@@ -527,6 +530,7 @@ public:
 			, SelectedVehicleMissingPCX {}
 			, SelectedAircraftMissingPCX {}
 			, SelectedBuildingMissingPCX {}
+			, SelectedIngameTimer { false }
 			, CleanUpAirBarrier { 0 }
 			, ExtendedScatterAction { false }
 			, MergeBuildingDamage { false }
@@ -763,6 +767,8 @@ public:
 			, AISellCapturedBuilding { true }
 
 			, InSequenceExtraRange { Leptons(0) }
+
+			, EnhancedBerzerk { false }
 		{ }
 
 		virtual ~ExtData() = default;
