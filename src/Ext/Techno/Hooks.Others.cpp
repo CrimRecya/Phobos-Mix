@@ -2153,6 +2153,25 @@ DEFINE_HOOK(0x68758D, INIClass_ReadScenario_AfterLoadProgressMgrDraw, 0x5)
 
 #pragma endregion
 
+#pragma region BerzerkBehavior
+
+DEFINE_HOOK(0x701DAE, TechnoClass_ReceiveDamage_Berzerk, 0x6)
+{
+	enum { SkipQueueMission = 0x701DBA };
+
+	GET(TechnoClass*, pThis, ESI);
+
+	if (!RulesExt::Global()->EnhancedBerzerk)
+		return 0;
+	
+	pThis->SetDestination(0, false);
+	pThis->QueueMission(Mission::Area_Guard, false);
+
+	return SkipQueueMission;
+}
+
+#pragma endregion
+
 // TODO Self-made impl
 
 
