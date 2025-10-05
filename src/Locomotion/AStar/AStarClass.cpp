@@ -490,7 +490,7 @@ bool AStarClass::FindHierarchicalPath(
 	修复思路：
 		在新增队列节点时，判断节点是否和上一节点是在同一块内，如果处在同一块内，则节点代价不累计，并在队列中
 		查找相同节点是否已经被记录过，如果已经被记录过，则在避免构成路径循环的基础上，选择节点数更多的路径来
-		标记，以配合常规寻路找到最优路径（该做法目前验证为相当消耗分层寻路节点缓存，且效果不佳）
+		标记，以配合常规寻路找到最优路径
 	*/
 	// 可跨区域移动的单位需要更全面的查找
 	if (movementZone == MovementZone::Amphibious
@@ -613,18 +613,13 @@ bool AStarClass::FindHierarchicalPath(
 						const auto pCheckSubzoneTracking = &pSubzoneTracking[checkSubzoneIndex];
 						const int checkSubzoneSuperiorIndex = pCheckSubzoneTracking->unknown_word_18;
 						const auto checkSubzonePassability = static_cast<PassabilityType>(pCheckSubzoneTracking->unknown_dword_1C);
-						int threat = 0;
-
-						// 计算威胁代价
-						if (calculateThreat)
-						{
-							const int threatPosedEstimates = reinterpret_cast<int(__thiscall*)(MapClass*, HouseClass*, int, int, int)>
-								(0x585F40)(&MapClass::Instance, pOwner, level, finderSubzoneIndex, checkSubzoneIndex); // GetThreatPosedEstimates
-							threat = static_cast<int>(threatPosedEstimates * threatAvoidanceCoefficient);
-						}
 
 						// 计算总代价，即通行性系数+父节点代价+威胁代价+补充代价
-						const float cost = static_cast<float>(AStarClass::PassabilityCoefficients[static_cast<int>(checkSubzonePassability)] + pFinderNode->Cost + threat + (isDiagonalConnection ? 0.001f : 0.0f));
+						const float cost = static_cast<float>(AStarClass::PassabilityCoefficients[static_cast<int>(checkSubzonePassability)]
+								+ pFinderNode->Cost
+								+ (!calculateThreat ? 0 : static_cast<int>(reinterpret_cast<int(__thiscall*)(MapClass*, HouseClass*, int, int, int)>
+									(0x585F40)(&MapClass::Instance, pOwner, level, finderSubzoneIndex, checkSubzoneIndex) * threatAvoidanceCoefficient))
+								+ (isDiagonalConnection ? 0.001f : 0.0f));
 
 						const int searchID = this->SearchID;
 
@@ -640,6 +635,10 @@ bool AStarClass::FindHierarchicalPath(
 							if (noZoneIndices)
 							{
 PROCESS_NODE:
+								// 缓存容量不足则搜索失败
+								if (bufferIndex >= 10000)
+									return false;
+
 								// 创建新节点
 								const auto pHierarchyBuffer = this->HierarchyBuffer;
 								const auto pHierarchicalNode = &pHierarchyBuffer->Nodes[bufferIndex++];
@@ -925,15 +924,6 @@ bool AStarClass::FindHierarchicalPath_Comprehensive(
 						const auto pCheckSubzoneTracking = &pSubzoneTracking[checkSubzoneIndex];
 						const int checkSubzoneSuperiorIndex = pCheckSubzoneTracking->unknown_word_18;
 						const auto checkSubzonePassability = static_cast<PassabilityType>(pCheckSubzoneTracking->unknown_dword_1C);
-						int threat = 0;
-
-						// 计算威胁代价
-						if (calculateThreat)
-						{
-							const int threatPosedEstimates = reinterpret_cast<int(__thiscall*)(MapClass*, HouseClass*, int, int, int)>
-								(0x585F40)(&MapClass::Instance, pOwner, level, finderSubzoneIndex, checkSubzoneIndex); // GetThreatPosedEstimates
-							threat = static_cast<int>(threatPosedEstimates * threatAvoidanceCoefficient);
-						}
 
 						// 如果相邻的子区域处在相同区块内，即只是因为地形类型不同，则不计算节点代价
 						bool noCost = false;
@@ -1000,83 +990,30 @@ bool AStarClass::FindHierarchicalPath_Comprehensive(
 						}
 
 						// 计算总代价，即通行性系数+父节点代价+威胁代价+补充代价
-						const float cost = static_cast<float>(noCost ? pFinderNode->Cost
-							: (AStarClass::PassabilityCoefficients[static_cast<int>(checkSubzonePassability)] + pFinderNode->Cost + threat + (isDiagonalConnection ? 0.001f : 0.0f)));
+						const float cost = static_cast<float>(noCost
+							? pFinderNode->Cost
+							: (AStarClass::PassabilityCoefficients[static_cast<int>(checkSubzonePassability)]
+								+ pFinderNode->Cost
+								+ (!calculateThreat ? 0 : static_cast<int>(reinterpret_cast<int(__thiscall*)(MapClass*, HouseClass*, int, int, int)>
+									(0x585F40)(&MapClass::Instance, pOwner, level, finderSubzoneIndex, checkSubzoneIndex) * threatAvoidanceCoefficient))
+								+ (isDiagonalConnection ? 0.001f : 0.0f)));
 
 						const int searchID = this->SearchID;
-						const bool searched = pOpenSetMarkers[checkSubzoneIndex] == searchID;
 
 						// 检查是否应该探索该相邻节点
-						if ((!searched // 不在开放集中
-								|| pGCostArray[checkSubzoneIndex] >= cost) // 成本低于记录值
+						if ((pOpenSetMarkers[checkSubzoneIndex] != searchID // 不在开放集中
+								|| pGCostArray[checkSubzoneIndex] > cost) // 成本低于记录值
 							&& (isMaxLevel // 是最高层级
 								|| pSuperiorLevelVisitedMarkers[checkSubzoneSuperiorIndex] == searchID // 在上一层级已访问
 								|| checkSubzonePassability == PassabilityType::Crushable) // ？？
 							&& MapClass::MovementAdjustArray[static_cast<int>(movementZone)][static_cast<int>(checkSubzonePassability)] == 1) // 允许该移动方式通行
 						{
-							do
+							// 如果区域索引为空则处理该节点
+							if (noZoneIndices)
 							{
-								if (searched && std::abs(pGCostArray[checkSubzoneIndex] - cost) < 1e-6f)
-								{
-									// 已经搜索过，而且代价相同，则选择节点更多的记录
-									const auto pHierarchyBuffer = this->HierarchyBuffer;
-
-									// 检查路径是否会产生循环
-									if (pFinderNode->PreviousNodeIndex != -1)
-									{
-										auto pSearchNode = &pHierarchyBuffer->Nodes[pFinderNode->PreviousNodeIndex];
-
-										do
-										{
-											if (std::abs(pSearchNode->Cost - cost) >= 1e-6f)
-												goto TRY_ADD_NODE;
-											else if (pSearchNode->SubzoneIndex == checkSubzoneIndex)
-												break;
-
-											pSearchNode = &pHierarchyBuffer->Nodes[pSearchNode->PreviousNodeIndex];
-
-											if (pSearchNode->PreviousNodeIndex != -1)
-												continue;
-											else if (pSearchNode->SubzoneIndex == checkSubzoneIndex)
-												break;
-
-											goto TRY_ADD_NODE;
-										}
-										while (true);
-									}
-
-									break;
-								}
-
-TRY_ADD_NODE:
-								if (!noZoneIndices)
-								{
-									// 计算连接索引
-									const unsigned int mixIndex = static_cast<unsigned short>(checkSubzoneIndex) < static_cast<unsigned short>(finderSubzoneIndex)
-										? static_cast<unsigned short>(finderSubzoneIndex) | (static_cast<unsigned short>(checkSubzoneIndex) << 16)
-										: static_cast<unsigned short>(checkSubzoneIndex) | (static_cast<unsigned short>(finderSubzoneIndex) << 16);
-									int zoneIndicesNewCount = pZoneIndices->Count - 1;
-
-									// 去重检查
-									auto pZoneIndex = &pZoneIndices->Items[zoneIndicesNewCount];
-
-									while (*pZoneIndex != mixIndex)
-									{
-										--zoneIndicesNewCount;
-										--pZoneIndex;
-
-										// 不在区域索引中，处理该节点
-										if (zoneIndicesNewCount < 0)
-											goto PROCESS_NODE;
-									}
-
-									// 如果在区域索引中找到，跳过该节点
-									break;
-								}
-
 PROCESS_NODE:
 								// 缓存容量不足则搜索失败
-								if (bufferIndex == 10000)
+								if (bufferIndex >= 10000)
 									return false;
 
 								// 创建新节点
@@ -1100,7 +1037,7 @@ PROCESS_NODE:
 									{
 										const auto pParentNode = pQueueNodes[harfNewCount];
 
-										if (pParentNode->Cost < cost || (pParentNode->Cost == cost && pParentNode->Count >= pHierarchicalNode->Count))
+										if (pParentNode->Cost <= cost)
 											break;
 
 										pQueueNodes[newCount] = pParentNode;
@@ -1122,7 +1059,29 @@ PROCESS_NODE:
 								pOpenSetMarkers[checkSubzoneIndex] = this->SearchID;
 								pGCostArray[checkSubzoneIndex] = cost;
 							}
-							while (false);
+							else
+							{
+								// 计算连接索引
+								const unsigned int mixIndex = static_cast<unsigned short>(checkSubzoneIndex) < static_cast<unsigned short>(finderSubzoneIndex)
+									? static_cast<unsigned short>(finderSubzoneIndex) | (static_cast<unsigned short>(checkSubzoneIndex) << 16)
+									: static_cast<unsigned short>(checkSubzoneIndex) | (static_cast<unsigned short>(finderSubzoneIndex) << 16);
+								int zoneIndicesNewCount = pZoneIndices->Count - 1;
+
+								// 去重检查
+								auto pZoneIndex = &pZoneIndices->Items[zoneIndicesNewCount];
+
+								while (*pZoneIndex != mixIndex)
+								{
+									--zoneIndicesNewCount;
+									--pZoneIndex;
+
+									// 不在区域索引中，处理该节点
+									if (zoneIndicesNewCount < 0)
+										goto PROCESS_NODE;
+								}
+
+								// 如果在区域索引中找到，跳过该节点
+							}
 						}
 
 						// 处理下一个相邻节点，直到处理完所有相邻节点
@@ -1149,46 +1108,18 @@ PROCESS_NODE:
 
 				// 堆下沉
 				int heapIndex = 1;
-				int childIndex = 2;
-
-				if (newCount < 2)
-				{
-					childIndex = 1;
-				}
-				else
-				{
-					const auto pQueueNode1 = pQueueNodes[1];
-					const auto pQueueNode2 = pQueueNodes[2];
-
-					if (pQueueNode1->Cost < pQueueNode2->Cost
-						|| (pQueueNode1->Cost == pQueueNode2->Cost && pQueueNode1->Count >= pQueueNode2->Count))
-					{
-						childIndex = 1;
-					}
-				}
+				int childIndex = (newCount < 2 || pQueueNodes[1]->Cost <= pQueueNodes[2]->Cost) ? 1 : 2;
 
 				do
 				{
-					if (newCount < 3)
+					if (newCount < 3 || pQueueNodes[childIndex]->Cost <= pQueueNodes[3]->Cost)
 					{
 						if (childIndex == 1)
 							break;
 					}
 					else
 					{
-						const auto pQueueNodeC = pQueueNodes[childIndex];
-						const auto pQueueNode3 = pQueueNodes[3];
-
-						if (pQueueNodeC->Cost < pQueueNode3->Cost
-							|| (pQueueNodeC->Cost == pQueueNode3->Cost && pQueueNodeC->Count >= pQueueNode3->Count))
-						{
-							if (childIndex == 1)
-								break;
-						}
-						else
-						{
-							childIndex = 3;
-						}
+						childIndex = 3;
 					}
 
 					do
@@ -1198,29 +1129,11 @@ PROCESS_NODE:
 						const int leftChildIndex = 2 * childIndex;
 						const int rightChildIndex = leftChildIndex + 1;
 
-						if (leftChildIndex <= newCount)
-						{
-							const auto pQueueNodeC = pQueueNodes[childIndex];
-							const auto pQueueNodeL = pQueueNodes[leftChildIndex];
+						if (leftChildIndex <= newCount && pQueueNodes[childIndex]->Cost > pQueueNodes[leftChildIndex]->Cost)
+							childIndex = leftChildIndex;
 
-							if (pQueueNodeC->Cost > pQueueNodeL->Cost
-								|| (pQueueNodeC->Cost == pQueueNodeL->Cost && pQueueNodeC->Count < pQueueNodeL->Count))
-							{
-								childIndex = leftChildIndex;
-							}
-						}
-
-						if (rightChildIndex <= newCount)
-						{
-							const auto pQueueNodeC = pQueueNodes[childIndex];
-							const auto pQueueNodeR = pQueueNodes[rightChildIndex];
-
-							if (pQueueNodeC->Cost > pQueueNodeR->Cost
-								|| (pQueueNodeC->Cost == pQueueNodeR->Cost && pQueueNodeC->Count < pQueueNodeR->Count))
-							{
-								childIndex = rightChildIndex;
-							}
-						}
+						if (rightChildIndex <= newCount && pQueueNodes[childIndex]->Cost > pQueueNodes[rightChildIndex]->Cost)
+							childIndex = rightChildIndex;
 					}
 					while (childIndex != heapIndex);
 				}

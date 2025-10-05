@@ -89,12 +89,6 @@ public:
 
 		// 节点计数
 		int NodeCount;
-
-		// 用于堆排序的比较函数
-		bool operator<(const PathQueueNode& another) const
-		{
-			return TotalCost < another.TotalCost;
-		}
 	};
 
 	struct PathQueueNodeBuffer
@@ -119,18 +113,6 @@ public:
 
 		// 计数
 		int Count;
-
-		// 用于堆排序的比较函数
-		bool operator<(const HierarchicalNode& another) const
-		{
-			if (Cost < another.Cost)
-				return true;
-
-			if (Cost > another.Cost)
-				return false;
-
-			return Count > another.Count;
-		}
 	};
 
 	struct HierarchicalNodeBuffer
@@ -239,13 +221,13 @@ public:
 		const FootClass* const pFoot
 	); // JMP_THIS(0x42C290)
 
-	// 新增可跨区域移动类型分层快速查找
+	// 可跨区域移动类型分层快速查找
 	bool FindHierarchicalPath_Comprehensive(
 		const CellStruct* const pStart,
 		const CellStruct* const pEnd,
 		const MovementZone movementZone,
 		const FootClass* const pFoot
-	);
+	); // 新增函数
 
 	// 辅助函数
 
