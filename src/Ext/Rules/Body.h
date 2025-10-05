@@ -415,6 +415,8 @@ public:
 
 		Valueable<Leptons> InSequenceExtraRange;
 
+		Valueable<bool> EnhancedBerzerk;
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, HarvesterDumpAmount { 0.0f }
@@ -763,6 +765,8 @@ public:
 			, AISellCapturedBuilding { true }
 
 			, InSequenceExtraRange { Leptons(0) }
+
+			, EnhancedBerzerk { false }
 		{ }
 
 		virtual ~ExtData() = default;
