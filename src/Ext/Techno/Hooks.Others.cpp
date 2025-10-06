@@ -2179,6 +2179,34 @@ DEFINE_HOOK(0x701DAE, TechnoClass_ReceiveDamage_Berzerk, 0x6)
 
 #pragma endregion
 
+#pragma region AITargetingAirThroughATC
+
+DEFINE_HOOK(0x6F9C48, TechnoClass_SelectAutoTarget_FixAirSearching1, 0x5)
+{
+	if (!RulesExt::Global()->AITargetingAirThroughATC)
+		return 0;
+	R->EAX(AircraftTrackerClass::Instance.CurrentVector.Count);
+	return R->Origin() + 0x5;
+}
+
+DEFINE_HOOK(0x6F9B8D, TechnoClass_SelectAutoTarget_FixAirSearching2, 0x6)
+{
+	if (!RulesExt::Global()->AITargetingAirThroughATC)
+		return 0;
+	R->EAX(AircraftTrackerClass::Instance.CurrentVector.Items);
+	return R->Origin() + 0x6;
+}
+
+DEFINE_HOOK(0x6F9B7E, TechnoClass_SelectAutoTarget_FixAirSearching3, 0x5)
+{
+	if (!RulesExt::Global()->AITargetingAirThroughATC)
+		return 0;
+	R->EAX(AircraftTrackerClass::Instance.CurrentVector.Count);
+	return R->Origin() + 0x5;
+}
+
+#pragma endregion
+
 // TODO Self-made impl
 
 
