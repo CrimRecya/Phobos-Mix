@@ -2185,23 +2185,34 @@ DEFINE_HOOK(0x6F9C48, TechnoClass_SelectAutoTarget_FixAirSearching1, 0x5)
 {
 	if (!RulesExt::Global()->AITargetingAirThroughATC)
 		return 0;
-	R->EAX(AircraftTrackerClass::Instance.CurrentVector.Count);
-	return R->Origin() + 0x5;
+
+	return 0x6F9B8D;
 }
 
 DEFINE_HOOK(0x6F9B8D, TechnoClass_SelectAutoTarget_FixAirSearching2, 0x6)
 {
 	if (!RulesExt::Global()->AITargetingAirThroughATC)
 		return 0;
-	R->EAX(AircraftTrackerClass::Instance.CurrentVector.Items);
-	return R->Origin() + 0x6;
+
+	if (auto pTechno = AircraftTrackerClass::Instance.Get())
+	{
+		R->EDI(pTechno);
+		GET(TechnoClass*, pThis, ESI);
+		R->ECX(pThis->Owner);
+		return 0x6F9B9C;
+	}
+
+	return 0x6F9C56;
 }
 
 DEFINE_HOOK(0x6F9B7E, TechnoClass_SelectAutoTarget_FixAirSearching3, 0x5)
 {
 	if (!RulesExt::Global()->AITargetingAirThroughATC)
 		return 0;
-	R->EAX(AircraftTrackerClass::Instance.CurrentVector.Count);
+
+	GET(TechnoClass*, pThis, ESI);
+	AircraftTrackerClass::Instance.FillCurrentVector(pThis->GetCell(), 256);
+	R->EAX(114514);
 	return R->Origin() + 0x5;
 }
 
