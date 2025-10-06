@@ -349,8 +349,14 @@ void TechnoExt::ScatterPathCellContent(FootClass* pThis, CellClass* pCell)
 				continue;
 		}
 
-		if (pFoot->WhatAmI() == AbstractType::Unit && ((pFoot->Location.X & 0xFF) != 128 || (pFoot->Location.Y & 0xFF) != 128))
-			continue;
+		if (pFoot->WhatAmI() == AbstractType::Unit)
+		{
+			if ((pFoot->Location.X & 0xFF) != 128 || (pFoot->Location.Y & 0xFF) != 128)
+				continue;
+
+			if (!pFoot->GetTechnoType()->Turret && pFoot->Target && !pFoot->Destination)
+				continue;
+		}
 
 		if (pFoot->NavQueue.Count <= 0 && pFoot->CurrentMission == Mission::Move)
 		{
