@@ -2181,39 +2181,29 @@ DEFINE_HOOK(0x701DAE, TechnoClass_ReceiveDamage_Berzerk, 0x6)
 
 #pragma region AITargetingAirThroughATC
 
-DEFINE_HOOK(0x6F9C48, TechnoClass_SelectAutoTarget_FixAirSearching1, 0x5)
+DEFINE_HOOK(0x6F9B7E, TechnoClass_SelectAutoTarget_FixAirSearching1, 0x5)
 {
-	if (!RulesExt::Global()->AITargetingAirThroughATC)
-		return 0;
-
-	return 0x6F9B8D;
+	return RulesExt::Global()->AITargetingAirThroughATC ? 0x6F9C56 : 0;
 }
 
-DEFINE_HOOK(0x6F9B8D, TechnoClass_SelectAutoTarget_FixAirSearching2, 0x6)
+DEFINE_HOOK(0x6F9D13, TechnoClass_SelectAutoTarget_FixAirSearching2, 0x7)
 {
+	enum { Ok = 0x6F9D13, NotOK = 0x6F9D93 };
+
 	if (!RulesExt::Global()->AITargetingAirThroughATC)
 		return 0;
 
-	if (auto pTechno = AircraftTrackerClass::Instance.Get())
-	{
-		R->EDI(pTechno);
-		GET(TechnoClass*, pThis, ESI);
-		R->ECX(pThis->Owner);
-		return 0x6F9B9C;
-	}
+	GET_STACK(int, canTargetRtti, STACK_OFFSET(0x6C, -0x58));
+	GET(TechnoClass*, pTarget, EDI);
 
-	return 0x6F9C56;
-}
+	bool canTarget = false;
 
-DEFINE_HOOK(0x6F9B7E, TechnoClass_SelectAutoTarget_FixAirSearching3, 0x5)
-{
-	if (!RulesExt::Global()->AITargetingAirThroughATC)
-		return 0;
+	if ((canTargetRtti & 4) != 0)
+		canTarget = pTarget->LastLayer != Layer::Underground;
+	else
+		canTarget = pTarget->LastLayer == Layer::Ground;
 
-	GET(TechnoClass*, pThis, ESI);
-	AircraftTrackerClass::Instance.FillCurrentVector(pThis->GetCell(), 256);
-	R->EAX(114514);
-	return R->Origin() + 0x5;
+	return canTarget ? Ok : NotOK;
 }
 
 #pragma endregion
