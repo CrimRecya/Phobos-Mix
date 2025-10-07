@@ -418,7 +418,7 @@ public:
 
 		Valueable<bool> EnhancedBerzerk;
 
-		Valueable<bool> AITargetingAirThroughATC;
+		Valueable<bool> AIAirTargetingFix;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -772,7 +772,7 @@ public:
 
 			, EnhancedBerzerk { false }
 
-			, AITargetingAirThroughATC { false }
+			, AIAirTargetingFix { false }
 		{ }
 
 		virtual ~ExtData() = default;

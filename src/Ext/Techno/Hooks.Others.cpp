@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
@@ -2179,18 +2179,18 @@ DEFINE_HOOK(0x701DAE, TechnoClass_ReceiveDamage_Berzerk, 0x6)
 
 #pragma endregion
 
-#pragma region AITargetingAirThroughATC
+#pragma region AIAirTargetingFix
 
-DEFINE_HOOK(0x6F9B7E, TechnoClass_SelectAutoTarget_FixAirSearching1, 0x5)
+DEFINE_HOOK(0x6F9B7E, TechnoClass_SelectAutoTarget_AIAirTargetingFix1, 0x5)
 {
-	return RulesExt::Global()->AITargetingAirThroughATC ? 0x6F9C56 : 0;
+	return RulesExt::Global()->AIAirTargetingFix ? 0x6F9C56 : 0;
 }
 
-DEFINE_HOOK(0x6F9D13, TechnoClass_SelectAutoTarget_FixAirSearching2, 0x7)
+DEFINE_HOOK(0x6F9D13, TechnoClass_SelectAutoTarget_AIAirTargetingFix2, 0x7)
 {
-	enum { Ok = 0x6F9D13, NotOK = 0x6F9D93 };
+	enum { Ok = 0x6F9D1C, NotOK = 0x6F9D93 };
 
-	if (!RulesExt::Global()->AITargetingAirThroughATC)
+	if (!RulesExt::Global()->AIAirTargetingFix)
 		return 0;
 
 	GET_STACK(int, canTargetRtti, STACK_OFFSET(0x6C, -0x58));
@@ -2204,6 +2204,16 @@ DEFINE_HOOK(0x6F9D13, TechnoClass_SelectAutoTarget_FixAirSearching2, 0x7)
 		canTarget = pTarget->LastLayer == Layer::Ground;
 
 	return canTarget ? Ok : NotOK;
+}
+
+DEFINE_HOOK(0x6F9D93, TEST, 0x5)
+{
+	GET(int, nIdx, EBX);
+	GET_STACK(TechnoClass*, pTarget, STACK_OFFSET(0x6C, -0x4C));
+
+	if (nIdx == TechnoClass::Array.Count - 1 && pTarget && pTarget->IsInAir())
+		Debug::LogAndMessage("Find target %s\n", pTarget->GetTechnoType()->ID);
+	return 0;
 }
 
 #pragma endregion
