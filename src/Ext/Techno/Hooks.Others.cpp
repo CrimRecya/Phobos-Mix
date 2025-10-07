@@ -2206,16 +2206,6 @@ DEFINE_HOOK(0x6F9D13, TechnoClass_SelectAutoTarget_AIAirTargetingFix2, 0x7)
 	return canTarget ? Ok : NotOK;
 }
 
-DEFINE_HOOK(0x6F9D93, TEST, 0x5)
-{
-	GET(int, nIdx, EBX);
-	GET_STACK(TechnoClass*, pTarget, STACK_OFFSET(0x6C, -0x4C));
-
-	if (nIdx == TechnoClass::Array.Count - 1 && pTarget && pTarget->IsInAir())
-		Debug::LogAndMessage("Find target %s\n", pTarget->GetTechnoType()->ID);
-	return 0;
-}
-
 #pragma endregion
 
 // TODO Self-made impl
