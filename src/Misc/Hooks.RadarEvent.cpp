@@ -11,7 +11,6 @@ DEFINE_HOOK(0x65FC6E, RadarEventClass_CTOR_SkipSetRadarEventCell, 0x6)
 
 	switch (pThis->Type)
 	{
-	case RadarEventType(-1):
 	case RadarEventType::UnitProduced:
 	case RadarEventType::UnitRepaired:
 	case RadarEventType::BuildingInfiltrated:
