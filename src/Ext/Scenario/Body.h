@@ -54,9 +54,6 @@ public:
 
 		std::set<int> Smudges;
 
-		DynamicVectorClass<TechnoClass*> UndergroundTracker;
-		DynamicVectorClass<TechnoClass*> SpecialTracker;
-
 		std::vector<std::wstring> RecordMessages;
 
 		PhobosFixedString<64u> DefaultLS640BkgdName;
@@ -87,8 +84,6 @@ public:
 			, BaseNormalTechnos {}
 			, OwnedUniqueTechnos {}
 			, Smudges {}
-			, UndergroundTracker {}
-			, SpecialTracker {}
 			, RecordMessages {}
 			, DefaultLS640BkgdName {}
 			, DefaultLS800BkgdName {}

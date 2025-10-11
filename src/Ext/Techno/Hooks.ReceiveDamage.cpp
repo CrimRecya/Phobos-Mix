@@ -480,24 +480,25 @@ DEFINE_HOOK(0x701E18, TechnoClass_ReceiveDamage_ReflectDamage, 0x7)
 
 	return 0;
 }
+
 DEFINE_HOOK(0x5F547E, ObjectClass_ReceiveDamage_FlashDuration, 0x6)
 {
 	enum { SkipGameCode = 0x5F545C };
 
-	GET(ObjectClass*, pThis, ESI);
-	GET(const int, nNewHealth, EDX);
+	GET(ObjectClass* const, pThis, ESI);
+	GET(const int, newHealth, EDX);
 	REF_STACK(args_ReceiveDamage const, receiveDamageArgs, STACK_OFFSET(0x24, 0x4));
 
-	if (pThis->Health == nNewHealth)
+	if (pThis->Health == newHealth)
 		return SkipGameCode;
 
-	int nFlashDuration = 7;
+	int flashDuration = 7;
 
 	if (auto const pWH = receiveDamageArgs.WH)
-		nFlashDuration = WarheadTypeExt::ExtMap.Find(pWH)->Flash_Duration.Get(nFlashDuration);
+		flashDuration = WarheadTypeExt::ExtMap.Find(pWH)->Flash_Duration.Get(flashDuration);
 
-	if (nFlashDuration > 0)
-		pThis->Flash(nFlashDuration);
+	if (flashDuration > 0)
+		pThis->Flash(flashDuration);
 
 	return SkipGameCode;
 }
