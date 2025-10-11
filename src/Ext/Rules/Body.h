@@ -418,6 +418,8 @@ public:
 
 		Valueable<bool> EnhancedBerzerk;
 
+		Valueable<bool> IgnoreCenterMinorRadarEvent;
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, HarvesterDumpAmount { 0.0f }
@@ -769,6 +771,8 @@ public:
 			, InSequenceExtraRange { Leptons(0) }
 
 			, EnhancedBerzerk { false }
+
+			, IgnoreCenterMinorRadarEvent { false }
 		{ }
 
 		virtual ~ExtData() = default;
