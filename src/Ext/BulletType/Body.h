@@ -100,7 +100,6 @@ public:
 
 		Valueable<bool> SubjectToGround;
 
-		Valueable<bool> AU;
 		Valueable<bool> BallisticScatter_IncreaseByRange;
 		Nullable<Leptons> BallisticScatter_MinRange;
 		Nullable<Leptons> BallisticScatter_MaxRange;
@@ -131,6 +130,8 @@ public:
 		Valueable<int> Parachuted_FallRate;
 		Nullable<int> Parachuted_MaxFallRate;
 		Nullable<AnimTypeClass*> BombParachute;
+
+		Valueable<bool> AU;
 
 		// Ares 0.1
 		Valueable<bool> SubjectToSolid;
@@ -213,7 +214,6 @@ public:
 			, ReturnWeapon_ApplyFirepowerMult { false }
 			, SubjectToSolid { false }
 			, SubjectToGround { false }
-			, AU { false }
 			, BallisticScatter_IncreaseByRange { false }
 			, BallisticScatter_MinRange {}
 			, BallisticScatter_MaxRange {}
@@ -242,6 +242,7 @@ public:
 			, Parachuted_FallRate { 1 }
 			, Parachuted_MaxFallRate {}
 			, BombParachute {}
+			, AU { false }
 		{ }
 
 		virtual ~ExtData() = default;

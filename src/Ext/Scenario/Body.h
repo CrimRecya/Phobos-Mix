@@ -66,6 +66,9 @@ public:
 		BulletClass* MasterDetonationBullet; // Used to do warhead/weapon detonations on spot without having to create new BulletClass instance every time.
 		std::vector<TechnoExt::ExtData*> LimboLaunchers;
 
+		DynamicVectorClass<TechnoClass*> UndergroundTracker;
+		DynamicVectorClass<TechnoClass*> SpecialTracker;
+
 		ExtData(ScenarioClass* OwnerObject) : Extension<ScenarioClass>(OwnerObject)
 			, ShowBriefing { false }
 			, BriefingTheme { -1 }
@@ -92,6 +95,8 @@ public:
 			, DefaultLS800BkgdPal {}
 			, MasterDetonationBullet {}
 			, LimboLaunchers {}
+			, UndergroundTracker {}
+			, SpecialTracker {}
 		{ }
 
 		void SetVariableToByID(bool bIsGlobal, int nIndex, char bState);

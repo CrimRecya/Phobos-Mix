@@ -17,6 +17,7 @@ void CellExt::ExtData::Serialize(T& Stm)
 	Stm
 		.Process(this->RadSites)
 		.Process(this->RadLevels)
+		.Process(this->InfantryCount)
 		.Process(this->IncomingUnit)
 		.Process(this->IncomingUnitAlt)
 		.Process(this->SmudgeGenerate)

@@ -130,6 +130,9 @@ public:
 		Valueable<bool> AmphibiousUnload;
 		Valueable<bool> NoQueueUpToEnter;
 		Valueable<bool> NoQueueUpToUnload;
+		Nullable<bool> NoQueueUpToEnter_Buildings;
+		Nullable<bool> NoQueueUpToUnload_Buildings;
+
 		Valueable<bool> CheckExtraBaseNormal;
 		Valueable<bool> Cameo_AlwaysExist;
 		Valueable<SHPStruct*> Cameo_OverlayShapes;
@@ -139,6 +142,7 @@ public:
 		Valueable<bool> ExtendedWeaponsFactory;
 		Valueable<bool> AutoBuilding;
 		Valueable<int> AutoBuilding_Gap;
+
 		Valueable<bool> BuildingProductionQueue;
 		Valueable<bool> PlacementGrid_Expand;
 		Valueable<Vector3D<int>> PlacementGrid_LandFrames;
@@ -517,6 +521,9 @@ public:
 			, AmphibiousUnload { false }
 			, NoQueueUpToEnter { false }
 			, NoQueueUpToUnload { false }
+			, NoQueueUpToEnter_Buildings {}
+			, NoQueueUpToUnload_Buildings {}
+
 			, CheckExtraBaseNormal { false }
 			, Cameo_AlwaysExist { false }
 			, Cameo_OverlayShapes { FileSystem::PIPS_SHP }
@@ -526,6 +533,7 @@ public:
 			, ExtendedWeaponsFactory { false }
 			, AutoBuilding { false }
 			, AutoBuilding_Gap { 1 }
+
 			, BuildingProductionQueue { false }
 			, PlacementGrid_Expand { false }
 			, PlacementGrid_LandFrames { { 1, 0, 0 } }

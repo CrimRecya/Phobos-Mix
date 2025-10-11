@@ -38,6 +38,8 @@ public:
 		std::vector<RadSiteClass*> RadSites;
 		std::vector<RadLevel> RadLevels;
 
+		int InfantryCount;
+
 		UnitClass* IncomingUnit;
 		UnitClass* IncomingUnitAlt;
 
@@ -47,6 +49,7 @@ public:
 		ExtData(CellClass* OwnerObject) : Extension<CellClass>(OwnerObject)
 			, RadSites {}
 			, RadLevels {}
+			, InfantryCount { 0 }
 			, IncomingUnit { nullptr }
 			, IncomingUnitAlt { nullptr }
 			, SmudgeGenerate { 0 }

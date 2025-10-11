@@ -233,12 +233,17 @@ public:
 		Valueable<bool> UnlimboDetonate_KeepTarget;
 		Valueable<bool> UnlimboDetonate_KeepSelected;
 
+		Valueable<bool> AffectsUnderground;
+		Valueable<bool> PlayAnimUnderground;
+		Valueable<bool> PlayAnimAboveSurface;
+
 		// Ares tags
 		// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
 		Valueable<bool> AffectsEnemies;
 		Nullable<bool> AffectsOwner;
 		Valueable<bool> EffectsRequireVerses;
 		Valueable<bool> Malicious;
+		Nullable<int> Flash_Duration;
 
 		double Crit_RandomBuffer;
 		double Crit_CurrentChance;
@@ -456,6 +461,7 @@ public:
 			, AffectsOwner {}
 			, EffectsRequireVerses { true }
 			, Malicious { true }
+			, Flash_Duration {}
 
 			, Crit_RandomBuffer { 0.0 }
 			, Crit_CurrentChance { 0.0 }
@@ -486,6 +492,10 @@ public:
 			, UnlimboDetonate_ForceLocation { false }
 			, UnlimboDetonate_KeepTarget { true }
 			, UnlimboDetonate_KeepSelected { true }
+
+			, AffectsUnderground { false }
+			, PlayAnimUnderground { true }
+			, PlayAnimAboveSurface { false }
 		{ }
 
 		void ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget);
