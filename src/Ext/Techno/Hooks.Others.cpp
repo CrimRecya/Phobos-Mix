@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
@@ -2175,6 +2175,35 @@ DEFINE_HOOK(0x701DAE, TechnoClass_ReceiveDamage_Berzerk, 0x6)
 	pThis->QueueMission(Mission::Area_Guard, false);
 
 	return SkipQueueMission;
+}
+
+#pragma endregion
+
+#pragma region AIAirTargetingFix
+
+DEFINE_HOOK(0x6F9B7E, TechnoClass_SelectAutoTarget_AIAirTargetingFix1, 0x5)
+{
+	return RulesExt::Global()->AIAirTargetingFix ? 0x6F9C56 : 0;
+}
+
+DEFINE_HOOK(0x6F9D13, TechnoClass_SelectAutoTarget_AIAirTargetingFix2, 0x7)
+{
+	enum { Ok = 0x6F9D1C, NotOK = 0x6F9D93 };
+
+	if (!RulesExt::Global()->AIAirTargetingFix)
+		return 0;
+
+	GET_STACK(int, canTargetRtti, STACK_OFFSET(0x6C, -0x58));
+	GET(TechnoClass*, pTarget, EDI);
+
+	bool canTarget = false;
+
+	if ((canTargetRtti & 4) != 0)
+		canTarget = pTarget->LastLayer != Layer::Underground;
+	else
+		canTarget = pTarget->LastLayer == Layer::Ground;
+
+	return canTarget ? Ok : NotOK;
 }
 
 #pragma endregion

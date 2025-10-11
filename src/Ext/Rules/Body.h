@@ -418,6 +418,8 @@ public:
 
 		Valueable<bool> EnhancedBerzerk;
 
+		Valueable<bool> AIAirTargetingFix;
+
 		Valueable<bool> IgnoreCenterMinorRadarEvent;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
@@ -771,6 +773,8 @@ public:
 			, InSequenceExtraRange { Leptons(0) }
 
 			, EnhancedBerzerk { false }
+
+			, AIAirTargetingFix { false }
 
 			, IgnoreCenterMinorRadarEvent { false }
 		{ }

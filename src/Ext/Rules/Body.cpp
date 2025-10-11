@@ -469,6 +469,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->EnhancedBerzerk.Read(exINI, GameStrings::CombatDamage, "EnhancedBerzerk");
 
+	this->AIAirTargetingFix.Read(exINI, GameStrings::General, "AIAirTargetingFix");
+
 	this->IgnoreCenterMinorRadarEvent.Read(exINI, GameStrings::General, "IgnoreCenterMinorRadarEvent");
 
 	// Section AITargetTypes
@@ -864,6 +866,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AISellCapturedBuilding)
 		.Process(this->InSequenceExtraRange)
 		.Process(this->EnhancedBerzerk)
+		.Process(this->AIAirTargetingFix)
 		.Process(this->IgnoreCenterMinorRadarEvent)
 		;
 }
