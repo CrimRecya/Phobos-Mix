@@ -386,6 +386,11 @@ public:
 
 		Valueable<AffectedHouse> BerzerkTargeting;
 
+		// cache tint color
+		int TintColorIronCurtain;
+		int TintColorForceShield;
+		int TintColorBerserk;
+
 		Valueable<bool> AttackMove_IgnoreWeaponCheck;
 		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 
@@ -404,11 +409,6 @@ public:
 		NullableIdx<AnimTypeClass> Parasite_GrappleAnim;
 
 		Valueable<bool> InfantryAutoDeploy;
-
-		// cache tint color
-		int TintColorIronCurtain;
-		int TintColorForceShield;
-		int TintColorBerserk;
 
 		Valueable<int> AdjacentWallDamage;
 

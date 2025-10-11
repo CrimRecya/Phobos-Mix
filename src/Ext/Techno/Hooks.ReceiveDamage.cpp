@@ -1,17 +1,14 @@
 ﻿#include "Body.h"
 
-#include <TacticalClass.h>
+#include <VoxClass.h>
 #include <RadarEventClass.h>
+#include <TacticalClass.h>
 
 #include <Ext/WarheadType/Body.h>
 #include <Ext/WeaponType/Body.h>
 #include <Ext/TEvent/Body.h>
 #include <Ext/House/Body.h>
 #include <Ext/Rules/Body.h>
-
-#include <VoxClass.h>
-#include <RadarEventClass.h>
-#include <TacticalClass.h>
 
 namespace ReceiveDamageTemp
 {
