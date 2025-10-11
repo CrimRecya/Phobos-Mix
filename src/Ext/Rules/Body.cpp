@@ -469,6 +469,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->EnhancedBerzerk.Read(exINI, GameStrings::CombatDamage, "EnhancedBerzerk");
 
+	this->AIAirTargetingFix.Read(exINI, GameStrings::General, "AIAirTargetingFix");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -862,6 +864,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AISellCapturedBuilding)
 		.Process(this->InSequenceExtraRange)
 		.Process(this->EnhancedBerzerk)
+		.Process(this->AIAirTargetingFix)
 		;
 }
 
