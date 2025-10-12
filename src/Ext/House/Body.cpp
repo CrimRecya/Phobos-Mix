@@ -1314,6 +1314,9 @@ bool HouseExt::ReachedBuildLimit(const HouseClass* pHouse, const TechnoTypeClass
 
 void HouseExt::ReorganizeAllTo(HouseClass* pFromHouse, HouseClass* pToHouse)
 {
+	if (pFromHouse == pToHouse)
+		return;
+
 	for (const auto& pTechno : TechnoClass::Array)
 	{
 		if (pTechno->OriginallyOwnedByHouse == pFromHouse)
