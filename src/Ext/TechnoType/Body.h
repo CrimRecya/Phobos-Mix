@@ -603,6 +603,8 @@ public:
 
 		Valueable<bool> ExtraTargeting_Excluded;
 
+		Valueable<bool> ReorganizeToWhenDefeated_Excluded;
+
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
 			, HealthBar_HidePips { false }
@@ -1155,6 +1157,8 @@ public:
 			, TurretResponse {}
 
 			, ExtraTargeting_Excluded { false }
+
+			, ReorganizeToWhenDefeated_Excluded { false }
 		{ }
 
 		virtual ~ExtData() = default;
