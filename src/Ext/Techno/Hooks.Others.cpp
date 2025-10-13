@@ -2210,52 +2210,60 @@ DEFINE_HOOK(0x6F9D13, TechnoClass_SelectAutoTarget_AIAirTargetingFix2, 0x7)
 
 #pragma region ExtendedStray
 
-int GetOccupiedCount(TechnoClass* pTechno)
-{
-	switch (pTechno->WhatAmI())
-	{
-		case AbstractType::Building:
-		{
-			auto pBuildingType = ((BuildingClass*)pTechno)->Type;
-			if (BuildingTypeExt::ExtMap.Find(pBuildingType)->IsPassable)
-				return 0;
-
-			int cellCount = 0;
-			for (auto pFoundation = pBuildingType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
-				cellCount += 3;
-			return cellCount;
-		}
-		case AbstractType::Unit:
-		case AbstractType::Aircraft:
-			return 3;
-		case AbstractType::Infantry:
-			return 1;
-		default:
-			return 3;
-	}
-}
-
 bool IsCloseToCenter(TechnoClass* pMember, CellClass* pCenterCell, int stray)
 {
 	// Vanilla check
 	if (pMember->DistanceFrom3D(pCenterCell) <= stray)
 		return true;
 
-	// 距离中心的可用距离
-	double distInCell = (double)pMember->DistanceFrom(pCenterCell) / 256;
+	auto GetOccupiedCount = [](TechnoClass* pTechno) -> int
+		{
+			switch (pTechno->WhatAmI())
+			{
+			case AbstractType::Building:
+			{
+				auto pBuildingType = ((BuildingClass*)pTechno)->Type;
+				if (BuildingTypeExt::ExtMap.Find(pBuildingType)->IsPassable)
+					return 0;
 
-	// 大概估计有多少个格子可用, 对角线长为2倍stray的正方形
-	int inRangeCellCount = distInCell * distInCell * 2;
+				int cellCount = 0;
+				for (auto pFoundation = pBuildingType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+					cellCount += 3;
+				return cellCount;
+			}
+			case AbstractType::Unit:
+			case AbstractType::Aircraft:
+				return 3;
+			case AbstractType::Infantry:
+				return 1;
+			default:
+				return 3;
+			}
+		};
 
-	// 大概估计有多少个位置被占用, 一个格子按3个位置算 , 步兵站1个, 载具占3个
-	int inRangeTechnoCount = 0;
-	for (auto const pTarget : Helpers::Alex::getCellSpreadItems(pCenterCell->GetCoords(), distInCell))
-		inRangeTechnoCount += GetOccupiedCount(pTarget);
+	auto isAreaFull = [&](int stray) -> bool
+		{
+			// 距离中心的可用距离
+			double distInCell = (double)stray / 256;
 
-	if (inRangeTechnoCount >= inRangeCellCount * 3)
-		return true;
+			// 大概估计有多少个格子可用, 对角线长为2倍stray的正方形
+			int inRangeCellCount = distInCell * distInCell * 2;
 
-	return false;
+			// 大概估计有多少个位置被占用, 一个格子按3个位置算 , 步兵站1个, 载具占3个
+			int inRangeTechnoCount = 0;
+			auto crd = pCenterCell->GetCoords();
+			for (auto const pTarget : Helpers::Alex::getCellSpreadItems(crd, distInCell))
+				inRangeTechnoCount += GetOccupiedCount(pTarget);
+
+			return inRangeTechnoCount >= inRangeCellCount * 3;
+		};
+
+	// 看stray范围是否塞满
+	if (!isAreaFull(stray))
+		return false;
+
+	// 看当前位置到中心位置距离是否塞满
+	return isAreaFull(pMember->DistanceFrom(pCenterCell));
 }
 
 DEFINE_HOOK(0x6EB680, TeamClass_ProcessAttack_Check, 0x5)
@@ -2272,7 +2280,7 @@ DEFINE_HOOK(0x6EB680, TeamClass_ProcessAttack_Check, 0x5)
 	return IsCloseToCenter(pMember, pThis->SpawnCell, stray) ? CloseToCenter : R->Origin() + 0xF;
 }
 
-DEFINE_HOOK(0x6EBB86, TeamClass_ProcessMove_Check, 0x5)
+DEFINE_HOOK(0x6EBB86, TeamClass_ProcessMove_Check, 0x6)
 {
 	if (!RulesExt::Global()->ExtendedStray)
 		return 0;
