@@ -2208,6 +2208,99 @@ DEFINE_HOOK(0x6F9D13, TechnoClass_SelectAutoTarget_AIAirTargetingFix2, 0x7)
 
 #pragma endregion
 
+#pragma region ExtendedStray
+
+int GetOccupiedCount(TechnoClass* pTechno)
+{
+	switch (pTechno->WhatAmI())
+	{
+		case AbstractType::Building:
+		{
+			auto pBuildingType = ((BuildingClass*)pTechno)->Type;
+			if (BuildingTypeExt::ExtMap.Find(pBuildingType)->IsPassable)
+				return 0;
+
+			int cellCount = 0;
+			for (auto pFoundation = pBuildingType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+				cellCount += 3;
+			return cellCount;
+		}
+		case AbstractType::Unit:
+		case AbstractType::Aircraft:
+			return 3;
+		case AbstractType::Infantry:
+			return 1;
+		default:
+			return 3;
+	}
+}
+
+bool IsCloseToCenter(TechnoClass* pMember, CellClass* pCenterCell, int stray)
+{
+	if (pMember->DistanceFrom3D(pCenterCell) <= stray)
+		return true;
+
+	// 距离中心的可用距离
+	double strayCell = (double)stray / 256;
+
+	// 大概估计有多少个格子可用, 对角线长为2倍stray的正方形
+	int inRangeCellCount = strayCell * strayCell * 2;
+
+	// 大概估计有多少个位置被占用, 一个格子按3个位置算 , 步兵站1个, 载具占3个
+	int inRangeTechnoCount = 0;
+	for (auto const pTarget : Helpers::Alex::getCellSpreadItems(pCenterCell->GetCoords(), strayCell))
+		inRangeTechnoCount += GetOccupiedCount(pTarget);
+
+	if (inRangeTechnoCount >= inRangeCellCount * 3)
+		return true;
+
+	return false;
+}
+
+DEFINE_HOOK(0x6EB680, TeamClass_ProcessAttack_Check, 0x5)
+{
+	if (!RulesExt::Global()->ExtendedStray)
+		return 0;
+
+	enum { CloseToCenter = 0x6EB6C5 };
+
+	GET(FootClass*, pMember, ESI);
+	GET(TeamClass*, pThis, EBP);
+	GET(int, stray, EDI);
+
+	return IsCloseToCenter(pMember, pThis->SpawnCell, stray) ? CloseToCenter : R->Origin() + 0xF;
+}
+
+DEFINE_HOOK(0x6EBB86, TeamClass_ProcessMove_Check, 0x5)
+{
+	if (!RulesExt::Global()->ExtendedStray)
+		return 0;
+
+	enum { CloseToCenter = 0x6EBC8D };
+
+	GET(FootClass*, pMember, ESI);
+	GET(TeamClass*, pThis, EBP);
+	GET(int, stray, EDI);
+
+	return IsCloseToCenter(pMember, pThis->SpawnCell, stray) ? CloseToCenter : R->Origin() + 0x13;
+}
+
+DEFINE_HOOK(0x6EBF2F, TeamClass_ProcessMove_AllMemberArrived, 0x6)
+{
+	if (!RulesExt::Global()->ExtendedStray)
+		return 0;
+
+	enum { Arrived = 0x6EBF37, NotArrived = 0x6EBF45 };
+
+	GET(TeamClass*, pThis, EBP);
+	ScriptActionNode buffer;
+	auto currentAction = pThis->CurrentScript->GetCurrentAction(&buffer)->Action;
+	int stray = currentAction == 54 || currentAction == 53 ? RulesClass::Instance->RelaxedStray : RulesClass::Instance->Stray;
+	return pThis->SpawnCell && pThis->SpawnCell->DistanceFrom3D(pThis->Focus) <= stray ? Arrived : NotArrived;
+}
+
+#pragma endregion
+
 // TODO Self-made impl
 
 

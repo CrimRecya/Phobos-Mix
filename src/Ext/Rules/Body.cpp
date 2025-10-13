@@ -477,6 +477,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->IgnoreCenterMinorRadarEvent.Read(exINI, GameStrings::General, "IgnoreCenterMinorRadarEvent");
 
+	this->ExtendedStray.Read(exINI, GameStrings::General, "ExtendedStray");
+
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -874,6 +876,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->EnhancedBerzerk)
 		.Process(this->AIAirTargetingFix)
 		.Process(this->IgnoreCenterMinorRadarEvent)
+		.Process(this->ExtendedStray)
 		;
 }
 
