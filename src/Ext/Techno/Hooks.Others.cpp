@@ -2247,7 +2247,7 @@ bool IsCloseToCenter(TechnoClass* pMember, CellClass* pCenterCell, int stray)
 			double distInCell = (double)stray / 256;
 
 			// 大概估计有多少个格子可用, 对角线长为2倍stray的正方形
-			int inRangeCellCount = distInCell * distInCell * 2;
+			int inRangeCellCount = (int)(distInCell * distInCell * 2);
 
 			// 大概估计有多少个位置被占用, 一个格子按3个位置算 , 步兵站1个, 载具占3个
 			int inRangeTechnoCount = 0;
