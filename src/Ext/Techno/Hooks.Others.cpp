@@ -2237,18 +2237,19 @@ int GetOccupiedCount(TechnoClass* pTechno)
 
 bool IsCloseToCenter(TechnoClass* pMember, CellClass* pCenterCell, int stray)
 {
+	// Vanilla check
 	if (pMember->DistanceFrom3D(pCenterCell) <= stray)
 		return true;
 
 	// 距离中心的可用距离
-	double strayCell = (double)stray / 256;
+	double distInCell = (double)pMember->DistanceFrom(pCenterCell) / 256;
 
 	// 大概估计有多少个格子可用, 对角线长为2倍stray的正方形
-	int inRangeCellCount = strayCell * strayCell * 2;
+	int inRangeCellCount = distInCell * distInCell * 2;
 
 	// 大概估计有多少个位置被占用, 一个格子按3个位置算 , 步兵站1个, 载具占3个
 	int inRangeTechnoCount = 0;
-	for (auto const pTarget : Helpers::Alex::getCellSpreadItems(pCenterCell->GetCoords(), strayCell))
+	for (auto const pTarget : Helpers::Alex::getCellSpreadItems(pCenterCell->GetCoords(), distInCell))
 		inRangeTechnoCount += GetOccupiedCount(pTarget);
 
 	if (inRangeTechnoCount >= inRangeCellCount * 3)
