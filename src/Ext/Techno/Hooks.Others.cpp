@@ -2208,6 +2208,16 @@ DEFINE_HOOK(0x6F9D13, TechnoClass_SelectAutoTarget_AIAirTargetingFix2, 0x7)
 
 #pragma endregion
 
+#pragma region NoAutoFire
+
+DEFINE_HOOK(0x6F8E44, TechnoClass_SelectAutoTarget_NoAutoFire, 0x7)
+{
+	GET(TechnoClass*, pThis, ESI);
+	return TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType())->NoAutoFire_AI && !pThis->Owner->IsControlledByHuman() ? 0x6F8E38 : 0;
+}
+
+#pragma endregion
+
 // TODO Self-made impl
 
 
