@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <AircraftClass.h>
 #include <AircraftTrackerClass.h>
@@ -1347,6 +1347,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->ExtraTargeting_Excluded.Read(exINI, pSection, "ExtraTargeting.Excluded");
 
+	this->JumpjetClimbIgnoreBuilding.Read(exINI, pSection, "JumpjetClimbIgnoreBuilding");
+
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
 	this->Cloneable.Read(exINI, pSection, "Cloneable");
@@ -2223,6 +2225,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->TurretResponse)
 
 		.Process(this->ExtraTargeting_Excluded)
+
+		.Process(this->JumpjetClimbIgnoreBuilding)
 		;
 }
 
