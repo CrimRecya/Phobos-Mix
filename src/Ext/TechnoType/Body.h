@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <TechnoTypeClass.h>
 
 #include <Utilities/Macro.h>
@@ -603,6 +603,8 @@ public:
 
 		Valueable<bool> ExtraTargeting_Excluded;
 
+		Valueable<bool> AIDefendBase_Ignore;
+
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
 			, HealthBar_HidePips { false }
@@ -1155,6 +1157,8 @@ public:
 			, TurretResponse {}
 
 			, ExtraTargeting_Excluded { false }
+
+			, AIDefendBase_Ignore { false }
 		{ }
 
 		virtual ~ExtData() = default;
