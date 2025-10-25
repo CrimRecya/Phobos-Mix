@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <AircraftClass.h>
 #include <HouseClass.h>
@@ -23,6 +23,11 @@
 #include <Ext/Cell/Body.h>
 
 #include <Utilities/AresFunctions.h>
+
+extern "C" __declspec(dllexport) bool __cdecl ConvertToType_Phobos(TechnoClass* pThis, TechnoTypeClass* toType)
+{
+	return TechnoExt::ConvertToType(pThis, toType);
+}
 
 TechnoExt::ExtContainer TechnoExt::ExtMap;
 UnitClass* TechnoExt::Deployer = nullptr;
