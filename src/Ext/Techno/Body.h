@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <InfantryClass.h>
 #include <AnimClass.h>
 
@@ -12,6 +12,8 @@
 #include <New/Entity/AttachEffectClass.h>
 #include <New/Entity/AttachmentClass.h>
 #include <New/Entity/SquadManagerClass.h>
+
+extern "C" __declspec(dllexport) bool __cdecl ConvertToType_Phobos(TechnoClass* pThis, TechnoTypeClass* toType);
 
 class BulletClass;
 
