@@ -130,8 +130,6 @@ public:
 		// Ares
 		std::optional<bool> AltOccupation; // if the unit marks cell occupation flags, this is set to whether it uses the "high" occupation members
 
-		CDTimerClass FiringAnimationTimer;
-
 		bool IsSelected;
 		bool ResetLocomotor;
 
@@ -151,6 +149,7 @@ public:
 
 		bool UndergroundTracked;
 		bool SpecialTracked;
+		bool FallingDownTracked;
 
 		int BulletsTargetingMeCount;
 
@@ -232,7 +231,6 @@ public:
 			, ThisOccupationCell { nullptr }
 			, LastOccupationCell { nullptr }
 			, AltOccupation {}
-			, FiringAnimationTimer {}
 			, SimpleDeployerAnimationTimer {}
 			, DelayedFireSequencePaused { false }
 			, DelayedFireWeaponIndex { -1 }
@@ -251,6 +249,7 @@ public:
 			, UndergroundTracked { false }
 			, SpecialTracked { false }
 			, BulletsTargetingMeCount { 0 }
+			, FallingDownTracked { false }
 		{ }
 
 		void OnEarlyUpdate();
@@ -429,7 +428,7 @@ public:
 	static void GetValuesForDisplay(TechnoClass* pThis, DisplayInfoType infoType, int& value, int& maxValue, int infoIndex);
 	static void GetDigitalDisplayFakeHealth(TechnoClass* pThis, int& value, int& maxValue);
 	static void CreateDelayedFireAnim(TechnoClass* pThis, AnimTypeClass* pAnimType, int weaponIndex, bool attach, bool center, bool removeOnNoDelay, bool onTurret, CoordStruct firingCoords);
-	static bool HandleDelayedFireWithPauseSequence(TechnoClass* pThis, int weaponIndex, int firingFrame);
+	static bool HandleDelayedFireWithPauseSequence(TechnoClass* pThis, WeaponTypeClass* pWeapon, int weaponIndex, int frame, int firingFrame);
 	static bool IsHealthInThreshold(TechnoClass* pObject, double min, double max);
 	static UnitTypeClass* GetUnitTypeExtra(UnitClass* pUnit);
 	static AircraftTypeClass* GetAircraftTypeExtra(AircraftClass* pAircraft);
