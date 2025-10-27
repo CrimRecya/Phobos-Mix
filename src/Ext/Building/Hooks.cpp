@@ -657,9 +657,11 @@ DEFINE_HOOK(0x4C9C7B, FactoryClass_QueueProduction_ForceCheckBuilding, 0x7)
 	return RulesExt::Global()->BuildingProductionQueue ? SkipGameCode : 0;
 }
 
+DEFINE_JUMP(LJMP, 0x4FABEE, 0x4FAB3D)
+
 DEFINE_HOOK(0x4FAAD8, HouseClass_AbandonProduction_RewriteForBuilding, 0x8)
 {
-	enum { CheckSame = 0x4FAB3D, SkipCheck = 0x4FAB64, Return = 0x4FAC9B };
+	enum { CheckSame = 0x4FAB3D, Return = 0x4FAC9B };
 
 	GET_STACK(const bool, all, STACK_OFFSET(0x18, 0x10));
 	GET(const int, index, EBX);
