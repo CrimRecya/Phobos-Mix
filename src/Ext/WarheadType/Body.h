@@ -178,6 +178,9 @@ public:
 		Nullable<double> DamageOwnerMultiplier;
 		Nullable<double> DamageAlliesMultiplier;
 		Nullable<double> DamageEnemiesMultiplier;
+		Nullable<double> DamageOwnerMultiplier_Berzerk;
+		Nullable<double> DamageAlliesMultiplier_Berzerk;
+		Nullable<double> DamageEnemiesMultiplier_Berzerk;
 		Valueable<double> DamageSourceHealthMultiplier;
 		Valueable<double> DamageTargetHealthMultiplier;
 
@@ -233,6 +236,8 @@ public:
 		Valueable<bool> AffectsUnderground;
 		Valueable<bool> PlayAnimUnderground;
 		Valueable<bool> PlayAnimAboveSurface;
+
+		Nullable<bool> AnimZAdjust;
 
 		// Ares tags
 		// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
@@ -417,6 +422,9 @@ public:
 			, DamageOwnerMultiplier {}
 			, DamageAlliesMultiplier {}
 			, DamageEnemiesMultiplier {}
+			, DamageOwnerMultiplier_Berzerk {}
+			, DamageAlliesMultiplier_Berzerk {}
+			, DamageEnemiesMultiplier_Berzerk {}
 			, DamageSourceHealthMultiplier { 0.0 }
 			, DamageTargetHealthMultiplier { 0.0 }
 
@@ -490,6 +498,8 @@ public:
 			, AffectsUnderground { false }
 			, PlayAnimUnderground { true }
 			, PlayAnimAboveSurface { false }
+
+			, AnimZAdjust {}
 		{ }
 
 		void ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget);

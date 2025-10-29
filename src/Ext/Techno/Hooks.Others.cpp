@@ -1977,39 +1977,6 @@ DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
 
 #pragma endregion
 
-#pragma region AILATimeFix
-
-// Skip the LATime set code in wrong place.
-DEFINE_JUMP(LJMP, 0x44227E, 0x4422C1);
-
-// Set the LATime when the building is actually damaged.
-DEFINE_HOOK(0x44242A, BuildingClass_ReceiveDamage_SetLATime, 0x8)
-{
-	GET(BuildingClass* const, pThis, ESI);
-	GET(const DamageState, state, EAX);
-	GET(TechnoClass* const, pAttacker, EBP);
-	GET_STACK(HouseClass* const, pAttackerHouse, STACK_OFFSET(0x9C, 0x1C));
-
-	const auto pFromHouse = pAttacker ? pAttacker->GetOwningHouse() : pAttackerHouse;
-
-	if (pFromHouse
-		&& !pThis->IsStrange()
-		&& state != DamageState::Unaffected
-		&& !pThis->Owner->IsAlliedWith(pFromHouse))
-	{
-		const auto pOwner = pThis->Owner;
-		pOwner->LATime = Unsorted::CurrentFrame;
-		pOwner->LAEnemy = pFromHouse->ArrayIndex;
-
-		if (pAttacker)
-			pThis->BaseIsAttacked(pAttacker);
-	}
-
-	return 0;
-}
-
-#pragma endregion
-
 #pragma region ManagerTargetFix
 
 // Cleart target for managers when the target is changing owner.
@@ -2226,7 +2193,109 @@ DEFINE_HOOK(0x425174, AnimClass_PointerExpired_KeepAnimOnLimbo, 0x6)
 		return 0;
 
 	GET_STACK(bool, bRemoved, STACK_OFFSET(0xC, 0x8));
-	return bRemoved ? 0 : 0x4251A3;
+	return bRemoved ? 0 : 0x4251A3;ECpack
+}
+
+#pragma endregion
+
+#pragma region ExtendedStray
+
+bool IsCloseToCenter(TechnoClass* pMember, CellClass* pCenterCell, int stray)
+{
+	// Vanilla check
+	if (pMember->DistanceFrom3D(pCenterCell) <= stray)
+		return true;
+
+	auto GetOccupiedCount = [](TechnoClass* pTechno) -> int
+		{
+			switch (pTechno->WhatAmI())
+			{
+			case AbstractType::Building:
+			{
+				auto pBuildingType = ((BuildingClass*)pTechno)->Type;
+				if (BuildingTypeExt::ExtMap.Find(pBuildingType)->IsPassable)
+					return 0;
+
+				int cellCount = 0;
+				for (auto pFoundation = pBuildingType->GetFoundationData(false); *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+					cellCount += 3;
+				return cellCount;
+			}
+			case AbstractType::Unit:
+			case AbstractType::Aircraft:
+				return 3;
+			case AbstractType::Infantry:
+				return 1;
+			default:
+				return 3;
+			}
+		};
+
+	auto isAreaFull = [&](int stray) -> bool
+		{
+			// 距离中心的可用距离
+			double distInCell = (double)stray / 256;
+
+			// 大概估计有多少个格子可用, 对角线长为2倍stray的正方形
+			int inRangeCellCount = (int)(distInCell * distInCell * 2);
+
+			// 大概估计有多少个位置被占用, 一个格子按3个位置算 , 步兵站1个, 载具占3个
+			int inRangeTechnoCount = 0;
+			auto crd = pCenterCell->GetCoords();
+			for (auto const pTarget : Helpers::Alex::getCellSpreadItems(crd, distInCell))
+				inRangeTechnoCount += GetOccupiedCount(pTarget);
+
+			return inRangeTechnoCount >= inRangeCellCount * 3;
+		};
+
+	// 看stray范围是否塞满
+	if (!isAreaFull(stray))
+		return false;
+
+	// 看当前位置到中心位置距离是否塞满
+	return isAreaFull(pMember->DistanceFrom(pCenterCell));
+}
+
+DEFINE_HOOK(0x6EB680, TeamClass_ProcessAttack_Check, 0x5)
+{
+	if (!RulesExt::Global()->ExtendedStray)
+		return 0;
+
+	enum { CloseToCenter = 0x6EB6C5 };
+
+	GET(FootClass*, pMember, ESI);
+	GET(TeamClass*, pThis, EBP);
+	GET(int, stray, EDI);
+
+	return IsCloseToCenter(pMember, pThis->SpawnCell, stray) ? CloseToCenter : R->Origin() + 0xF;
+}
+
+DEFINE_HOOK(0x6EBB86, TeamClass_ProcessMove_Check, 0x6)
+{
+	if (!RulesExt::Global()->ExtendedStray)
+		return 0;
+
+	enum { CloseToCenter = 0x6EBC8D };
+
+	GET(FootClass*, pMember, ESI);
+	GET(TeamClass*, pThis, EBP);
+	GET(int, stray, EDI);
+
+	return IsCloseToCenter(pMember, pThis->SpawnCell, stray) ? CloseToCenter : R->Origin() + 0x13;
+}
+
+DEFINE_HOOK(0x6EBF2F, TeamClass_ProcessMove_AllMemberArrived, 0x6)
+{
+	if (!RulesExt::Global()->ExtendedStray)
+		return 0;
+
+	enum { Arrived = 0x6EBF37, NotArrived = 0x6EBF45 };
+
+	GET(TeamClass*, pThis, EBP);
+	ScriptActionNode buffer;
+	auto currentAction = pThis->CurrentScript->GetCurrentAction(&buffer)->Action;
+	int stray = currentAction == 54 || currentAction == 53 ? RulesClass::Instance->RelaxedStray : RulesClass::Instance->Stray;
+	return pThis->SpawnCell && pThis->SpawnCell->DistanceFrom3D(pThis->Focus) <= stray ? Arrived : NotArrived;
 }
 
 #pragma endregion

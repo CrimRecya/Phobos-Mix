@@ -1284,9 +1284,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				}
 
 				if (pFactory && pProduct)
-					drawText(COLOR_PURPLE, "Product: (%s)[%d]", pProduct->GetTechnoType()->ID, (pFactory->GetProgress() * 100 / 54));
+					drawText(COLOR_PURPLE, "Product: (%s)[%d] {%d}", pProduct->GetTechnoType()->ID, (pFactory->GetProgress() * 100 / 54), (pFactory->QueuedObjects.Count + (pProduct ? 1 : 0)));
 				else
-					drawText(COLOR_PURPLE, "Product: (%s)[%d]", "N/A", 0);
+					drawText(COLOR_PURPLE, "Product: (%s)[%d] {%d}", "N/A", 0, (pFactory ? pFactory->QueuedObjects.Count : 0));
 
 				drawTime("RetryProduction", pBuilding->FactoryRetryTimer);
 			}

@@ -291,7 +291,7 @@ DEFINE_HOOK(0x4D962B, FootClass_SetDestination_RecycleFLH, 0x5)
 	else if ((pDestination->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None
 		&& (((pDestination->AbstractFlags & AbstractFlags::Foot) != AbstractFlags::None)
 			? RulesExt::Global()->FollowTargetSelf.Get() && locomotion_cast<JumpjetLocomotionClass*>(((static_cast<FootClass*>(pDestination)))->Locomotor)
-			: (pThis->SendCommand(RadioCommand::QueryCanEnter, static_cast<BuildingClass*>(pDestination)) != RadioCommand::AnswerPositive)))
+			: !pThis->GetTechnoType()->MissileSpawn && (pThis->SendCommand(RadioCommand::QueryCanEnter, static_cast<BuildingClass*>(pDestination)) != RadioCommand::AnswerPositive)))
 	{
 		GET(CoordStruct*, pDestCrd, EAX);
 		auto crd = pDestination->GetCoords();

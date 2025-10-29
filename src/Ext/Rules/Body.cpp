@@ -59,6 +59,8 @@ void RulesExt::LoadAfterTypeData(RulesClass* pThis, CCINIClass* pINI)
 			// Spawner range
 			if (pTechnoTypeExt->Spawner_LimitRange)
 				pTechnoTypeExt->CalculateSpawnerRange();
+
+			pTechnoTypeExt->UpdateAdditionalAttributes();
 		}
 	}
 
@@ -318,6 +320,9 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->DamageEnemiesMultiplier.Read(exINI, GameStrings::CombatDamage, "DamageEnemiesMultiplier");
 	this->DamageOwnerMultiplier_NotAffectsEnemies.Read(exINI, GameStrings::CombatDamage, "DamageOwnerMultiplier.NotAffectsEnemies");
 	this->DamageAlliesMultiplier_NotAffectsEnemies.Read(exINI, GameStrings::CombatDamage, "DamageAlliesMultiplier.NotAffectsEnemies");
+	this->DamageOwnerMultiplier_Berzerk.Read(exINI, GameStrings::CombatDamage, "DamageOwnerMultiplier.Berzerk");
+	this->DamageAlliesMultiplier_Berzerk.Read(exINI, GameStrings::CombatDamage, "DamageAlliesMultiplier.Berzerk");
+	this->DamageEnemiesMultiplier_Berzerk.Read(exINI, GameStrings::CombatDamage, "DamageEnemiesMultiplier.Berzerk");
 
 	this->DirectionalArmor.Read(exINI, GameStrings::CombatDamage, "DirectionalArmor");
 	this->DirectionalArmor_FrontMultiplier.Read(exINI, GameStrings::CombatDamage, "DirectionalArmor.FrontMultiplier");
@@ -478,6 +483,10 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->IgnoreCenterMinorRadarEvent.Read(exINI, GameStrings::General, "IgnoreCenterMinorRadarEvent");
 
 	this->KeepAnimOnLimbo.Read(exINI, GameStrings::General, "KeepAnimOnLimbo");
+
+	this->ExtendedStray.Read(exINI, GameStrings::General, "ExtendedStray");
+
+	this->WarheadAnimZAdjust.Read(exINI, GameStrings::AudioVisual, "WarheadAnimZAdjust");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -761,6 +770,9 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->DamageEnemiesMultiplier)
 		.Process(this->DamageOwnerMultiplier_NotAffectsEnemies)
 		.Process(this->DamageAlliesMultiplier_NotAffectsEnemies)
+		.Process(this->DamageOwnerMultiplier_Berzerk)
+		.Process(this->DamageAlliesMultiplier_Berzerk)
+		.Process(this->DamageEnemiesMultiplier_Berzerk)
 		.Process(this->DirectionalArmor)
 		.Process(this->DirectionalArmor_FrontMultiplier)
 		.Process(this->DirectionalArmor_SideMultiplier)
@@ -877,6 +889,8 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AIAirTargetingFix)
 		.Process(this->IgnoreCenterMinorRadarEvent)
 		.Process(this->KeepAnimOnLimbo)
+		.Process(this->ExtendedStray)
+		.Process(this->WarheadAnimZAdjust)
 		;
 }
 

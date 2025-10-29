@@ -91,34 +91,6 @@ DEFINE_HOOK(0x4FD538, HouseClass_AIHouseUpdate_CheckAIBaseCenter, 0x7)
 }
 
 /*
-	In sub_7393C0
-
-	- AIConstructionYard Hook #4-3 -> Prohibit AI from building construction yard
-*/
-DEFINE_HOOK(0x7397F4, UnitClass_TryToDeploy_SkipSetShouldRebuild, 0x7)
-{
-	enum { SkipRebuildFlag = 0x7397FB };
-
-	GET(BuildingClass* const, pBuilding, EBX);
-
-	return (pBuilding->Type->ConstructionYard && RulesExt::Global()->AIForbidConYard) ? SkipRebuildFlag : 0;
-}
-
-/*
-	In sub_440580
-
-	- AIConstructionYard Hook #4-4 -> Prohibit AI from building construction yard
-*/
-DEFINE_HOOK(0x440B7A, BuildingClass_Unlimbo_SkipSetShouldRebuild, 0x7)
-{
-	enum { SkipRebuildFlag = 0x440B81 };
-
-	GET(BuildingClass* const, pBuilding, ESI);
-
-	return (pBuilding->Type->ConstructionYard && RulesExt::Global()->AIForbidConYard) ? SkipRebuildFlag : 0;
-}
-
-/*
 	In sub_588570
 
 	- AIConstructionYard Hook #5-1 -> Only expand walls on nodes

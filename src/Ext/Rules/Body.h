@@ -262,6 +262,9 @@ public:
 		Valueable<double> DamageEnemiesMultiplier;
 		Nullable<double> DamageOwnerMultiplier_NotAffectsEnemies;
 		Nullable<double> DamageAlliesMultiplier_NotAffectsEnemies;
+		Nullable<double> DamageOwnerMultiplier_Berzerk;
+		Nullable<double> DamageAlliesMultiplier_Berzerk;
+		Nullable<double> DamageEnemiesMultiplier_Berzerk;
 
 		Valueable<bool> DirectionalArmor;
 		Valueable<float> DirectionalArmor_FrontMultiplier;
@@ -427,6 +430,10 @@ public:
 		Valueable<bool> IgnoreCenterMinorRadarEvent;
 
 		Valueable<bool> KeepAnimOnLimbo;
+
+		Valueable<bool> ExtendedStray;
+
+		Valueable<int> WarheadAnimZAdjust;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -645,6 +652,9 @@ public:
 			, DamageEnemiesMultiplier { 1.0 }
 			, DamageOwnerMultiplier_NotAffectsEnemies {}
 			, DamageAlliesMultiplier_NotAffectsEnemies {}
+			, DamageOwnerMultiplier_Berzerk {}
+			, DamageAlliesMultiplier_Berzerk {}
+			, DamageEnemiesMultiplier_Berzerk {}
 
 			, DirectionalArmor { false }
 			, DirectionalArmor_FrontMultiplier { 1.0 }
@@ -789,6 +799,10 @@ public:
 			, IgnoreCenterMinorRadarEvent { false }
 
 			, KeepAnimOnLimbo { false }
+
+			, ExtendedStray { false }
+
+			, WarheadAnimZAdjust { -15 }
 		{ }
 
 		virtual ~ExtData() = default;
