@@ -1,4 +1,4 @@
-﻿#include <JumpjetLocomotionClass.h>
+#include <JumpjetLocomotionClass.h>
 #include <UnitClass.h>
 #include <BuildingClass.h>
 
@@ -278,15 +278,16 @@ int JumpjetRushHelpers::JumpjetLocomotionPredictHeight(JumpjetLocomotionClass* p
 {
 	const auto pFoot = pThis->LinkedTo;
 	const auto pLocation = &pFoot->Location;
+	const bool ignoreOccupy = TechnoTypeExt::ExtMap.Find(pThis->LinkedTo->GetTechnoType())->JumpjetClimbIgnoreBuilding.Get(RulesExt::Global()->JumpjetClimbIgnoreBuilding);
 
 	constexpr int shift = 8; // >> shift -> / Unsorted::LeptonsPerCell
 	constexpr auto point2Cell = [](const Point2D& point) -> CellStruct
 	{
 		return CellStruct { static_cast<short>(point.X >> shift), static_cast<short>(point.Y >> shift) };
 	};
-	auto getJumpjetHeight = [](const CellClass* const pCell, const Point2D& point) -> int
+	auto getJumpjetHeight = [ignoreOccupy](const CellClass* const pCell, const Point2D& point) -> int
 	{
-		return pCell->GetFloorHeight(Point2D { point.X, point.Y }) + JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(pCell);
+			return pCell->GetFloorHeight(Point2D { point.X, point.Y }) + (ignoreOccupy ? 0 : JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(pCell));
 	};
 
 	// Initialize
@@ -320,9 +321,9 @@ int JumpjetRushHelpers::JumpjetLocomotionPredictHeight(JumpjetLocomotionClass* p
 
 			maxHeight = Math::max(maxHeight, getJumpjetHeight(pCurCell, curCoord));
 
-			auto getSideHeight = [](const CellClass* const pCell) -> int
+			auto getSideHeight = [ignoreOccupy](const CellClass* const pCell) -> int
 			{
-				return (pCell->Level * Unsorted::LevelHeight) + JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(pCell);
+					return (pCell->Level * Unsorted::LevelHeight) + (ignoreOccupy ? 0 : JumpjetRushHelpers::GetJumpjetHeightWithOccupyTechno(pCell));
 			};
 			auto getAntiAliasingCell = [&]() -> CellClass*
 			{
@@ -401,3 +402,50 @@ DEFINE_HOOK(0x54D4C0, JumpjetLocomotionClass_sub_54D0F0_NoStuck, 0x6)
 
 	return SkipCheckStop;
 }
+
+#pragma region JumpjetStraightAscend
+
+// Skip adjusting max speed and rotation while ascending if flag is set.
+DEFINE_HOOK(0x54BBD0, JumpjetLocomotionClass_Ascending_JumpjetStraightAscend, 0x6)
+{
+	enum { SkipGameCode = 0x54BC59 };
+
+	GET(JumpjetLocomotionClass*, pThis, ESI);
+
+	auto const pTechnoExt = TechnoExt::ExtMap.Find(pThis->LinkedTo);
+
+	if (pTechnoExt->JumpjetStraightAscend)
+		return SkipGameCode;
+
+	return 0;
+}
+
+// Skip adjusting coords if flag is set, unit is alive, not crashing and is in JJ loco states 0-1.
+// Unset flag in any other state.
+DEFINE_HOOK(0x54D600, JumpjetLocomotionClass_MovementAI_JumpjetStraightAscend, 0x6)
+{
+	enum { SkipGameCode = 0x54D697 };
+
+	GET(JumpjetLocomotionClass*, pThis, ESI);
+
+	auto const pLinkedTo = pThis->LinkedTo;
+	auto const pTechnoExt = TechnoExt::ExtMap.Find(pLinkedTo);
+
+	if (pTechnoExt->JumpjetStraightAscend)
+	{
+		if (pLinkedTo->IsCrashing || pLinkedTo->Health < 1)
+		{
+			pTechnoExt->JumpjetStraightAscend = false;
+			return 0;
+		}
+
+		if (pThis->State <= JumpjetLocomotionClass::State::Ascending)
+			return SkipGameCode;
+		else
+			pTechnoExt->JumpjetStraightAscend = false;
+	}
+
+	return 0;
+}
+
+#pragma endregion
