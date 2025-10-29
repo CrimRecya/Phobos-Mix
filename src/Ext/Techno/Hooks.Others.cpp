@@ -2183,6 +2183,7 @@ DEFINE_HOOK(0x422C70, AnimClass_DrawIfVisible_DontDrawIfOwnerInLimbo, 0x6)
 		return 0;
 
 	GET(AnimClass*, pThis, ECX);
+
 	R->EAX(pThis->LoopDelay || pThis->OwnerObject && (pThis->OwnerObject->InLimbo || pThis->OwnerObject->VisualCharacter(true, HouseClass::CurrentPlayer) == VisualType::Hidden));
 	return R->Origin() + 0x6;
 }
@@ -2193,7 +2194,8 @@ DEFINE_HOOK(0x425174, AnimClass_PointerExpired_KeepAnimOnLimbo, 0x6)
 		return 0;
 
 	GET_STACK(bool, bRemoved, STACK_OFFSET(0xC, 0x8));
-	return bRemoved ? 0 : 0x4251A3;ECpack
+
+	return bRemoved ? 0 : 0x4251A3;
 }
 
 #pragma endregion
