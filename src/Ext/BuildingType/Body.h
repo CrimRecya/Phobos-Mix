@@ -135,6 +135,9 @@ public:
 		Valueable<int> NumberImpassableRows_Dir;
 		Valueable<int> WeaponsFactory_Dir;
 
+		// Ares 0.7
+		Valueable<bool> IsPassable;
+
 		// Ares 0.A
 		Valueable<BuildingTypeClass*> RubbleIntact;
 		Valueable<bool> RubbleIntactRemove;
@@ -228,6 +231,9 @@ public:
 			, Bib_Dir { 2 }
 			, NumberImpassableRows_Dir { 2 }
 			, WeaponsFactory_Dir { 2 }
+
+			// Ares 0.7
+			, IsPassable { false }
 
 			// Ares 0.A
 			, RubbleIntact { nullptr }

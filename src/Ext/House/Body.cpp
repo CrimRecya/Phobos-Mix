@@ -1314,12 +1314,15 @@ bool HouseExt::ReachedBuildLimit(const HouseClass* pHouse, const TechnoTypeClass
 
 void HouseExt::ReorganizeAllTo(HouseClass* pFromHouse, HouseClass* pToHouse)
 {
+	if (pFromHouse == pToHouse)
+		return;
+
 	for (const auto& pTechno : TechnoClass::Array)
 	{
 		if (pTechno->OriginallyOwnedByHouse == pFromHouse)
 			pTechno->OriginallyOwnedByHouse = pToHouse;
 
-		if (pTechno->Owner == pFromHouse)
+		if (pTechno->Owner == pFromHouse && !TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType())->ReorganizeToWhenDefeated_Excluded)
 		{
 			pTechno->SetOwningHouse(pToHouse, true);
 			pTechno->SetTarget(nullptr);
@@ -1364,8 +1367,8 @@ void __fastcall HouseExt::DecideTechnosFate(HouseClass* pThis)
 
 	if (houses.Count)
 		HouseExt::ReorganizeAllTo(pThis, houses[ScenarioClass::Instance->Random.RandomRanged(0, houses.Count - 1)]);
-	else
-		pThis->DestroyAll();
+
+	pThis->DestroyAll();
 }
 
 #pragma endregion
