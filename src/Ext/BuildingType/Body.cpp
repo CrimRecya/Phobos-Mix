@@ -1482,6 +1482,9 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->ZShapePointMove_OnBuildup.Read(exArtINI, pArtSection, "ZShapePointMove.OnBuildup");
 	this->Refinery_UseNormalActiveAnim.Read(exArtINI, pArtSection, "Refinery.UseNormalActiveAnim");
 
+	// Ares 0.7
+	this->IsPassable.Read(exINI, pSection, "IsPassable");
+
 	// Ares 0.A
 	this->RubbleIntact.Read(exINI, pSection, "Rubble.Intact");
 	this->RubbleIntactRemove.Read(exINI, pSection, "Rubble.Intact.Remove");
@@ -1586,6 +1589,9 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Bib_Dir)
 		.Process(this->NumberImpassableRows_Dir)
 		.Process(this->WeaponsFactory_Dir)
+
+		// Ares 0.7
+		.Process(this->IsPassable)
 
 		// Ares 0.A
 		.Process(this->RubbleIntact)

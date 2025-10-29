@@ -429,6 +429,8 @@ public:
 
 		Valueable<bool> IgnoreCenterMinorRadarEvent;
 
+		Valueable<bool> ExtendedStray;
+
 		Valueable<int> WarheadAnimZAdjust;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
@@ -793,6 +795,8 @@ public:
 			, AIAirTargetingFix { false }
 
 			, IgnoreCenterMinorRadarEvent { false }
+
+			, ExtendedStray { false }
 
 			, WarheadAnimZAdjust { -15 }
 		{ }
