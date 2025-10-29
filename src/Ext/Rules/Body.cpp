@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 #include <Ext/Side/Body.h>
 #include <Utilities/TemplateDef.h>
 #include <FPSCounter.h>
@@ -482,6 +482,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->IgnoreCenterMinorRadarEvent.Read(exINI, GameStrings::General, "IgnoreCenterMinorRadarEvent");
 
+	this->KeepAnimOnLimbo.Read(exINI, GameStrings::General, "KeepAnimOnLimbo");
+
 	this->ExtendedStray.Read(exINI, GameStrings::General, "ExtendedStray");
 
 	this->WarheadAnimZAdjust.Read(exINI, GameStrings::AudioVisual, "WarheadAnimZAdjust");
@@ -886,6 +888,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->EnhancedBerzerk)
 		.Process(this->AIAirTargetingFix)
 		.Process(this->IgnoreCenterMinorRadarEvent)
+		.Process(this->KeepAnimOnLimbo)
 		.Process(this->ExtendedStray)
 		.Process(this->WarheadAnimZAdjust)
 		;

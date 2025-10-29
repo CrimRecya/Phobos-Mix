@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <CCINIClass.h>
 #include <RulesClass.h>
@@ -429,6 +429,8 @@ public:
 
 		Valueable<bool> IgnoreCenterMinorRadarEvent;
 
+		Valueable<bool> KeepAnimOnLimbo;
+
 		Valueable<bool> ExtendedStray;
 
 		Valueable<int> WarheadAnimZAdjust;
@@ -795,6 +797,8 @@ public:
 			, AIAirTargetingFix { false }
 
 			, IgnoreCenterMinorRadarEvent { false }
+
+			, KeepAnimOnLimbo { false }
 
 			, ExtendedStray { false }
 
