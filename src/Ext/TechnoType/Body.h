@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <TechnoTypeClass.h>
 
 #include <Utilities/Macro.h>
