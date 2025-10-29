@@ -606,6 +606,8 @@ public:
 
 		Valueable<bool> ExtraTargeting_Excluded;
 
+		Valueable<bool> AIDefendBase_Ignore;
+
 		Valueable<bool> Missile_UseDeathWeaponWhenIntercepted;
 
 		Nullable<bool> JumpjetClimbIgnoreBuilding;
@@ -1169,6 +1171,8 @@ public:
 			, TurretResponse {}
 
 			, ExtraTargeting_Excluded { false }
+
+			, AIDefendBase_Ignore { false }
 
 			, Missile_UseDeathWeaponWhenIntercepted { false }
 
