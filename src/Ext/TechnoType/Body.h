@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <TechnoTypeClass.h>
 
 #include <Utilities/Macro.h>
@@ -606,6 +606,8 @@ public:
 
 		Valueable<bool> ExtraTargeting_Excluded;
 
+		Nullable<bool> JumpjetClimbIgnoreBuilding;
+
 		Valueable<bool> NoAutoFire_AI;
 
 		Valueable<bool> ReorganizeToWhenDefeated_Excluded;
@@ -1165,6 +1167,8 @@ public:
 			, TurretResponse {}
 
 			, ExtraTargeting_Excluded { false }
+
+			, JumpjetClimbIgnoreBuilding {}
 
 			, NoAutoFire_AI { false }
 
