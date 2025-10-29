@@ -1394,7 +1394,9 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->ExtraTargeting_Excluded.Read(exINI, pSection, "ExtraTargeting.Excluded");
 
-	this->JumpjetClimbIgnoreBuilding.Read(exINI, pSection, "JumpjetClimbIgnoreBuilding");
+	this->Missile_UseDeathWeaponWhenIntercepted.Read(exINI, pSection, "Missile.UseDeathWeaponWhenIntercepted");
+
+  this->JumpjetClimbIgnoreBuilding.Read(exINI, pSection, "JumpjetClimbIgnoreBuilding");
 
 	this->NoAutoFire_AI.Read(exINI, pSection, "NoAutoFire.AI");
 
@@ -2278,6 +2280,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->TurretResponse)
 
 		.Process(this->ExtraTargeting_Excluded)
+
+		.Process(this->Missile_UseDeathWeaponWhenIntercepted)
 
 		.Process(this->JumpjetClimbIgnoreBuilding)
 
