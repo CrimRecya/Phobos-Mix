@@ -606,6 +606,8 @@ public:
 
 		Valueable<bool> ExtraTargeting_Excluded;
 
+		Valueable<bool> NoAutoFire_AI;
+
 		Valueable<bool> ReorganizeToWhenDefeated_Excluded;
 
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
@@ -1163,6 +1165,8 @@ public:
 			, TurretResponse {}
 
 			, ExtraTargeting_Excluded { false }
+
+			, NoAutoFire_AI { false }
 
 			, ReorganizeToWhenDefeated_Excluded { false }
 		{ }

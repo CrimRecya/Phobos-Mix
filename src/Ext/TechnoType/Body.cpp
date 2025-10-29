@@ -1394,6 +1394,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->ExtraTargeting_Excluded.Read(exINI, pSection, "ExtraTargeting.Excluded");
 
+	this->NoAutoFire_AI.Read(exINI, pSection, "NoAutoFire.AI");
+
 	this->ReorganizeToWhenDefeated_Excluded.Read(exINI, pSection, "ReorganizeToWhenDefeated.Excluded");
 
 	// Ares 0.2
@@ -2274,6 +2276,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->TurretResponse)
 
 		.Process(this->ExtraTargeting_Excluded)
+
+		.Process(this->NoAutoFire_AI)
 
 		.Process(this->ReorganizeToWhenDefeated_Excluded)
 		;
