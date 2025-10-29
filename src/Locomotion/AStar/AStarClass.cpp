@@ -487,10 +487,6 @@ bool AStarClass::FindHierarchicalPath(
 		依赖于子区域的数量，这会使得威胁值计算和移动成本计算可能会因这种再次划分而翻倍，如果还有多一层海岸还
 		能再多一倍，而如果地形边界刚好能和某个子区域的边界重合，那么这条路相比别的路就少了一个节点，成本就比
 		其它路径更少了，此时单位就会偏向于走这条路，尽管这条路实际上可能走了各种斜线、会绕不少路
-	修复思路：
-		在新增队列节点时，判断节点是否和上一节点是在同一块内，如果处在同一块内，则节点代价不累计，并在队列中
-		查找相同节点是否已经被记录过，如果已经被记录过，则在避免构成路径循环的基础上，选择节点数更多的路径来
-		标记，以配合常规寻路找到最优路径
 	*/
 	// 可跨区域移动的单位需要更全面的查找
 	if (movementZone == MovementZone::Amphibious
@@ -1937,39 +1933,6 @@ DEFINE_FUNCTION_JUMP(CALL, 0x42D222, AStarClass::FindHierarchicalPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x429F8A, AStarClass::CalculateMoveCost);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A415, AStarClass::ProcessFinalPath);
 DEFINE_FUNCTION_JUMP(CALL, 0x42A41E, AStarClass::OptimizeFinalPath);
-
-namespace FixFloodFillDiagonalFlagHelper
-{
-	bool IsDiagonal = false;
-}
-
-DEFINE_HOOK(0x5829C2, MapClass_FloodFillMap_CheckUpwardZoneIndex, 0x5)
-{
-	GET(LevelAndPassabilityStruct2*, pBasePathData, EBP);
-	GET(LevelAndPassabilityStruct2*, pCheckPathData, EAX);
-	FixFloodFillDiagonalFlagHelper::IsDiagonal = pBasePathData->word_0[3] != pCheckPathData->word_0[3];
-	return 0;
-}
-
-DEFINE_HOOK(0x582A30, MapClass_FloodFillMap_SetUpwardDiagonalFlag, 0x5)
-{
-	enum { SetDiagonalFlag = 0x582A39 };
-	return FixFloodFillDiagonalFlagHelper::IsDiagonal ? SetDiagonalFlag : 0;
-}
-
-DEFINE_HOOK(0x582C0C, MapClass_FloodFillMap_CheckDownwardZoneIndex, 0x5)
-{
-	GET(LevelAndPassabilityStruct2*, pBasePathData, EDX);
-	GET(LevelAndPassabilityStruct2*, pCheckPathData, EAX);
-	FixFloodFillDiagonalFlagHelper::IsDiagonal = pBasePathData->word_0[3] != pCheckPathData->word_0[3];
-	return 0;
-}
-
-DEFINE_HOOK(0x582C78, MapClass_FloodFillMap_SetDownwardDiagonalFlag, 0x5)
-{
-	enum { SetDiagonalFlag = 0x582C81 };
-	return FixFloodFillDiagonalFlagHelper::IsDiagonal ? SetDiagonalFlag : 0;
-}
 
 #pragma endregion
 

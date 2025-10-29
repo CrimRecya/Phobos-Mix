@@ -129,6 +129,8 @@ public:
 		static bool ShowWeedsCounter;
 		static bool ShowPlanningPath;
 		static bool HideLightFlashEffects;
+		static bool HideLaserTrailEffects;
+		static bool HideShakeEffects;
 		static bool ShowFlashOnSelecting;
 		static bool UnitPowerDrain;
 		static bool AllowSwitchNoMoveCommand;

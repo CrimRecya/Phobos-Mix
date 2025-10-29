@@ -1977,39 +1977,6 @@ DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
 
 #pragma endregion
 
-#pragma region AILATimeFix
-
-// Skip the LATime set code in wrong place.
-DEFINE_JUMP(LJMP, 0x44227E, 0x4422C1);
-
-// Set the LATime when the building is actually damaged.
-DEFINE_HOOK(0x44242A, BuildingClass_ReceiveDamage_SetLATime, 0x8)
-{
-	GET(BuildingClass* const, pThis, ESI);
-	GET(const DamageState, state, EAX);
-	GET(TechnoClass* const, pAttacker, EBP);
-	GET_STACK(HouseClass* const, pAttackerHouse, STACK_OFFSET(0x9C, 0x1C));
-
-	const auto pFromHouse = pAttacker ? pAttacker->GetOwningHouse() : pAttackerHouse;
-
-	if (pFromHouse
-		&& !pThis->IsStrange()
-		&& state != DamageState::Unaffected
-		&& !pThis->Owner->IsAlliedWith(pFromHouse))
-	{
-		const auto pOwner = pThis->Owner;
-		pOwner->LATime = Unsorted::CurrentFrame;
-		pOwner->LAEnemy = pFromHouse->ArrayIndex;
-
-		if (pAttacker)
-			pThis->BaseIsAttacked(pAttacker);
-	}
-
-	return 0;
-}
-
-#pragma endregion
-
 #pragma region ManagerTargetFix
 
 // Cleart target for managers when the target is changing owner.

@@ -180,6 +180,7 @@ void ScenarioExt::ExtData::Serialize(T& Stm)
 		.Process(this->LimboLaunchers)
 		.Process(this->UndergroundTracker)
 		.Process(this->SpecialTracker)
+		.Process(this->FallingDownTracker)
 		;
 }
 
