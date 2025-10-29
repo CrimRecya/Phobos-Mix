@@ -429,6 +429,8 @@ public:
 
 		Valueable<bool> IgnoreCenterMinorRadarEvent;
 
+		Valueable<int> WarheadAnimZAdjust;
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, HarvesterDumpAmount { 0.0f }
@@ -791,6 +793,8 @@ public:
 			, AIAirTargetingFix { false }
 
 			, IgnoreCenterMinorRadarEvent { false }
+
+			, WarheadAnimZAdjust { -15 }
 		{ }
 
 		virtual ~ExtData() = default;

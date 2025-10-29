@@ -1548,6 +1548,7 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->SpecialTracked)
 		.Process(this->BulletsTargetingMeCount)
 		.Process(this->FallingDownTracked)
+		.Process(this->JumpjetStraightAscend)
 		;
 }
 

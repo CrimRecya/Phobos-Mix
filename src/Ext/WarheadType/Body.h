@@ -237,6 +237,8 @@ public:
 		Valueable<bool> PlayAnimUnderground;
 		Valueable<bool> PlayAnimAboveSurface;
 
+		Nullable<bool> AnimZAdjust;
+
 		// Ares tags
 		// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
 		Valueable<bool> AffectsEnemies;
@@ -496,6 +498,8 @@ public:
 			, AffectsUnderground { false }
 			, PlayAnimUnderground { true }
 			, PlayAnimAboveSurface { false }
+
+			, AnimZAdjust {}
 		{ }
 
 		void ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget);

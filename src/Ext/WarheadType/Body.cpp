@@ -336,6 +336,8 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->PlayAnimUnderground.Read(exINI, pSection, "PlayAnimUnderground");
 	this->PlayAnimAboveSurface.Read(exINI, pSection, "PlayAnimAboveSurface");
 
+	this->AnimZAdjust.Read(exINI, pSection, "AnimZAdjust");
+
 	// Convert.From & Convert.To
 	TypeConvertGroup::Parse(this->Convert_Pairs, exINI, pSection, AffectedHouse::All);
 
@@ -657,6 +659,8 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AffectsUnderground)
 		.Process(this->PlayAnimUnderground)
 		.Process(this->PlayAnimAboveSurface)
+
+		.Process(this->AnimZAdjust)
 
 		// Ares tags
 		.Process(this->AffectsEnemies)

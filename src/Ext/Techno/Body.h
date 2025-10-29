@@ -155,6 +155,8 @@ public:
 
 		int BulletsTargetingMeCount;
 
+		bool JumpjetStraightAscend; // Is set to true jumpjet units will ascend straight and do not adjust rotation or position during it.
+
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
 			, Shield {}
@@ -252,6 +254,7 @@ public:
 			, SpecialTracked { false }
 			, BulletsTargetingMeCount { 0 }
 			, FallingDownTracked { false }
+			, JumpjetStraightAscend { false }
 		{ }
 
 		void OnEarlyUpdate();
