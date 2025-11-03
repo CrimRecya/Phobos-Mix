@@ -70,7 +70,8 @@ DEFINE_HOOK(0x41DAA4, AirstrikeClass_ResetTarget_ResetForOldTarget, 0xA)
 
 	GET(TechnoClass*, pTargetTechno, EDI);
 
-	TechnoExt::ExtMap.Find(pTargetTechno)->AirstrikeTargetingMe = nullptr;
+	if (const auto pTargetExt = TechnoExt::ExtMap.Find(pTargetTechno))
+		pTargetExt->AirstrikeTargetingMe = nullptr;
 
 	return SkipGameCode;
 }
@@ -82,7 +83,8 @@ DEFINE_HOOK(0x41DAD4, AirstrikeClass_ResetTarget_ResetForNewTarget, 0x6)
 	GET(AirstrikeClass*, pThis, EBP);
 	GET(TechnoClass*, pTargetTechno, ESI);
 
-	TechnoExt::ExtMap.Find(pTargetTechno)->AirstrikeTargetingMe = pThis;
+	if (const auto pTargetExt = TechnoExt::ExtMap.Find(pTargetTechno))
+		pTargetExt->AirstrikeTargetingMe = pThis;
 
 	return SkipGameCode;
 }
