@@ -2215,7 +2215,7 @@ DEFINE_HOOK(0x708455, TechnoClass_BaseIsAttacked_Ignore2, 0x6)
 
 DEFINE_HOOK(0x662FD8, RocketLocomotionClass_Process_CheckHealth, 0x5)
 {
-	enum { SkipDetonate = 0x662FE6, Detonate = 0x62FDF };
+	enum { SkipDetonate = 0x662FE6, Detonate = 0x662FDF };
 	GET(FootClass*, pLinkedTo, ECX);
 
 	if (pLinkedTo->Health > 0)
