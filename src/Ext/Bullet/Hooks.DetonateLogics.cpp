@@ -540,11 +540,10 @@ DEFINE_HOOK(0x469AA4, BulletClass_Logics_Extras, 0x5)
 		if (!pWHExt->UnlimboDetonate_ForceLocation)
 		{
 			const auto pType = pTechno->GetTechnoType();
-			const auto nCell = MapClass::Instance.NearByLocation(CellClass::Coord2Cell(location),
-									pType->SpeedType, -1, pType->MovementZone, false, 1, 1, true,
-									false, false, true, CellStruct::Empty, false, false);
+			const auto cell = MapClass::Instance.NearByLocation(CellClass::Coord2Cell(location), pType->SpeedType,
+				-1, pType->MovementZone, false, 1, 1, true, false, false, true, CellStruct::Empty, false, false);
 
-			const auto pCell = MapClass::Instance.TryGetCellAt(nCell);
+			const auto pCell = MapClass::Instance.TryGetCellAt(cell);
 
 			if (pCell)
 			{
