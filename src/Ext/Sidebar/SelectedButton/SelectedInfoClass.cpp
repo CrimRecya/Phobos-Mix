@@ -513,7 +513,7 @@ void SelectedInfoClass::GetValuesForDisplay(TechnoClass* pThis, ObjectTypeClass*
 
 	if (pTrueType == pFakeType)
 	{
-		TechnoExt::GetValuesForDisplay(pThis, infoType, value, maxValue, infoIndex);
+		TechnoExt::GetValuesForDisplay(pThis, pTrueType, infoType, value, maxValue, infoIndex);
 		return;
 	}
 
@@ -528,7 +528,7 @@ void SelectedInfoClass::GetValuesForDisplay(TechnoClass* pThis, ObjectTypeClass*
 	}
 	else if (pType)
 	{
-		TechnoExt::GetValuesForDisplay(pThis, infoType, value, maxValue, infoIndex);
+		TechnoExt::GetValuesForDisplay(pThis, pType, infoType, value, maxValue, infoIndex);
 		fakeValue = maxValue;
 	}
 

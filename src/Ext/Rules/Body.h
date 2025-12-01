@@ -430,8 +430,6 @@ public:
 
 		Valueable<bool> EnhancedBerzerk;
 
-		Valueable<bool> AIAirTargetingFix;
-
 		Valueable<bool> IgnoreCenterMinorRadarEvent;
 
 		Valueable<bool> KeepAnimOnLimbo;

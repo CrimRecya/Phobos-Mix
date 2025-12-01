@@ -353,6 +353,10 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->CombatAlert_UseAttackVoice.Read(exINI, GameStrings::AudioVisual, "CombatAlert.UseAttackVoice");
 	this->CombatAlert_UseEVA.Read(exINI, GameStrings::AudioVisual, "CombatAlert.UseEVA");
 
+	this->StartDistributionModeSound.Read(exINI, GameStrings::AudioVisual, "StartDistributionModeSound");
+	this->EndDistributionModeSound.Read(exINI, GameStrings::AudioVisual, "EndDistributionModeSound");
+	this->AddDistributionModeCommandSound.Read(exINI, GameStrings::AudioVisual, "AddDistributionModeCommandSound");
+
 	this->ReplaceVoxelLightSources();
 
 	this->UseFixedVoxelLighting.Read(exINI, GameStrings::AudioVisual, "UseFixedVoxelLighting");
@@ -478,8 +482,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->InSequenceExtraRange.Read(exINI, GameStrings::CombatDamage, "InSequenceExtraRange");
 
 	this->EnhancedBerzerk.Read(exINI, GameStrings::CombatDamage, "EnhancedBerzerk");
-
-	this->AIAirTargetingFix.Read(exINI, GameStrings::General, "AIAirTargetingFix");
 
 	this->IgnoreCenterMinorRadarEvent.Read(exINI, GameStrings::General, "IgnoreCenterMinorRadarEvent");
 
@@ -802,6 +804,9 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->CombatAlert_UseFeedbackVoice)
 		.Process(this->CombatAlert_UseAttackVoice)
 		.Process(this->CombatAlert_UseEVA)
+		.Process(this->StartDistributionModeSound)
+		.Process(this->EndDistributionModeSound)
+		.Process(this->AddDistributionModeCommandSound)
 		.Process(this->UseFixedVoxelLighting)
 		.Process(this->AIAutoDeployMCV)
 		.Process(this->AISetBaseCenter)
@@ -891,7 +896,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AISellCapturedBuilding)
 		.Process(this->InSequenceExtraRange)
 		.Process(this->EnhancedBerzerk)
-		.Process(this->AIAirTargetingFix)
 		.Process(this->IgnoreCenterMinorRadarEvent)
 		.Process(this->KeepAnimOnLimbo)
 		.Process(this->ExtendedStray)

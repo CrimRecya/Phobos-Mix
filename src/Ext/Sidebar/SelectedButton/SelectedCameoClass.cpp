@@ -206,7 +206,7 @@ void SelectedCameoClass::DrawInfo() const
 		}
 
 		int value = -1, maxValue = 0;
-		TechnoExt::GetValuesForDisplay(pTechno, pTypeExt->SelectedInfo_CameoType.Get(), value, maxValue, pTypeExt->SelectedInfo_CameoIndex);
+		TechnoExt::GetValuesForDisplay(pTechno, pType, pTypeExt->SelectedInfo_CameoType.Get(), value, maxValue, pTypeExt->SelectedInfo_CameoIndex);
 
 		rect.Y += 4;
 		rect.Width = static_cast<int>(50 * ((value <= -1 || maxValue <= 0) ? 1.0 : (static_cast<double>(value) / maxValue)) + 0.5);

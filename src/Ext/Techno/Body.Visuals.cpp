@@ -825,7 +825,7 @@ void TechnoExt::ProcessDigitalDisplays(TechnoClass* pThis)
 		int value = -1;
 		int maxValue = 0;
 
-		GetValuesForDisplay(pThis, pType, pDisplayType->InfoType, value, maxValue, pDisplayType->InfoIndex);
+		TechnoExt::GetValuesForDisplay(pThis, pType, pDisplayType->InfoType, value, maxValue, pDisplayType->InfoIndex);
 
 		if (value <= -1 || maxValue <= 0)
 			continue;
@@ -839,8 +839,8 @@ void TechnoExt::ProcessDigitalDisplays(TechnoClass* pThis)
 		}
 
 		Point2D position = whatAmI == AbstractType::Building
-			? GetBuildingSelectBracketPosition(pThis, pDisplayType->AnchorType_Building)
-			: GetFootSelectBracketPosition(pThis, pDisplayType->AnchorType);
+			? TechnoExt::GetBuildingSelectBracketPosition(pThis, pDisplayType->AnchorType_Building)
+			: TechnoExt::GetFootSelectBracketPosition(pThis, pDisplayType->AnchorType);
 		position.Y += pType->PixelSelectionBracketDelta;
 
 		if (pDisplayType->InfoType == DisplayInfoType::Shield)
