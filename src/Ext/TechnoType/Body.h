@@ -38,7 +38,12 @@ public:
 		Valueable<CSFText> UIDescription;
 		Valueable<bool> LowSelectionPriority;
 		PhobosFixedString<0x20> GroupAs;
+		std::vector<PhobosFixedString<0x20>> WeaponGroupAs;
 		Valueable<int> RadarJamRadius;
+		Valueable<AffectedHouse> RadarJamHouses;
+		Valueable<int> RadarJamDelay;
+		ValueableVector<BuildingTypeClass*> RadarJamAffect;
+		ValueableVector<BuildingTypeClass*> RadarJamIgnore;
 		Nullable<int> InhibitorRange;
 		Nullable<int> DesignatorRange;
 		Valueable<float> FactoryPlant_Multiplier;
@@ -193,7 +198,6 @@ public:
 		Valueable<bool> DeployingAnim_UseUnitDrawer;
 
 		Valueable<CSFText> EnemyUIName;
-		Valueable<TechnoTypeClass*> FakeOf;
 
 		bool ForceWeapon_Check;
 		Valueable<int> ForceWeapon_Naval_Decloaked;
@@ -452,6 +456,7 @@ public:
 
 		Valueable<bool> BunkerableAnyway;
 		Valueable<bool> KeepTargetOnMove;
+		Valueable<int> KeepTargetOnMove_Weapon;
 		Valueable<bool> KeepTargetOnMove_NoMorePursuit;
 		Valueable<Leptons> KeepTargetOnMove_ExtraDistance;
 
@@ -624,7 +629,12 @@ public:
 			, UIDescription {}
 			, LowSelectionPriority { false }
 			, GroupAs { NONE_STR }
+			, WeaponGroupAs {}
 			, RadarJamRadius { 0 }
+			, RadarJamHouses { AffectedHouse::Enemies }
+			, RadarJamDelay { 30 }
+			, RadarJamAffect {}
+			, RadarJamIgnore {}
 			, InhibitorRange {}
 			, DesignatorRange { }
 			, FactoryPlant_Multiplier { 1.0 }
@@ -765,7 +775,6 @@ public:
 			, CombatAlert_EVA {}
 
 			, EnemyUIName {}
-			, FakeOf {}
 
 			, VoiceCreated {}
 			, VoicePickup {}
@@ -1039,6 +1048,7 @@ public:
 
 			, BunkerableAnyway { false }
 			, KeepTargetOnMove { false }
+			, KeepTargetOnMove_Weapon { -1 }
 			, KeepTargetOnMove_NoMorePursuit { true }
 			, KeepTargetOnMove_ExtraDistance { Leptons(0) }
 

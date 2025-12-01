@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 #include <functional>
 
 #include <Ext/Anim/Body.h>
@@ -181,9 +181,9 @@ DEFINE_HOOK(0x4690C1, BulletClass_Logics_DetonateOnAllMapObjects, 0x8)
 			return vec;
 		};
 
-		auto tryDetonate = [pThis, pWHExt, pOwner, isFull](TechnoClass* pTechno)
+		auto tryDetonate = [pThis, pWHExt, pOwner, isFull](TechnoClass* pTechno, TechnoTypeClass* pType)
 			{
-				if (pWHExt->EligibleForFullMapDetonation(pTechno, pOwner))
+				if (pWHExt->EligibleForFullMapDetonation(pTechno, pType, pOwner))
 				{
 					if (isFull)
 					{
@@ -193,7 +193,7 @@ DEFINE_HOOK(0x4690C1, BulletClass_Logics_DetonateOnAllMapObjects, 0x8)
 					}
 					else
 					{
-						int damage = (pThis->Health * pThis->DamageMultiplier) >> 8;
+						const int damage = (pThis->Health * pThis->DamageMultiplier) >> 8;
 						pWHExt->DamageAreaWithTarget(pTechno->GetCoords(), damage, pThis->Owner, pThis->WH, true, pOwner, pTechno);
 					}
 				}
@@ -204,7 +204,7 @@ DEFINE_HOOK(0x4690C1, BulletClass_Logics_DetonateOnAllMapObjects, 0x8)
 			auto const aircraft = copy_dvc(AircraftClass::Array);
 
 			for (auto const pAircraft : aircraft)
-				tryDetonate(pAircraft);
+				tryDetonate(pAircraft, pAircraft->Type);
 		}
 
 		if ((pWHExt->DetonateOnAllMapObjects_AffectTargets & AffectedTarget::Building) != AffectedTarget::None)
@@ -212,7 +212,7 @@ DEFINE_HOOK(0x4690C1, BulletClass_Logics_DetonateOnAllMapObjects, 0x8)
 			auto const buildings = copy_dvc(BuildingClass::Array);
 
 			for (auto const pBuilding : buildings)
-				tryDetonate(pBuilding);
+				tryDetonate(pBuilding, pBuilding->Type);
 		}
 
 		if ((pWHExt->DetonateOnAllMapObjects_AffectTargets & AffectedTarget::Infantry) != AffectedTarget::None)
@@ -220,7 +220,7 @@ DEFINE_HOOK(0x4690C1, BulletClass_Logics_DetonateOnAllMapObjects, 0x8)
 			auto const infantry = copy_dvc(InfantryClass::Array);
 
 			for (auto const pInf : infantry)
-				tryDetonate(pInf);
+				tryDetonate(pInf, pInf->Type);
 		}
 
 		if ((pWHExt->DetonateOnAllMapObjects_AffectTargets & AffectedTarget::Unit) != AffectedTarget::None)
@@ -228,7 +228,7 @@ DEFINE_HOOK(0x4690C1, BulletClass_Logics_DetonateOnAllMapObjects, 0x8)
 			auto const units = copy_dvc(UnitClass::Array);
 
 			for (auto const pUnit : units)
-				tryDetonate(pUnit);
+				tryDetonate(pUnit, pUnit->Type);
 		}
 
 		pThis->Target = pOriginalTarget;
@@ -266,7 +266,7 @@ DEFINE_HOOK(0x469D1A, BulletClass_Logics_Debris, 0x6)
 		const auto pOwner = pThis->Owner ? pThis->Owner->Owner : BulletExt::ExtMap.Find(pThis)->FirerHouse;
 		auto coord = pThis->GetCoords();
 
-		int count = Math::min(debrisTypes.Count, debrisMaximums.Count);
+		const int count = Math::min(debrisTypes.Count, debrisMaximums.Count);
 
 		// Restore DebrisMaximums logic
 		// Make DebrisTypes generate completely in accordance with DebrisMaximums,
@@ -516,7 +516,7 @@ DEFINE_HOOK(0x469AA4, BulletClass_Logics_Extras, 0x5)
 			if (pTypeExt->ReturnWeapon_ApplyFirepowerMult)
 				damage = static_cast<int>(damage * TechnoExt::GetCurrentFirepowerMultiplier(pTechno));
 
-			if (BulletClass* pBullet = pWeapon->Projectile->CreateBullet(pTechno, pTechno,
+			if (auto const pBullet = pWeapon->Projectile->CreateBullet(pTechno, pTechno,
 				damage, pWeapon->Warhead, pWeapon->Speed, pWeapon->Bright))
 			{
 				BulletExt::SimulatedFiringUnlimbo(pBullet, pOwner, pWeapon, pThis->Location, false);
@@ -789,7 +789,7 @@ DEFINE_HOOK(0x469EC0, BulletClass_Logics_AirburstWeapon, 0x6)
 				const int x = random.RandomRanged(-range, range);
 				const int y = random.RandomRanged(-range, range);
 
-				CellStruct cell = { static_cast<short>(cellTarget.X + x), static_cast<short>(cellTarget.Y + y) };
+				const CellStruct cell = { static_cast<short>(cellTarget.X + x), static_cast<short>(cellTarget.Y + y) };
 				auto const pCell = MapClass::Instance.GetCellAt(cell);
 
 				targets.AddItem(pCell);
@@ -909,7 +909,7 @@ DEFINE_HOOK(0x4899DA, MapClass_DamageArea_DamageUnderGround, 0x7)
 		return 0;
 
 	const bool cylinder = pWHExt->CellSpread_Cylinder;
-	const float spread = pWH->CellSpread;
+	const float spread = pWH->CellSpread * (float)Unsorted::LeptonsPerCell;
 
 	for (auto const& pTechno : ScenarioExt::Global()->UndergroundTracker)
 	{
@@ -926,7 +926,7 @@ DEFINE_HOOK(0x4899DA, MapClass_DamageArea_DamageUnderGround, 0x7)
 			else
 				dist = technoCoords.DistanceFrom(*pCrd);
 
-			if (dist <= spread * Unsorted::LeptonsPerCell)
+			if (dist <= spread)
 			{
 				pTechno->ReceiveDamage(&damage, (int)dist, pWH, pSrcTechno, false, false, pSrcHouse);
 				hitted = true;

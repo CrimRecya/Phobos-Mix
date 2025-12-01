@@ -35,8 +35,6 @@
 #include <Ext/Sidebar/SelectedButton/SelectedInfoClass.h>
 #include <Misc/MessageColumn.h>
 
-#pragma region HotkeyCommand
-
 DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 {
 	// Load it after Ares'
@@ -74,20 +72,6 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 		SWSidebarClass::Commands[9] = MakeCommand<FireTacticalSWCommandClass<9>>();
 	}
 
-	if (Phobos::Config::AllowSwitchNoMoveCommand)
-		MakeCommand<SwitchNoMoveCommandClass>();
-
-	if (Phobos::Config::AllowDistributionCommand)
-	{
-		if (Phobos::Config::AllowDistributionCommand_SpreadMode)
-			MakeCommand<DistributionModeSpreadCommandClass>();
-
-		if (Phobos::Config::AllowDistributionCommand_FilterMode)
-			MakeCommand<DistributionModeFilterCommandClass>();
-
-		MakeCommand<DistributionModeHoldDownCommandClass>();
-	}
-
 	if (Phobos::Config::DevelopmentCommands)
 	{
 		MakeCommand<DamageDisplayCommandClass>();
@@ -107,10 +91,6 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 
 	return 0;
 }
-
-#pragma endregion
-
-#pragma region MouseScroll
 
 static void MouseWheelDownCommand()
 {

@@ -1335,6 +1335,7 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->CanC4_AllowZeroDamage.Read(exINI, pSection, "CanC4.AllowZeroDamage");
 
 	this->InitialStrength_Cloning.Read(exINI, pSection, "InitialStrength.Cloning");
+	this->Cloning_Powered.Read(exINI, pSection, "Cloning.Powered");
 	this->ExcludeFromMultipleFactoryBonus.Read(exINI, pSection, "ExcludeFromMultipleFactoryBonus");
 
 	this->Grinding_AllowAllies.Read(exINI, pSection, "Grinding.AllowAllies");
@@ -1463,8 +1464,8 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	}
 
 	this->Refinery_UseStorage.Read(exINI, pSection, "Refinery.UseStorage");
-	this->CloningFacility.Read(exINI, pSection, "CloningFacility");
 	this->AIBaseNormal.Read(exINI, pSection, "AIBaseNormal");
+	this->UndeploysInto_Sellable.Read(exINI, pSection, "UndeploysInto.Sellable");
 
 	// PlacementPreview
 	{
@@ -1484,6 +1485,9 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	// Ares 0.7
 	this->IsPassable.Read(exINI, pSection, "IsPassable");
+
+	// Ares 0.2
+	this->CloningFacility.Read(exINI, pSection, "CloningFacility");
 
 	// Ares 0.A
 	this->RubbleIntact.Read(exINI, pSection, "Rubble.Intact");
@@ -1511,6 +1515,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Powered_KillSpawns)
 		.Process(this->CanC4_AllowZeroDamage)
 		.Process(this->InitialStrength_Cloning)
+		.Process(this->Cloning_Powered)
 		.Process(this->ExcludeFromMultipleFactoryBonus)
 		.Process(this->Refinery_UseStorage)
 		.Process(this->Grinding_AllowAllies)
@@ -1571,7 +1576,6 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Adjacent_DisallowedExtra)
 		.Process(this->BarracksExitCell)
 		.Process(this->HasSecondaryRallyPoint)
-		.Process(this->CloningFacility)
 		.Process(this->Overpower_KeepOnline)
 		.Process(this->Overpower_ChargeWeapon)
 		.Process(this->DisableDamageSound)
@@ -1589,6 +1593,10 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Bib_Dir)
 		.Process(this->NumberImpassableRows_Dir)
 		.Process(this->WeaponsFactory_Dir)
+		.Process(this->UndeploysInto_Sellable)
+
+		// Ares 0.2
+		.Process(this->CloningFacility)
 
 		// Ares 0.7
 		.Process(this->IsPassable)

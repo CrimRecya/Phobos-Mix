@@ -33,6 +33,7 @@ public:
 		Valueable<bool> CanC4_AllowZeroDamage;
 		Valueable<bool> Refinery_UseStorage;
 		Valueable<PartialVector2D<double>> InitialStrength_Cloning;
+		Valueable<bool> Cloning_Powered { true };
 		Valueable<bool> ExcludeFromMultipleFactoryBonus;
 
 		ValueableIdx<VocClass> Grinding_Sound;
@@ -108,8 +109,6 @@ public:
 
 		Valueable<bool> HasSecondaryRallyPoint;
 
-		Valueable<bool> CloningFacility;
-
 		Valueable<int> Overpower_KeepOnline;
 		Valueable<int> Overpower_ChargeWeapon;
 
@@ -131,9 +130,14 @@ public:
 
 		Nullable<bool> AISellCapturedBuilding;
 
+		Valueable<bool> UndeploysInto_Sellable;
+
 		Valueable<int> Bib_Dir;
 		Valueable<int> NumberImpassableRows_Dir;
 		Valueable<int> WeaponsFactory_Dir;
+
+		// Ares 0.2
+		Valueable<bool> CloningFacility;
 
 		// Ares 0.7
 		Valueable<bool> IsPassable;
@@ -213,7 +217,6 @@ public:
 			, Adjacent_DisallowedExtra {}
 			, BarracksExitCell {}
 			, HasSecondaryRallyPoint { false }
-			, CloningFacility { false }
 			, Overpower_KeepOnline { 2 }
 			, Overpower_ChargeWeapon { 1 }
 			, DisableDamageSound { false }
@@ -231,6 +234,10 @@ public:
 			, Bib_Dir { 2 }
 			, NumberImpassableRows_Dir { 2 }
 			, WeaponsFactory_Dir { 2 }
+			, UndeploysInto_Sellable { false }
+
+			// Ares 0.2
+			, CloningFacility { false }
 
 			// Ares 0.7
 			, IsPassable { false }

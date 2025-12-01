@@ -37,8 +37,8 @@ public:
 		TechnoTypeClass* PreviousType; // Type change registered in TechnoClass::AI on current frame and used in FootClass::AI on same frame and reset after.
 		std::vector<EBolt*> ElectricBolts; // EBolts are not serialized so do not serialize this either.
 		int AnimRefCount; // Used to keep track of how many times this techno is referenced in anims f.ex Invoker, ParentBuilding etc., for pointer invalidation.
-		bool SubterraneanHarvFreshFromFactory;
-		AbstractClass* SubterraneanHarvRallyDest;
+		int SubterraneanHarvStatus; // 0 = none, 1 = created, 2 = out from factory
+		AbstractClass* SubterraneanHarvRallyPoint;
 		bool ReceiveDamage;
 		bool LastKillWasTeamTarget;
 		CDTimerClass PassengerDeletionTimer;
@@ -166,8 +166,8 @@ public:
 			, PreviousType { nullptr }
 			, ElectricBolts {}
 			, AnimRefCount { 0 }
-			, SubterraneanHarvFreshFromFactory { false }
-			, SubterraneanHarvRallyDest { nullptr }
+			, SubterraneanHarvStatus { 0 }
+			, SubterraneanHarvRallyPoint { nullptr }
 			, ReceiveDamage { false }
 			, LastKillWasTeamTarget { false }
 			, PassengerDeletionTimer {}
@@ -262,6 +262,7 @@ public:
 		void ApplyInterceptor();
 		bool CheckDeathConditions(bool isInLimbo = false);
 		void DepletedAmmoActions();
+		void UpdateSubterraneanHarvester();
 		void EatPassengers();
 		void UpdateTiberiumEater();
 		void UpdateShield();
@@ -430,7 +431,7 @@ public:
 	static Point2D GetBuildingSelectBracketPosition(TechnoClass* pThis, BuildingSelectBracketPosition bracketPosition);
 	static void DrawSelectBox(TechnoClass* pThis, const Point2D* pLocation, const RectangleStruct* pBounds, bool drawBefore = false);
 	static void ProcessDigitalDisplays(TechnoClass* pThis);
-	static void GetValuesForDisplay(TechnoClass* pThis, DisplayInfoType infoType, int& value, int& maxValue, int infoIndex);
+	static void GetValuesForDisplay(TechnoClass* pThis, TechnoTypeClass* pType, DisplayInfoType infoType, int& value, int& maxValue, int infoIndex);
 	static void GetDigitalDisplayFakeHealth(TechnoClass* pThis, int& value, int& maxValue);
 	static void CreateDelayedFireAnim(TechnoClass* pThis, AnimTypeClass* pAnimType, int weaponIndex, bool attach, bool center, bool removeOnNoDelay, bool onTurret, CoordStruct firingCoords);
 	static bool HandleDelayedFireWithPauseSequence(TechnoClass* pThis, WeaponTypeClass* pWeapon, int weaponIndex, int frame, int firingFrame);
@@ -441,6 +442,7 @@ public:
 	static bool HasAmmoToDeploy(TechnoClass* pThis);
 	static void HandleOnDeployAmmoChange(TechnoClass* pThis, int maxAmmoOverride = -1);
 	static bool SimpleDeployerAllowedToDeploy(UnitClass* pThis, bool defaultValue, bool alwaysCheckLandTypes);
+	static void ShowPromoteAnim(TechnoClass* pThis);
 
 	static void DrawExtraImage(TechnoClass* pThis, CellClass* pCell, const CoordStruct& coords, DirStruct dir = DirStruct(0));
 	static void DrawExtraImage(TechnoClass* pThis, const Point2D& location, const RectangleStruct& bounds, DirStruct dir = DirStruct(0), bool transparent = false, Sequence action = Sequence::Nothing, int tilt = -1);

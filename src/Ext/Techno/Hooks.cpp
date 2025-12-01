@@ -1,7 +1,6 @@
 ﻿#include "Body.h"
 
 #include <AircraftClass.h>
-#include <EventClass.h>
 #include <ScenarioClass.h>
 #include <TunnelLocomotionClass.h>
 #include <JumpjetLocomotionClass.h>
@@ -37,7 +36,7 @@ DEFINE_HOOK(0x7363C9, UnitClass_AI_AnimationPaused, 0x6)
 	enum { SkipGameCode = 0x7363DE };
 
 	GET(UnitClass*, pThis, ESI);
-	
+
 	if (TechnoExt::ExtMap.Find(pThis)->DelayedFireSequencePaused)
 		return SkipGameCode;
 
@@ -78,6 +77,7 @@ DEFINE_HOOK(0x736480, UnitClass_AI, 0x6)
 	auto const pExt = TechnoExt::ExtMap.Find(pThis);
 	pExt->UpdateKeepTargetOnMove();
 	pExt->DepletedAmmoActions();
+	pExt->UpdateSubterraneanHarvester();
 
 	return 0;
 }
@@ -151,31 +151,19 @@ DEFINE_HOOK(0x6FA793, TechnoClass_AI_SelfHealGain, 0x5)
 	return SkipGameSelfHeal;
 }
 
-// Can't hook where unit promotion happens in vanilla because of Ares - Fryone, Kerbiter
-DEFINE_HOOK(0x6F9FA9, TechnoClass_AI_PromoteAnim, 0x6)
+// Handle promote animations in cases where Ares is not available.
+DEFINE_HOOK(0x6FA07A, TechnoClass_AI_PromoteAnim, 0x5)
 {
-	GET(TechnoClass*, pThis, ECX);
+	enum { SkipGameCode = 0x6FA07F };
 
-	auto const pType = pThis->GetTechnoType();
+	GET(TechnoClass*, pThis, ESI);
+	GET(VeterancyStruct*, pVet, ECX);
 
-	auto aresProcess = [pType]() { return (pType->Turret) ? 0x6F9FB7 : 0x6FA054; };
+	TechnoExt::ShowPromoteAnim(pThis);
 
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-	auto const pVeteranAnim = !pTypeExt->Promote_VeteranAnimation.empty() ? pTypeExt->Promote_VeteranAnimation : RulesExt::Global()->Promote_VeteranAnimation;
-	auto const pEliteAnim = !pTypeExt->Promote_EliteAnimation.empty() ? pTypeExt->Promote_EliteAnimation : RulesExt::Global()->Promote_EliteAnimation;
-
-	if (pVeteranAnim.empty() && pEliteAnim.empty())
-		return aresProcess();
-
-	if (pThis->CurrentRanking != pThis->Veterancy.GetRemainingLevel() && pThis->CurrentRanking != Rank::Invalid && (pThis->Veterancy.GetRemainingLevel() != Rank::Rookie))
-	{
-		if (pThis->Veterancy.GetRemainingLevel() == Rank::Veteran && !pVeteranAnim.empty())
-			AnimExt::CreateRandomAnim(pVeteranAnim, pThis->GetCenterCoords(), pThis, pThis->Owner, true, true);
-		else if (!pEliteAnim.empty())
-			AnimExt::CreateRandomAnim(pEliteAnim, pThis->GetCenterCoords(), pThis, pThis->Owner, true, true);
-	}
-
-	return aresProcess();
+	// Restore overridden instructions.
+	R->EAX(pVet->GetRemainingLevel());
+	return SkipGameCode;
 }
 
 DEFINE_HOOK(0x6FA540, TechnoClass_AI_ChargeTurret, 0x6)
@@ -228,7 +216,8 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 	pExt->TypeExtData = pTypeExt;
 
-	pExt->CurrentShieldType = pTypeExt->ShieldType;
+	auto const pShieldType = pTypeExt->ShieldType;
+	pExt->CurrentShieldType = pShieldType;
 	pExt->InitializeAttachEffects();
 	pExt->InitializeDisplayInfo();
 	pExt->InitializeLaserTrails();
@@ -243,13 +232,13 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	if (pTypeExt->UniqueTechno && pOwner->IsControlledByCurrentPlayer())
 		ScenarioExt::Global()->OwnedUniqueTechnos.push_back(pExt);
 
-	if (!pExt->AE.HasTint && !pExt->CurrentShieldType)
+	if (!pExt->AE.HasTint && (!pShieldType || !pShieldType->HasTint() || pShieldType->Strength <= 0))
 		pExt->UpdateTintValues();
 
 	if (pTypeExt->Harvester_Counted)
 		HouseExt::ExtMap.Find(pOwner)->OwnedCountedHarvesters.push_back(pThis);
 
-	if ((pOwner->IsControlledByHuman() || !RulesExt::Global()->DistributeTargetingFrame_AIOnly)
+	if ((!pOwner->IsControlledByHuman() || !RulesExt::Global()->DistributeTargetingFrame_AIOnly)
 		&& pTypeExt->DistributeTargetingFrame.Get(RulesExt::Global()->DistributeTargetingFrame))
 	{
 		pThis->TargetingTimer.Start(ScenarioClass::Instance->Random.RandomRanged(0, 15));
@@ -879,47 +868,6 @@ DEFINE_HOOK(0x70D703, TechnoClass_FireDeathWeapon_UseGlobalDeathWeaponDamage, 0x
 	return 0;
 }
 
-#pragma region BuildingTypeSelectable
-
-namespace BuildingTypeSelectable
-{
-	bool ProcessingIDMatches = false;
-}
-
-DEFINE_HOOK_AGAIN(0x732B28, TypeSelectExecute_SetContext, 0x6)
-DEFINE_HOOK(0x732A85, TypeSelectExecute_SetContext, 0x7)
-{
-	BuildingTypeSelectable::ProcessingIDMatches = true;
-	return 0;
-}
-
-// This func has two retn, but one of them is affected by Ares' hook. Thus we only hook the other one.
-// If you have any problem, check Ares in IDA before making any changes.
-DEFINE_HOOK(0x732C97, TechnoClass_IDMatches_ResetContext, 0x5)
-{
-	BuildingTypeSelectable::ProcessingIDMatches = false;
-	return 0;
-}
-
-// If the context is set as well as the flags is enabled, this will make the vfunc CanBeSelectedNow return true to enable the type selection.
-DEFINE_HOOK(0x465D40, BuildingClass_Is1x1AndUndeployable_BuildingMassSelectable, 0x6)
-{
-	enum { SkipGameCode = 0x465D6A };
-
-	// Since Ares hooks around, we have difficulty juggling Ares and no Ares.
-	// So we simply disable this feature if no Ares.
-	if (!AresHelper::CanUseAres)
-		return 0;
-
-	if (!BuildingTypeSelectable::ProcessingIDMatches || !RulesExt::Global()->BuildingTypeSelectable)
-		return 0;
-
-	R->EAX(true);
-	return SkipGameCode;
-}
-
-#pragma endregion
-
 #pragma region UnitDisguise
 
 DEFINE_HOOK(0x7466D8, UnitClass_DisguiseAs_DisguiseUnit, 0xA)
@@ -1346,7 +1294,7 @@ DEFINE_HOOK(0x4DF4DB, FootClass_RefreshMegaMission_CheckMissionFix, 0xA)
 	auto const pType = pThis->GetTechnoType();
 	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 	auto const mission = pThis->GetCurrentMission();
-	bool stopWhenTargetAcquired = pTypeExt->AttackMove_StopWhenTargetAcquired.Get(RulesExt::Global()->AttackMove_StopWhenTargetAcquired.Get(!pType->OpportunityFire));
+	const bool stopWhenTargetAcquired = pTypeExt->AttackMove_StopWhenTargetAcquired.Get(RulesExt::Global()->AttackMove_StopWhenTargetAcquired.Get(!pType->OpportunityFire));
 	bool clearMegaMission = mission != Mission::Guard;
 
 	if (stopWhenTargetAcquired && clearMegaMission)
@@ -1681,7 +1629,7 @@ DEFINE_HOOK(0x6F93BB, TechnoClass_SelectAutoTarget_Scan_AU, 0x6)
 		}
 	}
 
-	GET(int, rangeFindingCell, ECX);
+	GET(const int, rangeFindingCell, ECX);
 
 	return rangeFindingCell <= 0 ? FuncRet : Continue;
 }
@@ -1702,34 +1650,49 @@ DEFINE_HOOK(0x6F7E1E, TechnoClass_CanAutoTargetObject_AU, 0x6)
 
 DEFINE_HOOK(0x5F4160, ObjectClass_DropAsBomb_Track, 0x6)
 {
+	if (!RulesExt::Global()->FallingDownTargetingFix)
+		return 0;
+
 	GET(TechnoClass*, pThis, ECX);
+
 	if ((pThis->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
 	{
 		ScenarioExt::Global()->FallingDownTracker.AddUnique(pThis);
 		TechnoExt::ExtMap.Find(pThis)->FallingDownTracked = true;
 	}
+
 	return 0;
 }
 
 DEFINE_HOOK(0x5F5965, ObjectClass_SpawnParachuted_Track, 0x7)
 {
+	if (!RulesExt::Global()->FallingDownTargetingFix)
+		return 0;
+
 	GET(TechnoClass*, pThis, ESI);
+
 	if ((pThis->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
 	{
 		ScenarioExt::Global()->FallingDownTracker.AddUnique(pThis);
 		TechnoExt::ExtMap.Find(pThis)->FallingDownTracked = true;
 	}
+
 	return 0;
 }
 
 DEFINE_HOOK(0x5F3F86, ObjectClass_Update_Track, 0x7)
 {
+	if (!RulesExt::Global()->FallingDownTargetingFix)
+		return 0;
+
 	GET(TechnoClass*, pThis, ESI);
+
 	if ((pThis->AbstractFlags & AbstractFlags::Techno) != AbstractFlags::None)
 	{
 		ScenarioExt::Global()->FallingDownTracker.Remove(pThis);
 		TechnoExt::ExtMap.Find(pThis)->FallingDownTracked = false;
 	}
+
 	return 0;
 }
 
@@ -1737,17 +1700,22 @@ DEFINE_HOOK(0x6F9398, TechnoClass_SelectAutoTarget_Scan_FallingDown, 0x9)
 {
 	enum { FuncRet = 0x6F9DA1, Continue = 0x6F93A1 };
 
+	GET_STACK(const ThreatType, flags, STACK_OFFSET(0x6C, 0x4));
+
+	const bool skip = flags != (ThreatType::Air | ThreatType::Range);
+
+	if (!RulesExt::Global()->FallingDownTargetingFix)
+		return skip ? Continue : FuncRet;
+	else if (skip)
+		return Continue;
+
 	REF_STACK(const TechnoClass*, pBestTarget, STACK_OFFSET(0x6C, -0x4C));
 	REF_STACK(int, bestThreat, STACK_OFFSET(0x6C, -0x50));
 	GET_STACK(const bool, transportMCed, STACK_OFFSET(0x6C, -0x59));
 	GET_STACK(const bool, onlyTargetEnemyHouse, STACK_OFFSET(0x6C, 0xC));
 	GET_STACK(int, canTargetWhatAmI, STACK_OFFSET(0x6C, -0x58));
 	GET_STACK(const int, wantedDist, STACK_OFFSET(0x6C, -0x40));
-	GET_STACK(const ThreatType, flags, STACK_OFFSET(0x6C, 0x4));
 	GET(TechnoClass* const, pThis, ESI);
-
-	if ((int)flags != 5)
-		return Continue;
 
 	const auto pType = pThis->GetTechnoType();
 	const auto pOwner = pThis->Owner;
