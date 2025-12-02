@@ -1977,36 +1977,6 @@ DEFINE_HOOK(0x42EBA2, BaseClass_GetBaseNodeIndex_AIAdjacentMax, 0x8)
 
 #pragma endregion
 
-#pragma region ManagerTargetFix
-
-// Cleart target for managers when the target is changing owner.
-DEFINE_HOOK(0x701681, TechnoClass_SetOwningHouse_ClearManagerTarget, 0x6)
-{
-	GET(TechnoClass*, pThis, ESI);
-
-	for (const auto pTemporal : TemporalClass::Array)
-	{
-		if (pTemporal->Target == pThis)
-			pTemporal->LetGo();
-	}
-
-	for (const auto pAirstrike : AirstrikeClass::Array)
-	{
-		if (pAirstrike->Target == pThis)
-			pAirstrike->ResetTarget();
-	}
-
-	for (const auto pSpawn : SpawnManagerClass::Array)
-	{
-		if (pSpawn->Target == pThis)
-			pSpawn->ResetTarget();
-	}
-
-	return 0;
-}
-
-#pragma endregion
-
 #pragma region LoadGameTips
 
 static inline void LoadTips(INI_EX exINI, const char* pSection, DynamicVectorClass<CSFText>& dest)

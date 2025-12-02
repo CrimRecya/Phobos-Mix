@@ -2886,7 +2886,7 @@ DEFINE_HOOK(0x5218C2, InfantryClass_UnmarkAllOccupationBits_ResetOwnerIdx, 0x6)
 	const auto pExt = CellExt::ExtMap.Find(pCell);
 	pExt->InfantryCount--;
 
-	// Vanilla check only the flag to decide if the InfantryOwnerIndex should be reset. 
+	// Vanilla check only the flag to decide if the InfantryOwnerIndex should be reset.
 	// But the tree take one of the flag bit. So if a infantry walk through a cell with a tree, the InfantryOwnerIndex won't be reset.
 	return (newFlag & 0x1C) == 0 || pExt->InfantryCount == 0 ? Reset : NoReset;
 }
@@ -3004,7 +3004,7 @@ DEFINE_HOOK(0x70D4A0, AbstractClass_ClearTargetToMe_ClearManagerTarget, 0x5)
 {
 	GET(AbstractClass*, pThis, ECX);
 
-	for (const auto pTemporal : TemporalClass::Array)
+	for (const auto& pTemporal : TemporalClass::Array)
 	{
 		if (pTemporal->Target == pThis)
 			pTemporal->LetGo();
@@ -3012,23 +3012,26 @@ DEFINE_HOOK(0x70D4A0, AbstractClass_ClearTargetToMe_ClearManagerTarget, 0x5)
 
 	// WW don't clear target if the techno has airstrike manager.
 	// No idea why, but for now we respect it and don't handle the airstrike target.
-	//for (const auto pAirstrike : AirstrikeClass::Array)
+	//for (const auto& pAirstrike : AirstrikeClass::Array)
 	//{
 	//	if (pAirstrike->Target == pThis)
 	//		pAirstrike->ClearTarget();
 	//}
 
-	for (const auto pSpawn : SpawnManagerClass::Array)
+	for (const auto& pSpawn : SpawnManagerClass::Array)
 	{
 		if (pSpawn->Target == pThis)
 			pSpawn->ResetTarget();
 	}
 
-	if (const auto pTechno = abstract_cast<TechnoClass*>(pThis))
-		pTechno->LastTarget = nullptr;
+	if (pThis)
+	{
+		if (const auto pTechno = abstract_cast<TechnoClass*, true>(pThis))
+			pTechno->LastTarget = nullptr;
 
-	if (const auto pFoot = abstract_cast<FootClass*>(pThis))
-		pFoot->LastDestination = nullptr;
+		if (const auto pFoot = abstract_cast<FootClass*, true>(pThis))
+			pFoot->LastDestination = nullptr;
+	}
 
 	return 0;
 }
