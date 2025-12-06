@@ -554,7 +554,7 @@ void MessageColumnClass::Initialize(int x, int y, int maxCount, int maxRecord, i
 	this->Blocked = false;
 }
 
-#include <IH.Ext.h>
+#include <EC.h>
 Ext::DispatchInterface AutoWrapTextEx("IHCore", "AutoWrapTextEx", DoNotCheckVersion);
 
 MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wchar_t* message, int timeout, bool silent, int delay)
@@ -581,7 +581,7 @@ MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wch
 
 	const int messageLen = static_cast<int>(wcslen(message));
 	//Use function from IHCore if available
-	auto Func = AutoWrapTextEx.GetFunc();
+	auto Func = HasIH() ? AutoWrapTextEx.GetFunc() : nullptr;
 	int charsToCopy;
 	const wchar_t* strAfter = nullptr;
 	if (Func)
