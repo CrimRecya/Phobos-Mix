@@ -581,7 +581,8 @@ MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wch
 
 	const int messageLen = static_cast<int>(wcslen(message));
 	//Use function from IHCore if available
-	auto Func = HasIH() ? AutoWrapTextEx.GetFunc() : nullptr;
+	bool ECLoadComplete = GetECLoadStage() == Ext::ECLoadStage::InitComplete;
+	auto Func = ECLoadComplete ? AutoWrapTextEx.GetFunc() : nullptr;
 	int charsToCopy;
 	const wchar_t* strAfter = nullptr;
 	if (Func)
