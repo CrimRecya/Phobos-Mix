@@ -634,6 +634,87 @@ DEFINE_HOOK(0x74691D, UnitClass_UpdateDisguise_EMP, 0x6)
 
 #pragma endregion
 
+#pragma region AttackMindControlledDelay
+
+static bool __fastcall CanAttackMindControlled(TechnoClass* pControlled, TechnoClass* pRetaliator)
+{
+	const auto pMind = pControlled->MindControlledBy;
+
+	if (!pMind || pRetaliator->Berzerk)
+		return true;
+
+	const auto pManager = pMind->CaptureManager;
+
+	if (!pManager || !pRetaliator->Owner->IsAlliedWith(pManager->GetOriginalOwner(pControlled)))
+		return true;
+
+	return TechnoExt::ExtMap.Find(pControlled)->BeControlledThreatFrame <= Unsorted::CurrentFrame;
+}
+
+DEFINE_HOOK(0x7089E8, TechnoClass_AllowedToRetaliate_AttackMindControlledDelay, 0x6)
+{
+	enum { CannotRetaliate = 0x708B17 };
+
+	GET(TechnoClass* const, pThis, ESI);
+	GET(TechnoClass* const, pAttacker, EBP);
+
+	return CanAttackMindControlled(pAttacker, pThis) ? 0 : CannotRetaliate;
+}
+
+static inline int CalculateExtraThreat(TechnoClass* pThis, ObjectClass* pTarget, int threat)
+{
+	const auto pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
+
+	if (!pTypeExt->TargetExtraThreat)
+		return threat;
+
+	const auto& vec = pTypeExt->TargetExtraThreat_Multipliers;
+	const size_t multsCount = vec.size();
+
+	if (multsCount <= 0)
+		return threat;
+
+	const size_t angleCount = pTypeExt->TargetExtraThreat_Angles.size();
+
+	if (angleCount <= 0)
+		return static_cast<int>(threat * vec[0]);
+
+	const auto absType = pThis->WhatAmI();
+	const auto tgtDir = pThis->GetTargetDirection(pTarget);
+	const bool useSec = pTypeExt->TargetExtraThreat_Turret && absType == AbstractType::Unit && pTypeExt->OwnerObject()->Turret;
+	const auto curDir = (useSec || absType == AbstractType::Aircraft ? pThis->SecondaryFacing : pThis->PrimaryFacing).Current();
+	const int difference = std::abs(static_cast<short>(static_cast<short>(tgtDir.Raw) - static_cast<short>(curDir.Raw)));
+
+	for (size_t i = 0; i < angleCount; ++i)
+	{
+		if (difference <= static_cast<int>(pTypeExt->TargetExtraThreat_Angles[i].Raw))
+			return static_cast<int>(threat * vec[Math::min(i, (multsCount - 1))]);
+	}
+
+	return static_cast<int>(threat * vec[Math::min(angleCount, (multsCount - 1))]);
+}
+
+DEFINE_HOOK(0x6F88BF, TechnoClass_CanAutoTargetObject_AttackMindControlledDelay, 0x6)
+{
+	enum { CannotSelect = 0x6F894F };
+
+	GET(TechnoClass* const, pThis, EDI);
+	GET(ObjectClass* const, pTarget, ESI);
+	GET(int* const, pThreat, EBP);
+
+	if (const auto pTechno = abstract_cast<TechnoClass*, true>(pTarget))
+	{
+		if (!CanAttackMindControlled(pTechno, pThis))
+			return CannotSelect;
+	}
+
+	*pThreat = CalculateExtraThreat(pThis, pTarget, *pThreat);
+
+	return 0;
+}
+
+#pragma endregion
+
 #pragma region ExtendedGattlingRateDown
 
 DEFINE_HOOK(0x70DE40, TechnoClass_GattlingValueRateDown_GattlingRateDownDelay, 0xA)
@@ -803,7 +884,7 @@ DEFINE_HOOK(0x51B20E, InfantryClass_AssignTarget_FireOnce, 0x6)
 }
 
 // Update attached anim layers after parent unit changes layer.
-void __fastcall DisplayClass_Submit_Wrapper(DisplayClass* pThis, void* _, ObjectClass* pObject)
+static void __fastcall DisplayClass_Submit_Wrapper(DisplayClass* pThis, void* _, ObjectClass* pObject)
 {
 	pThis->Submit(pObject);
 
@@ -837,7 +918,7 @@ DEFINE_HOOK(0x51D7E0, InfantryClass_DoAction_Water, 0x5)
 	return Continue;
 }
 
-bool __fastcall LocomotorCheckForBunkerable(TechnoTypeClass* pType)
+static bool __fastcall LocomotorCheckForBunkerable(TechnoTypeClass* pType)
 {
 	auto const loco = pType->Locomotor;
 

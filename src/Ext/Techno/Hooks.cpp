@@ -65,6 +65,7 @@ DEFINE_HOOK(0x4DA54E, FootClass_AI, 0x6)
 
 	pExt->UpdateWarpInDelay();
 	pExt->UpdateTiberiumEater();
+	pExt->AmmoAutoConvertActions();
 
 	return 0;
 }
@@ -310,7 +311,7 @@ DEFINE_HOOK(0x6F6AC4, TechnoClass_Limbo, 0x5)
 	return 0;
 }
 
-bool __fastcall TechnoClass_Limbo_Wrapper(TechnoClass* pThis)
+static bool __fastcall TechnoClass_Limbo_Wrapper(TechnoClass* pThis)
 {
 	// Do not remove attached effects from undeploying buildings.
 	if (auto const pBuilding = abstract_cast<BuildingClass*>(pThis))
@@ -516,12 +517,12 @@ DEFINE_HOOK(0x6FE352, TechnoClass_FirepowerMultiplier, 0x8)       // TechnoClass
 
 #pragma region Disguise
 
-bool __fastcall IsAlly_Wrapper(HouseClass* pTechnoOwner, void* _, HouseClass* pCurrentPlayer)
+static bool __fastcall IsAlly_Wrapper(HouseClass* pTechnoOwner, void* _, HouseClass* pCurrentPlayer)
 {
 	return pCurrentPlayer->IsObserver() || pTechnoOwner->IsAlliedWith(pCurrentPlayer) || (RulesExt::Global()->DisguiseBlinkingVisibility & AffectedHouse::Enemies) != AffectedHouse::None;
 }
 
-bool __fastcall IsControlledByCurrentPlayer_Wrapper(HouseClass* pThis)
+static bool __fastcall IsControlledByCurrentPlayer_Wrapper(HouseClass* pThis)
 {
 	HouseClass* pCurrent = HouseClass::CurrentPlayer;
 	const AffectedHouse visibilityFlags = RulesExt::Global()->DisguiseBlinkingVisibility;
@@ -678,9 +679,9 @@ DEFINE_HOOK(0x70EFE0, TechnoClass_GetMaxSpeed, 0x6)
 
 	GET(TechnoClass*, pThis, ECX);
 
-	auto const pThisType = pThis->GetTechnoType();
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
+	auto const pThisType = pTypeExt->OwnerObject();
 	int maxSpeed = pThisType->Speed;
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pThisType);
 
 	if (pTypeExt->UseDisguiseMovementSpeed && pThis->IsDisguised())
 	{
@@ -768,9 +769,11 @@ DEFINE_HOOK(0x73B4DA, UnitClass_DrawVXL_WaterType_Extra, 0x6)
 
 	GET(UnitClass*, pThis, EBP);
 
-	if (pThis->IsClearlyVisibleTo(HouseClass::CurrentPlayer) && !pThis->Deployed)
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->Type);
+
+	if (pTypeExt->NeedDamagedImage && pThis->IsClearlyVisibleTo(HouseClass::CurrentPlayer) && !pThis->Deployed)
 	{
-		if (UnitTypeClass* pCustomType = TechnoExt::GetUnitTypeExtra(pThis))
+		if (const auto pCustomType = TechnoExt::GetUnitTypeExtra(pThis, pTypeExt))
 			R->EBX<ObjectTypeClass*>(pCustomType);
 	}
 
@@ -783,16 +786,19 @@ DEFINE_HOOK(0x73C602, UnitClass_DrawSHP_WaterType_Extra, 0x6)
 
 	GET(UnitClass*, pThis, EBP);
 
-	if (pThis->IsClearlyVisibleTo(HouseClass::CurrentPlayer) && !pThis->Deployed)
+	const auto pType = pThis->Type;
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+
+	if (pTypeExt->NeedDamagedImage && pThis->IsClearlyVisibleTo(HouseClass::CurrentPlayer) && !pThis->Deployed)
 	{
-		if (const UnitTypeClass* pCustomType = TechnoExt::GetUnitTypeExtra(pThis))
+		if (const auto pCustomType = TechnoExt::GetUnitTypeExtra(pThis, pTypeExt))
 		{
-			if (SHPStruct* Image = pCustomType->GetImage())
+			if (const auto Image = pCustomType->GetImage())
 				R->EAX<SHPStruct*>(Image);
 		}
 	}
 
-	R->ECX(pThis->Type);
+	R->ECX(pType);
 	return Continue;
 }
 
@@ -1024,13 +1030,11 @@ DEFINE_HOOK(0x655DDD, RadarClass_ProcessPoint_RadarInvisible, 0x6)
 	if (isInShrouded && !pTechno->Owner->IsControlledByCurrentPlayer())
 		return Invisible;
 
-	auto const pType = pTechno->GetTechnoType();
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pTechno)->TypeExtData;
 
-	if (pType->RadarInvisible)
+	if (pTypeExt->OwnerObject()->RadarInvisible
+		&& EnumFunctions::CanTargetHouse(pTypeExt->RadarInvisibleToHouse.Get(AffectedHouse::Enemies), pTechno->Owner, HouseClass::CurrentPlayer))
 	{
-		auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
-
-		if (EnumFunctions::CanTargetHouse(pTypeExt->RadarInvisibleToHouse.Get(AffectedHouse::Enemies), pTechno->Owner, HouseClass::CurrentPlayer))
 			return Invisible;
 	}
 
@@ -1256,11 +1260,10 @@ DEFINE_HOOK(0x4DF410, FootClass_UpdateAttackMove_TargetAcquired, 0x6)
 {
 	GET(FootClass* const, pThis, ESI);
 
-	auto const pType = pThis->GetTechnoType();
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
 
 	if (pThis->IsCloseEnoughToAttack(pThis->Target)
-		&& pTypeExt->AttackMove_StopWhenTargetAcquired.Get(RulesExt::Global()->AttackMove_StopWhenTargetAcquired.Get(!pType->OpportunityFire)))
+		&& pTypeExt->AttackMove_StopWhenTargetAcquired.Get(RulesExt::Global()->AttackMove_StopWhenTargetAcquired.Get(!pTypeExt->OwnerObject()->OpportunityFire)))
 	{
 		if (auto const pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor))
 		{
@@ -1291,10 +1294,9 @@ DEFINE_HOOK(0x4DF4DB, FootClass_RefreshMegaMission_CheckMissionFix, 0xA)
 
 	GET(FootClass* const, pThis, ESI);
 
-	auto const pType = pThis->GetTechnoType();
-	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
 	auto const mission = pThis->GetCurrentMission();
-	const bool stopWhenTargetAcquired = pTypeExt->AttackMove_StopWhenTargetAcquired.Get(RulesExt::Global()->AttackMove_StopWhenTargetAcquired.Get(!pType->OpportunityFire));
+	const bool stopWhenTargetAcquired = pTypeExt->AttackMove_StopWhenTargetAcquired.Get(RulesExt::Global()->AttackMove_StopWhenTargetAcquired.Get(!pTypeExt->OwnerObject()->OpportunityFire));
 	bool clearMegaMission = mission != Mission::Guard;
 
 	if (stopWhenTargetAcquired && clearMegaMission)

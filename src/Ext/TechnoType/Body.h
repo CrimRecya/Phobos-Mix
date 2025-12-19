@@ -70,6 +70,7 @@ public:
 		Valueable<bool> MultiMindControl_ReleaseVictim;
 		Valueable<int> CameoPriority;
 		DWORD CameoPriority_Houses;
+		PhobosPCXFile AltCameoPCX;
 		Valueable<bool> NoManualMove;
 		Valueable<bool> NoManualEject;
 		Nullable<int> InitialStrength;
@@ -96,6 +97,9 @@ public:
 		Nullable<AutoDeathBehavior> AutoDeath_Behavior;
 		ValueableVector<AnimTypeClass*> AutoDeath_VanishAnimation;
 		Valueable<bool> AutoDeath_OnAmmoDepletion;
+		Valueable<bool> AutoDeath_OnOwnerChange;
+		Nullable<bool> AutoDeath_OnOwnerChange_HumanToComputer;
+		Nullable<bool> AutoDeath_OnOwnerChange_ComputerToHuman;
 		Valueable<int> AutoDeath_AfterDelay;
 		ValueableVector<TechnoTypeClass*> AutoDeath_TechnosDontExist;
 		Valueable<bool> AutoDeath_TechnosDontExist_Any;
@@ -166,6 +170,8 @@ public:
 		Valueable<bool> OpenTopped_ShareTransportTarget;
 		Valueable<bool> OpenTopped_UseTransportRangeModifiers;
 		Valueable<bool> OpenTopped_CheckTransportDisableWeapons;
+		Valueable<int> OpenTransport_RangeBonus;
+		Valueable<float> OpenTransport_DamageMultiplier;
 
 		Valueable<bool> AutoFire;
 		Valueable<bool> AutoFire_TargetSelf;
@@ -484,6 +490,7 @@ public:
 		Nullable<TechnoTypeClass*> Image_ConditionRed;
 		Nullable<UnitTypeClass*> WaterImage_ConditionYellow;
 		Nullable<UnitTypeClass*> WaterImage_ConditionRed;
+		bool NeedDamagedImage;
 
 		Nullable<int> InitialSpawnsNumber;
 		ValueableVector<AircraftTypeClass*> Spawns_Queue;
@@ -578,6 +585,10 @@ public:
 		Valueable<double> FallingDownDamage;
 		Nullable<double> FallingDownDamage_Water;
 
+		Valueable<int> Ammo_AutoConvertMinimumAmount;
+		Valueable<int> Ammo_AutoConvertMaximumAmount;
+		Nullable<TechnoTypeClass*> Ammo_AutoConvertType;
+
 		Valueable<bool> FiringForceScatter;
 
 		Valueable<int> FireUp;
@@ -662,6 +673,7 @@ public:
 			, MultiMindControl_ReleaseVictim { false }
 			, CameoPriority { 0 }
 			, CameoPriority_Houses { 0 }
+			, AltCameoPCX {}
 			, NoManualMove { false }
 			, NoManualEject { false }
 			, InitialStrength {}
@@ -713,6 +725,8 @@ public:
 			, OpenTopped_ShareTransportTarget { true }
 			, OpenTopped_UseTransportRangeModifiers { false }
 			, OpenTopped_CheckTransportDisableWeapons { false }
+			, OpenTransport_RangeBonus { 0 }
+			, OpenTransport_DamageMultiplier { 1.0 }
 
 			, AutoFire { false }
 			, AutoFire_TargetSelf { false }
@@ -753,6 +767,9 @@ public:
 			, AutoDeath_Behavior { }
 			, AutoDeath_VanishAnimation {}
 			, AutoDeath_OnAmmoDepletion { false }
+			, AutoDeath_OnOwnerChange { false }
+			, AutoDeath_OnOwnerChange_HumanToComputer {}
+			, AutoDeath_OnOwnerChange_ComputerToHuman {}
 			, AutoDeath_AfterDelay { 0 }
 			, AutoDeath_TechnosDontExist {}
 			, AutoDeath_TechnosDontExist_Any { false }
@@ -1077,6 +1094,7 @@ public:
 			, Image_ConditionRed { }
 			, WaterImage_ConditionYellow { }
 			, WaterImage_ConditionRed { }
+			, NeedDamagedImage { false }
 
 			, InitialSpawnsNumber { }
 			, Spawns_Queue { }
@@ -1150,6 +1168,10 @@ public:
 			, FallingDownDamage { 1.0 }
 			, FallingDownDamage_Water {}
 
+			, Ammo_AutoConvertMinimumAmount { -1 }
+			, Ammo_AutoConvertMaximumAmount { -1 }
+			, Ammo_AutoConvertType { nullptr }
+
 			, FiringForceScatter { true }
 
 			, FireUp { -1 }
@@ -1213,11 +1235,14 @@ public:
 		DirStruct GetBodyDesiredDir(DirStruct currentDir, DirStruct defaultDir);
 
 		void CalculateSpawnerRange();
-		bool IsSecondary(const int weaponIndex);
-		int SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget);
-		int SelectMultiWeapon(TechnoClass* const pThis, AbstractClass* const pTarget);
+		bool IsSecondary(const int weaponIndex) const;
+		int SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget) const;
+		int SelectMultiWeapon(TechnoClass* const pThis, AbstractClass* const pTarget) const;
 
 		void UpdateAdditionalAttributes();
+
+		// Ares 0.2
+		bool CameoIsVeteran(HouseClass* pHouse) const;
 
 		// Ares 0.A
 		const char* GetSelectionGroupID() const;

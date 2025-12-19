@@ -135,6 +135,7 @@ This page lists all the individual contributions to the project by their author.
   - `Powered.KillSpawns`
   - `Spawner.LimitRange`
   - Majority of ScriptType actions
+  - ScriptType Action 14004: Force Global OnlyTargetHouseEnemy value in Teams
   - MC deployer fixes
   - Help with docs
   - Automatic Passenger Deletion logic
@@ -154,6 +155,7 @@ This page lists all the individual contributions to the project by their author.
   - Warhead activation target health thresholds enhancements
   - Event 606: AttachEffect is attaching to a Techno
   - Linked superweapons
+  - Unit & infantry auto-conversion on ammo change
 - **Starkku**:
   - Misc. minor bugfixes & improvements
   - AI script actions:
@@ -467,6 +469,9 @@ This page lists all the individual contributions to the project by their author.
   - Customize Ares's radar jam logic
   - Customize if cloning need power
   - Customize type selection for IFV
+  - Fix the issue that units will goto farest location if target is closer than `MinimumRange`
+  - Fix a bug introduced by Ares where building types that have `UndeploysInto` cannot display `AltCameo` or `AltCameoPCX` even when you infiltrate enemy buildings with `Factory=UnitType`
+  - Fix the bug that techno with `Trainable=false` can be promoted if it's created by trigger event
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**:
   - Customizable `ShowTimer` priority of superweapons
@@ -591,6 +596,8 @@ This page lists all the individual contributions to the project by their author.
   - Fix customized `WarpAway` anim's wrong definition
   - Shield respawn animation and weapon
   - Toggle off laser trail and shake effects
+  - OpenTopped range bonus and damage multiplier customization for passengers
+  - AutoDeath upon ownership change
 - **NaotoYuuki** - Vertical & meteor trajectory projectile prototypes
 - **handama** - AI script action to `16005 Jump Back To Previous Script`
 - **TaranDahl (航味麻酱)**:
@@ -648,6 +655,8 @@ This page lists all the individual contributions to the project by their author.
   - Dehardcode the `ZAdjust` of warhead anim
   - Fix an issue where some effects pointing to a unit were not properly cleared when the unit changed its owner
   - Fix an issue where the vanilla script ignores jumpjets
+  - CellSpread in cylinder shape
+  - CellSpread damage check if victim is in air or on floor
 - **solar-III (凤九歌)**
   - Target scanning delay customization (documentation)
   - Skip target scanning function calling for unarmed technos (documentation)
@@ -691,3 +700,4 @@ This page lists all the individual contributions to the project by their author.
 - **Damfoos** - extensive and thorough testing
 - **Dmitry Volkov** - extensive and thorough testing
 - **Rise of the East community** - extensive playtesting of in-dev features
+- **11EJDE11** - Prevent mpdebug number from being drawn when visibility toggled off

@@ -33,13 +33,13 @@ DEFINE_HOOK(0x46920B, BulletClass_Detonate, 0x6)
 
 DEFINE_HOOK(0x489286, MapClass_DamageArea, 0x6)
 {
-	GET_BASE(const WarheadTypeClass*, pWH, 0x0C);
+	GET_BASE(const WarheadTypeClass*, pWH, 0xC);
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
 	if (pWHExt->InDamageArea)
 	{
 		GET(const CoordStruct*, pCoords, ECX);
-		GET_BASE(TechnoClass*, pOwner, 0x08);
+		GET_BASE(TechnoClass*, pOwner, 0x8);
 		GET_BASE(HouseClass*, pHouse, 0x14);
 
 		auto const pDecidedHouse = !pHouse && pOwner ? pOwner->Owner : pHouse;
@@ -56,7 +56,7 @@ DEFINE_HOOK(0x489286, MapClass_DamageArea, 0x6)
 DEFINE_HOOK(0x489430, MapClass_DamageArea_Cylinder_1, 0x7)
 {
 	//GET(int, nDetoCrdZ, EDX);
-	GET_BASE(WarheadTypeClass* const, pWH, 0x0C);
+	GET_BASE(WarheadTypeClass* const, pWH, 0xC);
 	GET_STACK(int, nVictimCrdZ, STACK_OFFSET(0xE0, -0x5C));
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
@@ -70,7 +70,7 @@ DEFINE_HOOK(0x489430, MapClass_DamageArea_Cylinder_1, 0x7)
 DEFINE_HOOK(0x4894C1, MapClass_DamageArea_Cylinder_2, 0x5)
 {
 	//GET(int, nDetoCrdZ, EDX);
-	GET_BASE(WarheadTypeClass* const, pWH, 0x0C);
+	GET_BASE(WarheadTypeClass* const, pWH, 0xC);
 	GET(int, nVictimCrdZ, ESI);
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
@@ -86,7 +86,7 @@ DEFINE_HOOK_AGAIN(0x4897C3, MapClass_DamageArea_Cylinder_3, 0x5)
 DEFINE_HOOK(0x48979C, MapClass_DamageArea_Cylinder_3, 0x8)
 {
 	//GET(int, nDetoCrdZ, ECX);
-	GET_BASE(WarheadTypeClass* const, pWH, 0x0C);
+	GET_BASE(WarheadTypeClass* const, pWH, 0xC);
 	GET(int, nVictimCrdZ, EDX);
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
@@ -100,7 +100,7 @@ DEFINE_HOOK(0x48979C, MapClass_DamageArea_Cylinder_3, 0x8)
 DEFINE_HOOK(0x4898BF, MapClass_DamageArea_Cylinder_4, 0x5)
 {
 	//GET(int, nDetoCrdZ, EDX);
-	GET_BASE(WarheadTypeClass* const, pWH, 0x0C);
+	GET_BASE(WarheadTypeClass* const, pWH, 0xC);
 	GET(int, nVictimCrdZ, ECX);
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
@@ -124,7 +124,8 @@ DEFINE_HOOK(0x489416, MapClass_DamageArea_CheckHeight_1, 0x6)
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	return (pTechno->IsInAir() ? pWHExt->AffectsInAir : pWHExt->AffectsOnFloor) ? 0 : SkipThisObject;
+	// return (pTechno->IsInAir() ? pWHExt->AffectsInAir : pWHExt->AffectsOnFloor) ? 0 : SkipThisObject;
+	return (pWHExt->AffectsInAir ? (!pWHExt->AffectsOnFloor && !pObject->IsInAir()) : (!pWHExt->AffectsOnFloor || pObject->IsInAir())) ? SkipThisObject : 0;
 }
 */
 DEFINE_HOOK(0x489710, MapClass_DamageArea_CheckHeight_2, 0x7)
@@ -134,9 +135,10 @@ DEFINE_HOOK(0x489710, MapClass_DamageArea_CheckHeight_2, 0x7)
 	GET_BASE(WarheadTypeClass* const, pWH, 0x0C);
 	GET(ObjectClass*, pObject, ESI);
 
-	auto pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
+	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	return (pObject->IsInAir() ? pWHExt->AffectsInAir : pWHExt->AffectsOnFloor) ? 0 : SkipThisObject;
+	// return (pTechno->IsInAir() ? pWHExt->AffectsInAir : pWHExt->AffectsOnFloor) ? 0 : SkipThisObject;
+	return (pWHExt->AffectsInAir ? (!pWHExt->AffectsOnFloor && !pObject->IsInAir()) : (!pWHExt->AffectsOnFloor || pObject->IsInAir())) ? SkipThisObject : 0;
 }
 
 #pragma endregion
