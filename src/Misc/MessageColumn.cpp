@@ -554,6 +554,9 @@ void MessageColumnClass::Initialize(int x, int y, int maxCount, int maxRecord, i
 	this->Blocked = false;
 }
 
+#include <EC.h>
+Ext::DispatchInterface AutoWrapTextEx("IHCore", "AutoWrapTextEx", DoNotCheckVersion);
+
 MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wchar_t* message, int timeout, bool silent, int delay)
 {
 	if (!message)
@@ -577,14 +580,71 @@ MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wch
 		return nullptr;
 
 	const int messageLen = static_cast<int>(wcslen(message));
-	// As vanilla
-	const int charsToCopy = reinterpret_cast<int(__thiscall*)(BitFont*, const wchar_t*, int, int, int)>(0x433F50)(pBit, message, availableWidth, 111, 1);
+	//Use function from IHCore if available
+	bool ECLoadComplete = GetECLoadStage() == Ext::ECLoadStage::InitComplete;
+	auto Func = ECLoadComplete ? AutoWrapTextEx.GetFunc() : nullptr;
+	int charsToCopy;
+	const wchar_t* strAfter = nullptr;
+	if (Func)
+	{
 
-	if (charsToCopy < 0)
-		return nullptr;
+		const wchar_t* strBefore;
+		AsType<
+			void __cdecl(
+				BitFont* _In_ Font,
+				const wchar_t* _In_ Str,
+				int _In_ MaxPixels,
+				int _In_ MaxChars,
+				bool _In_ WordWrap,
+				int& _Out_ Len,
+				const wchar_t*& _Out_ StrBefore,
+				const wchar_t*& _Out_ StrAfter
+			)
+		>(Func)(
+			pBit,
+			message,
+			availableWidth,
+			111,
+			1,
+			charsToCopy,
+			strBefore,
+			strAfter
+		);
+		/*
+		AutoWrapTextEx
 
-	buffer.append(message, charsToCopy);
+		在计算字符串最大长度时忽略格式控制字符
+		同时重新生成字符串剩余部分
 
+		输出：
+		Len = 0 ,StrBefore = nullptr ,StrAfter = nullptr :
+				存在错误（如字符串是空串或字体不可用）
+		Len != 0 ,StrBefore != nullptr ,StrAfter = nullptr :
+				完全输出，返回字符串长度， StrBefore就是Str，不需要重新分配
+		Len != 0 ,StrBefore != nullptr ,StrAfter != nullptr :
+				部分输出，返回输出长度，StrBefore指向重整后的字符串，StrAfter指向剩余字符串;
+				StrBefore和StrAfter使用GameCreateArray重新分配，请使用后用GameDeleteArray释放
+
+		*/
+		if (charsToCopy == 0)
+			return nullptr;
+
+		buffer.append(strBefore);
+
+		// Clean up strBefore
+		if (strAfter)
+			GameDeleteArray(strBefore, charsToCopy);
+	}
+	else
+	{
+		// As vanilla
+		charsToCopy = reinterpret_cast<int(__thiscall*)(BitFont*, const wchar_t*, int, int, int)>(0x433F50)(pBit, message, availableWidth, 111, 1);
+
+		if (charsToCopy < 0)
+			return nullptr;
+
+		buffer.append(message, charsToCopy);
+	}
 	if (this->MaxCount > 0 && (this->GetLabelCount() + 1) > this->MaxCount)
 	{
 		if (auto pLabel = this->LabelList)
@@ -604,14 +664,14 @@ MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wch
 		VocClass::PlayGlobal(RulesClass::Instance->IncomingMessage, 0x2000, 1.0f);
 
 	const auto pLabel = new MessageLabelClass
-		(
-			this->LabelsPos.X,
-			this->LabelsPos.Y,
-			newID,
-			(timeout == -1) ? 0 : (timeout + currentTime),
-			!silent,
-			delay + currentTime
-		);
+	(
+		this->LabelsPos.X,
+		this->LabelsPos.Y,
+		newID,
+		(timeout == -1) ? 0 : (timeout + currentTime),
+		!silent,
+		delay + currentTime
+	);
 
 	if (this->LabelList)
 		pLabel->AddTail(*this->LabelList);
@@ -620,21 +680,44 @@ MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wch
 
 	this->Update();
 
-	if (charsToCopy < messageLen)
+	if (Func)
 	{
-		const wchar_t* remainingText = &message[charsToCopy];
-
-		while (*remainingText && *remainingText < 0x20)
-			++remainingText;
-
-		if (*remainingText)
+		if (strAfter)
 		{
-			int nextDelay = delay;
+			const wchar_t* remainingText = strAfter;
 
-			if (!silent)
-				nextDelay += (charsToCopy * 2 - 1);
+			if (*remainingText)
+			{
+				int nextDelay = delay;
 
-			this->AddMessage(name, remainingText, timeout, silent, nextDelay);
+				if (!silent)
+					nextDelay += (charsToCopy * 2 - 1);
+
+				this->AddMessage(name, remainingText, timeout, silent, nextDelay);
+			}
+			// Clean up strAfter
+			GameDeleteArray(strAfter, wcslen(strAfter));
+		}
+	}
+	else
+	{
+		//As vanilla
+		if (charsToCopy < messageLen)
+		{
+			const wchar_t* remainingText = &message[charsToCopy];
+
+			while (*remainingText && *remainingText < 0x20)
+				++remainingText;
+
+			if (*remainingText)
+			{
+				int nextDelay = delay;
+
+				if (!silent)
+					nextDelay += (charsToCopy * 2 - 1);
+
+				this->AddMessage(name, remainingText, timeout, silent, nextDelay);
+			}
 		}
 	}
 
