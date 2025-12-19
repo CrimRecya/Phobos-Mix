@@ -184,7 +184,7 @@ void SelectedNotButtonClass::DrawInfo() const
 	const auto position = Point2D { this->X, this->Y };
 	const auto pExt = SelectedInfoClass::Instance.CurrentSelectTechno[0];
 	const auto pTechno = pExt->OwnerObject();
-	auto getIconFrame = [](const int base, const int mult) -> int
+	auto getIconFrame = [](const int base, const double mult) -> int
 	{
 		if (mult - 1.0 > 1e-10)
 			return base + (mult > 2.0 ? 4 : 3);

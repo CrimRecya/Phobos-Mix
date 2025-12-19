@@ -246,7 +246,6 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->AffectsOnFloor.Read(exINI, pSection, "AffectsOnFloor");
 	this->AffectsInAir.Read(exINI, pSection, "AffectsInAir");
-	this->CellSpread_Cylinder.Read(exINI, pSection, "CellSpread.Cylinder");
 	this->LightChanging.Read(exINI, pSection, "LightChanging");
 	this->SetAmbientLight.Read(exINI, pSection, "SetAmbientLight");
 	this->SetAmbientRed.Read(exINI, pSection, "SetAmbientRed");
@@ -570,7 +569,6 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->AffectsOnFloor)
 		.Process(this->AffectsInAir)
-		.Process(this->CellSpread_Cylinder)
 		.Process(this->LightChanging)
 		.Process(this->SetAmbientLight)
 		.Process(this->SetAmbientRed)

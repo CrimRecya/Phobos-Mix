@@ -155,7 +155,6 @@ public:
 
 		Valueable<bool> AffectsOnFloor;
 		Valueable<bool> AffectsInAir;
-		Valueable<bool> CellSpread_Cylinder;
 		Valueable<bool> LightChanging;
 		Valueable<int> SetAmbientLight;
 		Valueable<int> SetAmbientRed;
@@ -402,7 +401,6 @@ public:
 
 			, AffectsOnFloor { true }
 			, AffectsInAir { true }
-			, CellSpread_Cylinder { false }
 			, LightChanging { false }
 			, SetAmbientLight { -1 }
 			, SetAmbientRed { -1 }

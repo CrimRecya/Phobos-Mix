@@ -124,7 +124,7 @@ CellStruct BuildingTypeExt::GetWeaponFactoryDoor(BuildingClass* pThis)
 	return cell;
 }
 
-int BuildingTypeExt::GetUpgradesAmount(BuildingTypeClass* pBuilding, HouseClass* pHouse) // not including producing upgrades
+int BuildingTypeExt::GetUpgradesAmount(BuildingTypeClass const* const pBuilding, HouseClass const* const pHouse) // not including producing upgrades
 {
 	int result = 0;
 	bool isUpgrade = false;
