@@ -184,17 +184,20 @@ void SelectedNotButtonClass::DrawInfo() const
 	const auto position = Point2D { this->X, this->Y };
 	const auto pExt = SelectedInfoClass::Instance.CurrentSelectTechno[0];
 	const auto pTechno = pExt->OwnerObject();
+	auto getIconFrame = [](const int base, const int mult) -> int
+	{
+		if (mult - 1.0 > 1e-10)
+			return base + (mult > 2.0 ? 4 : 3);
+		else if (mult - 1.0 < -1e-10)
+			return base + (mult < 0.5 ? 2 : 1);
+
+		return base;
+	};
 
 	if (this->ID == 0) // InfoIconA
 	{
 		const double mult = TechnoExt::GetCurrentFirepowerMultiplier(pTechno);
-		int frame = 0;
-
-		if (mult - 1.0 > 1e-10)
-			frame = mult > 2.0 ? 4 : 3;
-		else if (mult - 1.0 < -1e-10)
-			frame = mult < 0.5 ? 2 : 1;
-
+		const int frame = getIconFrame(0, mult);
 		RectangleStruct rect { 0, 0, this->X + this->Width, this->Y + this->Height };
 		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 			pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
@@ -216,13 +219,7 @@ void SelectedNotButtonClass::DrawInfo() const
 	else if (this->ID == 1) // InfoIconD
 	{
 		const auto mult = pTechno->ArmorMultiplier * pExt->AE.ArmorMultiplier * (pTechno->HasAbility(Ability::Stronger) ? RulesClass::Instance->VeteranArmor : 1.0);
-		int frame = 5;
-
-		if (mult - 1.0 > 1e-10)
-			frame = mult > 2.0 ? 9 : 8;
-		else if (mult - 1.0 < -1e-10)
-			frame = mult < 0.5 ? 7 : 6;
-
+		const int frame = getIconFrame(5, mult);
 		RectangleStruct rect { 0, 0, this->X + this->Width, this->Y + this->Height };
 		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 			pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
@@ -241,69 +238,29 @@ void SelectedNotButtonClass::DrawInfo() const
 			DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
 		}
 	}
-	else if (this->ID == 2) // InfoIconS
+	else // InfoIconS
 	{
-		auto const whatAmI = pTechno->WhatAmI();
-		
-		if (whatAmI == AbstractType::Building)
+		const auto pFoot = abstract_cast<FootClass*, true>(pTechno);
+		const double mult = pFoot
+			? pFoot->SpeedMultiplier * TechnoExt::ExtMap.Find(pFoot)->AE.SpeedMultiplier * (pFoot->HasAbility(Ability::Faster) ? RulesClass::Instance->VeteranSpeed : 1.0)
+			: pExt->AE.ROFMultiplier * (pTechno->HasAbility(Ability::ROF) ? RulesClass::Instance->VeteranROF : 1.0);
+		const int frame = getIconFrame((pFoot ? 10 : 0), mult);
+		RectangleStruct rect { 0, 0, this->X + this->Width, this->Y + this->Height };
+		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
+			pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+
+		if (this->Hovering)
 		{
-			const auto mult = pExt->AE.ROFMultiplier * (pTechno->HasAbility(Ability::ROF) ? RulesClass::Instance->VeteranROF : 1.0);
-			int frame = 0;
-	
-			if (mult - 1.0 > 1e-10)
-				frame = mult > 2.0 ? 2 : 1;
-			else if (mult - 1.0 < -1e-10)
-				frame = mult < 0.5 ? 4 : 3;
-	
-			RectangleStruct rect { 0, 0, this->X + this->Width, this->Y + this->Height };
-			DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
-				pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
-	
-			if (this->Hovering)
-			{
-				auto location = Point2D { this->X + this->Width + 10, this->Y - 3 };
-				wchar_t buffer[0x20];
-				swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("TIP:ROFMult", L"ROFMult:%5.2f"), mult);
-				RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
-				location += Point2D { 4, 1 };
-				drawRect.Width += 8;
-				ColorStruct color { 0, 0, 0 };
-				DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
-				DSurface::Composite->DrawRect(&drawRect, COLOR_WHITE);
-				DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
-			}
-		}
-		else
-		{
-			double mult = 1.0;
-	
-			if (const auto pFoot = abstract_cast<FootClass*, true>(pTechno))
-				mult = pFoot->SpeedMultiplier * TechnoExt::ExtMap.Find(pFoot)->AE.SpeedMultiplier * (pFoot->HasAbility(Ability::Faster) ? RulesClass::Instance->VeteranSpeed : 1.0);
-	
-			int frame = 10;
-	
-			if (mult - 1.0 > 1e-10)
-				frame = mult > 2.0 ? 14 : 13;
-			else if (mult - 1.0 < -1e-10)
-				frame = mult < 0.5 ? 12 : 11;
-	
-			RectangleStruct rect { 0, 0, this->X + this->Width, this->Y + this->Height };
-			DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
-				pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
-	
-			if (this->Hovering)
-			{
-				auto location = Point2D { this->X + this->Width + 10, this->Y - 3 };
-				wchar_t buffer[0x20];
-				swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("TIP:SpeedMult", L"SpeedMult:%5.2f"), mult);
-				RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
-				location += Point2D { 4, 1 };
-				drawRect.Width += 8;
-				ColorStruct color { 0, 0, 0 };
-				DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
-				DSurface::Composite->DrawRect(&drawRect, COLOR_WHITE);
-				DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
-			}
+			auto location = Point2D { this->X + this->Width + 10, this->Y - 3 };
+			wchar_t buffer[0x20];
+			swprintf_s(buffer, (pFoot ? GeneralUtils::LoadStringUnlessMissing("TIP:ArmorMult", L"ArmorMult:%5.2f") : GeneralUtils::LoadStringUnlessMissing("TIP:ROFMult", L"ROFMult:%5.2f")), mult);
+			RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
+			location += Point2D { 4, 1 };
+			drawRect.Width += 8;
+			ColorStruct color { 0, 0, 0 };
+			DSurface::Composite->FillRectTrans(&drawRect, &color, 40);
+			DSurface::Composite->DrawRect(&drawRect, COLOR_WHITE);
+			DSurface::Composite->DrawText(buffer, &location, COLOR_WHITE);
 		}
 	}
 }

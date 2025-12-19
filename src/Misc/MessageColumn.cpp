@@ -580,27 +580,26 @@ MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wch
 		return nullptr;
 
 	const int messageLen = static_cast<int>(wcslen(message));
-	//Use function from IHCore if available
-	bool ECLoadComplete = GetECLoadStage() == Ext::ECLoadStage::InitComplete;
-	auto Func = ECLoadComplete ? AutoWrapTextEx.GetFunc() : nullptr;
-	int charsToCopy;
+	// Use function from IHCore if available
+	const auto func = GetECLoadStage() == Ext::ECLoadStage::InitComplete ? AutoWrapTextEx.GetFunc() : nullptr;
+	int charsToCopy = 0;
 	const wchar_t* strAfter = nullptr;
-	if (Func)
-	{
 
-		const wchar_t* strBefore;
-		AsType<
-			void __cdecl(
-				BitFont* _In_ Font,
-				const wchar_t* _In_ Str,
-				int _In_ MaxPixels,
-				int _In_ MaxChars,
-				bool _In_ WordWrap,
-				int& _Out_ Len,
-				const wchar_t*& _Out_ StrBefore,
-				const wchar_t*& _Out_ StrAfter
-			)
-		>(Func)(
+	if (func)
+	{
+		const wchar_t* strBefore = nullptr;
+		AsType<void __cdecl
+		(
+			BitFont* _In_ Font,
+			const wchar_t* _In_ Str,
+			int _In_ MaxPixels,
+			int _In_ MaxChars,
+			bool _In_ WordWrap,
+			int& _Out_ Len,
+			const wchar_t*& _Out_ StrBefore,
+			const wchar_t*& _Out_ StrAfter
+		)>(func)
+		(
 			pBit,
 			message,
 			availableWidth,
@@ -610,22 +609,19 @@ MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wch
 			strBefore,
 			strAfter
 		);
-		/*
-		AutoWrapTextEx
-
-		在计算字符串最大长度时忽略格式控制字符
-		同时重新生成字符串剩余部分
-
-		输出：
-		Len = 0 ,StrBefore = nullptr ,StrAfter = nullptr :
-				存在错误（如字符串是空串或字体不可用）
-		Len != 0 ,StrBefore != nullptr ,StrAfter = nullptr :
-				完全输出，返回字符串长度， StrBefore就是Str，不需要重新分配
-		Len != 0 ,StrBefore != nullptr ,StrAfter != nullptr :
-				部分输出，返回输出长度，StrBefore指向重整后的字符串，StrAfter指向剩余字符串;
-				StrBefore和StrAfter使用GameCreateArray重新分配，请使用后用GameDeleteArray释放
-
-		*/
+/*
+	AutoWrapTextEx
+	在计算字符串最大长度时忽略格式控制字符
+	同时重新生成字符串剩余部分
+	输出：
+	Len = 0 ,StrBefore = nullptr ,StrAfter = nullptr :
+		存在错误（如字符串是空串或字体不可用）
+	Len != 0 ,StrBefore != nullptr ,StrAfter = nullptr :
+		完全输出，返回字符串长度， StrBefore就是Str，不需要重新分配
+	Len != 0 ,StrBefore != nullptr ,StrAfter != nullptr :
+		部分输出，返回输出长度，StrBefore指向重整后的字符串，StrAfter指向剩余字符串;
+		StrBefore和StrAfter使用GameCreateArray重新分配，请使用后用GameDeleteArray释放
+*/
 		if (charsToCopy == 0)
 			return nullptr;
 
@@ -645,6 +641,7 @@ MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wch
 
 		buffer.append(message, charsToCopy);
 	}
+
 	if (this->MaxCount > 0 && (this->GetLabelCount() + 1) > this->MaxCount)
 	{
 		if (auto pLabel = this->LabelList)
@@ -680,7 +677,7 @@ MessageLabelClass* MessageColumnClass::AddMessage(const wchar_t* name, const wch
 
 	this->Update();
 
-	if (Func)
+	if (func)
 	{
 		if (strAfter)
 		{
