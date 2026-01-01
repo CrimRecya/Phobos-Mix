@@ -225,9 +225,7 @@ bool Phobos::IsTrialValid()
 	if (currentTime < compileTime)
 		return false;
 
-	const double daysPassed = difftime(currentTime, compileTime) / (60 * 60 * 24);
-
-	if (daysPassed > 30)
+	if (difftime(currentTime, compileTime) / (60 * 60 * 24) > 183)
 		return false;
 
 	if (std::filesystem::exists(recordFile))
@@ -354,7 +352,7 @@ DEFINE_HOOK(0x684AD3, UnknownClass_sub_684620_InitMessageList, 0x5)
 		const time_t compileTime = Phobos::GetCompile();
 		const time_t currentTime = Phobos::GetCurrent();
 		const int daysUsed = static_cast<int>(difftime(currentTime, compileTime) / (60 * 60 * 24));
-		const int daysLeft = 30 - daysUsed;
+		const int daysLeft = 183 - daysUsed;
 		constexpr const wchar_t* const text = L"正在使用Phobos特别合并构建#" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L"。若在使用过程中发生问题，请按说明中的方法反馈。  — 绯红热茶";
 		wchar_t buffer[0x40];
 

@@ -154,7 +154,6 @@ public:
 		Valueable<bool> SelectedIngameTimer;
 		Valueable<int> CleanUpAirBarrier;
 		Valueable<bool> ExtendedScatterAction;
-		Valueable<bool> MergeBuildingDamage;
 
 		Valueable<bool> AllowParallelAIQueues;
 		Valueable<bool> ForbidParallelAIQueues_Aircraft;
@@ -570,7 +569,6 @@ public:
 			, SelectedIngameTimer { false }
 			, CleanUpAirBarrier { 0 }
 			, ExtendedScatterAction { false }
-			, MergeBuildingDamage { false }
 
 			, AllowParallelAIQueues { true }
 			, ForbidParallelAIQueues_Aircraft { false }
