@@ -2565,11 +2565,12 @@ DEFINE_HOOK(0x6F9C80, TechnoClass_GreatestThreat_LogDeadInTechnoArray, 0x6)
 	GET(TechnoClass* const, pThis, ESI);
 	GET(int, index, EBX);
 
-	auto pTechno = TechnoClass::Array.Items[index];
+	const auto pTechno = TechnoClass::Array.Items[index];
+	const bool safe = (VTable::Get(pTechno) & 0xFFFE0000) == 0x7E0000;
 
-	if (pTechno->IsDead())
+	if (!safe || pTechno->IsDead())
 	{
-		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
+		if (!safe || VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
 			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X) with dirty vtable in TechnoArray!\n",
 				reinterpret_cast<DWORD>(pTechno));
@@ -2610,21 +2611,27 @@ DEFINE_HOOK(0x6F91EC, TechnoClass_GreatestThreat_LogDeadInAircraftTracker, 0x6)
 	GET(TechnoClass* const, pThis, ESI);
 	GET(TechnoClass* const, pTechno, EBP);
 
-	if (pTechno->IsDead())
+	const bool safe = (VTable::Get(pTechno) & 0xFFFE0000) == 0x7E0000;
+
+	if (!safe || pTechno->IsDead())
 	{
-		if (VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
+		if (!safe || VTable::Get(pTechno) == 0x7E1F50) // AbstractClass::AbsVTable
 		{
 			Debug::LogAndMessage("TechnoClass::GreatestThreat: Found DeadTechno(0x%08X) with dirty vtable in AircraftTracker!\n",
 				reinterpret_cast<DWORD>(pTechno));
 
-			for (int i = 0; i < 20; ++i)
+			auto removeFromATC = [pTechno]()
 			{
-				for (int j = 0; j < 20; ++j)
+				for (int i = 0; i < 20; ++i)
 				{
-					if (AircraftTrackerClass::Instance.TrackerVectors[i][j].Remove(pTechno))
-						return NextOne;
+					for (int j = 0; j < 20; ++j)
+					{
+						if (AircraftTrackerClass::Instance.TrackerVectors[i][j].Remove(pTechno))
+							return;
+					}
 				}
-			}
+			};
+			removeFromATC();
 
 			if (SessionClass::IsSingleplayer() && Phobos::Config::DevelopmentCommands)
 			{
