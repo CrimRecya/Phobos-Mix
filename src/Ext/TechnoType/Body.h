@@ -188,6 +188,7 @@ public:
 
 		Valueable<bool> NoSecondaryWeaponFallback;
 		Valueable<bool> NoSecondaryWeaponFallback_AllowAA;
+		Nullable<bool> AllowWeaponSelectAgainstWalls;
 
 		Valueable<int> NoAmmoWeapon;
 		Valueable<int> NoAmmoAmount;
@@ -571,6 +572,7 @@ public:
 		Valueable<int> Overload_ParticleSysCount;
 
 		Valueable<bool> Harvester_CanGuardArea;
+		Valueable<bool> Harvester_CanGuardArea_RequireTarget;
 		Nullable<bool> HarvesterScanAfterUnload;
 
 		Nullable<bool> ExtendedAircraftMissions_SmoothMoving;
@@ -743,6 +745,7 @@ public:
 
 			, NoSecondaryWeaponFallback { false }
 			, NoSecondaryWeaponFallback_AllowAA { false }
+			, AllowWeaponSelectAgainstWalls {}
 			, NoAmmoWeapon { -1 }
 			, NoAmmoAmount { 0 }
 			, JumpjetRotateOnCrash { true }
@@ -1154,6 +1157,7 @@ public:
 			, AttachmentUndergroundLayerMaxHeight { RulesExt::Global()->AttachmentUndergroundLayerMaxHeight }
 
 			, Harvester_CanGuardArea { false }
+			, Harvester_CanGuardArea_RequireTarget { false }
 			, HarvesterScanAfterUnload {}
 
 			, ExtendedAircraftMissions_SmoothMoving {}

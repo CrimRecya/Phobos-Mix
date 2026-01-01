@@ -136,6 +136,8 @@ public:
 		Valueable<int> NumberImpassableRows_Dir;
 		Valueable<int> WeaponsFactory_Dir;
 
+		Nullable<bool> BuildingRadioLink_SyncOwner;
+
 		// Ares 0.2
 		Valueable<bool> CloningFacility;
 
@@ -235,6 +237,8 @@ public:
 			, NumberImpassableRows_Dir { 2 }
 			, WeaponsFactory_Dir { 2 }
 			, UndeploysInto_Sellable { false }
+
+			, BuildingRadioLink_SyncOwner {}
 
 			// Ares 0.2
 			, CloningFacility { false }

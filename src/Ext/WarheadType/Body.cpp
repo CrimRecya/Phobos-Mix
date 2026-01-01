@@ -258,6 +258,8 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->Nonprovocative.Read(exINI, pSection, "Nonprovocative");
 
+	this->MergeBuildingDamage.Read(exINI, pSection, "MergeBuildingDamage");
+
 	this->CombatLightDetailLevel.Read(exINI, pSection, "CombatLightDetailLevel");
 	this->CombatLightChance.Read(exINI, pSection, "CombatLightChance");
 	this->CLIsBlack.Read(exINI, pSection, "CLIsBlack");
@@ -338,6 +340,8 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->PlayAnimAboveSurface.Read(exINI, pSection, "PlayAnimAboveSurface");
 
 	this->AnimZAdjust.Read(exINI, pSection, "AnimZAdjust");
+
+	this->ApplyPerTargetEffectsOnDetonate.Read(exINI, pSection, "ApplyPerTargetEffectsOnDetonate");
 
 	// Convert.From & Convert.To
 	TypeConvertGroup::Parse(this->Convert_Pairs, exINI, pSection, AffectedHouse::All);
@@ -615,6 +619,8 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->Nonprovocative)
 
+		.Process(this->MergeBuildingDamage)
+
 		.Process(this->CombatLightDetailLevel)
 		.Process(this->CombatLightChance)
 		.Process(this->CLIsBlack)
@@ -664,6 +670,8 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->PlayAnimAboveSurface)
 
 		.Process(this->AnimZAdjust)
+
+		.Process(this->ApplyPerTargetEffectsOnDetonate)
 
 		// Ares tags
 		.Process(this->AffectsEnemies)

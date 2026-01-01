@@ -262,6 +262,8 @@ public:
 		Valueable<bool> JumpjetClimbWithoutCutOut;
 		Valueable<bool> JumpjetClimbIgnoreBuilding;
 
+		Valueable<bool> MergeBuildingDamage;
+
 		Valueable<double> DamageOwnerMultiplier;
 		Valueable<double> DamageAlliesMultiplier;
 		Valueable<double> DamageEnemiesMultiplier;
@@ -444,6 +446,10 @@ public:
 		Valueable<bool> AIAirTargetingFix;
 
 		Valueable<bool> SortCameoByName;
+
+		Valueable<bool> BuildingRadioLink_SyncOwner;
+
+		Valueable<bool> ApplyPerTargetEffectsOnDetonate;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -823,6 +829,12 @@ public:
 			, AIAirTargetingFix { false }
 
 			, SortCameoByName { false }
+
+			, MergeBuildingDamage { false }
+
+			, BuildingRadioLink_SyncOwner { true }
+
+			, ApplyPerTargetEffectsOnDetonate { true }
 		{ }
 
 		virtual ~ExtData() = default;
