@@ -908,15 +908,13 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			updateLine();
 		}
 
-		const auto facing1 = pTechno->PrimaryFacing.Current();
-		const auto primaryFacing = facing1.GetValue<3>();
-
 		{
 			constexpr const char* facingTypes[8] = { "North", "NorthEast", "East", "SouthEast", "South", "SouthWest", "West", "NorthWest" };
+			const auto facing1 = pTechno->PrimaryFacing.Current();
 			const auto facing11 = pTechno->PrimaryFacing.StartFacing;
 			const auto facing12 = pTechno->PrimaryFacing.DesiredFacing;
 
-			drawText(COLOR_CYAN, "PrimaryFacing: (%05d[%02d])[%s]", facing1.Raw, facing1.GetValue<5>(), facingTypes[primaryFacing]);
+			drawText(COLOR_CYAN, "PrimaryFacing: (%05d[%02d])[%s]", facing1.Raw, facing1.GetValue<5>(), facingTypes[facing1.GetValue<3>()]);
 			updateLine();
 
 			drawText(COLOR_CYAN, "PriStartFacing: (%05d)", facing11.Raw);
@@ -1067,9 +1065,10 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 
 			{
 				constexpr const char* moveTypes[8] = { "Clear", "Cloak", "Move", "Gate", "A-Block", "E-Block", "Temp", "Unable" };
-				const auto facingType = static_cast<FacingType>(static_cast<char>(static_cast<int>(primaryFacing)));
 				const auto pLastCell = MapClass::Instance.GetCellAt(pFoot->LastMapCoords);
-				const auto moveType = static_cast<int>(pFoot->IsCellOccupied(pLastCell->GetNeighbourCell(facingType), facingType, pLastCell->Level + (pFoot->OnBridge ? 4 : 0), pLastCell, true));
+				const auto faceType = pFoot->PrimaryFacing.Current().GetValue<3>();
+				const auto pNextCell = MapClass::Instance.GetCellAt(Unsorted::AdjacentCell[faceType] + pLastCell->MapCoords);
+				const auto moveType = static_cast<int>(pFoot->IsCellOccupied(pNextCell, static_cast<FacingType>(faceType), pLastCell->Level + (pFoot->OnBridge ? 4 : 0), pLastCell, true));
 
 				drawText(COLOR_WHITE, "PlanningPathIdx: %d", pFoot->PlanningPathIdx);
 				drawText(COLOR_WHITE, "FaceMoveType: (%s)", (moveType >= 0 && moveType < 8) ? moveTypes[moveType] : "N/A");
