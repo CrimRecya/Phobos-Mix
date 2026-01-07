@@ -2783,9 +2783,10 @@ AircraftTypes, due to their different attack patterns, will not wait for the del
 
 ### Extra range
 
-- Now you can adjust weapon's range when the firer or target are under specific conditions.
+- Now you can adjust weapon's range when the firer or target are under specific conditions. Only work during the attack process and cannot affect other behaviors such as path finding.
 - `ExtraRange.TargetMoving` grants the weapon extra range when the target is in a moving state.
   - `ExtraRange.TargetMoving.CloseRangeOnly` is used to restrict whether the global default value only applies to units with `CloseRange=yes`.
+- `ExtraRange.FirerMoving` grants the weapon extra range when the firer is in a moving state.
 - `ExtraRange.Prefiring` grants the weapon extra range when the firer is in a pre-firing state, including:
     - Vehicles with tags such as `FiringSyncFrame%d`.
     - Aircraft that are firing.
@@ -2799,11 +2800,13 @@ In `rulesmd.ini`:
 [General]
 ExtraRange.TargetMoving=0.0                     ; float, range in cells
 ExtraRange.TargetMoving.CloseRangeOnly=false    ; boolean
+ExtraRange.FirerMoving=0.0                      ; float, range in cells
 ExtraRange.Prefiring=0.0                        ; float, range in cells
 ExtraRange.Prefiring.IncludeBurst=true          ; boolean
 
 [SOMEWEAPON]                                    ; WeaponType
 ExtraRange.TargetMoving=                        ; float, range in cells, the default values refer to the descriptions above
+ExtraRange.FirerMoving=                         ; float, range in cells, default to [General] -> ExtraRange.FirerMoving
 ExtraRange.Prefiring=                           ; float, range in cells, default to [General] -> ExtraRange.Prefiring
 ExtraRange.Prefiring.IncludeBurst=              ; boolean, default to [General] -> ExtraRange.Prefiring.IncludeBurst
 ```

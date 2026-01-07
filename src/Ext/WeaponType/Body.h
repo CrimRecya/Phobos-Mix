@@ -93,6 +93,7 @@ public:
 		Valueable<bool> DelayedFire_AnimOnTurret;
 
 		Nullable<Leptons> ExtraRange_TargetMoving;
+		Nullable<Leptons> ExtraRange_FirerMoving;
 		Nullable<Leptons> ExtraRange_Prefiring;
 		Nullable<bool> ExtraRange_Prefiring_IncludeBurst;
 
@@ -170,6 +171,7 @@ public:
 			, DelayedFire_AnimOnTurret { true }
 
 			, ExtraRange_TargetMoving {}
+			, ExtraRange_FirerMoving {}
 			, ExtraRange_Prefiring {}
 			, ExtraRange_Prefiring_IncludeBurst {}
 		{ }

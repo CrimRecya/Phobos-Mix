@@ -68,6 +68,16 @@ static bool IsChasing(TechnoClass* pThis, AbstractClass* pTarget)
 	return true;
 }
 
+static bool IsMovingFire(TechnoClass* pThis)
+{
+	const auto pFoot = abstract_cast<FootClass*>(pThis);
+
+	if (!pFoot || !pFoot->Locomotor.GetInterfacePtr()->Is_Really_Moving_Now())
+		return false;
+
+	return true;
+}
+
 static bool IsPrefiring(TechnoClass* pThis, WeaponTypeClass* pWeapon)
 {
 	const auto pTypeExt = WeaponTypeExt::ExtMap.Find(pWeapon);
@@ -157,6 +167,11 @@ DEFINE_HOOK(0x6F7248, TechnoClass_InRange_WeaponRange, 0x6)
 
 			if (targetMovingExtraRange && IsChasing(pThis, pTarget))
 				range += targetMovingExtraRange;
+
+			const auto firerMovingExtraRange = pExt->ExtraRange_FirerMoving.Get(RulesExt::Global()->ExtraRange_FirerMoving);
+
+			if (firerMovingExtraRange && IsMovingFire(pThis))
+				range += firerMovingExtraRange;
 		}
 	}
 
