@@ -471,6 +471,8 @@ This page lists all the individual contributions to the project by their author.
   - Fix a bug where units can be promoted when created via trigger actions even if they have `Trainable=false`
   - Fix the bug that ai will try to product aircraft even the airport has no free dock for it
   - Allow techno type considered as other type when recruiting techno for teams
+  - Fix the issue that technos cannot spawn survivors due to non-probabilistic reasons when the tech type was destroyed
+  - Fix the bug that vehicle survivor can spawn on wrong position when transport has been destroyed
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**:
   - Customizable `ShowTimer` priority of superweapons
