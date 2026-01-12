@@ -126,13 +126,12 @@ DEFINE_HOOK(0x4FD1CD, HouseClass_RecalcCenter_LimboDelivery, 0x6)
 
 	GET(BuildingClass* const, pBuilding, ESI);
 
-	if (!MapClass::Instance.CoordinatesLegal(pBuilding->GetMapCoords()))
+	if (!MapClass::Instance.CoordinatesLegal(pBuilding->GetMapCoords())
+		|| (RecalcCenterTemp::pExtData && RecalcCenterTemp::pExtData->OwnsLimboDeliveredBuilding(pBuilding))
+		|| TechnoTypeExt::ExtMap.Find(pBuilding->Type)->IgnoreForBaseCenter)
+	{
 		return R->Origin() == 0x4FD1CD ? SkipBuilding1 : SkipBuilding2;
-
-	auto const pExt = RecalcCenterTemp::pExtData;
-
-	if (pExt && pExt->OwnsLimboDeliveredBuilding(pBuilding))
-		return R->Origin() == 0x4FD1CD ? SkipBuilding1 : SkipBuilding2;
+	}
 
 	return 0;
 }
@@ -143,7 +142,7 @@ DEFINE_HOOK(0x4AC534, DisplayClass_ComputeStartPosition_IllegalCoords, 0x6)
 
 	GET(TechnoClass* const, pTechno, ECX);
 
-	if (!MapClass::Instance.CoordinatesLegal(pTechno->GetMapCoords()))
+	if (!MapClass::Instance.CoordinatesLegal(pTechno->GetMapCoords()) || TechnoExt::ExtMap.Find(pTechno)->TypeExtData->IgnoreForBaseCenter)
 		return SkipTechno;
 
 	return 0;

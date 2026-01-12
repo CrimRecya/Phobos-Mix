@@ -744,6 +744,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->ReloadInTransport.Read(exINI, pSection, "ReloadInTransport");
 	this->ForbidParallelAIQueues.Read(exINI, pSection, "ForbidParallelAIQueues");
+	this->IgnoreForBaseCenter.Read(exINI, pSection, "IgnoreForBaseCenter");
 
 	this->LaserTargetColor.Read(exINI, pSection, "LaserTargetColor");
 	this->AirstrikeLineColor.Read(exINI, pSection, "AirstrikeLineColor");
@@ -1416,6 +1417,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->InitialStrength)
 		.Process(this->ReloadInTransport)
 		.Process(this->ForbidParallelAIQueues)
+		.Process(this->IgnoreForBaseCenter)
 		.Process(this->TintColorAirstrike)
 		.Process(this->LaserTargetColor)
 		.Process(this->AirstrikeLineColor)
