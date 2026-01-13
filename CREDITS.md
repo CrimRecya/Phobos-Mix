@@ -403,6 +403,7 @@ This page lists all the individual contributions to the project by their author.
   - Reactivate unused trigger events 2, 53, and 54
   - Map Action 511, 609, 610
   - Weapons now support `AttackFriendlies` and `AttackCursorOnFriendlies`
+  - Attack non-threatening structures extensions
 - **NetsuNegi**:
   - Forbidding parallel AI queues by type
   - Jumpjet crash speed fix when crashing onto building

@@ -1322,6 +1322,18 @@ In `rulesmd.ini`:
 AttackMove.IgnoreWeaponCheck=false    ; boolean
 ```
 
+### Attack non-threatening structures
+
+- You can now freely configure whether units can automatically target non-threatening structures.
+  - `AutoTarget.NoThreatBuildings` affects player-controlled units, `AutoTargetAI.NoThreatBuildings` affects other units.
+
+In `rulesmd.ini`:
+```ini
+[General]
+AutoTarget.NoThreatBuildings=false      ; boolean
+AutoTargetAI.NoThreatBuildings=true     ; boolean
+```
+
 ### Aircraft spawner customizations
 
 ![image](_static/images/spawnrange-01.gif)
@@ -2727,15 +2739,14 @@ In `rulesmd.ini`:
 AreaFire.Target=base ; AreaFire Target Enumeration (base|self|random)
 ```
 
-### Can attack allies
+### Attack non-threatening structures
 
-- Weapons now support `AttackFriendlies` and `AttackCursorOnFriendlies`, They override the firer's `AttackFriendlies` and `AttackCursorOnFriendlies`.
+- `AttackNoThreatBuildings` permits shooters to attack non-threatening structures. This setting overrides other configurations.
 
 In `rulesmd.ini`:
 ```ini
 [SOMEWEAPON]                ; WeaponType
-AttackFriendlies=           ; boolean
-AttackCursorOnFriendlies=   ; boolean
+AttackNoThreatBuildings=    ; boolean
 ```
 
 ### Burst delay customizations
@@ -2768,6 +2779,17 @@ Burst.NoDelay=false   ; boolean
 ```{note}
 - This is useless for buildings and aircraft.
 - This will ignore `Burst.Delays` setting.
+```
+
+### Can attack allies
+
+- Weapons now support `AttackFriendlies` and `AttackCursorOnFriendlies`, They override the firer's `AttackFriendlies` and `AttackCursorOnFriendlies`.
+
+In `rulesmd.ini`:
+```ini
+[SOMEWEAPON]                ; WeaponType
+AttackFriendlies=           ; boolean
+AttackCursorOnFriendlies=   ; boolean
 ```
 
 ### Delayed firing

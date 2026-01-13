@@ -91,6 +91,7 @@ public:
 		Nullable<bool> ExtraRange_Prefiring_IncludeBurst;
 		Nullable<bool> AttackFriendlies;
 		Nullable<bool> AttackCursorOnFriendlies;
+		Nullable<bool> AttackNoThreatBuildings;
 
 		bool SkipWeaponPicking;
 
@@ -170,6 +171,7 @@ public:
 			, ExtraRange_Prefiring_IncludeBurst {}
 			, AttackFriendlies {}
 			, AttackCursorOnFriendlies {}
+			, AttackNoThreatBuildings {}
 		{ }
 
 		int GetBurstDelay(int burstIndex) const;
