@@ -529,6 +529,8 @@ Vanilla fixes:
 - Fixed an issue that rockets do not consider the destination altitude during climbing (by TaranDahl)
 - Fixed the bug that if object has been removed from LogicClass in Update(), next object will be skip (by NetsuNegi)
 - Fixed cursor from being hardcoded to update/render 60 times a second no matter how fast the game is rendering. Now the Cursor will update and render much more frequently (by Fridge)
+- Fixed an issue that the AI would set anger towards friendly houses, causing it to act stupidly (by TaranDahl)
+- Fixed an issue that the AI would look for the first house in the array as an enemy instead of the nearest one when there were no enemies (by TaranDahl)
 
 Phobos fixes:
 - Fixed the bug that `AllowAirstrike=no` cannot completely prevent air strikes from being launched against it (by NetsuNegi)
