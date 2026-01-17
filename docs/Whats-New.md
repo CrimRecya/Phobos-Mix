@@ -89,6 +89,37 @@ You can use the migration utility (can be found on [Phobos supplementaries repo]
 
 - Key `rulesmd.ini -> [TechnoType] -> Deployed.RememberTarget` is deprecated and can be removed now, the bugfix for `DeployToFire` deployers is now always on.
 
+### Changed tags<!-- This is only a temporary solution; what method to use afterwards has not been determined yet. -->
+
+- To standardize tag names for similar functions, prevent typos, or avoid misunderstandings, replace them with new tag names.
+
+#### From pre-0.5 devbuilds
+
+- The following tags were renamed:
+  - `[WarheadType] -> Crit.AffectAbovePercent` -> `[WarheadType] -> Crit.AffectsAbovePercent`.
+
+#### From 0.4
+
+- The following tags were renamed:
+  - `[AttachEffectType] -> AffectTargets` -> `[AttachEffectType] -> AffectsTarget`
+  - `[AttachEffectType] -> ReflectDamage.AffectsHouses` -> `[AttachEffectType] -> ReflectDamage.AffectsHouse`
+  - `[AttachEffectType/TechnoType] -> RevengeWeapon.AffectsHouses` -> `[AttachEffectType/TechnoType] -> RevengeWeapon.AffectsHouse`
+  - `[TechnoType] -> AutoFire` -> `[TechnoType] -> AutoTargetOwnPosition`
+  - `[TechnoType] -> AutoFire.TargetSelf` -> `[TechnoType] -> AutoTargetOwnPosition.Self`
+  - `[WarheadType] -> DetonateOnAllMapObjects.AffectHouses` -> `[WarheadType] -> DetonateOnAllMapObjects.AffectsHouse`
+  - `[WarheadType] -> DetonateOnAllMapObjects.AffectTargets` -> `[WarheadType] -> DetonateOnAllMapObjects.AffectsTarget`
+  - `[WarheadType] -> Crit.AffectBelowPercent` -> `[WarheadType] -> Crit.AffectsBelowPercent`.
+  - `[WarheadType] -> Crit.Affects` -> `[WarheadType] -> Crit.AffectsTarget`
+  - `[WarheadType] -> Crit.AffectsHouses` -> `[WarheadType] -> Crit.AffectsHouse`
+  - `[WarheadType] -> KillWeapon.AffectsHouses` -> `[WarheadType] -> KillWeapon.AffectsHouse`
+  - `[WarheadType] -> KillWeapon.OnFirer.AffectsHouses` -> `[WarheadType] -> KillWeapon.OnFirer.AffectsHouse`
+  - `[WarheadType/SuperWeaponType] -> Convert(N).AffectedHouses` -> `[WarheadType/SuperWeaponType] -> Convert(N).AffectsHouse`
+  - `[SuperWeaponType] -> LimboKill.Affected` -> `[SuperWeaponType] -> LimboKill.AffectsHouse`
+
+```{note}
+- You can use the [*MigrationUtility*](https://github.com/Phobos-developers/PhobosSupplementaries/tree/develop/MigrationUtility) in the PhobosSupplementaries repository to conveniently complete these migrations.
+```
+
 ### New user settings in RA2MD.INI
 
 - These are new user setting keys added by various features in Phobos. Most of them can be found in either in [user inteface](User-Interface.md) or [miscellaneous](Miscellanous.md) sections. Search functionality can be used to find them quickly if needed.
