@@ -2484,7 +2484,7 @@ While this feature can provide better performance than a large `CellSpread` valu
 
 - `KillWeapon` will be fired at the target TechnoType's location once it's killed by this Warhead.
 - `KillWeapon.OnFirer` will be fired at the attacker's location once the target TechnoType is killed by this Warhead. If the source of this Warhead is not another TechnoType, `KillWeapon.OnFirer` will not be fired.
-- `KillWeapon.AffectsHouse` / `KillWeapon.OnFirer.AffectsHouse` and `KillWeapon.Affects` / `KillWeapon.OnFirer.Affects` can be used to filter which houses targets can belong to and which types of targets are be considered valid for `KillWeapon` and `KillWeapon.OnFirer` respectively.
+- `KillWeapon.AffectsHouse` / `KillWeapon.OnFirer.AffectsHouse` and `KillWeapon.AffectsTarget` / `KillWeapon.OnFirer.AffectsTarget` can be used to filter which houses targets can belong to and which types of targets are be considered valid for `KillWeapon` and `KillWeapon.OnFirer` respectively.
   - If the source of this Warhead is not another TechnoType, `KillWeapon` will be fired regardless of the target's house or type.
 - If a TechnoType has `SuppressKillWeapons` set to true, it will not trigger `KillWeapon` or `KillWeapon.OnFirer` upon being killed. `SuppressKillWeapons.Types` can be used to list WeaponTypes affected by this, if none are listed all WeaponTypes are affected.
 
@@ -2495,8 +2495,8 @@ KillWeapon=                           ; WeaponType
 KillWeapon.OnFirer=                   ; WeaponType
 KillWeapon.AffectsHouse=all           ; List of Affected House Enumeration (none|owner/self|allies/ally|team|enemies/enemy|all)
 KillWeapon.OnFirer.AffectsHouse=all   ; List of Affected House Enumeration (none|owner/self|allies/ally|team|enemies/enemy|all)
-KillWeapon.Affects=all                ; List of Affected Target Enumeration (none|aircraft|buildings|infantry|units|all)
-KillWeapon.OnFirer.Affects=all        ; List of Affected Target Enumeration (none|aircraft|buildings|infantry|units|all)
+KillWeapon.AffectsTarget=all          ; List of Affected Target Enumeration (none|aircraft|buildings|infantry|units|all)
+KillWeapon.OnFirer.AffectsTarget=all  ; List of Affected Target Enumeration (none|aircraft|buildings|infantry|units|all)
 
 [SOMETECHNO]                          ; TechnoType
 SuppressKillWeapons=false             ; boolean
