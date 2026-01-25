@@ -823,40 +823,7 @@ DEFINE_HOOK(0x414665, AircraftClass_Draw_ExtraSHP, 0x6)
 
 	return Continue;
 }
-/*
-// Do not explicitly reset target for KeepTargetOnMove vehicles when issued move command.
-DEFINE_HOOK(0x4C7462, EventClass_Execute_KeepTargetOnMove, 0x5)
-{
-	enum { SkipGameCode = 0x4C74C0 };
 
-	GET(TechnoClass*, pTechno, EDI);
-
-	if (pTechno->WhatAmI() != AbstractType::Unit)
-		return 0;
-
-	GET(EventClass*, pThis, ESI);
-	auto const mission = static_cast<Mission>(pThis->MegaMission.Mission);
-	auto const pExt = TechnoExt::ExtMap.Find(pTechno);
-
-	if (mission == Mission::Move && pExt->TypeExtData->KeepTargetOnMove && pTechno->Target)
-	{
-		GET(AbstractClass*, pTarget, EBX);
-
-		if (!pTarget && pTechno->IsCloseEnoughToAttack(pTechno->Target))
-		{
-			auto const pDestination = pThis->MegaMission.Destination.As_Abstract();
-			pTechno->SetDestination(pDestination, true);
-			pExt->KeepTargetOnMove = true;
-
-			return SkipGameCode;
-		}
-	}
-
-	pExt->KeepTargetOnMove = false;
-
-	return 0;
-}
-*/
 #pragma endregion
 
 DEFINE_HOOK(0x70D703, TechnoClass_FireDeathWeapon_UseGlobalDeathWeaponDamage, 0xA)

@@ -1005,7 +1005,7 @@ DEFINE_HOOK(0x4C7512, EventClass_Execute_StopCommand, 0x6)
 
 	return 0;
 }
-
+/*
 DEFINE_HOOK(0x4C7462, EventClass_Execute_MegaMission_MoveCommand, 0x5)
 {
 	enum { SkipGameCode = 0x4C74C0 };
@@ -1045,5 +1045,5 @@ DEFINE_HOOK(0x4C7462, EventClass_Execute_MegaMission_MoveCommand, 0x5)
 
 	return 0;
 }
-
+*/
 #pragma endregion

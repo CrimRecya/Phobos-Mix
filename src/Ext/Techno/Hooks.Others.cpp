@@ -1564,9 +1564,8 @@ static inline bool ExtraTargeting(TechnoClass* pThis, bool area = false)
 	}
 
 	auto coord = (area && pThis->ArchiveTarget ? pThis->ArchiveTarget : pThis)->GetCoords();
-
 	pThis->ShouldLoseTargetNow = true;
-	bool HasTarget = pThis->TargetAndEstimateDamage(coord, area ? ThreatType::Area : ThreatType::Range);
+	const bool HasTarget = pThis->TargetAndEstimateDamage(coord, area ? ThreatType::Area : ThreatType::Range);
 	pThis->ShouldLoseTargetNow = HasTarget;
 
 	return HasTarget;
@@ -1631,15 +1630,23 @@ DEFINE_HOOK(0x4C7462, EventClass_RespondToEvent_ExtraTargeting_MegaMission, 0x5)
 	{
 		auto const pExt = TechnoExt::ExtMap.Find(pTechno);
 
-		if (mission == Mission::Move && pExt->TypeExtData->KeepTargetOnMove && pTechno->Target)
+		if (mission == Mission::Move)
 		{
-			if (!pTarget && pTechno->IsCloseEnoughToAttack(pTechno->Target))
-			{
-				auto const pDestination = pThis->MegaMission.Destination.As_Abstract();
-				pTechno->SetDestination(pDestination, true);
-				pExt->KeepTargetOnMove = true;
+			// Explicitly reset subterranean harvester state machine.
+			pExt->SubterraneanHarvStatus = 0;
+			pExt->SubterraneanHarvRallyPoint = nullptr;
 
-				return SkipGameCode;
+			// Do not explicitly reset target for KeepTargetOnMove vehicles when issued move command.
+			if (pExt->TypeExtData->KeepTargetOnMove && pTechno->Target)
+			{
+				if (!pTarget && pTechno->IsCloseEnoughToAttack(pTechno->Target))
+				{
+					auto const pDestination = pThis->MegaMission.Destination.As_Abstract();
+					pTechno->SetDestination(pDestination, true);
+					pExt->KeepTargetOnMove = true;
+
+					return SkipGameCode;
+				}
 			}
 		}
 
@@ -1651,7 +1658,7 @@ DEFINE_HOOK(0x4C7462, EventClass_RespondToEvent_ExtraTargeting_MegaMission, 0x5)
 
 	auto currentMission = pTechno->GetCurrentMission();
 
-	if (currentMission == Mission::Attack || currentMission == Mission::Area_Guard)
+	if (currentMission == Mission::Attack || currentMission == Mission::Area_Guard || !ExtraTargeting(pTechno))
 	{
 		// These missions won't change to the queued mission if the techno has target.
 		pTechno->TargetingTimer.Stop();
@@ -1659,7 +1666,6 @@ DEFINE_HOOK(0x4C7462, EventClass_RespondToEvent_ExtraTargeting_MegaMission, 0x5)
 	}
 	else
 	{
-		ExtraTargeting(pTechno);
 		return SkipSetTarget;
 	}
 }
