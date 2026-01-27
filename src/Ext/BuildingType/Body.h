@@ -169,7 +169,6 @@ public:
 			, Refinery_UseNormalActiveAnim { false }
 			, HasPowerUpAnim {}
 			, UndeploysInto_Sellable { false }
-
 			, BuildingRadioLink_SyncOwner {}
 
 			// Ares 0.2

@@ -194,6 +194,9 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->BunkerWallsUpSound.Read(exINI, pSection, "BunkerWallsUpSound");
 	this->BunkerWallsDownSound.Read(exINI, pSection, "BunkerWallsDownSound");
 	this->BuildingRepairedSound.Read(exINI, pSection, "BuildingRepairedSound");
+	this->Refinery_UseStorage.Read(exINI, pSection, "Refinery.UseStorage");
+	this->UndeploysInto_Sellable.Read(exINI, pSection, "UndeploysInto.Sellable");
+	this->BuildingRadioLink_SyncOwner.Read(exINI, pSection, "BuildingRadioLink.SyncOwner");
 
 	if (pThis->NumberOfDocks > 0)
 	{
@@ -243,11 +246,6 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 			this->OccupierMuzzleFlashes[i] = nMuzzleLocation.Get(Point2D::Empty);
 		}
 	}
-
-	this->Refinery_UseStorage.Read(exINI, pSection, "Refinery.UseStorage");
-	this->UndeploysInto_Sellable.Read(exINI, pSection, "UndeploysInto.Sellable");
-
-	this->BuildingRadioLink_SyncOwner.Read(exINI, pSection, "BuildingRadioLink.SyncOwner");
 
 	// PlacementPreview
 	{
