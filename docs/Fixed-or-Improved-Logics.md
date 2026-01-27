@@ -716,10 +716,11 @@ ExtendedAircraftMissions=false            ; boolean
 ExtendedAircraftMissions.UnlandDamage=-1  ; integer
 
 [SOMEAIRCRAFT]                            ; AircraftType
-ExtendedAircraftMissions.SmoothMoving=    ; boolean, default to [General] -> ExtendedAircraftMissions
-ExtendedAircraftMissions.EarlyDescend=    ; boolean, default to [General] -> ExtendedAircraftMissions
-ExtendedAircraftMissions.RearApproach=    ; boolean, default to [General] -> ExtendedAircraftMissions
-ExtendedAircraftMissions.FastScramble=    ; boolean, default to [General] -> ExtendedAircraftMissions
+ExtendedAircraftMissions=                 ; boolean, default to [General] -> ExtendedAircraftMissions
+ExtendedAircraftMissions.SmoothMoving=    ; boolean, default to [SOMEAIRCRAFT] -> ExtendedAircraftMissions
+ExtendedAircraftMissions.EarlyDescend=    ; boolean, default to [SOMEAIRCRAFT] -> ExtendedAircraftMissions
+ExtendedAircraftMissions.RearApproach=    ; boolean, default to [SOMEAIRCRAFT] -> ExtendedAircraftMissions
+ExtendedAircraftMissions.FastScramble=    ; boolean, default to [SOMEAIRCRAFT] -> ExtendedAircraftMissions
 ExtendedAircraftMissions.UnlandDamage=    ; integer, default to [General] -> ExtendedAircraftMissions.UnlandDamage
 ```
 
