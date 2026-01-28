@@ -614,6 +614,7 @@ This page lists all the individual contributions to the project by their author.
   - OpenTopped range bonus and damage multiplier customization for passengers
   - AutoDeath upon ownership change
   - Maximum amount for power plant enhancer
+  - Return warhead
 - **NaotoYuuki** - Vertical & meteor trajectory projectile prototypes
 - **handama** - AI script action to `16005 Jump Back To Previous Script`
 - **TaranDahl (航味麻酱)**:
