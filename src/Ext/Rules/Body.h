@@ -111,6 +111,7 @@ public:
 		Valueable<bool> ForbidParallelAIQueues_Vehicle;
 
 		Valueable<bool> EnablePowerSurplus;
+		Valueable<int> PowerSurplus_ScaleToDrainAmount;
 
 		Valueable<bool> DisplayIncome;
 		Valueable<bool> DisplayIncome_AllowAI;
@@ -391,6 +392,7 @@ public:
 			, ForbidParallelAIQueues_Vehicle { false }
 
 			, EnablePowerSurplus { false }
+			, PowerSurplus_ScaleToDrainAmount { 0 }
 
 			, AllowDeployControlledMCV { false }
 
