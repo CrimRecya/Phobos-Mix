@@ -1175,7 +1175,15 @@ DEFINE_HOOK(0x7185DA, TeleportLocomotionClass_MakeRoom_DestFix, 0x6)
 
 	GET(CellStruct*, pCellAt, EAX);
 
-	return *pCellAt == CellStruct::Empty ? ReturnTrue : 0;
+	if (*pCellAt == CellStruct::Empty)
+	{
+		GET(const LocomotionClass* const, pLoco, EBP);
+		// cannot find location ? dont move
+		pLoco->LinkedTo->ChronoDestCoords = pLoco->LinkedTo->Location;
+		return ReturnTrue;
+	}
+
+	return 0;
 }
 
 #pragma region TeleportLocomotionOccupationFix
