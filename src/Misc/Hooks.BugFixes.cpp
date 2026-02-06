@@ -1371,7 +1371,19 @@ DEFINE_HOOK(0x6F4BB3, TechnoClass_ReceiveCommand_RequestUntether, 0x7)
 #pragma endregion
 
 // Fix the bug that techno in attack move will move to target if it cannot attack it
-DEFINE_JUMP(LJMP, 0x4D77BD, 0x4D769F)
+DEFINE_HOOK(0x4D77BD, FootClass_ObjectClickedAction_NoMove, 0x6)
+{
+	enum { Attack = 0x4D769F };
+
+	GET(ObjectClass*, pTarget, EBX);
+	const auto pTargetTechno = abstract_cast<TechnoClass*>(pTarget);
+
+	if (!pTargetTechno)
+		return Attack;
+
+	GET(FootClass*, pThis, ESI);
+	return pThis->Owner->IsAlliedWith(pTargetTechno->Owner) ? 0 : Attack;
+}
 
 #pragma region JumpjetShadowPointFix
 
