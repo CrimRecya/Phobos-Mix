@@ -539,9 +539,9 @@ New:
 - [Penetrates damage on transporter](New-or-Enhanced-Logics.md#penetrates-damage-on-transporter) (by NetsuNegi)
 - Added amount limit of `LimboKill` (by NetsuNegi)
 - [Customizations for techno type target scan/guard range](Fixed-or-Improved-Logics.md#target-scan-guard-range-customizations) (by Starkku)
-- Spawns particle when spawns tiberium by terrain (by NetsuNegi)
+- [Spawns particle when spawns tiberium by terrain](Fixed-or-Improved-Logics.md#customizable-ore-spawners) (by NetsuNegi)
 - Allow jumpjet climbing ignore building height (by TaranDahl)
-- Allow draw SuperWeapon timer as percentage (by NetsuNegi)
+- [Allow draw SuperWeapon timer as percentage](User-Interface.md#allow-draw-superweapon-timer-as-percentage) (by NetsuNegi)
 - Customize particle system of parasite logic (by NetsuNegi)
 
 Vanilla fixes:
@@ -1220,7 +1220,6 @@ Vanilla fixes:
 - Fixed the bug when reading a map which puts `Preview(Pack)` after `Map` lead to the game fail to draw the preview (by secsome)
 - Fixed the bug that GameModeOptions are not correctly saved (by secsome)
 - Fixed the bug that AITriggerTypes do not recognize building upgrades (by Uranusian)
-- Fixed AI Aircraft docks bug when Ares tag `[GlobalControls] -> AllowParallelAIQueues=no` is set (by FS-21)
 - Fixed the bug when occupied building's `MuzzleFlashX` is drawn on the center of the building when `X` goes past 10 (by Otamaa)
 - Fixed jumpjet units that are `Crashable` not crashing to ground properly if destroyed while being pulled by a `Locomotor` warhead (by Starkku)
 - Fixed aircraft & jumpjet units not being affected by speed modifiers (by Starkku)
@@ -1276,6 +1275,7 @@ Phobos fixes:
 - Fixed GlobalVariables failed working among scenarios (by Trsdy)
 
 Fixes / interactions with other extensions:
+- Fixed AI Aircraft docks bug when Ares tag `[GlobalControls] -> AllowParallelAIQueues=no` is set (by FS-21)
 - Weapons fired by EMPulse superweapons *(Ares feature)* without `EMPulse.TargetSelf=true` can now create radiation (by Starkku)
 
 Non-DLL:
