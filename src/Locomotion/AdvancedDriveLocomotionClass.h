@@ -358,6 +358,28 @@ private:
 				pLinked->OnBridge = false;
 		}
 	}
+	inline void UpdatePathDirections()
+	{
+		const auto pLinked = this->LinkedTo;
+		memmove(&pLinked->PathDirections[0], &pLinked->PathDirections[1], 0x5Cu);
+		pLinked->PathDirections[23] = -1;
+	}
+	inline void SetNewLocation(const CoordStruct& crd)
+	{
+		const auto pLinked = this->LinkedTo;
+		const bool wasOnMap = pLinked->IsOnMap;
+		pLinked->IsOnMap = false;
+		pLinked->SetLocation(crd);
+		pLinked->IsOnMap = wasOnMap;
+	}
+	inline void SetNewHeight(const int height)
+	{
+		const auto pLinked = this->LinkedTo;
+		const bool wasOnMap = pLinked->IsOnMap;
+		pLinked->IsOnMap = false;
+		pLinked->SetHeight(height);
+		pLinked->IsOnMap = wasOnMap;
+	}
 	inline int UpdateSpeedAccum(int& speedAccum); // Avoid using goto
 public:
 	static bool IsReversing(FootClass* pFoot)

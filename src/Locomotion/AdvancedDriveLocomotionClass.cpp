@@ -137,7 +137,7 @@ bool AdvancedDriveLocomotionClass::Process()
 	const auto notInMotion = !this->InMotion();
 
 	// Update hover state
-	if (pTypeExt->AdvancedDrive_Hover)
+	if (pTypeExt->AdvancedDrive_Hover && pLinked->TubeIndex < 0) // Check TubeIndex may be redundant
 		this->UpdateHoverState();
 
 	if (notInMotion)
@@ -485,18 +485,12 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 			const auto pTube = TubeClass::Array.Items[tubeIndex];
 			this->HeadToCoord = CellClass::Cell2Coord(pTube->ExitCell);
 
-			memmove(&pLinked->PathDirections[0], &pLinked->PathDirections[1], 0x5Cu);
-			pLinked->PathDirections[23] = -1;
+			this->UpdatePathDirections();
 			pLinked->TubeIndex = static_cast<char>(tubeIndex);
 			pLinked->TubeFaceIndex = 0;
-
-			const auto nextCell = pTube->EnterCell + CellSpread::GetNeighbourOffset(pTube->Faces[0] & 7);
-			const auto pNextCell = MapClass::Instance.GetCellAt(nextCell);
-			pLinked->CurrentTunnelCoords = pNextCell->GetCellCoords();
-
-			const auto currentHeight = MapClass::Instance.GetCellFloorHeight(pLinked->Location);
-			const auto exitHeight = MapClass::Instance.GetCellFloorHeight(this->HeadToCoord);
-			pLinked->CurrentTunnelCoords.Z = currentHeight + (exitHeight - currentHeight) / pTube->FaceCount;
+			pLinked->CurrentTunnelCoords = MapClass::Instance.GetCellAt(pTube->EnterCell + CellSpread::GetNeighbourOffset(pTube->Faces[0] & 7))->GetCellCoords();
+			// The initial height must be correct
+			pLinked->CurrentTunnelCoords.Z = pLinked->Location.Z + (MapClass::Instance.GetCellFloorHeight(this->HeadToCoord) - MapClass::Instance.GetCellFloorHeight(pLinked->Location)) / pTube->FaceCount;
 
 			this->IsDriving = true;
 			this->TrackNumber = -1;
@@ -571,10 +565,7 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 
 	if (CellClass::Coord2Cell(newPos) == CellClass::Coord2Cell(pLinked->Location))
 	{
-		const bool wasOnMap = pLinked->IsOnMap;
-		pLinked->IsOnMap = false;
-		pLinked->SetLocation(newPos);
-		pLinked->IsOnMap = wasOnMap;
+		this->SetNewLocation(newPos);
 	}
 	else
 	{
@@ -1247,13 +1238,14 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 			pLinked->PathDirections[22] = -1;
 			pLinked->unknown_bool_68B = true; // Seems like useless
 		}
+
+		pLinked->PathDirections[23] = -1;
 	}
 	else
 	{
-		memmove(&pLinked->PathDirections[0], &pLinked->PathDirections[1], 0x5Cu);
+		this->UpdatePathDirections();
 	}
 
-	pLinked->PathDirections[23] = -1;
 	pLinked->CurrentMapCoords = nextCell;
 	pLinked->ShouldScanForTarget = false;
 	this->TrackIndex = 0;
@@ -1409,10 +1401,7 @@ void AdvancedDriveLocomotionClass::UpdateHoverState()
 	}
 	while (false);
 
-	const bool wasOnMap = pLinked->IsOnMap;
-	pLinked->IsOnMap = false;
-	pLinked->SetHeight(newHeight);
-	pLinked->IsOnMap = wasOnMap;
+	this->SetNewHeight(newHeight);
 
 	if (outOfBunker)
 	{
@@ -1758,10 +1747,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 
 		if (CellClass::Coord2Cell(newPos) == CellClass::Coord2Cell(pLinked->Location))
 		{
-			const bool wasOnMap = pLinked->IsOnMap;
-			pLinked->IsOnMap = false;
-			pLinked->SetLocation(newPos);
-			pLinked->IsOnMap = wasOnMap;
+			this->SetNewLocation(newPos);
 		}
 		else
 		{
@@ -1823,10 +1809,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 		if (!pTypeExt->AdvancedDrive_Hover)
 		{
 			// Stay on the ground
-			const bool wasOnMap = pLinked->IsOnMap;
-			pLinked->IsOnMap = false;
-			pLinked->SetHeight(0);
-			pLinked->IsOnMap = wasOnMap;
+			this->SetNewHeight(0);
 
 			// Immediately turn
 			pLinked->PrimaryFacing.SetCurrent(DirStruct((face << 8) + (this->IsForward ? 0 : 32768)));
@@ -1902,8 +1885,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 							{
 								this->MarkOccupation(coords, MarkType::Down);
 								pLinked->SetSpeedPercentage(speedPercent);
-								memmove(&pLinked->PathDirections[0], &pLinked->PathDirections[1], 0x5Cu);
-								pLinked->PathDirections[23] = -1;
+								this->UpdatePathDirections();
 							}
 						}
 
@@ -1955,12 +1937,8 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 	pLinked->FrozenStill = true;
 	pLinked->IsWaitingBlockagePath = false;
 
-	if (CellClass::Coord2Cell(this->HeadToCoord) == CellClass::Coord2Cell(pLinked->Location))
+	auto maintainHeight = [this, pLinked, pTypeExt]()
 	{
-		const bool wasOnMap = pLinked->IsOnMap;
-		pLinked->IsOnMap = false;
-
-		// Maintain height
 		if (pTypeExt->AdvancedDrive_Hover)
 		{
 			auto newPos = this->HeadToCoord;
@@ -1972,26 +1950,19 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 			pLinked->SetLocation(this->HeadToCoord);
 			pLinked->SetHeight(0);
 		}
+	};
 
+	if (CellClass::Coord2Cell(this->HeadToCoord) == CellClass::Coord2Cell(pLinked->Location))
+	{
+		const bool wasOnMap = pLinked->IsOnMap;
+		pLinked->IsOnMap = false;
+		maintainHeight();
 		pLinked->IsOnMap = wasOnMap;
 	}
 	else
 	{
 		pLinked->Mark(MarkType::Up);
-
-		// Maintain height
-		if (pTypeExt->AdvancedDrive_Hover)
-		{
-			auto newPos = this->HeadToCoord;
-			newPos.Z = pLinked->Location.Z;
-			pLinked->SetLocation(newPos);
-		}
-		else
-		{
-			pLinked->SetLocation(this->HeadToCoord);
-			pLinked->SetHeight(0);
-		}
-
+		maintainHeight();
 		pLinked->Mark(MarkType::Down);
 	}
 
