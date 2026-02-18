@@ -1,18 +1,15 @@
 ﻿#pragma once
-#include <TechnoTypeClass.h>
-
-#include <Utilities/Macro.h>
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 #include <Utilities/Enum.h>
 
+#include <New/Type/AttachEffectTypeClass.h>
 #include <New/Type/ShieldTypeClass.h>
 #include <New/Type/LaserTrailTypeClass.h>
-#include <New/Type/AttachEffectTypeClass.h>
-#include <New/Type/Affiliated/InterceptorTypeClass.h>
-#include <New/Type/Affiliated/PassengerDeletionTypeClass.h>
 #include <New/Type/DigitalDisplayTypeClass.h>
 #include <New/Type/SelectBoxTypeClass.h>
+#include <New/Type/Affiliated/InterceptorTypeClass.h>
+#include <New/Type/Affiliated/PassengerDeletionTypeClass.h>
 #include <New/Type/Affiliated/DroppodTypeClass.h>
 #include <New/Type/Affiliated/TiberiumEaterTypeClass.h>
 #include <New/Type/Affiliated/CreateUnitTypeClass.h>
@@ -37,6 +34,7 @@ public:
 		Valueable<bool> HealthBar_Permanent_PipScale;
 		Valueable<CSFText> UIDescription;
 		Valueable<bool> LowSelectionPriority;
+		Valueable<bool> LowDeployPriority;
 		PhobosFixedString<0x20> GroupAs;
 		std::vector<PhobosFixedString<0x20>> WeaponGroupAs;
 		Valueable<int> RadarJamRadius;
@@ -48,6 +46,8 @@ public:
 		Nullable<int> DesignatorRange;
 		Valueable<float> FactoryPlant_Multiplier;
 		Valueable<Leptons> MindControlRangeLimit;
+		Valueable<bool> MindControl_IgnoreSize;
+		Valueable<int> MindControlSize;
 		Valueable<AffectedHouse> MindControlLink_VisibleToHouse;
 
 		std::unique_ptr<InterceptorTypeClass> InterceptorType;
@@ -76,6 +76,7 @@ public:
 		Nullable<int> InitialStrength;
 		Valueable<bool> ReloadInTransport;
 		Valueable<bool> ForbidParallelAIQueues;
+		Valueable<bool> IgnoreForBaseCenter;
 
 		int TintColorAirstrike;
 		Nullable<int> LaserTargetColor;
@@ -173,8 +174,8 @@ public:
 		Valueable<int> OpenTransport_RangeBonus;
 		Valueable<float> OpenTransport_DamageMultiplier;
 
-		Valueable<bool> AutoFire;
-		Valueable<bool> AutoFire_TargetSelf;
+		Valueable<bool> AutoTargetOwnPosition;
+		Valueable<bool> AutoTargetOwnPosition_Self;
 
 		Valueable<bool> AggressiveStance;
 		Nullable<bool> AggressiveStance_Togglable;
@@ -247,6 +248,9 @@ public:
 		Nullable<int> DeployFireWeapon;
 		Valueable<TargetZoneScanType> TargetZoneScanType;
 
+		Nullable<Leptons> AreaGuardRange;
+		Valueable<Leptons> MaxGuardRange;
+
 		Promotable<SHPStruct*> Insignia;
 		Valueable<Vector3D<int>> InsigniaFrames;
 		Promotable<int> InsigniaFrame;
@@ -305,7 +309,7 @@ public:
 		Valueable<AffectedHouse> Tint_VisibleToHouses;
 
 		Valueable<WeaponTypeClass*> RevengeWeapon;
-		Valueable<AffectedHouse> RevengeWeapon_AffectsHouses;
+		Valueable<AffectedHouse> RevengeWeapon_AffectsHouse;
 
 		AEAttachInfoTypeClass AttachEffects;
 
@@ -575,6 +579,7 @@ public:
 		Valueable<bool> Harvester_CanGuardArea_RequireTarget;
 		Nullable<bool> HarvesterScanAfterUnload;
 
+		Nullable<bool> ExtendedAircraftMissions;
 		Nullable<bool> ExtendedAircraftMissions_SmoothMoving;
 		Nullable<bool> ExtendedAircraftMissions_EarlyDescend;
 		Nullable<bool> ExtendedAircraftMissions_RearApproach;
@@ -621,6 +626,8 @@ public:
 
 		Nullable<bool> InfantryAutoDeploy;
 
+		ValueableVector<TechnoTypeClass*> TeamMember_ConsideredAs;
+
 		Nullable<bool> TurretResponse;
 
 		Valueable<bool> ExtraTargeting_Excluded;
@@ -629,11 +636,34 @@ public:
 
 		Valueable<bool> Missile_UseDeathWeaponWhenIntercepted;
 
-		Nullable<bool> JumpjetClimbIgnoreBuilding;
-
 		Valueable<bool> NoAutoFire_AI;
 
 		Valueable<bool> ReorganizeToWhenDefeated_Excluded;
+
+		Vector2D<bool> AttackFriendlies;
+
+		Valueable<bool> Deploy_SkipPassengerUnload;
+		Valueable<bool> Deploy_NoPassenger;
+		Valueable<bool> Deploy_NoTiberium;
+
+		Nullable<int> DrainMoneyFrameDelay;
+		Nullable<int> DrainMoneyAmount;
+		Nullable<AnimTypeClass*> DrainAnimationType;
+		Nullable<bool> DrainMoneyDisplay;
+		Nullable<AffectedHouse> DrainMoneyDisplay_Houses;
+		Valueable<Point2D> DrainMoneyDisplay_Offset;
+		Nullable<bool> DrainMoneyDisplay_OnTarget;
+		Nullable<bool> DrainMoneyDisplay_OnTarget_UseDisplayIncome;
+
+		Nullable<Mission> ParadropMission;
+		Nullable<Mission> AIParadropMission;
+
+		Nullable<int> PenetratesTransport_Level;
+		Valueable<double> PenetratesTransport_PassThroughMultiplier;
+		Valueable<double> PenetratesTransport_FatalRateMultiplier;
+		Valueable<double> PenetratesTransport_DamageMultiplier;
+
+		Nullable<bool> JumpjetClimbIgnoreBuilding;
 
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
@@ -642,6 +672,7 @@ public:
 			, HealthBar_Permanent_PipScale { false }
 			, UIDescription {}
 			, LowSelectionPriority { false }
+			, LowDeployPriority { false }
 			, GroupAs { NONE_STR }
 			, WeaponGroupAs {}
 			, RadarJamRadius { 0 }
@@ -653,6 +684,8 @@ public:
 			, DesignatorRange { }
 			, FactoryPlant_Multiplier { 1.0 }
 			, MindControlRangeLimit {}
+			, MindControl_IgnoreSize { true }
+			, MindControlSize { 1 }
 			, MindControlLink_VisibleToHouse{ AffectedHouse::All }
 
 			, InterceptorType { nullptr }
@@ -681,6 +714,7 @@ public:
 			, InitialStrength {}
 			, ReloadInTransport { false }
 			, ForbidParallelAIQueues { false }
+			, IgnoreForBaseCenter { false }
 			, TintColorAirstrike { 0 }
 			, LaserTargetColor {}
 			, AirstrikeLineColor {}
@@ -730,9 +764,6 @@ public:
 			, OpenTransport_RangeBonus { 0 }
 			, OpenTransport_DamageMultiplier { 1.0 }
 
-			, AutoFire { false }
-			, AutoFire_TargetSelf { false }
-
 			, AggressiveStance { false }
 			, AggressiveStance_Togglable {}
 			, VoiceEnterAggressiveStance { -1 }
@@ -743,6 +774,8 @@ public:
 			, VoiceEnterCeaseFireStance { -1 }
 			, VoiceExitCeaseFireStance { -1 }
 
+			, AutoTargetOwnPosition { false }
+			, AutoTargetOwnPosition_Self { false }
 			, NoSecondaryWeaponFallback { false }
 			, NoSecondaryWeaponFallback_AllowAA { false }
 			, AllowWeaponSelectAgainstWalls {}
@@ -849,6 +882,9 @@ public:
 			, DeployFireWeapon {}
 			, TargetZoneScanType { TargetZoneScanType::Same }
 
+			, AreaGuardRange {}
+			, MaxGuardRange { Leptons(4096) }
+
 			, Insignia {}
 			, InsigniaFrames { { -1, -1, -1 } }
 			, InsigniaFrame { -1 }
@@ -909,7 +945,7 @@ public:
 			, Tint_VisibleToHouses { AffectedHouse::All }
 
 			, RevengeWeapon {}
-			, RevengeWeapon_AffectsHouses { AffectedHouse::All }
+			, RevengeWeapon_AffectsHouse { AffectedHouse::All }
 
 			, AttachEffects {}
 
@@ -1160,6 +1196,7 @@ public:
 			, Harvester_CanGuardArea_RequireTarget { false }
 			, HarvesterScanAfterUnload {}
 
+			, ExtendedAircraftMissions {}
 			, ExtendedAircraftMissions_SmoothMoving {}
 			, ExtendedAircraftMissions_EarlyDescend {}
 			, ExtendedAircraftMissions_RearApproach {}
@@ -1206,6 +1243,8 @@ public:
 
 			, InfantryAutoDeploy {}
 
+			, TeamMember_ConsideredAs {}
+
 			, TurretResponse {}
 
 			, ExtraTargeting_Excluded { false }
@@ -1214,11 +1253,33 @@ public:
 
 			, Missile_UseDeathWeaponWhenIntercepted { false }
 
-			, JumpjetClimbIgnoreBuilding {}
-
 			, NoAutoFire_AI { false }
 
 			, ReorganizeToWhenDefeated_Excluded { false }
+			, AttackFriendlies { false,false }
+
+			, Deploy_SkipPassengerUnload { false }
+			, Deploy_NoPassenger { false }
+			, Deploy_NoTiberium { false }
+
+			, DrainMoneyFrameDelay {}
+			, DrainMoneyAmount {}
+			, DrainAnimationType {}
+			, DrainMoneyDisplay {}
+			, DrainMoneyDisplay_Houses {}
+			, DrainMoneyDisplay_Offset { Point2D::Empty }
+			, DrainMoneyDisplay_OnTarget {}
+			, DrainMoneyDisplay_OnTarget_UseDisplayIncome {}
+
+			, ParadropMission {}
+			, AIParadropMission {}
+
+			, PenetratesTransport_Level {}
+			, PenetratesTransport_PassThroughMultiplier { 1.0 }
+			, PenetratesTransport_FatalRateMultiplier { 1.0 }
+			, PenetratesTransport_DamageMultiplier { 1.0 }
+
+			, JumpjetClimbIgnoreBuilding {}
 		{ }
 
 		virtual ~ExtData() = default;

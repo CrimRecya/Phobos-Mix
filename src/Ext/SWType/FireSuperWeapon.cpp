@@ -1,18 +1,12 @@
 ﻿#include "Body.h"
 
-#include <SuperClass.h>
-#include <BuildingClass.h>
-#include <HouseClass.h>
-#include <ScenarioClass.h>
-#include <MessageListClass.h>
+#include <Ext/House/Body.h>
+#include <Ext/WarheadType/Body.h>
+#include <Ext/WeaponType/Body.h>
+#include <Ext/Scenario/Body.h>
+#include <Utilities/Helpers.Alex.h>
 
-#include <Utilities/EnumFunctions.h>
-#include <Utilities/GeneralUtils.h>
-
-#include "Ext/House/Body.h"
-#include <MessageListClass.h>
-#include "Ext/WarheadType/Body.h"
-#include "Ext/WeaponType/Body.h"
+#include <unordered_set>
 
 // ============= New SuperWeapon Effects================
 
@@ -137,40 +131,73 @@ void SWTypeExt::ExtData::ApplyLimboDelivery(HouseClass* pHouse)
 
 void SWTypeExt::ExtData::ApplyLimboKill(HouseClass* pHouse)
 {
-	for (int limboKillID : this->LimboKill_IDs)
+	const int idAmount = static_cast<int>(this->LimboKill_IDs.size());
+
+	if (!idAmount)
+		return;
+
+	std::vector<BuildingClass*> limboKills;
+
+	for (const auto pTargetHouse : HouseClass::Array)
 	{
-		for (HouseClass* pTargetHouse : HouseClass::Array)
+		if (!EnumFunctions::CanTargetHouse(this->LimboKill_AffectsHouse, pHouse, pTargetHouse))
+			continue;
+
+		const auto pHouseExt = HouseExt::ExtMap.Find(pTargetHouse);
+		auto& buildings = pHouseExt->OwnedLimboDeliveredBuildings;
+
+		if (buildings.empty())
+			continue;
+
+		std::unordered_set<int> removedID;
+		std::unordered_set<BuildingClass*> removes;
+
+		for (int idx = 0; idx < idAmount; ++idx)
 		{
-			if (EnumFunctions::CanTargetHouse(this->LimboKill_Affected, pHouse, pTargetHouse))
+			const int id = this->LimboKill_IDs[idx];
+
+			if (removedID.contains(id))
+				continue;
+
+			const int maxCount = idx < static_cast<int>(this->LimboKill_Counts.size()) ? this->LimboKill_Counts[idx] : std::numeric_limits<int>::max();
+			auto IsEligible = [id](BuildingClass* pBuilding) { return BuildingExt::ExtMap.Find(pBuilding)->LimboID == id; };
+
+			Helpers::Alex::for_each_if_n(buildings.begin(), buildings.end(), maxCount, IsEligible, [&limboKills, &removes](BuildingClass* pBuilding) {
+				limboKills.emplace_back(pBuilding);
+				removes.emplace(pBuilding);
+			});
+
+			removedID.emplace(id);
+		}
+
+		if (!buildings.empty())
+			std::erase_if(buildings, [&removes](BuildingClass* pBuilding) { return removes.contains(pBuilding); });
+	}
+
+	for (const auto pBuilding : limboKills)
+	{
+		const auto pBuildingType = pBuilding->Type;
+
+		// Remove limbo buildings' tracking here because their are not truely InLimbo
+		if (!pBuildingType->Insignificant && !pBuildingType->DontScore)
+			HouseExt::ExtMap.Find(pBuilding->Owner)->RemoveFromLimboTracking(pBuildingType);
+
+		if (BuildingTypeExt::ExtMap.Find(pBuildingType)->LimboBuildID == BuildingExt::ExtMap.Find(pBuilding)->LimboID)
+		{
+			const auto pHouse = pBuilding->Owner;
+			const auto index = pBuilding->Type->ArrayIndex;
+
+			for (auto& pBaseNode : pHouse->Base.BaseNodes)
 			{
-				auto const pHouseExt = HouseExt::ExtMap.Find(pTargetHouse);
-				auto& vec = pHouseExt->OwnedLimboDeliveredBuildings;
-
-				for (auto it = vec.begin(); it != vec.end(); )
-				{
-					BuildingClass* const pBuilding = *it;
-
-					if (BuildingTypeExt::DeleteLimboBuilding(pBuilding, limboKillID))
-					{
-						it = vec.erase(it);
-						auto const pBldType = pBuilding->Type;
-
-						// Remove limbo buildings' tracking here because their are not truely InLimbo
-						if (!pBldType->Insignificant && !pBldType->DontScore)
-							HouseExt::ExtMap.Find(pBuilding->Owner)->RemoveFromLimboTracking(pBldType);
-
-						pBuilding->Stun();
-						pBuilding->Limbo();
-						pBuilding->RegisterDestruction(nullptr);
-						pBuilding->UnInit();
-					}
-					else
-					{
-						++it;
-					}
-				}
+				if (pBaseNode.BuildingTypeIndex == index)
+					pBaseNode.Placed = false;
 			}
 		}
+
+		pBuilding->Stun();
+		pBuilding->Limbo();
+		pBuilding->RegisterDestruction(nullptr);
+		pBuilding->UnInit();
 	}
 }
 

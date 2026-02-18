@@ -1,8 +1,4 @@
-﻿#include <AircraftTypeClass.h>
-#include <SpawnManagerClass.h>
-#include <TiberiumClass.h>
-#include <TacticalClass.h>
-#include "Body.h"
+﻿#include "Body.h"
 
 DEFINE_HOOK_AGAIN(0x6D9134, TacticalClass_RenderLayers_DrawBefore, 0x5)// BuildingClass
 DEFINE_HOOK(0x6D9076, TacticalClass_RenderLayers_DrawBefore, 0x5)// FootClass

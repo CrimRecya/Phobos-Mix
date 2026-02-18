@@ -2,8 +2,6 @@
 #include "SWSidebar/SWSidebarClass.h"
 
 #include <EventClass.h>
-#include <HouseClass.h>
-#include <SuperClass.h>
 
 #include <Ext/BuildingType/Body.h>
 

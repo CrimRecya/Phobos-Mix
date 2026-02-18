@@ -1,7 +1,4 @@
-﻿#include <AlphaShapeClass.h>
-#include <TacticalClass.h>
-
-#include <Ext/Building/Body.h>
+﻿#include <Ext/Building/Body.h>
 #include <Utilities/AresFunctions.h>
 
 DEFINE_PATCH(0x5F3E70, 0x83, 0xEC, 0x10, 0x55, 0x56) // Disbale Ares::ObjectClass_Update_AlphaLight

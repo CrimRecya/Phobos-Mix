@@ -1,11 +1,5 @@
 ﻿#include "Body.h"
 
-#include <HouseClass.h>
-#include <OverlayClass.h>
-#include <TerrainClass.h>
-
-#include <Utilities/GeneralUtils.h>
-
 // Passable TerrainTypes Hook #1 - Do not set occupy bits.
 DEFINE_HOOK(0x71C110, TerrainClass_SetOccupyBit_PassableTerrain, 0x6)
 {

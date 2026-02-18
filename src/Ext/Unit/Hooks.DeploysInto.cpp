@@ -1,5 +1,7 @@
-﻿#include <Ext/CaptureManager/Body.h>
-#include <Ext/WarheadType/Body.h>
+﻿#include <IsometricTileTypeClass.h>
+
+#include <Ext/TerrainType/Body.h>
+#include <Ext/CaptureManager/Body.h>
 #include <Ext/Building/Body.h>
 
 #pragma region AllowDeployControlledMCV

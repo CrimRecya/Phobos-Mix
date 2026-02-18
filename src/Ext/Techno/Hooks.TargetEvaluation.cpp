@@ -12,9 +12,9 @@ DEFINE_HOOK(0x7098B9, TechnoClass_TargetSomethingNearby_AutoFire, 0x6)
 
 	const auto pExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
 
-	if (pExt->AutoFire)
+	if (pExt->AutoTargetOwnPosition)
 	{
-		if (pExt->AutoFire_TargetSelf)
+		if (pExt->AutoTargetOwnPosition_Self)
 			pThis->SetTarget(pThis);
 		else
 			pThis->SetTarget(pThis->GetCell());
@@ -205,8 +205,10 @@ DEFINE_HOOK(0x6F85AB, TechnoClass_CanAutoTargetObject_AggressiveAttackMove, 0x6)
 
 	GET(TechnoClass* const, pThis, EDI);
 
-	if (!pThis->Owner->IsControlledByHuman())
-		return CanTarget;
+	// Now, it is possible to customize which types of national active attacks on non-threatening buildings, so this part has been commented out.
+	// The new judgment code is in TechnoClass_CanAutoTarget_AttackNoThreatBuildings of Hook.cpp.
+	// if (!pThis->Owner->IsControlledByHuman())
+	//	return CanTarget;
 
 	GET(TechnoClass*, pTarget, ESI);
 
@@ -260,7 +262,7 @@ static double __fastcall HealthRatio_Wrapper(TechnoClass* pTechno)
 			if (pShieldData->IsActive())
 			{
 				const auto pWH = EvaluateObjectTemp::PickedWeapon ? EvaluateObjectTemp::PickedWeapon->Warhead : nullptr;
-				const auto pFoot = abstract_cast<FootClass*>(pTechno);
+				const auto pFoot = abstract_cast<FootClass*, true>(pTechno);
 
 				if (!pShieldData->CanBePenetrated(pWH) || ((pFoot && pFoot->ParasiteEatingMe)))
 					result = pShieldData->GetHealthRatio();
@@ -299,7 +301,7 @@ public:
 				if (pShieldData->IsActive())
 				{
 					const auto pWeapon = pThis->GetWeapon(nWeaponIndex)->WeaponType;
-					const auto pFoot = abstract_cast<FootClass*>(pObj);
+					const auto pFoot = abstract_cast<FootClass*, true>(pTechno);
 
 					if (pWeapon && (!pShieldData->CanBePenetrated(pWeapon->Warhead) || (pFoot && pFoot->ParasiteEatingMe)))
 					{
@@ -328,7 +330,7 @@ public:
 private:
 	static bool CanApplyEngineerActions(TechnoClass* pThis, ObjectClass* pTarget)
 	{
-		const auto pInf = abstract_cast<InfantryClass*>(pThis);
+		const auto pInf = abstract_cast<InfantryClass*, true>(pThis);
 		const auto pBuilding = abstract_cast<BuildingClass*>(pTarget);
 
 		if (!pInf || !pBuilding)

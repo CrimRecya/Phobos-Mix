@@ -5,20 +5,19 @@
 #include <TechnoClass.h>
 #include <TargetClass.h>
 
-#include <TargetClass.h>
-
 enum class EventTypeExt : uint8_t
 {
 	// Vanilla game used Events from 0x00 to 0x2F
 	// CnCNet reserved Events from 0x30 to 0x3F
 	// Ares used Events 0x60 and 0x61
 
-	ManualReload = 0x80,
-	ToggleAggressiveStance = 0x81,
-	ToggleCeaseFireStance = 0x82,
-	AssignSecondaryRallyPoint = 0x83,
+	ApproachObject = 0x80,
+	ManualReload = 0x81,
+	ToggleAggressiveStance = 0x82,
+	ToggleCeaseFireStance = 0x83,
+	AssignSecondaryRallyPoint = 0x84,
 
-	FIRST = ManualReload,
+	FIRST = ApproachObject,
 	LAST = AssignSecondaryRallyPoint
 };
 
@@ -33,6 +32,12 @@ public:
 	union
 	{
 		char DataBuffer[104];
+
+		struct APPROACHOBJECT
+		{
+			TargetClass Whom;
+			TargetClass Target;
+		} ApproachObject;
 
 		struct ManualReloadEvent
 		{
@@ -59,6 +64,8 @@ public:
 	bool AddEvent();
 	void RespondEvent();
 
+	void RespondApproachObject();
+
 	static void RaiseManualReloadEvent(TechnoClass* pTechno);
 	void RespondToManualReloadEvent();
 
@@ -78,4 +85,3 @@ public:
 static_assert(sizeof(EventExt) == 111);
 static_assert(offsetof(EventExt, DataBuffer) == 7);
 #pragma pack(pop)
-

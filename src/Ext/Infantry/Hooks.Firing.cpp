@@ -1,7 +1,4 @@
-﻿#include <Helpers/Macro.h>
-#include <InfantryClass.h>
-
-#include <Ext/Techno/Body.h>
+﻿#include <Ext/Techno/Body.h>
 #include <Ext/WeaponType/Body.h>
 
 namespace FiringAITemp

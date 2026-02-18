@@ -1,7 +1,5 @@
-﻿
-#include "Body.h"
+﻿#include "Body.h"
 
-#include <Helpers/Macro.h>
 #include <EventClass.h>
 #include <BuildingClass.h>
 #include <FootClass.h>
@@ -23,6 +21,10 @@ void EventExt::RespondEvent()
 {
 	switch (this->Type)
 	{
+	case EventTypeExt::ApproachObject:
+		this->RespondApproachObject();
+		break;
+
 	case EventTypeExt::ManualReload:
 		this->RespondToManualReloadEvent();
 		break;
@@ -37,6 +39,9 @@ void EventExt::RespondEvent()
 
 	case EventTypeExt::AssignSecondaryRallyPoint:
 		this->RespondToAssignSecondaryRallyPoint();
+		break;
+
+	default:
 		break;
 	}
 }
@@ -152,6 +157,8 @@ size_t EventExt::GetDataSize(EventTypeExt type)
 {
 	switch (type)
 	{
+	case EventTypeExt::ApproachObject:
+		return sizeof(EventExt::ApproachObject);
 	case EventTypeExt::ManualReload:
 		return sizeof(EventExt::ManualReloadEvent);
 	case EventTypeExt::ToggleAggressiveStance:
@@ -160,6 +167,8 @@ size_t EventExt::GetDataSize(EventTypeExt type)
 		return sizeof(EventExt::ToggleCeaseFireStance);
 	case EventTypeExt::AssignSecondaryRallyPoint:
 		return sizeof(EventExt::AssignSecondaryRallyPoint);
+	default:
+		break;
 	}
 
 	return 0;
@@ -168,6 +177,23 @@ size_t EventExt::GetDataSize(EventTypeExt type)
 bool EventExt::IsValidType(EventTypeExt type)
 {
 	return (type >= EventTypeExt::FIRST && type <= EventTypeExt::LAST);
+}
+
+void EventExt::RespondApproachObject()
+{
+	const auto pSource = this->ApproachObject.Whom.As_Foot();
+
+	if (!pSource || static_cast<char>(pSource->Owner->ArrayIndex) != this->HouseIndex)
+		return;
+
+	const auto pObject = this->ApproachObject.Target.As_Object();
+
+	if (!pObject)
+		return;
+
+	const auto pOriginalTarget = std::exchange(pSource->Target, pObject);
+	pSource->vt_entry_53C(0);
+	pSource->Target = pOriginalTarget;
 }
 
 // hooks

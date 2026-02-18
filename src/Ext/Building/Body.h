@@ -1,17 +1,5 @@
-﻿#pragma once
-#include <BuildingClass.h>
-#include <HouseClass.h>
-#include <TiberiumClass.h>
-#include <FactoryClass.h>
-
-#include <Helpers/Macro.h>
-#include <Utilities/Container.h>
-#include <Utilities/TemplateDef.h>
-
-#include <Misc/FlyingStrings.h>
+#pragma once
 #include <Ext/Techno/Body.h>
-#include <Ext/TechnoType/Body.h>
-#include <Ext/Building/Body.h>
 #include <Ext/BuildingType/Body.h>
 
 class BuildingExt
@@ -39,6 +27,7 @@ public:
 		int PoweredUpToLevel; // Distinct from UpgradeLevel, and set to highest PowersUpToLevel out of applied upgrades regardless of how many are currently applied to this building.
 		SuperClass* CurrentEMPulseSW;
 		AbstractClass* SecondaryArchiveTarget;
+		bool IsFiringNow;
 
 		ExtData(BuildingClass* OwnerObject) : Extension<BuildingClass>(OwnerObject)
 			, TypeExtData { nullptr }
@@ -54,6 +43,7 @@ public:
 			, PoweredUpToLevel { 0 }
 			, CurrentEMPulseSW {}
 			, SecondaryArchiveTarget { nullptr }
+			, IsFiringNow { false }
 		{ }
 
 		void DisplayIncomeString();

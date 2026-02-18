@@ -1,16 +1,5 @@
 ﻿#include "Body.h"
 
-#include <AircraftClass.h>
-#include <HouseClass.h>
-#include <ScenarioClass.h>
-#include <SpawnManagerClass.h>
-#include <SlaveManagerClass.h>
-#include <ParasiteClass.h>
-#include <TemporalClass.h>
-#include <AirstrikeClass.h>
-#include <BombListClass.h>
-#include <TacticalClass.h>
-#include <OverlayTypeClass.h>
 #include <JumpjetLocomotionClass.h>
 
 #include <Ext/Anim/Body.h>
@@ -18,9 +7,7 @@
 #include <Ext/House/Body.h>
 #include <Ext/Scenario/Body.h>
 #include <Ext/WeaponType/Body.h>
-#include <Ext/WarheadType/Body.h>
-#include <Ext/House/Body.h>
-#include <Ext/Cell/Body.h>
+#include <Ext/Event/Body.h>
 
 #include <Utilities/AresFunctions.h>
 
@@ -1321,31 +1308,26 @@ bool TechnoExt::IsHealthInThreshold(TechnoClass* pObject, double min, double max
 
 bool TechnoExt::CannotMove(UnitClass* pThis)
 {
-	const auto loco = pThis->Locomotor;
+	const auto pType = pThis->Type;
 
-	if (!locomotion_cast<JumpjetLocomotionClass*>(loco))
-	{
-		const auto pType = pThis->Type;
+	if (pType->Speed == 0)
+		return true;
 
-		if (pType->Speed == 0 && !locomotion_cast<TeleportLocomotionClass*>(loco))
-			return true;
+	const auto movementRestrictedTo = pType->MovementRestrictedTo;
 
-		const auto movementRestrictedTo = pType->MovementRestrictedTo;
+	if (movementRestrictedTo == LandType::None)
+		return false;
 
-		if (movementRestrictedTo == LandType::None)
-			return false;
+	auto landType = pThis->GetCell()->LandType;
 
-		auto landType = pThis->GetCell()->LandType;
+	if (landType == LandType::Tunnel)
+		return false;
 
-		if (landType == LandType::Tunnel)
-			return false;
+	if (pThis->OnBridge && (landType == LandType::Water || landType == LandType::Beach))
+		landType = LandType::Road;
 
-		if (pThis->OnBridge && (landType == LandType::Water || landType == LandType::Beach))
-			landType = LandType::Road;
-
-		if (movementRestrictedTo != landType)
-			return true;
-	}
+	if (movementRestrictedTo != landType)
+		return true;
 
 	return false;
 }
@@ -1442,6 +1424,129 @@ bool TechnoExt::SimpleDeployerAllowedToDeploy(UnitClass* pThis, bool defaultValu
 		auto const pCell = pThis->GetCell();
 		return pCell->IsClearToMove(speed, true, true, -1, mZone, -1, pCell->ContainsBridge());
 	}
+
+	return true;
+}
+
+void TechnoExt::ClickedApproachObject(FootClass* pThis, ObjectClass* pObject)
+{
+	if (Unsorted::MoveFeedback)
+		pThis->VoiceMove();
+
+	EventExt event {};
+	event.Type = EventTypeExt::ApproachObject;
+	event.HouseIndex = static_cast<char>(pThis->Owner->ArrayIndex);
+	event.Frame = Unsorted::CurrentFrame;
+	event.ApproachObject.Whom = TargetClass(pThis);
+	event.ApproachObject.Target = TargetClass(pObject);
+	event.AddEvent();
+}
+
+bool TechnoExt::EjectRandomly(FootClass* pEjectee, const CoordStruct& coords, int distance, bool select)
+{
+	std::vector<CoordStruct> usableCoords;
+
+	for (int direction = 0; direction < 8; ++direction)
+	{
+		const CellStruct tmpCoords = Unsorted::AdjacentCell[direction];
+		CoordStruct ejectCoords { coords.X + tmpCoords.X * distance, coords.Y + tmpCoords.Y * distance, coords.Z };
+		const auto pCell = MapClass::Instance.TryGetCellAt(ejectCoords);
+
+		if (!pCell)
+			continue;
+
+		const auto occupied = pEjectee->IsCellOccupied(pCell, FacingType::None, -1, nullptr, true);
+
+		if (occupied != Move::OK && occupied != Move::MovingBlock)
+			continue;
+
+		if (pEjectee->WhatAmI() == InfantryClass::AbsID)
+		{
+			ejectCoords = pCell->FindInfantrySubposition(ejectCoords, false, false, false);
+
+			// Jan 31, 2026 - Starkku: FindInfantrySubposition has several code paths that return empty CoordStruct. We should ignore those.
+			if (ejectCoords == CoordStruct::Empty)
+				continue;
+
+			ejectCoords.Z = coords.Z;
+		}
+		else
+		{
+			ejectCoords = CellClass::Cell2Coord(pCell->MapCoords, coords.Z);
+		}
+
+		usableCoords.emplace_back(ejectCoords);
+	}
+
+	const int count = static_cast<int>(usableCoords.size());
+
+	if (!count)
+		return false;
+
+	return TechnoExt::EjectSurvivor(pEjectee, usableCoords[ScenarioClass::Instance->Random(0, count - 1)], select);
+}
+
+bool TechnoExt::EjectSurvivor(FootClass* pSurvivor, CoordStruct coords, bool select)
+{
+	const auto pCell = MapClass::Instance.GetCellAt(coords);
+
+	pSurvivor->OnBridge = pCell->ContainsBridge();
+
+	const int floorZ = pCell->GetCoordsWithBridge().Z;
+	const bool chuted = (coords.Z - floorZ > 2 * Unsorted::LevelHeight);
+
+	if (chuted)
+	{
+		pSurvivor->Limbo();
+
+		++Unsorted::ScenarioInit;
+		const bool result = pSurvivor->SpawnParachuted(coords);
+		--Unsorted::ScenarioInit;
+
+		if (!result)
+			return false;
+	}
+	else
+	{
+		coords.Z = floorZ;
+
+		++Unsorted::ScenarioInit;
+		const bool result = pSurvivor->Unlimbo(coords, static_cast<DirType>(ScenarioClass::Instance->Random(0, 7)));
+		--Unsorted::ScenarioInit;
+
+		if (!result)
+			return false;
+	}
+
+	if (const auto pTransporter = pSurvivor->Transporter)
+	{
+		if (pTransporter->GetTechnoType()->OpenTopped)
+			pTransporter->ExitedOpenTopped(pSurvivor);
+
+		pSurvivor->Transporter = nullptr;
+	}
+
+	pSurvivor->LastMapCoords = pCell->MapCoords;
+
+	if (chuted)
+	{
+		const bool scat = pSurvivor->OnBridge;
+		const auto occupation = scat ? pCell->AltOccupationFlags : pCell->OccupationFlags;
+
+		if (occupation & 0x1C)
+			pCell->ScatterContent(CoordStruct::Empty, true, true, scat);
+	}
+	else
+	{
+		pSurvivor->Scatter(CoordStruct::Empty, true, false);
+		pSurvivor->QueueMission(pSurvivor->Owner->IsControlledByHuman() ? Mission::Guard : Mission::Hunt, 0);
+	}
+
+	pSurvivor->ShouldEnterOccupiable = false;
+	pSurvivor->ShouldGarrisonStructure = false;
+
+	if (select)
+		pSurvivor->Select();
 
 	return true;
 }

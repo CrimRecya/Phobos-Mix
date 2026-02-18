@@ -3,10 +3,6 @@
 #include "UniqueButton/UniqueTechnoColumnClass.h"
 #include "SelectedButton/SelectedInfoClass.h"
 
-#include <HouseClass.h>
-#include <FactoryClass.h>
-#include <FileSystem.h>
-
 #include <Ext/Side/Body.h>
 #include <Ext/House/Body.h>
 #include <Ext/TechnoType/Body.h>

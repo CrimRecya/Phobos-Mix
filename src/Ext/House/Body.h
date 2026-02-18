@@ -1,13 +1,8 @@
 ﻿#pragma once
 #include <HouseClass.h>
 
-#include <Helpers/Macro.h>
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
-
-#include <Ext/Building/Body.h>
-
-#include <map>
 
 struct PlacingBuildingStruct
 {
@@ -85,6 +80,9 @@ public:
 		CDTimerClass SpyEffect_RadarJamTimer;
 
 		int ForceEnemyIndex;
+		int TeamDelay;
+		bool FreeRadar;
+		bool ForceRadar;
 
 		ExtData(HouseClass* OwnerObject) : Extension<HouseClass>(OwnerObject)
 			, PowerPlantEnhancers {}
@@ -121,6 +119,9 @@ public:
 			, ForceEnemyIndex(-1)
 			, ForceOnlyTargetHouseEnemy { false }
 			, ForceOnlyTargetHouseEnemyMode { -1 }
+			, TeamDelay(-1)
+			, FreeRadar(false)
+			, ForceRadar(false)
 		{ }
 
 		bool OwnsLimboDeliveredBuilding(BuildingClass* pBuilding) const;
@@ -228,7 +229,7 @@ public:
 	static int CountOwnedNowWithDeployOrUpgrade(HouseClass* pHouse, BuildingTypeClass* pBuildingType, bool upgrade = true, bool deploy = true);
 	static bool CheckOwnerBitfieldForCurrentPlayer(TechnoTypeClass* pType);
 	static void RecheckOwnerBitfieldForCurrentPlayer();
-
 	static void ReorganizeAllTo(HouseClass* pFromHouse, HouseClass* pToHouse);
 	static void __fastcall DecideTechnosFate(HouseClass* pHouse);
+	static void CalculatePowerSurplus(HouseClass* pThis);
 };

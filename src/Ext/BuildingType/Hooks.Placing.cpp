@@ -1,16 +1,13 @@
 ﻿#include "Body.h"
 
-#include <EventClass.h>
-#include <TerrainClass.h>
-#include <AircraftClass.h>
-#include <TacticalClass.h>
-#include <IsometricTileTypeClass.h>
-
 #include <Ext/House/Body.h>
-#include <Ext/TechnoType/Body.h>
-#include <Ext/TerrainType/Body.h>
+#include <Ext/Rules/Body.h>
 #include <Ext/Scenario/Body.h>
-#include <Utilities/EnumFunctions.h>
+#include <Ext/Techno/Body.h>
+#include <Ext/TerrainType/Body.h>
+
+#include <EventClass.h>
+#include <IsometricTileTypeClass.h>
 
 /*
 	In sub_740810
@@ -235,11 +232,85 @@ DEFINE_HOOK(0x5FD2B6, OverlayClass_Unlimbo_SkipTerrainCheck, 0x9)
 // Buildable Proximity Helper
 namespace ProximityTemp
 {
+	int DistanceOverride = 0;
+	bool SkipDisallowed = false;
 	bool Build = false;
 	bool Exist = false;
 	bool Mouse = false;
 	CellClass* CurrentCell = nullptr;
 	BuildingTypeClass* BuildType = nullptr;
+}
+
+DEFINE_HOOK(0x4A8F3E, DisplayClass_BuildingProximityCheck_BeforeChecks, 0x6)
+{
+	enum { SkipGameCode = 0x4A8F44, ReturnFromFunction = 0x4A9052 };
+
+	GET(BuildingTypeClass*, pType, ESI);
+	GET_STACK(const int, houseArrayIndex, STACK_OFFSET(0x30, 0x8));
+	GET_STACK(CellStruct*, foundationData, STACK_OFFSET(0x30, 0xC));
+	GET_STACK(CellStruct*, currentPosition, STACK_OFFSET(0x30, 0x10));
+
+	auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+	ProximityTemp::BuildType = pType;
+	ProximityTemp::SkipDisallowed = false;
+
+	if (pTypeExt->Adjacent_Disallowed_Prohibit && pTypeExt->Adjacent_Disallowed_ProhibitDistance > 0 && ProximityTemp::DistanceOverride == 0)
+	{
+		ProximityTemp::DistanceOverride = pTypeExt->Adjacent_Disallowed_ProhibitDistance;
+		bool result = DisplayClass::Instance.PassesProximityCheck(pType, houseArrayIndex, foundationData, currentPosition);
+		ProximityTemp::DistanceOverride = 0;
+
+		if (!result)
+		{
+			R->EAX(false);
+			return ReturnFromFunction;
+		}
+
+		ProximityTemp::SkipDisallowed = true;
+	}
+
+	int distance = ProximityTemp::DistanceOverride > 0 ? ProximityTemp::DistanceOverride : pType->Adjacent;
+	R->EAX(distance);
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x4A8FD7, DisplayClass_BuildingProximityCheck_BuildArea, 0x6)
+{
+	enum { SkipBuilding = 0x4A902C, ReturnFromFunction = 0x4A9052 };
+
+	GET(BuildingClass*, pCellBuilding, ESI);
+	GET_STACK(const int, houseArrayIndex, STACK_OFFSET(0x30, 0x8));
+
+	auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pCellBuilding->Type);
+
+	if (pTypeExt->NoBuildAreaOnBuildup && pCellBuilding->CurrentMission == Mission::Construction)
+		return SkipBuilding;
+
+	auto const pTmpTypeExt = BuildingTypeExt::ExtMap.Find(ProximityTemp::BuildType);
+	auto const& pBuildingsAllowed = pTmpTypeExt->Adjacent_Allowed;
+
+	if (pBuildingsAllowed.size() > 0 && !pBuildingsAllowed.Contains(pCellBuilding->Type))
+		return SkipBuilding;
+
+	if (!ProximityTemp::SkipDisallowed && pCellBuilding->Owner->ArrayIndex == houseArrayIndex)
+	{
+		auto const& pBuildingsDisallowed = pTmpTypeExt->Adjacent_Disallowed;
+
+		if (pBuildingsDisallowed.size() > 0 && pBuildingsDisallowed.Contains(pCellBuilding->Type))
+		{
+			if (pTmpTypeExt->Adjacent_Disallowed_Prohibit)
+			{
+				R->EAX(false);
+				return ReturnFromFunction;
+			}
+			else
+			{
+				return SkipBuilding;
+			}
+		}
+	}
+
+	return 0;
 }
 
 /*

@@ -1,14 +1,8 @@
 ﻿#pragma once
 
-#include <CCINIClass.h>
 #include <RulesClass.h>
 #include <Utilities/Container.h>
-#include <Utilities/Constructs.h>
-#include <Utilities/Template.h>
-#include <Utilities/Enum.h>
 #include <Utilities/TemplateDef.h>
-#include <Utilities/Debug.h>
-#include <Utilities/Anchor.h>
 
 class AnimTypeClass;
 class MouseCursor;
@@ -69,6 +63,7 @@ public:
 		Valueable<bool> PlacementPreview;
 		TranslucencyLevel PlacementPreview_Translucency;
 
+		Valueable<bool> SuperWeaponTimer_Percentage;
 		Valueable<bool> SuperWeaponSidebar_AllowByDefault;
 
 		Nullable<double> ConditionYellow_Terrain;
@@ -163,10 +158,16 @@ public:
 		Valueable<bool> ForbidParallelAIQueues_Vehicle;
 
 		Valueable<bool> EnablePowerSurplus;
+		Valueable<int> PowerSurplus_ScaleToDrainAmount;
 
 		Valueable<bool> DisplayIncome;
 		Valueable<bool> DisplayIncome_AllowAI;
 		Valueable<AffectedHouse> DisplayIncome_Houses;
+
+		Valueable<bool> DrainMoneyDisplay;
+		Valueable<AffectedHouse> DrainMoneyDisplay_Houses;
+		Valueable<bool> DrainMoneyDisplay_OnTarget;
+		Valueable<bool> DrainMoneyDisplay_OnTarget_UseDisplayIncome;
 
 		Valueable<bool> AllowDeployControlledMCV;
 
@@ -226,10 +227,7 @@ public:
 		ValueableVector<AnimTypeClass*> Promote_VeteranAnimation;
 		ValueableVector<AnimTypeClass*> Promote_EliteAnimation;
 
-		Valueable<bool> CylinderRangefinding;
 		Valueable<bool> StopPlanningOnEnter;
-		Valueable<bool> PlayerAttackIronCurtain;
-		Valueable<bool> AIAttackIronCurtain;
 		Valueable<bool> PlayerAutoRepair;
 		Valueable<bool> PlayerReturnFire_Smarter;
 		NullableIdx<VoxClass> EVA_WeCaptureABuilding;
@@ -345,6 +343,10 @@ public:
 		Valueable<bool> DistributeTargetingFrame;
 		Valueable<bool> DistributeTargetingFrame_AIOnly;
 
+		Valueable<bool> CanTargetAI_IronCurtained;
+		Valueable<bool> CanTarget_IronCurtained;
+		Valueable<bool> AutoTarget_IronCurtained;
+
 		Valueable<bool> BuildingWaypoints;
 		Valueable<bool> BuildingTypeSelectable;
 
@@ -398,6 +400,7 @@ public:
 		Valueable<bool> AnimCraterDestroyTiberium;
 
 		Valueable<AffectedHouse> BerzerkTargeting;
+		Valueable<bool> AllowBerzerkOnAllies;
 
 		// cache tint color
 		int TintColorIronCurtain;
@@ -448,7 +451,25 @@ public:
 
 		Valueable<bool> BuildingRadioLink_SyncOwner;
 
+		Valueable<Leptons> ExtraRange_TargetMoving;
+		Valueable<bool> ExtraRange_TargetMoving_CloseRangeOnly;
+		Valueable<Leptons> ExtraRange_FirerMoving;
+		Valueable<Leptons> ExtraRange_Prefiring;
+		Valueable<bool> ExtraRange_Prefiring_IncludeBurst;
+
 		Valueable<bool> ApplyPerTargetEffectsOnDetonate;
+
+		Valueable<bool> AutoTarget_NoThreatBuildings;
+		Valueable<bool> AutoTargetAI_NoThreatBuildings;
+
+		Valueable<Mission> ParadropMission;
+		Valueable<Mission> AIParadropMission;
+
+		Valueable<bool> DefaultToGuardArea;
+
+		Valueable<bool> CylinderRangefinding;
+
+		Valueable<int> PenetratesTransport_Level;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -486,6 +507,7 @@ public:
 			, PlacementPreview { false }
 			, PlacementPreview_Translucency { 75 }
 
+			, SuperWeaponTimer_Percentage { false }
 			, SuperWeaponSidebar_AllowByDefault { false }
 
 			, Shield_ConditionYellow { }
@@ -578,6 +600,7 @@ public:
 			, ForbidParallelAIQueues_Vehicle { false }
 
 			, EnablePowerSurplus { false }
+			, PowerSurplus_ScaleToDrainAmount { 0 }
 
 			, AllowDeployControlledMCV { false }
 
@@ -602,6 +625,10 @@ public:
 			, DisplayIncome { false }
 			, DisplayIncome_AllowAI { true }
 			, DisplayIncome_Houses { AffectedHouse::All }
+			, DrainMoneyDisplay { false }
+			, DrainMoneyDisplay_Houses { AffectedHouse::All }
+			, DrainMoneyDisplay_OnTarget { false }
+			, DrainMoneyDisplay_OnTarget_UseDisplayIncome { true }
 			, CrateOnlyOnLand { false }
 			, UnitCrateVehicleCap { 50 }
 			, FreeMCV_CreditsThreshold { 1500 }
@@ -631,10 +658,7 @@ public:
 			, DropPodTrailer { }
 			, DropPodDefaultTrailer { }
 			, PodImage { }
-			, CylinderRangefinding { false }
 			, StopPlanningOnEnter { true }
-			, PlayerAttackIronCurtain { true }
-			, AIAttackIronCurtain { false }
 			, PlayerAutoRepair { false }
 			, PlayerReturnFire_Smarter { false }
 			, EVA_WeCaptureABuilding {}
@@ -735,6 +759,9 @@ public:
 			, PlayerAttackMoveTargetingDelay {}
 			, DistributeTargetingFrame { false }
 			, DistributeTargetingFrame_AIOnly { true }
+			, CanTargetAI_IronCurtained { false }
+			, CanTarget_IronCurtained { true }
+			, AutoTarget_IronCurtained { true }
 			, BuildingWaypoints { false }
 			, BuildingTypeSelectable { false }
 
@@ -783,6 +810,7 @@ public:
 			, AnimCraterDestroyTiberium { true }
 
 			, BerzerkTargeting { AffectedHouse::All }
+			, AllowBerzerkOnAllies { false }
 
 			, TintColorIronCurtain { 0 }
 			, TintColorForceShield { 0 }
@@ -833,6 +861,24 @@ public:
 			, BuildingRadioLink_SyncOwner { true }
 
 			, ApplyPerTargetEffectsOnDetonate { true }
+
+			, ExtraRange_TargetMoving { Leptons(0) }
+			, ExtraRange_TargetMoving_CloseRangeOnly { false }
+			, ExtraRange_FirerMoving { Leptons(0) }
+			, ExtraRange_Prefiring { Leptons(0) }
+			, ExtraRange_Prefiring_IncludeBurst { true }
+
+			, AutoTarget_NoThreatBuildings { false }
+			, AutoTargetAI_NoThreatBuildings { true }
+
+			, ParadropMission { Mission::Guard }
+			, AIParadropMission { Mission::Hunt }
+
+			, DefaultToGuardArea { false }
+
+			, CylinderRangefinding { false }
+
+			, PenetratesTransport_Level { 10 }
 		{ }
 
 		virtual ~ExtData() = default;

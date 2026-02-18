@@ -30,7 +30,6 @@
 #include <WWMouseClass.h>
 #include <ShapeButtonClass.h>
 
-#include <Utilities/Macro.h>
 #include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
 #include <Ext/Sidebar/SelectedButton/SelectedInfoClass.h>
 #include <Misc/MessageColumn.h>

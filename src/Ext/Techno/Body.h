@@ -1,12 +1,8 @@
 ﻿#pragma once
-#include <InfantryClass.h>
-#include <AnimClass.h>
 
-#include <Helpers/Macro.h>
+#include <Ext/TechnoType/Body.h>
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
-#include <Utilities/Macro.h>
-#include <Ext/Bullet/Body.h>
 #include <New/Entity/ShieldClass.h>
 #include <New/Entity/LaserTrailClass.h>
 #include <New/Entity/AttachEffectClass.h>
@@ -438,6 +434,7 @@ public:
 	static void CreateDelayedFireAnim(TechnoClass* pThis, AnimTypeClass* pAnimType, int weaponIndex, bool attach, bool center, bool removeOnNoDelay, bool onTurret, CoordStruct firingCoords);
 	static bool HandleDelayedFireWithPauseSequence(TechnoClass* pThis, WeaponTypeClass* pWeapon, int weaponIndex, int frame, int firingFrame);
 	static bool IsHealthInThreshold(TechnoClass* pObject, double min, double max);
+	static bool IsVeterancyInThreshold(TechnoClass* pObject, double min, double max);
 	static UnitTypeClass* GetUnitTypeExtra(UnitClass* pUnit, TechnoTypeExt::ExtData* pData);
 	static AircraftTypeClass* GetAircraftTypeExtra(AircraftClass* pAircraft);
 	static bool CannotMove(UnitClass* pThis);
@@ -445,6 +442,10 @@ public:
 	static void HandleOnDeployAmmoChange(TechnoClass* pThis, int maxAmmoOverride = -1);
 	static bool SimpleDeployerAllowedToDeploy(UnitClass* pThis, bool defaultValue, bool alwaysCheckLandTypes);
 	static void ShowPromoteAnim(TechnoClass* pThis);
+	static void ClickedApproachObject(FootClass* pThis, ObjectClass* pObject);
+
+	static bool EjectRandomly(FootClass* pEjectee, const CoordStruct& coords, int distance, bool select);
+	static bool EjectSurvivor(FootClass* pSurvivor, CoordStruct coords, bool select);
 
 	static void DrawExtraImage(TechnoClass* pThis, CellClass* pCell, const CoordStruct& coords, DirStruct dir = DirStruct(0));
 	static void DrawExtraImage(TechnoClass* pThis, const Point2D& location, const RectangleStruct& bounds, DirStruct dir = DirStruct(0), bool transparent = false, Sequence action = Sequence::Nothing, int tilt = -1);

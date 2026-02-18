@@ -1,13 +1,9 @@
-﻿#include <ColorScheme.h>
-#include <GameOptionsClass.h>
+﻿#include <GameOptionsClass.h>
 #include <FPSCounter.h>
-#include <SessionClass.h>
-#include <Phobos.h>
 #include <BitFont.h>
 #include <InputManagerClass.h>
 
 #include <Ext/Rules/Body.h>
-#include <Utilities/Macro.h>
 
 namespace TimerValueTemp
 {

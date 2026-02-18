@@ -1,10 +1,4 @@
-﻿#pragma once
-#include <BuildingTypeClass.h>
-#include <SuperClass.h>
-#include <SuperWeaponTypeClass.h>
-
-#include <Ext/TechnoType/Body.h>
-#include <Helpers/Macro.h>
+#pragma once
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 
@@ -27,6 +21,7 @@ public:
 		ValueableVector<BuildingTypeClass*> PowerPlantEnhancer_Buildings;
 		Valueable<int> PowerPlantEnhancer_Amount;
 		Nullable<float> PowerPlantEnhancer_Factor;
+		Valueable<int> PowerPlantEnhancer_MaxCount;
 
 		std::vector<Point2D> OccupierMuzzleFlashes;
 		Valueable<bool> Powered_KillSpawns;
@@ -93,6 +88,7 @@ public:
 
 		ValueableVector<TechnoTypeClass*> FactoryPlant_AllowTypes;
 		ValueableVector<TechnoTypeClass*> FactoryPlant_DisallowTypes;
+		Valueable<int> FactoryPlant_MaxCount;
 
 		Nullable<double> Units_RepairRate;
 		Nullable<int> Units_RepairStep;
@@ -104,6 +100,8 @@ public:
 		ValueableVector<BuildingTypeClass*> Adjacent_Disallowed;
 		ValueableVector<TechnoTypeClass*> Adjacent_AllowedExtra;
 		ValueableVector<TechnoTypeClass*> Adjacent_DisallowedExtra;
+		Valueable<bool> Adjacent_Disallowed_Prohibit;
+		Valueable<int> Adjacent_Disallowed_ProhibitDistance;
 
 		Nullable<Point2D> BarracksExitCell;
 
@@ -155,10 +153,11 @@ public:
 			, PowerPlantEnhancer_Buildings {}
 			, PowerPlantEnhancer_Amount { 0 }
 			, PowerPlantEnhancer_Factor { 1.0 }
+			, PowerPlantEnhancer_MaxCount { -1 }
 			, OccupierMuzzleFlashes()
 			, Powered_KillSpawns { false }
 			, CanC4_AllowZeroDamage { false }
-			, InitialStrength_Cloning { { 1.0, 0.0 } }
+			, InitialStrength_Cloning { { 1.0 } }
 			, ExcludeFromMultipleFactoryBonus { false }
 			, Refinery_UseStorage { false }
 			, Grinding_AllowAllies { false }
@@ -205,6 +204,7 @@ public:
 			, AircraftDockingDirs {}
 			, FactoryPlant_AllowTypes {}
 			, FactoryPlant_DisallowTypes {}
+			, FactoryPlant_MaxCount { -1 }
 			, IsAnimDelayedBurst { true }
 			, AggressiveStance_Exempt { false }
 			, IsDestroyableObstacle { false }
@@ -217,6 +217,8 @@ public:
 			, Adjacent_Disallowed {}
 			, Adjacent_AllowedExtra {}
 			, Adjacent_DisallowedExtra {}
+			, Adjacent_Disallowed_Prohibit { false }
+			, Adjacent_Disallowed_ProhibitDistance { 0 }
 			, BarracksExitCell {}
 			, HasSecondaryRallyPoint { false }
 			, Overpower_KeepOnline { 2 }
@@ -237,7 +239,6 @@ public:
 			, NumberImpassableRows_Dir { 2 }
 			, WeaponsFactory_Dir { 2 }
 			, UndeploysInto_Sellable { false }
-
 			, BuildingRadioLink_SyncOwner {}
 
 			// Ares 0.2

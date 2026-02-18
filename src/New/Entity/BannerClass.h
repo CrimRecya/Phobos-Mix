@@ -1,10 +1,6 @@
-#pragma once
+﻿#pragma once
 
-#include <GeneralStructures.h>
-
-#include <Ext/Scenario/Body.h>
 #include <New/Type/BannerTypeClass.h>
-#include <Utilities/EnumerableEntity.h>
 
 class BannerClass final : public EnumerableEntity<BannerClass>
 {

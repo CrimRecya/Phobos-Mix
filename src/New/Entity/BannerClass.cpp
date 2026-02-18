@@ -1,4 +1,26 @@
-#include "BannerClass.h"
+﻿#include "BannerClass.h"
+
+#include <Ext/Scenario/Body.h>
+
+std::vector<std::unique_ptr<BannerClass>> BannerClass::Array;
+
+BannerClass::BannerClass
+(
+	BannerTypeClass* pBannerType,
+	int id,
+	Point2D position,
+	int variable,
+	bool isGlobalVariable
+)
+	: Type(pBannerType)
+	, ID(id)
+	, Position(static_cast<int>(position.X / 100.0 * DSurface::ViewBounds.Width), static_cast<int>(position.Y / 100.0 * DSurface::ViewBounds.Height))
+	, Variable(variable)
+	, IsGlobalVariable(isGlobalVariable)
+{
+	this->Duration = pBannerType->Duration;
+	this->Delay = pBannerType->Delay;
+}
 
 void BannerClass::Render()
 {

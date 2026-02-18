@@ -3,8 +3,6 @@
 #include <EventClass.h>
 #include <TacticalClass.h>
 
-#include <Utilities/GeneralUtils.h>
-#include <Ext/TechnoType/Body.h>
 #include <Ext/House/Body.h>
 #include <Ext/SWType/Body.h>
 #include <Ext/Scenario/Body.h>
@@ -1327,6 +1325,7 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->PowerPlantEnhancer_Buildings.Read(exINI, pSection, "PowerPlantEnhancer.PowerPlants");
 	this->PowerPlantEnhancer_Amount.Read(exINI, pSection, "PowerPlantEnhancer.Amount");
 	this->PowerPlantEnhancer_Factor.Read(exINI, pSection, "PowerPlantEnhancer.Factor");
+	this->PowerPlantEnhancer_MaxCount.Read(exINI, pSection, "PowerPlantEnhancer.MaxCount");
 	this->Powered_KillSpawns.Read(exINI, pSection, "Powered.KillSpawns");
 
 	if (pThis->PowersUpBuilding[0] == NULL && this->PowersUp_Buildings.size() > 0)
@@ -1375,6 +1374,7 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->FactoryPlant_AllowTypes.Read(exINI, pSection, "FactoryPlant.AllowTypes");
 	this->FactoryPlant_DisallowTypes.Read(exINI, pSection, "FactoryPlant.DisallowTypes");
+	this->FactoryPlant_MaxCount.Read(exINI, pSection, "FactoryPlant.MaxCount");
 
 	this->AggressiveStance_Exempt.Read(exINI, pSection, "AggressiveStance.Exempt");
 
@@ -1388,6 +1388,8 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Adjacent_Disallowed.Read(exINI, pSection, "Adjacent.Disallowed");
 	this->Adjacent_AllowedExtra.Read(exINI, pSection, "Adjacent.AllowedExtra");
 	this->Adjacent_DisallowedExtra.Read(exINI, pSection, "Adjacent.DisallowedExtra");
+	this->Adjacent_Disallowed_Prohibit.Read(exINI, pSection, "Adjacent.Disallowed.Prohibit");
+	this->Adjacent_Disallowed_ProhibitDistance.Read(exINI, pSection, "Adjacent.Disallowed.ProhibitDistance");
 
 	this->BarracksExitCell.Read(exINI, pSection, "BarracksExitCell");
 
@@ -1405,13 +1407,17 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->BunkerWallsUpSound.Read(exINI, pSection, "BunkerWallsUpSound");
 	this->BunkerWallsDownSound.Read(exINI, pSection, "BunkerWallsDownSound");
 	this->BuildingRepairedSound.Read(exINI, pSection, "BuildingRepairedSound");
+	this->Refinery_UseStorage.Read(exINI, pSection, "Refinery.UseStorage");
+	this->AIBaseNormal.Read(exINI, pSection, "AIBaseNormal");
+	this->UndeploysInto_Sellable.Read(exINI, pSection, "UndeploysInto.Sellable");
+	this->BuildingRadioLink_SyncOwner.Read(exINI, pSection, "BuildingRadioLink.SyncOwner");
 
 	this->AISellCapturedBuilding.Read(exINI, pSection, "AISellCapturedBuilding");
 
 	if (pThis->NumberOfDocks > 0)
 	{
-		this->AircraftDockingDirs.clear();
-		this->AircraftDockingDirs.resize(pThis->NumberOfDocks);
+		std::optional<DirType> empty;
+		this->AircraftDockingDirs.resize(pThis->NumberOfDocks, empty);
 
 		Nullable<DirType> nLandingDir;
 		nLandingDir.Read(exINI, pSection, "AircraftDockingDir");
@@ -1463,12 +1469,6 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		}
 	}
 
-	this->Refinery_UseStorage.Read(exINI, pSection, "Refinery.UseStorage");
-	this->AIBaseNormal.Read(exINI, pSection, "AIBaseNormal");
-	this->UndeploysInto_Sellable.Read(exINI, pSection, "UndeploysInto.Sellable");
-
-	this->BuildingRadioLink_SyncOwner.Read(exINI, pSection, "BuildingRadioLink.SyncOwner");
-
 	// PlacementPreview
 	{
 		this->PlacementPreview.Read(exINI, pSection, "PlacementPreview");
@@ -1512,6 +1512,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->PowerPlantEnhancer_Buildings)
 		.Process(this->PowerPlantEnhancer_Amount)
 		.Process(this->PowerPlantEnhancer_Factor)
+		.Process(this->PowerPlantEnhancer_MaxCount)
 		.Process(this->SuperWeapons)
 		.Process(this->OccupierMuzzleFlashes)
 		.Process(this->Powered_KillSpawns)
@@ -1564,6 +1565,7 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AircraftDockingDirs)
 		.Process(this->FactoryPlant_AllowTypes)
 		.Process(this->FactoryPlant_DisallowTypes)
+		.Process(this->FactoryPlant_MaxCount)
 		.Process(this->IsAnimDelayedBurst)
 		.Process(this->AggressiveStance_Exempt)
 		.Process(this->IsDestroyableObstacle)
@@ -1576,6 +1578,8 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Adjacent_Disallowed)
 		.Process(this->Adjacent_AllowedExtra)
 		.Process(this->Adjacent_DisallowedExtra)
+		.Process(this->Adjacent_Disallowed_Prohibit)
+		.Process(this->Adjacent_Disallowed_ProhibitDistance)
 		.Process(this->BarracksExitCell)
 		.Process(this->HasSecondaryRallyPoint)
 		.Process(this->Overpower_KeepOnline)

@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <BulletClass.h>
-
 #include <Ext/WeaponType/Body.h>
 #include <Utilities/EnumFunctions.h>
 #include <Utilities/TemplateDef.h>
