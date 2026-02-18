@@ -1,7 +1,5 @@
 ﻿#include "ParabolaTrajectory.h"
 
-#include <OverlayTypeClass.h>
-
 #include <Ext/Bullet/Body.h>
 #include <Ext/WarheadType/Body.h>
 

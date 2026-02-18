@@ -483,8 +483,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->AISellCapturedBuilding.Read(exINI, GameStrings::General, "AISellCapturedBuilding");
 
-	this->InSequenceExtraRange.Read(exINI, GameStrings::CombatDamage, "InSequenceExtraRange");
-
 	this->EnhancedBerzerk.Read(exINI, GameStrings::CombatDamage, "EnhancedBerzerk");
 
 	this->IgnoreCenterMinorRadarEvent.Read(exINI, GameStrings::General, "IgnoreCenterMinorRadarEvent");
@@ -927,7 +925,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->InfantryAutoDeploy)
 		.Process(this->AdjacentWallDamage)
 		.Process(this->AISellCapturedBuilding)
-		.Process(this->InSequenceExtraRange)
 		.Process(this->EnhancedBerzerk)
 		.Process(this->IgnoreCenterMinorRadarEvent)
 		.Process(this->KeepAnimOnLimbo)

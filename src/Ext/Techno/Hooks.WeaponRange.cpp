@@ -57,7 +57,7 @@ static bool IsChasing(TechnoClass* pThis, AbstractClass* pTarget)
 
 	const auto pFootTarget = abstract_cast<FootClass*>(pTarget);
 
-	if (!pFootTarget || !pFootTarget->Locomotor.GetInterfacePtr()->Is_Really_Moving_Now())
+	if (!pFootTarget || !pFootTarget->Locomotor->Is_Really_Moving_Now())
 		return false;
 
 	return true;
@@ -67,7 +67,7 @@ static bool IsMovingFire(TechnoClass* pThis)
 {
 	const auto pFoot = abstract_cast<FootClass*>(pThis);
 
-	if (!pFoot || !pFoot->Locomotor.GetInterfacePtr()->Is_Really_Moving_Now())
+	if (!pFoot || !pFoot->Locomotor->Is_Really_Moving_Now())
 		return false;
 
 	return true;
@@ -147,16 +147,6 @@ DEFINE_HOOK(0x6F7248, TechnoClass_InRange_WeaponRange, 0x6)
 	else
 	{
 		range = WeaponTypeExt::GetRangeWithModifiers(pWeapon, pThis);
-		auto pInfantry = abstract_cast<InfantryClass*>(pThis);
-
-		if (pInfantry && range != -512)
-		{
-			const auto sequence = pInfantry->SequenceAnim;
-
-			if (sequence == Sequence::FireFly || sequence == Sequence::FireUp || sequence == Sequence::FireProne || sequence == Sequence::DeployedFire || sequence == Sequence::SecondaryFire)
-				range += RulesExt::Global()->InSequenceExtraRange.Get();
-		}
-	}
 
 		if (range != -512)
 		{

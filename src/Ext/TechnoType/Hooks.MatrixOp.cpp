@@ -118,6 +118,17 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteTurretDrawing, 0x6)
 		const auto turKey = turShouldRedraw ? -1 : flags;
 		const auto turCache = turShouldRedraw ? nullptr : &pDrawType->VoxelTurretWeaponCache;
 
+		auto getPrimaryRadian = [pThis]() -> double
+		{
+			// Align with the jj Draw_Matrix calc changing.
+			if (const auto pJJLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor))
+			{
+				if (!pThis->IsAttackedByLocomotor)
+					return pJJLoco->LocomotionFacing.Current().GetRadian<32>();
+			}
+
+			return pThis->PrimaryFacing.Current().GetRadian<32>();
+		};
 		auto shouldCalculateMatrix = [=]()
 		{
 			if (!haveBar)
@@ -128,11 +139,11 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteTurretDrawing, 0x6)
 
 			return pDrawTypeExt->ExtraBarrelCount.Get() > 0;
 		};
-		auto getTurretMatrix = [=, &mtx]() -> Matrix3D
+		auto getTurretMatrix = [=, &mtx, &getPrimaryRadian]() -> Matrix3D
 		{
 			auto mtx_turret = mtx;
 			pDrawTypeExt->ApplyTurretOffset(&mtx_turret, Pixel_Per_Lepton, turIdx);
-			mtx_turret.RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - pThis->PrimaryFacing.Current().GetRadian<32>()));
+			mtx_turret.RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - getPrimaryRadian()));
 
 			if (turretInRecoil)
 				mtx_turret.TranslateX(-pTurData->TravelSoFar);

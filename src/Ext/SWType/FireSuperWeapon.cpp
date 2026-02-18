@@ -184,10 +184,9 @@ void SWTypeExt::ExtData::ApplyLimboKill(HouseClass* pHouse)
 
 		if (BuildingTypeExt::ExtMap.Find(pBuildingType)->LimboBuildID == BuildingExt::ExtMap.Find(pBuilding)->LimboID)
 		{
-			const auto pHouse = pBuilding->Owner;
-			const auto index = pBuilding->Type->ArrayIndex;
+			const int index = pBuilding->Type->ArrayIndex;
 
-			for (auto& pBaseNode : pHouse->Base.BaseNodes)
+			for (auto& pBaseNode : pBuilding->Owner->Base.BaseNodes)
 			{
 				if (pBaseNode.BuildingTypeIndex == index)
 					pBaseNode.Placed = false;

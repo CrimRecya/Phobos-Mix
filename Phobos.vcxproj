@@ -336,7 +336,6 @@
     <ClInclude Include="src\Ext\Bullet\Trajectories\VirtualTrajectories\EngraveTrajectory.h" />
     <ClInclude Include="src\Ext\Bullet\Trajectories\ActualTrajectories\ParabolaTrajectory.h" />
     <ClInclude Include="src\Ext\Bullet\Trajectories\VirtualTrajectories\TracingTrajectory.h" />
-    <ClInclude Include="src\Ext\Event\Body.h" />
     <ClInclude Include="src\Ext\OverlayType\Body.h" />
     <ClInclude Include="src\Ext\ParticleType\Body.h" />
     <ClInclude Include="src\Ext\Sidebar\Body.h" />

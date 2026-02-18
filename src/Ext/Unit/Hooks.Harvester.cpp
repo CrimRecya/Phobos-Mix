@@ -3,6 +3,7 @@
 #include <Ext/House/Body.h>
 #include <Ext/Anim/Body.h>
 #include <Utilities/EnumFunctions.h>
+#include <Misc/FlyingStrings.h>
 
 #pragma region EnterRefineryFix
 

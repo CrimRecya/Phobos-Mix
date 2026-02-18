@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <Ext/TechnoType/Body.h>
+#include <Ext/Bullet/Body.h>
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 #include <New/Entity/ShieldClass.h>

@@ -447,20 +447,6 @@ DEFINE_HOOK(0x6F9B64, TechnoClass_SelectAutoTarget_RecordAttackWall, 0x7)
 
 #pragma endregion
 
-#pragma region CylinderRange
-
-DEFINE_HOOK(0x6F755A, TechnoClass_IsCloseEnough_CylinderRangefinding, 0x7)
-{
-	GET_BASE(WeaponTypeClass* const, pWeaponType, 0x10);
-	GET(CoordStruct* const, pCoord, ESI);
-	GET(TechnoClass* const, pThis, EDI);
-	const bool cylinder = WeaponTypeExt::ExtMap.Find(pWeaponType)->CylinderRangefinding.Get(RulesExt::Global()->CylinderRangefinding.Get());
-	R->EAX(pCoord->X);
-	return (cylinder || pThis->WhatAmI() == AbstractType::Aircraft) ? 0x6F75B2 : 0x6F7568;
-}
-
-#pragma endregion
-
 #pragma region PlanWaypoint
 
 DEFINE_HOOK(0x63745D, UnknownClass_PlanWaypoint_ContinuePlanningOnEnter, 0x6)
@@ -490,33 +476,6 @@ DEFINE_HOOK(0x638D73, UnknownClass_CheckLastWaypoint_ContinuePlanningWaypoint, 0
 		return Deselect;
 
 	return SkipDeselect;
-}
-
-#pragma endregion
-
-#pragma region TargetIronCurtain
-
-DEFINE_HOOK(0x6FC22A, TechnoClass_GetFireError_TargetingIronCurtain, 0x6)
-{
-	enum { CantFire = 0x6FC86A, GoOtherChecks = 0x6FC24D };
-
-	GET(TechnoClass*, pThis, ESI);
-	GET(ObjectClass*, pTarget, EBP);
-	GET_STACK(int, wpIdx, STACK_OFFSET(0x20, 0x8));
-
-	if (!pTarget->IsIronCurtained())
-		return GoOtherChecks;
-
-	auto pOwner = pThis->Owner;
-	auto const pRules = RulesExt::Global();
-
-	if ((pOwner->IsHumanPlayer || pOwner->IsInPlayerControl) ? pRules->PlayerAttackIronCurtain : pRules->AIAttackIronCurtain)
-		return GoOtherChecks;
-
-	auto pWpExt = WeaponTypeExt::ExtMap.TryFind(pThis->GetWeapon(wpIdx)->WeaponType);
-	bool isHealing = pThis->CombatDamage(wpIdx) < 0;
-
-	return (pWpExt && pWpExt->AttackIronCurtain.Get(isHealing)) ? GoOtherChecks : CantFire;
 }
 
 #pragma endregion
@@ -2177,36 +2136,6 @@ DEFINE_HOOK(0x662FD8, RocketLocomotionClass_Process_CheckHealth, 0x5)
 	}
 
 	return Detonate;
-}
-
-#pragma endregion
-
-#pragma region JumpjetClimbIgnoreBuilding
-
-namespace JumpjetClimbIgnoreBuilding
-{
-	bool Ignore = false;
-	int Z = 0;
-}
-
-DEFINE_HOOK(0x54D820, JumpjetLocomotionClass_GetFloorZ_SetContext, 0x6)
-{
-	GET(JumpjetLocomotionClass*, pThis, ESI);
-	JumpjetClimbIgnoreBuilding::Ignore = TechnoTypeExt::ExtMap.Find(pThis->LinkedTo->GetTechnoType())->JumpjetClimbIgnoreBuilding.Get(RulesExt::Global()->JumpjetClimbIgnoreBuilding);
-
-  if (JumpjetClimbIgnoreBuilding::Ignore)
-		JumpjetClimbIgnoreBuilding::Z = MapClass::Instance.GetCellFloorHeight(pThis->LinkedTo->Location);
-
-  return 0;
-}
-
-DEFINE_HOOK_AGAIN(0x54D8EA, JumpjetLocomotionClass_GetFloorZ_IgnoreBuilding, 0x6);
-DEFINE_HOOK(0x54D859, JumpjetLocomotionClass_GetFloorZ_IgnoreBuilding, 0x9)
-{
-	if (JumpjetClimbIgnoreBuilding::Ignore)
-		R->EAX(JumpjetClimbIgnoreBuilding::Z);
-
-	return 0;
 }
 
 #pragma endregion

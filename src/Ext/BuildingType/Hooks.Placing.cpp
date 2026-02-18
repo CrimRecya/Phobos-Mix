@@ -241,9 +241,32 @@ namespace ProximityTemp
 	BuildingTypeClass* BuildType = nullptr;
 }
 
+/*
+	In sub_4A8EB0
+
+	- BaseNormal extra checking Hook #1-1 -> Set context and clear up data
+*/
+DEFINE_HOOK(0x4A8F20, DisplayClass_BuildingProximityCheck_SetContext, 0x5)
+{
+	GET(BuildingTypeClass*, pType, ESI);
+
+	if (RulesExt::Global()->PlacementGrid_Expand)
+		ScenarioExt::Global()->BaseNormalCells.clear();
+
+	ProximityTemp::Build = false;
+	ProximityTemp::BuildType = pType;
+
+	return 0;
+}
+
+/*
+	In sub_4A8EB0
+
+	- BaseNormal extra checking Hook #1-2 -> Check allowed range
+*/
 DEFINE_HOOK(0x4A8F3E, DisplayClass_BuildingProximityCheck_BeforeChecks, 0x6)
 {
-	enum { SkipGameCode = 0x4A8F44, ReturnFromFunction = 0x4A9052 };
+	enum { SkipGameCode = 0x4A8F44, ReturnFromFunction = 0x4A904E };
 
 	GET(BuildingTypeClass*, pType, ESI);
 	GET_STACK(const int, houseArrayIndex, STACK_OFFSET(0x30, 0x8));
@@ -262,7 +285,8 @@ DEFINE_HOOK(0x4A8F3E, DisplayClass_BuildingProximityCheck_BeforeChecks, 0x6)
 
 		if (!result)
 		{
-			R->EAX(false);
+			R->Stack<bool>(STACK_OFFSET(0x30, 0xC), false);
+			ScenarioExt::Global()->BaseNormalCells.clear();
 			return ReturnFromFunction;
 		}
 
@@ -274,9 +298,14 @@ DEFINE_HOOK(0x4A8F3E, DisplayClass_BuildingProximityCheck_BeforeChecks, 0x6)
 	return SkipGameCode;
 }
 
+/*
+	In sub_4A8EB0
+
+	- BaseNormal extra checking Hook #1-3 -> Check allowed building
+*/
 DEFINE_HOOK(0x4A8FD7, DisplayClass_BuildingProximityCheck_BuildArea, 0x6)
 {
-	enum { SkipBuilding = 0x4A902C, ReturnFromFunction = 0x4A9052 };
+	enum { SkipBuilding = 0x4A902C, ReturnFromFunction = 0x4A904E };
 
 	GET(BuildingClass*, pCellBuilding, ESI);
 	GET_STACK(const int, houseArrayIndex, STACK_OFFSET(0x30, 0x8));
@@ -300,7 +329,8 @@ DEFINE_HOOK(0x4A8FD7, DisplayClass_BuildingProximityCheck_BuildArea, 0x6)
 		{
 			if (pTmpTypeExt->Adjacent_Disallowed_Prohibit)
 			{
-				R->EAX(false);
+				R->Stack<bool>(STACK_OFFSET(0x30, 0xC), false);
+				ScenarioExt::Global()->BaseNormalCells.clear();
 				return ReturnFromFunction;
 			}
 			else
@@ -316,52 +346,7 @@ DEFINE_HOOK(0x4A8FD7, DisplayClass_BuildingProximityCheck_BuildArea, 0x6)
 /*
 	In sub_4A8EB0
 
-	- BaseNormal extra checking Hook #1-1 -> Set context and clear up data
-*/
-DEFINE_HOOK(0x4A8F20, DisplayClass_BuildingProximityCheck_SetContext, 0x5)
-{
-	GET(BuildingTypeClass*, pType, ESI);
-
-	if (RulesExt::Global()->PlacementGrid_Expand)
-		ScenarioExt::Global()->BaseNormalCells.clear();
-
-	ProximityTemp::Build = false;
-	ProximityTemp::BuildType = pType;
-
-	return 0;
-}
-
-/*
-	In sub_4A8EB0
-
-	- BaseNormal extra checking Hook #1-2 -> Check allowed building
-*/
-DEFINE_HOOK(0x4A8FD7, DisplayClass_BuildingProximityCheck_BuildArea, 0x6)
-{
-	enum { SkipBuilding = 0x4A902C };
-
-	GET(BuildingClass*, pCellBuilding, ESI);
-
-	if (BuildingTypeExt::ExtMap.Find(pCellBuilding->Type)->NoBuildAreaOnBuildup && pCellBuilding->CurrentMission == Mission::Construction)
-		return SkipBuilding;
-
-	auto const& pBuildingsAllowed = BuildingTypeExt::ExtMap.Find(ProximityTemp::BuildType)->Adjacent_Allowed;
-
-	if (pBuildingsAllowed.size() > 0 && !pBuildingsAllowed.Contains(pCellBuilding->Type))
-		return SkipBuilding;
-
-	auto const& pBuildingsDisallowed = BuildingTypeExt::ExtMap.Find(ProximityTemp::BuildType)->Adjacent_Disallowed;
-
-	if (pBuildingsDisallowed.size() > 0 && pBuildingsDisallowed.Contains(pCellBuilding->Type))
-		return SkipBuilding;
-
-	return 0;
-}
-
-/*
-	In sub_4A8EB0
-
-	- BaseNormal extra checking Hook #1-3 -> Break loop or record cell for drawing
+	- BaseNormal extra checking Hook #1-4 -> Break loop or record cell for drawing
 */
 DEFINE_HOOK(0x4A902C, MapClass_PassesProximityCheck_BaseNormalExtra, 0x5)
 {
@@ -387,7 +372,7 @@ DEFINE_HOOK(0x4A902C, MapClass_PassesProximityCheck_BaseNormalExtra, 0x5)
 /*
 	In sub_4A8EB0
 
-	- BaseNormal extra checking Hook #1-4 -> Restore the correct result
+	- BaseNormal extra checking Hook #1-5 -> Restore the correct result
 */
 DEFINE_HOOK(0x4A904E, MapClass_PassesProximityCheck_RestoreResult, 0x5)
 {

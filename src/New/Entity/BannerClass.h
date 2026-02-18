@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <Utilities/EnumerableEntity.h>
+
 #include <New/Type/BannerTypeClass.h>
 
 class BannerClass final : public EnumerableEntity<BannerClass>
@@ -25,8 +27,8 @@ public:
 		, Delay {}
 	{ };
 
-	BannerClass(BannerTypeClass* pBannerType, int id, Point2D position, int variable, bool isGlobalVariable)
-		: Type { pBannerType }
+	BannerClass(BannerTypeClass* pBannerType, int id, Point2D position, int variable, bool isGlobalVariable) : EnumerableEntity<BannerClass>()
+		, Type { pBannerType }
 		, ID { id }
 		, Position { static_cast<int>(position.X / 100.0 * DSurface::ViewBounds.Width), static_cast<int>(position.Y / 100.0 * DSurface::ViewBounds.Height) }
 		, Variable { variable }

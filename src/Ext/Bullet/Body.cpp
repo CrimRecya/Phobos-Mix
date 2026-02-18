@@ -6,6 +6,7 @@
 #include <Ext/WeaponType/Body.h>
 #include <Ext/Cell/Body.h>
 #include <Ext/EBolt/Body.h>
+#include <Ext/Techno/Body.h>
 #include <New/Entity/LaserTrailClass.h>
 
 BulletExt::ExtContainer BulletExt::ExtMap;

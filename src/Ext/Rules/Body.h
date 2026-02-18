@@ -430,8 +430,6 @@ public:
 
 		Valueable<bool> AISellCapturedBuilding;
 
-		Valueable<Leptons> InSequenceExtraRange;
-
 		Valueable<bool> EnhancedBerzerk;
 
 		Valueable<bool> IgnoreCenterMinorRadarEvent;
@@ -836,8 +834,6 @@ public:
 			, AdjacentWallDamage { 200 }
 
 			, AISellCapturedBuilding { true }
-
-			, InSequenceExtraRange { Leptons(0) }
 
 			, EnhancedBerzerk { false }
 
