@@ -24,20 +24,6 @@ DEFINE_HOOK(0x6F3E6E, TechnoClass_ActionLines_TurretMultiOffset, 0x0)
 	return 0x6F3E85;
 }
 
-DEFINE_HOOK(0x73B780, UnitClass_DrawVXL_TurretMultiOffset, 0x0)
-{
-	enum { CleanFlag = 0x73B78A, SkipFlag = 0x73B790 };
-
-	GET(TechnoTypeClass* const, pDrawType, EBX);
-
-	auto const pDrawTypeExt = TechnoTypeExt::ExtMap.Find(pDrawType);
-
-	return (*pDrawTypeExt->TurretOffset.GetEx() == CoordStruct::Empty
-		&& pDrawTypeExt->ExtraTurretCount <= 0
-		&& pDrawTypeExt->ExtraBarrelCount <= 0)
-		? CleanFlag : SkipFlag;
-}
-
 struct AresTechnoTypeExt
 {
 	char _[0xA4];
@@ -48,7 +34,7 @@ struct AresTechnoTypeExt
 	VoxelStruct NoSpawnAltVXL;
 };
 
-static inline double GetPrimaryRadian(UnitClass* pThis)
+static inline double GetPrimaryRadian(const UnitClass* pThis)
 {
 	// Align with the jj Draw_Matrix calc changing.
 	if (const auto pJJLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor))
@@ -59,6 +45,41 @@ static inline double GetPrimaryRadian(UnitClass* pThis)
 
 	return pThis->PrimaryFacing.Current().GetRadian<32>();
 };
+
+static inline double GetTurretRadian(const UnitClass* pThis)
+{
+	const auto pType = pThis->Type;
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	const int turretROT = pTypeExt->TurretROT.Get(pType->ROT);
+	if (turretROT > 6)
+		return pThis->SecondaryFacing.Current().GetRadian<32>();
+	else if (turretROT > 4)
+		return pThis->SecondaryFacing.Current().GetRadian<64>();
+	else if (turretROT > 2)
+		return pThis->SecondaryFacing.Current().GetRadian<128>();
+
+	return pThis->SecondaryFacing.Current().GetRadian<256>();
+};
+
+static inline size_t GetTurretFacing(const UnitClass* pThis)
+{
+	const auto pType = pThis->Type;
+	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	const int turretROT = pTypeExt->TurretROT.Get(pType->ROT);
+	if (turretROT > 6)
+		return pThis->SecondaryFacing.Current().GetFacing<32>();
+	else if (turretROT > 4)
+		return pThis->SecondaryFacing.Current().GetFacing<64>();
+	else if (turretROT > 2)
+		return pThis->SecondaryFacing.Current().GetFacing<128>();
+
+	return pThis->SecondaryFacing.Current().GetFacing<256>();
+};
+
+static inline float GetRotateRadian(const UnitClass* pThis, bool detail, bool change)
+{
+	return static_cast<float>((detail ? GetTurretRadian(pThis) : pThis->SecondaryFacing.Current().GetRadian<32>()) - (change ? GetPrimaryRadian(pThis) : pThis->PrimaryFacing.Current().GetRadian<32>()));
+}
 
 DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteTurretDrawing, 0x6)
 {
@@ -144,7 +165,7 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteTurretDrawing, 0x6)
 		{
 			auto mtx_turret = mtx;
 			pDrawTypeExt->ApplyTurretOffset(&mtx_turret, Pixel_Per_Lepton, turIdx);
-			mtx_turret.RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - GetPrimaryRadian(pThis)));
+			mtx_turret.RotateZ(GetRotateRadian(pThis, notChargeTurret, true));
 
 			if (turretInRecoil)
 				mtx_turret.TranslateX(-pTurData->TravelSoFar);
@@ -330,15 +351,25 @@ DEFINE_HOOK(0x73CCE1, UnitClass_DrawSHP_TurretOffest, 0x6)
 
 #pragma region draw_matrix
 
+struct FixedTurretShadowIndexKey
+{
+	unsigned TurretFace : 5;
+	unsigned SlopeIndex : 6;
+	unsigned PointOffset : 5;
+	unsigned LocoCoreData : 7;
+	unsigned TurretNumber : 8;
+	unsigned IsOnGround : 1;
+};
+
 struct JumpjetTiltVoxelIndexKey
 {
-	unsigned bodyFrame : 5;
-	unsigned bodyFace : 5;
-	unsigned slopeIndex : 6;
-	unsigned isSpawnAlt : 1;
-	unsigned forwards : 7;
-	unsigned sideways : 7;
-	unsigned reserved : 1;
+	unsigned BodyFrame : 5;
+	unsigned BodyFace : 5;
+	unsigned SlopeIndex : 6;
+	unsigned IsSpawnAlt : 1;
+	unsigned Forwards : 7;
+	unsigned Sideways : 7;
+	unsigned Reserved : 1;
 };
 
 struct PhobosVoxelIndexKey
@@ -349,13 +380,17 @@ struct PhobosVoxelIndexKey
 		union
 		{
 			JumpjetTiltVoxelIndexKey JumpjetTiltVoxel;
+			FixedTurretShadowIndexKey FixedTurretShadow;
 			// add other definitions here as needed
 		} CustomIndexKey;
 	};
 
 	// add funcs here if needed
-	constexpr bool IsCleanKey() const { return Base.Value == 0; }
-	constexpr bool IsJumpjetKey() const { return Base.MainVoxel.Reserved != 0; }
+	constexpr operator const VoxelIndexKey& () const noexcept { return Base; }
+	constexpr void Invalidate() noexcept { Base.Invalidate(); }
+	constexpr bool Is_Valid_Key() const noexcept { return Base.Is_Valid_Key(); }
+	constexpr bool IsCleanKey() const noexcept { return Base.Value == 0; }
+	constexpr bool IsJumpjetKey() const noexcept { return Base.MainVoxel.Reserved != 0; }
 };
 
 static_assert(sizeof(PhobosVoxelIndexKey) == sizeof(VoxelIndexKey), "PhobosVoxelIndexKey size mismatch");
@@ -418,7 +453,7 @@ static Matrix3D* __stdcall JumpjetLocomotionClass_Draw_Matrix(ILocomotion* iloco
 	if (std::abs(ars) >= 0.005 || std::abs(arf) >= 0.005)
 	{
 		if (key)
-			key->Base.Invalidate();
+			key->Invalidate();
 
 		if (onGround)
 		{
@@ -462,11 +497,11 @@ static Matrix3D* __stdcall JumpjetLocomotionClass_Draw_Matrix(ILocomotion* iloco
 
 			if (locoFace.IsRotating())
 			{
-				const float sidewaysSpeedFactor = static_cast<float>(pThis->CurrentSpeed * pTypeExt->JumpjetTilt_SidewaysSpeedFactor);
-				const float sidewaysRotationFactor = static_cast<float>(static_cast<short>(locoFace.Difference().Raw)
+				const float SidewaysSpeedFactor = static_cast<float>(pThis->CurrentSpeed * pTypeExt->JumpjetTilt_SidewaysSpeedFactor);
+				const float SidewaysRotationFactor = static_cast<float>(static_cast<short>(locoFace.Difference().Raw)
 					* pTypeExt->JumpjetTilt_SidewaysRotationFactor);
 
-				ars = Math::clamp(static_cast<float>(sidewaysSpeedFactor * sidewaysRotationFactor
+				ars = Math::clamp(static_cast<float>(SidewaysSpeedFactor * SidewaysRotationFactor
 					* JumpjetTiltReference::SidewaysBaseTilt), -JumpjetTiltReference::MaxTilt, JumpjetTiltReference::MaxTilt);
 
 				const auto arsDir = DirStruct(ars);
@@ -489,19 +524,19 @@ static Matrix3D* __stdcall JumpjetLocomotionClass_Draw_Matrix(ILocomotion* iloco
 		}
 	}
 
-	if (key && key->Base.Is_Valid_Key())
+	if (key && key->Is_Valid_Key())
 	{
 		// It is currently unclear whether the passed key only has two situations:
 		// all 0s and all 1s, so I use the safest approach for now
 		if (key->IsCleanKey() && (arfFace || arsFace))
 		{
-			key->CustomIndexKey.JumpjetTiltVoxel.forwards = arfFace;
-			key->CustomIndexKey.JumpjetTiltVoxel.sideways = arsFace;
+			key->CustomIndexKey.JumpjetTiltVoxel.Forwards = arfFace;
+			key->CustomIndexKey.JumpjetTiltVoxel.Sideways = arsFace;
 
 			if (onGround)
-				key->CustomIndexKey.JumpjetTiltVoxel.slopeIndex = slope_idx;
+				key->CustomIndexKey.JumpjetTiltVoxel.SlopeIndex = slope_idx;
 
-			key->CustomIndexKey.JumpjetTiltVoxel.bodyFace = curf.GetFacing<32>();
+			key->CustomIndexKey.JumpjetTiltVoxel.BodyFace = curf.GetFacing<32>();
 
 			// Outside the function, there is another step to add a frame number to the key for drawing
 			key->Base.Value >>= 5;
@@ -519,16 +554,50 @@ static Matrix3D* __stdcall JumpjetLocomotionClass_Draw_Matrix(ILocomotion* iloco
 	return ret;
 }
 DEFINE_FUNCTION_JUMP(VTABLE, 0x7ECD8C, JumpjetLocomotionClass_Draw_Matrix);
-
+/*
+DEFINE_HOOK(0x5F99E7, Test_Log, 0x6)
+{
+	Debug::LogAndMessage("Clean cache!\n");
+	return 0;
+}
+*/
+DEFINE_PATCH(0x40F271, 0x00, 0x00, 0x00, 0x08); // 128M voxel cache
 DEFINE_HOOK(0x73B748, UnitClass_DrawVXL_ResetKeyForTurretUse, 0x7)
 {
+	enum { SkipGameCode = 0x73B79F };
+
 	REF_STACK(PhobosVoxelIndexKey, key, STACK_OFFSET(0x1C4, -0x1B0));
 
-	// Main body drawing completed, then enable accurate drawing of turrets and barrels
-	if (key.Base.Is_Valid_Key() && key.IsJumpjetKey())
-		key.Base.Invalidate();
+	if (key.Is_Valid_Key())
+	{
+		if (key.IsJumpjetKey())
+		{
+			key.Invalidate();
+		}
+		else
+		{
+			GET(const UnitClass* const, pThis, EBP);
+			GET(const TechnoTypeClass* const, pDrawType, EBX);
+			GET_STACK(const int, turretFrame, STACK_OFFSET(0x1C4, -0x18C));
 
-	return 0;
+			const auto pDrawTypeExt = TechnoTypeExt::ExtMap.Find(pDrawType);
+			if (*pDrawTypeExt->TurretOffset.GetEx() == CoordStruct::Empty && pDrawTypeExt->ExtraTurretCount <= 0 && pDrawTypeExt->ExtraBarrelCount <= 0)
+				key.Base.Value &= ~0x3FFu;
+			else
+				key.Base.Value &= ~0x1Fu;
+
+			if ((pThis->Type->TurretCount <= 0 || pThis->Type->IsGattling) && !pThis->Type->DisableVoxelCache)
+				key.Base.MinorVoxel.TurretWeaponIndex = GetTurretFacing(pThis);
+			else
+				key.Base.MinorVoxel.TurretFacing = pThis->SecondaryFacing.Current().GetFacing<32>();
+
+			if (pDrawType->TurretVoxel.HVA && pDrawType->TurretVoxel.HVA->FrameCount > 1)
+				key.Base.MinorVoxel.TurretFrameIndex = ((pDrawType->MainVoxel.HVA->FrameCount > 1) ? (pThis->TurretAnimFrame % pDrawType->TurretVoxel.HVA->FrameCount) : (turretFrame & 0xFFu));
+		}
+	}
+
+	R->ESI(key.Base.Value);
+	return SkipGameCode;
 }
 
 // Visual bugfix : Teleport loco vxls could not tilt
@@ -652,7 +721,7 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 		return SkipDrawing;
 
 	REF_STACK(Matrix3D, shadowMatrix, STACK_OFFSET(0x1C4, -0x130));
-	GET_STACK(VoxelIndexKey, vxlIndexKey, STACK_OFFSET(0x1C4, -0x1B0));
+	GET_STACK(PhobosVoxelIndexKey, vxlIndexKey, STACK_OFFSET(0x1C4, -0x1B0));
 	LEA_STACK(RectangleStruct* const, bnd, STACK_OFFSET(0x1C4, 0xC));
 	LEA_STACK(Point2D* const, pt, STACK_OFFSET(0x1C4, -0x1A4));
 	GET_STACK(Surface* const, surface, STACK_OFFSET(0x1C4, -0x1A8));
@@ -746,11 +815,11 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 
 		if (locoFace.IsRotating())
 		{
-			const float sidewaysSpeedFactor = static_cast<float>(jjloco->CurrentSpeed * pDrawTypeExt->JumpjetTilt_SidewaysSpeedFactor);
-			const float sidewaysRotationFactor = static_cast<float>(static_cast<short>(locoFace.Difference().Raw)
+			const float SidewaysSpeedFactor = static_cast<float>(jjloco->CurrentSpeed * pDrawTypeExt->JumpjetTilt_SidewaysSpeedFactor);
+			const float SidewaysRotationFactor = static_cast<float>(static_cast<short>(locoFace.Difference().Raw)
 				* pDrawTypeExt->JumpjetTilt_SidewaysRotationFactor);
 
-			ars = Math::clamp(static_cast<float>(sidewaysSpeedFactor * sidewaysRotationFactor
+			ars = Math::clamp(static_cast<float>(SidewaysSpeedFactor * SidewaysRotationFactor
 				* JumpjetTiltReference::SidewaysBaseTilt), -JumpjetTiltReference::MaxTilt, JumpjetTiltReference::MaxTilt);
 		}
 
@@ -811,8 +880,20 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 	if (!(pTurretVoxel && pTurretVoxel->VXL && pTurretVoxel->HVA))
 		return SkipDrawing;
 
+	const bool notChargeTurret = pThis->Type->TurretCount <= 0 || pThis->Type->IsGattling;
 	if (vxlIndexKey.Is_Valid_Key())
-		vxlIndexKey.MinorVoxel.TurretFacing = pThis->SecondaryFacing.Current().GetFacing<32>();
+	{
+		if (notChargeTurret && !pThis->Type->DisableShadowCache)
+		{
+			vxlIndexKey.CustomIndexKey.FixedTurretShadow.TurretFace = 0;
+			vxlIndexKey.CustomIndexKey.FixedTurretShadow.TurretNumber = GetTurretFacing(pThis);
+		}
+		else
+		{
+			vxlIndexKey.CustomIndexKey.FixedTurretShadow.TurretFace = pThis->SecondaryFacing.Current().GetFacing<32>();
+			vxlIndexKey.CustomIndexKey.FixedTurretShadow.TurretNumber = (pThis->CurrentTurretNumber & 0xFFu);
+		}
+	}
 
 	auto getBarrelVoxel = [pDrawType](int idx)->VoxelStruct*
 	{
@@ -842,7 +923,7 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 	{
 		auto mtx_turret = mtx;
 		pDrawTypeExt->ApplyTurretOffset(&mtx_turret, Pixel_Per_Lepton, turIdx);
-		mtx_turret.RotateZ(static_cast<float>(pThis->SecondaryFacing.Current().GetRadian<32>() - GetPrimaryRadian(pThis)));
+		mtx_turret.RotateZ(GetRotateRadian(pThis, notChargeTurret, false));
 
 		const auto pTurData = pDrawType->TurretRecoil ? ((turIdx >= 0) ? &pExt->ExtraTurretRecoil[turIdx] : &pThis->TurretRecoil) : nullptr;
 		const auto turretInRecoil = pTurData && pTurData->State != RecoilData::RecoilState::Inactive;

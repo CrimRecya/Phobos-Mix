@@ -714,7 +714,7 @@ void TechnoTypeExt::ExtData::SetTurretLimitedDir(FootClass* pThis, DirStruct des
 	const auto destinationDir = this->GetTurretDesiredDir(desiredDir);
 	auto setTurretDesired = [this, pBody, pTurret](const DirStruct& dir)
 	{
-		if (this->Turret_BodyFoundation.Get(RulesExt::Global()->Turret_BodyFoundation) && pBody->IsRotating())
+		if (this->Turret_BodyFoundation.Get(RulesExt::Global()->Turret_BodyFoundation) && !this->OwnerObject()->TurretSpins && pBody->IsRotating())
 		{
 			const auto difference = static_cast<short>(pBody->Difference().Raw) > 0 ? pBody->ROT.Raw : -pBody->ROT.Raw;
 			const auto facing = DirStruct { pTurret->Current().Raw + difference };

@@ -1023,6 +1023,9 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 				updateLine();
 		}
 
+		drawText(COLOR_CYAN, "Cache: [1](%d/%d),[2](%d/%d),[3](%d/%d),[4](%d/%d)", pType->VoxelMainCache.IndexCount, pType->VoxelMainCache.IndexSize, pType->VoxelTurretWeaponCache.IndexCount, pType->VoxelTurretWeaponCache.IndexSize, pType->VoxelShadowCache.IndexCount, pType->VoxelShadowCache.IndexSize, pType->VoxelTurretBarrelCache.IndexCount, pType->VoxelTurretBarrelCache.IndexSize);
+		updateLine();
+
 		drawText(COLOR_WHITE, "TurretRecoil: %.3f", pTechno->TurretRecoil.TravelSoFar);
 		drawText(COLOR_WHITE, "BarrelRecoil: %.3f", pTechno->BarrelRecoil.TravelSoFar);
 
