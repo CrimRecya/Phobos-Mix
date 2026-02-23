@@ -290,23 +290,6 @@ DEFINE_HOOK(0x5865E2, MapClass_IsLocationFogged_Check, 0x5)
 
 #pragma endregion
 
-#pragma region SetHealthPercentageFix
-
-DEFINE_HOOK(0x5F5C80, ObjectClass_SetHealthPercentage_Round, 0xA)
-{
-	enum { SkipGameCode = 0x5F5CBA };
-
-	GET(ObjectClass* const, pThis, ECX);
-	GET_STACK(double, percentage, STACK_OFFSET(0x0, 0x4));
-
-	pThis->Health = (percentage <= 0.0) ? 0 : Math::max(1, Game::F2I(pThis->GetType()->Strength * percentage + 0.5));
-
-	R->EAX(0);
-	return SkipGameCode;
-}
-
-#pragma endregion
-
 #pragma region EngineerAutoFire
 
 DEFINE_HOOK(0x707E84, TechnoClass_GetGuardRange_Engineer, 0x6)
