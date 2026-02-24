@@ -303,6 +303,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fixed vehicles disguised as trees incorrectly displaying veterancy insignia when they shouldn't.
 - Fixed the issue where the AI's regular targeting would also target garrisonable buildings.
 - Fixed the issue that the move mission of the jumpjet does not end correctly.
+- AI team garrison scripts now re-evaluate destination immediately instead of trying to garrison ungarrisonable building before changing target.
 
 ## Fixes / interactions with other extensions
 
