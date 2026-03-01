@@ -260,13 +260,10 @@ DEFINE_HOOK(0x7015C9, TechnoClass_Captured_UpdateTracking, 0x6)
 		{
 			const bool I_am_human = pThis->Owner->IsControlledByHuman();
 
-			if (I_am_human != pNewOwner->IsControlledByHuman())
+			if (I_am_human != pNewOwner->IsControlledByHuman() && (I_am_human ? humanToComputer : computerToHuman))
 			{
-				if ((I_am_human && humanToComputer) || (!I_am_human && computerToHuman))
-				{
-					TechnoExt::KillSelf(pThis, pTypeExt->AutoDeath_Behavior, pTypeExt->AutoDeath_VanishAnimation, !pThis->IsInLogic && pThis->IsAlive);
-					return 0;
-				}
+				TechnoExt::KillSelf(pThis, pTypeExt->AutoDeath_Behavior, pTypeExt->AutoDeath_VanishAnimation, !pThis->IsInLogic && pThis->IsAlive);
+				return 0;
 			}
 		}
 	}
