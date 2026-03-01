@@ -3260,7 +3260,7 @@ DEFINE_HOOK(0x4D4203, FootClass_MissionMove_EndCheckFix1, 0x6)
 DEFINE_HOOK(0x4D4221, FootClass_MissionMove_EndCheckFix2, 0x6)
 {
 	GET(FootClass*, pThis, ESI);
-	R->AL(pThis->Locomotor.GetInterfacePtr()->Is_Moving_Now());
+	R->AL(pThis->Locomotor->Is_Moving_Now());
 	return 0x4D422D;
 }
 

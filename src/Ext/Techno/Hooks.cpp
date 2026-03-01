@@ -1113,7 +1113,6 @@ DEFINE_HOOK(0x5F4032, ObjectClass_FallingDown_ToDead, 0x6)
 
 		if (!pTechno->HasParachute)
 		{
-			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 			double ratio = 0.0;
 
 			if (pCell->LandType == LandType::Water && !pTechno->OnBridge)
