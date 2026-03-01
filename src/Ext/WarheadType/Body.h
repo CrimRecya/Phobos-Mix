@@ -259,6 +259,8 @@ public:
 		Valueable<bool> PenetratesTransport_DamageAll;
 		ValueableIdx<VocClass> PenetratesTransport_CleanSound;
 
+		Valueable<bool> Taunt;
+
 		// Ares tags
 		// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
 		Valueable<bool> AffectsEnemies;
@@ -546,6 +548,8 @@ public:
 			, AnimZAdjust {}
 
 			, ApplyPerTargetEffectsOnDetonate {}
+
+			, Taunt { false }
 		{ }
 
 		void ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget);

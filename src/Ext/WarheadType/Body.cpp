@@ -367,6 +367,8 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->PenetratesTransport_DamageAll.Read(exINI, pSection, "PenetratesTransport.DamageAll");
 	this->PenetratesTransport_CleanSound.Read(exINI, pSection, "PenetratesTransport.CleanSound");
 
+	this->Taunt.Read(exINI, pSection, "Taunt");
+
 	// Convert.From & Convert.To
 	TypeConvertGroup::Parse(this->Convert_Pairs, exINI, pSection, AffectedHouse::All);
 
@@ -430,6 +432,7 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		|| this->ForceTrack
 		|| this->ReturnWarhead
 		|| this->PenetratesTransport_Level > 0
+		|| this->Taunt
 	);
 
 	char tempBuffer[32];
@@ -715,6 +718,8 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->AnimZAdjust)
 
 		.Process(this->ApplyPerTargetEffectsOnDetonate)
+
+		.Process(this->Taunt)
 
 		// Ares tags
 		.Process(this->AffectsEnemies)

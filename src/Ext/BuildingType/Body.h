@@ -146,6 +146,9 @@ public:
 		Valueable<BuildingTypeClass*> RubbleIntact;
 		Valueable<bool> RubbleIntactRemove;
 
+		// Ares 3.0
+		Nullable<bool> UnitSell;
+
 		ExtData(BuildingTypeClass* OwnerObject) : Extension<BuildingTypeClass>(OwnerObject)
 			, PowersUp_Owner { AffectedHouse::Owner }
 			, PowersUp_Buildings {}
@@ -250,6 +253,9 @@ public:
 			// Ares 0.A
 			, RubbleIntact { nullptr }
 			, RubbleIntactRemove { false }
+
+			// Ares 3.0
+			, UnitSell {}
 		{ }
 
 		BuildingTypeClass* GetAnotherPlacingType(size_t direction, bool onWater);
@@ -290,7 +296,7 @@ public:
 
 	static void PlayBunkerSound(BuildingClass const* pThis, bool buildUp = false);
 	static CellStruct GetWeaponFactoryDoor(BuildingClass* pThis);
-	static int GetEnhancedPower(BuildingClass* pBuilding, HouseClass* pHouse);
+	static int GetEnhancedPower(BuildingTypeClass* pBuilding, int output, HouseClass* pHouse);
 	static bool CanUpgrade(BuildingClass* pBuilding, BuildingTypeClass* pUpgradeType, HouseClass* pUpgradeOwner);
 	static int GetUpgradesAmount(BuildingTypeClass const* const pBuilding, HouseClass const* const pHouse);
 	static void DrawAdjacentLines();
