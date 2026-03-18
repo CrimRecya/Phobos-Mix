@@ -770,3 +770,4 @@ This page lists all the individual contributions to the project by their author.
 - **RAZER**:
   - Wall overlay unit sell exploit fix
   - Multiplayer gamespeed fix for RealTimeTimers
+  - Revert Ares patch to allow OpenTopped transport customization

@@ -294,6 +294,7 @@ public:
 
 		Valueable<bool> FallingDownTargetingFix;
 		Valueable<bool> AIAirTargetingFix;
+		Valueable<bool> OpenTopped_DecloakToFire;
 
 		Valueable<bool> SortCameoByName;
 
@@ -557,6 +558,7 @@ public:
 
 			, FallingDownTargetingFix { false }
 			, AIAirTargetingFix { false }
+			, OpenTopped_DecloakToFire { false }
 
 			, SortCameoByName { false }
 
