@@ -152,6 +152,16 @@ msgstr ""
 msgid "From older Phobos versions"
 msgstr "由旧版本 Phobos"
 
+msgid ""
+"Due to the format issue with `select.shp` in vanilla Yuri's Revenge that "
+"prevents the [Select box logic](User-Interface.md#select-box) from "
+"rendering correctly, `select.shp` no longer serves as the default value "
+"for `[SelectBoxType] -> Shape=`, and you need to manually specify a value "
+"for this flag."
+msgstr ""
+"由于原版《尤里的复仇》中的 `select.shp` 存在格式问题，导致 [自定义选择框](User-Interface.md#select-box) 逻辑无法正常绘制，"
+"`select.shp` 已不再作为 `[SelectBoxType] -> Shape=` 的默认值，你需要手动为该语句指定一个值。"
+
 msgid "From 0.4"
 msgstr "由 0.4"
 
