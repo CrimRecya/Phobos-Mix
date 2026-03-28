@@ -1778,6 +1778,14 @@ msgid ""
 msgstr ""
 "修复了由于 `Strength` 值低于 `RepairStep` 时引发的 [EIP#007120F7](https://modenc.renegadeprojects.com/Internal_Error#eip_007120F7)（by NetsuNegi）"
 
+msgid ""
+"[Customize default mirage disguises per vehicletypes](New-or-Enhanced-"
+"Logics.md#default-mirage-disguise-for-individual-vehicletypes) (by "
+"NetsuNegi)"
+msgstr ""
+"[为每个载具类型单独定义默认的幻影伪装类型](New-or-Enhanced-Logics.md#"
+"default-mirage-disguise-for-individual-vehicletypes)（by NetsuNegi）"
+
 msgid "Vanilla fixes:"
 msgstr "原版问题修复："
 

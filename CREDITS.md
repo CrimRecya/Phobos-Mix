@@ -520,6 +520,7 @@ This page lists all the individual contributions to the project by their author.
   - Fix the EIP#007120F7 caused when the `Strength` value is lower than `RepairStep`
   - Allow the use of more precise calculation of repair costs
   - Fix the initial direction of building placed by Ares's UnitDelivery superweapon
+  - Customize default mirage disguises per vehicletypes
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**:
   - Customizable `ShowTimer` priority of superweapons
