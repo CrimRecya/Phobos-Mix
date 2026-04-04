@@ -221,14 +221,6 @@ public:
 		const FootClass* const pFoot
 	); // JMP_THIS(0x42C290)
 
-	// 可跨区域移动类型分层快速查找
-	bool FindHierarchicalPath_Comprehensive(
-		const CellStruct* const pStart,
-		const CellStruct* const pEnd,
-		const MovementZone movementZone,
-		const FootClass* const pFoot
-	); // 新增函数
-
 	// 辅助函数
 
 	// 创建路径节点 ∈ FindRegularPath
