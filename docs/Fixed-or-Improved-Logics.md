@@ -317,6 +317,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fixed the [EIP#007120F7](https://modenc.renegadeprojects.com/Internal_Error#eip_007120F7) that was triggered when repairing because the `Strength` value was lower than `RepairStep`.
 - Fixed the bug where non-Teleporter miners would not return to work after minerals are depleted and then regenerated.
 - Fixed a desync due to an inconsistent shroud state caused by `GapGenerator` and `SpySat` interaction.
+- Now miners will no longer withdraw from the Harvest mission due to mineral depletion and will periodically attempt to return to work.
 
 ## Fixes / interactions with other extensions
 
