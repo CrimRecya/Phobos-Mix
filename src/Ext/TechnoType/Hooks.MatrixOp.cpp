@@ -924,10 +924,11 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 	if (notUseTurretShadow)
 		pCache = (haveBar || pTurretVoxel != &pDrawType->TurretVoxel) ? nullptr : reinterpret_cast<decltype(pCache)>(&pDrawType->VoxelTurretBarrelCache);
 
+	const double adjustedFactor = Pixel_Per_Lepton / currentScale;
 	auto drawTurretShadow = [&](int turIdx)
 	{
 		auto mtx_turret = mtx;
-		pDrawTypeExt->ApplyTurretOffset(&mtx_turret, Pixel_Per_Lepton, turIdx);
+		pDrawTypeExt->ApplyTurretOffset(&mtx_turret, adjustedFactor, turIdx);
 		mtx_turret.RotateZ(GetRotateRadian(pThis, notChargeTurret, false));
 
 		const auto pTurData = pDrawType->TurretRecoil ? ((turIdx >= 0) ? &pExt->ExtraTurretRecoil[turIdx] : &pThis->TurretRecoil) : nullptr;
