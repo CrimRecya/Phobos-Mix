@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <RulesClass.h>
 #include <Utilities/Container.h>
@@ -383,6 +383,7 @@ public:
 
 		Valueable<double> DamagedSpeed;
 
+		Valueable<bool> EnableWreckageSpawn;
 		Valueable<double> WreckageInitialHealthPercent;
 
 		Valueable<int> AttachmentTopLayerMinHeight;
@@ -796,6 +797,7 @@ public:
 
 			, DamagedSpeed { 0.75 }
 
+			, EnableWreckageSpawn { false }
 			, WreckageInitialHealthPercent { 0.1 }
 
 			, AttachmentTopLayerMinHeight { 500 }
