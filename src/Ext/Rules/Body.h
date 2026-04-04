@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <RulesClass.h>
 #include <Utilities/Container.h>
