@@ -253,7 +253,7 @@ void SelectedNotButtonClass::DrawInfo() const
 		{
 			auto location = Point2D { this->X + this->Width + 10, this->Y - 3 };
 			wchar_t buffer[0x20];
-			swprintf_s(buffer, (pFoot ? GeneralUtils::LoadStringUnlessMissing("TIP:ArmorMult", L"ArmorMult:%5.2f") : GeneralUtils::LoadStringUnlessMissing("TIP:ROFMult", L"ROFMult:%5.2f")), mult);
+			swprintf_s(buffer, (pFoot ? GeneralUtils::LoadStringUnlessMissing("TIP:SpeedMult", L"SpeedMult:%5.2f") : GeneralUtils::LoadStringUnlessMissing("TIP:ROFMult", L"ROFMult:%5.2f")), mult);
 			RectangleStruct drawRect = Drawing::GetTextDimensions(buffer, location, 0, 3, 2);
 			location += Point2D { 4, 1 };
 			drawRect.Width += 8;
