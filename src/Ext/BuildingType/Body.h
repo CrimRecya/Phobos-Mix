@@ -155,7 +155,7 @@ public:
 			, PowerPlant_DamageFactor { 1.0 }
 			, PowerPlantEnhancer_Buildings {}
 			, PowerPlantEnhancer_Amount { 0 }
-			, PowerPlantEnhancer_Factor { 1.0 }
+			, PowerPlantEnhancer_Factor { 1.0f }
 			, PowerPlantEnhancer_MaxCount { -1 }
 			, OccupierMuzzleFlashes()
 			, Powered_KillSpawns { false }
@@ -296,7 +296,7 @@ public:
 
 	static void PlayBunkerSound(BuildingClass const* pThis, bool buildUp = false);
 	static CellStruct GetWeaponFactoryDoor(BuildingClass* pThis);
-	static int GetEnhancedPower(BuildingTypeClass* pBuilding, int output, HouseClass* pHouse);
+	static std::pair<int, int> GetEnhancedPower(BuildingTypeClass* pBuilding, int output, HouseClass* pHouse);
 	static bool CanUpgrade(BuildingClass* pBuilding, BuildingTypeClass* pUpgradeType, HouseClass* pUpgradeOwner);
 	static int GetUpgradesAmount(BuildingTypeClass const* const pBuilding, HouseClass const* const pHouse);
 	static void DrawAdjacentLines();
