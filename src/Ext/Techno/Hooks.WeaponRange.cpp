@@ -305,10 +305,12 @@ DEFINE_HOOK(0x4D5FBD, FootClass_ApproachTarget_BeforeSearching, 0xA)
 			const int distance = (pThis->IsInAir() || pWeapon->Projectile->Arcing || pThis->WhatAmI() == AircraftClass::AbsID)
 				? pThis->DistanceFrom(pThis->Target)
 				: pThis->DistanceFrom3D(pThis->Target);
-			ApproachTargetTemp::FromMaximumRange = distance >= pWeapon->MinimumRange;
 
-			if (!ApproachTargetTemp::FromMaximumRange)
+			if (distance < pWeapon->MinimumRange)
+			{
+				ApproachTargetTemp::FromMaximumRange = false;
 				searchRange = 204;
+			}
 		}
 	}
 
