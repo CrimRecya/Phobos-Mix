@@ -1056,14 +1056,14 @@ DEFINE_HOOK(0x4179F7, AircraftClass_EnterIdleMode_NoCrash, 0x6)
 
 	if (!pThis->Team && (pThis->CurrentMission != Mission::Area_Guard || !pThis->ArchiveTarget))
 	{
-		const auto pCell = reinterpret_cast<CellClass*(__thiscall*)(AircraftClass*)>(0x41A160)(pThis);
+		const auto pCell = pThis->FindNearestDock();
 		pThis->SetDestination(pCell, true);
 		pThis->SetArchiveTarget(pCell);
 		pThis->QueueMission(Mission::Area_Guard, true);
 	}
 	else if (!pThis->Destination)
 	{
-		const auto pCell = reinterpret_cast<CellClass*(__thiscall*)(AircraftClass*)>(0x41A160)(pThis);
+		const auto pCell = pThis->FindNearestDock();
 		pThis->SetDestination(pCell, true);
 	}
 

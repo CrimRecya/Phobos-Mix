@@ -1122,7 +1122,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 	{
 		for (const auto& pOwned : pHouse->Buildings)
 		{
-			if (!reinterpret_cast<bool(__thiscall*)(BuildingClass*, BuildingTypeClass*, HouseClass*)>(0x452670)(pOwned, pType, pHouse)) // CanUpgradeBuilding
+			if (!pOwned->CanUpgradeBuilding(pType, pHouse))
 				continue;
 
 			const auto cell = getMapCell(pOwned);

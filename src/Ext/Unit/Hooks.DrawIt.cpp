@@ -20,7 +20,7 @@ DEFINE_HOOK(0x73C7AC, UnitClass_DrawAsSHP_DrawTurret_TintFix, 0x6)
 	GET_STACK(const int, extraLight, STACK_OFFSET(0x128, 0x1C));
 
 	const bool tooBigToFitUnderBridge = pType->TooBigToFitUnderBridge
-		&& reinterpret_cast<bool(__thiscall*)(TechnoClass*)>(0x703B10)(pThis) && !reinterpret_cast<int(__thiscall*)(TechnoClass*)>(0x703E70)(pThis);
+		&& pThis->IsNearBridge() && !reinterpret_cast<int(__thiscall*)(TechnoClass*)>(0x703E70)(pThis);
 	const int zAdjust = tooBigToFitUnderBridge ? -16 : 0;
 	const ZGradient zGradient = tooBigToFitUnderBridge ? ZGradient::Ground : pThis->GetZGradient();
 

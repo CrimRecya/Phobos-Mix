@@ -243,7 +243,7 @@ DEFINE_HOOK(0x6F7647, TechnoClass_InRange_Obstacles, 0x5)
 		const auto coords = pTechno->Location;
 		pTechno->Location = *pSourceCoords; // Temporarily adjust the coordinates based on the path finding
 
-		if (reinterpret_cast<bool(__thiscall*)(const TechnoClass*)>(0x703B10)(pTechno)) // Near by elevated bridge
+		if (pTechno->IsNearBridge())
 			pObstacleCell = MapClass::Instance.GetCellAt(*pSourceCoords);
 
 		pTechno->Location = coords;

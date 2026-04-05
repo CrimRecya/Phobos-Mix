@@ -40,14 +40,14 @@ void UnifiedTechnoColorCommandClass::Execute(WWKey eInput) const
 
 	if (pRadar->IsAvailableNow)
 	{
-		const auto pSurface = reinterpret_cast<DSurface*>(pRadar->unknown_121C);
+		const auto pSurface = pRadar->unknown_121C;
 		const auto width = pSurface->GetWidth();
 		const auto height = pSurface->GetHeight();
 
 		for (int x = 0; x < width; ++x)
 		{
 			for (int y = 0; y < height; ++y)
-				reinterpret_cast<void(__thiscall*)(RadarClass*, const Point2D&)>(0x6562D0)(pRadar, Point2D{x,y});
+				pRadar->RefreshCrd(Point2D{x,y});
 		}
 	}
 }

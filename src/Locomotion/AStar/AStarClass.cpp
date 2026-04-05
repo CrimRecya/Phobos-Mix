@@ -5,11 +5,6 @@
 #include <TubeClass.h>
 #include <Ext/Techno/Body.h>
 
-static inline double GetThreatAvoidanceCoefficient(const FootClass* pFoot)
-{
-	return reinterpret_cast<double(__thiscall*)(const FootClass*)>(0x4DC760)(pFoot); // 懒得更新YRpp，先这样
-}
-
 static inline int GetMovementPassability(MovementZone movementZone, PassabilityType passType)
 {
 	return MapClass::MovementAdjustArray[static_cast<int>(movementZone)][static_cast<int>(passType)];
@@ -17,7 +12,7 @@ static inline int GetMovementPassability(MovementZone movementZone, PassabilityT
 
 static inline LevelAndPassabilityStruct2& GetPassabilityStruct(const CellStruct* pCell)
 {
-	return MapClass::Instance.LevelAndPassabilityStruct2pointer_70[reinterpret_cast<int(__thiscall*)(MapClass*, const CellStruct*)>(0x56D3F0)(&MapClass::Instance, pCell)];
+	return MapClass::Instance.LevelAndPassabilityStruct2pointer_70[MapClass::Instance.GetCellPathIndex(*pCell)];
 }
 
 #pragma region NextPathCell
@@ -622,7 +617,7 @@ bool AStarClass::FindHierarchicalPath(
 	// 如果有单位传入，计算威胁避免系数
 	if (pFoot)
 	{
-		threatAvoidanceCoefficient = GetThreatAvoidanceCoefficient(pFoot);
+		threatAvoidanceCoefficient = pFoot->GetThreatAvoidanceCoefficient();
 		pOwner = pFoot->Owner;
 		calculateThreat = threatAvoidanceCoefficient > 0.00001;
 	}
@@ -735,10 +730,9 @@ bool AStarClass::FindHierarchicalPath(
 
 							// 计算总代价，即通行性系数+父节点代价+威胁代价+补充代价
 							const float cost = static_cast<float>(AStarClass::PassabilityCoefficients[static_cast<int>(checkSubzonePassability)]
-									+ pFinderNode->Cost
-									+ (!calculateThreat ? 0 : static_cast<int>(reinterpret_cast<int(__thiscall*)(MapClass*, HouseClass*, int, int, int)>
-										(0x585F40)(&MapClass::Instance, pOwner, level, finderSubzoneIndex, checkSubzoneIndex) * threatAvoidanceCoefficient))
-									+ (isDiagonalConnection ? 0.001f : 0.0f));
+								+ pFinderNode->Cost
+								+ (!calculateThreat ? 0 : static_cast<int>(MapClass::Instance.GetThreatPosedEstimates(pOwner, level, finderSubzoneIndex, checkSubzoneIndex) * threatAvoidanceCoefficient))
+								+ (isDiagonalConnection ? 0.001f : 0.0f));
 
 							const int searchID = this->SearchID;
 
@@ -1185,7 +1179,7 @@ int AStarClass::AdjustFinalPath(
 		}
 	}
 
-	const double threat = GetThreatAvoidanceCoefficient(pFoot);
+	const double threat = pFoot->GetThreatAvoidanceCoefficient();
 	const auto pOwner = pFoot->Owner;
 
 	// 路径调整
@@ -1570,7 +1564,7 @@ bool AStarClass::PlotStraightPath(
 	int minSteps = Math::min(absX, absY);
 	int diagSteps = Math::max(absX, absY) - minSteps;
 
-	const double threat = GetThreatAvoidanceCoefficient(pFoot);
+	const double threat = pFoot->GetThreatAvoidanceCoefficient();
 	const auto pOwner = pFoot->Owner;
 
 	int phase = 0;

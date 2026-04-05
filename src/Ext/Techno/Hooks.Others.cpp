@@ -1024,7 +1024,7 @@ DEFINE_HOOK(0x741925, UnitClass_CrushCell_CrushBuilding, 0x5)
 	{
 		if (auto const pBuilding = CrushBuildingOnAnyCell::pCell->GetBuilding())
 		{
-			if (reinterpret_cast<bool(__thiscall*)(BuildingClass*, TechnoClass*)>(0x5F6CD0)(pBuilding, pThis)) // IsCrushable
+			if (pBuilding->IsCrushable(pThis))
 			{
 				VocClass::PlayAt(pBuilding->Type->CrushSound, pThis->Location, 0);
 				pBuilding->Destroy();

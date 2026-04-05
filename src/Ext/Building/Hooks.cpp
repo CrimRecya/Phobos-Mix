@@ -230,7 +230,7 @@ DEFINE_HOOK(0x44E202, BuildingClass_Mission_Unload_CheckStuck, 0x6)
 		if (pLocoDest == CoordStruct::Empty || pLocoDest == pUnit->Location)
 		{
 			// Evacuate the congestion at the entrance
-			reinterpret_cast<void(__thiscall*)(BuildingClass*)>(0x449540)(pThis);
+			pThis->WeaponFactoryOutsideBusy();
 			const auto cell = BuildingTypeExt::GetWeaponFactoryDoor(pThis);
 			const auto pDest = MapClass::Instance.GetCellAt(cell);
 

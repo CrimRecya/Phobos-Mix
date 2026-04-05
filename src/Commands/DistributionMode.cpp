@@ -132,7 +132,7 @@ void DistributionModeHoldDownCommandClass::DistributionModeOn()
 
 	DistributionModeHoldDownCommandClass::Enabled = true;
 
-	if (const auto pButton = reinterpret_cast<ShapeButtonClass*(__fastcall*)(int)>(0x6CFD40)(ShapeButtonHelper::NewButtonIndexes[0]))
+	if (const auto pButton = ShapeButtonClass::GetButton(ShapeButtonHelper::NewButtonIndexes[0]))
 	{
 		if (!pButton->IsOn)
 			pButton->TurnOn();
@@ -154,7 +154,7 @@ void DistributionModeHoldDownCommandClass::DistributionModeOff()
 
 	DistributionModeHoldDownCommandClass::Enabled = false;
 
-	if (const auto pButton = reinterpret_cast<ShapeButtonClass*(__fastcall*)(int)>(0x6CFD40)(ShapeButtonHelper::NewButtonIndexes[0]))
+	if (const auto pButton = ShapeButtonClass::GetButton(ShapeButtonHelper::NewButtonIndexes[0]))
 	{
 		if (pButton->IsOn)
 			pButton->TurnOff();
@@ -231,7 +231,7 @@ void __fastcall DistributionModeHoldDownCommandClass::ClickedCellAction(ObjectCl
 
 void __fastcall DistributionModeHoldDownCommandClass::AreaGuardAction(TechnoClass* pTechno)
 {
-	pTechno->ClickedMission(Mission::Area_Guard, reinterpret_cast<ObjectClass*>(pTechno->GetCellAgain()), nullptr, nullptr);
+	pTechno->ClickedMission(Mission::Area_Guard, pTechno->GetCellAgain(), nullptr, nullptr);
 	Unsorted::MoveFeedback = false;
 
 	if (const auto pExt = TechnoExt::ExtMap.Find(pTechno))

@@ -501,13 +501,13 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		}
 		else if (InputManagerClass::Instance->IsForceSelectKeyPressed())
 		{
-			const int baseIndex = reinterpret_cast<int(__thiscall*)(MapClass*, CellStruct*)>(0x56D3F0)(&MapClass::Instance, &centerCell);
+			const int baseIndex = MapClass::Instance.GetCellPathIndex(centerCell);
 			const auto& baseData = MapClass::Instance.LevelAndPassabilityStruct2pointer_70[baseIndex];
 			centerCell += CellStruct { 7, 7 };
 
 			auto checkSameSubzoneIndex = [&baseData](CellClass* pCheckCell, int level) -> bool
 			{
-				const int pathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, CellStruct*)>(0x56D3F0)(&MapClass::Instance, &pCheckCell->MapCoords);
+				const int pathIndex = MapClass::Instance.GetCellPathIndex(pCheckCell->MapCoords);
 				return baseData.word_0[level] == MapClass::Instance.LevelAndPassabilityStruct2pointer_70[pathIndex].word_0[level];
 			};
 
@@ -793,7 +793,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		drawText(COLOR_WHITE, "BlockedNearby: %d", pCell->BlockedNeighbours);
 
 		{
-			const int pathIndex = reinterpret_cast<int(__thiscall*)(MapClass*, CellStruct*)>(0x56D3F0)(&MapClass::Instance, &pCell->MapCoords);
+			const int pathIndex = MapClass::Instance.GetCellPathIndex(pCell->MapCoords);
 			const auto& passabilityData1 = MapClass::Instance.LevelAndPassability[pathIndex];
 			const auto& passabilityData2 = MapClass::Instance.LevelAndPassabilityStruct2pointer_70[pathIndex];
 			const int level0SubzoneIndex = static_cast<unsigned short>(passabilityData2.word_0[0]);
@@ -1047,7 +1047,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawInfo("Mega Target", pFoot, pFoot->MegaTarget);
 
 			drawInfo("Follow Target", pFoot, pFoot->unknown_5A0);
-			drawInfo("Patrol Target", pFoot, reinterpret_cast<AbstractClass*>(pFoot->unknown_5DC));
+			drawInfo("Patrol Target", pFoot, pFoot->unknown_5DC);
 
 			drawInfo("First ArrayItem", pFoot, (pFoot->unknown_abstract_array_588.Count > 0 ? pFoot->unknown_abstract_array_588.GetItem(0) : nullptr));
 			drawInfo("First NavQueue", pFoot, (pFoot->NavQueue.Count > 0 ? pFoot->NavQueue.GetItem(0) : nullptr));
@@ -1104,7 +1104,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawText(COLOR_WHITE, "PercentSpeed: %d", static_cast<int>(pFoot->SpeedPercentage * 100));
 
 			drawText(COLOR_WHITE, "OnElevatedBridge: %s", (pFoot->OnBridge ? "Yes" : "No"));
-			drawText(COLOR_WHITE, "NearElevatedBridge: %s", (reinterpret_cast<bool(__thiscall*)(FootClass*)>(0x703B10)(pFoot) ? "Yes" : "No"));
+			drawText(COLOR_WHITE, "NearElevatedBridge: %s", (pFoot->IsNearBridge() ? "Yes" : "No"));
 
 			drawText(COLOR_WHITE, "OnBacklit: %s", (pFoot->vt_entry_2B0() ? "Yes" : "No"));
 			drawText(COLOR_WHITE, "IsCrushing: %s", (pFoot->IsCrushingSomething ? "Yes" : "No"));

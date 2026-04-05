@@ -530,7 +530,7 @@ void ParentClickedCellAction(TechnoClass* pThis, Action action, CellStruct* pCel
 
 void ParentAreaGuardAction(TechnoClass* pThis)
 {
-	pThis->ClickedMission(Mission::Area_Guard, reinterpret_cast<ObjectClass*>(pThis->GetCellAgain()), nullptr, nullptr);
+	pThis->ClickedMission(Mission::Area_Guard, pThis->GetCellAgain(), nullptr, nullptr);
 	Unsorted::MoveFeedback = false;
 
 	// Children handling

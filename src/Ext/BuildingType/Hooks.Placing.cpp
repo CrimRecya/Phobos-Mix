@@ -819,7 +819,7 @@ static inline void ClearCurrentBuildingData(DisplayClass* const pDisplay)
 
 	if (!Unsorted::ArmageddonMode)
 	{
-		reinterpret_cast<void(__thiscall*)(DisplayClass*, CellStruct*)>(0x4A8D50)(pDisplay, nullptr); // Clear CurrentFoundationCopy_Data
+		pDisplay->SetBusyFoundation(nullptr);
 		pDisplay->CurrentBuildingCopy = nullptr;
 		pDisplay->CurrentBuildingTypeCopy = nullptr;
 	}
@@ -1230,9 +1230,7 @@ DEFINE_HOOK(0x4C70E1, EventClass_RespondToEvent_SetPlaceType, 0x8)
 	if (absType == AbstractType::Building || absType == AbstractType::BuildingType)
 		PlaceTypeTemp::PlaceType = static_cast<size_t>(flags);
 
-	reinterpret_cast<void(__thiscall*)(HouseClass*, AbstractType, int, bool, const CellStruct*)>
-		(0x4FB0E0)(pHouse, absType, arrayIndex, isNaval, &cell); // UnitFromFactory
-
+	pHouse->UnitFromFactory(absType, arrayIndex, isNaval, &cell);
 	PlaceTypeTemp::PlaceType = 0;
 
 	return SkipGameCode;
@@ -1464,7 +1462,7 @@ DEFINE_HOOK(0x4451F8, BuildingClass_KickOutUnit_CleanUpAIBuildingSpace, 0x6)
 			const auto pCell = MapClass::Instance.GetCellAt(topLeftCell);
 			const auto pCellBuilding = pCell->GetBuilding();
 
-			if (!pCellBuilding || !reinterpret_cast<bool(__thiscall*)(BuildingClass*, BuildingTypeClass*, HouseClass*)>(0x452670)(pCellBuilding, pBuildingType, pHouse)) // CanUpgradeBuilding
+			if (!pCellBuilding || !pCellBuilding->CanUpgradeBuilding(pBuildingType, pHouse))
 				return CanNotBuild;
 		}
 	}
@@ -1945,7 +1943,7 @@ DEFINE_HOOK(0x42EB8E, BaseClass_GetBaseNodeIndex_CheckValidBaseNode, 0x6)
 		}
 	}
 
-	return reinterpret_cast<bool(__thiscall*)(HouseClass*, BaseNodeClass*)>(0x50CAD0)(pBase->Owner, pBaseNode) ? Valid : Invalid;
+	return pBase->Owner->IsValidBaseNode(pBaseNode) ? Valid : Invalid;
 }
 
 /*
