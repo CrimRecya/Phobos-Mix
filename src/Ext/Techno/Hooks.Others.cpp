@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <EventClass.h>
 #include <SpawnManagerClass.h>
@@ -2107,14 +2107,18 @@ DEFINE_HOOK(0x662FD8, RocketLocomotionClass_Process_CheckHealth, 0x5)
 	enum { SkipDetonate = 0x662FE6, Detonate = 0x662FDF };
 	GET(FootClass*, pLinkedTo, ECX);
 
-	if (pLinkedTo->Health > 0)
-		return SkipDetonate;
-
-	if (TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType())->Missile_UseDeathWeaponWhenIntercepted)
+	if (pLinkedTo->Health <= 0)
 	{
-		pLinkedTo->FireDeathWeapon(0);
-		AircraftTrackerClass::Instance.Remove(pLinkedTo);
-		pLinkedTo->UnInit();
+		if (TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType())->Missile_UseDeathWeaponWhenIntercepted)
+		{
+			pLinkedTo->FireDeathWeapon(0);
+			AircraftTrackerClass::Instance.Remove(pLinkedTo);
+			pLinkedTo->UnInit();
+			return SkipDetonate;
+		}
+	}
+	else if (MapClass::Instance.IsWithinUsableArea(pLinkedTo->GetCoords()))
+	{
 		return SkipDetonate;
 	}
 

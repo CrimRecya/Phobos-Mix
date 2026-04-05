@@ -1,4 +1,4 @@
-#include <AircraftTrackerClass.h>
+﻿#include <AircraftTrackerClass.h>
 #include <EventClass.h>
 #include <JumpjetLocomotionClass.h>
 #include <TunnelLocomotionClass.h>
@@ -3074,7 +3074,7 @@ DEFINE_HOOK(0x54CC16, JumpjetLocomotionClass_CrashDescent_OffMap, 0x8)
 
 	return 0;
 }
-
+/*
 // RocketLocomotionClass::Process - health check after position update.
 // If off-map, bypass the Health > 0 skip and force detonation/cleanup.
 DEFINE_HOOK(0x662FD5, RocketLocomotionClass_Process_OffMap, 0x6)
@@ -3088,7 +3088,7 @@ DEFINE_HOOK(0x662FD5, RocketLocomotionClass_Process_OffMap, 0x6)
 
 	return 0;
 }
-
+*/
 DEFINE_HOOK(0x4DEC7F, FootClass_Crash_FallingDownFix, 0x7)
 {
 	GET(FootClass*, pThis, ESI);
