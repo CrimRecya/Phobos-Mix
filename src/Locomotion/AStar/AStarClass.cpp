@@ -5,6 +5,26 @@
 #include <TubeClass.h>
 #include <Ext/Techno/Body.h>
 
+std::vector<CellStruct> AStarClass::s_lineCells;
+std::vector<unsigned short> AStarClass::s_straightSubzones[3];
+std::vector<int> AStarClass::s_isStraightFlag[3];
+static bool InitStaticAStarContainers()
+{
+    AStarClass::s_lineCells.reserve(400);
+	AStarClass::s_lineCells.clear();
+
+    for (int i = 0; i < 3; ++i)
+	{
+        AStarClass::s_straightSubzones[i].reserve(100);
+        AStarClass::s_straightSubzones[i].clear();
+		AStarClass::s_isStraightFlag[i].clear();
+		AStarClass::s_isStraightFlag[i].resize(100, 0);
+	}
+
+    return true;
+}
+bool AStarClass::s_containersInit = InitStaticAStarContainers();
+
 static inline int GetMovementPassability(MovementZone movementZone, PassabilityType passType)
 {
 	return MapClass::MovementAdjustArray[static_cast<int>(movementZone)][static_cast<int>(passType)];
@@ -485,7 +505,7 @@ bool AStarClass::FindHierarchicalPath(
 	---
 	修复方案：
 	---
-		每层先尝试快速判断直线路线，不行再退回到常规方法
+		每层先尝试快速判断直线路线，不行则给予直线路径一个较低的成本系数，并退回到常规方法
 	---
 	要点总结：
 	---
@@ -506,13 +526,10 @@ bool AStarClass::FindHierarchicalPath(
 		能再多一倍，而如果地形边界刚好能和某个子区域的边界重合，那么这条路相比别的路就少了一个节点，成本就比
 		其它路径更少了，此时单位就会偏向于走这条路，尽管这条路实际上可能走了各种L型、凹型区域，会绕不少路
 	*/
-	std::vector<CellStruct> lineCells;
-	const bool findRectilinearFirst = movementZone == MovementZone::Amphibious
-		|| movementZone == MovementZone::AmphibiousCrusher
-		|| movementZone == MovementZone::AmphibiousDestroyer
-		|| movementZone == MovementZone::Fly
-		|| movementZone == MovementZone::WaterBeach;
-	if (findRectilinearFirst)
+	constexpr float RECTILINEAR_DISCOUNT = 0.6f;
+	const bool enableRectilinear = true;
+	AStarClass::s_lineCells.clear();
+	if (enableRectilinear)
 	{
 		const int x0 = pStart->X;
 		const int y0 = pStart->Y;
@@ -527,7 +544,7 @@ bool AStarClass::FindHierarchicalPath(
 
 		while (true)
 		{
-			lineCells.push_back({(short)x, (short)y});
+			AStarClass::s_lineCells.push_back({(short)x, (short)y});
 
 			if (x == x1 && y == y1)
 				break;
@@ -548,27 +565,32 @@ bool AStarClass::FindHierarchicalPath(
 		}
 	}
 
-	auto findRectilinearPath = [this, pStart, pEnd, movementZone, &lineCells](int level) -> bool
+	auto FindRectilinearPath = [this, pStart, pEnd, movementZone](int level) -> bool
 	{
+		auto& straightSubzones = AStarClass::s_straightSubzones[level];
+		auto& straightFlags = AStarClass::s_isStraightFlag[level];
+        straightSubzones.clear();
+		straightFlags.clear();
+
 		// 获取直线上的子区域索引
-		std::vector<unsigned short> subzoneSeq;
 		{
 			int lastIdx = -1;
-			for (const auto& cell : lineCells)
+			for (const auto& cell : AStarClass::s_lineCells)
 			{
 				const int idx = static_cast<unsigned short>(GetPassabilityStruct(&cell).word_0[level]);
 				if (idx != lastIdx)
 				{
-					subzoneSeq.push_back(static_cast<unsigned short>(idx));
+					straightSubzones.push_back(static_cast<unsigned short>(idx));
 					lastIdx = idx;
 				}
 			}
 		}
 
-		if (subzoneSeq.empty())
+		// 不可能的分支
+		if (straightSubzones.empty())
 			return false;
 
-		auto areConnected = [level, movementZone](unsigned int fromIdx, unsigned int toIdx) -> bool
+		auto AreConnected = [level, movementZone](unsigned int fromIdx, unsigned int toIdx) -> bool
 		{
 			if (fromIdx == toIdx)
 				return true;
@@ -578,33 +600,40 @@ bool AStarClass::FindHierarchicalPath(
 			for (int i = 0; i < pFinderSubzoneConnections->Count; ++i)
 			{
 				if (pFinderSubzoneConnections->Items[i].unknown_dword_0 == toIdx)
-				{
-					const auto checkSubzonePassability = static_cast<PassabilityType>(pSubzoneTracking[toIdx].unknown_dword_1C);
-					if (GetMovementPassability(movementZone, checkSubzonePassability) == 1)
-						return true;
-				}
+					return GetMovementPassability(movementZone, static_cast<PassabilityType>(pSubzoneTracking[toIdx].unknown_dword_1C)) == 1;
 			}
 
 			return false;
 		};
 
 		// 检查相邻子区域是否全部连通，不考虑威胁值和通行性系数
-		for (size_t i = 0; i + 1 < subzoneSeq.size(); ++i)
+		for (size_t i = 0; i + 1 < straightSubzones.size(); ++i)
 		{
-			if (!areConnected(subzoneSeq[i], subzoneSeq[i+1]))
+			if (!AreConnected(straightSubzones[i], straightSubzones[i+1]))
+			{
+				// 当直线不可直接到达时，记录直线上的子区域索引，用于后续节点成本计算
+				const size_t subzoneCount = static_cast<size_t>(MapClass::Instance.SubzoneTracking[level].Count);
+
+				if (straightFlags.size() < subzoneCount)
+					straightFlags.resize(subzoneCount, 0);
+
+				for (int idx : straightSubzones)
+					straightFlags[idx] = this->SearchID;
+
 				return false;
+			}
 		}
 
 		// 填充当前层级的路径数据
-		this->PassabilityCounts[level] = static_cast<int>(subzoneSeq.size());
+		this->PassabilityCounts[level] = static_cast<int>(straightSubzones.size());
 
 		auto& data = this->PassabilityData[level];
-		for (size_t i = 0; i < subzoneSeq.size(); ++i)
-			data.Indices[i] = subzoneSeq[i];
+		for (size_t i = 0; i < straightSubzones.size(); ++i)
+			data.Indices[i] = straightSubzones[i];
 
 		// 标记路径上的所有子区域为已访问，供低层级连通性检查使用
 		auto pLevelVisitedMarkers = this->LevelVisitedMarkers[level];
-		for (int idx : subzoneSeq)
+		for (int idx : straightSubzones)
 			pLevelVisitedMarkers[idx] = this->SearchID;
 
 		return true;
@@ -648,7 +677,7 @@ bool AStarClass::FindHierarchicalPath(
 			const int targetSubzoneIndex = static_cast<unsigned short>(targetStruct.word_0[level]);
 
 			// 快速检查直线上的子区域，不考虑任何需要绕路的情况
-			if (findRectilinearFirst && findRectilinearPath(level))
+			if (enableRectilinear && FindRectilinearPath(level))
 				break;
 
 			// 获取下一层级的访问标记，用于层级间连通性检查
@@ -729,10 +758,13 @@ bool AStarClass::FindHierarchicalPath(
 							const auto checkSubzonePassability = static_cast<PassabilityType>(pCheckSubzoneTracking->unknown_dword_1C);
 
 							// 计算总代价，即通行性系数+父节点代价+威胁代价+补充代价
-							const float cost = static_cast<float>(AStarClass::PassabilityCoefficients[static_cast<int>(checkSubzonePassability)]
+							float cost = static_cast<float>(AStarClass::PassabilityCoefficients[static_cast<int>(checkSubzonePassability)]
 								+ pFinderNode->Cost
 								+ (!calculateThreat ? 0 : static_cast<int>(MapClass::Instance.GetThreatPosedEstimates(pOwner, level, finderSubzoneIndex, checkSubzoneIndex) * threatAvoidanceCoefficient))
 								+ (isDiagonalConnection ? 0.001f : 0.0f));
+
+							if (enableRectilinear && AStarClass::s_isStraightFlag[level][checkSubzoneIndex] == this->SearchID)
+								cost *= RECTILINEAR_DISCOUNT;
 
 							const int searchID = this->SearchID;
 
@@ -754,7 +786,7 @@ bool AStarClass::FindHierarchicalPath(
 											? static_cast<unsigned short>(finderSubzoneIndex) | (static_cast<unsigned short>(checkSubzoneIndex) << 16)
 											: static_cast<unsigned short>(checkSubzoneIndex) | (static_cast<unsigned short>(finderSubzoneIndex) << 16);
 
-										auto shouldProcessNode = [pZoneIndices, mixIndex]() -> bool
+										auto ShouldProcessNode = [pZoneIndices, mixIndex]() -> bool
 										{
 											int zoneIndicesNewCount = pZoneIndices->Count - 1;
 											auto pZoneIndex = &pZoneIndices->Items[zoneIndicesNewCount];
@@ -772,7 +804,7 @@ bool AStarClass::FindHierarchicalPath(
 										};
 
 										// 如果在区域索引中找到，跳过该节点
-										if (!shouldProcessNode())
+										if (!ShouldProcessNode())
 											break;
 									}
 
@@ -1286,7 +1318,10 @@ void AStarClass::OptimizeFinalPath(
 
 	if (pathLength > 0)
 	{
-		auto MaxCellAxisDeviation = [](const CellStruct cell) { return Math::max(std::abs(cell.X), std::abs(cell.Y)); };
+		auto MaxCellAxisDeviation = [](const CellStruct cell) -> int
+		{
+			return Math::max(std::abs(cell.X), std::abs(cell.Y));
+		};
 		const int* const pLevels = pPath->Levels;
 		const int* pCurDir = pDirs;
 

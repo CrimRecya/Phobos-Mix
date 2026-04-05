@@ -139,6 +139,13 @@ public:
 	DEFINE_ARRAY_REFERENCE(const float, [8], DirPathCosts, 0x81872C)
 	DEFINE_ARRAY_REFERENCE(const int, [8], DirSides, 0x89A304)
 
+	// 优化容器
+
+	static std::vector<CellStruct> s_lineCells;
+    static std::vector<unsigned short> s_straightSubzones[3];
+    static std::vector<int> s_isStraightFlag[3];
+	static bool s_containersInit;
+
 	// 构造/析构函数
 
 	AStarClass()

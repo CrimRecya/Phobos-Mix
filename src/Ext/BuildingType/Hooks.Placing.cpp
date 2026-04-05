@@ -251,7 +251,7 @@ DEFINE_HOOK(0x4A8F20, DisplayClass_BuildingProximityCheck_SetContext, 0x5)
 	GET(BuildingTypeClass*, pType, ESI);
 
 	if (RulesExt::Global()->PlacementGrid_Expand)
-		ScenarioExt::Global()->BaseNormalCells.clear();
+		BuildingTypeExt::BaseNormalCells.clear();
 
 	ProximityTemp::Build = false;
 	ProximityTemp::BuildType = pType;
@@ -286,7 +286,7 @@ DEFINE_HOOK(0x4A8F3E, DisplayClass_BuildingProximityCheck_BeforeChecks, 0x6)
 		if (!result)
 		{
 			R->Stack<bool>(STACK_OFFSET(0x30, 0xC), false);
-			ScenarioExt::Global()->BaseNormalCells.clear();
+			BuildingTypeExt::BaseNormalCells.clear();
 			return ReturnFromFunction;
 		}
 
@@ -330,7 +330,7 @@ DEFINE_HOOK(0x4A8FD7, DisplayClass_BuildingProximityCheck_BuildArea, 0x6)
 			if (pTmpTypeExt->Adjacent_Disallowed_Prohibit)
 			{
 				R->Stack<bool>(STACK_OFFSET(0x30, 0xC), false);
-				ScenarioExt::Global()->BaseNormalCells.clear();
+				BuildingTypeExt::BaseNormalCells.clear();
 				return ReturnFromFunction;
 			}
 			else
@@ -363,7 +363,7 @@ DEFINE_HOOK(0x4A902C, MapClass_PassesProximityCheck_BaseNormalExtra, 0x5)
 		ProximityTemp::Build = true;
 
 		GET_STACK(const CellStruct, currentCell, STACK_OFFSET(0x30, -0x20));
-		ScenarioExt::Global()->BaseNormalCells.push_back(currentCell);
+		BuildingTypeExt::BaseNormalCells.push_back(currentCell);
 	}
 
 	return 0;
@@ -441,7 +441,7 @@ DEFINE_HOOK(0x4A904E, MapClass_PassesProximityCheck_RestoreResult, 0x5)
 				if (gridExpand)
 				{
 					ProximityTemp::Build = true;
-					ScenarioExt::Global()->BaseNormalCells.push_back(technoMapCell);
+					BuildingTypeExt::BaseNormalCells.push_back(technoMapCell);
 				}
 				else
 				{
@@ -775,10 +775,8 @@ DEFINE_HOOK(0x47EF52, CellClass_DrawPlaceGrid_DrawGrids, 0x6)
 	const auto minY = static_cast<short>(cell.Y - range);
 
 	bool green = false;
-	const auto& cells = ScenarioExt::Global()->BaseNormalCells;
-
 	// Brute force
-	for (const auto& baseCell : cells)
+	for (const auto& baseCell : BuildingTypeExt::BaseNormalCells)
 	{
 		if (baseCell.X >= minX && baseCell.Y >= minY && baseCell.X <= maxX && baseCell.Y <= maxY)
 		{

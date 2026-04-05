@@ -291,6 +291,29 @@ public:
 	};
 
 	static ExtContainer ExtMap;
+
+	static std::vector<CellStruct> BaseNormalCells;
+	static std::vector<TechnoClass*> CleanCheckedTechnos;
+	static std::vector<CellClass*> CleanCheckedCells;
+	static std::vector<CellClass*> CleanOptionalCells;
+	static std::vector<TechnoClass*> CleanReCheckedTechnos;
+	struct InfantryCountInCell
+	{
+		CellClass* Position;
+		int Count;
+	};
+	static std::vector<InfantryCountInCell> CleanInfantryCells;
+	struct TechnoWithDestination
+	{
+		TechnoClass* Techno;
+		CellClass* Destination;
+	};
+	static std::vector<TechnoWithDestination> CleanFinalOrder;
+	static std::vector<CellClass*> CleanDeleteCells;
+	static std::vector<TechnoClass*> CleanOptionalTechnos;
+	static std::unordered_map<int, int> PlaceCheckedCells;
+	static bool ContainersInit;
+
 	static bool LoadGlobals(PhobosStreamReader& Stm);
 	static bool SaveGlobals(PhobosStreamWriter& Stm);
 
