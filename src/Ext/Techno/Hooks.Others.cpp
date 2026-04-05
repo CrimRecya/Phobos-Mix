@@ -228,6 +228,30 @@ DEFINE_JUMP(LJMP, 0x44C75E, 0x44C793);
 
 #pragma endregion
 
+#pragma region RocketUpdateTargetPosition
+/*
+DEFINE_HOOK(0x662310, RocketLocomotionClass_Process_UpdateTargetPosition, 0x5)
+{
+	GET(ILocomotion*, pThis, ESI);
+	GET(RocketStruct*, pRocketStruct, EDI);
+
+	const auto pLoco = static_cast<RocketLocomotionClass*>(pThis);
+	const auto pRocket = pLoco->LinkedTo;
+
+	if (pLoco->MissionState != 5 && (pLoco->MissionState != 4 || !pRocketStruct->LazyCurve))
+	{
+		if (const auto pSpawnOwner = pRocket->SpawnOwner)
+		{
+			if (const auto pTarget = pSpawnOwner->Target)
+				pLoco->MovingDestination = pTarget->GetCoords();
+		}
+	}
+
+	return 0;
+}
+*/
+#pragma endregion
+
 #pragma region HardLoco
 /*
 DEFINE_HOOK_AGAIN(0x742A8C, UnitClass_SetDestination_PiggyBack, 0x8)
