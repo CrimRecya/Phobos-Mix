@@ -740,6 +740,7 @@ This page lists all the individual contributions to the project by their author.
   - Allow disable an over-optimization in targeting
   - Extra threat
   - Fix the incorrect mission switching in infantry EnterIdleMode
+  - Fix the issue that `BombSight` not being updated correctly in techno conversion
 - **solar-III (凤九歌)**
   - Target scanning delay customization (documentation)
   - Skip target scanning function calling for unarmed technos (documentation)

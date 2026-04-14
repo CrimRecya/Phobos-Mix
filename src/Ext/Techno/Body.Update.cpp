@@ -1117,6 +1117,11 @@ void TechnoExt::ExtData::UpdateTypeData(TechnoTypeClass* pCurrentType)
 		barrelRecoil.HoldFrames = barrelAnimData.HoldFrames;
 	}
 
+	if (pOldType->BombSight && !pCurrentType->BombSight)
+		BombListClass::Instance.RemoveDetector(pThis);
+	else if (!pOldType->BombSight && pCurrentType->BombSight)
+		BombListClass::Instance.AddDetector(pThis);
+
 	// Only FootClass* can use this.
 	if (const auto pFoot = abstract_cast<FootClass*, true>(pThis))
 	{
