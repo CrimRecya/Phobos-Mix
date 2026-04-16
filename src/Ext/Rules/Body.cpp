@@ -387,6 +387,11 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->BalloonHoverPathingFix.Read(exINI, GameStrings::General, "BalloonHoverPathingFix");
 	Phobos::Optimizations::DisableBalloonHoverPathingFix = !this->BalloonHoverPathingFix;
 
+	this->WalkLocomotorMakesWake.Read(exINI, GameStrings::AudioVisual, "WalkLocomotorMakesWake");
+	this->DriveLocomotorMakesWake.Read(exINI, GameStrings::AudioVisual, "DriveLocomotorMakesWake");
+	this->HoverLocomotorMakesWake.Read(exINI, GameStrings::AudioVisual, "HoverLocomotionClassMakesWake");
+	this->ShipLocomotorMakesWake.Read(exINI, GameStrings::AudioVisual, "ShipLocomotionClassMakesWake");
+	
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
 	for (int i = 0; i < itemsCount; ++i)
@@ -702,6 +707,10 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->ExtraThreatCoefficient_Facing)
 		.Process(this->ExtraThreatCoefficient_DistanceToLastTarget)
 		.Process(this->BalloonHoverPathingFix)
+		.Process(this->WalkLocomotorMakesWake)
+		.Process(this->DriveLocomotorMakesWake)
+		.Process(this->HoverLocomotorMakesWake)
+		.Process(this->ShipLocomotorMakesWake)
 		;
 }
 

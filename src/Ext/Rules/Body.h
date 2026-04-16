@@ -335,6 +335,11 @@ public:
 		Valueable<double> ExtraThreatCoefficient_DistanceToLastTarget;
 		Valueable<bool> BalloonHoverPathingFix;
 
+		Valueable<bool> WalkLocomotorMakesWake;
+		Valueable<bool> DriveLocomotorMakesWake;
+		Valueable<bool> HoverLocomotorMakesWake;
+		Valueable<bool> ShipLocomotorMakesWake;
+    
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, HarvesterDumpAmount { 0.0f }
@@ -612,6 +617,11 @@ public:
 			, ExtraThreatCoefficient_DistanceToLastTarget { 0.0 }
 			
 			, BalloonHoverPathingFix { false }
+			
+			, WalkLocomotorMakesWake { false }
+			, DriveLocomotorMakesWake { true }
+			, HoverLocomotorMakesWake { true }
+			, ShipLocomotorMakesWake { true }
 		{ }
 
 		virtual ~ExtData() = default;
