@@ -1172,12 +1172,12 @@ DEFINE_HOOK(0x4733B6, PassengerClass_AddPassenger_KeepUpdate, 0x5)
 
 	return 0;
 }
-
+/*
 DEFINE_HOOK(0x4DB87E, FootClass_SetLocation_UpdatePassengerLocation, 0x6)
 {
 	return RulesExt::Global()->UpdateInLimbo_NormalPassenger ? 0x4DB888 : 0;
 }
-
+*/
 DEFINE_HOOK(0x62A0A0, ParasiteClass_Update_UpdateParasiteLocation, 0x7)
 {
 	GET(ParasiteClass*, pThis, ESI);

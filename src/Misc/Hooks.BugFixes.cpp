@@ -3025,7 +3025,7 @@ DEFINE_HOOK(0x4DB874, FootClass_SetLocation_Extra, 0xA)
 		pParasite->SetLocation(pThis->Location);
 
 	// Restore overriden instructions
-	if (pThis->GetTechnoType()->OpenTopped)
+	if (RulesExt::Global()->UpdateInLimbo_NormalPassenger || pThis->GetTechnoType()->OpenTopped)
 		pThis->UpdatePassengerCoords();
 
 	// Skip Ares's hook
