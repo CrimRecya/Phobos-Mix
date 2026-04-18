@@ -32,8 +32,8 @@ Matrix3D AdvancedDriveLocomotionClass::Draw_Matrix(VoxelIndexKey* key)
 	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 	const bool shouldTilt = !pTypeExt->AdvancedDrive_Hover || pTypeExt->AdvancedDrive_Hover_Tilt;
 	const double rate = this->SlopeTimer.GetRatePassed();
-	const float ars = std::abs(pLinked->AngleRotatedSideways);
-	const float arf = std::abs(pLinked->AngleRotatedForwards);
+	const float ars = pLinked->AngleRotatedSideways;
+	const float arf = pLinked->AngleRotatedForwards;
 
 	auto getLerpVoxelRampMatrix = [&rate](int previous, int current)
 	{
@@ -42,7 +42,7 @@ Matrix3D AdvancedDriveLocomotionClass::Draw_Matrix(VoxelIndexKey* key)
 		return mtx;
 	};
 
-	if (ars < 0.005 && arf < 0.005)
+	if (std::abs(ars) < 0.005 && std::abs(arf) < 0.005)
 	{
 		// Should set key first, then call base draw_matrix
 
