@@ -141,10 +141,11 @@ public:
 
 	// 优化容器
 
-	static std::vector<CellStruct> s_lineCells;
-    static std::vector<unsigned short> s_straightSubzones[3];
-    static std::vector<int> s_isStraightFlag[3];
-	static bool s_containersInit;
+	static constexpr bool EnableRectilinear = true;
+	static std::vector<CellStruct> LineCells;
+    static std::vector<unsigned short> StraightSubzones[3];
+    static std::vector<int> IsStraightFlag[3];
+	static bool ContainersInit;
 
 	// 构造/析构函数
 
