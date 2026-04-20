@@ -21,6 +21,12 @@ DEFINE_HOOK(0x6A593E, SidebarClass_InitForHouse_AdditionalFiles, 0x5)
 		SidebarExt::TabProducingProgress[i] = GameCreate<SHPReference>(filename);
 	}
 
+	for (int i = 0; i < 2; i++)
+	{
+		sprintf_s(filename, "tab%02dabm.shp", i);
+		SidebarExt::AutoBuildingMark[i] = GameCreate<SHPReference>(filename);
+	}
+
 	return 0;
 }
 
@@ -35,11 +41,27 @@ DEFINE_HOOK(0x6A5EA1, SidebarClass_UnloadShapes_AdditionalFiles, 0x5)
 		}
 	}
 
+	for (int i = 0; i < 2; i++)
+	{
+		if (SidebarExt::AutoBuildingMark[i])
+		{
+			GameDelete(SidebarExt::AutoBuildingMark[i]);
+			SidebarExt::AutoBuildingMark[i] = nullptr;
+		}
+	}
+
 	return 0;
 }
 
-DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt_ProducingProgress, 0x6)
+namespace
 {
+	int drawnTimes = 0;
+}
+
+DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt, 0x6)
+{
+	drawnTimes++;
+
 	if (Phobos::UI::ProducingProgress_Show)
 	{
 		const auto pPlayer = HouseClass::CurrentPlayer;
@@ -81,6 +103,89 @@ DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt_ProducingProgress, 0x6)
 						&sidebarRect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 				}
 			}
+		}
+	}
+
+	auto drawAutoBuildingMark = [&](int tabIndex)
+		{
+			if (auto pShp = SidebarExt::AutoBuildingMark[tabIndex])
+			{
+				drawnTimes %= pShp->Frames;
+				const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.GetItem(HouseClass::CurrentPlayer->SideIndex));
+				const int XOffset = pSideExt->Sidebar_GDIPositions ? 29 : 32;
+				const int XBase = (pSideExt->Sidebar_GDIPositions ? 26 : 20);
+				const int YBase = 197;
+				const auto position = Point2D { XBase + tabIndex * XOffset, YBase };
+				RectangleStruct sidebarRect = DSurface::Sidebar->GetRect();
+				DSurface::Sidebar->DrawSHP(FileSystem::ANIM_PAL, pShp, drawnTimes, &position,
+					&sidebarRect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+			}
+		};
+
+	if (Phobos::Config::AutomaticPlacingBuilding)
+	{
+		drawAutoBuildingMark(0);
+	}
+
+	if (Phobos::Config::AutomaticPlacingCombatBuilding)
+	{
+		drawAutoBuildingMark(1);
+	}
+
+	return 0;
+}
+
+// Add right click for structure and combat tab button.
+DEFINE_HOOK(0x6A4CEE, SidebarClass_InitTabButtons_RightButton, 0x5)
+{
+	GET(ShapeButtonClass*, pButton, ECX);
+
+	new (pButton) ShapeButtonClass();
+
+	GET(int, leftCount, EDI);
+
+	if (leftCount >= 3)
+	{
+		pButton->Flags |= GadgetFlag::RightPress | GadgetFlag::RightRelease;
+	}
+
+	return R->Origin() + 0x5;
+}
+
+DEFINE_HOOK(0x6A7904, SidebarClass_Update_ToggleAutoBuilding, 0x5)
+{
+	GET(int, keyCode, EAX);
+
+	int clickedTabIdx = keyCode - ((int)WWKey::Button | (int)WWKey::Button_IsRightClick | 203);
+
+	// Right clicked on the tab button.
+	if (clickedTabIdx == 0 || clickedTabIdx == 1)
+	{
+		auto& sideBar = SidebarClass::Instance;
+
+		if (clickedTabIdx != sideBar.ActiveTabIndex)
+		{
+			auto& pClickedButton = SidebarClass::TabButtons[clickedTabIdx];
+			pClickedButton.MarkRedraw();
+			pClickedButton.IsPressed = false;
+			pClickedButton.IsOn = false;
+		}
+
+		if (clickedTabIdx == 0)
+		{
+			Phobos::Config::AutomaticPlacingBuilding = !Phobos::Config::AutomaticPlacingBuilding;
+		}
+		else// if (clickedTabIdx == 1)
+		{
+			Phobos::Config::AutomaticPlacingCombatBuilding = !Phobos::Config::AutomaticPlacingCombatBuilding;
+		}
+
+		const int tabIndex = SidebarClass::Instance.ActiveTabIndex;
+
+		if (!tabIndex || tabIndex == 1)
+		{
+			SidebarClass::Instance.SidebarBackgroundNeedsRedraw = true;
+			SidebarClass::Instance.RepaintSidebar(tabIndex);
 		}
 	}
 
