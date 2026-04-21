@@ -20,6 +20,7 @@ public:
 		, CruiseUnableRange { Leptons(1280) }
 		, CruiseAltitude { 800 }
 		, CruiseAlongLevel { false }
+		, CruiseOnlyBeneathAltitude { false }
 		, SuicideAboveRange { -3.0 }
 		, SuicideShortOfROT { false }
 	{ }
@@ -36,6 +37,7 @@ public:
 	Valueable<Leptons> CruiseUnableRange;
 	Valueable<int> CruiseAltitude;
 	Valueable<bool> CruiseAlongLevel;
+	Valueable<bool> CruiseOnlyBeneathAltitude;
 	Valueable<double> SuicideAboveRange;
 	Valueable<bool> SuicideShortOfROT;
 

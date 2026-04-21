@@ -23,6 +23,7 @@ void MissileTrajectoryType::Serialize(T& Stm)
 		.Process(this->CruiseUnableRange)
 		.Process(this->CruiseAltitude)
 		.Process(this->CruiseAlongLevel)
+		.Process(this->CruiseOnlyBeneathAltitude)
 		.Process(this->SuicideAboveRange)
 		.Process(this->SuicideShortOfROT)
 		;
@@ -93,6 +94,7 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->CruiseUnableRange = Leptons(Math::max(128, this->CruiseUnableRange.Get()));
 	this->CruiseAltitude.Read(exINI, pSection, "Trajectory.Missile.CruiseAltitude");
 	this->CruiseAlongLevel.Read(exINI, pSection, "Trajectory.Missile.CruiseAlongLevel");
+	this->CruiseOnlyBeneathAltitude.Read(exINI, pSection, "Trajectory.Missile.CruiseOnlyBeneathAltitude");
 	this->SuicideAboveRange.Read(exINI, pSection, "Trajectory.Missile.SuicideAboveRange");
 	this->SuicideShortOfROT.Read(exINI, pSection, "Trajectory.Missile.SuicideShortOfROT");
 }
@@ -516,27 +518,55 @@ bool MissileTrajectory::StandardVelocityChange()
 		}
 
 		// If in the cruise phase, the steering target will be set at the fixed height
-		if (this->CruiseEnable)
+		if (pType->CruiseEnable)
 		{
+			const int cruiseAltitudeTarget = this->GetCruiseAltitude();
 			const auto horizontal = BulletExt::Coord2Point(targetLocation - pBullet->Location);
 			const double horizontalDistance = horizontal.Magnitude();
+			bool lastFrameCruise = this->CruiseEnable;
 
-			// The distance is still long, continue cruising
-			if (horizontalDistance > pType->CruiseUnableRange.Get())
+			// If cruise is still enabled after altitude check, apply cruise logic
+			if (pType->CruiseOnlyBeneathAltitude && pBullet->Location.Z <= cruiseAltitudeTarget
+				|| horizontalDistance > pType->CruiseUnableRange.Get())
 			{
+				this->CruiseEnable = true;
+				// The distance is still long, continue cruising
 				const double ratio = this->MovingSpeed / horizontalDistance;
 				targetLocation.X = pBullet->Location.X + static_cast<int>(horizontal.X * ratio);
 				targetLocation.Y = pBullet->Location.Y + static_cast<int>(horizontal.Y * ratio);
 
 				// Smooth curve for low turning speed projectile
-				targetLocation.Z = (this->GetCruiseAltitude() + pBullet->Location.Z) / 2;
+				targetLocation.Z = (cruiseAltitudeTarget + pBullet->Location.Z) / 2;
 			}
 			else
 			{
 				this->CruiseEnable = false;
-				this->LastDotProduct = 0.0;
+
+				if (lastFrameCruise)
+					this->LastDotProduct = 0.0;
 			}
 		}
+		// if (this->CruiseEnable)
+		// {
+		// 	const auto horizontal = BulletExt::Coord2Point(targetLocation - pBullet->Location);
+		// 	const double horizontalDistance = horizontal.Magnitude();
+
+		// 	// The distance is still long, continue cruising
+		// 	if (horizontalDistance > pType->CruiseUnableRange.Get())
+		// 	{
+		// 		const double ratio = this->MovingSpeed / horizontalDistance;
+		// 		targetLocation.X = pBullet->Location.X + static_cast<int>(horizontal.X * ratio);
+		// 		targetLocation.Y = pBullet->Location.Y + static_cast<int>(horizontal.Y * ratio);
+
+		// 		// Smooth curve for low turning speed projectile
+		// 		targetLocation.Z = (this->GetCruiseAltitude() + pBullet->Location.Z) / 2;
+		// 	}
+		// 	else
+		// 	{
+		// 		this->CruiseEnable = false;
+		// 		this->LastDotProduct = 0.0;
+		// 	}
+		// }
 	}
 
 	// Calculate new speed
