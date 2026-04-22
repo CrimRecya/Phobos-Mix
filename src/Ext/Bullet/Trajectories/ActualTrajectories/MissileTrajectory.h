@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "../PhobosActualTrajectory.h"
 
@@ -20,7 +20,7 @@ public:
 		, CruiseUnableRange { Leptons(1280) }
 		, CruiseAltitude { 800 }
 		, CruiseAlongLevel { false }
-		, CruiseOnlyBeneathAltitude { false }
+		, ForceCruiseToAvoidGround { false }
 		, SuicideAboveRange { -3.0 }
 		, SuicideShortOfROT { false }
 	{ }
@@ -37,7 +37,7 @@ public:
 	Valueable<Leptons> CruiseUnableRange;
 	Valueable<int> CruiseAltitude;
 	Valueable<bool> CruiseAlongLevel;
-	Valueable<bool> CruiseOnlyBeneathAltitude;
+	Valueable<bool> ForceCruiseToAvoidGround;
 	Valueable<double> SuicideAboveRange;
 	Valueable<bool> SuicideShortOfROT;
 
