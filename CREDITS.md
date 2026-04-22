@@ -746,6 +746,7 @@ This page lists all the individual contributions to the project by their author.
   - Updateable firing anim
   - Fix the issue where the sidebar would not refresh when an unit dies in limbo
   - Enable playing ingame movie in non-campaign modes (i.e. trigger action 100 and 117)
+  - Allow replacing vanilla repairing with togglable auto repairing
 - **solar-III (凤九歌)**
   - Target scanning delay customization (documentation)
   - Skip target scanning function calling for unarmed technos (documentation)

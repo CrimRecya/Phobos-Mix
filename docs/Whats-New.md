@@ -570,6 +570,7 @@ New:
 - [Hotkey for deselect object from current selection](User-Interface.md#deselect-object-s) (by FrozenFog)
 - [Updateable firing anim](Fixed-or-Improved-Logics.md#updateable-firing-anim) (by TaranDahl)
 - [Additional customizations for `Splits` concerning target selection](Fixed-or-Improved-Logics.md#airburst--splits) (by Starkku)
+- [Allow replacing vanilla repairing with togglable auto repairing](User-Interface.md#allow-replacing-vanilla-repairing-with-togglable-auto-repairing) (by TaranDahl)
 
 Vanilla fixes:
 - Fixed sidebar not updating queued unit numbers when adding or removing units when the production is on hold (by CrimRecya)
