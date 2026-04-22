@@ -128,9 +128,9 @@ void EventExt::RespondToTogglePlayerAutoRepair()
 		SidebarClass::Instance.SidebarNeedsRedraw = true;
 
 		if (pHouseExt->PlayerAutoRepair)
-			SidebarClass::ToggelRepairButton.TurnOn();
+			SidebarClass::ToggleRepairButton.TurnOn();
 		else
-			SidebarClass::ToggelRepairButton.TurnOff();
+			SidebarClass::ToggleRepairButton.TurnOff();
 	}
 }
 

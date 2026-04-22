@@ -560,7 +560,7 @@ DEFINE_HOOK(0x6A5395, SidebarClass_InitIO_InitRepairButton, 0x6)
 	if (HouseExt::ExtMap.Find(HouseClass::CurrentPlayer)->PlayerAutoRepair)
 	{
 		SidebarClass::Instance.SidebarNeedsRedraw = true;
-		SidebarClass::ToggelRepairButton.IsOn = true;
+		SidebarClass::ToggleRepairButton.IsOn = true;
 	}
 
 	return 0;
