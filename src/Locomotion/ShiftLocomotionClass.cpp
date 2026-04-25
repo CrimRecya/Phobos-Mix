@@ -8,6 +8,7 @@
 #include <comip.h>
 #include <comdef.h>
 #include <JumpjetLocomotionClass.h>
+#include <Locomotion/AStar/AStarClass.h>
 
 #pragma region Helpers
 
@@ -47,7 +48,7 @@ CoordStruct ShiftLocomotionClass::FindShiftDestination(FootClass* pTechno, Coord
 				return false;
 
 			auto currentMapCrd = pTechno->GetMapCoords();
-			bool reachable = !pathReachable || AStarClass::Instance.AttemptPath(&currentMapCrd, &mapCrd, pTechno, pTechno->OnBridge, pCell->ContainsBridge()) != INT_MAX;
+			bool reachable = !pathReachable || AStarClass::Instance.AttemptPath(&currentMapCrd, &mapCrd, pTechno, pTechno->OnBridge, pCell->ContainsBridge(), MovementZone::None) != INT_MAX;
 
 			if (!reachable)
 				return false;

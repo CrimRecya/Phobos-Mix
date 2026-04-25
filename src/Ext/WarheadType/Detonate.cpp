@@ -8,7 +8,7 @@
 #include <Locomotion/ShiftLocomotionClass.h>
 #include <New/Entity/ShiftSchedule.h>
 #include <JumpjetLocomotionClass.h>
-#include <AStarClass.h>
+#include <Locomotion/AStar/AStarClass.h>
 #include <cmath>
 
 #pragma region CreateGap Calls
