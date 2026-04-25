@@ -1665,6 +1665,9 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->JumpjetStraightAscend)
 		.Process(this->OnParachuted)
 		.Process(this->HoverShutdown)
+		/*.Process(this->QueuedShift)*/ // Always set and reset in one function
+		.Process(this->ShiftApplier)
+		.Process(this->ShiftApplierHouse)
 		;
 }
 
@@ -1685,6 +1688,9 @@ void TechnoExt::ExtData::InvalidatePointer(void* ptr, bool bRemoved)
 		this->CachedCell = nullptr;
 		this->CachedTarget = nullptr;
 	}
+	
+	AnnounceInvalidPointer(this->ShiftApplier, ptr);
+	AnnounceInvalidPointer(this->ShiftApplierHouse, ptr);
 }
 
 void TechnoExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)
@@ -1730,6 +1736,7 @@ bool TechnoExt::ExtContainer::InvalidateExtDataIgnorable(void* const ptr) const
 	case AbstractType::Unit:
 	case AbstractType::Terrain:
 	case AbstractType::Bullet:
+	case AbstractType::House:
 		return false;
 	}
 
