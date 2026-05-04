@@ -1,3 +1,5 @@
+﻿// by TaranDahl
+
 #pragma once
 
 #include <Utilities/Enumerable.h>

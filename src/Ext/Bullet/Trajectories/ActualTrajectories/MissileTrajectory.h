@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "../PhobosActualTrajectory.h"
 
@@ -20,7 +20,7 @@ public:
 		, CruiseUnableRange { Leptons(1280) }
 		, CruiseAltitude { 800 }
 		, CruiseAlongLevel { false }
-		, ForceCruiseToAvoidGround { false }
+		, CollisionDetection { false }
 		, SuicideAboveRange { -3.0 }
 		, SuicideShortOfROT { false }
 	{ }
@@ -37,7 +37,7 @@ public:
 	Valueable<Leptons> CruiseUnableRange;
 	Valueable<int> CruiseAltitude;
 	Valueable<bool> CruiseAlongLevel;
-	Valueable<bool> ForceCruiseToAvoidGround;
+	Valueable<bool> CollisionDetection;
 	Valueable<double> SuicideAboveRange;
 	Valueable<bool> SuicideShortOfROT;
 
@@ -101,7 +101,7 @@ private:
 	bool NotCurveVelocityChange();
 	bool StandardVelocityChange();
 	bool ChangeBulletVelocity(const CoordStruct& targetLocation);
-	int GetCruiseAltitude();
+	int GetCruiseAltitude(bool collisionCheck, int lastCheckHeight);
 
 	template <typename T>
 	void Serialize(T& Stm);

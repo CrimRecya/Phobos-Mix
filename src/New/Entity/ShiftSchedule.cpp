@@ -1,3 +1,5 @@
+﻿// by TaranDahl
+
 #include "ShiftSchedule.h"
 
 void ShiftSchedule::BeginShiftProcess(TechnoClass* pThis)

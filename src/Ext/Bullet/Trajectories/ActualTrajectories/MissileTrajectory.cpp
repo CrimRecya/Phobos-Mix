@@ -1,4 +1,4 @@
-#include "MissileTrajectory.h"
+﻿#include "MissileTrajectory.h"
 
 #include <Ext/Bullet/Body.h>
 
@@ -23,7 +23,7 @@ void MissileTrajectoryType::Serialize(T& Stm)
 		.Process(this->CruiseUnableRange)
 		.Process(this->CruiseAltitude)
 		.Process(this->CruiseAlongLevel)
-		.Process(this->ForceCruiseToAvoidGround)
+		.Process(this->CollisionDetection)
 		.Process(this->SuicideAboveRange)
 		.Process(this->SuicideShortOfROT)
 		;
@@ -93,8 +93,9 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->CruiseUnableRange.Read(exINI, pSection, "Trajectory.Missile.CruiseUnableRange");
 	this->CruiseUnableRange = Leptons(Math::max(128, this->CruiseUnableRange.Get()));
 	this->CruiseAltitude.Read(exINI, pSection, "Trajectory.Missile.CruiseAltitude");
+	this->CruiseAltitude = Math::max(0, this->CruiseAltitude.Get());
 	this->CruiseAlongLevel.Read(exINI, pSection, "Trajectory.Missile.CruiseAlongLevel");
-	this->ForceCruiseToAvoidGround.Read(exINI, pSection, "Trajectory.Missile.ForceCruiseToAvoidGround");
+	this->CollisionDetection.Read(exINI, pSection, "Trajectory.Missile.CollisionDetection");
 	this->SuicideAboveRange.Read(exINI, pSection, "Trajectory.Missile.SuicideAboveRange");
 	this->SuicideShortOfROT.Read(exINI, pSection, "Trajectory.Missile.SuicideShortOfROT");
 }
@@ -517,24 +518,28 @@ bool MissileTrajectory::StandardVelocityChange()
 			}
 		}
 
-		const int cruiseAltitudeTarget = this->GetCruiseAltitude();
-		const auto horizontal = BulletExt::Coord2Point(targetLocation - pBullet->Location);
-		const double horizontalDistance = horizontal.Magnitude();
-		
-		// Force cruise to zero if going to hit the ground.
-		if (pType->ForceCruiseToAvoidGround
-			&& pType->CruiseAlongLevel && pType->TurningSpeed > BulletExt::Epsilon
-			&& pBullet->Location.Z < cruiseAltitudeTarget - pType->CruiseAltitude) // going to hit the ground
+		do
 		{
-			const double ratio = this->MovingSpeed / horizontalDistance;
-			targetLocation.X = pBullet->Location.X + static_cast<int>(horizontal.X * ratio);
-			targetLocation.Y = pBullet->Location.Y + static_cast<int>(horizontal.Y * ratio);
-			targetLocation.Z = cruiseAltitudeTarget - pType->CruiseAltitude;
-		}
-		else
-		{
+			int cruiseGroundHeight = 0;
+			if (pType->CollisionDetection)
+			{
+				cruiseGroundHeight = this->GetCruiseAltitude(true, 0);
+				if (pBullet->Location.Z < cruiseGroundHeight)
+				{
+					const auto horizontal = BulletExt::Coord2Point(targetLocation - pBullet->Location);
+					const double ratio = this->MovingSpeed / horizontal.Magnitude();
+					targetLocation.X = pBullet->Location.X + static_cast<int>(horizontal.X * ratio);
+					targetLocation.Y = pBullet->Location.Y + static_cast<int>(horizontal.Y * ratio);
+					targetLocation.Z = cruiseGroundHeight;
+					break;
+				}
+			}
+
 			if (this->CruiseEnable)
 			{
+				const auto horizontal = BulletExt::Coord2Point(targetLocation - pBullet->Location);
+				const double horizontalDistance = horizontal.Magnitude();
+
 				// The distance is still long, continue cruising
 				if (horizontalDistance > pType->CruiseUnableRange.Get())
 				{
@@ -543,7 +548,7 @@ bool MissileTrajectory::StandardVelocityChange()
 					targetLocation.Y = pBullet->Location.Y + static_cast<int>(horizontal.Y * ratio);
 
 					// Smooth curve for low turning speed projectile
-					targetLocation.Z = (cruiseAltitudeTarget + pBullet->Location.Z) / 2;
+					targetLocation.Z = (this->GetCruiseAltitude(false, cruiseGroundHeight) + pBullet->Location.Z) / 2;
 				}
 				else
 				{
@@ -552,6 +557,7 @@ bool MissileTrajectory::StandardVelocityChange()
 				}
 			}
 		}
+		while (false);
 	}
 
 	// Calculate new speed
@@ -621,13 +627,18 @@ bool MissileTrajectory::ChangeBulletVelocity(const CoordStruct& targetLocation)
 	return this->CalculateBulletVelocity(this->MovingSpeed);
 }
 
-int MissileTrajectory::GetCruiseAltitude()
+int MissileTrajectory::GetCruiseAltitude(bool collisionCheck, int lastCheckHeight)
 {
 	const auto pBullet = this->Bullet;
 	const auto pType = this->Type;
 
-	if (!pType->CruiseAlongLevel || pType->TurningSpeed <= BulletExt::Epsilon)
-		return pType->CruiseAltitude + pBullet->SourceCoords.Z;
+	if (!collisionCheck)
+	{
+		if (!pType->CruiseAlongLevel || pType->TurningSpeed <= BulletExt::Epsilon)
+			return pType->CruiseAltitude + pBullet->SourceCoords.Z;
+		else
+			return pType->CruiseAltitude + lastCheckHeight;
+	}
 
 	constexpr int shift = 8; // >> shift -> / Unsorted::LeptonsPerCell
 	constexpr auto point2Cell = [](const Point2D& point) -> CellStruct
@@ -710,6 +721,9 @@ int MissileTrajectory::GetCruiseAltitude()
 
 	// Predict height
 	for (int i = 0; i < checkSteps && checkStepHeight(); ++i);
+
+	if (collisionCheck)
+		return maxHeight;
 
 	return pType->CruiseAltitude + maxHeight;
 }

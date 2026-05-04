@@ -1,3 +1,5 @@
+﻿// by TaranDahl
+
 #include "ShiftLocomotionClass.h"
 
 #include <Utilities/Debug.h>
