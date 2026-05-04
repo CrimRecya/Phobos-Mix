@@ -60,8 +60,6 @@ namespace SidebarAutoBuildingMark
 
 DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt, 0x6)
 {
-	SidebarAutoBuildingMark::DrawnTimes++;
-
 	if (Phobos::UI::ProducingProgress_Show)
 	{
 		const auto pPlayer = HouseClass::CurrentPlayer;
@@ -108,9 +106,11 @@ DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt, 0x6)
 
 	auto drawAutoBuildingMark = [&](int tabIndex)
 		{
-			if (auto pShp = SidebarExt::AutoBuildingMark[tabIndex])
+			if (const auto pShp = SidebarExt::AutoBuildingMark[tabIndex])
 			{
-				SidebarAutoBuildingMark::DrawnTimes %= pShp->Frames;
+				if (pShp->Frames)
+					SidebarAutoBuildingMark::DrawnTimes %= pShp->Frames;
+
 				const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.GetItem(HouseClass::CurrentPlayer->SideIndex));
 				const int XOffset = pSideExt->Sidebar_GDIPositions ? 29 : 32;
 				const int XBase = (pSideExt->Sidebar_GDIPositions ? 26 : 20);
@@ -121,6 +121,7 @@ DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt, 0x6)
 					&sidebarRect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 			}
 		};
+	SidebarAutoBuildingMark::DrawnTimes++;
 	if (Phobos::Config::AutomaticPlacingBuilding)
 		drawAutoBuildingMark(0);
 	if (Phobos::Config::AutomaticPlacingCombatBuilding)

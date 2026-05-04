@@ -22,6 +22,7 @@ void MissileTrajectoryType::Serialize(T& Stm)
 		.Process(this->CruiseEnable)
 		.Process(this->CruiseUnableRange)
 		.Process(this->CruiseAltitude)
+		.Process(this->CruiseAltitudeRange)
 		.Process(this->CruiseAlongLevel)
 		.Process(this->CollisionDetection)
 		.Process(this->SuicideAboveRange)
@@ -93,7 +94,8 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->CruiseUnableRange.Read(exINI, pSection, "Trajectory.Missile.CruiseUnableRange");
 	this->CruiseUnableRange = Leptons(Math::max(128, this->CruiseUnableRange.Get()));
 	this->CruiseAltitude.Read(exINI, pSection, "Trajectory.Missile.CruiseAltitude");
-	this->CruiseAltitude = Math::max(0, this->CruiseAltitude.Get());
+	this->CruiseAltitude = Math::max(0, this->CruiseAltitude);
+	this->CruiseAltitudeRange = this->CruiseAltitude / 2;
 	this->CruiseAlongLevel.Read(exINI, pSection, "Trajectory.Missile.CruiseAlongLevel");
 	this->CollisionDetection.Read(exINI, pSection, "Trajectory.Missile.CollisionDetection");
 	this->SuicideAboveRange.Read(exINI, pSection, "Trajectory.Missile.SuicideAboveRange");
@@ -109,6 +111,7 @@ void MissileTrajectory::Serialize(T& Stm)
 		.Process(this->InStraight)
 		.Process(this->Accelerate)
 		.Process(this->OriginalDistance)
+		.Process(this->LastCruiseAltitude)
 		.Process(this->OffsetCoord)
 		.Process(this->PreAimDistance)
 		.Process(this->LastDotProduct)
@@ -138,6 +141,9 @@ void MissileTrajectory::OnUnlimbo()
 
 	// Record the initial distance
 	this->OriginalDistance = static_cast<int>(pBullet->TargetCoords.DistanceFrom(pBullet->SourceCoords));
+
+	// Set initial cruise altitude
+	this->LastCruiseAltitude = -this->Type->CruiseAltitude;
 
 	// Waiting for launch trigger
 	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
@@ -520,7 +526,7 @@ bool MissileTrajectory::StandardVelocityChange()
 
 		do
 		{
-			int cruiseGroundHeight = 0;
+			int cruiseGroundHeight = -1;
 			if (pType->CollisionDetection)
 			{
 				cruiseGroundHeight = this->GetCruiseAltitude(true, 0);
@@ -636,8 +642,16 @@ int MissileTrajectory::GetCruiseAltitude(bool collisionCheck, int lastCheckHeigh
 	{
 		if (!pType->CruiseAlongLevel || pType->TurningSpeed <= BulletExt::Epsilon)
 			return pType->CruiseAltitude + pBullet->SourceCoords.Z;
-		else
-			return pType->CruiseAltitude + lastCheckHeight;
+
+		if (lastCheckHeight != -1)
+		{
+			const int currentCruiseAltitude = pType->CruiseAltitude + lastCheckHeight;
+			if (std::abs(this->LastCruiseAltitude - currentCruiseAltitude) < pType->CruiseAltitudeRange)
+				return this->LastCruiseAltitude;
+
+			this->LastCruiseAltitude = currentCruiseAltitude;
+			return currentCruiseAltitude;
+		}
 	}
 
 	constexpr int shift = 8; // >> shift -> / Unsorted::LeptonsPerCell
@@ -725,5 +739,10 @@ int MissileTrajectory::GetCruiseAltitude(bool collisionCheck, int lastCheckHeigh
 	if (collisionCheck)
 		return maxHeight;
 
-	return pType->CruiseAltitude + maxHeight;
+	const int currentCruiseAltitude = pType->CruiseAltitude + maxHeight;
+	if (std::abs(this->LastCruiseAltitude - currentCruiseAltitude) < pType->CruiseAltitudeRange)
+		return this->LastCruiseAltitude;
+
+	this->LastCruiseAltitude = currentCruiseAltitude;
+	return currentCruiseAltitude;
 }
