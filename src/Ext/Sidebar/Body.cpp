@@ -8,6 +8,7 @@
 std::unique_ptr<SidebarExt::ExtData> SidebarExt::Data = nullptr;
 
 SHPStruct* SidebarExt::TabProducingProgress[4];
+SHPStruct* SidebarExt::AutoBuildingMark[2];
 
 void SidebarExt::Allocate(SidebarClass* pThis)
 {
