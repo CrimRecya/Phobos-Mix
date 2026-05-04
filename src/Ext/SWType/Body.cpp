@@ -95,6 +95,7 @@ void SWTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->SW_Link_RollChances)
 		.Process(this->Message_LinkedSWAcquired)
 		.Process(this->EVA_LinkedSWAcquired)
+		.Process(this->ChangeEVAIndex)
 		;
 }
 
@@ -226,6 +227,8 @@ void SWTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->EVA_LinkedSWAcquired.Read(exINI, pSection, "EVA.LinkedSWAcquired");
 	this->SW_Link_RollChances.Read(exINI, pSection, "SW.Link.RollChances");
 
+	this->ChangeEVAIndex.Read(exINI, pSection, "ChangeEVAIndex");
+	
 	// SW.Link.RandomWeights
 	for (size_t i = 0; ; ++i)
 	{

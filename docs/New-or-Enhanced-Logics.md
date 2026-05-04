@@ -1268,6 +1268,20 @@ Detonate.Damage=            ; integer
 Detonate.AtFirer=false      ; boolean
 ```
 
+### Change EVA voice
+
+- Any superweapon can now change the player's EVA voice set after activation.
+  - `ChangeEVAIndex` specifies the EVA voice index to switch to, corresponding to entries under `[EVATypes]`.
+  - If set to `-1`, no change is applied.
+  - By default, `0` is Allied, `1` is Soviet, and `2` is Yuri.
+  - The change is applied to the player who activates the superweapon.
+
+In `rulesmd.ini`:
+```ini
+[SOMESW]               ; SuperWeaponType
+ChangeEVAIndex=-1      ; integer
+```
+
 ## Technos
 
 ### Aggressive attack move mission

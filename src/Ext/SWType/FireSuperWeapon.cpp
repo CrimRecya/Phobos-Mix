@@ -37,6 +37,9 @@ void SWTypeExt::FireSuperWeaponExt(SuperClass* pSW, const CellStruct& cell)
 	if (static_cast<int>(pType->Type) == 28 && !pTypeExt->EMPulse_TargetSelf) // Ares' Type=EMPulse SW
 		pTypeExt->HandleEMPulseLaunch(pSW, cell);
 
+	if (pTypeExt->ChangeEVAIndex != -1)
+		pTypeExt->ApplyChangeEVAIndex(pSW);
+
 	auto& sw_ext = HouseExt::ExtMap.Find(pHouse)->SuperExts[pType->ArrayIndex];
 	sw_ext.ShotCount++;
 
@@ -482,4 +485,17 @@ void SWTypeExt::ExtData::ApplyLinkedSW(SuperClass* pSW)
 
 		MessageListClass::Instance.PrintMessage(this->Message_LinkedSWAcquired.Get(), RulesClass::Instance->MessageDelay, HouseClass::CurrentPlayer->ColorSchemeIndex, true);
 	}
+}
+
+void SWTypeExt::ExtData::ApplyChangeEVAIndex(SuperClass* pSW)
+{
+	const auto pHouse = pSW->Owner;
+	if (!pHouse->IsControlledByCurrentPlayer())
+		return;
+
+	int newEvaIndex = VoxClass::EVAIndex;
+
+	newEvaIndex = this->ChangeEVAIndex;
+
+	VoxClass::EVAIndex = newEvaIndex;
 }
