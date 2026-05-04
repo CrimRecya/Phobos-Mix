@@ -100,11 +100,23 @@ void CeaseFireStanceClass::CeaseFireExecute()
 		}
 		else
 		{
+			int ceasedAggressiveStanceCount = 0;
 			for (const auto& pTechno : TechnoVectorNonCeaseFire)
+			{
+				if (TechnoExt::ExtMap.Find(pTechno)->GetAggressiveStance())
+				{
+					ceasedAggressiveStanceCount++;
+					EventExt::RaiseToggleAggressiveStance(pTechno);
+				}
+
 				EventExt::RaiseToggleCeaseFireStance(pTechno);
+			}
 
 			wchar_t buffer[0x100];
-			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:CEASEFIRE_STANCE_ON", L"%i unit(s) entered Cease Fire Stance."), TechnoVectorNonCeaseFire.size());
+			if (ceasedAggressiveStanceCount != 0)
+				swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:CEASEFIRE_STANCE_ON_V2", L"%i unit(s) entered Cease Fire Stance, %i unit(s) ceased Aggressive Stance."), TechnoVectorNonCeaseFire.size(), ceasedAggressiveStanceCount);
+			else
+				swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:CEASEFIRE_STANCE_ON", L"%i unit(s) entered Cease Fire Stance."), TechnoVectorNonCeaseFire.size());
 			MessageListClass::Instance.PrintMessage(buffer);
 		}
 	}
