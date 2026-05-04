@@ -1,4 +1,4 @@
-#include "AggressiveStance.h"
+﻿#include "AggressiveStance.h"
 
 #include "Ext/Techno/Body.h"
 #include <Ext/Event/Body.h>
@@ -103,13 +103,12 @@ void AggressiveStanceClass::AggressiveExecute()
 			int ceasedCeaseFireCount = 0;
 			for (const auto& pTechno : TechnoVectorNonAggressive)
 			{
-				const auto pTechnoExt = TechnoExt::ExtMap.Find(pTechno);
-
-				if (pTechnoExt->GetCeaseFireStance())
+				if (TechnoExt::ExtMap.Find(pTechno)->GetCeaseFireStance())
 				{
 					EventExt::RaiseToggleCeaseFireStance(pTechno);
 					ceasedCeaseFireCount++;
 				}
+
 				EventExt::RaiseToggleAggressiveStance(pTechno);
 			}
 

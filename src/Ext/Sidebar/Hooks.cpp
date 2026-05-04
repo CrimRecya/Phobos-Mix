@@ -53,14 +53,14 @@ DEFINE_HOOK(0x6A5EA1, SidebarClass_UnloadShapes_AdditionalFiles, 0x5)
 	return 0;
 }
 
-namespace
+namespace SidebarAutoBuildingMark
 {
-	int drawnTimes = 0;
+	int DrawnTimes = 0;
 }
 
 DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt, 0x6)
 {
-	drawnTimes++;
+	SidebarAutoBuildingMark::DrawnTimes++;
 
 	if (Phobos::UI::ProducingProgress_Show)
 	{
@@ -110,27 +110,21 @@ DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt, 0x6)
 		{
 			if (auto pShp = SidebarExt::AutoBuildingMark[tabIndex])
 			{
-				drawnTimes %= pShp->Frames;
+				SidebarAutoBuildingMark::DrawnTimes %= pShp->Frames;
 				const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.GetItem(HouseClass::CurrentPlayer->SideIndex));
 				const int XOffset = pSideExt->Sidebar_GDIPositions ? 29 : 32;
 				const int XBase = (pSideExt->Sidebar_GDIPositions ? 26 : 20);
 				const int YBase = 197;
 				const auto position = Point2D { XBase + tabIndex * XOffset, YBase };
 				RectangleStruct sidebarRect = DSurface::Sidebar->GetRect();
-				DSurface::Sidebar->DrawSHP(FileSystem::ANIM_PAL, pShp, drawnTimes, &position,
+				DSurface::Sidebar->DrawSHP(FileSystem::ANIM_PAL, pShp, SidebarAutoBuildingMark::DrawnTimes, &position,
 					&sidebarRect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 			}
 		};
-
 	if (Phobos::Config::AutomaticPlacingBuilding)
-	{
 		drawAutoBuildingMark(0);
-	}
-
 	if (Phobos::Config::AutomaticPlacingCombatBuilding)
-	{
 		drawAutoBuildingMark(1);
-	}
 
 	return 0;
 }
@@ -145,9 +139,7 @@ DEFINE_HOOK(0x6A4CEE, SidebarClass_InitTabButtons_RightButton, 0x5)
 	GET(int, leftCount, EDI);
 
 	if (leftCount >= 3)
-	{
 		pButton->Flags |= GadgetFlag::RightPress | GadgetFlag::RightRelease;
-	}
 
 	return R->Origin() + 0x5;
 }
@@ -156,14 +148,12 @@ DEFINE_HOOK(0x6A7904, SidebarClass_Update_ToggleAutoBuilding, 0x5)
 {
 	GET(int, keyCode, EAX);
 
-	int clickedTabIdx = keyCode - ((int)WWKey::Button | (int)WWKey::Button_IsRightClick | 203);
+	int clickedTabIdx = keyCode - ((int)WWKey::Button | (int)WWKey::RightClick | 203);
 
 	// Right clicked on the tab button.
 	if (clickedTabIdx == 0 || clickedTabIdx == 1)
 	{
-		auto& sideBar = SidebarClass::Instance;
-
-		if (clickedTabIdx != sideBar.ActiveTabIndex)
+		if (clickedTabIdx != SidebarClass::Instance.ActiveTabIndex)
 		{
 			auto& pClickedButton = SidebarClass::TabButtons[clickedTabIdx];
 			pClickedButton.MarkRedraw();
@@ -172,16 +162,11 @@ DEFINE_HOOK(0x6A7904, SidebarClass_Update_ToggleAutoBuilding, 0x5)
 		}
 
 		if (clickedTabIdx == 0)
-		{
 			Phobos::Config::AutomaticPlacingBuilding = !Phobos::Config::AutomaticPlacingBuilding;
-		}
-		else// if (clickedTabIdx == 1)
-		{
+		else // if (clickedTabIdx == 1)
 			Phobos::Config::AutomaticPlacingCombatBuilding = !Phobos::Config::AutomaticPlacingCombatBuilding;
-		}
 
 		const int tabIndex = SidebarClass::Instance.ActiveTabIndex;
-
 		if (!tabIndex || tabIndex == 1)
 		{
 			SidebarClass::Instance.SidebarBackgroundNeedsRedraw = true;
