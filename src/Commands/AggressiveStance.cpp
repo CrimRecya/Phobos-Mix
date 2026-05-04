@@ -1,4 +1,4 @@
-﻿#include "AggressiveStance.h"
+#include "AggressiveStance.h"
 
 #include "Ext/Techno/Body.h"
 #include <Ext/Event/Body.h>
@@ -100,11 +100,24 @@ void AggressiveStanceClass::AggressiveExecute()
 		}
 		else
 		{
+			int ceasedCeaseFireCount = 0;
 			for (const auto& pTechno : TechnoVectorNonAggressive)
+			{
+				const auto pTechnoExt = TechnoExt::ExtMap.Find(pTechno);
+
+				if (pTechnoExt->GetCeaseFireStance())
+				{
+					EventExt::RaiseToggleCeaseFireStance(pTechno);
+					ceasedCeaseFireCount++;
+				}
 				EventExt::RaiseToggleAggressiveStance(pTechno);
+			}
 
 			wchar_t buffer[0x100];
-			swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:AGGRESSIVE_STANCE_ON", L"%i unit(s) entered Aggressive Stance."), TechnoVectorNonAggressive.size());
+			if (ceasedCeaseFireCount != 0)
+				swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:AGGRESSIVE_STANCE_ON_V2", L"%i unit(s) entered Aggressive Stance, %i unit(s) ceased Cease Fire Stance."), TechnoVectorNonAggressive.size(), ceasedCeaseFireCount);
+			else
+				swprintf_s(buffer, GeneralUtils::LoadStringUnlessMissing("MSG:AGGRESSIVE_STANCE_ON", L"%i unit(s) entered Aggressive Stance."), TechnoVectorNonAggressive.size());
 			MessageListClass::Instance.PrintMessage(buffer);
 		}
 	}
