@@ -9,10 +9,12 @@
 #include <New/Entity/AttachEffectClass.h>
 #include <New/Entity/AttachmentClass.h>
 #include <New/Entity/SquadManagerClass.h>
+#include <New/Entity/ShiftSchedule.h>
 
 extern "C" __declspec(dllexport) bool __cdecl ConvertToType_Phobos(TechnoClass* pThis, TechnoTypeClass* toType);
 
 class BulletClass;
+struct ShiftSchedule;
 
 class TechnoExt
 {
@@ -158,6 +160,10 @@ public:
 		bool OnParachuted; // This is just a temporary patch. TODO: fully check HasParachuted and correct its maintenance method.
 		bool HoverShutdown;
 
+		std::unique_ptr<ShiftSchedule> QueuedShift;
+		TechnoClass* ShiftApplier;
+		HouseClass* ShiftApplierHouse;
+
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
 			, Shield {}
@@ -259,6 +265,9 @@ public:
 			, JumpjetStraightAscend { false }
 			, OnParachuted { false }
 			, HoverShutdown { false }
+			, QueuedShift {}
+			, ShiftApplier { nullptr }
+			, ShiftApplierHouse { nullptr }
 		{ }
 
 		void OnEarlyUpdate();

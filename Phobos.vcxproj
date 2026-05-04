@@ -34,6 +34,7 @@
     <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedCameoClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedColumnClass.cpp" />
     <ClCompile Include="src\Ext\Sidebar\SelectedButton\SelectedInfoClass.cpp" />
+    <ClCompile Include="src\Locomotion\ShiftLocomotionClass.cpp" />
     <ClCompile Include="src\Ext\Infantry\Hooks.cpp" />
     <ClCompile Include="src\Ext\Infantry\Hooks.Firing.cpp" />
     <ClCompile Include="src\Ext\TechnoType\Hooks.MultiWeapon.cpp" />
@@ -45,6 +46,7 @@
     <ClCompile Include="src\Ext\Unit\Hooks.SimpleDeployer.cpp" />
     <ClCompile Include="src\Ext\Unit\Hooks.Unload.cpp" />
     <ClCompile Include="src\New\Entity\Ares\RadarJammerClass.cpp" />
+    <ClCompile Include="src\New\Entity\ShiftSchedule.cpp" />
     <ClCompile Include="src\New\Type\Affiliated\CreateUnitTypeClass.cpp" />
     <ClCompile Include="src\Blowfish\blowfish.cpp" />
     <ClCompile Include="src\Blowfish\Hooks.Blowfish.cpp" />
@@ -288,9 +290,11 @@
     <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedCameoClass.h" />
     <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedColumnClass.h" />
     <ClInclude Include="src\Ext\Sidebar\SelectedButton\SelectedInfoClass.h" />
+    <ClInclude Include="src\Locomotion\ShiftLocomotionClass.h" />
     <ClInclude Include="src\Ext\EBolt\Body.h" />
     <ClInclude Include="src\Ext\Event\Body.h" />
     <ClInclude Include="src\New\Entity\Ares\RadarJammerClass.h" />
+    <ClInclude Include="src\New\Entity\ShiftSchedule.h" />
     <ClInclude Include="src\New\Type\Affiliated\CreateUnitTypeClass.h" />
     <ClInclude Include="src\Blowfish\blowfish.h" />
     <ClInclude Include="src\Ext\Cell\Body.h" />
