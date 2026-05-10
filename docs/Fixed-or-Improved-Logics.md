@@ -2758,7 +2758,7 @@ Due to technical constraints, these features do not work with electric bolts cre
 
 ### Laser Z-adjust
 
-- It is now possible to change the Z-adjust for weapon laser drawing via `LaserZAdjust` per weapon, defaults to `[AudioVisual]` -> `LaserZAdjust`. Note that this is not available on prism support weapons.
+- It is now possible to change the Z-adjust for weapon laser drawing via `LaserZAdjust` per weapon, defaults to `[AudioVisual] -> LaserZAdjust`. Note that this is not available on prism support weapons.
 
 In `rulesmd.ini`:
 ```ini
@@ -2766,7 +2766,7 @@ In `rulesmd.ini`:
 LaserZAdjust=0  ; integer
 
 [SOMEWEAPON]    ; WeaponType
-LaserZAdjust=  ; integer
+LaserZAdjust=   ; integer
 ```
 
 ### Single-color lasers
