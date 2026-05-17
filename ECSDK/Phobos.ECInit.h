@@ -34,7 +34,7 @@ inline void ECInitialize()
 			{
 				Debug::Log("Full EC Detected!\n");
 			}
-			else if(WICVer() < WIC_LOWEST_VERSION || SyringeIHVer() < SYRINGEIH_LOWEST_VERSION)
+			else if (HasWIC() && HasSyringeIH() && (WICVer() < WIC_LOWEST_VERSION || SyringeIHVer() < SYRINGEIH_LOWEST_VERSION))
 			{
 				Debug::Log("EC Detected - Component Version Too Low\n");
 			}
