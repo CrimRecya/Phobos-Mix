@@ -296,6 +296,21 @@ private:
 		coords.X += adjCoords.X;
 		coords.Y += adjCoords.Y;
 	}
+	inline void SetTrackNumber(int track)
+	{
+		if (track >= -1 && track < 72)
+		{
+			this->TrackNumber = track;
+			return;
+		}
+
+		const int kMaxFrames = 16;
+		void* frames[kMaxFrames] = { nullptr };
+		USHORT capturedCount = CaptureStackBackTrace(1, kMaxFrames, frames, NULL);
+		Debug::Log("Invalid call: Force track %d , Captured %hu frames:\n", track, capturedCount);
+		for (USHORT i = 0; i < capturedCount; ++i)
+			Debug::Log("  [%d] %p\n", i, frames[i]);
+	}
 	inline void UpdateSituation();
 	inline void UpdateForwardState(int desiredRaw);
 	template <bool check = false>

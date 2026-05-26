@@ -257,7 +257,7 @@ bool AdvancedDriveLocomotionClass::Is_Powered()
 
 void AdvancedDriveLocomotionClass::Force_Track(int track, CoordStruct coord)
 {
-	this->TrackNumber = track;
+	this->SetTrackNumber(track);
 	this->TrackIndex = 0;
 
 	if (coord != CoordStruct::Empty)
@@ -493,12 +493,12 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 			pLinked->CurrentTunnelCoords.Z = pLinked->Location.Z + (MapClass::Instance.GetCellFloorHeight(this->HeadToCoord) - MapClass::Instance.GetCellFloorHeight(pLinked->Location)) / pTube->FaceCount;
 
 			this->IsDriving = true;
-			this->TrackNumber = -1;
+			this->SetTrackNumber(-1);
 			return false;
 		}
 
 		pLinked->PathDirections[0] = -1;
-		this->TrackNumber = -1;
+		this->SetTrackNumber(-1);
 		this->HeadToCoord = CoordStruct::Empty;
 		return false;
 	}
@@ -753,7 +753,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 			}
 
 			this->StopDriving<true>();
-			this->TrackNumber = -1;
+			this->SetTrackNumber(-1);
 			this->IsTurretLockedDown = false;
 			return false;
 		}
@@ -994,7 +994,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 		if (moveResult != Move::No)
 		{
 			pLinked->ShouldScanForTarget = false;
-			this->TrackNumber = -1;
+			this->SetTrackNumber(-1);
 			return true;
 		}
 
@@ -1125,10 +1125,10 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 	while (false);
 
 	this->IsOnShortTrack = false;
-	this->TrackNumber = nextDir + 8 * pathDir;
+	this->SetTrackNumber(nextDir + 8 * pathDir);
 
 	if (!DriveLocomotionClass::TurnTrack[this->TrackNumber].NormalTrackStructIndex)
-		this->TrackNumber = 9 * pathDir;
+		this->SetTrackNumber(9 * pathDir);
 
 	if (DriveLocomotionClass::TurnTrack[this->TrackNumber].Flag & 8)
 	{
@@ -1226,7 +1226,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 			}
 
 			pLinked->PathDirections[0] = -1;
-			this->TrackNumber = -1;
+			this->SetTrackNumber(-1);
 			nextPos = CoordStruct::Empty;
 
 			if (nextMoveResult == Move::Destroyable || nextMoveResult == Move::FriendlyDestroyable)
@@ -1267,7 +1267,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 		}
 	}
 
-	this->TrackNumber = -1;
+	this->SetTrackNumber(-1);
 	pLinked->PathDirections[0] = -1;
 	pLinked->SetSpeedPercentage(0.0);
 	return false;
@@ -1854,7 +1854,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 
 						const auto speedPercent = pLinked->SpeedPercentage;
 						this->IsOnShortTrack = false;
-						this->TrackNumber = newTrack;
+						this->SetTrackNumber(newTrack);
 						pTrackData = pNewTrackData;
 						dirChanged = false;
 						trackStructIndex = pNewTrackData->NormalTrackStructIndex;
@@ -1967,7 +1967,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 	}
 
 	this->StopDriving<true>();
-	this->TrackNumber = -1;
+	this->SetTrackNumber(-1);
 	this->TrackIndex = 0;
 	bool reachedDestination = false;
 
@@ -2013,7 +2013,11 @@ DEFINE_HOOK(0x4DA9FB, FootClass_Update_WalkedFrames, 0x6)
 
 	if (AdvancedDriveLocomotionClass::IsReversing(pThis))
 	{
-		--pThis->WalkedFramesSoFar;
+		if (pThis->WalkedFramesSoFar > 0)
+			--pThis->WalkedFramesSoFar;
+		else // Ignore fake type
+			pThis->WalkedFramesSoFar += (256 * pThis->GetType()->MainVoxel.HVA->FrameCount - 1);
+
 		return SkipGameCode;
 	}
 
