@@ -1002,7 +1002,7 @@ ZShapePointMove.OnBuildup=false  ; boolean
 
 ### Armed building guard retry delay
 
-- By default buildings with weapons have a delay of `[Guard]` -> `AARate` multiplied by 900 plus random value in range 0-2 (inclusive) before rechecking if the building can attack if it has a target. This delay is now customizable globally by `[General]` -> `BuildingGuardRetryDelay` or per-BuildingType with `GuardRetryDelay`.
+- By default buildings with weapons (including garrisoned buildings) have a delay of `[Guard]` -> `AARate` multiplied by 900 plus random value in range 0-2 (inclusive) before rechecking if the building can attack if it has a target. This delay is now customizable globally by `[General]` -> `BuildingGuardRetryDelay` or per-BuildingType with `GuardRetryDelay`.
 
 In `artmd.ini`:
 ```ini
