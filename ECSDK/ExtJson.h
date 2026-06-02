@@ -61,8 +61,8 @@ public:
     inline JsonObject GetObjectItem(const std::string& Str) const;
 
     inline bool HasItem(const std::string& Str) const { return GetObjectItem(Str).Available(); }
-    
-    //请在判断HasItem == true 之后再使用！
+
+    //请在判断HasItem == true 之后再使用!
     int ItemInt(const std::string& Str) const;
     double ItemDouble(const std::string& Str) const;
     std::string ItemString(const std::string& Str) const;
@@ -112,7 +112,7 @@ public:
     void AddString(const std::string& Str, const std::string& Val) const;
     void AddBool(const std::string& Str, bool Val) const;
     void AddStrBool(const std::string& Str, bool Val, StrBoolType Type) const;
-     
+
     //返回原来的Obj
     JsonFile SwapNull() const;
     JsonFile SwapInt(int Val) const;
@@ -143,7 +143,7 @@ public:
     void CreateStrBool(bool Val, StrBoolType Type);
     void CreateCopy(JsonObject Obj, bool Recurse);
 
-    // 不知道是否为空时请调用以下函数 
+    // 不知道是否为空时请调用以下函数
     void SetOrCreateNull();
     void SetOrCreateInt(int Val);
     void SetOrCreateDouble(double Val);

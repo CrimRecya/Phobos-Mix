@@ -1,5 +1,7 @@
 ﻿#include "Phobos.h"
 
+#include <Phobos.ECInit.h>
+
 #include <Drawing.h>
 #include <SessionClass.h>
 #include <Unsorted.h>
@@ -10,8 +12,6 @@
 #include "Utilities/AresHelper.h"
 #include "Utilities/Parser.h"
 #include "Misc/MessageColumn.h"
-
-#include <Phobos.ECInit.h>
 
 bool Phobos::HideWarning = false;
 bool Phobos::PoweredByEC = false;
@@ -282,7 +282,7 @@ DEFINE_HOOK(0x6BC0D2, AfterECInit, 0x5)
 	if (!Phobos::HideWarning && !Phobos::IsTrialValid() && !Phobos::PoweredByEC)
 	{
 		Debug::Log("Initialized version: " PRODUCT_VERSION " failed! \n");
-		MessageBoxExW(NULL, L"试用期已结束，且未检测到授权！", Phobos::VersionDescription, MB_ICONERROR, 0);
+		MessageBoxExW(NULL, L"试用期已结束，且未检测到授权!", Phobos::VersionDescription, MB_ICONERROR, 0);
 		FatalExit(0xDEAD);
 	}
 

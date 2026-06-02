@@ -572,5 +572,4 @@ DEFINE_HOOK(0x70CF87, TechnoClass_ThreatCoefficient_CanAttackMeThreatBonus, 0x9)
 	return 0;
 }
 
-
 #pragma endregion

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <EC.h>
+#include "EC.h"
+#include <Utilities/Debug.h>
 #include <Phobos.version.h>
 #include <Phobos.h>
 

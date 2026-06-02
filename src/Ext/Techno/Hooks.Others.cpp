@@ -1636,37 +1636,6 @@ DEFINE_HOOK(0x4C7462, EventClass_RespondToEvent_ExtraTargeting_MegaMission, 0x5)
 	}
 }
 
-// Current target may hurt me.
-static inline bool IsAThreatToMe(TechnoClass* const pTechno, AbstractClass* const pTarget, int weaponIndex = -1)
-{
-	if (const auto pTechnoTarget = abstract_cast<TechnoClass*>(pTarget))
-	{
-		if (weaponIndex < 0)
-			weaponIndex = pTechnoTarget->SelectWeapon(pTechno);
-
-		if (!pTechnoTarget->GetWeapon(weaponIndex)->WeaponType)
-			return false;
-
-		const auto error = pTechnoTarget->GetFireError(pTechno, weaponIndex, true);
-		return pTechnoTarget->WhatAmI() == AbstractType::Building ? (error != FireError::ILLEGAL) && (error != FireError::RANGE) : (error != FireError::ILLEGAL);
-	}
-
-	return false;
-}
-
-DEFINE_HOOK(0x70CE85, TechnoClass_ThreatCoefficient_CanAttackMeThreatBonus, 0x5)
-{
-	GET(TechnoClass* const, pThis, EDI);
-	GET(TechnoClass* const, pTarget, ESI);
-	GET(const int, weaponIndex, EAX);
-	REF_STACK(double, totalThreat, STACK_OFFSET(0x58, -0x48));
-
-	if (IsAThreatToMe(pThis, pTarget, weaponIndex))
-		totalThreat += RulesExt::Global()->CanAttackMeThreatBonus;
-
-	return 0;
-}
-
 static inline bool CanExtraTargetingNow(TechnoClass* const pTechno)
 {
 	return RulesExt::Global()->ExtraTargeting && !TechnoExt::ExtMap.Find(pTechno)->KeepTargetOnMove && pTechno->Owner->IsControlledByHuman();
@@ -1690,17 +1659,6 @@ DEFINE_HOOK(0x709957, TechnoClass_TargetAndEstimateDamage_SetTarget, 0x6)
 		pThis->SetTarget(pTarget);
 
 	return RulesExt::Global()->VHPScan_Enhanced ? SkipSetTargetAndEstimateHealth : SkipSetTarget;
-}
-
-// 目标死亡时
-DEFINE_HOOK(0x7079D1, TechnoClass_PointerExpired_TargetExpired, 0x6)
-{
-	GET(TechnoClass*, pThis, ESI);
-
-	if(RulesExt::Global()->ExtraTargeting && pThis->Owner->IsControlledByHuman())
-		pThis->TargetingTimer.Stop();
-
-	return 0;
 }
 
 // 受到伤害时

@@ -6,20 +6,20 @@ namespace InitialLoad
 	template<typename ParamType, typename... TArgs>
 	IHInitialLoadService CreateRequest(const char* Name, TArgs&&... args)//创建后永不销毁
 	{
-		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType 必须派生自 InitialLoadParam ！");
+		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType 必须派生自 InitialLoadParam !");
 		return IHInitialLoadService{ Name,new ParamType(std::forward<TArgs>(args)...) };
 	}
 	void ServiceRequest(IHInitialLoadService IService);
 	template<typename ParamType, typename... TArgs>
 	void CreateRequestAndSubmit(const char* Name, TArgs&&... args)//创建后永不销毁
 	{
-		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType 必须派生自 InitialLoadParam ！");
+		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType 必须派生自 InitialLoadParam !");
 		ServiceRequest(IHInitialLoadService{ Name,new ParamType(std::forward<TArgs>(args)...) });
 	}
 	template<typename ParamType>
 	class Service
 	{
-		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType 必须派生自 InitialLoadParam ！");
+		static_assert(std::is_base_of<InitialLoadParam, ParamType>::value, "ParamType 必须派生自 InitialLoadParam !");
 		std::string ServiceName;
 		PArray<IHInitialLoadService> Requests;
 		bool Requested{ false };

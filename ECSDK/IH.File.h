@@ -1,9 +1,9 @@
-#pragma once
+﻿#pragma once
 #include <CCFileClass.h>
 #include "SyringeEx.h"
 #include "IH.Initial.h"
 
-//所有的派生类应派生自 IHFileClass 或 IHReadOnlyFileClass 
+//所有的派生类应派生自 IHFileClass 或 IHReadOnlyFileClass
 //并具有接受noinit_t的构造函数
 //实现所有虚函数并挂载即可
 
@@ -67,7 +67,7 @@ public:
 template<typename ParamType>
 vptr_t GetIHFileRegisterKey()
 {
-	static_assert( std::is_base_of<IHFileClass , ParamType>::value , "ParamType 必须派生自 IHFileClass ！" );
+	static_assert( std::is_base_of<IHFileClass , ParamType>::value , "ParamType 必须派生自 IHFileClass !" );
 	ParamType p { noinit_t() };
 	return *reinterpret_cast< vptr_t* >( &p );
 }

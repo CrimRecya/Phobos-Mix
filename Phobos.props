@@ -25,7 +25,7 @@
   <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   <PropertyGroup>
     <GenerateManifest>false</GenerateManifest>
-    <IncludePath>$(ExpandedIncludePath);$(MSBuildThisFileDirectory)src\;$(YRppDir);$(VC_IncludePath)</IncludePath>
+    <IncludePath>$(ExpandedIncludePath);$(MSBuildThisFileDirectory)src\;$(YRppDir);$(SolutionDir)ecsdk;$(VC_IncludePath)</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\IntDir\</IntDir>

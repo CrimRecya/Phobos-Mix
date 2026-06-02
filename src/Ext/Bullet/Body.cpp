@@ -741,16 +741,6 @@ void BulletExt::SimulatedFiringEffects(BulletClass* pBullet, HouseClass* pHouse,
 	}
 }
 
-inline CoordStruct BulletExt::GetTargetCoordsForFiring(BulletClass* pBullet)
-{
-	if (pBullet->Type->Inviso && pBullet->Type->FlakScatter)
-		return pBullet->Location;
-	else if (const auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target))
-		return pTarget->GetTargetCoords();
-
-	return pBullet->TargetCoords;
-}
-
 void BulletExt::ApplyArcingFix(BulletClass* pThis, const CoordStruct& sourceCoords, const CoordStruct& targetCoords, BulletVelocity& velocity)
 {
 	const auto distanceCoords = targetCoords - sourceCoords;

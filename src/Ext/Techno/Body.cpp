@@ -11,11 +11,6 @@
 #include <Utilities/AresHelper.h>
 #include <Interop/TechnoExt.h>
 
-extern "C" __declspec(dllexport) bool __cdecl ConvertToType_Phobos(TechnoClass* pThis, TechnoTypeClass* toType)
-{
-	return TechnoExt::ConvertToType(pThis, toType);
-}
-
 TechnoExt::ExtContainer TechnoExt::ExtMap;
 UnitClass* TechnoExt::Deployer = nullptr;
 

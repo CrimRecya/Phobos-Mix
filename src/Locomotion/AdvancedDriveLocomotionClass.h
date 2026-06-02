@@ -2,6 +2,7 @@
 
 #include <LocomotionClass.h>
 #include <MapClass.h>
+#include <Utilities/Debug.h>
 
 #include <Interfaces.h>
 

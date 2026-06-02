@@ -410,7 +410,6 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->BuildingTypeSelectable.Read(exINI, GameStrings::General, "BuildingTypeSelectable");
 
 	this->ExtraTargeting.Read(exINI, GameStrings::General, "ExtraTargeting");
-	this->CanAttackMeThreatBonus.Read(exINI, GameStrings::General, "CanAttackMeThreatBonus");
 
 	this->AllyShareControl.Read(exINI, GameStrings::General, "AllyShareControl");
 	this->InTransportInfantryAmmoFix.Read(exINI, GameStrings::General, "InTransportInfantryAmmoFix");
@@ -541,7 +540,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->PenetratesTransport_Level.Read(exINI, GameStrings::CombatDamage, "PenetratesTransport.Level");
 
 	this->UnitsUnsellable.Read(exINI, GameStrings::General, "UnitsUnsellable");
-	
+
 	this->DisableOveroptimizationInTargeting.Read(exINI, GameStrings::General, "DisableOveroptimizationInTargeting");
 
 	this->DriverKilled_KillPassengers.Read(exINI, GameStrings::CombatDamage, "DriverKilled.KillPassengers");
@@ -557,7 +556,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->DriveLocomotorMakesWake.Read(exINI, GameStrings::AudioVisual, "DriveLocomotorMakesWake");
 	this->HoverLocomotorMakesWake.Read(exINI, GameStrings::AudioVisual, "HoverLocomotionClassMakesWake");
 	this->ShipLocomotorMakesWake.Read(exINI, GameStrings::AudioVisual, "ShipLocomotionClassMakesWake");
-	
+
 	this->FiringAnim_Update.Read(exINI, GameStrings::AudioVisual, "FiringAnim.Update");
 	this->ExtendedPlayerRepair.Read(exINI, GameStrings::General, "ExtendedPlayerRepair");
 
@@ -924,7 +923,6 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AutoTarget_IronCurtained)
 		.Process(this->BuildingTypeSelectable)
 		.Process(this->ExtraTargeting)
-		.Process(this->CanAttackMeThreatBonus)
 		.Process(this->AllyShareControl)
 		.Process(this->InTransportInfantryAmmoFix)
 		.Process(this->UpdateInLimbo_Occupier)

@@ -11,8 +11,6 @@
 #include <New/Entity/SquadManagerClass.h>
 #include <New/Entity/ShiftSchedule.h>
 
-extern "C" __declspec(dllexport) bool __cdecl ConvertToType_Phobos(TechnoClass* pThis, TechnoTypeClass* toType);
-
 class BulletClass;
 struct ShiftSchedule;
 

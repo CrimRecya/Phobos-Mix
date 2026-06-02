@@ -360,7 +360,6 @@ public:
 		Valueable<bool> BuildingTypeSelectable;
 
 		Valueable<bool> ExtraTargeting;
-		Valueable<double> CanAttackMeThreatBonus;
 
 		Valueable<bool> AllyShareControl;
 
@@ -400,8 +399,6 @@ public:
 
 		Valueable<int> TunnelSimpleDistTooFar;
 		Valueable<int> TunnelPathingDistTooFar;
-
-		Valueable<bool> BalloonHoverPathingFix;
 
 		Valueable<AffectedHouse> ReorganizeToWhenDefeated;
 
@@ -471,7 +468,7 @@ public:
 
 		Valueable<bool> FiringAnim_Update;
 		Valueable<bool> ExtendedPlayerRepair;
-		
+
 		Valueable<bool> AutoTarget_NoThreatBuildings;
 		Valueable<bool> AutoTargetAI_NoThreatBuildings;
 
@@ -481,7 +478,7 @@ public:
 		Valueable<bool> DefaultToGuardArea;
 
 		Valueable<bool> DisableOveroptimizationInTargeting;
-    
+
 		Valueable<bool> CylinderRangefinding;
 
 		Valueable<int> PenetratesTransport_Level;
@@ -504,7 +501,7 @@ public:
 		Valueable<bool> Shrapnel_IgnoreHitBuildings;
 
 		Nullable<PartialVector2D<int>> BuildingGuardRetryDelay;
-    
+
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
 			, HarvesterDumpAmount { 0.0f }
@@ -808,7 +805,6 @@ public:
 			, BuildingTypeSelectable { false }
 
 			, ExtraTargeting { false }
-			, CanAttackMeThreatBonus { 0.0 }
 			, AllyShareControl { false }
 			, InTransportInfantryAmmoFix { false }
 			, UpdateInLimbo_Occupier { false }
@@ -843,8 +839,6 @@ public:
 
 			, TunnelSimpleDistTooFar { 12 }
 			, TunnelPathingDistTooFar { 15 }
-
-			, BalloonHoverPathingFix { true }
 
 			, ReorganizeToWhenDefeated { AffectedHouse::None }
 
@@ -932,9 +926,9 @@ public:
 			, ExtraThreatCoefficient_InRangeDistance { 0.0 }
 			, ExtraThreatCoefficient_Facing { 0.0 }
 			, ExtraThreatCoefficient_DistanceToLastTarget { 0.0 }
-			
+
 			, BalloonHoverPathingFix { false }
-			
+
 			, WalkLocomotorMakesWake { false }
 			, DriveLocomotorMakesWake { true }
 			, HoverLocomotorMakesWake { true }

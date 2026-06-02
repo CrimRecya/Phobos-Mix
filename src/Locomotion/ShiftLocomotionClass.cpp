@@ -584,6 +584,7 @@ bool __stdcall ShiftLocomotionClass::Is_Piggybacking()
 	return this->Piggybacker != nullptr;
 }
 
+/*
 static ShiftSchedule::Sample MakeSampleFromObject(FootClass* obj)
 {
 	ShiftSchedule::Sample s;
@@ -605,6 +606,7 @@ static ShiftSchedule::Sample MakeSampleFromObject(FootClass* obj)
 	}
 	return s;
 }
+*/
 
 Layer ShiftLocomotionClass::In_Which_Layer()
 {
