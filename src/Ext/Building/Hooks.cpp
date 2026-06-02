@@ -353,6 +353,51 @@ DEFINE_HOOK(0x4511D6, BuildingClass_AnimationAI_SellBuildup, 0x7)
 	return BuildingTypeExt::ExtMap.Find(pThis->Type)->SellBuildupLength == pThis->Animation.Value ? Continue : Skip;
 }
 
+#pragma region PowerPlantEnhancer
+
+DEFINE_HOOK(0x441553, BuildingClass_Unlimbo_AddOwned, 0x6)
+{
+	GET(BuildingClass*, pThis, ESI);
+	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pThis->Type);
+	const auto pOwnerExt = HouseExt::ExtMap.Find(pThis->Owner);
+
+	if (!pTypeExt->PowerPlantEnhancer_Buildings.empty() && (pTypeExt->PowerPlantEnhancer_Amount != 0 || pTypeExt->PowerPlantEnhancer_Factor != 1.0f))
+		pOwnerExt->PowerPlantEnhancers.push_back(pThis);
+
+	return 0;
+}
+
+DEFINE_HOOK(0x448A78, BuildingClass_SetOwningHouse_RemoveOwned, 0x6)
+{
+	GET(BuildingClass*, pThis, ESI);
+	GET(HouseClass*, pOwner, EBX);
+	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pThis->Type);
+	const auto pOwnerExt = HouseExt::ExtMap.Find(pOwner);
+
+	if (!pTypeExt->PowerPlantEnhancer_Buildings.empty() && (pTypeExt->PowerPlantEnhancer_Amount != 0 || pTypeExt->PowerPlantEnhancer_Factor != 1.0f))
+	{
+		auto& vec = pOwnerExt->PowerPlantEnhancers;
+		vec.erase(std::remove(vec.begin(), vec.end(), pThis), vec.end());
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x449197, BuildingClass_SetOwningHouse_AddOwned, 0x6)
+{
+	GET(BuildingClass*, pThis, ESI);
+	GET(HouseClass*, pNewOwner, EBP);
+	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pThis->Type);
+	const auto pNewOwnerExt = HouseExt::ExtMap.Find(pNewOwner);
+
+	if (!pTypeExt->PowerPlantEnhancer_Buildings.empty() && (pTypeExt->PowerPlantEnhancer_Amount != 0 || pTypeExt->PowerPlantEnhancer_Factor != 1.0f))
+		pNewOwnerExt->PowerPlantEnhancers.push_back(pThis);
+
+	return 0;
+}
+
+#pragma endregion
+
 #pragma region FactoryPlant
 
 DEFINE_HOOK(0x441501, BuildingClass_Unlimbo_FactoryPlant, 0x6)
@@ -979,7 +1024,7 @@ DEFINE_HOOK(0x4485DB, BuildingClass_SetOwningHouse_SyncLinkedOwner, 0x6)
 
 #pragma region PrefiringMark
 
-DEFINE_HOOK(0x440042, BuildingClass_UpdateDelayedFiring_PrefiringMark1, 0x9)
+DEFINE_HOOK(0x440045, BuildingClass_UpdateDelayedFiring_PrefiringMark1, 0x6)
 {
 	GET(BuildingClass*, pThis, ESI);
 	BuildingExt::ExtMap.Find(pThis)->IsFiringNow = (int)pThis->PrismStage && pThis->DelayBeforeFiring <= 1;
@@ -1055,6 +1100,63 @@ DEFINE_HOOK(0x444D11, BuildingClass_ExitObject_ProductionAnimForInfantryFactory,
 	}
 
 	return 0;
+}
+
+#pragma endregion
+
+DEFINE_HOOK(0x45670D, BuildingClass_GetRadialIndicatorRange_Extras, 0x7)
+{
+	enum { ApplyRange = 0x45674B, ApplyTurretWeapon = 0x456714 };
+
+	GET(BuildingClass*, pThis, ESI);
+	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pThis->Type);
+
+	if (!pTypeExt->PowerPlantEnhancer_Buildings.empty() && (pTypeExt->PowerPlantEnhancer_Amount != 0 || pTypeExt->PowerPlantEnhancer_Factor != 1.0f))
+	{
+		R->EAX(pTypeExt->PowerPlantEnhancer_Range.Get() / Unsorted::LeptonsPerCell);
+		return ApplyRange;
+	}
+
+	R->EAX(pThis->TechnoClass::GetTurretWeapon());
+	return ApplyTurretWeapon;
+}
+
+#pragma region Mission_Guard_Attack
+
+static int HandleArmedBuildingGuard(BuildingClass* pThis)
+{
+	auto const pType = pThis->Type;
+	pThis->IsReadyToCommence = true;
+
+	// May 29, 2026 - Starkku: The EMPulseCannon and SW checks are most likely superfluous,
+	// but kept them here just in case removing them would break something.
+	if (pType->EMPulseCannon || pThis->FirstActiveSWIdx() >= 0 || (pType->CanBeOccupied && pThis->Occupants.Count <= 0) || !pThis->Target)
+	{
+		auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+		auto const& delay = pTypeExt->GuardRetryDelay.isset() ? pTypeExt->GuardRetryDelay : RulesExt::Global()->BuildingGuardRetryDelay;
+
+		if (delay.isset())
+			return GeneralUtils::GetRangedRandomOrSingleValue(delay);
+
+		return static_cast<int>(MissionControlClass::Array[(int)pThis->CurrentMission].AARate * 900 + ScenarioClass::Instance->Random(0, 2));
+	}
+	else
+	{
+		pThis->QueueMission(Mission::Attack, false);
+		pThis->NextMission();
+
+		return 1;
+	}
+}
+
+DEFINE_HOOK(0x4496FB, BuildingClass_Mission_Guard_Armed, 0x6)
+{
+	enum { ReturnFromFunction = 0x4497A7 };
+
+	GET(BuildingClass*, pThis, ESI);
+
+	R->EAX(HandleArmedBuildingGuard(pThis));
+	return ReturnFromFunction;
 }
 
 #pragma endregion

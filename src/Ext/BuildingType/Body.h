@@ -19,6 +19,7 @@ public:
 
 		Valueable<double> PowerPlant_DamageFactor;
 		ValueableVector<BuildingTypeClass*> PowerPlantEnhancer_Buildings;
+		Valueable<Leptons> PowerPlantEnhancer_Range;
 		Valueable<int> PowerPlantEnhancer_Amount;
 		Nullable<float> PowerPlantEnhancer_Factor;
 		Valueable<int> PowerPlantEnhancer_MaxCount;
@@ -41,6 +42,7 @@ public:
 		Valueable<bool> Grinding_PlayDieSound;
 
 		Nullable<bool> DisplayIncome;
+		Nullable<int> DisplayIncome_Delay;
 		Nullable<AffectedHouse> DisplayIncome_Houses;
 		Valueable<Point2D> DisplayIncome_Offset;
 
@@ -136,6 +138,8 @@ public:
 
 		Nullable<bool> BuildingRadioLink_SyncOwner;
 
+		Nullable<PartialVector2D<int>> GuardRetryDelay;
+
 		// Ares 0.2
 		Valueable<bool> CloningFacility;
 
@@ -154,6 +158,7 @@ public:
 			, PowersUp_Buildings {}
 			, PowerPlant_DamageFactor { 1.0 }
 			, PowerPlantEnhancer_Buildings {}
+			, PowerPlantEnhancer_Range { Leptons(0) }
 			, PowerPlantEnhancer_Amount { 0 }
 			, PowerPlantEnhancer_Factor { 1.0f }
 			, PowerPlantEnhancer_MaxCount { -1 }
@@ -172,6 +177,7 @@ public:
 			, Grinding_Weapon {}
 			, Grinding_Weapon_RequiredCredits { 0 }
 			, DisplayIncome { }
+			, DisplayIncome_Delay { }
 			, DisplayIncome_Houses { }
 			, DisplayIncome_Offset { { 0,0 } }
 			, PlacementPreview { true }
@@ -243,6 +249,7 @@ public:
 			, WeaponsFactory_Dir { 2 }
 			, UndeploysInto_Sellable { false }
 			, BuildingRadioLink_SyncOwner {}
+			, GuardRetryDelay {}
 
 			// Ares 0.2
 			, CloningFacility { false }
@@ -318,8 +325,10 @@ public:
 	static bool SaveGlobals(PhobosStreamWriter& Stm);
 
 	static void PlayBunkerSound(BuildingClass const* pThis, bool buildUp = false);
+
 	static CellStruct GetWeaponFactoryDoor(BuildingClass* pThis);
-	static std::pair<int, int> GetEnhancedPower(BuildingTypeClass* pBuilding, int output, HouseClass* pHouse);
+
+	static std::pair<int, int> GetEnhancedPower(BuildingTypeClass* pBuilding, int output, HouseClass* pHouse, BuildingClass* pPowerPlant = nullptr);
 	static bool CanUpgrade(BuildingClass* pBuilding, BuildingTypeClass* pUpgradeType, HouseClass* pUpgradeOwner);
 	static int GetUpgradesAmount(BuildingTypeClass const* const pBuilding, HouseClass const* const pHouse);
 	static void DrawAdjacentLines();

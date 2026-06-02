@@ -1,16 +1,18 @@
-﻿#include "Body.h"
-
-#include <EventClass.h>
-#include <BuildingClass.h>
-#include <FootClass.h>
-
-#include <Ext/Building/Body.h>
+#include "Body.h"
 
 #include <Utilities/Debug.h>
-#include <HouseClass.h>
-
+#include <Ext/House/Body.h>
+#include <Ext/Rules/Body.h>
 #include "Ext/Techno/Body.h"
+#include <Ext/Building/Body.h>
 #include <Ext/WarheadType/Body.h>
+
+#include <Helpers/Macro.h>
+#include <BuildingClass.h>
+#include <EventClass.h>
+#include <HouseClass.h>
+#include <FootClass.h>
+#include <ShapeButtonClass.h>
 
 bool EventExt::AddEvent()
 {
@@ -23,6 +25,10 @@ void EventExt::RespondEvent()
 	{
 	case EventTypeExt::ApproachObject:
 		this->RespondApproachObject();
+		break;
+
+	case EventTypeExt::TogglePlayerAutoRepair:
+		this->RespondToTogglePlayerAutoRepair();
 		break;
 
 	case EventTypeExt::ManualReload:
@@ -40,7 +46,6 @@ void EventExt::RespondEvent()
 	case EventTypeExt::AssignSecondaryRallyPoint:
 		this->RespondToAssignSecondaryRallyPoint();
 		break;
-
 	default:
 		break;
 	}
@@ -153,12 +158,24 @@ void EventExt::RespondToAssignSecondaryRallyPoint()
 	}
 }
 
+void EventExt::RaiseTogglePlayerAutoRepair()
+{
+	EventExt eventExt {};
+	eventExt.Type = EventTypeExt::TogglePlayerAutoRepair;
+	eventExt.HouseIndex = (char)HouseClass::CurrentPlayer->ArrayIndex;
+	eventExt.Frame = Unsorted::CurrentFrame;
+	eventExt.AddEvent();
+	Debug::LogGame("Adding event TOGGLE_PLAYER_AUTOREPAIR\n");
+}
+
 size_t EventExt::GetDataSize(EventTypeExt type)
 {
 	switch (type)
 	{
 	case EventTypeExt::ApproachObject:
 		return sizeof(EventExt::ApproachObject);
+	case EventTypeExt::TogglePlayerAutoRepair:
+		return sizeof(EventExt::TogglePlayerAutoRepair);
 	case EventTypeExt::ManualReload:
 		return sizeof(EventExt::ManualReloadEvent);
 	case EventTypeExt::ToggleAggressiveStance:
@@ -230,6 +247,29 @@ void EventExt::RespondApproachObject()
 	pSource->Target = nullptr;
 }
 
+void EventExt::RespondToTogglePlayerAutoRepair()
+{
+	if (this->HouseIndex >= HouseClass::Array.Count)
+		return;
+
+	if (!RulesExt::Global()->ExtendedPlayerRepair)
+		return;
+
+	auto pHouse = HouseClass::Array.GetItem(this->HouseIndex);
+	auto pHouseExt = HouseExt::ExtMap.Find(pHouse);
+	pHouseExt->PlayerAutoRepair = !pHouseExt->PlayerAutoRepair;
+
+	if (HouseClass::CurrentPlayer == pHouse)
+	{
+		SidebarClass::Instance.SidebarNeedsRedraw = true;
+
+		if (pHouseExt->PlayerAutoRepair)
+			SidebarClass::ToggleRepairButton.TurnOn();
+		else
+			SidebarClass::ToggleRepairButton.TurnOff();
+	}
+}
+
 // hooks
 
 DEFINE_HOOK(0x4C6CC8, Networking_RespondToEvent, 0x5)
@@ -291,3 +331,4 @@ DEFINE_HOOK(0x64C30E, sub_64BDD0_GetEventSize2, 0x6)
 
 	return 0;
 }
+

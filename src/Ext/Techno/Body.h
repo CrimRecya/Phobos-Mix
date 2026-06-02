@@ -159,6 +159,8 @@ public:
 
 		bool OnParachuted; // This is just a temporary patch. TODO: fully check HasParachuted and correct its maintenance method.
 		bool HoverShutdown;
+		CoordStruct LastTargetCrd;
+		CDTimerClass LastTargetCrdClearTimer;
 
 		std::unique_ptr<ShiftSchedule> QueuedShift;
 		TechnoClass* ShiftApplier;
@@ -268,6 +270,8 @@ public:
 			, QueuedShift {}
 			, ShiftApplier { nullptr }
 			, ShiftApplierHouse { nullptr }
+			, LastTargetCrd { CoordStruct::Empty }
+			, LastTargetCrdClearTimer {}
 		{ }
 
 		void OnEarlyUpdate();
@@ -321,6 +325,8 @@ public:
 		void UpdateTintValues();
 
 		void AmmoAutoConvertActions();
+		void UpdateLastTargetCrd();
+		int GetSight();
 
 		virtual ~ExtData() override;
 		virtual void InvalidatePointer(void* ptr, bool bRemoved) override;
@@ -462,9 +468,11 @@ public:
 	static bool SimpleDeployerAllowedToDeploy(UnitClass* pThis, bool defaultValue, bool alwaysCheckLandTypes);
 	static void ShowPromoteAnim(TechnoClass* pThis);
 	static void ClickedApproachObject(FootClass* pThis, ObjectClass* pObject);
+	static bool CanBeRecruitedFix(FootClass* pThis, HouseClass* pHouse);
 
 	static bool EjectRandomly(FootClass* pEjectee, const CoordStruct& coords, int distance, bool select);
 	static bool EjectSurvivor(FootClass* pSurvivor, CoordStruct coords, bool select);
+	static bool __fastcall ApplyKillDriver(TechnoClass** pData, void*, HouseClass* pToHouse, TechnoClass* pKiller, bool resetVeterancy);
 
 	static void DrawExtraImage(TechnoClass* pThis, CellClass* pCell, const CoordStruct& coords, DirStruct dir = DirStruct(0));
 	static void DrawExtraImage(TechnoClass* pThis, const Point2D& location, const RectangleStruct& bounds, DirStruct dir = DirStruct(0), bool transparent = false, Sequence action = Sequence::Nothing, int tilt = -1);
@@ -485,4 +493,6 @@ public:
 	static void ApplyKillWeapon(TechnoClass* pThis, TechnoClass* pSource, WarheadTypeClass* pWH);
 	static void ApplyRevengeWeapon(TechnoClass* pThis, TechnoClass* pSource, WarheadTypeClass* pWH);
 	static bool MultiWeaponCanFire(TechnoClass* const pThis, AbstractClass* const pTarget, WeaponTypeClass* const pWeaponType);
+	static bool HasWeaponsDisabled(TechnoClass* pThis);
+	static FireError GetFireErrorIgnoreDisableWeapons(TechnoClass* pThis, AbstractClass* pTarget, int weaponIndex, bool ignoreRange);
 };

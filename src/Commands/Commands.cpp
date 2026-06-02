@@ -23,6 +23,8 @@
 #include "CeaseFireStance.h"
 #include "UnifiedTechnoColor.h"
 #include "ToggleMessageList.h"
+#include "DeselectObject.h"
+#include "DeselectObject5.h"
 
 #include <CCINIClass.h>
 #include <InputManagerClass.h>
@@ -58,6 +60,8 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<CeaseFireStanceClass>();
 	MakeCommand<ToggleMessageListCommandClass>();
 	MakeCommand<ToggleSWSidebar>();
+	MakeCommand<DeselectObjectCommandClass>();
+	MakeCommand<DeselectObject5CommandClass>();
 
 	if (Phobos::Config::SuperWeaponSidebarCommands)
 	{

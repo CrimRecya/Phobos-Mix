@@ -185,6 +185,7 @@ void ScenarioExt::ExtData::Serialize(T& Stm)
 		.Process(this->UndergroundTracker)
 		.Process(this->SpecialTracker)
 		.Process(this->FallingDownTracker)
+		.Process(this->EVAIndex)
 		;
 }
 
@@ -196,6 +197,8 @@ void ScenarioExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)
 
 void ScenarioExt::ExtData::SaveToStream(PhobosStreamWriter& Stm)
 {
+	Global()->EVAIndex = VoxClass::EVAIndex;
+
 	Extension<ScenarioClass>::SaveToStream(Stm);
 	this->Serialize(Stm);
 }

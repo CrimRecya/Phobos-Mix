@@ -165,13 +165,13 @@ DEFINE_HOOK(0x702299, TechnoClass_ReceiveDamage_Debris, 0xA)
 			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
 			const auto& debrisMinimums = pTypeExt->DebrisMinimums;
 			const bool limit = pTypeExt->DebrisTypes_Limit.Get(count > 1);
-			const int minIndex = static_cast<int>(debrisMinimums.size()) - 1;
+			const int minimumsMaxIndex = static_cast<int>(debrisMinimums.size()) - 1;
 			int currentIndex = 0;
 
 			while (totalSpawnAmount > 0)
 			{
-				const int currentMaxDebris = Math::min(1, debrisMaximums[currentIndex]);
-				const int currentMinDebris = (minIndex >= 0) ? Math::max(0, debrisMinimums[Math::min(currentIndex, minIndex)]) : 0;
+				const int currentMaxDebris = Math::max(1, debrisMaximums[currentIndex]);
+				const int currentMinDebris = (minimumsMaxIndex >= 0) ? Math::max(0, debrisMinimums[Math::min(currentIndex, minimumsMaxIndex)]) : 0;
 				int amountToSpawn = Math::min(totalSpawnAmount, ScenarioClass::Instance->Random.RandomRanged(currentMinDebris, currentMaxDebris));
 				totalSpawnAmount -= amountToSpawn;
 
@@ -2259,7 +2259,7 @@ DEFINE_HOOK(0x4D6FE1, FootClass_ElectricAssultFix2, 0x7)		// Mission_AreaGuard
 	const auto pWeapon = ElectricAssultTemp::WeaponType;
 	const bool InGuard = (R->Origin() == 0x4D5184);
 
-	if (pBuilding->Owner == pThis->Owner
+	if (pBuilding->Owner->IsAlliedWith(pThis->Owner)
 		&& GeneralUtils::GetWarheadVersusArmor(pWeapon->Warhead, pBuilding, pBuilding->Type) != 0.0)
 	{
 		return InGuard ? SkipGuard : SkipAreaGuard;
@@ -2304,6 +2304,19 @@ namespace DamageAreaTemp
 {
 	const CellClass* CheckingCell = nullptr;
 	bool CheckingCellAlt = false;
+	bool AircraftTrackerChecked = false;
+}
+
+DEFINE_HOOK(0x489286, MapClass_DamageArea_BeforeAll, 0x6)
+{
+	DamageAreaTemp::AircraftTrackerChecked = false;
+	return 0;
+}
+
+DEFINE_HOOK(0x4893C3, MapClass_DamageArea_DamageAir, 0x6)
+{
+	DamageAreaTemp::AircraftTrackerChecked = true;
+	return 0;
 }
 
 // Skip useless alt check, so it will only start checking from the cell's FirstObject
@@ -2482,6 +2495,23 @@ DEFINE_HOOK(0x489E47, DamageArea_RockerItemsFix2, 0x6)
 		DamageAreaTemp::CheckingCellAlt = true;
 
 	R->EDI(pObject);
+	return 0;
+}
+
+// https://github.com/Phobos-developers/Phobos/pull/2146
+DEFINE_HOOK(0x489710, MapClass_DamageArea_LowAirFix, 0x7)
+{
+	enum { GoNextObject = 0x4899B3 };
+
+	if (DamageAreaTemp::AircraftTrackerChecked) // have we checked AircraftTracker ?
+	{
+		GET(ObjectClass*, pObject, ESI);
+		const auto pTechno = abstract_cast<TechnoClass*, true>(pObject);
+
+		if (pTechno && pTechno->GetLastFlightMapCoords() != CellStruct::Empty) // this means it is in AircraftTracker
+			return GoNextObject;
+	}
+
 	return 0;
 }
 
@@ -3236,7 +3266,7 @@ static bool inline CanBeSold(TechnoClass* pTechno, AbstractType rtti)
 	{
 		auto const pTypeExt = TechnoExt::ExtMap.Find(pTechno)->TypeExtData;
 
-		if (!pTypeExt->Unsellable.Get(RulesExt::Global()->UnitsUnsellable))
+		if (pTypeExt->Unsellable.Get(RulesExt::Global()->UnitsUnsellable))
 			return false;
 
 		auto const pCell = MapClass::Instance.GetCellAt(pTechno->GetCenterCoords());
@@ -3371,6 +3401,9 @@ DEFINE_HOOK(0x4D4221, FootClass_MissionMove_EndCheckFix2, 0x6)
 	return 0x4D422D;
 }
 
+// Skip incorrect mission queued in InfantryClass::EnterIdleMode
+DEFINE_JUMP(LJMP, 0x51CBE5, 0x51CC1F);
+
 #pragma region SetHealthPercentageFix
 
 DEFINE_HOOK(0x5F5C80, ObjectClass_SetHealthPercentage_Round, 0xA)
@@ -3481,7 +3514,7 @@ DEFINE_HOOK(0x7120DD, TechnoTypeClass_GetRepairStepCost, 0x6)
 	enum { SkipGameCode = 0x71210C };
 
 	GET(TechnoTypeClass*, pType, ESI);
-	GET(int, cost, EAX);
+	GET(const int, cost, EAX);
 
 	if (RulesExt::Global()->FixRepairStepCost)
 		R->EAX(static_cast<int>((cost / std::max(static_cast<double>(pType->Strength) / RulesClass::Instance->RepairStep, 1.0)) * RulesClass::Instance->RepairPercent));
@@ -3576,6 +3609,130 @@ DEFINE_HOOK(0x577BF1, MapClass_ResetShroudForTMission_CellCheck, 0x6)
 	}
 
 	return SkipGameCode;
+}
+
+#pragma endregion
+
+
+#pragma region BalloonHoverPathingFix
+
+DEFINE_HOOK(0x64D592, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal1, 0x6)
+{
+	enum { SkipTargetCrdRecal = 0x64D598 };
+	GET(TechnoClass*, pTechno, EBP);
+	return pTechno->GetTechnoType()->BalloonHover ? SkipTargetCrdRecal : 0;
+}
+
+DEFINE_HOOK(0x64D575, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal2, 0x6)
+{
+	enum { SkipTargetCrdRecal = 0x64D598 };
+	GET(TechnoClass*, pTechno, EBP);
+	return pTechno->GetTechnoType()->BalloonHover ? SkipTargetCrdRecal : 0;
+}
+
+DEFINE_HOOK(0x64D5C5, Game_PreProcessMegaMissionList_CheckForTargetCrdRecal3, 0x6)
+{
+	enum { SkipTargetCrdRecal = 0x64D659 };
+	GET(TechnoClass*, pTechno, EBP);
+	return pTechno->GetTechnoType()->BalloonHover ? SkipTargetCrdRecal : 0;
+}
+
+DEFINE_HOOK(0x51BFA2, InfantryClass_IsCellOccupied_Start, 0x6)
+{
+	enum { MoveOK = 0x51C02D };
+	GET(InfantryClass*, pThis, EBP);
+	return pThis->Type->BalloonHover && pThis->IsInAir() ? MoveOK : 0;
+}
+
+DEFINE_HOOK(0x73F0A7, UnitClass_IsCellOccupied_Start, 0x9)
+{
+	enum { MoveOK = 0x73F23F };
+	GET(UnitClass*, pThis, ECX);
+	return pThis->Type->BalloonHover && pThis->IsInAir() ? MoveOK : 0;
+}
+
+DEFINE_HOOK(0x4D62C0, FootClass_ApproachTarget_CheckArcCell, 0x6)
+{
+	GET(FootClass*, pThis, EBX);
+
+	if (pThis->GetTechnoType()->BalloonHover && pThis->IsInAir())
+	{
+		R->AL(true);
+		return 0x4D6425;
+	}
+
+	return 0;
+}
+
+#pragma endregion
+
+#pragma region TabOnTechnoDestroyedFix
+
+// Skip the vanilla call at HouseClass::RegisterUnpresent.
+// This should be called when the techno is destroyed, not disappeared.
+DEFINE_JUMP(LJMP, 0x502630, 0x50263B);
+
+DEFINE_HOOK(0x7015A2, TechnoClass_SetOwningHouse_RefreshSidebar, 0x6)
+{
+	GET(TechnoClass*, pThis, ESI);
+	SidebarClass::Instance.OnTechnoDestroyed(pThis);
+	return 0;
+}
+
+DEFINE_HOOK(0x5F6609, ObjectClass_UnInit_RefreshSidebar, 0x9)
+{
+	GET(TechnoClass*, pThis, ESI);
+	pThis->KillPassengers(nullptr);
+	SidebarClass::Instance.OnTechnoDestroyed(pThis);
+	return 0x5F6612;
+}
+
+#pragma endregion
+
+// Fixed the issue that the time for units in the area guard mission to reacquire targets after eliminating the target is significantly longer than that in other missions
+DEFINE_HOOK(0x707A2E, TechnoClass_PointerExpired_TargetExpired, 0x5)
+{
+	GET(TechnoClass*, pThis, ESI);
+
+	if (pThis->GetCurrentMission() == Mission::Area_Guard)
+	{
+		if (pThis->UpdateTimer.GetTimeLeft() > 10 && !Unsorted::ScenarioInit)
+			pThis->UpdateTimer.Start(pThis->TargetingTimer.GetTimeLeft());
+	}
+	return 0;
+}
+
+DEFINE_HOOK_AGAIN(0x73583C, Remove_UnInitFix, 0x6) // UnitClass::DTOR
+DEFINE_HOOK(0x71A9CD, Remove_UnInitFix, 0x6) // TemporalClass::Update
+{
+	GET(FootClass*, pPassenger, EAX);
+
+	pPassenger->UnInit();
+	return R->Origin() + 0x9;
+}
+
+#pragma region VoxelLightingFix
+
+// Fixes VoxelAnimClass::DrawIt and BulletClass::DrawAVXL VXL rendering
+// lacking proper double-light source (ambient + directional + specular)
+// that TechnoClass uses via sub_753D00, making them appear darker.
+
+DEFINE_HOOK(0x749D97, VoxelAnimClass_DrawIt_LightingFix, 0x5)
+{
+	GET(VoxLib*, pVXL, EBP);
+	GET(Matrix3D*, pMatrix, EAX);
+	Drawing::SetupVoxelDoubleLighting(pVXL, 0, 0, pMatrix, &Drawing::VoxelTransformMatrix, &Game::VoxelLightSource, 3.0);
+	return 0x749DA8;
+}
+
+DEFINE_HOOK(0x46B0E1, BulletClass_DrawAVXL_LightingFix, 0x5)
+{
+	GET(VoxLib*, pVXL, ESI);
+	GET(Matrix3D*, pMatrix, EAX);
+
+	Drawing::SetupVoxelDoubleLighting(pVXL, 0, 0, pMatrix, &Drawing::VoxelTransformMatrix, &Game::VoxelLightSource, 3.0);
+	R->Stack(STACK_OFFSET(0xF4, -0xDC), pVXL);
+	return 0x46B0F6;
 }
 
 #pragma endregion

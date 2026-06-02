@@ -6,6 +6,7 @@
 #include <Ext/House/Body.h>
 #include <Ext/Sidebar/Body.h>
 #include <Ext/EBolt/Body.h>
+#include <Ext/SWType/Body.h>
 
 #include <New/Entity/Ares/RadarJammerClass.h>
 
@@ -20,6 +21,12 @@ static ObjectClass* __fastcall CreateInitialPayload(TechnoTypeClass* type, void*
 	const auto instance = type->CreateObject(owner);
 	Unsorted::ScenarioInit = mutex_old;
 	return instance;
+}
+
+static void __fastcall InitialPayload_OpenToppedFix(TechnoClass* pThis)
+{
+	pThis->IsInPlayfield = true;
+	pThis->Limbo();
 }
 
 static void __fastcall LetGo(TemporalClass* pTemporal)
@@ -58,6 +65,11 @@ static EBolt* __stdcall CreateEBolt2(WeaponTypeClass* pWeapon)
 static bool __fastcall CameoIsVeteran(TechnoTypeClass** pTypeExt_Ares, void*, HouseClass* pHouse)
 {
 	return TechnoTypeExt::ExtMap.Find(*pTypeExt_Ares)->CameoIsVeteran(pHouse);
+}
+
+static bool __fastcall SW_IsAvailable(SuperWeaponTypeClass** pExt_Ares, void*, HouseClass* pHouse)
+{
+	return SWTypeExt::ExtMap.Find(*pExt_Ares)->IsAvailable(pHouse);
 }
 
 namespace PermaMCTemp
@@ -118,6 +130,9 @@ void Apply_Ares3_0_Patches()
 	// SpawnSurvivor fix:
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x445E0, GET_OFFSET(TechnoExt::EjectRandomly));
 
+	// KillDriver re-implementation and enhancement
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x456D0, GET_OFFSET(TechnoExt::ApplyKillDriver));
+
 	// Redirect Ares' getCellSpreadItems to our implementation:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x62267, &Helpers::Alex::getCellSpreadItems);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x528C8, &Helpers::Alex::getCellSpreadItems);
@@ -131,6 +146,7 @@ void Apply_Ares3_0_Patches()
 
 	// InitialPayload creation:
 	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x43D5D, &CreateInitialPayload);
+	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x43E4F, GET_OFFSET(InitialPayload_OpenToppedFix));
 
 	// Replace the TemporalClass::Detach call by LetGo in convert function:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x436DA, &LetGo);
@@ -175,8 +191,12 @@ void Apply_Ares3_0_Patches()
 	// Redirect Ares's TechnoTypeExt::ExtData::CameoIsElite() to our implementation:
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x3D800, &CameoIsVeteran);
 
-	// Redirect Ares's return address in ImmuneToBerserk related checks
-	Patch::Apply_RAW(AresHelper::AresBaseAddress + 0x4AB37, { 0x1F, 0x1D });
+	// Redirect Ares's SWTypeExt::ExtData::IsAvailable to our implementation:
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x32BE0, &SW_IsAvailable);
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x329E0, &SWTypeExt::IsSuperAvailable);
+
+	// Remove Ares check for houses for Psychedelic=yes Warheads.
+	Patch::Apply_RAW(AresHelper::AresBaseAddress + 0x4AAAA, { 0x31, 0xC0, 0x90, 0x90, 0x90, 0x90 });
 
 	// Handle select of PsyDom
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x36107, &PermaMC_FreeUnit_SetContext);
@@ -202,6 +222,9 @@ void Apply_Ares3_0p1_Patches()
 	// SpawnSurvivor fix:
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x450C0, GET_OFFSET(TechnoExt::EjectRandomly));
 
+	// KillDriver re-implementation and enhancement
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x46240, GET_OFFSET(TechnoExt::ApplyKillDriver));
+
 	// Redirect Ares' getCellSpreadItems to our implementation:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x62FB7, &Helpers::Alex::getCellSpreadItems);
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x53578, &Helpers::Alex::getCellSpreadItems);
@@ -215,6 +238,7 @@ void Apply_Ares3_0p1_Patches()
 
 	// InitialPayload creation:
 	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x4483D, &CreateInitialPayload);
+	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x4492F, GET_OFFSET(InitialPayload_OpenToppedFix));
 
 	// Replace the TemporalClass::Detach call by LetGo in convert function:
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x441BA, &LetGo);
@@ -259,8 +283,12 @@ void Apply_Ares3_0p1_Patches()
 	// Redirect Ares's TechnoTypeExt::ExtData::CameoIsElite() to our implementation:
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x3E210, &CameoIsVeteran);
 
-	// Redirect Ares's return address in ImmuneToBerserk related checks
-	Patch::Apply_RAW(AresHelper::AresBaseAddress + 0x4B797, { 0x1F, 0x1D });
+	// Redirect Ares's SWTypeExt::ExtData::IsAvailable to our implementation:
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x335E0, &SW_IsAvailable);
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x333E0, &SWTypeExt::IsSuperAvailable);
+
+	// Remove Ares check for houses for Psychedelic=yes Warheads.
+	Patch::Apply_RAW(AresHelper::AresBaseAddress + 0x4B70A, { 0x31, 0xC0, 0x90, 0x90, 0x90, 0x90 });
 
 	// Handle select of PsyDom
 	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x36BA7, &PermaMC_FreeUnit_SetContext);

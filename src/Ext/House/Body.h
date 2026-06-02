@@ -26,7 +26,7 @@ public:
 	class ExtData final : public Extension<HouseClass>
 	{
 	public:
-		std::map<int, int> PowerPlantEnhancers;
+		std::vector<BuildingClass*> PowerPlantEnhancers;
 		std::vector<BuildingClass*> OwnedLimboDeliveredBuildings;
 		std::vector<TechnoClass*> OwnedCountedHarvesters;
 		bool ForceOnlyTargetHouseEnemy;
@@ -84,6 +84,8 @@ public:
 		bool FreeRadar;
 		bool ForceRadar;
 
+		bool PlayerAutoRepair;
+
 		ExtData(HouseClass* OwnerObject) : Extension<HouseClass>(OwnerObject)
 			, PowerPlantEnhancers {}
 			, OwnedLimboDeliveredBuildings {}
@@ -122,6 +124,7 @@ public:
 			, TeamDelay(-1)
 			, FreeRadar(false)
 			, ForceRadar(false)
+			, PlayerAutoRepair(true)
 		{ }
 
 		bool OwnsLimboDeliveredBuilding(BuildingClass* pBuilding) const;

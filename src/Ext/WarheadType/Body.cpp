@@ -45,6 +45,11 @@ bool WarheadTypeExt::ExtData::CanAffectTarget(TechnoClass* pTarget) const
 	if (!this->EffectsRequireVerses)
 		return true;
 
+	bool isAir = pTarget->IsInAir();
+
+	if ((isAir && !this->AffectsAir) || (!isAir && !this->AffectsGround))
+		return false;
+
 	return GeneralUtils::GetWarheadVersusArmor(this->OwnerObject(), pTarget, pTarget->GetTechnoType()) != 0.0;
 }
 
@@ -320,6 +325,7 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Nonprovocative.Read(exINI, pSection, "Nonprovocative");
 
 	this->CombatLightDetailLevel.Read(exINI, pSection, "CombatLightDetailLevel");
+	this->CombatLightDetailLevel_CheckColored.Read(exINI, pSection, "CombatLightDetailLevel.CheckColored");
 	this->CombatLightChance.Read(exINI, pSection, "CombatLightChance");
 	this->CLIsBlack.Read(exINI, pSection, "CLIsBlack");
 	this->Particle_AlphaImageIsLightFlash.Read(exINI, pSection, "Particle.AlphaImageIsLightFlash");
@@ -755,6 +761,7 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->MergeBuildingDamage)
 
 		.Process(this->CombatLightDetailLevel)
+		.Process(this->CombatLightDetailLevel_CheckColored)
 		.Process(this->CombatLightChance)
 		.Process(this->CLIsBlack)
 		.Process(this->Particle_AlphaImageIsLightFlash)
