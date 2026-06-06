@@ -109,6 +109,11 @@ const wchar_t* DistributionModeHoldDownCommandClass::GetUIDescription() const
 	return GeneralUtils::LoadStringUnlessMissing("TXT_DISTR_HOLDDOWN_DESC", L"Automatically and averagely select similar targets around the original target. This is for holding down to toggle on/off");
 }
 
+bool DistributionModeHoldDownCommandClass::PreventCombinationOverride(WWKey eInput) const
+{
+	return (eInput & WWKey::Shift | WWKey::Ctrl | WWKey::Alt) != WWKey(0);
+}
+
 bool DistributionModeHoldDownCommandClass::ExtraTriggerCondition(WWKey eInput) const
 {
 	return true;

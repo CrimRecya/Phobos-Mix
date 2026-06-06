@@ -6,15 +6,11 @@
 
 #pragma endregion
 
-#ifdef ENABLE_ASTAR_REIMPL
-
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 #include <Utilities/Macro.h>
 
 #include <PriorityQueueClass.h>
-
-#define ENABLE_ASTAR_OPTIMIZE true
 
 class AStarClass
 {
@@ -141,11 +137,15 @@ public:
 
 	// 优化容器
 
+#ifdef ENABLE_ASTAR_REIMPL
+
 	static constexpr bool EnableRectilinear = true;
 	static std::vector<CellStruct> LineCells;
     static std::vector<unsigned short> StraightSubzones[3];
     static std::vector<int> IsStraightFlag[3];
 	static bool ContainersInit;
+
+#endif
 
 	// 构造/析构函数
 
@@ -180,11 +180,15 @@ public:
 
 	// 静态函数
 
+#ifdef ENABLE_ASTAR_REIMPL
+
 	// static CellStruct* __fastcall NextPathCell(CellStruct* pBuffer, CellStruct* pCurrent, int dir) JMP_STD(0x42D490);
 	static CellStruct NextPathCell(
 		const CellStruct cell,
 		const int dir
 	);
+
+#endif
 
 	// 接口函数
 
@@ -211,6 +215,8 @@ public:
 
 	// 功能函数
 
+#ifdef ENABLE_ASTAR_REIMPL
+
 	// 常规路径查找
 	PathFinderData* FindRegularPath(
 		const CellStruct* const pStart,
@@ -228,6 +234,8 @@ public:
 		const MovementZone movementZone,
 		const FootClass* const pFoot
 	); // JMP_THIS(0x42C290)
+
+#endif
 
 	// 辅助函数
 
@@ -250,6 +258,8 @@ public:
 		const int level
 	) const JMP_THIS(0x42B080);
 
+#ifdef ENABLE_ASTAR_REIMPL
+
 	// 计算移动成本 ∈ FindRegularPath
 	double CalculateMoveCost(
 		const CellClass* const* const pFromCellPtr,
@@ -259,11 +269,15 @@ public:
 		const FootClass* const pFoot
 	) const; // JMP_THIS(0x429830)
 
+#endif
+
 	// 构建最终路径 ∈ FindRegularPath
 	PathFinderData* BuildFinalPath(
 		PathQueueNode* const pEndNode,
 		int* const pDirs
 	) const JMP_THIS(0x42AA90);
+
+#ifdef ENABLE_ASTAR_REIMPL
 
 	// 处理最终路径 ∈ FindRegularPath
 	void ProcessFinalPath(
@@ -306,6 +320,8 @@ public:
 		const int curLevel,
 		const bool allowThreats
 	) const; // JMP_THIS(0x42BE20)
+
+#endif
 
 	// 成员变量（分层：大区块、子区域、单元格）
 
@@ -396,5 +412,3 @@ public:
 	// 可通行性计数
 	int PassabilityCounts[3];
 };
-
-#endif

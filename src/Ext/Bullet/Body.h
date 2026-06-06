@@ -297,6 +297,7 @@ public:
 
 		return pFirer;
 	}
+	static bool HasVirtualTrajectories(TechnoClass* pTechno);
 	static bool CheckExceededCapacity(TechnoClass* pTechno, BulletTypeClass* pBulletType, BulletExt::ExtData* pBulletExt = nullptr);
 	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
 };

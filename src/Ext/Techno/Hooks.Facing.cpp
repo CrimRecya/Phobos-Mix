@@ -1,7 +1,6 @@
 ﻿#include "Body.h"
 
 #include <JumpjetLocomotionClass.h>
-#include <BulletTypeClass.h>
 
 #include <Ext/WeaponType/Body.h>
 
@@ -81,7 +80,10 @@ DEFINE_HOOK(0x736AEA, UnitClass_UpdateRotation_ApplyUnitIdleAction, 0x6)
 	const auto currentMission = pThis->CurrentMission;
 
 	// Busy in attacking or driver dead?
-	if (pThis->Target || (Unsorted::CurrentFrame - pThis->LastFireBulletFrame) < (RulesClass::Instance->GuardAreaTargetingDelay + 5) || (currentMission == Mission::Harmless && pThis->Owner == HouseClass::FindSpecial()))
+	if (pThis->Target
+		|| (Unsorted::CurrentFrame - pThis->LastFireBulletFrame) < (RulesClass::Instance->GuardAreaTargetingDelay + 5)
+		|| (currentMission == Mission::Harmless && pThis->Owner == HouseClass::FindSpecial())
+		|| BulletExt::HasVirtualTrajectories(pThis))
 	{
 		pExt->CheckIdleAction();
 		pExt->UpdateIdleDir();

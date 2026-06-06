@@ -334,6 +334,28 @@ void BulletExt::ExtData::UpdateGroupIndex()
 	return;
 }
 
+bool BulletExt::HasVirtualTrajectories(TechnoClass* pTechno)
+{
+	if (const auto pMap = TechnoExt::ExtMap.Find(pTechno)->TrajectoryGroup)
+	{
+		for (const auto& [pBulletType, group] : pMap->GetValues())
+		{
+			if (const auto pTrajType = BulletTypeExt::ExtMap.Find(pBulletType)->TrajectoryType.get())
+			{
+				const auto flag = pTrajType->Flag();
+
+				if (flag == TrajectoryFlag::Engrave || flag == TrajectoryFlag::Tracing)
+				{
+					if (!group.Bullets.empty())
+						return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 // Check and set the group
 bool BulletExt::CheckExceededCapacity(TechnoClass* pTechno, BulletTypeClass* pBulletType, BulletExt::ExtData* pBulletExt)
 {

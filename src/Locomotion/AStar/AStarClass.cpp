@@ -3,7 +3,6 @@
 #ifdef ENABLE_ASTAR_REIMPL
 
 #include <TubeClass.h>
-#include <Ext/Techno/Body.h>
 
 std::vector<CellStruct> AStarClass::LineCells;
 std::vector<unsigned short> AStarClass::StraightSubzones[3];

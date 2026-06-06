@@ -277,6 +277,12 @@ private:
 	}
 
 	container_t values;
+
+public:
+	const container_t& GetValues() const
+	{
+		return this->values;
+	}
 };
 
 // pcx filename storage with optional automatic loading
