@@ -556,6 +556,7 @@ namespace detail
 		return false;
 	}
 
+	template <>
 	inline bool read<Action>(Action& value, INI_EX& parser, const char* pSection, const char* pKey)
 	{
 		if (parser.ReadString(pSection, pKey))

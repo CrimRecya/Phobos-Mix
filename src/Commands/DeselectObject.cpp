@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "DeselectObject.h"
 #include <Utilities/GeneralUtils.h>
 
