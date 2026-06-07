@@ -11,6 +11,7 @@ decltype(AresFunctions::RequirementsMet) AresFunctions::RequirementsMet = nullpt
 decltype(AresFunctions::ReverseEngineer) AresFunctions::ReverseEngineer = nullptr;
 decltype(AresFunctions::IsTargetConstraintsEligible) AresFunctions::IsTargetConstraintsEligible = nullptr;
 decltype(AresFunctions::UnitDeliveryStateMachine_Update) AresFunctions::UnitDeliveryStateMachine_Update = nullptr;
+decltype(AresFunctions::ApplyPermaMC) AresFunctions::ApplyPermaMC = nullptr;
 decltype(AresFunctions::DetailsCurrentlyEnabled) AresFunctions::DetailsCurrentlyEnabled = nullptr;
 std::function<AresSWTypeExtData* (SuperWeaponTypeClass*)> AresFunctions::SWTypeExtMap_Find;
 PhobosMap<ObjectClass*, AlphaShapeClass*>* AresFunctions::AlphaExtMap = nullptr;
@@ -50,6 +51,8 @@ void AresFunctions::InitAres3_0()
 	NOTE_ARES_FUN(IsTargetConstraintsEligible, 0x032110);
 
 	NOTE_ARES_FUN(UnitDeliveryStateMachine_Update, 0x075DE0);
+
+	NOTE_ARES_FUN(ApplyPermaMC, 0x052CD0);
 
 	NOTE_ARES_FUN(DetailsCurrentlyEnabled, 0x02A6C0);
 
@@ -95,6 +98,8 @@ void AresFunctions::InitAres3_0p1()
 	NOTE_ARES_FUN(IsTargetConstraintsEligible, 0x032AF0);
 
 	NOTE_ARES_FUN(UnitDeliveryStateMachine_Update, 0x076E90);
+
+	NOTE_ARES_FUN(ApplyPermaMC, 0x053980);
 
 	NOTE_ARES_FUN(DetailsCurrentlyEnabled, 0x02B1C0);
 

@@ -52,7 +52,10 @@ bool BuildingTypeExt::ContainersInit = InitStaticBuildingTypeContainers();
 int BuildingTypeExt::ExtData::GetSuperWeaponCount() const
 {
 	// The user should only use SuperWeapon and SuperWeapon2 if the attached sw count isn't bigger than 2
-	return 2 + this->SuperWeapons.size();
+	const auto pThis = this->OwnerObject();
+	int count = pThis->SuperWeapon >= 0 ? 1 : 0;
+	count += pThis->SuperWeapon2 >= 0 ? 1 : 0;
+	return count + this->SuperWeapons.size();
 }
 
 int BuildingTypeExt::ExtData::GetSuperWeaponIndex(const int index, HouseClass* pHouse) const
@@ -185,14 +188,14 @@ int BuildingTypeExt::GetUpgradesAmount(BuildingTypeClass const* const pBuilding,
 {
 	int result = 0;
 	bool isUpgrade = false;
-	auto const pPowersUp = pBuilding->PowersUpBuilding;
 
 	auto checkUpgrade = [pHouse, pBuilding, &result, &isUpgrade](BuildingTypeClass* pTPowersUp)
 	{
 		isUpgrade = true;
+
 		for (auto const& pBld : pHouse->Buildings)
 		{
-			if (pBld->Type == pTPowersUp)
+			if (pBld->UpgradeLevel && pBld->Type == pTPowersUp)
 			{
 				for (auto const& pUpgrade : pBld->Upgrades)
 				{
@@ -203,11 +206,15 @@ int BuildingTypeExt::GetUpgradesAmount(BuildingTypeClass const* const pBuilding,
 		}
 	};
 
+	// June 7, 2026 - Starkku: PowersUpBuilding is now put in PowersUp_Buildings
+	/*
+	auto const pPowersUp = pBuilding->PowersUpBuilding;
+
 	if (pPowersUp[0])
 	{
 		if (auto const pTPowersUp = BuildingTypeClass::Find(pPowersUp))
 			checkUpgrade(pTPowersUp);
-	}
+	}*/
 
 	for (auto const pTPowersUp : BuildingTypeExt::ExtMap.Find(pBuilding)->PowersUp_Buildings)
 		checkUpgrade(pTPowersUp);
@@ -1371,10 +1378,6 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->PowerPlantEnhancer_Factor.Read(exINI, pSection, "PowerPlantEnhancer.Factor");
 	this->PowerPlantEnhancer_MaxCount.Read(exINI, pSection, "PowerPlantEnhancer.MaxCount");
 	this->Powered_KillSpawns.Read(exINI, pSection, "Powered.KillSpawns");
-
-	if (pThis->PowersUpBuilding[0] == NULL && this->PowersUp_Buildings.size() > 0)
-		strcpy_s(pThis->PowersUpBuilding, this->PowersUp_Buildings[0]->ID);
-
 	this->CanC4_AllowZeroDamage.Read(exINI, pSection, "CanC4.AllowZeroDamage");
 
 	this->InitialStrength_Cloning.Read(exINI, pSection, "InitialStrength.Cloning");
@@ -1464,6 +1467,25 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->GuardRetryDelay.Read(exINI, pSection, "GuardRetryDelay");
 
 	this->AISellCapturedBuilding.Read(exINI, pSection, "AISellCapturedBuilding");
+
+	this->TurretAnim_IdleFrames.Read(exINI, pSection, "TurretAnim.IdleFrames");
+	this->TurretAnim_LowPowerIdleFrames.Read(exINI, pSection, "TurretAnim.LowPowerIdleFrames");
+	this->TurretAnim_FiringFrames.Read(exINI, pSection, "TurretAnim.FiringFrames");
+	this->TurretAnim_LowPowerFiringFrames.Read(exINI, pSection, "TurretAnim.LowPowerFiringFrames");
+	this->TurretAnim_IdleRate.Read(exINI, pSection, "TurretAnim.IdleRate");
+	this->TurretAnim_FiringRate.Read(exINI, pSection, "TurretAnim.FiringRate");
+
+	if (pThis->PowersUpBuilding[0] == NULL && this->PowersUp_Buildings.size() > 0)
+	{
+		strcpy_s(pThis->PowersUpBuilding, this->PowersUp_Buildings[0]->ID);
+	}
+	else if (pThis->PowersUpBuilding[0])
+	{
+		auto pPowerUpType = BuildingTypeClass::Find(pThis->PowersUpBuilding);
+
+		if (pPowerUpType && !this->PowersUp_Buildings.Contains(pPowerUpType))
+			this->PowersUp_Buildings.emplace_back(pPowerUpType);
+	}
 
 	if (pThis->NumberOfDocks > 0)
 	{
@@ -1658,6 +1680,12 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->UndeploysInto_Sellable)
 		.Process(this->BuildingRadioLink_SyncOwner)
 		.Process(this->GuardRetryDelay)
+		.Process(this->TurretAnim_IdleFrames)
+		.Process(this->TurretAnim_LowPowerIdleFrames)
+		.Process(this->TurretAnim_FiringFrames)
+		.Process(this->TurretAnim_LowPowerFiringFrames)
+		.Process(this->TurretAnim_IdleRate)
+		.Process(this->TurretAnim_FiringFrames)
 
 		// Ares 0.2
 		.Process(this->CloningFacility)
@@ -1695,16 +1723,14 @@ bool BuildingTypeExt::ExtContainer::Load(BuildingTypeClass* pThis, IStream* pStm
 
 bool BuildingTypeExt::LoadGlobals(PhobosStreamReader& Stm)
 {
-
 	return Stm.Success();
 }
 
 bool BuildingTypeExt::SaveGlobals(PhobosStreamWriter& Stm)
 {
-
-
 	return Stm.Success();
 }
+
 // =============================
 // container
 

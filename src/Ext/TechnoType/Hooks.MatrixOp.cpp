@@ -562,6 +562,7 @@ DEFINE_HOOK(0x5F99E7, Test_Log, 0x6)
 }
 */
 DEFINE_PATCH(0x40F271, 0x00, 0x00, 0x00, 0x08); // 128M voxel cache
+
 DEFINE_HOOK(0x73B748, UnitClass_DrawVXL_ResetKeyForTurretUse, 0x7)
 {
 	enum { SkipGameCode = 0x73B79F };
@@ -715,9 +716,11 @@ DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 
 	GET(UnitClass* const, pThis, EBP);
 
-	auto const loco = pThis->Locomotor.GetInterfacePtr();
+	if (pThis->CloakState != CloakState::Uncloaked || pThis->Type->NoShadow)
+		return SkipDrawing;
 
-	if (pThis->CloakState != CloakState::Uncloaked || pThis->Type->NoShadow || !loco->Is_To_Have_Shadow())
+	auto const loco = pThis->Locomotor.GetInterfacePtr();
+	if (!loco->Is_To_Have_Shadow())
 		return SkipDrawing;
 
 	REF_STACK(Matrix3D, shadowMatrix, STACK_OFFSET(0x1C4, -0x130));
@@ -1004,10 +1007,17 @@ DEFINE_HOOK(0x4147F9, AircraftClass_Draw_Shadow, 0x6)
 	GET_STACK(RectangleStruct*, bound, STACK_OFFSET(0xCC, 0x10));
 	enum { FinishDrawing = 0x4148A5 };
 
+	if (pThis->CloakState != CloakState::Uncloaked || pThis->IsSinking)
+		return FinishDrawing;
+
 	AircraftTypeClass* pAircraftType = pThis->Type;
+
+	if (pAircraftType->NoShadow)
+		return FinishDrawing;
+
 	const auto loco = pThis->Locomotor.GetInterfacePtr();
 
-	if (pAircraftType->NoShadow || pThis->CloakState != CloakState::Uncloaked || pThis->IsSinking || !loco->Is_To_Have_Shadow())
+	if (!loco->Is_To_Have_Shadow())
 		return FinishDrawing;
 
 	pAircraftType = TechnoExt::GetAircraftTypeExtra(pThis);

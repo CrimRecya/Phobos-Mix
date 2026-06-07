@@ -21,6 +21,13 @@ private:
 	bool Serialize(T& stm);
 };
 
+struct RadialFireStruct
+{
+	int Segments = 0;
+	int Index = 0;
+	DirStruct Direction {};
+};
+
 class BulletExt
 {
 public:
@@ -164,17 +171,9 @@ public:
 
 	static void Detonate(const CoordStruct& coords, TechnoClass* pOwner, int damage, HouseClass* pFiringHouse, AbstractClass* pTarget, bool isBright, WeaponTypeClass* pWeapon, WarheadTypeClass* pWarhead);
 	static void ApplyArcingFix(BulletClass* pThis, const CoordStruct& sourceCoords, const CoordStruct& targetCoords, BulletVelocity& velocity);
-	static inline CoordStruct GetTargetCoordsForFiring(BulletClass* pBullet)
-	{
-		if (pBullet->Type->Inviso && pBullet->Type->FlakScatter)
-			return pBullet->Location;
-		else if (const auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target))
-			return pTarget->GetTargetCoords();
+	static CoordStruct GetTargetCoordsForFiring(BulletClass* pBullet);
 
-		return pBullet->TargetCoords;
-	}
-
-	static void SimulatedFiringUnlimbo(BulletClass* pBullet, HouseClass* pHouse, WeaponTypeClass* pWeapon, const CoordStruct& sourceCoords, bool randomVelocity);
+	static void SimulatedFiringUnlimbo(BulletClass* pBullet, HouseClass* pHouse, WeaponTypeClass* pWeapon, const CoordStruct& sourceCoords, bool headToTarget, const RadialFireStruct& radialFire = {});
 	static void SimulatedFiringEffects(BulletClass* pBullet, HouseClass* pHouse, ObjectClass* pAttach, bool firingEffect, bool visualEffect);
 	static inline void SimulatedFiringAnim(BulletClass* pBullet, HouseClass* pHouse, ObjectClass* pAttach);
 	static inline void SimulatedFiringReport(BulletClass* pBullet);
@@ -300,4 +299,6 @@ public:
 	static bool HasVirtualTrajectories(TechnoClass* pTechno);
 	static bool CheckExceededCapacity(TechnoClass* pTechno, BulletTypeClass* pBulletType, BulletExt::ExtData* pBulletExt = nullptr);
 	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
+
+	static inline BulletVelocity ApplyRadialFireVelocityWarp(BulletVelocity velocity, const RadialFireStruct& radialFire);
 };
