@@ -582,6 +582,7 @@ HideShakeEffects=false           ; boolean
 - Restored the original Tiberian Sun behavior of playing the `[AudioVisual] -> DeploySound=` sound effect when clicking the sidebar to execute `Deploy` (by Noble_Fish)
 - Allow `RemoveMindControl` warhead to mute `MindClearedSound` (by Noble_Fish)
 - Introduce weight selection rules for ExtraWarheads (by Noble_Fish)
+- [Building turret idle/firing/low power animations](Fixed-or-Improved-Logics.md#building-turret-animations) (by Starkku)
 
 #### Vanilla fixes:
 - Fixed sidebar not updating queued unit numbers when adding or removing units when the production is on hold (by CrimRecya)

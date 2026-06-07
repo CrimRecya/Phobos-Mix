@@ -146,6 +146,7 @@ int BuildingTypeExt::GetUpgradesAmount(BuildingTypeClass* pBuilding, HouseClass*
 	return isUpgrade ? result : -1;
 }
 
+
 void BuildingTypeExt::ExtData::Initialize()
 { }
 
@@ -232,6 +233,13 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->UndeploysInto_Sellable.Read(exINI, pSection, "UndeploysInto.Sellable");
 	this->BuildingRadioLink_SyncOwner.Read(exINI, pSection, "BuildingRadioLink.SyncOwner");
 	this->GuardRetryDelay.Read(exINI, pSection, "GuardRetryDelay");
+
+	this->TurretAnim_IdleFrames.Read(exINI, pSection, "TurretAnim.IdleFrames");
+	this->TurretAnim_LowPowerIdleFrames.Read(exINI, pSection, "TurretAnim.LowPowerIdleFrames");
+	this->TurretAnim_FiringFrames.Read(exINI, pSection, "TurretAnim.FiringFrames");
+	this->TurretAnim_LowPowerFiringFrames.Read(exINI, pSection, "TurretAnim.LowPowerFiringFrames");
+	this->TurretAnim_IdleRate.Read(exINI, pSection, "TurretAnim.IdleRate");
+	this->TurretAnim_FiringRate.Read(exINI, pSection, "TurretAnim.FiringRate");
 
 	if (pThis->PowersUpBuilding[0] == NULL && this->PowersUp_Buildings.size() > 0)
 	{
@@ -402,6 +410,12 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->UndeploysInto_Sellable)
 		.Process(this->BuildingRadioLink_SyncOwner)
 		.Process(this->GuardRetryDelay)
+		.Process(this->TurretAnim_IdleFrames)
+		.Process(this->TurretAnim_LowPowerIdleFrames)
+		.Process(this->TurretAnim_FiringFrames)
+		.Process(this->TurretAnim_LowPowerFiringFrames)
+		.Process(this->TurretAnim_IdleRate)
+		.Process(this->TurretAnim_FiringFrames)
 
 		// Ares 0.2
 		.Process(this->CloningFacility)
