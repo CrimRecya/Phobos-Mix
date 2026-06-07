@@ -540,6 +540,39 @@ namespace detail
 	}
 
 	template <>
+	inline bool read<Action>(Action& value, INI_EX& parser, const char* pSection, const char* pKey)
+	{
+		if (parser.ReadString(pSection, pKey))
+		{
+			static const auto Actions = {
+				"move", "nomove", "enter", "enter", "self_deploy", "attack", "harvest", "select", "toggleselect", "capture",
+				"eaten", "repair", "sell", "sellunit", "nosell", "norepair", "sabotage", "tote", "dontuse2", "dontuse3",
+				"nuke", "dontuse4", "dontuse5", "dontuse6", "dontuse7", "dontuse8", "guardarea", "heal", "damage", "grepair",
+				"nodeploy", "noenter", "nogrepair", "togglepower", "notogglepower", "entertunnel", "noentertunnel", "ironcurtain",
+				"lightningstorm", "chronosphere", "chronowarp", "paradrop", "placewaypoint", "tibsunbug", "enterwaypointmode",
+				"followwaypoint", "selectwaypoint", "loopwaypointpath", "dragwaypoint", "attackwaypoint", "enterwaypoint",
+				"patrolwaypoint", "areaattack", "ivanbomb", "noivanbomb", "detonate", "detonateall", "disarmbomb", "selectnode",
+				"attacksupport", "placebeacon", "selectbeacon", "attackmovenav", "attackmovetar", "demolish", "amerparadrop",
+				"psychicdominator", "spyplane", "geneticconverter", "forceshield", "noforceshield", "airstrike", "psychicreveal" };
+
+			auto it = Actions.begin();
+
+			for (auto i = 0u; i < Actions.size(); ++i)
+			{
+				if (_strcmpi(parser.value(), *it++) == 0)
+				{
+					value = static_cast<Action>(i);
+					return true;
+				}
+			}
+
+			Debug::INIParseFailed(pSection, pKey, parser.value(), "Expected an action");
+		}
+
+		return false;
+	}
+
+	template <>
 	inline bool read<DirType>(DirType& value, INI_EX& parser, const char* pSection, const char* pKey)
 	{
 		int buffer;
