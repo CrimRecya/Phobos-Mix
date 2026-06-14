@@ -9,6 +9,7 @@
 #include <ShipLocomotionClass.h>
 #include <HoverLocomotionClass.h>
 #include <TunnelLocomotionClass.h>
+#include <Kamikaze.h>
 
 #include <Ext/Anim/Body.h>
 #include <Ext/Building/Body.h>
@@ -229,7 +230,26 @@ DEFINE_JUMP(LJMP, 0x44C75E, 0x44C793);
 #pragma endregion
 
 #pragma region RocketUpdateTargetPosition
-/*
+
+DEFINE_HOOK(0x6B75AC, SpawnManagerClass_AI_SetDestinationForMissiles, 0x5)
+{
+	enum { QueueMoveMission = 0x6B75BC };
+
+	GET(SpawnManagerClass*, pSpawnManager, ESI);
+	GET(AircraftClass*, pSpawnee, EDI);
+
+	const auto pTarget = pSpawnManager->Target;
+	pSpawnee->SetDestination(pTarget, true);
+
+	if (const auto pLoco = locomotion_cast<RocketLocomotionClass*>(pSpawnee->Locomotor))
+	{
+		if (const auto pTargetObject = abstract_cast<ObjectClass*>(pTarget))
+			pLoco->MovingDestination = pTargetObject->GetTargetCoords();
+	}
+
+	return QueueMoveMission;
+}
+
 DEFINE_HOOK(0x662310, RocketLocomotionClass_Process_UpdateTargetPosition, 0x5)
 {
 	GET(ILocomotion*, pThis, ESI);
@@ -238,18 +258,54 @@ DEFINE_HOOK(0x662310, RocketLocomotionClass_Process_UpdateTargetPosition, 0x5)
 	const auto pLoco = static_cast<RocketLocomotionClass*>(pThis);
 	const auto pRocket = pLoco->LinkedTo;
 
+	// TODO Check Missile.Tracing flag
 	if (pLoco->MissionState != 5 && (pLoco->MissionState != 4 || !pRocketStruct->LazyCurve))
 	{
-		if (const auto pSpawnOwner = pRocket->SpawnOwner)
-		{
-			if (const auto pTarget = pSpawnOwner->Target)
-				pLoco->MovingDestination = pTarget->GetCoords();
-		}
+		if (const auto pTarget = abstract_cast<FootClass*>(pRocket->Target))
+			pLoco->MovingDestination = pTarget->GetCoords();
 	}
 
 	return 0;
 }
-*/
+
+DEFINE_HOOK(0x54E42B, Kamikaze_Add_SetTarget, 0x6)
+{
+	enum { SetKamikazeTarget = 0x54E475 };
+
+	GET(AbstractClass*, pTarget, ECX);
+
+	R->EAX(pTarget);
+
+	return SetKamikazeTarget;
+}
+
+DEFINE_HOOK(0x54E60A, Kamikaze_Remove_ResetTarget, 0x6)
+{
+	enum { ContinueLoop = 0x54E5B7 };
+
+	GET(AbstractClass*, pInvalidTarget, ECX);
+	GET(Kamikaze*, pKamikaze, EDI);
+	GET(int, index, ESI);
+
+	auto getNewTarget = [pInvalidTarget]() -> CellClass*
+	{
+		if (const auto pInvalidTargetBuilding = abstract_cast<BuildingClass*>(pInvalidTarget))
+		{
+			if (pInvalidTargetBuilding->Type)
+				return MapClass::Instance.GetCellAt(pInvalidTargetBuilding->GetTargetCoords());
+		}
+		return MapClass::Instance.GetCellAt(pInvalidTarget->GetCoords());
+	};
+	const auto pNewTarget = getNewTarget();
+	const auto pControl = pKamikaze->Nodes.Items[index];
+	const auto pAircraft = pControl->Item;
+	pAircraft->SetTarget(pNewTarget);
+	pAircraft->QueueMission(Mission::Attack, false);
+	pControl->Cell = pNewTarget;
+
+	return ContinueLoop;
+}
+
 #pragma endregion
 
 #pragma region HardLoco
