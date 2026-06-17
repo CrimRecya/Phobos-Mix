@@ -12,6 +12,8 @@ public:
 		, FacingCoord { false }
 		, ReduceCoord { true }
 		, PreAimCoord { { 0, 0, 0 } }
+		, PreAimScatter_Min { Leptons(0) }
+		, PreAimScatter_Max { Leptons(0) }
 		, LaunchSpeed { 0.001 }
 		, Acceleration { 10.0 }
 		, TurningSpeed { 10.0 }
@@ -22,14 +24,17 @@ public:
 		, CruiseAltitudeRange { 200 }
 		, CruiseAlongLevel { false }
 		, CollisionDetection { false }
-		, SuicideAboveRange { -3.0 }
 		, SuicideShortOfROT { false }
+		, SuicideAboveRange { -3.0 }
+		, FlyingVolatility { Leptons(0) }
 	{ }
 
 	Valueable<bool> UniqueCurve;
 	Valueable<bool> FacingCoord;
 	Valueable<bool> ReduceCoord;
 	Valueable<CoordStruct> PreAimCoord;
+	Valueable<Leptons> PreAimScatter_Min;
+	Valueable<Leptons> PreAimScatter_Max;
 	Valueable<double> LaunchSpeed;
 	Valueable<double> Acceleration;
 	Valueable<double> TurningSpeed;
@@ -40,8 +45,9 @@ public:
 	int CruiseAltitudeRange;
 	Valueable<bool> CruiseAlongLevel;
 	Valueable<bool> CollisionDetection;
-	Valueable<double> SuicideAboveRange;
 	Valueable<bool> SuicideShortOfROT;
+	Valueable<double> SuicideAboveRange;
+	Valueable<Leptons> FlyingVolatility;
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;

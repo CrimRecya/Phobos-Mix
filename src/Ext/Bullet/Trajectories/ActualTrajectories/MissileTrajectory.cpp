@@ -15,6 +15,8 @@ void MissileTrajectoryType::Serialize(T& Stm)
 		.Process(this->FacingCoord)
 		.Process(this->ReduceCoord)
 		.Process(this->PreAimCoord)
+		.Process(this->PreAimScatter_Min)
+		.Process(this->PreAimScatter_Max)
 		.Process(this->LaunchSpeed)
 		.Process(this->Acceleration)
 		.Process(this->TurningSpeed)
@@ -25,8 +27,9 @@ void MissileTrajectoryType::Serialize(T& Stm)
 		.Process(this->CruiseAltitudeRange)
 		.Process(this->CruiseAlongLevel)
 		.Process(this->CollisionDetection)
-		.Process(this->SuicideAboveRange)
 		.Process(this->SuicideShortOfROT)
+		.Process(this->SuicideAboveRange)
+		.Process(this->FlyingVolatility)
 		;
 }
 
@@ -84,6 +87,10 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->FacingCoord.Read(exINI, pSection, "Trajectory.Missile.FacingCoord");
 	this->ReduceCoord.Read(exINI, pSection, "Trajectory.Missile.ReduceCoord");
 	this->PreAimCoord.Read(exINI, pSection, "Trajectory.Missile.PreAimCoord");
+	this->PreAimScatter_Min.Read(exINI, pSection, "Trajectory.Missile.PreAimScatter.Min");
+	this->PreAimScatter_Min = Leptons(Math::max(0, this->PreAimScatter_Min.Get()));
+	this->PreAimScatter_Max.Read(exINI, pSection, "Trajectory.Missile.PreAimScatter.Max");
+	this->PreAimScatter_Max = Leptons(Math::max(0, this->PreAimScatter_Max.Get()));
 	this->LaunchSpeed.Read(exINI, pSection, "Trajectory.Missile.LaunchSpeed");
 	this->LaunchSpeed = Math::max(0.001, this->LaunchSpeed);
 	this->Acceleration.Read(exINI, pSection, "Trajectory.Missile.Acceleration");
@@ -98,8 +105,10 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->CruiseAltitudeRange = this->CruiseAltitude / 2;
 	this->CruiseAlongLevel.Read(exINI, pSection, "Trajectory.Missile.CruiseAlongLevel");
 	this->CollisionDetection.Read(exINI, pSection, "Trajectory.Missile.CollisionDetection");
-	this->SuicideAboveRange.Read(exINI, pSection, "Trajectory.Missile.SuicideAboveRange");
 	this->SuicideShortOfROT.Read(exINI, pSection, "Trajectory.Missile.SuicideShortOfROT");
+	this->SuicideAboveRange.Read(exINI, pSection, "Trajectory.Missile.SuicideAboveRange");
+	this->FlyingVolatility.Read(exINI, pSection, "Trajectory.Missile.FlyingVolatility");
+	this->FlyingVolatility = Leptons(std::clamp(static_cast<int>(this->FlyingVolatility.Get()), 0, Unsorted::LeptonsPerCell));
 }
 
 template<typename T>
@@ -353,7 +362,17 @@ CoordStruct MissileTrajectory::GetPreAimCoordsWithBurst()
 	if (pType->MirrorCoord && this->CurrentBurst < 0)
 		preAimCoord.Y = -preAimCoord.Y;
 
-	// No rotate now, return original value
+	const int offsetMin = static_cast<int>(pType->PreAimScatter_Min.Get());
+	const int offsetMax = static_cast<int>(pType->PreAimScatter_Max.Get());
+
+	if (offsetMin > 0 || offsetMax > 0)
+	{
+		const int offsetDistance = ScenarioClass::Instance->Random.RandomRanged(offsetMin, offsetMax);
+		const double angel = ScenarioClass::Instance->Random.RandomDouble() * Math::TwoPi;
+		preAimCoord.X += static_cast<int>(offsetDistance * Math::cos(angel));
+		preAimCoord.Y += static_cast<int>(offsetDistance * Math::sin(angel));
+	}
+
 	return preAimCoord;
 }
 
@@ -521,6 +540,21 @@ bool MissileTrajectory::StandardVelocityChange()
 				const double leadSpeed = (pType->Speed + this->MovingSpeed) / 2;
 				const double timeMult = targetLocation.DistanceFrom(pBullet->Location) / leadSpeed;
 				targetLocation += (pBullet->TargetCoords - this->LastTargetCoord) * timeMult;
+			}
+		}
+
+		if (pType->FlyingVolatility.Get() > 0)
+		{
+			const auto offset = targetLocation - pBullet->Location;
+			const double offsetDistance = offset.Magnitude();
+			const double volatility = Math::max(0.0, (offsetDistance - (2 * pType->Speed)));
+
+			if (volatility > BulletExt::Epsilon)
+			{
+				const double volatilityDistance = pType->FlyingVolatility.Get() * volatility;
+				const CoordStruct volatilityOffset { -offset.Y, offset.X, offset.Z };
+				const double direction = ((pBullet->UniqueID + (Unsorted::CurrentFrame / 4)) & 1) != 0 ? 1.0 : -1.0;
+				targetLocation += volatilityOffset * (direction * volatilityDistance / offsetDistance / Unsorted::LeptonsPerCell);
 			}
 		}
 
