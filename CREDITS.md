@@ -684,6 +684,7 @@ This page lists all the individual contributions to the project by their author.
   - Allow warhead to only affect invoker
   - Allow customizing whether the creation of shrapnel weapon is controlled by the new target check on the warhead of the parent weapon
   - Customize `Tiled` drawing interval and centering
+  - Customize whether technos with `Locomotor=Fly` wobble
 - **Ollerus**:
   - Build limit group enhancement
   - Customizable rocker amplitude
