@@ -40,7 +40,7 @@ void UnifiedTechnoColorCommandClass::Execute(WWKey eInput) const
 
 	if (pRadar->IsAvailableNow)
 	{
-		const auto pSurface = pRadar->unknown_121C;
+		const auto pSurface = pRadar->unknown_surface_121C;
 		const auto width = pSurface->GetWidth();
 		const auto height = pSurface->GetHeight();
 

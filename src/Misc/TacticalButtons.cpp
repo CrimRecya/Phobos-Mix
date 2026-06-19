@@ -868,7 +868,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		const auto pMouse = &MouseClass::Instance;
 
 		drawText(COLOR_WHITE, "Mouse: (%04d,%04d)", mouseXY1.X, mouseXY1.Y);
-		drawText(COLOR_WHITE, "RadarScope: (%03d,%03d,%02d,%02d)", pMouse->unknown_rect_14DC.X, pMouse->unknown_rect_14DC.Y, pMouse->unknown_rect_14DC.Width, pMouse->unknown_rect_14DC.Height);
+		drawText(COLOR_WHITE, "RadarScope: (%03d,%03d,%02d,%02d)", pMouse->RadarScopeRect.X, pMouse->RadarScopeRect.Y, pMouse->RadarScopeRect.Width, pMouse->RadarScopeRect.Height);
 	}
 
 	if (pTechno)
@@ -1430,7 +1430,7 @@ DEFINE_HOOK(0x692F85, ScrollClass_MouseUpdate_SkipMouseLongPress, 0x7)
 	GET(ScrollClass*, pThis, EBX);
 
 	// 555A: AnyMouseButtonDown
-	return (pThis->unknown_byte_554A && !TacticalButtonsClass::Instance.PressedInButtonsLayer) ? CheckMousePress : CheckMouseNoPress;
+	return (pThis->AnyMouseButtonDown && !TacticalButtonsClass::Instance.PressedInButtonsLayer) ? CheckMousePress : CheckMouseNoPress;
 }
 
 DEFINE_HOOK(0x69300B, ScrollClass_MouseUpdate_SkipMouseActionUpdate, 0x6)

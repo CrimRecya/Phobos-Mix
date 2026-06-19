@@ -1085,7 +1085,7 @@ DEFINE_HOOK(0x4A937D, DisplayClass_CallBuildingPlaceCheck_ReplaceBuildingType, 0
 
 	if (pTypeExt && pTypeExt->PlaceBuilding_Extra)
 	{
-		if (!ScrollClass::Instance.unknown_byte_554A) // 555A: AnyMouseButtonDown
+		if (!ScrollClass::Instance.AnyMouseButtonDown)
 			updateCurrentFoundation();
 		else // bp
 			R->EBP(pDisplay->CurrentFoundation_CenterCell.X);

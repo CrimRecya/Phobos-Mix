@@ -301,7 +301,7 @@ DEFINE_HOOK(0x54E60A, Kamikaze_Remove_ResetTarget, 0x6)
 	const auto pAircraft = pControl->Item;
 	pAircraft->SetTarget(pNewTarget);
 	pAircraft->QueueMission(Mission::Attack, false);
-	pControl->Cell = pNewTarget;
+	pControl->Target = pNewTarget;
 
 	return ContinueLoop;
 }
