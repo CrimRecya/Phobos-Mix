@@ -227,17 +227,16 @@ void MissileTrajectory::OpenFire()
 		this->MovingVelocity.Z = 4.0;
 		this->MovingSpeed = 4.0;
 
-		// OriginalDistance is converted to record the maximum height
-		if (this->OriginalDistance < (Unsorted::LeptonsPerCell * 8)) // When the distance is very close, the trajectory tends to be parabolic
-			this->OriginalDistance = static_cast<int>(this->OriginalDistance * 0.75) + (Unsorted::LeptonsPerCell * 2);
-		else if (this->OriginalDistance > (Unsorted::LeptonsPerCell * 15)) // When the distance is far enough, it is the complete trajectory
-			this->OriginalDistance = static_cast<int>(this->OriginalDistance * 0.4) + (Unsorted::LeptonsPerCell * 2);
+		if (this->MaximumHeight < (Unsorted::LeptonsPerCell * 8)) // When the distance is very close, the trajectory tends to be parabolic
+			this->MaximumHeight = static_cast<int>(this->MaximumHeight * 0.75) + (Unsorted::LeptonsPerCell * 2);
+		else if (this->MaximumHeight > (Unsorted::LeptonsPerCell * 15)) // When the distance is far enough, it is the complete trajectory
+			this->MaximumHeight = static_cast<int>(this->MaximumHeight * 0.4) + (Unsorted::LeptonsPerCell * 2);
 		else // The distance is neither long nor short, it is an adaptive trajectory
-			this->OriginalDistance = (Unsorted::LeptonsPerCell * 8);
+			this->MaximumHeight = (Unsorted::LeptonsPerCell * 8);
 
 		// Calculate the maximum height during the ascending phase
 		constexpr int thresholdDistance = 3200;
-		this->OriginalDistance = this->OriginalDistance < thresholdDistance ? this->OriginalDistance / 2 : this->OriginalDistance - (thresholdDistance / 2);
+		this->MaximumHeight = this->MaximumHeight < thresholdDistance ? this->MaximumHeight / 2 : this->MaximumHeight - (thresholdDistance / 2);
 		this->RemainingDistance = INT_MAX;
 	}
 	else // Under normal circumstances, the trajectory is similar to ROT projectile with an initial launch direction
@@ -446,7 +445,7 @@ bool MissileTrajectory::CurveVelocityChange()
 		constexpr double uniqueCurveMaxVerticalSpeed = 160.0;
 
 		// The launch phase is divided into ascending and descending stages
-		if (this->Accelerate && (pBullet->Location.Z - pBullet->SourceCoords.Z) < this->OriginalDistance)
+		if (this->Accelerate && (pBullet->Location.Z - pBullet->SourceCoords.Z) < this->MaximumHeight)
 		{
 			if (this->MovingVelocity.Z < uniqueCurveMaxVerticalSpeed) // Accelerated phase of ascent
 				this->MovingVelocity.Z += MissileTrajectory::UniqueCurveAcceleration;
@@ -543,7 +542,7 @@ bool MissileTrajectory::StandardVelocityChange()
 			}
 		}
 
-		if (pType->FlyingVolatility.Get() > 0)
+		if (!pType->LockDirection && pType->FlyingVolatility.Get() > 0)
 		{
 			const auto offset = targetLocation - pBullet->Location;
 			const double offsetDistance = offset.Magnitude();

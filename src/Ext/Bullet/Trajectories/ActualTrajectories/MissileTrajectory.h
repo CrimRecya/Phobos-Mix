@@ -84,7 +84,11 @@ public:
 	bool CruiseEnable;
 	bool InStraight;
 	bool Accelerate;
-	int OriginalDistance;
+	union
+	{
+		int OriginalDistance;
+		int MaximumHeight;
+	};
 	int LastCruiseAltitude;
 	CoordStruct OffsetCoord;
 	double PreAimDistance;
