@@ -1358,6 +1358,8 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->UniqueTechno.Read(exINI, pSection, "UniqueTechno");
 
+	this->Missile_Tracing.Read(exINI, pSection, "Missile.Tracing");
+
 	this->CanManualReload.Read(exINI, pSection, "CanManualReload");
 	this->CanManualReload_WhenFull.Read(exINI, pSection, "CanManualReload.WhenFull");
 	this->CanManualReload_ResetROF.Read(exINI, pSection, "CanManualReload.ResetROF");
@@ -1572,7 +1574,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->PenetratesTransport_DamageMultiplier.Read(exINI, pSection, "PenetratesTransport.DamageMultiplier");
 
 	this->JumpjetClimbIgnoreBuilding.Read(exINI, pSection, "JumpjetClimbIgnoreBuilding");
-	
+
 
 	this->ExtraThreat_IsThreat.Read(exINI, pSection, "ExtraThreat.IsThreat");
 	this->AlwaysConsideredThreat.Read(exINI, pSection, "AlwaysConsideredThreat");
@@ -2198,7 +2200,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->SpawnHeight)
 		.Process(this->LandingDir)
 		.Process(this->DroppodType)
-			
+
 		.Process(this->CurleyShuffle)
 
 		.Process(this->TiberiumEaterType)
@@ -2301,6 +2303,8 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->RateDown_Cover_AmmoBelow)
 
 		.Process(this->UniqueTechno)
+
+		.Process(this->Missile_Tracing)
 
 		.Process(this->CanManualReload)
 		.Process(this->CanManualReload_WhenFull)
@@ -2552,7 +2556,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->PenetratesTransport_DamageMultiplier)
 
 		.Process(this->JumpjetClimbIgnoreBuilding)
-			
+
 		.Process(this->HoverDrownable)
 
 		.Process(this->Unsellable)

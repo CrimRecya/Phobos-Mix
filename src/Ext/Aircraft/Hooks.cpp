@@ -1240,7 +1240,7 @@ DEFINE_HOOK(0x4157EB, AircraftClass_Mission_SpyPlaneOverfly_MaxCount, 0x6)
 }
 
 #pragma region Rocket
-
+/*
 DEFINE_HOOK(0x66295A, RocketLocomotionClass_Process_IsHighEnoughForCruise, 0x8)
 {
 	GET(AircraftClass*, pLinkedTo, ECX);
@@ -1258,7 +1258,7 @@ DEFINE_HOOK(0x66295A, RocketLocomotionClass_Process_IsHighEnoughForCruise, 0x8)
 
 	return R->Origin() + 0x8;
 }
-
+*/
 #pragma endregion
 
 #pragma region CurleyShuffle

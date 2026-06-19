@@ -403,6 +403,8 @@ public:
 
 		Valueable<bool> UniqueTechno;
 
+		Valueable<bool> Missile_Tracing;
+
 		Valueable<bool> CanManualReload;
 		Valueable<bool> CanManualReload_WhenFull;
 		Valueable<bool> CanManualReload_ResetROF;
@@ -1067,6 +1069,8 @@ public:
 
 			, UniqueTechno { false }
 
+			, Missile_Tracing { false }
+
 			, CanManualReload { false }
 			, CanManualReload_WhenFull { false }
 			, CanManualReload_ResetROF { true }
@@ -1333,7 +1337,7 @@ public:
 
 			, HarvesterLoadRate {}
 			, HarvesterDumpRate {}
-				
+
 			, Parasite_AllowWaterExit {}
 
 			, FlyNoWobbles {}

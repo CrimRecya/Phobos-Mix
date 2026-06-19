@@ -250,19 +250,68 @@ DEFINE_HOOK(0x6B75AC, SpawnManagerClass_AI_SetDestinationForMissiles, 0x5)
 	return QueueMoveMission;
 }
 
-DEFINE_HOOK(0x662310, RocketLocomotionClass_Process_UpdateTargetPosition, 0x5)
+DEFINE_HOOK(0x662957, RocketLocomotionClass_Process_UpdateTargetPositionWhenBoost, 0x5)
 {
+	enum { CheckHeight = 0x662962 };
+
 	GET(ILocomotion*, pThis, ESI);
-	GET(RocketStruct*, pRocketStruct, EDI);
 
 	const auto pLoco = static_cast<RocketLocomotionClass*>(pThis);
 	const auto pRocket = pLoco->LinkedTo;
-
-	// TODO Check Missile.Tracing flag
-	if (pLoco->MissionState != 5 && (pLoco->MissionState != 4 || !pRocketStruct->LazyCurve))
+	const bool tracing = TechnoExt::ExtMap.Find(pRocket)->TypeExtData->Missile_Tracing;
+	if (tracing)
 	{
 		if (const auto pTarget = abstract_cast<FootClass*>(pRocket->Target))
 			pLoco->MovingDestination = pTarget->GetCoords();
+	}
+
+	int heightTarget = pRocket->Location.Z - pLoco->MovingDestination.Z;
+	if (MapClass::Instance.GetCellAt(pLoco->MovingDestination)->ContainsBridge())
+		heightTarget -= CellClass::BridgeHeight;
+
+	const int desiredHeight = Math::min(pRocket->GetHeight(), heightTarget);
+
+	if (tracing)
+	{
+		GET(RocketStruct*, pRocketStruct, EDI);
+
+		if (!pRocketStruct->LazyCurve && desiredHeight >= (pRocketStruct->Altitude / 4))
+			pRocket->PrimaryFacing.SetDesired(DirStruct(Math::atan2(pRocket->Location.Y - pLoco->MovingDestination.Y, pLoco->MovingDestination.X - pRocket->Location.X)));
+	}
+
+	R->EAX(desiredHeight);
+	return CheckHeight;
+}
+
+DEFINE_HOOK(0x662A1E, RocketLocomotionClass_Process_UpdateTargetPositionWhenCruise, 0x5)
+{
+	GET(ILocomotion*, pThis, ESI);
+
+	const auto pLoco = static_cast<RocketLocomotionClass*>(pThis);
+	const auto pRocket = pLoco->LinkedTo;
+	if (TechnoExt::ExtMap.Find(pRocket)->TypeExtData->Missile_Tracing)
+	{
+		if (const auto pTarget = abstract_cast<FootClass*>(pRocket->Target))
+			pLoco->MovingDestination = pTarget->GetCoords();
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x662CDF, RocketLocomotionClass_Process_UpdateTargetPositionWhenDive, 0x5)
+{
+	GET(ILocomotion*, pThis, ESI);
+
+	const auto pLoco = static_cast<RocketLocomotionClass*>(pThis);
+	const auto pRocket = pLoco->LinkedTo;
+	if (TechnoExt::ExtMap.Find(pRocket)->TypeExtData->Missile_Tracing)
+	{
+		if (const auto pTarget = abstract_cast<FootClass*>(pRocket->Target))
+			pLoco->MovingDestination = pTarget->GetCoords();
+
+		GET(int, dX, EAX);
+		GET(int, dY, ECX);
+		pRocket->PrimaryFacing.SetDesired(DirStruct(Math::atan2(-dY, dX)));
 	}
 
 	return 0;
