@@ -592,6 +592,7 @@ HideShakeEffects=false           ; boolean
 - [Animation transparency customization settings](New-or-Enhanced-Logics.md#customizable-animation-transparency-settings) (by Starkku)
 - [Customize `Tiled` drawing interval and centering](Fixed-or-Improved-Logics.md#customize-the-drawing-interval-for-tiled) (by Noble_Fish)
 - [Customize whether technos with `Locomotor=Fly` wobble](Fixed-or-Improved-Logics.md#customize-whether-technos-with-locomotor-fly-wobble) (by Noble_Fish)
+- [Customize the landing animation of technos that have `Locomotor=Fly`](Fixed-or-Improved-Logics.md#customize-the-landing-animation-of-technos-that-have-locomotor-fly) (by Noble_Fish)
 
 #### Vanilla fixes:
 - Fixed sidebar not updating queued unit numbers when adding or removing units when the production is on hold (by CrimRecya)
