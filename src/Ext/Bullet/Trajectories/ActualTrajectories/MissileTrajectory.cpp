@@ -29,7 +29,8 @@ void MissileTrajectoryType::Serialize(T& Stm)
 		.Process(this->CollisionDetection)
 		.Process(this->SuicideShortOfROT)
 		.Process(this->SuicideAboveRange)
-		.Process(this->FlyingVolatility)
+		.Process(this->VolatilityRange)
+		.Process(this->VolatilityPeriod)
 		;
 }
 
@@ -107,8 +108,10 @@ void MissileTrajectoryType::Read(CCINIClass* const pINI, const char* pSection)
 	this->CollisionDetection.Read(exINI, pSection, "Trajectory.Missile.CollisionDetection");
 	this->SuicideShortOfROT.Read(exINI, pSection, "Trajectory.Missile.SuicideShortOfROT");
 	this->SuicideAboveRange.Read(exINI, pSection, "Trajectory.Missile.SuicideAboveRange");
-	this->FlyingVolatility.Read(exINI, pSection, "Trajectory.Missile.FlyingVolatility");
-	this->FlyingVolatility = Leptons(std::clamp(static_cast<int>(this->FlyingVolatility.Get()), 0, Unsorted::LeptonsPerCell));
+	this->VolatilityRange.Read(exINI, pSection, "Trajectory.Missile.VolatilityRange");
+	this->VolatilityRange = Leptons(std::clamp(static_cast<int>(this->VolatilityRange.Get()), 0, Unsorted::LeptonsPerCell));
+	this->VolatilityPeriod.Read(exINI, pSection, "Trajectory.Missile.VolatilityPeriod");
+	this->VolatilityPeriod = Math::max(1, this->VolatilityPeriod);
 }
 
 template<typename T>
@@ -551,7 +554,7 @@ bool MissileTrajectory::StandardVelocityChange()
 			}
 		}
 
-		if (!pType->LockDirection && pType->FlyingVolatility.Get() > 0)
+		if (!pType->LockDirection && pType->VolatilityRange.Get() > 0)
 		{
 			const auto offset = targetLocation - pBullet->Location;
 			const double offsetDistance = offset.Magnitude();
@@ -559,9 +562,9 @@ bool MissileTrajectory::StandardVelocityChange()
 
 			if (volatility > BulletExt::Epsilon)
 			{
-				const double volatilityDistance = pType->FlyingVolatility.Get() * volatility;
+				const double volatilityDistance = pType->VolatilityRange.Get() * volatility;
 				const CoordStruct volatilityOffset { -offset.Y, offset.X, offset.Z };
-				const double direction = ((pBullet->UniqueID + (Unsorted::CurrentFrame / 4)) & 1) != 0 ? 1.0 : -1.0;
+				const double direction = ((pBullet->UniqueID + (Unsorted::CurrentFrame / pType->VolatilityPeriod.Get())) & 1) != 0 ? 1.0 : -1.0;
 				targetLocation += volatilityOffset * (direction * volatilityDistance / offsetDistance / Unsorted::LeptonsPerCell);
 			}
 		}

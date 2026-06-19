@@ -26,7 +26,8 @@ public:
 		, CollisionDetection { false }
 		, SuicideShortOfROT { false }
 		, SuicideAboveRange { -3.0 }
-		, FlyingVolatility { Leptons(0) }
+		, VolatilityRange { Leptons(0) }
+		, VolatilityPeriod { 4 }
 	{ }
 
 	Valueable<bool> UniqueCurve;
@@ -47,7 +48,8 @@ public:
 	Valueable<bool> CollisionDetection;
 	Valueable<bool> SuicideShortOfROT;
 	Valueable<double> SuicideAboveRange;
-	Valueable<Leptons> FlyingVolatility;
+	Valueable<Leptons> VolatilityRange;
+	Valueable<int> VolatilityPeriod;
 
 	virtual bool Load(PhobosStreamReader& Stm, bool RegisterForChange) override;
 	virtual bool Save(PhobosStreamWriter& Stm) const override;
