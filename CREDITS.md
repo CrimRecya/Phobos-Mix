@@ -860,3 +860,4 @@ This page lists all the individual contributions to the project by their author.
   - Multiplayer gamespeed fix for RealTimeTimers
   - Revert Ares patch to allow OpenTopped transport customization
   - Fix for units with Fly, Jumpjet or Rocket locomotors crashing off-map not being cleaned up
+  - Fix for mirage tanks (and other vehicles disguised as terrain) incorrectly displaying veterancy insignia to enemy players when not clearly visible
