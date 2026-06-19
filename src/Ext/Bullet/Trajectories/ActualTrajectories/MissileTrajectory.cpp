@@ -367,9 +367,18 @@ CoordStruct MissileTrajectory::GetPreAimCoordsWithBurst()
 	if (offsetMin > 0 || offsetMax > 0)
 	{
 		const int offsetDistance = ScenarioClass::Instance->Random.RandomRanged(offsetMin, offsetMax);
-		const double angel = ScenarioClass::Instance->Random.RandomDouble() * Math::TwoPi;
-		preAimCoord.X += static_cast<int>(offsetDistance * Math::cos(angel));
-		preAimCoord.Y += static_cast<int>(offsetDistance * Math::sin(angel));
+		const double angle = ScenarioClass::Instance->Random.RandomDouble() * Math::TwoPi;
+
+		auto auxVector = CoordStruct::Empty;
+		if (std::abs(preAimCoord.X) <= std::abs(preAimCoord.Y) && std::abs(preAimCoord.X) <= std::abs(preAimCoord.Z))
+			auxVector.X = 1;
+		else if (std::abs(preAimCoord.Y) <= std::abs(preAimCoord.Z))
+			auxVector.Y = 1;
+		else
+			auxVector.Z = 1;
+
+		const auto baseVector = preAimCoord.CrossProduct(auxVector).Normalized();
+		preAimCoord += (baseVector * Math::cos(angle) + preAimCoord.CrossProduct(baseVector).Normalized() * Math::sin(angle)) * offsetDistance;
 	}
 
 	return preAimCoord;

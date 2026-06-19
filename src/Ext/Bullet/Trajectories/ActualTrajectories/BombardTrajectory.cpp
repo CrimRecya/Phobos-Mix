@@ -272,9 +272,9 @@ CoordStruct BombardTrajectory::CalculateMiddleCoords()
 
 	if (!pType->FallScatter_Linear)
 	{
-		const double angel = ScenarioClass::Instance->Random.RandomDouble() * Math::TwoPi;
-		scatterX = length * Math::cos(angel);
-		scatterY = length * Math::sin(angel);
+		const double angle = ScenarioClass::Instance->Random.RandomDouble() * Math::TwoPi;
+		scatterX = length * Math::cos(angle);
+		scatterY = length * Math::sin(angle);
 	}
 	else
 	{
