@@ -55,7 +55,6 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Animations can now be offset on the X axis with `XDrawOffset`.
 - `IsSimpleDeployer` units now only play `DeploySound` and `UndeploySound` once, when done with (un)deploying instead of repeating it over duration of turning and/or `DeployingAnim`.
 - AITrigger can now recognize Building Upgrades as legal condition.
-- `EWGates` and `NSGates` now will link walls like `xxGateOne` and `xxGateTwo` do.
 - Fixed interaction of `UnitAbsorb` & `InfantryAbsorb` with `Grinding` buildings. The keys will now make the building only accept appropriate types of objects.
 - Fixed missing `No Enter` cursor for VehicleTypes being unable to enter a `Grinding` building.
 - Fixed Engineers being able to enter `Grinding` buildings even when they shouldn't (such as ally building at full HP).
@@ -113,8 +112,6 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - AI players can now build `Naval=true` and `Naval=false` vehicles concurrently like human players do.
 - Fixed the bug when jumpjets were snapping into facing bottom-right when starting movement (observable when the starting unit is a jumpjet and is ordered to move).
 - Objects with `Palette` set now have their color tint adjusted accordingly by superweapons, map retint actions etc. if they belong to a house using any color scheme instead of only those from the first half of `[Colors]` list.
-- Animations using `AltPalette` are now remapped to their owner's color scheme instead of first listed color scheme and no longer draw over shroud. Color scheme from `[AudioVisual] -> AnimRemapDefaultColorScheme` is used if anim has no owner, which defaults to first listed color scheme from `[Colors]` still.
-  - They can also have map lighting apply on them if `AltPalette.ApplyLighting` is set to true.
 - Fixed `DeployToFire` not considering building placement rules for `DeploysInto` buildings and as a result not working properly with `WaterBound` buildings.
 - Fixed `DeployToFire` not recalculating firer's position on land if it cannot currently deploy.
 - `Arcing=true` projectile elevation inaccuracy can now be fixed by setting `Arcing.AllowElevationInaccuracy=false`.
@@ -826,6 +823,26 @@ LandingDir=     ; Direction type (integers from 0-255). Accepts negative values 
 
 ## Animations
 
+### Animation palette customizations & improvements
+
+- Animations using `AltPalette` are now remapped to their owner's color scheme instead of first listed color scheme and no longer draw over shroud.
+  - Color scheme from `[AudioVisual] -> AnimRemapDefaultColorScheme` is used if anim has no owner, which defaults to first listed color scheme from `[Colors]` still.
+  - They can also have map lighting apply on them if `AltPalette.ApplyLighting` is set to true.
+- `TheaterPalette` can be used to customize whether or not animation is drawn in theater / tile palette. Takes priority all over palette-influencing settings except `IsVeins=true`. Defaults to true for tile animations, otherwise false.
+
+In `rulesmd.ini`:
+```ini
+[AudioVisual]
+AnimRemapDefaultColorScheme=    ; integer, [Colors] list index
+```
+
+In `artmd.ini`:
+```ini
+[SOMEANIM]                      ; AnimationType
+AltPalette.ApplyLighting=false  ; boolean
+TheaterPalette=                 ; boolean
+```
+
 ### Animation weapon and damage settings
 
 - `Weapon` can be set to a WeaponType, to create a projectile and immediately detonate it instead of simply dealing `Damage` by `Warhead`. This allows weapon effects to be applied.
@@ -879,6 +896,19 @@ WakeAnim=                     ; List of AnimationTypes
 SplashAnims=                  ; List of AnimationTypes, default to [CombatDamage] -> SplashList
 SplashAnims.PickRandom=false  ; boolean
 ExtraShadow=true              ; boolean
+```
+
+### Customize the drawing interval for `Tiled`
+
+- In vanilla, the drawing interval of an animation with `Tiled=yes` is determined by the height of the rectangle formed by the non-transparent pixels of the first frame in the Shape resource file. Now you can customize it.
+  - If `Tiled.Interval` is greater than `0`, the specified value is used; otherwise, the default rule applies.
+  - `Tiled.AlignToCenter` can be used to change the alignment of the Shape resource file coordinates from the bottom center to the canvas center for the Animation entity's center.
+
+In `artmd.ini`:
+```ini
+[SOMEANIM]                 ; AnimationType, with Tiled=yes
+Tiled.Interval=0           ; integer, pixels
+Tiled.AlignToCenter=false  ; boolean
 ```
 
 ### Customize whether `Crater=yes` animation would destroy tiberium
@@ -1183,6 +1213,14 @@ FactoryPlant.DisallowTypes=  ; List of TechnoTypes
 FactoryPlant.MaxCount=-1     ; integer
 ```
 
+### Gates connecting with Walls
+
+![image](_static/images/ewgates.gif)
+*A Gate EW is built onto the Concrete Walls in [Fantasy ADVENTURE](https://www.moddb.com/mods/fantasy-adventure)*
+
+- It is possible to add new gates which can be connected with any Walls by specifing them as `[AI] -> EWGates` and `[AI] -> NSGates` like `xxGateOne` and `xxGateTwo` do.
+  - In the in-game orientation, north points to the upper right, so `NSGates` correspond to buildings with `Foundation=1x3`, and `EWGates` correspond to buildings with `Foundation=3x1`.
+
 ### Power plant damage factor
 
 - It is possible to customize the power decrement of a power plant when it's damaged. The actual power output for this plant will be: `Power` minuses the product of original power decrement and `Powerplant.DamageFactor`. Can't reduce power output lower than 0.
@@ -1405,17 +1443,20 @@ BallisticScatter.Max= ; floating point value, distance in cells
 - Setting `Shrapnel.UseWeaponTargeting` now allows weapon target filtering to be enabled for `ShrapnelWeapon`. Target's `LegalTarget` setting, Warhead `Verses` against `Armor` as well as `ShrapnelWeapon` [weapon targeting filters](New-or-Enhanced-Logics.md#weapon-targeting-filter) & [AttachEffect filters](New-or-Enhanced-Logics.md#attached-effects) will be checked.
   - Do note that this overrides the normal check of only allowing shrapnels to hit non-allied objects. Use `CanTargetHouses=enemies` to manually enable this behaviour again.
 - `Shrapnel.IgnoreHitBuildings` can be used to override default behaviour where shrapnels can snap onto building targets multiple times if the building occupies more than one cell. Note that this wont prevent random cells within the building's `Foundation` from being targeted if there are not enough objects around to satisfy `ShrapnelCount`.
+- `Shrapnel.ObeyWarheadTriggerConditions` can be used to determine whether to use [Customizable Warhead trigger conditions](Fixed-or-Improved-Logics.md#customizable-warhead-trigger-conditions) and [Only affects invoker checks](New-or-Enhanced-Logics.md#allow-warhead-to-only-affect-invoker) when hitting units to decide if it triggers.
 
 In `rulesmd.ini`:
 ```ini
 [CombatDamage]
-Shrapnel.IgnoreHitBuildings=false  ; boolean
+Shrapnel.IgnoreHitBuildings=false           ; boolean
+Shrapnel.ObeyWarheadTriggerConditions=true  ; boolean
 
-[SOMEPROJECTILE]                   ; Projectile
-Shrapnel.AffectsGround=false       ; boolean
-Shrapnel.AffectsBuildings=false    ; boolean
-Shrapnel.UseWeaponTargeting=false  ; boolean
-Shrapnel.IgnoreHitBuildings=       ; boolean
+[SOMEPROJECTILE]                            ; Projectile
+Shrapnel.AffectsGround=false                ; boolean
+Shrapnel.AffectsBuildings=false             ; boolean
+Shrapnel.UseWeaponTargeting=false           ; boolean
+Shrapnel.IgnoreHitBuildings=                ; boolean
+Shrapnel.ObeyWarheadTriggerConditions=      ; boolean, defaults to [CombatDamage] -> Shrapnel.ObeyWarheadTriggerConditions
 ```
 
 ## Technos
@@ -1711,6 +1752,20 @@ FallingDownDamage.Water=            ; integer / percentage
 FallingDownDamage.AllowEMP=true     ; boolean
 ```
 
+### Customize whether technos with `Locomotor=Fly` wobble
+
+- In vanilla, if technos use `Locomotor=Fly` and do not have `IsDropship=true`, they will have a hardcoded wobble effect. However, using `IsDropship=true` also introduces a series of hardcoded behaviors associated with it. Now, you can customize whether to disable this behavior, and it can also be used to enable this behavior for technos with `IsDropship=true`.
+  - If the flag on technos is not defined, default to using the global value; if the global flag is not defined, use the original rule, which determines whether to disable wobble behavior based on whether the technos have `IsDropship=true`.
+
+In `rulesmd.ini`:
+```ini
+[AudioVisual]
+FlyNoWobbles=  ; boolean
+
+[SOMETECHNO]   ; TechnoType with Locomotor=Fly
+FlyNoWobbles=  ; boolean, defaults to [AudioVisual] -> FlyNoWobbles
+```
+
 ### Damaged speed customization
 
 - In vanilla, units using drive/ship loco will has hardcoded speed multiplier when damaged. Now you can customize it.
@@ -1744,6 +1799,26 @@ How to generate `DebrisTypes` in the game:
 2. Traverse `DebrisTypes` and limit the quantity range through `DebrisMaximums` and `DebrisMinimums`.
 3. When the number of generated debris will exceeds the total number, limit the quantity and end the traversal.
 4. When the number of debris generated after a single traversal is not enough to exceed the total number, it will end if `DebrisTypes.Limit` is enabled, otherwise the traversal will restart like vanilla game do.
+```
+
+### Dehardcode of parasites unlimboing after killing naval targets
+
+- In vanilla, parasites with `Naval=false` perform a series of additional checks on the current cell after killing a target, including a series of determinations such as whether there is a bridge when the cell's LandType is `Water`, `Beach`, or `Rock`, which prevents them from normally unlimbo in open water; while parasites with `Naval=true` skip these checks. Now, you can customize the behavior of parasites after killing a target in water:
+  - If not set, the original behavior is performed by default.
+  - If set to `true`, they can unlimbo normally even if `Naval=false`.
+  - If set to `false`, they cannot unlimbo normally even if `Naval=true`.
+
+In `rulesmd.ini`:
+```ini
+[General]
+Parasite.AllowWaterExit=  ; boolean
+
+[SOMETECHNO]              ; TechnoType
+Parasite.AllowWaterExit=  ; boolean, defaults to [General] -> Parasite.AllowWaterExit
+```
+
+```{note}
+Setting `Parasite.AllowWaterExit` to `true` does not skip the original check of whether a BuildingType exists on the cell.
 ```
 
 ### DropPod

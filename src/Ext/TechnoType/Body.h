@@ -690,6 +690,10 @@ public:
 		Nullable<int> HarvesterLoadRate;
 		Nullable<double> HarvesterDumpRate;
 
+		Nullable<bool> Parasite_AllowWaterExit;
+
+		Nullable<bool> FlyNoWobbles;
+
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
 			, HealthBar_HidePips { false }
@@ -1329,6 +1333,10 @@ public:
 
 			, HarvesterLoadRate {}
 			, HarvesterDumpRate {}
+				
+			, Parasite_AllowWaterExit {}
+
+			, FlyNoWobbles {}
 		{ }
 
 		virtual ~ExtData() = default;

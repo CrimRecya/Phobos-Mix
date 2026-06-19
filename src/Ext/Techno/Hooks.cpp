@@ -1067,6 +1067,23 @@ DEFINE_HOOK(0x6298CC, ParasiteClass_AI_GrippleAnim, 0x5)
 	return SkipGameCode;
 }
 
+DEFINE_HOOK(0x62AB69, ParasiteClass_CanExistOnVictimCell_AllowWaterExit, 0x6)
+{
+	enum { SkipChecks = 0x62AC0F, ForceFail = 0x62AB4B, ContinueVanilla = 0x62AB77 };
+
+	GET(TechnoTypeClass*, pType, EAX);
+
+	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	const auto& globalVal = RulesExt::Global()->Parasite_AllowWaterExit;
+
+	if (pTypeExt->Parasite_AllowWaterExit.isset())
+		return pTypeExt->Parasite_AllowWaterExit.Get() ? SkipChecks : ForceFail;
+	else if (globalVal.isset())
+		return globalVal.Get() ? SkipChecks : ForceFail;
+	else
+		return pType->Naval ? SkipChecks : ContinueVanilla;
+}
+
 #pragma region RadarDrawing
 
 DEFINE_HOOK(0x655DDD, RadarClass_ProcessPoint_RadarInvisible, 0x6)
@@ -2275,6 +2292,17 @@ DEFINE_HOOK(0x70AFEF, TechnoClass_UpdateSight_DynamicSight2, 0x6)
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x4CF8B1, FlyLocomotionClass_Draw_Point_NoWobbles, 0x6)
+{
+    enum { Continue = 0x4CF8B7 };
+    GET(TechnoTypeClass*, pType, EAX);
+
+	auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+    R->CL(pTypeExt->FlyNoWobbles.Get(RulesExt::Global()->FlyNoWobbles.Get(pType->IsDropship)));
+
+	return Continue;
+}
 
 namespace WarpPerStep
 {
