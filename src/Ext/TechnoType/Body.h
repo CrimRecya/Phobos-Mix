@@ -696,6 +696,8 @@ public:
 
 		Nullable<bool> FlyNoWobbles;
 
+		Nullable<AnimTypeClass*> LandingAnim;
+
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
 			, HealthBar_HidePips { false }
@@ -1341,6 +1343,8 @@ public:
 			, Parasite_AllowWaterExit {}
 
 			, FlyNoWobbles {}
+
+			, LandingAnim {}
 		{ }
 
 		virtual ~ExtData() = default;
