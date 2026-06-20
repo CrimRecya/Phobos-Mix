@@ -861,3 +861,4 @@ This page lists all the individual contributions to the project by their author.
   - Multiplayer gamespeed fix for RealTimeTimers
   - Revert Ares patch to allow OpenTopped transport customization
   - Fix for units with Fly, Jumpjet or Rocket locomotors crashing off-map not being cleaned up
+- **Chang_zhi** - Interop export interface for accessing scenario local/global variables
