@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 #include <Utilities/Enum.h>
@@ -160,7 +160,7 @@ public:
 		Valueable<bool> DestroyAnim_Random;
 		Valueable<bool> NotHuman_RandomDeathSequence;
 
-		Valueable<InfantryTypeClass*> DefaultDisguise;
+		Valueable<TechnoTypeClass*> DefaultDisguise;
 		NullableVector<TerrainTypeClass*> DefaultMirageDisguises;
 		Valueable<bool> UseDisguiseMovementSpeed;
 
@@ -783,7 +783,7 @@ public:
 			, DestroyAnim_Random { true }
 			, NotHuman_RandomDeathSequence { false }
 
-			, DefaultDisguise {}
+			, DefaultDisguise { nullptr }
 			, UseDisguiseMovementSpeed {}
 
 			, OpenTopped_RangeBonus {}
