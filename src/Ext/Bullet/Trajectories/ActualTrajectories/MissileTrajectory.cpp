@@ -381,7 +381,7 @@ CoordStruct MissileTrajectory::GetPreAimCoordsWithBurst()
 			auxVector.Z = 1;
 
 		const auto baseVector = preAimCoord.CrossProduct(auxVector).Normalized();
-		preAimCoord += (baseVector * Math::cos(angle) + preAimCoord.CrossProduct(baseVector).Normalized() * Math::sin(angle)) * offsetDistance;
+		preAimCoord += (baseVector * (Math::cos(angle) * offsetDistance) + preAimCoord.CrossProduct(baseVector).Normalized() * (Math::sin(angle) * offsetDistance));
 	}
 
 	return preAimCoord;
