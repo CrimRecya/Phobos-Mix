@@ -1,9 +1,10 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <AircraftTrackerClass.h>
 
 #include <Ext/Bullet/Body.h>
 #include <Ext/WeaponType/Body.h>
+#include <Ext/WarheadType/Body.h>
 #include <Ext/Techno/Body.h>
 #include <Utilities/EnumFunctions.h>
 

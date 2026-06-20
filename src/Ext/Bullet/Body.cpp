@@ -1,9 +1,10 @@
-﻿#include "Body.h"
+#include "Body.h"
 #include "Trajectories\PhobosVirtualTrajectory.h"
 
 #include <Ext/Anim/Body.h>
 #include <Ext/RadSite/Body.h>
 #include <Ext/WeaponType/Body.h>
+#include <Ext/WarheadType/Body.h>
 #include <Ext/Cell/Body.h>
 #include <Ext/EBolt/Body.h>
 #include <Ext/Techno/Body.h>
@@ -410,7 +411,9 @@ void BulletExt::ExtData::InterceptBullet(TechnoClass* pSource, BulletClass* pInt
 		const int damage = static_cast<int>(pInterceptor->Health * versus);
 		this->CurrentStrength -= damage;
 
-		if (Phobos::DisplayDamageNumbers && damage != 0)
+		const bool HiddenNumbers = WarheadTypeExt::ExtMap.Find(pThis->WH)->HiddenDamageNumbers;
+
+		if (Phobos::Config::DamageNumbersCommands && Phobos::Config::DisplayDamageNumbers && !HiddenNumbers && damage != 0)
 			GeneralUtils::DisplayDamageNumberString(damage, DamageDisplayType::Intercept, pThis->GetRenderCoords(), this->DamageNumberOffset);
 
 		if (this->CurrentStrength <= 0)

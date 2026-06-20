@@ -1,4 +1,4 @@
-﻿#include "DamageDisplay.h"
+#include "DamageDisplay.h"
 
 #include <Utilities/GeneralUtils.h>
 
@@ -24,5 +24,5 @@ const wchar_t* DamageDisplayCommandClass::GetUIDescription() const
 
 void DamageDisplayCommandClass::Execute(WWKey eInput) const
 {
-	Phobos::DisplayDamageNumbers = !Phobos::DisplayDamageNumbers;
+	Phobos::Config::DisplayDamageNumbers = !Phobos::Config::DisplayDamageNumbers;
 }

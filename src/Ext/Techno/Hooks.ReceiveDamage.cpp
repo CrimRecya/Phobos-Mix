@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <Ext/House/Body.h>
 #include <Ext/TEvent/Body.h>
@@ -248,7 +248,7 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 	GET(const DamageState, state, EAX);
 	GET(WarheadTypeClass* const, pWH, EBP);
 
-	if (Phobos::DisplayDamageNumbers && *pDamage)
+	if (Phobos::Config::DamageNumbersCommands && Phobos::Config::DisplayDamageNumbers && *pDamage && !WarheadTypeExt::ExtMap.Find(pWH)->HiddenDamageNumbers)
 		GeneralUtils::DisplayDamageNumberString(*pDamage, DamageDisplayType::Regular, pThis->GetRenderCoords(), TechnoExt::ExtMap.Find(pThis)->DamageNumberOffset);
 
 	if ((state == DamageState::NowDead) && !WarheadTypeExt::ExtMap.Find(pWH)->SuppressWreckage && RulesExt::Global()->EnableWreckageSpawn)
