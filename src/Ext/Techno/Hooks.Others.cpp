@@ -269,17 +269,17 @@ DEFINE_HOOK(0x662957, RocketLocomotionClass_Process_UpdateTargetPositionWhenBoos
 	if (MapClass::Instance.GetCellAt(pLoco->MovingDestination)->ContainsBridge())
 		heightTarget -= CellClass::BridgeHeight;
 
-	const int desiredHeight = Math::min(pRocket->GetHeight(), heightTarget);
+	const int checkHeight = Math::min(pRocket->GetHeight(), heightTarget);
 
 	if (tracing)
 	{
 		GET(RocketStruct*, pRocketStruct, EDI);
 
-		if (!pRocketStruct->LazyCurve && desiredHeight >= (pRocketStruct->Altitude / 4))
+		if (!pRocketStruct->LazyCurve && checkHeight >= (pRocketStruct->Altitude / 4))
 			pRocket->PrimaryFacing.SetDesired(DirStruct(Math::atan2(pRocket->Location.Y - pLoco->MovingDestination.Y, pLoco->MovingDestination.X - pRocket->Location.X)));
 	}
 
-	R->EAX(desiredHeight);
+	R->EAX(checkHeight);
 	return CheckHeight;
 }
 
@@ -353,6 +353,16 @@ DEFINE_HOOK(0x54E60A, Kamikaze_Remove_ResetTarget, 0x6)
 	pControl->Target = pNewTarget;
 
 	return ContinueLoop;
+}
+
+DEFINE_HOOK(0x41AA91, AircraftClass_SetDestination_SetRocketDestination, 0x7)
+{
+	enum { ContinueCheckLanding = 0x41AAB1, SetNoDestination = 0x41AA9C };
+
+	GET(AircraftClass*, pThis, ESI);
+	GET(AbstractClass*, pDest, EDI);
+
+	return pDest->IsInAir() && (!pThis->Spawned || !pThis->Type->MissileSpawn || !pThis->SpawnOwner) ? SetNoDestination : ContinueCheckLanding;
 }
 
 #pragma endregion
@@ -1760,7 +1770,7 @@ DEFINE_HOOK(0x709957, TechnoClass_TargetAndEstimateDamage_SetTarget, 0x6)
 	GET(TechnoClass*, pThis, ESI);
 	GET(AbstractClass*, pTarget, EDI);
 
-	if (CanExtraTargetingNow(pThis) ? (pThis->QueuedMission != Mission::Attack) : (pTarget != nullptr))
+	if (CanExtraTargetingNow(pThis) ? (pThis->QueuedMission != Mission::Attack && pThis->Target != pTarget) : (pTarget != nullptr))
 		pThis->SetTarget(pTarget);
 
 	return RulesExt::Global()->VHPScan_Enhanced ? SkipSetTargetAndEstimateHealth : SkipSetTarget;
