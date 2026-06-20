@@ -1,4 +1,4 @@
-#include "ShieldClass.h"
+﻿#include "ShieldClass.h"
 
 #include <Ext/Anim/Body.h>
 #include <Ext/Techno/Body.h>
@@ -1083,12 +1083,6 @@ ArmorType ShieldClass::GetArmorType(TechnoTypeClass* pTechnoType) const
 {
 	const auto pShieldType = this->Type;
 	const auto pTechno = this->Techno;
-
-	if (pShieldType->InheritArmor_From != nullptr)
-	{
-		auto pInherited = pShieldType->InheritArmor_From;
-		return pInherited->Armor;
-	}
 
 	if (pTechno && pShieldType->InheritArmorFromTechno)
 	{
