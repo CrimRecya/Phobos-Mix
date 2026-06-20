@@ -1,4 +1,4 @@
-#include "SelectedButtonClass.h"
+﻿#include "SelectedButtonClass.h"
 #include "SelectedInfoClass.h"
 
 #include <Ext/Side/Body.h>
@@ -244,7 +244,7 @@ void SelectedNotButtonClass::DrawInfo() const
 		const double mult = pFoot
 			? pFoot->SpeedMultiplier * TechnoExt::ExtMap.Find(pFoot)->AE.SpeedMultiplier * (pFoot->HasAbility(Ability::Faster) ? RulesClass::Instance->VeteranSpeed : 1.0)
 			: pExt->AE.ROFMultiplier * (pTechno->HasAbility(Ability::ROF) ? RulesClass::Instance->VeteranROF : 1.0);
-		const int frame = getIconFrame((pFoot ? 10 : 15), mult);
+		const int frame = getIconFrame((pFoot ? 10 : 0), mult);
 		RectangleStruct rect { 0, 0, this->X + this->Width, this->Y + this->Height };
 		DSurface::Composite->DrawSHP(pSideExt->SelectedInfo_Palette.GetOrDefaultConvert(FileSystem::ANIM_PAL),
 			pSHP, frame, &position, &rect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);

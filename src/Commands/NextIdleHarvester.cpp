@@ -1,4 +1,4 @@
-#include "NextIdleHarvester.h"
+﻿#include "NextIdleHarvester.h"
 
 #include <Utilities/GeneralUtils.h>
 #include <Ext/Techno/Body.h>
@@ -66,6 +66,6 @@ void NextIdleHarvesterCommandClass::Execute(WWKey eInput) const
 	}
 	else
 	{
-		MessageListClass::Instance.PrintMessage(StringTable::LoadString("MSG:NothingSelectedOreMiner"), RulesClass::Instance->MessageDelay, HouseClass::CurrentPlayer->ColorSchemeIndex, true);
+		MessageListClass::Instance.PrintMessage(StringTable::LoadString("MSG:NothingSelected"), RulesClass::Instance->MessageDelay, HouseClass::CurrentPlayer->ColorSchemeIndex, true);
 	}
 }
