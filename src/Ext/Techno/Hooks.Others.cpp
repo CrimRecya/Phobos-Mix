@@ -380,21 +380,26 @@ DEFINE_HOOK(0x742691, UnitClass_SetDestination_PiggyBack, 0x8)
 #pragma endregion
 
 #pragma region DetectionLogic
-/*
-DEFINE_HOOK(0x5865E2, MapClass_IsLocationFogged_Check, 0x5)
+
+DEFINE_HOOK(0x687C56, INIClass_ReadScenario_EnableFog, 0x5)
 {
-	REF_STACK(CoordStruct*, pCoords, STACK_OFFSET(0x0, 0x4));
+	const bool fog = RulesClass::Instance->FogOfWar;
+	GameModeOptionsClass::Instance.FogOfWar = fog;
+	ScenarioClass::Instance->SpecialFlags.FogOfWar = fog;
+	return 0;
+}
+
+DEFINE_HOOK(0x5865E2, MapClass_IsLocationFogged_Reimplement, 0x5)
+{
+	GET_STACK(const CoordStruct*, pCoords, STACK_OFFSET(0x0, 0x4));
 
 	const int level = pCoords->Z / Unsorted::LevelHeight;
 	const int extra = (level & 1) ? ((level >> 1) + 1) : (level >> 1);
 	const CellStruct cell { static_cast<short>((pCoords->X >> 8) - extra), static_cast<short>((pCoords->Y >> 8) - extra) };
 
-	R->EAX(!(MapClass::Instance.GetCellAt(cell)->AltFlags & AltCellFlags::NoFog));
+	R->EAX(!!(MapClass::Instance.GetCellAt(cell)->Flags & CellFlags::Fogged));
 	return 0;
 }
-*/
-// 0x655DDD
-// 0x6D8FD0
 
 #pragma endregion
 
