@@ -401,6 +401,161 @@ DEFINE_HOOK(0x5865E2, MapClass_IsLocationFogged_Reimplement, 0x5)
 	return 0;
 }
 
+DEFINE_HOOK(0x4A9CA0, DisplayClass_RevealFogShroud_Reimplement, 0x8)
+{
+	enum { SkipGameCode = 0x4A9DC6 };
+
+	GET(DisplayClass*, pThis, ECX);
+	GET_STACK(CellStruct*, pCellStruct, STACK_OFFSET(0x0, 0x4));
+	GET_STACK(HouseClass*, pHouse, STACK_OFFSET(0x0, 0x8));
+	GET_STACK(bool, increase, STACK_OFFSET(0x0, 0xC));
+
+	const auto pCell = pThis->GetCellAt(*pCellStruct);
+	const auto flags = pCell->Flags;
+	const bool edgeNotRevealed = !(flags & CellFlags::EdgeRevealed);
+	const bool shouldRadarRedraw = edgeNotRevealed || !(pCell->AltFlags & AltCellFlags::Mapped);
+	bool shouldRedraw = shouldRadarRedraw;
+	pCell->Flags = flags & ~CellFlags::IsPlot | CellFlags::EdgeRevealed;
+
+	if (increase)
+		pCell->IncreaseShroudCounter();
+	else
+		pCell->ReduceShroudCounter();
+
+	const char newVisibility = TacticalClass::Instance->GetOcclusion(*pCellStruct, false);
+	if (newVisibility != pCell->Visibility)
+	{
+		shouldRedraw = true;
+		pCell->Visibility = newVisibility;
+	}
+
+	if (pCell->Visibility == -1)
+		pCell->AltFlags |= AltCellFlags::NoFog;
+
+	const char newFoggedness = TacticalClass::Instance->GetOcclusion(*pCellStruct, true);
+	if (newFoggedness != pCell->Foggedness)
+	{
+		shouldRedraw = true;
+		pCell->Foggedness = newFoggedness;
+	}
+
+	if (pCell->Foggedness == -1)
+		pCell->Flags |= CellFlags::CenterRevealed;
+
+	if (shouldRedraw)
+		TacticalClass::Instance->RegisterCellAsVisible(pCell);
+
+	if ((pCell->AltFlags & AltCellFlags::Mapped) && ScenarioClass::Instance->SpecialFlags.FogOfWar)
+	{
+		for (size_t i = 0; i < 8; ++i)
+		{
+			auto adjCell = Unsorted::AdjacentCell[i & 7] + *pCellStruct;
+			const auto pAdjCell = pThis->GetCellAt(adjCell);
+
+			if (adjCell != *pCellStruct && !(pAdjCell->Flags & CellFlags::CenterRevealed))
+			{
+				const char adjNewFoggedness = TacticalClass::Instance->GetOcclusion(adjCell, true);
+				if (adjNewFoggedness == -1)
+				{
+					if (pAdjCell->Flags & CellFlags::EdgeRevealed)
+					{
+						pAdjCell->Flags |= CellFlags::CenterRevealed;
+						TacticalClass::Instance->RegisterCellAsVisible(pAdjCell);
+
+						for (size_t j = 0; j < 8; ++j)
+						{
+							const auto nextAdjCell = Unsorted::AdjacentCell[j & 7] + adjCell;
+							const auto pNextAdjCell = pThis->GetCellAt(nextAdjCell);
+
+							const char nextAdjNewFoggedness = TacticalClass::Instance->GetOcclusion(nextAdjCell, true);
+							if (nextAdjNewFoggedness != pNextAdjCell->Foggedness)
+							{
+								pNextAdjCell->Foggedness = nextAdjNewFoggedness;
+								TacticalClass::Instance->RegisterCellAsVisible(pNextAdjCell);
+							}
+						}
+
+						continue;
+					}
+				}
+				else
+				{
+					if (adjNewFoggedness == -2 || (pAdjCell->Flags & CellFlags::EdgeRevealed))
+					{
+						if (adjNewFoggedness >= 0 && adjNewFoggedness != pAdjCell->Foggedness)
+						{
+							pAdjCell->Foggedness = adjNewFoggedness;
+							TacticalClass::Instance->RegisterCellAsVisible(pAdjCell);
+						}
+
+						continue;
+					}
+				}
+
+				pThis->MapCellFoggedness(&adjCell, pHouse);
+				continue;
+			}
+		}
+	}
+
+	if (shouldRedraw)
+		MapClass::Instance.RevealCheck(pCell, pHouse, shouldRadarRedraw);
+
+	if ((pCell->Flags & CellFlags::EdgeRevealed) && edgeNotRevealed && ScenarioClass::Instance->SpecialFlags.FogOfWar)
+		pCell->CleanFog();
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x4ADFF0, MapClass_AllToSee_Reimplement, 0x5)
+{
+	enum { SkipGameCode = 0x4AE0A5 };
+
+	GET_STACK(bool, notForBuilding, STACK_OFFSET(0x0, 0x4));
+	GET_STACK(bool, revealFlag, STACK_OFFSET(0x0, 0x8));
+
+	const auto& vec = TechnoClass::Array;
+	for (int i = 0; i < vec.Count; ++i)
+	{
+		const auto pTechno = vec.Items[i];
+		if (pTechno && !pTechno->InLimbo && pTechno->IsOnMap)
+		{
+			const bool notBuilding = pTechno->WhatAmI() != AbstractType::Building;
+			if (notBuilding || !notForBuilding)
+			{
+				const auto pOwner = pTechno->Owner;
+				if (pOwner->IsControlledByCurrentPlayer())
+				{
+					if (pTechno->DiscoveredByCurrentPlayer)
+						pTechno->See(false, revealFlag);
+				}
+				else if (!notBuilding
+					&& RulesClass::Instance->AllyReveal
+					&& pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
+				{
+					pTechno->See(revealFlag, false);
+				}
+			}
+		}
+	}
+
+	return SkipGameCode;
+}
+
+DEFINE_HOOK(0x4ACBC4, MapClass_FogSpread_SkipWithSpySat, 0x5)
+{
+	enum { SkipGameCode = 0x4ACC4B, SpreadFogOfWar = 0x4ACBC9 };
+
+	GET(MapClass*, pThis, ECX);
+
+	const auto pPlayer = HouseClass::CurrentPlayer;
+	if (pPlayer->Defeated || pPlayer->SpySatActive)
+		return SkipGameCode;
+
+	pThis->CellIteratorReset();
+	return SpreadFogOfWar;
+}
+
 #pragma endregion
 
 #pragma region NewFactories
