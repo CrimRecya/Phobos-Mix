@@ -19,6 +19,14 @@
 TechnoTypeExt::ExtContainer TechnoTypeExt::ExtMap;
 bool TechnoTypeExt::SelectWeaponMutex = false;
 
+void TechnoTypeExt::ExtData::Initialize()
+{
+	auto pThis = this->OwnerObject();
+
+	if (pThis->WhatAmI() == AircraftTypeClass::AbsID)
+		this->Missile_TakeOffAnim = AnimTypeClass::Find("V3TAKOFF");
+}
+
 void TechnoTypeExt::ExtData::ApplyTurretOffset(Matrix3D* mtx, double factor, int turIdx)
 {
 	// Does not verify if the offset actually has all values parsed as it makes no difference, it will be 0 for the unparsed ones either way.
@@ -1250,6 +1258,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->CurleyShuffle.Read(exINI, pSection, "CurleyShuffle");
 
 	this->Convert_Deploy.Read(exINI, pSection, "Convert.Deploy");
+	this->Convert_Undeploy.Read(exINI, pSection, "Convert.Undeploy");
 	this->Convert_HumanToComputer.Read(exINI, pSection, "Convert.HumanToComputer");
 	this->Convert_ComputerToHuman.Read(exINI, pSection, "Convert.ComputerToHuman");
 	this->Convert_ResetMindControl.Read(exINI, pSection, "Convert.ResetMindControl");
@@ -1597,11 +1606,17 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->LandingAnim.Read(exINI, pSection, "LandingAnim");
 
+	this->Missile_Cruise.Read(exINI, pSection, "Missile.Cruise");
+	this->Missile_TakeOffSeparation.Read(exINI, pSection, "Missile.TakeOffSeparation");
+
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
 	this->Cloneable.Read(exINI, pSection, "Cloneable");
 	this->ClonedAt.Read(exINI, pSection, "ClonedAt");
 	this->ClonedAs.Read(exINI, pSection, "ClonedAs");
+
+	// Ares 0.3
+	this->Missile_TakeOffAnim.Read(exINI, pSection, "Missile.TakeOffAnim");
 
 	// Ares 0.9
 	this->InhibitorRange.Read(exINI, pSection, "InhibitorRange");
@@ -2208,6 +2223,7 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->TiberiumEaterType)
 
 		.Process(this->Convert_Deploy)
+		.Process(this->Convert_Undeploy)
 		.Process(this->Convert_HumanToComputer)
 		.Process(this->Convert_ComputerToHuman)
 		.Process(this->Convert_ResetMindControl)
@@ -2580,6 +2596,10 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->FlyNoWobbles)
 
 		.Process(this->LandingAnim)
+
+		.Process(this->Missile_Cruise)
+		.Process(this->Missile_TakeOffAnim)
+		.Process(this->Missile_TakeOffSeparation)
 		;
 }
 

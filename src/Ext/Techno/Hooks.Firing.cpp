@@ -1085,7 +1085,7 @@ CoordStruct* GetFLHTemp::UnitClassFake::_GetFLH(CoordStruct* outBuffer, int weap
 		}
 
 		auto TechnoClass_GetFLH = reinterpret_cast<CoordStruct*(__thiscall*)(TechnoClass*, CoordStruct*, int, CoordStruct)>(0x6F3AD0);
-		TechnoClass_GetFLH(pThis, outBuffer, weaponIdx, CoordStruct::Empty);
+		TechnoClass_GetFLH(pThis, outBuffer, weaponIdx, offset);
 	}
 	while (false);
 
@@ -1102,6 +1102,7 @@ DEFINE_HOOK(0x6F3AEB, TechnoClass_GetFLH, 0x6)
 	GET(TechnoTypeClass*, pType, EAX);
 	GET(const int, weaponIndex, ESI);
 	GET_STACK(CoordStruct*, pCoords, STACK_OFFSET(0xD8, 0x4));
+	REF_STACK(CoordStruct, offset, STACK_OFFSET(0xD8, 0xC));
 
 	bool allowOnTurret = true;
 	CoordStruct flh = CoordStruct::Empty;
@@ -1150,6 +1151,7 @@ DEFINE_HOOK(0x6F3AEB, TechnoClass_GetFLH, 0x6)
 	if (pTypeExt->BurstPerTurret > 0)
 		turIdx = ((pThis->CurrentBurstIndex / pTypeExt->BurstPerTurret) % (pTypeExt->ExtraTurretCount + 1)) - 1;
 
+	flh += offset;
 	*pCoords = TechnoExt::GetFLHAbsoluteCoords(pThis, flh, allowOnTurret, turIdx);
 	R->EAX(pCoords);
 

@@ -30,12 +30,8 @@ void TechnoExt::ExtData::OnEarlyUpdate()
 	if (!this->TypeExtData || this->TypeExtData->OwnerObject() != pType)
 		this->UpdateTypeData(pType);
 
-	if (this->CheckDeathConditions())
-		return;
-
 	this->UpdateShield();
 	this->UpdateAttachEffects();
-	this->ApplyInterceptor();
 	this->EatPassengers();
 	this->ApplySpawnLimitRange();
 	this->ApplyMindControlRangeLimit();
@@ -57,6 +53,11 @@ void TechnoExt::ExtData::OnEarlyUpdate()
 			this->AutoTargetedWallCell = nullptr;
 		}
 	}
+
+	if (this->CheckDeathConditions())
+		return;
+
+	this->ApplyInterceptor();
 }
 
 void TechnoExt::ExtData::ApplyInterceptor()

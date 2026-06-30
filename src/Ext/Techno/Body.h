@@ -164,6 +164,9 @@ public:
 		TechnoClass* ShiftApplier;
 		HouseClass* ShiftApplierHouse;
 
+		bool HasDeployConverted;
+		bool HasUndeployConverted;
+
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
 			, Shield {}
@@ -270,6 +273,8 @@ public:
 			, ShiftApplierHouse { nullptr }
 			, LastTargetCrd { CoordStruct::Empty }
 			, LastTargetCrdClearTimer {}
+			, HasDeployConverted { false }
+			, HasUndeployConverted { false }
 		{ }
 
 		void OnEarlyUpdate();
