@@ -438,8 +438,6 @@ public:
 
 		Valueable<bool> AISellCapturedBuilding;
 
-		Valueable<bool> EnhancedBerzerk;
-
 		Valueable<bool> IgnoreCenterMinorRadarEvent;
 
 		Valueable<bool> KeepAnimOnLimbo;
@@ -519,7 +517,7 @@ public:
 
 		Valueable<DynamicTeamDelayType> TeamDelays_DynamicType;
 		Valueable<Vector3D<int>> TeamDelays_Count[8];
-    
+
 		Valueable<Mission> BerzerkMission;
 
 		Valueable<int> BunkerStateUpdateDelay;
@@ -897,8 +895,6 @@ public:
 			, AdjacentWallDamage { 200 }
 
 			, AISellCapturedBuilding { true }
-
-			, EnhancedBerzerk { false }
 
 			, IgnoreCenterMinorRadarEvent { false }
 
