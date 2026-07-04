@@ -264,6 +264,7 @@ DEFINE_HOOK(0x55B4E1, LogicClass_Update_UnmarkCellOccupationFlags, 0x5)
 
 #pragma region DetectionLogic
 
+// 重新启用功能
 DEFINE_HOOK(0x687C56, INIClass_ReadScenario_EnableFog, 0x5)
 {
 	const bool fog = RulesClass::Instance->FogOfWar;
@@ -272,6 +273,7 @@ DEFINE_HOOK(0x687C56, INIClass_ReadScenario_EnableFog, 0x5)
 	return 0;
 }
 
+// 重新实现核心判定：位置处在迷雾中
 DEFINE_HOOK(0x5865E2, MapClass_IsLocationFogged_Reimplement, 0x5)
 {
 	GET_STACK(const CoordStruct*, pCoords, STACK_OFFSET(0x0, 0x4));
@@ -284,6 +286,7 @@ DEFINE_HOOK(0x5865E2, MapClass_IsLocationFogged_Reimplement, 0x5)
 	return 0;
 }
 
+// 像黑幕那样自动刷新周围格子的绘制状态，防止边缘出现锯齿
 DEFINE_HOOK(0x4A9CA0, DisplayClass_RevealFogShroud_Reimplement, 0x8)
 {
 	enum { SkipGameCode = 0x4A9DC6 };
@@ -390,6 +393,7 @@ DEFINE_HOOK(0x4A9CA0, DisplayClass_RevealFogShroud_Reimplement, 0x8)
 	return SkipGameCode;
 }
 
+// 像黑幕刷新那样考虑飞行单位，确保未移动的飞行单位的视野不会被刷新掉
 DEFINE_HOOK(0x4ADFF0, MapClass_AllToSee_Reimplement, 0x5)
 {
 	enum { SkipGameCode = 0x4AE0A5 };
@@ -425,9 +429,10 @@ DEFINE_HOOK(0x4ADFF0, MapClass_AllToSee_Reimplement, 0x5)
 	return SkipGameCode;
 }
 
+// 增加一种立即刷新迷雾的机制，甚至！？性能提升？！
 DEFINE_HOOK(0x4ACBC4, MapClass_FogSpread_SkipWithSpySat, 0x5)
 {
-	enum { SkipGameCode = 0x4ACC4B, SpreadFogOfWar = 0x4ACBC9 };
+	enum { SkipGameCode = 0x4ACC4B, SpreadFogOfWar = 0x4ACBF8 };
 
 	GET(MapClass*, pThis, ECX);
 
@@ -436,7 +441,36 @@ DEFINE_HOOK(0x4ACBC4, MapClass_FogSpread_SkipWithSpySat, 0x5)
 		return SkipGameCode;
 
 	pThis->CellIteratorReset();
+	if (RulesClass::Instance->ShadowGrow)
+	{
+		for (auto pCell = pThis->CellIteratorNext(); pCell; pCell = pThis->CellIteratorNext())
+			pCell->Flags |= CellFlags::IsPlot;
+	}
+	else
+	{
+		for (auto pCell = pThis->CellIteratorNext(); pCell; pCell = pThis->CellIteratorNext())
+		{
+			const auto flags = pCell->Flags;
+			if (!(flags & CellFlags::CenterRevealed) && (flags & CellFlags::EdgeRevealed))
+				pCell->Flags = flags | CellFlags::IsPlot;
+		}
+	}
+
 	return SpreadFogOfWar;
 }
+
+// 让单位在更新视野的时候不会多更新一次之前的视野
+static void __fastcall TechnoClass_RevealLastSight(TechnoClass* pThis, void* _, bool OnlyOutline, bool RevealByHeight, bool specifiedHouse, HouseClass *pHouse)
+{
+	pThis->unknown_bool_250 = false;
+}
+DEFINE_FUNCTION_JUMP(CALL6, 0x415672, TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x4157F7, TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x416C6D, TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x4CD43F, TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x4DA6F7, TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x51A8D7, TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x54C93C, TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x73AC5F, TechnoClass_RevealLastSight);
 
 #pragma endregion
