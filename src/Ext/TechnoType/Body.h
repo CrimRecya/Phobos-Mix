@@ -160,7 +160,7 @@ public:
 		Valueable<bool> DestroyAnim_Random;
 		Valueable<bool> NotHuman_RandomDeathSequence;
 
-		Valueable<InfantryTypeClass*> DefaultDisguise;
+		Valueable<TechnoTypeClass*> DefaultDisguise;
 		NullableVector<TerrainTypeClass*> DefaultMirageDisguises;
 		Valueable<bool> UseDisguiseMovementSpeed;
 

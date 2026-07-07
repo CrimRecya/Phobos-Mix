@@ -2011,15 +2011,14 @@ DEFINE_HOOK(0x4DA9FB, FootClass_Update_WalkedFrames, 0x6)
 
 	GET(FootClass* const, pThis, ESI);
 
-	if (AdvancedDriveLocomotionClass::IsReversing(pThis))
-	{
-		if (pThis->WalkedFramesSoFar > 0)
-			--pThis->WalkedFramesSoFar;
-		else // Ignore fake type
-			pThis->WalkedFramesSoFar += (256 * pThis->GetType()->MainVoxel.HVA->FrameCount - 1);
+	if (!AdvancedDriveLocomotionClass::IsReversing(pThis))
+		return 0; // ++pThis->WalkedFramesSoFar;
+	else if (pThis->WalkedFramesSoFar > 0)
+		--pThis->WalkedFramesSoFar;
+	else if (const auto pUnitType = abstract_cast<UnitTypeClass*, true>(pThis->GetType())) // Ignore fake type and non-unittype
+		pThis->WalkedFramesSoFar += (256 * Math::max(1, (pUnitType->Voxel ? pUnitType->MainVoxel.HVA->FrameCount : static_cast<int>(pUnitType->WalkFrames))) - 1);
+	else
+		return 0; // ++pThis->WalkedFramesSoFar;
 
-		return SkipGameCode;
-	}
-
-	return 0; // ++pThis->WalkedFramesSoFar;
+	return SkipGameCode;
 }
