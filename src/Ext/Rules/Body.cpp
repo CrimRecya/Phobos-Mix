@@ -573,6 +573,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	pThis->DeploySound = deploySound;
 
 	this->DiscardOn_MoveBasedOnDestination.Read(exINI, GameStrings::General, "DiscardOn.MoveBasedOnDestination");
+	this->DiscardOn_ConsiderHarvestingAsStationary.Read(exINI, GameStrings::General, "DiscardOn.ConsiderHarvestingAsStationary");
 
 	this->RemoveMindControl_Silent.Read(exINI, GameStrings::AudioVisual, "RemoveMindControl.Silent");
 	this->MindControl_Permanent_ReplaceSilent.Read(exINI, GameStrings::AudioVisual, "MindControl.Permanent.ReplaceSilent");
@@ -595,6 +596,12 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->BerzerkMission.Read(exINI, GameStrings::CombatDamage, "BerzerkMission");
 
 	this->BunkerStateUpdateDelay.Read(exINI, GameStrings::General, "BunkerStateUpdateDelay");
+
+	this->AllowChatBoxInSinglePlayer.Read(exINI, GameStrings::General, "AllowChatBoxInSinglePlayer");
+
+	this->SecondaryFireSequenceLandOnly.Read(exINI, GameStrings::General, "SecondaryFireSequenceLandOnly");
+	this->AutoRemoveEarliestBeacon.Read(exINI, GameStrings::General, "AutoRemoveEarliestBeacon");
+	this->AllowBeaconHotKeyInSinglePlayer.Read(exINI, GameStrings::General, "AllowBeaconHotKeyInSinglePlayer");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -1055,6 +1062,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->Temporal_ApplyVersus)
 		.Process(this->Temporal_ApplyMultiplier)
 		.Process(this->DiscardOn_MoveBasedOnDestination)
+		.Process(this->DiscardOn_ConsiderHarvestingAsStationary)
 		.Process(this->RemoveMindControl_Silent)
 		.Process(this->MindControl_Permanent_ReplaceSilent)
 		.Process(this->FlyNoWobbles)
@@ -1065,6 +1073,10 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->TeamDelays_Count)
 		.Process(this->BerzerkMission)
 		.Process(this->BunkerStateUpdateDelay)
+		.Process(this->AllowChatBoxInSinglePlayer)
+		.Process(this->SecondaryFireSequenceLandOnly)
+		.Process(this->AutoRemoveEarliestBeacon)
+		.Process(this->AllowBeaconHotKeyInSinglePlayer)
 		;
 }
 

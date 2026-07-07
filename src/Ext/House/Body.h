@@ -4,6 +4,8 @@
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 
+#include <array>
+
 struct PlacingBuildingStruct
 {
 	BuildingTypeClass* Type;
@@ -86,6 +88,8 @@ public:
 
 		bool PlayerAutoRepair;
 
+		std::array<int, 3> BeaconsPlacedOrder;
+
 		ExtData(HouseClass* OwnerObject) : Extension<HouseClass>(OwnerObject)
 			, PowerPlantEnhancers {}
 			, OwnedLimboDeliveredBuildings {}
@@ -125,6 +129,7 @@ public:
 			, FreeRadar(false)
 			, ForceRadar(false)
 			, PlayerAutoRepair(true)
+			, BeaconsPlacedOrder { 0, 0, 0 }
 		{ }
 
 		bool OwnsLimboDeliveredBuilding(BuildingClass* pBuilding) const;

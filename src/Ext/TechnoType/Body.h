@@ -560,6 +560,7 @@ public:
 
 		std::vector<LaserTrailDataEntry> LaserTrailData;
 		Valueable<bool> OnlyUseLandSequences;
+		Nullable<bool> SecondaryFireSequenceLandOnly;
 		Nullable<CoordStruct> PronePrimaryFireFLH;
 		Nullable<CoordStruct> ProneSecondaryFireFLH;
 		Nullable<CoordStruct> DeployedPrimaryFireFLH;
@@ -904,6 +905,7 @@ public:
 			, Passengers_SyncOwner_RevertOnExit { true }
 
 			, OnlyUseLandSequences { false }
+			, SecondaryFireSequenceLandOnly {}
 
 			, PronePrimaryFireFLH {}
 			, ProneSecondaryFireFLH {}

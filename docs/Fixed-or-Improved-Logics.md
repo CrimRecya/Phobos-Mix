@@ -161,7 +161,6 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Fixed damaged aircraft not repairing on `UnitReload=true` docks unless they land on the dock first.
 - Enable the observer data panel, which could only be displayed in multiplayer games, to also be displayed in skirmish games.
 - Certain global tileset indices (`ShorePieces`, `WaterSet`, `CliffSet`, `WaterCliffs`, `WaterBridge`, `BridgeSet` and `WoodBridgeSet`) can now be toggled to be parsed for lunar theater by setting `[General] -> ApplyLunarFixes` to true in `lunarmd.ini`. Do note that enabling this without fixing f.ex `WoodBridgeTileSet` pointing to a tileset with `TilesInSet=0` will cause issues in-game.
-- Fixed infantry `SecondaryFire` / `SecondaryProne` sequences being displayed in water instead of `WetAttack`.
 - Fixed objects with ally target and `AttackFriendlies=true` having their target reset every frame, particularly AI-owned buildings.
 - `<Player @ X>` can now be used as owner for pre-placed objects on skirmish and multiplayer maps.
 - Follower vehicle index for preplaced vehicles in maps is now explicitly constrained to `[Units]` list in map files and is no longer thrown off by vehicles that could not be created or created vehicles having other vehicles as initial passengers.
@@ -380,6 +379,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - `DisableWeapons.Duration` now makes `Gattling=yes` rate tick down and stops the sounds from playing, no longer interferes with target acquisition and works together with Phobos' `OpenTopped.CheckTransportDisableWeapons`.
 - Allowed Ares' `SW.AuxBuildings` and `SW.NegBuildings` to count building upgrades.
 - Allowed infantry to use `Convert.Deploy` without requiring `IsSimpleDeployer=true`.
+- Allowed adding custom cruise missiles, so that Ares' `Missile.RaiseRate` is no longer meaningless.
 
 ## Newly added global settings
 
@@ -393,6 +393,16 @@ It was originally planned to list global features that are exclusively related t
 
 -->
 
+### Allow beacon placement hotkey in single player
+
+- In vanilla, the beacon placement hotkey is restricted to multiplayer games only. Now you can allow using the beacon placement hotkey in single player and skirmish modes by setting `AllowBeaconHotKeyInSinglePlayer` to true.
+
+In `rulesmd.ini`:
+```ini
+[General]
+AllowBeaconHotKeyInSinglePlayer=false  ; boolean
+```
+
 ### Allow deploy controlled MCV
 
 In vanilla, you cannot deploy a controlled vehicle to `ConstructionYard=true` building. Now you can customize it.
@@ -401,6 +411,17 @@ In `rulesmd.ini`:
 ```ini
 [General]
 AllowDeployControlledMCV=false   ; boolean
+```
+
+### Auto-remove earliest beacon
+
+- In vanilla, each player can place up to 3 beacons. When all 3 beacon slots are occupied, attempting to place a new beacon does nothing. Now you can make the game automatically remove the earliest-placed beacon to free up a slot for the new one.
+  - `[General] -> AutoRemoveEarliestBeacon` controls this behavior.
+
+In `rulesmd.ini`:
+```ini
+[General]
+AutoRemoveEarliestBeacon=no   ; boolean
 ```
 
 ### Chrono sparkle animation customization & improvements
@@ -925,7 +946,7 @@ ExtraShadow=true              ; boolean
 
 ### Customize `Tiled` drawing interval and centering
 
-- In vanilla, the drawing interval of an animation with `Tiled=yes` is determined by the height of the rectangle formed by the non-transparent pixels of the first frame in the Shape resource file. Now you can customize it.
+- In vanilla, the drawing interval of an animation with `Tiled=yes` is determined by the height of the rectangle formed by the non-transparent pixels of the first frame in the Shape resource file. Now you can customize it.
   - If `Tiled.Interval` is greater than `0`, the specified value is used; otherwise, the default rule applies.
   - `Tiled.AlignToCenter` can be used to change the alignment of the Shape resource file coordinates from the bottom center to the canvas center for the Animation entity's center.
 
@@ -1335,6 +1356,23 @@ InfantryAutoDeploy=false      ; boolean
 
 [SOMEINFANTRY]                ; InfantryType
 InfantryAutoDeploy=           ; boolean, default to [General] -> InfantryAutoDeploy
+```
+
+### Ensure infantry use correct firing sequences on water
+
+- In Yuri's Revenge, the two new sequences `SecondaryFire` / `SecondaryProne` are used to control the sequences used when firing secondary weapons, but they not only affect land infantry, even water infantry are also affected by them.
+- Now, the default behavior has been changed so that water infantry use the water attack sequence `WetAttack` for their secondary weapons. You can restore the vanilla behavior with the following flag.
+
+In `rulesmd.ini`:
+```ini
+[General]
+SecondaryFireSequenceLandOnly=true  ; boolean
+```
+
+In `artmd.ini`:
+```ini
+[SOMEINFANTRY]                      ; InfantryType image
+SecondaryFireSequenceLandOnly=      ; boolean, defaults to [General] -> SecondaryFireSequenceLandOnly
 ```
 
 ### Prone speed customization
