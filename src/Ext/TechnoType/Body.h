@@ -670,6 +670,8 @@ public:
 
 		Nullable<Mission> ParadropMission;
 		Nullable<Mission> AIParadropMission;
+		Nullable<int> ParadropDelay;
+		Nullable<int> ParadropEndDelay;
 
 		Nullable<int> PenetratesTransport_Level;
 		Valueable<double> PenetratesTransport_PassThroughMultiplier;
@@ -1324,6 +1326,8 @@ public:
 
 			, ParadropMission {}
 			, AIParadropMission {}
+			, ParadropDelay {}
+			, ParadropEndDelay {}
 
 			, PenetratesTransport_Level {}
 			, PenetratesTransport_PassThroughMultiplier { 1.0 }
