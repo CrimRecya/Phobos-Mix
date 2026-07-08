@@ -294,6 +294,8 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 				const auto pType = pTechno->GetTechnoType();
 				const int range = (2 << spreadMode);
 				const auto center = pTechno->GetCoords();
+				const auto pBuilding = abstract_cast<BuildingClass*, true>(pTechno);
+				const bool isGrinding = pBuilding && pBuilding->Type->Grinding;
 				const auto pItems = Helpers::Alex::getCellSpreadItems(center, range);
 
 				std::vector<std::pair<TechnoClass*, int>> record;
@@ -377,6 +379,13 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 										continue;
 								}
 							}
+						}
+
+						if (action == Action::Repair)
+						{
+							const auto pItemBuilding = abstract_cast<BuildingClass*, true>(pItem);
+							if (isGrinding != (pItemBuilding && pItemBuilding->Type->Grinding))
+								continue;
 						}
 
 						canTargetIndex = i;
