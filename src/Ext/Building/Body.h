@@ -63,7 +63,9 @@ public:
 
 		virtual void InvalidatePointer(void* ptr, bool bRemoved) override
 		{
-			AnnounceInvalidPointer(CurrentAirFactory, ptr);
+			if (bRemoved)
+				AnnounceInvalidPointer(CurrentAirFactory, ptr);
+
 			AnnounceInvalidPointer(SecondaryArchiveTarget, ptr);
 		}
 

@@ -2,6 +2,7 @@
 
 #include <Utilities/AresHelper.h>
 #include <Ext/Techno/Body.h>
+#include <Ext/TeamType/Body.h>
 
 enum class AttachCargoMode
 {
@@ -185,4 +186,20 @@ DEFINE_HOOK(0x6EF57F, TeamClass_GetTaskForceMissingMemberTypes_Consideration, 0x
 	}
 
 	return SkipThisMember;
+}
+
+DEFINE_HOOK(0x6EA870, TeamClass_LiberateMember_Start, 0x6)
+{
+	GET_STACK(FootClass*, pMember, 0x4);
+	GET(TeamClass*, pTeam, ECX);
+
+	const auto pTeamTypeExt = TeamTypeExt::ExtMap.Find(pTeam->Type);
+	const int value = pTeamTypeExt->SetRecruitableOnLiberate.Get(RulesExt::Global()->SetRecruitableOnLiberate);
+
+	if (value > 0)
+		pMember->RecruitableB = true;
+	else if (value == 0)
+		pMember->RecruitableB = false;
+
+	return 0;
 }
