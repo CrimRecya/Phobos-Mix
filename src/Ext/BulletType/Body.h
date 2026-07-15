@@ -142,6 +142,7 @@ public:
 
 		// Ares 0.1
 		Valueable<bool> SubjectToSolid;
+		Valueable<int> ZAdjust;
 
 		// Ares 0.7
 		Nullable<Leptons> BallisticScatter_Min;
@@ -258,6 +259,7 @@ public:
 			, Parachuted_MaxFallRate {}
 			, BombParachute {}
 			, AU { false }
+			, ZAdjust { 0 }
 		{ }
 
 		virtual ~ExtData() = default;

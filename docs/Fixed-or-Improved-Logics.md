@@ -143,7 +143,6 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Units & buildings with `DecloakToFire=false` weapons now cloak while targeting & reloading.
 - Units with `Sensors=true` will no longer reveal ally buildings.
 - Air units are now reliably included by target scan with large range and Warhead detonation by large `CellSpread`.
-- OverlayTypes now read and use `ZAdjust` if specified in their `artmd.ini` entry.
 - Weapons with `AA=true` Projectile can now correctly fire at air units when both firer and target are over a bridge.
 - Buildings with foundation bigger than 1x1 can now recycle spawned correctly.
 - Fixed disguised units not using the correct palette if target has custom palette.
@@ -848,18 +847,6 @@ ExtendedAircraftMissions.UnlandDamage=    ; integer, default to [General] -> Ext
 And now when `ExtendedAircraftMissions` is enabled, aircraft that can land at the airport will check at any time to see if they have a dock. Therefore, if there are aircraft in your mission that require dock and you have not provided enough or not disabled the feature, they will crash immediately
 ```
 
-### Fixed spawn distance & spawn height for airstrike / SpyPlane aircraft
-
-- It is now possible to have aircraft spawned from `(Elite)AirstrikeTeamType` or `Type=SpyPlane` superweapons to be created at fixed distance from their intended target/destination instead of from edge of the map by setting `SpawnDistanceFromTarget`.
-- `SpawnHeight` can also be used to override the initial height of the aircraft, which defaults to `FlightLevel`, or if not set then `[General] -> FlightLevel`.
-
-In `rulesmd.ini`:
-```ini
-[SOMEAIRCRAFT]            ; AircraftType
-SpawnDistanceFromTarget=  ; floating point value, distance in cells
-SpawnHeight=              ; integer, height in leptons
-```
-
 ### Landing direction
 
 - By default aircraft land facing the direction specified by `[AudioVisual] -> PoseDir`. This can now be customized per AircraftType via `LandingDir`, defaults to `[AudioVisual] -> PoseDir`. If the building the aircraft is docking to has [aircraft docking direction](#aircraft-docking-direction) set, that setting takes priority over this.
@@ -869,6 +856,23 @@ In `rulesmd.ini`:
 ```ini
 [SOMEAIRCRAFT]  ; AircraftType
 LandingDir=     ; Direction type (integers from 0-255). Accepts negative values as a special case.
+```
+
+### Reinforcement aircraft spawn settings
+
+- A number of new settings are available for AircraftTypes spawned from `(Elite)AirstrikeTeamType` or `Type=SpyPlane/Paradrop/AmerParadrop` superweapons.
+  - `SpawnFromEdge` and `RetreatToEdge` can be used to customize the edge of map from where the aircraft spawns and where it retreats to, respectively. Defaults to the owner's edge of the map which is determined based on base location and other factors.
+  - `SpawnDistanceFromTarget` can be used to set fixed spawn distance from target instead of at edge of map. The approach direction is still determined by the edge where it would've otherwise spawned. Negative values will invert the direction.
+  - `SpawnHeight` can be used to override the initial height of the aircraft, which defaults to `FlightLevel`, or if not set then `[General] -> FlightLevel`.
+  - Additionally, these aircraft now spawn facing the target's direction instead of always facing north.
+
+In `rulesmd.ini`:
+```ini
+[SOMEAIRCRAFT]            ; AircraftType
+SpawnFromEdge=owner       ; Edge type enumeration (owner|closest|random)
+RetreatToEdge=owner       ; Edge type enumeration (owner|closest|random)
+SpawnDistanceFromTarget=  ; floating point value, distance in cells
+SpawnHeight=              ; integer, height in leptons
 ```
 
 ## Animations
@@ -1405,9 +1409,17 @@ ProneSpeed.NoCrawls=1.5       ; floating point value, multiplier
 ProneSpeed=                   ; floating point value, multiplier, by default, use the corresponding global value according to Crawls
 ```
 
-<!--
 ## Overlays
--->
+
+### `ZAdjust` for OverlayTypes
+
+- OverlayTypes now read and use `ZAdjust` if specified in their `artmd.ini` entry.
+
+In `artmd.ini`:
+```ini
+[SOMEOVERLAY]  ; OverlayType Image
+ZAdjust=0      ; integer
+```
 
 ## Particle systems
 
@@ -1558,6 +1570,20 @@ Shrapnel.AffectsBuildings=false             ; boolean
 Shrapnel.UseWeaponTargeting=false           ; boolean
 Shrapnel.IgnoreHitBuildings=                ; boolean
 Shrapnel.ObeyWarheadTriggerConditions=      ; boolean, defaults to [CombatDamage] -> Shrapnel.ObeyWarheadTriggerConditions
+```
+
+### `ZAdjust` for Projectiles
+
+- In vanilla, the Z‑depth of projectiles is automatically calculated, but this calculation is not foolproof. For example, when launching a missile straight up from a building, the projectile will be blocked by the building. Now you can manually set a correction value, similar to animations.
+
+In `artmd.ini`:
+```ini
+[SOMEPROJECTILE]  ; Projectile Image
+ZAdjust=0         ; integer
+```
+
+```{note}
+Unlike those using Shape, projectiles that use Voxel resource files as images will use another complex per-pixel dynamic mapping calculation. Likewise, they cannot be simply adjusted via this INI flag—this feature only works on projectiles that use Shape assets as images.
 ```
 
 ## Technos

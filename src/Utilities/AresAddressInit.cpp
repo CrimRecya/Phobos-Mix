@@ -13,6 +13,7 @@ decltype(AresFunctions::IsTargetConstraintsEligible) AresFunctions::IsTargetCons
 decltype(AresFunctions::UnitDeliveryStateMachine_Update) AresFunctions::UnitDeliveryStateMachine_Update = nullptr;
 decltype(AresFunctions::ApplyPermaMC) AresFunctions::ApplyPermaMC = nullptr;
 decltype(AresFunctions::DetailsCurrentlyEnabled) AresFunctions::DetailsCurrentlyEnabled = nullptr;
+decltype(AresFunctions::SendPDPlane) AresFunctions::SendPDPlane = nullptr;
 std::function<AresSWTypeExtData* (SuperWeaponTypeClass*)> AresFunctions::SWTypeExtMap_Find;
 PhobosMap<ObjectClass*, AlphaShapeClass*>* AresFunctions::AlphaExtMap = nullptr;
 
@@ -55,6 +56,8 @@ void AresFunctions::InitAres3_0()
 	NOTE_ARES_FUN(ApplyPermaMC, 0x052CD0);
 
 	NOTE_ARES_FUN(DetailsCurrentlyEnabled, 0x02A6C0);
+
+	NOTE_ARES_FUN(SendPDPlane, 0x0741A0);
 
 	NOTE_ARES_FUN(_SWTypeExtMapFind, 0x57C70);
 	NOTE_ARES_FUN(_SWTypeExtMap, 0xC1C54);
@@ -102,6 +105,8 @@ void AresFunctions::InitAres3_0p1()
 	NOTE_ARES_FUN(ApplyPermaMC, 0x053980);
 
 	NOTE_ARES_FUN(DetailsCurrentlyEnabled, 0x02B1C0);
+
+	NOTE_ARES_FUN(SendPDPlane, 0x075250);
 
 	NOTE_ARES_FUN(_SWTypeExtMapFind, 0x58900);
 	NOTE_ARES_FUN(_SWTypeExtMap, 0xC2C50);

@@ -161,6 +161,8 @@ void BulletTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->LaserTrail_Types.Read(exArtINI, pSection, "LaserTrail.Types");
 
+	this->ZAdjust.Read(exArtINI, pSection, "ZAdjust");
+
 	this->TrajectoryValidation();
 }
 
@@ -335,6 +337,7 @@ void BulletTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Parachuted_MaxFallRate)
 		.Process(this->BombParachute)
 		.Process(this->AU)
+		.Process(this->ZAdjust)
 		;
 }
 
