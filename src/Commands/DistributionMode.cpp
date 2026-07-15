@@ -322,7 +322,7 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 					if (MapClass::Instance.GetCellAt(coords)->ContainsBridge())
 						coords.Z += CellClass::BridgeHeight;
 
-					if (!MapClass::Instance.IsLocationShrouded(coords))
+					if (!MapClass::Instance.IsLocationShrouded(coords) && !MapClass::Instance.IsLocationFogged(coords))
 						record.emplace_back(pItem, 0);
 				}
 

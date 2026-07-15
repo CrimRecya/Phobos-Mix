@@ -64,6 +64,28 @@ DEFINE_HOOK(0x55B6B3, LogicClass_AI_After, 0x5)
 	return 0;
 }
 
+DEFINE_HOOK(0x6B60DE, SmudgeTypeClass_Mark_SetContext, 0x6)
+{
+	GET(CellClass* const, pCell, EAX);
+
+	ScenarioExt::Global()->Smudges.insert(MapClass::GetCellIndex(pCell->MapCoords));
+	const auto pCellExt = CellExt::ExtMap.Find(pCell);
+	pCellExt->SmudgeGenerate = Unsorted::CurrentFrame;
+	pCellExt->SmudgeState = BlitterFlags::None;
+
+	return 0;
+}
+
+DEFINE_HOOK(0x6B56AC, SmudgeTypeClass_DrawIt_DrawTrans, 0x5)
+{
+	GET(CellClass* const, pCell, ESI);
+	REF_STACK(BlitterFlags, flags, STACK_OFFSET(0x3C, -0x3C));
+
+	flags |= CellExt::ExtMap.Find(pCell)->SmudgeState;
+
+	return 0;
+}
+
 #pragma endregion
 
 #pragma region AirBarrier
@@ -264,6 +286,143 @@ DEFINE_HOOK(0x55B4E1, LogicClass_Update_UnmarkCellOccupationFlags, 0x5)
 
 #pragma region DetectionLogic
 
+namespace FoggedObjectHelper
+{
+	bool SetVectorCapacity(DynamicVectorClass<FoggedObjectClass*>* pVector, int capacity)
+	{
+		return reinterpret_cast<bool(__thiscall*)(DynamicVectorClass<FoggedObjectClass*>*, int, FoggedObjectClass **)>(0x45A680)(pVector, capacity, nullptr);
+	}
+	void AddItemToVector(DynamicVectorClass<FoggedObjectClass*>* pVector, FoggedObjectClass* pItem)
+	{
+		if(pVector->Count < pVector->Capacity
+			|| (pVector->IsAllocated || !pVector->Capacity)
+				&& pVector->CapacityIncrement > 0
+				&& FoggedObjectHelper::SetVectorCapacity(pVector, pVector->Capacity + pVector->CapacityIncrement))
+		{
+			pVector->Items[pVector->Count++] = std::move(pItem);
+		}
+	}
+	DynamicVectorClass<FoggedObjectClass*>* CreateGameDynamicVector()
+	{
+		void* raw = YRMemory::Allocate(0x18u);
+		*reinterpret_cast<void**>(raw) = reinterpret_cast<void*>(0x7E44F4u);
+		auto pVector = static_cast<DynamicVectorClass<FoggedObjectClass*>*>(raw);
+		pVector->Items = nullptr;
+		pVector->Capacity = 0;
+		pVector->IsInitialized = true;
+		pVector->IsAllocated = false;
+		pVector->Count = 0;
+		pVector->CapacityIncrement = 1;
+		FoggedObjectHelper::SetVectorCapacity(pVector, 1);
+		return pVector;
+	}
+	static FoggedObjectClass* __fastcall CreateFoggedOverlay(void* pThis, void* _, const CoordStruct& coords, int OverlayTypeIndex, int OverlayData) JMP_THIS(0x4D0980);
+	static FoggedObjectClass* __fastcall CreateFoggedSmudge(void* pThis, void* _, const CoordStruct& coords, int SmudgeTypeIndex, int SmudgeData) JMP_THIS(0x4D0C40);
+	static FoggedObjectClass* __fastcall CreateFoggedTerrain(void* pThis, void* _, TerrainClass* pTerrain) JMP_THIS(0x4D1370);
+	static void __fastcall TechnoClass_RevealLastSight(TechnoClass* pThis, void* _, bool OnlyOutline, bool RevealByHeight, bool specifiedHouse, HouseClass *pHouse)
+	{
+		pThis->unknown_bool_250 = false;
+	}
+	class CellClassFake final : public CellClass
+	{
+	public:
+		FoggedObjectClass* FreezeOverlay(DynamicVectorClass<FoggedObjectClass*>* pVector)
+		{
+			const auto pObject = FoggedObjectHelper::CreateFoggedOverlay(
+				YRMemory::Allocate(0x78u),
+				0,
+				this->GetCoords(),
+				this->OverlayTypeIndex,
+				static_cast<unsigned int>(this->OverlayData)
+			);
+			FoggedObjectHelper::AddItemToVector(pVector, pObject);
+			return pObject;
+		}
+		FoggedObjectClass* FreezeSmudge(DynamicVectorClass<FoggedObjectClass*>* pVector)
+		{
+			const auto pObject = FoggedObjectHelper::CreateFoggedSmudge(
+				YRMemory::Allocate(0x78u),
+				0,
+				this->GetCoords(),
+				this->SmudgeTypeIndex,
+				static_cast<unsigned int>(this->SmudgeData)
+			);
+			FoggedObjectHelper::AddItemToVector(pVector, pObject);
+			return pObject;
+		}
+	};
+	class TerrainClassFake final : public TerrainClass
+	{
+	public:
+		FoggedObjectClass* FreezeTerrain(DynamicVectorClass<FoggedObjectClass*>* pVector)
+		{
+			const auto pObject = FoggedObjectHelper::CreateFoggedTerrain(
+				YRMemory::Allocate(0x78u),
+				0,
+				this
+			);
+			FoggedObjectHelper::AddItemToVector(pVector, pObject);
+			return pObject;
+		}/*
+		bool TerrainClass_Unlimbo_CheckFog(const CoordStruct& coords, DirType dir)
+		{
+			const bool result = this->ObjectClass::Unlimbo(coords, dir);
+			if (result && ScenarioClass::Instance->SpecialFlags.FogOfWar)
+			{
+				const auto pCell = MapClass::Instance.GetCellAt(coords);
+				if (this->IsAlive && (pCell->Flags & CellFlags::Fogged))
+				{
+					if (!pCell->FoggedObjects)
+						pCell->FoggedObjects = FoggedObjectHelper::CreateGameDynamicVector();
+
+					this->FreezeTerrain(pCell->FoggedObjects);
+				}
+			}
+			return result;
+		};*/
+	};/*
+	class OverlayClassFake final : public OverlayClass
+	{
+	public:
+		bool OverlayClass_Unlimbo_CheckFog(const CoordStruct& coords, DirType dir)
+		{
+			const bool result = this->ObjectClass::Unlimbo(coords, dir);
+			if (result && ScenarioClass::Instance->SpecialFlags.FogOfWar)
+			{
+				const auto pCell = MapClass::Instance.GetCellAt(coords);
+				if (pCell->OverlayTypeIndex != -1 && (pCell->Flags & CellFlags::Fogged))
+				{
+					if (!pCell->FoggedObjects)
+						pCell->FoggedObjects = FoggedObjectHelper::CreateGameDynamicVector();
+
+					static_cast<FoggedObjectHelper::CellClassFake*>(pCell)->FreezeOverlay(pCell->FoggedObjects);
+				}
+			}
+			return result;
+		}
+	};
+	class SmudgeClassFake final : public SmudgeClass
+	{
+	public:
+		bool SmudgeClass_Unlimbo_CheckFog(const CoordStruct& coords, DirType dir)
+		{
+			const bool result = this->ObjectClass::Unlimbo(coords, dir);
+			if (result && ScenarioClass::Instance->SpecialFlags.FogOfWar)
+			{
+				const auto pCell = MapClass::Instance.GetCellAt(coords);
+				if (pCell->SmudgeTypeIndex != -1 && (pCell->Flags & CellFlags::Fogged))
+				{
+					if (!pCell->FoggedObjects)
+						pCell->FoggedObjects = FoggedObjectHelper::CreateGameDynamicVector();
+
+					static_cast<FoggedObjectHelper::CellClassFake*>(pCell)->FreezeSmudge(pCell->FoggedObjects);
+				}
+			}
+			return result;
+		}
+	};*/
+}
+
 // 重新启用功能
 DEFINE_HOOK(0x687C56, INIClass_ReadScenario_EnableFog, 0x5)
 {
@@ -393,7 +552,7 @@ DEFINE_HOOK(0x4A9CA0, DisplayClass_RevealFogShroud_Reimplement, 0x8)
 	return SkipGameCode;
 }
 
-// 像黑幕刷新那样考虑飞行单位，确保未移动的飞行单位的视野不会被刷新掉
+// 像黑幕刷新那样考虑飞行单位，确保未移动的飞行单位的视野不会被刷新掉，并且友军视野不只看建筑，避免频繁刷新
 DEFINE_HOOK(0x4ADFF0, MapClass_AllToSee_Reimplement, 0x5)
 {
 	enum { SkipGameCode = 0x4AE0A5 };
@@ -407,8 +566,7 @@ DEFINE_HOOK(0x4ADFF0, MapClass_AllToSee_Reimplement, 0x5)
 		const auto pTechno = vec.Items[i];
 		if (pTechno && !pTechno->InLimbo && pTechno->IsOnMap)
 		{
-			const bool notBuilding = pTechno->WhatAmI() != AbstractType::Building;
-			if (notBuilding || !notForBuilding)
+			if (pTechno->WhatAmI() != AbstractType::Building || !notForBuilding)
 			{
 				const auto pOwner = pTechno->Owner;
 				if (pOwner->IsControlledByCurrentPlayer())
@@ -416,11 +574,10 @@ DEFINE_HOOK(0x4ADFF0, MapClass_AllToSee_Reimplement, 0x5)
 					if (pTechno->DiscoveredByCurrentPlayer)
 						pTechno->See(false, revealFlag);
 				}
-				else if (!notBuilding
-					&& RulesClass::Instance->AllyReveal
-					&& pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
+				else if (RulesClass::Instance->AllyReveal)
 				{
-					pTechno->See(revealFlag, false);
+					if (pOwner->IsAlliedWith(HouseClass::CurrentPlayer))
+						pTechno->See(revealFlag, false);
 				}
 			}
 		}
@@ -460,17 +617,101 @@ DEFINE_HOOK(0x4ACBC4, MapClass_FogSpread_SkipWithSpySat, 0x5)
 }
 
 // 让单位在更新视野的时候不会多更新一次之前的视野
-static void __fastcall TechnoClass_RevealLastSight(TechnoClass* pThis, void* _, bool OnlyOutline, bool RevealByHeight, bool specifiedHouse, HouseClass *pHouse)
+DEFINE_FUNCTION_JUMP(CALL6, 0x415672, FoggedObjectHelper::TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x4157F7, FoggedObjectHelper::TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x416C6D, FoggedObjectHelper::TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x4CD43F, FoggedObjectHelper::TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x4DA6F7, FoggedObjectHelper::TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x51A8D7, FoggedObjectHelper::TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x54C93C, FoggedObjectHelper::TechnoClass_RevealLastSight);
+DEFINE_FUNCTION_JUMP(CALL6, 0x73AC5F, FoggedObjectHelper::TechnoClass_RevealLastSight);
+
+// 迷雾遮蔽时增加地形对象、覆盖物、弹坑
+DEFINE_HOOK(0x486B21, CellClass_FogCell_FreezeObjects, 0x6)
 {
-	pThis->unknown_bool_250 = false;
+	enum { SkipGameCode = 0x486BAB };
+
+	GET(FoggedObjectHelper::CellClassFake*, pCell, EBP);
+	GET(DynamicVectorClass<FoggedObjectClass*>*, pVector, EDI);
+
+    pCell->Flags |= CellFlags::Fogged;
+	for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
+	{
+		const auto absType = pObject->WhatAmI();
+		if (absType == AbstractType::Building)
+		{
+			const auto& pBuilding = static_cast<BuildingClass*>(pObject);
+			if (pBuilding->IsAllFogged())
+				pBuilding->FreezeInFog(pVector, pCell, (!pBuilding->IsStrange() && pBuilding->Translucency != 15));
+		}
+		else if (absType == AbstractType::Unit
+			|| absType == AbstractType::Aircraft
+			|| absType == AbstractType::Infantry)
+		{
+			pObject->Deselect();
+		}
+		else if (absType == AbstractType::Terrain)
+		{
+			static_cast<FoggedObjectHelper::TerrainClassFake*>(pObject)->FreezeTerrain(pVector);
+		}
+	}
+
+	if (pCell->OverlayTypeIndex != -1)
+		pCell->FreezeOverlay(pVector);
+
+	if (pCell->SmudgeTypeIndex != -1)
+		pCell->FreezeSmudge(pVector);
+
+	return SkipGameCode;
 }
-DEFINE_FUNCTION_JUMP(CALL6, 0x415672, TechnoClass_RevealLastSight);
-DEFINE_FUNCTION_JUMP(CALL6, 0x4157F7, TechnoClass_RevealLastSight);
-DEFINE_FUNCTION_JUMP(CALL6, 0x416C6D, TechnoClass_RevealLastSight);
-DEFINE_FUNCTION_JUMP(CALL6, 0x4CD43F, TechnoClass_RevealLastSight);
-DEFINE_FUNCTION_JUMP(CALL6, 0x4DA6F7, TechnoClass_RevealLastSight);
-DEFINE_FUNCTION_JUMP(CALL6, 0x51A8D7, TechnoClass_RevealLastSight);
-DEFINE_FUNCTION_JUMP(CALL6, 0x54C93C, TechnoClass_RevealLastSight);
-DEFINE_FUNCTION_JUMP(CALL6, 0x73AC5F, TechnoClass_RevealLastSight);
+
+// 地形对象被迷雾遮蔽时跳过绘制
+DEFINE_HOOK(0x6D9313, TacticalClass_DrawObjectsInLayers_SkipTerrainInFog, 0x6)
+{
+	enum { SkipDraw = 0x6D940C };
+
+	GET(CoordStruct*, pCoord, EAX);
+
+	return (ScenarioClass::Instance->SpecialFlags.FogOfWar && MapClass::Instance.IsLocationFogged(*pCoord)) ? SkipDraw : 0;
+}
+
+// 覆盖物被迷雾遮蔽时跳过绘制
+DEFINE_HOOK(0x6D70BC, TacticalClass_DrawCellOverlay_SkipOverlayInFog, 0xA)
+{
+	enum { Draw = 0x6D70C6, SkipDraw = 0x6D71A4 };
+
+	GET(CellClass*, pCell, EBX);
+
+	return (pCell->OverlayTypeIndex != -1 && (!ScenarioClass::Instance->SpecialFlags.FogOfWar || !(pCell->Flags & CellFlags::Fogged))) ? Draw : SkipDraw;
+}
+
+// 弹坑被迷雾遮蔽时跳过绘制
+DEFINE_HOOK(0x48049E, CellClass_DrawCellSmudge_SkipSmudgeInFog, 0x6)
+{
+	enum { Draw = 0x4804A4, SkipDraw = 0x4804FB };
+
+	GET(CellClass*, pThis, ESI);
+
+	return (pThis->SmudgeTypeIndex != -1 && (!ScenarioClass::Instance->SpecialFlags.FogOfWar || !(pThis->Flags & CellFlags::Fogged))) ? Draw : SkipDraw;
+}
+
+/*
+// 地形对象、覆盖物、弹坑出现时检查是否被迷雾遮蔽
+DEFINE_FUNCTION_JUMP(CALL, 0x5FC4B1, FoggedObjectHelper::OverlayClassFake::OverlayClass_Unlimbo_CheckFog);
+DEFINE_FUNCTION_JUMP(CALL, 0x6B4B14, FoggedObjectHelper::SmudgeClassFake::SmudgeClass_Unlimbo_CheckFog);
+DEFINE_FUNCTION_JUMP(CALL, 0x71D012, FoggedObjectHelper::TerrainClassFake::TerrainClass_Unlimbo_CheckFog);
+*/
+
+// 矿石不更新
+// 修复矿柱图像异常
+// 修复Alpha光亮度异常
+// 波动效果要受影响
+// 光照强度要受影响
+// 线尾迹要受影响
+// 激光要受影响
+// 电弧要受影响
+// 辐射波要受影响
+// 波要受影响
+// 飞碟激光要受影响
 
 #pragma endregion
