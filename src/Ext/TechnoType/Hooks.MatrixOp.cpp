@@ -106,17 +106,17 @@ DEFINE_HOOK(0x73BA12, UnitClass_DrawAsVXL_RewriteTurretDrawing, 0x6)
 	const bool notChargeTurret = pThis->Type->TurretCount <= 0 || pThis->Type->IsGattling;
 
 	auto getTurretVoxel = [pDrawType, notChargeTurret, currentTurretNumber]() -> VoxelStruct*
-		{
-			if (notChargeTurret)
-				return &pDrawType->TurretVoxel;
+	{
+		if (notChargeTurret)
+			return &pDrawType->TurretVoxel;
 
-			// Not considering the situation where there is no Ares and the limit is exceeded
-			if (currentTurretNumber < 18 || !AresHelper::CanUseAres)
-				return &pDrawType->ChargerTurrets[currentTurretNumber];
+		// Not considering the situation where there is no Ares and the limit is exceeded
+		if (currentTurretNumber < 18 || !AresHelper::CanUseAres)
+			return &pDrawType->ChargerTurrets[currentTurretNumber];
 
-			auto* aresTypeExt = reinterpret_cast<AresTechnoTypeExt*>(pDrawType->align_2FC);
-			return &aresTypeExt->ChargerTurrets[currentTurretNumber - 18];
-		};
+		auto* aresTypeExt = reinterpret_cast<AresTechnoTypeExt*>(pDrawType->align_2FC);
+		return &aresTypeExt->ChargerTurrets[currentTurretNumber - 18];
+	};
 	const auto pTurretVoxel = getTurretVoxel();
 
 	auto getBarrelVoxel = [pDrawType, notChargeTurret, currentTurretNumber]() -> VoxelStruct*
@@ -713,7 +713,6 @@ DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5A4C, TunnelLocomotionClass_ShadowMatrix);
 DEFINE_HOOK(0x73C47A, UnitClass_DrawAsVXL_Shadow, 0x5)
 {
 	enum { SkipDrawing = 0x73C5C9 };
-	GET(UnitClass* const, pThis, EBP);
 
 	GET(UnitClass* const, pThis, EBP);
 
