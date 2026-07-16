@@ -498,14 +498,6 @@ public:
 
 		Nullable<bool> AllowAirstrike;
 
-		Nullable<bool> BarrelOverTurret;
-		Valueable<int> BarrelOffset;
-		Valueable<int> ExtraBarrelCount;
-		std::vector<int> ExtraBarrelOffsets;
-		Valueable<int> ExtraTurretCount;
-		std::vector<CoordStruct> ExtraTurretOffsets;
-		Valueable<int> BurstPerTurret;
-
 		Nullable<TechnoTypeClass*> Image_ConditionYellow;
 		Nullable<TechnoTypeClass*> Image_ConditionRed;
 		Nullable<UnitTypeClass*> WaterImage_ConditionYellow;
@@ -709,6 +701,14 @@ public:
 		Valueable<bool> Missile_Cruise;
 		Valueable<AnimTypeClass*> Missile_TakeOffAnim;
 		Valueable<int> Missile_TakeOffSeparation;
+
+		Nullable<bool> BarrelOverTurret;
+		Valueable<int> BarrelOffset;
+		Valueable<int> ExtraBarrelCount;
+		std::vector<int> ExtraBarrelOffsets;
+		Valueable<int> ExtraTurretCount;
+		std::vector<CoordStruct> ExtraTurretOffsets;
+		Valueable<int> BurstPerTurret;
 
 		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
 			, HealthBar_Hide { false }
@@ -1179,14 +1179,6 @@ public:
 
 			, Power { }
 
-			, BarrelOverTurret { }
-			, BarrelOffset { 0 }
-			, ExtraBarrelCount { 0 }
-			, ExtraBarrelOffsets { }
-			, ExtraTurretCount { 0 }
-			, ExtraTurretOffsets { }
-			, BurstPerTurret { 0 }
-
 			, AllowAirstrike { }
 
 			, Image_ConditionYellow { }
@@ -1369,6 +1361,15 @@ public:
 			, Missile_Cruise { false }
 			, Missile_TakeOffAnim { nullptr }
 			, Missile_TakeOffSeparation { 24 }
+
+			, BarrelOverTurret { }
+			, BarrelOffset { 0 }
+			, ExtraBarrelCount { 0 }
+			, ExtraBarrelOffsets { }
+			, ExtraTurretCount { 0 }
+			, ExtraTurretOffsets { }
+			, BurstPerTurret { 0 }
+
 		{ }
 
 		virtual ~ExtData() = default;
@@ -1382,14 +1383,15 @@ public:
 
 		void LoadFromINIByWhatAmI(INI_EX& exINI, const char* pSection, INI_EX& exArtINI, const char* pArtSection);
 
-		void ApplyTurretOffset(Matrix3D* mtx, double factor = 1.0, int turIdx = -1);
 		DirStruct GetTurretDesiredDir(DirStruct defaultDir);
 		void SetTurretLimitedDir(FootClass* pThis, DirStruct desiredDir);
 		short GetTurretLimitedRaw(short currentDirectionRaw);
 		DirStruct GetBodyDesiredDir(DirStruct currentDir, DirStruct defaultDir);
 
+		void ApplyTurretOffset(Matrix3D* mtx, double factor = 1.0, int turIdx = -1);
 		void CalculateSpawnerRange();
 		bool IsSecondary(const int weaponIndex) const;
+
 		int SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget) const;
 		int SelectMultiWeapon(TechnoClass* const pThis, AbstractClass* const pTarget) const;
 

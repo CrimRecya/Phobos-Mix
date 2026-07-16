@@ -18,7 +18,6 @@
 
 TechnoTypeExt::ExtContainer TechnoTypeExt::ExtMap;
 bool TechnoTypeExt::SelectWeaponMutex = false;
-
 void TechnoTypeExt::ExtData::Initialize()
 {
 	auto pThis = this->OwnerObject();
@@ -1809,7 +1808,7 @@ void TechnoTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->DefaultVisualCharacterToAlly.Read(exArtINI, pArtSection, "DefaultVisualCharacterToAlly");
 	this->DefaultVisualCharacterToEnemy.Read(exArtINI, pArtSection, "DefaultVisualCharacterToEnemy");
 
-	// Extra barrel/turret offsets
+	// Multi-turret / multi-barrel position offsets
 	this->BarrelOverTurret.Read(exArtINI, pArtSection, "BarrelOverTurret");
 	this->BarrelOffset.Read(exArtINI, pArtSection, "BarrelOffset");
 	this->ExtraBarrelCount.Read(exArtINI, pArtSection, "ExtraBarrelCount");
@@ -2424,14 +2423,6 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->Power)
 
-		.Process(this->BarrelOverTurret)
-		.Process(this->BarrelOffset)
-		.Process(this->ExtraBarrelCount)
-		.Process(this->ExtraBarrelOffsets)
-		.Process(this->ExtraTurretCount)
-		.Process(this->ExtraTurretOffsets)
-		.Process(this->BurstPerTurret)
-
 		.Process(this->AllowAirstrike)
 
 		.Process(this->Image_ConditionYellow)
@@ -2614,6 +2605,14 @@ void TechnoTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Missile_Cruise)
 		.Process(this->Missile_TakeOffAnim)
 		.Process(this->Missile_TakeOffSeparation)
+
+		.Process(this->BarrelOverTurret)
+		.Process(this->BarrelOffset)
+		.Process(this->ExtraBarrelCount)
+		.Process(this->ExtraBarrelOffsets)
+		.Process(this->ExtraTurretCount)
+		.Process(this->ExtraTurretOffsets)
+		.Process(this->BurstPerTurret)
 		;
 }
 

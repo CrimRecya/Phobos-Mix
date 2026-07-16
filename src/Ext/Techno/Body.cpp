@@ -1938,6 +1938,8 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->ShiftApplierHouse)
 		.Process(this->LastTargetCrd)
 		.Process(this->LastTargetCrdClearTimer)
+		.Process(this->ExtraTurretRecoil)
+		.Process(this->ExtraBarrelRecoil)
 		;
 }
 

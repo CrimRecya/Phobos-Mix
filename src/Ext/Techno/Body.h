@@ -65,8 +65,6 @@ public:
 		WeaponTypeClass* LastWeaponType;
 		CoordStruct LastWeaponFLH;
 		std::shared_ptr<PhobosMap<BulletTypeClass*, BulletGroupData>> TrajectoryGroup;
-		std::vector<RecoilData> ExtraTurretRecoil;
-		std::vector<RecoilData> ExtraBarrelRecoil;
 		int ScatteringStopFrame;
 		int MyTargetingFrame;
 		CellClass* AutoTargetedWallCell;
@@ -166,6 +164,8 @@ public:
 
 		bool HasDeployConverted;
 		bool HasUndeployConverted;
+		std::vector<RecoilData> ExtraTurretRecoil;
+		std::vector<RecoilData> ExtraBarrelRecoil;
 
 		ExtData(TechnoClass* OwnerObject) : Extension<TechnoClass>(OwnerObject)
 			, TypeExtData { nullptr }
@@ -207,8 +207,6 @@ public:
 			, LastWeaponType {}
 			, LastWeaponFLH {}
 			, TrajectoryGroup {}
-			, ExtraTurretRecoil {}
-			, ExtraBarrelRecoil {}
 			, ScatteringStopFrame { 0 }
 			, MyTargetingFrame { ScenarioClass::Instance->Random.RandomRanged(0,15) }
 			, AutoTargetedWallCell{ nullptr }
@@ -275,6 +273,8 @@ public:
 			, LastTargetCrdClearTimer {}
 			, HasDeployConverted { false }
 			, HasUndeployConverted { false }
+			, ExtraTurretRecoil {}
+			, ExtraBarrelRecoil {}
 		{ }
 
 		void OnEarlyUpdate();
@@ -308,9 +308,6 @@ public:
 		void InitializeAttachEffects();
 		void InitializeAttachments();
 		void UpdateSelfOwnedAttachEffects();
-		void RecordRecoilData();
-		void UpdateRecoilData();
-		void InitializeRecoilData();
 		bool HasAttachedEffects(std::vector<AttachEffectTypeClass*> attachEffectTypes, bool requireAll, bool ignoreSameSource, TechnoClass* pInvoker, AbstractClass* pSource, std::vector<int> const* minCounts, std::vector<int> const* maxCounts) const;
 		int GetAttachedEffectCumulativeCount(AttachEffectTypeClass* pAttachEffectType, bool ignoreSameSource = false, TechnoClass* pInvoker = nullptr, AbstractClass* pSource = nullptr) const;
 		void InitializeDisplayInfo();
@@ -326,6 +323,9 @@ public:
 		int ApplyForceWeaponInRange(AbstractClass* pTarget);
 		void ResetDelayedFireTimer();
 		void UpdateTintValues();
+		void InitializeRecoilData();
+		void UpdateRecoilData();
+		void RecordRecoilData();
 
 		void AmmoAutoConvertActions();
 		void UpdateLastTargetCrd();

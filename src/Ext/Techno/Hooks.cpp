@@ -280,9 +280,9 @@ DEFINE_HOOK(0x6F42F7, TechnoClass_Init, 0x2)
 	pExt->InitializeAttachEffects();
 	pExt->InitializeDisplayInfo();
 	pExt->InitializeLaserTrails();
+	pExt->InitializeRecoilData();
 	pExt->InitAggressiveStance();
 	pExt->InitCeaseFireStance();
-	pExt->InitializeRecoilData();
 	pExt->InitializeAttachments();
 
 	if (RulesExt::Global()->CheckExtraBaseNormal && pTypeExt->ExtraBaseNormal)
