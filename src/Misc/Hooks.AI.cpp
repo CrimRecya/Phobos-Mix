@@ -316,6 +316,21 @@ namespace FoggedObjectHelper
 		FoggedObjectHelper::SetVectorCapacity(pVector, 1);
 		return pVector;
 	}
+	void ClearAllFog()
+	{
+		MapClass::Instance.CellIteratorReset();
+		for (auto pCell = MapClass::Instance.CellIteratorNext(); pCell; pCell = MapClass::Instance.CellIteratorNext())
+		{
+			pCell->ShroudCounter = 0;
+			pCell->GapsCoveringThisCell = 0;
+			pCell->AltFlags |= (AltCellFlags::Mapped | AltCellFlags::NoFog);
+			pCell->Flags |= (CellFlags::CenterRevealed | CellFlags::EdgeRevealed);
+			pCell->Flags &= ~CellFlags::Fogged;
+			pCell->ClearFoggedObjects();
+		}
+		MapClass::Instance.sub_657CE0();
+		MapClass::Instance.MarkNeedsRedraw(2);
+	}
 	static FoggedObjectClass* __fastcall CreateFoggedOverlay(void* pThis, void* _, const CoordStruct& coords, int OverlayTypeIndex, int OverlayData) JMP_THIS(0x4D0980);
 	static FoggedObjectClass* __fastcall CreateFoggedSmudge(void* pThis, void* _, const CoordStruct& coords, int SmudgeTypeIndex, int SmudgeData) JMP_THIS(0x4D0C40);
 	static FoggedObjectClass* __fastcall CreateFoggedTerrain(void* pThis, void* _, TerrainClass* pTerrain) JMP_THIS(0x4D1370);
@@ -594,7 +609,7 @@ DEFINE_HOOK(0x4ACBC4, MapClass_FogSpread_SkipWithSpySat, 0x5)
 	GET(MapClass*, pThis, ECX);
 
 	const auto pPlayer = HouseClass::CurrentPlayer;
-	if (pPlayer->Defeated || pPlayer->SpySatActive)
+	if (pPlayer->Defeated)
 		return SkipGameCode;
 
 	pThis->CellIteratorReset();
@@ -693,6 +708,14 @@ DEFINE_HOOK(0x48049E, CellClass_DrawCellSmudge_SkipSmudgeInFog, 0x6)
 	GET(CellClass*, pThis, ESI);
 
 	return (pThis->SmudgeTypeIndex != -1 && (!ScenarioClass::Instance->SpecialFlags.FogOfWar || !(pThis->Flags & CellFlags::Fogged))) ? Draw : SkipDraw;
+}
+
+DEFINE_HOOK(0x4FC200, HouseClass_AcceptDefeat_RevealFog, 0x5)
+{
+	if (ScenarioClass::Instance->SpecialFlags.FogOfWar)
+		FoggedObjectHelper::ClearAllFog();
+
+	return 0;
 }
 
 /*
