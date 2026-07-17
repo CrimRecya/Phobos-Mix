@@ -1,6 +1,7 @@
 ﻿#include <New/Entity/AttachmentClass.h>
 
 #include <Ext/Scenario/Body.h>
+#include <Ext/TerrainType/Body.h>
 #include <Utilities/Macro.h>
 
 #pragma region SmudgeUpdate
@@ -288,9 +289,18 @@ DEFINE_HOOK(0x55B4E1, LogicClass_Update_UnmarkCellOccupationFlags, 0x5)
 
 namespace FoggedObjectHelper
 {
+	struct FoggedObjectClassFake
+	{
+		char _[0x40];
+		RectangleStruct RenderDimension;
+	};
 	bool SetVectorCapacity(DynamicVectorClass<FoggedObjectClass*>* pVector, int capacity)
 	{
 		return reinterpret_cast<bool(__thiscall*)(DynamicVectorClass<FoggedObjectClass*>*, int, FoggedObjectClass **)>(0x45A680)(pVector, capacity, nullptr);
+	}
+	bool ObjectUnlimbo(ObjectClass* pObject, const CoordStruct& position, DirType face)
+	{
+		return reinterpret_cast<bool(__thiscall*)(ObjectClass*, const CoordStruct&, DirType)>(0x5F4EC0)(pObject, position, face);
 	}
 	void AddItemToVector(DynamicVectorClass<FoggedObjectClass*>* pVector, FoggedObjectClass* pItem)
 	{
@@ -350,6 +360,10 @@ namespace FoggedObjectHelper
 				this->OverlayTypeIndex,
 				static_cast<unsigned int>(this->OverlayData)
 			);
+			auto rect = reinterpret_cast<FoggedObjectClassFake*>(pObject)->RenderDimension;
+			rect.X -= TacticalClass::Instance->TacticalPos.X;
+			rect.Y -= TacticalClass::Instance->TacticalPos.Y;
+			TacticalClass::Instance->RegisterDirtyArea(rect, 0);
 			FoggedObjectHelper::AddItemToVector(pVector, pObject);
 			return pObject;
 		}
@@ -362,6 +376,10 @@ namespace FoggedObjectHelper
 				this->SmudgeTypeIndex,
 				static_cast<unsigned int>(this->SmudgeData)
 			);
+			auto rect = reinterpret_cast<FoggedObjectClassFake*>(pObject)->RenderDimension;
+			rect.X -= TacticalClass::Instance->TacticalPos.X;
+			rect.Y -= TacticalClass::Instance->TacticalPos.Y;
+			TacticalClass::Instance->RegisterDirtyArea(rect, 0);
 			FoggedObjectHelper::AddItemToVector(pVector, pObject);
 			return pObject;
 		}
@@ -376,12 +394,16 @@ namespace FoggedObjectHelper
 				0,
 				this
 			);
+			auto rect = reinterpret_cast<FoggedObjectClassFake*>(pObject)->RenderDimension;
+			rect.X -= TacticalClass::Instance->TacticalPos.X;
+			rect.Y -= TacticalClass::Instance->TacticalPos.Y;
+			TacticalClass::Instance->RegisterDirtyArea(rect, 0);
 			FoggedObjectHelper::AddItemToVector(pVector, pObject);
 			return pObject;
-		}/*
+		}
 		bool TerrainClass_Unlimbo_CheckFog(const CoordStruct& coords, DirType dir)
 		{
-			const bool result = this->ObjectClass::Unlimbo(coords, dir);
+			const bool result = FoggedObjectHelper::ObjectUnlimbo(this, coords, dir);
 			if (result && ScenarioClass::Instance->SpecialFlags.FogOfWar)
 			{
 				const auto pCell = MapClass::Instance.GetCellAt(coords);
@@ -394,14 +416,14 @@ namespace FoggedObjectHelper
 				}
 			}
 			return result;
-		};*/
-	};/*
+		};
+	};
 	class OverlayClassFake final : public OverlayClass
 	{
 	public:
 		bool OverlayClass_Unlimbo_CheckFog(const CoordStruct& coords, DirType dir)
 		{
-			const bool result = this->ObjectClass::Unlimbo(coords, dir);
+			const bool result = FoggedObjectHelper::ObjectUnlimbo(this, coords, dir);
 			if (result && ScenarioClass::Instance->SpecialFlags.FogOfWar)
 			{
 				const auto pCell = MapClass::Instance.GetCellAt(coords);
@@ -421,7 +443,7 @@ namespace FoggedObjectHelper
 	public:
 		bool SmudgeClass_Unlimbo_CheckFog(const CoordStruct& coords, DirType dir)
 		{
-			const bool result = this->ObjectClass::Unlimbo(coords, dir);
+			const bool result = FoggedObjectHelper::ObjectUnlimbo(this, coords, dir);
 			if (result && ScenarioClass::Instance->SpecialFlags.FogOfWar)
 			{
 				const auto pCell = MapClass::Instance.GetCellAt(coords);
@@ -435,7 +457,7 @@ namespace FoggedObjectHelper
 			}
 			return result;
 		}
-	};*/
+	};
 }
 
 // 重新启用功能
@@ -685,7 +707,7 @@ DEFINE_HOOK(0x6D9313, TacticalClass_DrawObjectsInLayers_SkipTerrainInFog, 0x6)
 {
 	enum { SkipDraw = 0x6D940C };
 
-	GET(CoordStruct*, pCoord, EAX);
+	GET(const CoordStruct*, pCoord, EAX);
 
 	return (ScenarioClass::Instance->SpecialFlags.FogOfWar && MapClass::Instance.IsLocationFogged(*pCoord)) ? SkipDraw : 0;
 }
@@ -695,7 +717,7 @@ DEFINE_HOOK(0x6D70BC, TacticalClass_DrawCellOverlay_SkipOverlayInFog, 0xA)
 {
 	enum { Draw = 0x6D70C6, SkipDraw = 0x6D71A4 };
 
-	GET(CellClass*, pCell, EBX);
+	GET(const CellClass*, pCell, EBX);
 
 	return (pCell->OverlayTypeIndex != -1 && (!ScenarioClass::Instance->SpecialFlags.FogOfWar || !(pCell->Flags & CellFlags::Fogged))) ? Draw : SkipDraw;
 }
@@ -705,7 +727,7 @@ DEFINE_HOOK(0x48049E, CellClass_DrawCellSmudge_SkipSmudgeInFog, 0x6)
 {
 	enum { Draw = 0x4804A4, SkipDraw = 0x4804FB };
 
-	GET(CellClass*, pThis, ESI);
+	GET(const CellClass*, pThis, ESI);
 
 	return (pThis->SmudgeTypeIndex != -1 && (!ScenarioClass::Instance->SpecialFlags.FogOfWar || !(pThis->Flags & CellFlags::Fogged))) ? Draw : SkipDraw;
 }
@@ -718,15 +740,64 @@ DEFINE_HOOK(0x4FC200, HouseClass_AcceptDefeat_RevealFog, 0x5)
 	return 0;
 }
 
-/*
 // 地形对象、覆盖物、弹坑出现时检查是否被迷雾遮蔽
 DEFINE_FUNCTION_JUMP(CALL, 0x5FC4B1, FoggedObjectHelper::OverlayClassFake::OverlayClass_Unlimbo_CheckFog);
 DEFINE_FUNCTION_JUMP(CALL, 0x6B4B14, FoggedObjectHelper::SmudgeClassFake::SmudgeClass_Unlimbo_CheckFog);
 DEFINE_FUNCTION_JUMP(CALL, 0x71D012, FoggedObjectHelper::TerrainClassFake::TerrainClass_Unlimbo_CheckFog);
-*/
+
+DEFINE_HOOK(0x4D1B2E, FoggedObjectClass_DrawFoggedObjects_DrawTerrain, 0x6)
+{
+	enum { SkipGameCode = 0x4D2311 };
+
+	GET(SHPStruct*, pImage, EAX);
+	GET(const TerrainTypeClass*, pType, ECX);
+	GET(const CoordStruct*, pCoord, ESI);
+	GET(const RectangleStruct*, pBounds, EDI);
+	GET(CellClass*, pCell, EBP);
+	GET_STACK(int, frame, STACK_OFFSET(0x154, -0x134));
+
+	if (pImage)
+	{
+		auto point = TacticalClass::Instance->CoordsToClient(*pCoord).first;
+		point.X += (DSurface::ViewBounds.X - pBounds->X);
+		point.Y += (DSurface::ViewBounds.Y - pBounds->Y);
+		int zAdjust = -TacticalClass::Instance->AdjustForZ(pCoord->Z);
+
+		if (!pCell->LightConvert)
+			pCell->InitLightConvert();
+
+		ConvertClass* pPalette = pCell->LightConvert;
+		int intensity = static_cast<int>(pCell->Intensity_Terrain);
+		if (const auto pPalettes = TerrainTypeExt::ExtMap.Find(pType)->Palette)
+		{
+			const int wallOwnerIndex = pCell->WallOwnerIndex;
+			int colorSchemeIndex = HouseClass::CurrentPlayer->ColorSchemeIndex;
+
+			if (wallOwnerIndex >= 0)
+				colorSchemeIndex = HouseClass::Array[wallOwnerIndex]->ColorSchemeIndex;
+
+			pPalette = pPalettes->Items[colorSchemeIndex]->LightConvert;
+			intensity = static_cast<int>(pCell->Intensity_Normal);
+
+			if (pType->SpawnsTiberium)
+				point.Y -= 16;
+		}
+		else if (pType->SpawnsTiberium)
+		{
+			pPalette = FileSystem::GRFTXT_TIBERIUM_PAL;
+			intensity = static_cast<int>(pCell->Intensity_Normal);
+			point.Y -= 16;
+		}
+
+		DSurface::Temp->DrawSHP(pPalette, pImage, frame, &point, pBounds, BlitterFlags(0x4E00), 0, zAdjust - 4, ZGradient::Deg90, intensity, 0, 0, 0, 0, 0);
+		if (Game::bDrawShadow)
+			DSurface::Temp->DrawSHP(pPalette, pImage, frame + (pImage->Frames / 2), &point, pBounds, BlitterFlags(0x4601), 0, zAdjust - 2, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
+	}
+
+	return SkipGameCode;
+}
 
 // 矿石不更新
-// 修复矿柱图像异常
 // 修复Alpha光亮度异常
 // 波动效果要受影响
 // 光照强度要受影响
