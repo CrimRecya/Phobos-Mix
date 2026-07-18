@@ -29,7 +29,7 @@ DEFINE_HOOK(0x7193F6, TeleportLocomotionClass_ILocomotion_Process_WarpoutAnim, 0
 	if (pExt->WarpOutWeapon)
 		WeaponTypeExt::DetonateAt(pExt->WarpOutWeapon, pLinked, pLinked);
 
-	const int distance = (int)Math::sqrt(pLinked->Location.DistanceFromSquared(pLocomotor->LastCoords));
+	const int distance = static_cast<int>(pLinked->Location.DistanceFrom(pLocomotor->LastCoords));
 	const auto linkedExt = TechnoExt::ExtMap.Find(pLinked);
 	linkedExt->LastWarpDistance = distance;
 

@@ -94,9 +94,9 @@ void TechnoExt::ExtData::ApplyInterceptor()
 	BulletClass* pOptionalTarget = nullptr;
 	BulletClass* pTargetBullet = nullptr;
 	const double guardRange = pInterceptorType->GuardRange.Get(pThis);
-	const double guardRangeSq = guardRange * guardRange;
+	const double guardRangeSq = static_cast<double>(guardRange) * guardRange;
 	const double minGuardRange = pInterceptorType->MinimumGuardRange.Get(pThis);
-	const double minGuardRangeSq = minGuardRange * minGuardRange;
+	const double minGuardRangeSq = static_cast<double>(minGuardRange) * minGuardRange;
 	const auto location = pThis->Location;
 	const auto pWeapon = pThis->GetWeapon(pInterceptorType->Weapon)->WeaponType; // Interceptor weapon is always fixed
 	const auto pWH = pWeapon->Warhead;

@@ -75,7 +75,7 @@ bool SWTypeExt::ExtData::IsInhibitorEligible(HouseClass* pOwner, const CellStruc
 
 		// has to be closer than the inhibitor range (which defaults to Sight)
 		const int range = pExt->InhibitorRange.Get(pType->Sight);
-		return coords.DistanceFromSquared(CellClass::Coord2Cell(center)) <= range * range;
+		return coords.DistanceFromSquared(CellClass::Coord2Cell(center)) <= static_cast<double>(range) * range;
 	}
 
 	return false;
@@ -114,7 +114,7 @@ bool SWTypeExt::ExtData::IsDesignatorEligible(HouseClass* pOwner, const CellStru
 
 		// has to be closer than the designator range (which defaults to Sight)
 		const int range = pExt->DesignatorRange.Get(pType->Sight);
-		return coords.DistanceFromSquared(CellClass::Coord2Cell(center)) <= range * range;
+		return coords.DistanceFromSquared(CellClass::Coord2Cell(center)) <= static_cast<double>(range) * range;
 	}
 
 	return false;

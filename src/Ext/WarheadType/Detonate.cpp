@@ -702,7 +702,7 @@ void WarheadTypeExt::ExtData::InterceptBullets(TechnoClass* pOwner, BulletClass*
 	}
 	else
 	{
-		const double cellSpreadSq = cellSpread * cellSpread * 65536; // Unsorted::LeptonsPerCell * Unsorted::LeptonsPerCell
+		const double cellSpreadSq = 65536.0 * cellSpread * cellSpread; // Unsorted::LeptonsPerCell * Unsorted::LeptonsPerCell
 
 		for (const auto& pBullet : BulletClass::Array)
 		{

@@ -307,7 +307,7 @@ DEFINE_HOOK(0x73EB2C, UnitClass_MissionHarvest_Status2, 0x6)
 	const auto destLocation = pThis->GetDestination();
 	auto destCell = CellStruct { static_cast<short>(destLocation.X >> 8), static_cast<short>(destLocation.Y >> 8) };
 
-	int distanceSquared = INT_MAX;
+	double distanceSquared = 268435456.0;
 	BuildingClass* pDock = nullptr;
 
 	for (const auto& pBuildingType : docks)
@@ -322,9 +322,7 @@ DEFINE_HOOK(0x73EB2C, UnitClass_MissionHarvest_Status2, 0x6)
 				if (reinterpret_cast<bool(__thiscall*)(DisplayClass*, CellStruct*, CellStruct*, MovementZone, bool, bool, bool)>(0x56D100)
 					(&DisplayClass::Instance, &destCell, &dockCell, move, pThis->IsOnBridge(), false ,false)) // Prevent send command
 				{
-					const auto difference = Point2D { (thisPosition.X - (dockLocation.X >> 4)), (thisPosition.Y - (dockLocation.Y >> 4)) };
-					const auto newDistanceSquared = (difference.X * difference.X) + (difference.Y * difference.Y);
-
+					const double newDistanceSquared = Point2D { (thisPosition.X - (dockLocation.X >> 4)), (thisPosition.Y - (dockLocation.Y >> 4)) }.MagnitudeSquared();
 					if (newDistanceSquared < distanceSquared) // No check for primary building
 					{
 						distanceSquared = newDistanceSquared;
@@ -353,7 +351,7 @@ DEFINE_HOOK(0x73EB2C, UnitClass_MissionHarvest_Status2, 0x6)
 
 	auto closeTo = CellStruct::Empty;
 
-	if (distanceSquared > 6400)
+	if (distanceSquared > 6400.0)
 		closeTo = CellClass::Coord2Cell(thisLocation);
 
 	destCell = MapClass::Instance.NearByLocation(destCell, pType->SpeedType, -1, move, false, 1, 1, false, false, false, true, closeTo, false, false);

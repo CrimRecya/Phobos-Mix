@@ -205,7 +205,7 @@ void AdvancedDriveLocomotionClass::Stop_Moving()
 	// I think no body want to see slowly~ slowly~ moving, so I change this one
 	if (pLinked->GetTechnoType()->Accelerates)
 	{
-		if (pLinked->Location.DistanceFromSquared(this->HeadToCoord) < 16384)
+		if (pLinked->Location.DistanceFromSquared(this->HeadToCoord) < 16384.0)
 		{
 			if (this->MovementSpeed >= 0.5)
 				this->MovementSpeed = 0.5;

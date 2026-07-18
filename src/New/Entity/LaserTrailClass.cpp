@@ -17,7 +17,7 @@ bool LaserTrailClass::Update(CoordStruct location)
 		// The trail was just inited
 		this->LastLocation = location;
 	}
-	else if (location.DistanceFromSquared(this->LastLocation.Get()) > segmentLength * segmentLength) // TODO reimplement IgnoreVertical properly?
+	else if (location.DistanceFromSquared(this->LastLocation.Get()) > static_cast<double>(segmentLength) * segmentLength) // TODO reimplement IgnoreVertical properly?
 	{
 		auto const pType = this->Type;
 
