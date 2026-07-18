@@ -191,6 +191,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->AmphibiousEnter.Read(exINI, GameStrings::General, "AmphibiousEnter");
 	this->AmphibiousUnload.Read(exINI, GameStrings::General, "AmphibiousUnload");
 	this->NoQueueUpToEnter.Read(exINI, GameStrings::General, "NoQueueUpToEnter");
+	this->NoQueueUpToEnter_BoardDistance.Read(exINI, GameStrings::General, "NoQueueUpToEnter.BoardDistance");
 	this->NoQueueUpToUnload.Read(exINI, GameStrings::General, "NoQueueUpToUnload");
 	this->NoQueueUpToEnter_Buildings.Read(exINI, GameStrings::General, "NoQueueUpToEnter.Buildings");
 	this->NoQueueUpToUnload_Buildings.Read(exINI, GameStrings::General, "NoQueueUpToUnload.Buildings");
@@ -246,6 +247,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->AirstrikeLineColor.Read(exINI, GameStrings::AudioVisual, "AirstrikeLineColor");
 	this->AirstrikeLineZAdjust.Read(exINI, GameStrings::AudioVisual, "AirstrikeLineZAdjust");
 
+	this->LaserPositionUpdate_StopOnFirerConvert.Read(exINI, GameStrings::AudioVisual, "LaserPositionUpdate.StopOnFirerConvert");
 	this->LaserZAdjust.Read(exINI, GameStrings::AudioVisual, "LaserZAdjust");
 	this->EBoltZAdjust.Read(exINI, GameStrings::AudioVisual, "EBoltZAdjust");
 	this->EBoltZAdjust_ClampInitialDepthForBuilding.Read(exINI, GameStrings::AudioVisual, "EBoltZAdjust.ClampInitialDepthForBuilding");
@@ -773,6 +775,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->AmphibiousEnter)
 		.Process(this->AmphibiousUnload)
 		.Process(this->NoQueueUpToEnter)
+		.Process(this->NoQueueUpToEnter_BoardDistance)
 		.Process(this->NoQueueUpToUnload)
 		.Process(this->NoQueueUpToEnter_Buildings)
 		.Process(this->NoQueueUpToUnload_Buildings)
@@ -818,6 +821,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->ColorAddUse8BitRGB)
 		.Process(this->AirstrikeLineColor)
 		.Process(this->AirstrikeLineZAdjust)
+		.Process(this->LaserPositionUpdate_StopOnFirerConvert)
 		.Process(this->LaserZAdjust)
 		.Process(this->EBoltZAdjust)
 		.Process(this->EBoltZAdjust_ClampInitialDepthForBuilding)

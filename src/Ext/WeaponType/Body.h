@@ -45,6 +45,8 @@ public:
 		Valueable<AreaFireTarget> AreaFire_Target;
 		Valueable<WeaponTypeClass*> FeedbackWeapon;
 		Valueable<bool> Laser_IsSingleColor;
+		Valueable<PositionFollow> LaserPositionUpdate;
+		Nullable<bool> LaserPositionUpdate_StopOnFirerConvert;
 		Nullable<int> LaserZAdjust;
 		Nullable<int> EBoltZAdjust;
 		Nullable<bool> EBoltZAdjust_ClampInitialDepthForBuilding;
@@ -143,6 +145,8 @@ public:
 			, AreaFire_Target { AreaFireTarget::Base }
 			, FeedbackWeapon {}
 			, Laser_IsSingleColor { false }
+			, LaserPositionUpdate { PositionFollow::None }
+			, LaserPositionUpdate_StopOnFirerConvert {}
 			, LaserZAdjust {}
 			, EBoltZAdjust {}
 			, EBoltZAdjust_ClampInitialDepthForBuilding {}
@@ -249,4 +253,7 @@ public:
 	static int GetRangeWithModifiers(WeaponTypeClass* pThis, TechnoClass* pFirer);
 	static int GetRangeWithModifiers(WeaponTypeClass* pThis, TechnoClass* pFirer, int range);
 	static int GetTechnoKeepRange(WeaponTypeClass* pThis, TechnoClass* pFirer, bool isMinimum);
+
+	// Misc/Hooks.LaserDraw.cpp
+	static void OnObjectRemoved(ObjectClass* pObject);
 };

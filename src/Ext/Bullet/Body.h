@@ -50,6 +50,8 @@ public:
 		int DamageNumberOffset;
 		int ParabombFallRate;
 		bool IsInstantDetonation;
+		double FirepowerMult;
+		bool IsSplitFromAirburst;
 
 		TrajectoryPointer Trajectory;
 		bool DispersedTrajectory;
@@ -88,6 +90,7 @@ public:
 			, DamageNumberOffset { INT32_MIN }
 			, ParabombFallRate { 0 }
 			, IsInstantDetonation { false }
+			, IsSplitFromAirburst { false }
 
 			, Trajectory { nullptr }
 			, DispersedTrajectory { false }
