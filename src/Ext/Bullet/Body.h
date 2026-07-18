@@ -58,7 +58,6 @@ public:
 		CDTimerClass LifeDurationTimer;
 		CDTimerClass NoTargetLifeTimer;
 		CDTimerClass RetargetTimer;
-		double FirepowerMult;
 		int AttenuationRange;
 		bool TargetIsInAir;
 		bool TargetIsTechno;
@@ -90,6 +89,7 @@ public:
 			, DamageNumberOffset { INT32_MIN }
 			, ParabombFallRate { 0 }
 			, IsInstantDetonation { false }
+			, FirepowerMult { 1.0 }
 			, IsSplitFromAirburst { false }
 
 			, Trajectory { nullptr }
@@ -97,7 +97,6 @@ public:
 			, LifeDurationTimer {}
 			, NoTargetLifeTimer {}
 			, RetargetTimer {}
-			, FirepowerMult { 1.0 }
 			, AttenuationRange { 0 }
 			, TargetIsInAir { false }
 			, TargetIsTechno { false }
