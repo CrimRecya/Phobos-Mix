@@ -293,7 +293,10 @@ namespace FoggedObjectHelper
 	{
 		char _[0x40];
 		RectangleStruct RenderDimension;
+		char __[0x24];
+		bool Visible;
 	};
+	static_assert(sizeof(FoggedObjectClassFake) == 0x78u);
 	bool SetVectorCapacity(DynamicVectorClass<FoggedObjectClass*>* pVector, int capacity)
 	{
 		return reinterpret_cast<bool(__thiscall*)(DynamicVectorClass<FoggedObjectClass*>*, int, FoggedObjectClass **)>(0x45A680)(pVector, capacity, nullptr);
@@ -314,7 +317,7 @@ namespace FoggedObjectHelper
 	}
 	DynamicVectorClass<FoggedObjectClass*>* CreateGameDynamicVector()
 	{
-		void* raw = YRMemory::Allocate(0x18u);
+		void* raw = YRMemory::Allocate(sizeof(DynamicVectorClass<FoggedObjectClass*>));
 		*reinterpret_cast<void**>(raw) = reinterpret_cast<void*>(0x7E44F4u);
 		auto pVector = static_cast<DynamicVectorClass<FoggedObjectClass*>*>(raw);
 		pVector->Items = nullptr;
@@ -351,15 +354,16 @@ namespace FoggedObjectHelper
 	class CellClassFake final : public CellClass
 	{
 	public:
-		FoggedObjectClass* FreezeOverlay(DynamicVectorClass<FoggedObjectClass*>* pVector)
+		FoggedObjectClass* FreezeOverlay(DynamicVectorClass<FoggedObjectClass*>* pVector, bool visible)
 		{
 			const auto pObject = FoggedObjectHelper::CreateFoggedOverlay(
-				YRMemory::Allocate(0x78u),
+				YRMemory::Allocate(sizeof(FoggedObjectClassFake)),
 				0,
 				this->GetCoords(),
 				this->OverlayTypeIndex,
 				static_cast<unsigned int>(this->OverlayData)
 			);
+			reinterpret_cast<FoggedObjectClassFake*>(pObject)->Visible = visible;
 			auto rect = reinterpret_cast<FoggedObjectClassFake*>(pObject)->RenderDimension;
 			rect.X -= TacticalClass::Instance->TacticalPos.X;
 			rect.Y -= TacticalClass::Instance->TacticalPos.Y;
@@ -367,15 +371,16 @@ namespace FoggedObjectHelper
 			FoggedObjectHelper::AddItemToVector(pVector, pObject);
 			return pObject;
 		}
-		FoggedObjectClass* FreezeSmudge(DynamicVectorClass<FoggedObjectClass*>* pVector)
+		FoggedObjectClass* FreezeSmudge(DynamicVectorClass<FoggedObjectClass*>* pVector, bool visible)
 		{
 			const auto pObject = FoggedObjectHelper::CreateFoggedSmudge(
-				YRMemory::Allocate(0x78u),
+				YRMemory::Allocate(sizeof(FoggedObjectClassFake)),
 				0,
 				this->GetCoords(),
 				this->SmudgeTypeIndex,
 				static_cast<unsigned int>(this->SmudgeData)
 			);
+			reinterpret_cast<FoggedObjectClassFake*>(pObject)->Visible = visible;
 			auto rect = reinterpret_cast<FoggedObjectClassFake*>(pObject)->RenderDimension;
 			rect.X -= TacticalClass::Instance->TacticalPos.X;
 			rect.Y -= TacticalClass::Instance->TacticalPos.Y;
@@ -387,13 +392,14 @@ namespace FoggedObjectHelper
 	class TerrainClassFake final : public TerrainClass
 	{
 	public:
-		FoggedObjectClass* FreezeTerrain(DynamicVectorClass<FoggedObjectClass*>* pVector)
+		FoggedObjectClass* FreezeTerrain(DynamicVectorClass<FoggedObjectClass*>* pVector, bool visible)
 		{
 			const auto pObject = FoggedObjectHelper::CreateFoggedTerrain(
-				YRMemory::Allocate(0x78u),
+				YRMemory::Allocate(sizeof(FoggedObjectClassFake)),
 				0,
 				this
 			);
+			reinterpret_cast<FoggedObjectClassFake*>(pObject)->Visible = visible;
 			auto rect = reinterpret_cast<FoggedObjectClassFake*>(pObject)->RenderDimension;
 			rect.X -= TacticalClass::Instance->TacticalPos.X;
 			rect.Y -= TacticalClass::Instance->TacticalPos.Y;
@@ -412,7 +418,7 @@ namespace FoggedObjectHelper
 					if (!pCell->FoggedObjects)
 						pCell->FoggedObjects = FoggedObjectHelper::CreateGameDynamicVector();
 
-					this->FreezeTerrain(pCell->FoggedObjects);
+					this->FreezeTerrain(pCell->FoggedObjects, false);
 				}
 			}
 			return result;
@@ -432,7 +438,7 @@ namespace FoggedObjectHelper
 					if (!pCell->FoggedObjects)
 						pCell->FoggedObjects = FoggedObjectHelper::CreateGameDynamicVector();
 
-					static_cast<FoggedObjectHelper::CellClassFake*>(pCell)->FreezeOverlay(pCell->FoggedObjects);
+					static_cast<FoggedObjectHelper::CellClassFake*>(pCell)->FreezeOverlay(pCell->FoggedObjects, false);
 				}
 			}
 			return result;
@@ -452,7 +458,7 @@ namespace FoggedObjectHelper
 					if (!pCell->FoggedObjects)
 						pCell->FoggedObjects = FoggedObjectHelper::CreateGameDynamicVector();
 
-					static_cast<FoggedObjectHelper::CellClassFake*>(pCell)->FreezeSmudge(pCell->FoggedObjects);
+					static_cast<FoggedObjectHelper::CellClassFake*>(pCell)->FreezeSmudge(pCell->FoggedObjects, false);
 				}
 			}
 			return result;
@@ -689,15 +695,15 @@ DEFINE_HOOK(0x486B21, CellClass_FogCell_FreezeObjects, 0x6)
 		}
 		else if (absType == AbstractType::Terrain)
 		{
-			static_cast<FoggedObjectHelper::TerrainClassFake*>(pObject)->FreezeTerrain(pVector);
+			static_cast<FoggedObjectHelper::TerrainClassFake*>(pObject)->FreezeTerrain(pVector, true);
 		}
 	}
 
 	if (pCell->OverlayTypeIndex != -1)
-		pCell->FreezeOverlay(pVector);
+		pCell->FreezeOverlay(pVector, true);
 
 	if (pCell->SmudgeTypeIndex != -1)
-		pCell->FreezeSmudge(pVector);
+		pCell->FreezeSmudge(pVector, true);
 
 	return SkipGameCode;
 }
@@ -732,6 +738,7 @@ DEFINE_HOOK(0x48049E, CellClass_DrawCellSmudge_SkipSmudgeInFog, 0x6)
 	return (pThis->SmudgeTypeIndex != -1 && (!ScenarioClass::Instance->SpecialFlags.FogOfWar || !(pThis->Flags & CellFlags::Fogged))) ? Draw : SkipDraw;
 }
 
+// 被击败或是观察者时揭开所有迷雾，间谍卫星目前只揭开黑幕不管迷雾，感觉可能还是分开好
 DEFINE_HOOK(0x4FC200, HouseClass_AcceptDefeat_RevealFog, 0x5)
 {
 	if (ScenarioClass::Instance->SpecialFlags.FogOfWar)
@@ -740,8 +747,9 @@ DEFINE_HOOK(0x4FC200, HouseClass_AcceptDefeat_RevealFog, 0x5)
 	return 0;
 }
 
-// 地形对象、覆盖物、弹坑出现时检查是否被迷雾遮蔽
+// 地形对象、覆盖物、弹坑出现时检查是否被迷雾遮蔽，虽然感觉没必要，但既然建筑也这么做了那就蛮做
 DEFINE_FUNCTION_JUMP(CALL, 0x5FC4B1, FoggedObjectHelper::OverlayClassFake::OverlayClass_Unlimbo_CheckFog);
+DEFINE_FUNCTION_JUMP(CALL, 0x5FD2D2, FoggedObjectHelper::OverlayClassFake::OverlayClass_Unlimbo_CheckFog);
 DEFINE_FUNCTION_JUMP(CALL, 0x6B4B14, FoggedObjectHelper::SmudgeClassFake::SmudgeClass_Unlimbo_CheckFog);
 DEFINE_FUNCTION_JUMP(CALL, 0x71D012, FoggedObjectHelper::TerrainClassFake::TerrainClass_Unlimbo_CheckFog);
 
