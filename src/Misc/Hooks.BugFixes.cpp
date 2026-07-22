@@ -2215,8 +2215,7 @@ DEFINE_HOOK(0x489416, MapClass_DamageArea_AirDamageSelfFix, 0x6)
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWarhead);
 
-	// if (pAirTechno->IsInAir() ? !pWHExt->AffectsInAir : !pWHExt->AffectsOnFloor)
-	if (pWHExt->AffectsInAir ? (!pWHExt->AffectsOnFloor && !pAirTechno->IsInAir()) : (!pWHExt->AffectsOnFloor || pAirTechno->IsInAir()))
+	if (pAirTechno->IsInAir() ? !pWHExt->AffectsAir : !pWHExt->AffectsGround)
 		return NextTechno;
 
 	if (pAirTechno != pSourceTechno)

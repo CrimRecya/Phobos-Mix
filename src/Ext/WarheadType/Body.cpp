@@ -48,9 +48,7 @@ bool WarheadTypeExt::ExtData::CanAffectTarget(TechnoClass* pTarget) const
 	if (!this->EffectsRequireVerses)
 		return true;
 
-	bool isAir = pTarget->IsInAir();
-
-	if ((isAir && !this->AffectsAir) || (!isAir && !this->AffectsGround))
+	if (pTarget->IsInAir() ? !this->AffectsAir : !this->AffectsGround)
 		return false;
 
 	return GeneralUtils::GetWarheadVersusArmor(this->OwnerObject(), pTarget, pTarget->GetTechnoType()) != 0.0;
@@ -324,8 +322,6 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->DetonateOnAllMapObjects_AffectTypes.Read(exINI, pSection, "DetonateOnAllMapObjects.AffectTypes");
 	this->DetonateOnAllMapObjects_IgnoreTypes.Read(exINI, pSection, "DetonateOnAllMapObjects.IgnoreTypes");
 
-	this->AffectsOnFloor.Read(exINI, pSection, "AffectsOnFloor");
-	this->AffectsInAir.Read(exINI, pSection, "AffectsInAir");
 	this->LightChanging.Read(exINI, pSection, "LightChanging");
 	this->SetAmbientLight.Read(exINI, pSection, "SetAmbientLight");
 	this->SetAmbientRed.Read(exINI, pSection, "SetAmbientRed");
@@ -724,8 +720,6 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->DetonateOnAllMapObjects_AffectTypes)
 		.Process(this->DetonateOnAllMapObjects_IgnoreTypes)
 
-		.Process(this->AffectsOnFloor)
-		.Process(this->AffectsInAir)
 		.Process(this->LightChanging)
 		.Process(this->SetAmbientLight)
 		.Process(this->SetAmbientRed)

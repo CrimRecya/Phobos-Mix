@@ -163,8 +163,6 @@ public:
 		Valueable<bool> InflictLocomotor;
 		Valueable<bool> RemoveInflictedLocomotor;
 
-		Valueable<bool> AffectsOnFloor;
-		Valueable<bool> AffectsInAir;
 		Valueable<bool> LightChanging;
 		Valueable<int> SetAmbientLight;
 		Valueable<int> SetAmbientRed;
@@ -464,8 +462,6 @@ public:
 			, InflictLocomotor { false }
 			, RemoveInflictedLocomotor { false }
 
-			, AffectsOnFloor { true }
-			, AffectsInAir { true }
 			, LightChanging { false }
 			, SetAmbientLight { -1 }
 			, SetAmbientRed { -1 }

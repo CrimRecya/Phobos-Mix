@@ -121,7 +121,7 @@ DEFINE_HOOK(0x4898BF, MapClass_DamageArea_Cylinder_4, 0x5)
 
 #pragma endregion
 
-#pragma region AffectsInAirAndAffectsOnFloor
+#pragma region AffectsAir and AffectsGround
 /*
 DEFINE_HOOK(0x489416, MapClass_DamageArea_CheckHeight_1, 0x6)
 {
@@ -132,8 +132,7 @@ DEFINE_HOOK(0x489416, MapClass_DamageArea_CheckHeight_1, 0x6)
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	// return (pTechno->IsInAir() ? pWHExt->AffectsInAir : pWHExt->AffectsOnFloor) ? 0 : SkipThisObject;
-	return (pWHExt->AffectsInAir ? (!pWHExt->AffectsOnFloor && !pObject->IsInAir()) : (!pWHExt->AffectsOnFloor || pObject->IsInAir())) ? SkipThisObject : 0;
+	return (pTechno->IsInAir() ? pWHExt->AffectsAir : pWHExt->AffectsGround) ? 0 : SkipThisObject;
 }
 */
 DEFINE_HOOK(0x489710, MapClass_DamageArea_CheckHeight_2, 0x7)
@@ -145,8 +144,7 @@ DEFINE_HOOK(0x489710, MapClass_DamageArea_CheckHeight_2, 0x7)
 
 	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWH);
 
-	// return (pTechno->IsInAir() ? pWHExt->AffectsInAir : pWHExt->AffectsOnFloor) ? 0 : SkipThisObject;
-	return (pWHExt->AffectsInAir ? (!pWHExt->AffectsOnFloor && !pObject->IsInAir()) : (!pWHExt->AffectsOnFloor || pObject->IsInAir())) ? SkipThisObject : 0;
+	return (pObject->IsInAir() ? pWHExt->AffectsAir : pWHExt->AffectsGround) ? 0 : SkipThisObject;
 }
 
 #pragma endregion
