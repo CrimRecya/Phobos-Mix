@@ -1420,6 +1420,20 @@ void BuildingTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->LaserFencePost_Fence.Read(exINI, pSection, "LaserFencePost.Fence");
 	this->PlaceBuilding_OnLand.Read(exINI, pSection, "PlaceBuilding.OnLand");
 	this->PlaceBuilding_OnWater.Read(exINI, pSection, "PlaceBuilding.OnWater");
+	if (this->PlaceBuilding_OnLand.size())
+	{
+		auto& vec = this->PlaceBuilding_OnLand_Unique;
+		vec = this->PlaceBuilding_OnLand;
+		std::sort(vec.begin(), vec.end());
+		vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+	}
+	if (this->PlaceBuilding_OnWater.size())
+	{
+		auto& vec = this->PlaceBuilding_OnWater_Unique;
+		vec = this->PlaceBuilding_OnWater;
+		std::sort(vec.begin(), vec.end());
+		vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+	}
 	this->PlaceBuilding_DirectionShape.Read(exINI, pSection, "PlaceBuilding.DirectionShape");
 	this->PlaceBuilding_DirectionPalette.LoadFromINI(pINI, pSection, "PlaceBuilding.DirectionPalette");
 	this->PlaceBuilding_Extra.Read(exINI, pSection, "PlaceBuilding.Extra");
@@ -1637,6 +1651,8 @@ void BuildingTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->LaserFencePost_Fence)
 		.Process(this->PlaceBuilding_OnLand)
 		.Process(this->PlaceBuilding_OnWater)
+		.Process(this->PlaceBuilding_OnLand_Unique)
+		.Process(this->PlaceBuilding_OnWater_Unique)
 		.Process(this->PlaceBuilding_DirectionShape)
 		.Process(this->PlaceBuilding_DirectionPalette)
 		.Process(this->PlaceBuilding_Extra)

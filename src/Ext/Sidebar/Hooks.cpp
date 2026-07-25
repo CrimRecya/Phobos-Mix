@@ -272,14 +272,31 @@ DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
 				1000, 0, 0, 0, 0, 0);
 		}
 
+		const bool existShape = frameSize && frames[0] >= 0;
 		const bool statistics = Phobos::Config::ShowBuildingStatistics
 			&& pTypeExt->Cameo_ShouldCount.Get(pBuildingType->BuildCat != BuildCat::Combat || pBuildingType->BuildLimit != INT_MAX);
 
-		if ((frameSize && frames[0] >= 0) || statistics)
+		if (existShape || statistics)
 		{
-			if (const auto count = HouseExt::CountOwnedPresentWithDeployOrUpgrade(HouseClass::CurrentPlayer, pBuildingType, true))
+			auto getBuildingCount = [pBuildingType, pTypeExt]()
 			{
-				if (frameSize && frames[0] >= 0)
+				if (!pTypeExt->PlaceBuilding_Extra)
+					return HouseExt::CountOwnedPresentWithDeployOrUpgrade(HouseClass::CurrentPlayer, pBuildingType, true);
+
+				int count = 0;
+
+				for (auto& pOtherType : pTypeExt->PlaceBuilding_OnLand_Unique)
+					count += HouseExt::CountOwnedPresentWithDeployOrUpgrade(HouseClass::CurrentPlayer, pOtherType, true);
+
+				for (auto& pOtherType : pTypeExt->PlaceBuilding_OnWater_Unique)
+					count += HouseExt::CountOwnedPresentWithDeployOrUpgrade(HouseClass::CurrentPlayer, pOtherType, true);
+
+				return count;
+			};
+
+			if (const int count = getBuildingCount())
+			{
+				if (existShape)
 				{
 					DSurface::Sidebar->DrawSHP(
 						pRulesExt->Cameo_OverlayPalette.GetOrDefaultConvert(FileSystem::PALETTE_PAL),
