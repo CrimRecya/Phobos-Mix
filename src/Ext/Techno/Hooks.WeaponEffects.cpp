@@ -303,7 +303,6 @@ DEFINE_HOOK(0x6FD446, TechnoClass_LaserZap_IsSingleColor, 0x7)
 {
 	GET(WeaponTypeClass* const, pWeapon, ECX);
 	GET(LaserDrawClass* const, pLaser, EAX);
-	GET_STACK(AbstractClass* const, pTarget, STACK_OFFSET(0x48, 0x4));
 
 	if (WeaponTypeExt::ExtMap.Find(pWeapon)->Laser_IsSingleColor)
 		pLaser->IsHouseColor = true;

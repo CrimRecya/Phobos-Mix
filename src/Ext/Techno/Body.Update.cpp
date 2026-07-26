@@ -2032,14 +2032,6 @@ void TechnoExt::ExtData::UpdateRearmInEMPState()
 
 	if (pThis->ReloadTimer.InProgress() && pTypeExt->NoReload_UnderEMP.Get(RulesExt::Global()->NoReload_UnderEMP))
 		pThis->ReloadTimer.StartTime++;
-
-	if (const auto pBuilding = abstract_cast<BuildingClass*, true>(pThis))
-	{
-		const auto pFactory = pBuilding->Factory;
-
-		if (pFactory && pFactory->Object && pFactory->Production.Rate > 0 && pFactory->Production.Timer.InProgress())
-			pFactory->Production.Timer.StartTime++;
-	}
 }
 
 void TechnoExt::ExtData::UpdateRearmInTemporal()
