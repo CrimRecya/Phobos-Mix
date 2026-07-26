@@ -348,7 +348,7 @@ static inline bool ShouldResetSpawnManagerTarget(SpawnManagerClass* pThis)
 	{
 		auto pTarget = abstract_cast<TechnoClass*>(pThis->Target);
 
-		if (pTarget && pTarget->GetHealthPercentage() >= RulesClass::Instance->unknown_double_16F8)
+		if (pTarget && pTarget->GetHealthPercentage() >= RulesClass::Instance->ConditionGreen)
 			return true;
 	}
 
@@ -477,7 +477,7 @@ DEFINE_HOOK(0x75AC93, WalkLocomotionClass_Process_Wake, 0x6)
 		auto location = pLinkedTo->GetCoords();
 		GameCreate<AnimClass>(pAnimType, location, 0, 1, 0x600u, false);
 	}
-	
+
 	return 0;
 }
 
