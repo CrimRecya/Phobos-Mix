@@ -65,7 +65,7 @@ public:
 			{
 				if (const auto pTechno = abstract_cast<TechnoClass*, true>(selected.Object))
 				{
-					const auto pExt = TechnoExt::ExtMap.Find(pTechno);
+					const auto pExt = TechnoExt::Fetch(static_cast<TechnoClass*>(selected.Object));
 
 					if (!pExt->TypeExtData->LowSelectionPriority)
 					{
@@ -96,7 +96,7 @@ public:
 				const auto pObject = selected.Object;
 				const auto pTechnoType = pObject->GetTechnoType(); // Returns nullptr on non techno objects
 
-				if (auto const pTypeExt = TechnoTypeExt::ExtMap.TryFind(pTechnoType)) // If pTechnoType is nullptr so will be pTypeExt
+				if (auto const pTypeExt = TechnoTypeExt::TryFetch(pTechnoType)) // If pTechnoType is nullptr so will be pTypeExt
 				{
 					const auto pExt = TechnoExt::ExtMap.Find(static_cast<TechnoClass*>(pObject));
 
@@ -142,7 +142,7 @@ public:
 		do
 		{
 			const auto pTechnoType = pTechno->GetTechnoType();
-			const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechnoType);
+			const auto pTypeExt = TechnoTypeExt::Fetch(pTechnoType);
 			const char* id = pTypeExt->GetSelectionGroupID();
 
 			if (std::ranges::none_of(names, [id](const char* pID) { return !_stricmp(pID, id); }))
@@ -217,7 +217,7 @@ DEFINE_HOOK(0x73298D, TypeSelectExecute_UseIFVMode, 0x5)
 		if (!pTechnoType->Gunner)
 			continue;
 
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pTechnoType);
+		const auto pTypeExt = TechnoTypeExt::Fetch(pTechnoType);
 		char* gunnerID = pTypeExt->WeaponGroupAs[pTechno->CurrentWeaponNumber];
 
 		if (!GeneralUtils::IsValidString(gunnerID))

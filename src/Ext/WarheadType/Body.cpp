@@ -6,7 +6,7 @@ WarheadTypeExt::ExtContainer WarheadTypeExt::ExtMap;
 
 WarheadTypeClass* WarheadTypeExt::LocomotorWarhead = nullptr;
 
-bool WarheadTypeExt::ExtData::CanTargetHouse(HouseClass* pHouse, TechnoClass* pTarget) const
+bool WarheadTypeExt::CanTargetHouse(HouseClass* pHouse, TechnoClass* pTarget) const
 {
 	if (pHouse && pTarget)
 	{
@@ -34,7 +34,7 @@ bool WarheadTypeExt::ExtData::CanTargetHouse(HouseClass* pHouse, TechnoClass* pT
 	return true;
 }
 
-bool WarheadTypeExt::ExtData::CanAffectTarget(TechnoClass* pTarget) const
+bool WarheadTypeExt::CanAffectTarget(TechnoClass* pTarget) const
 {
 	if (!this->IsHealthInThreshold(pTarget))
 		return false;
@@ -54,7 +54,7 @@ bool WarheadTypeExt::ExtData::CanAffectTarget(TechnoClass* pTarget) const
 	return GeneralUtils::GetWarheadVersusArmor(this->OwnerObject(), pTarget, pTarget->GetTechnoType()) != 0.0;
 }
 
-bool WarheadTypeExt::ExtData::IsHealthInThreshold(TechnoClass* pTarget) const
+bool WarheadTypeExt::IsHealthInThreshold(TechnoClass* pTarget) const
 {
 	if (!this->HealthCheck)
 		return true;
@@ -62,7 +62,7 @@ bool WarheadTypeExt::ExtData::IsHealthInThreshold(TechnoClass* pTarget) const
 	return TechnoExt::IsHealthInThreshold(pTarget, this->AffectsAbovePercent, this->AffectsBelowPercent);
 }
 
-bool WarheadTypeExt::ExtData::IsVeterancyInThreshold(TechnoClass* pTarget) const
+bool WarheadTypeExt::IsVeterancyInThreshold(TechnoClass* pTarget) const
 {
 	if (!this->VeterancyCheck)
 		return true;
@@ -70,7 +70,7 @@ bool WarheadTypeExt::ExtData::IsVeterancyInThreshold(TechnoClass* pTarget) const
 	return EnumFunctions::CanTargetVeterancy(this->AffectsVeterancy, pTarget);
 }
 
-bool WarheadTypeExt::ExtData::IsInvokerAllowed(TechnoClass* pTarget, TechnoClass* pInvoker) const
+bool WarheadTypeExt::IsInvokerAllowed(TechnoClass* pTarget, TechnoClass* pInvoker) const
 {
 	if (!this->AffectsInvokerOnly)
 		return true;
@@ -89,7 +89,7 @@ bool WarheadTypeExt::ExtData::IsInvokerAllowed(TechnoClass* pTarget, TechnoClass
 }
 
 // Checks if Warhead can affect target that might or might be currently invulnerable.
-bool WarheadTypeExt::ExtData::CanAffectInvulnerable(TechnoClass* pTarget) const
+bool WarheadTypeExt::CanAffectInvulnerable(TechnoClass* pTarget) const
 {
 	if (!pTarget->IsIronCurtained())
 		return true;
@@ -107,7 +107,7 @@ void WarheadTypeExt::DetonateAt(WarheadTypeClass* pThis, const CoordStruct& coor
 	BulletExt::Detonate(coords, pOwner, damage, pFiringHouse, pTarget, pThis->Bright, nullptr, pThis);
 }
 
-bool WarheadTypeExt::ExtData::EligibleForFullMapDetonation(TechnoClass* pTechno, TechnoTypeClass* pType, HouseClass* pOwner) const
+bool WarheadTypeExt::EligibleForFullMapDetonation(TechnoClass* pTechno, TechnoTypeClass* pType, HouseClass* pOwner) const
 {
 	if (!pTechno || !pTechno->IsOnMap || !pTechno->IsAlive || pTechno->InLimbo || pTechno->IsSinking)
 		return false;
@@ -130,10 +130,10 @@ bool WarheadTypeExt::ExtData::EligibleForFullMapDetonation(TechnoClass* pTechno,
 	return true;
 }
 
-// Wrapper for MapClass::DamageArea() that sets a pointer in WarheadTypeExt::ExtData that is used to figure 'intended' target of the Warhead detonation, if set and there's no CellSpread.
-DamageAreaResult WarheadTypeExt::ExtData::DamageAreaWithTarget(const CoordStruct& coords, int damage, TechnoClass* pSource, WarheadTypeClass* pWH, bool affectsTiberium, HouseClass* pSourceHouse, TechnoClass* pTarget)
+// Wrapper for MapClass::DamageArea() that sets a pointer in WarheadTypeExt that is used to figure 'intended' target of the Warhead detonation, if set and there's no CellSpread.
+DamageAreaResult WarheadTypeExt::DamageAreaWithTarget(const CoordStruct& coords, int damage, TechnoClass* pSource, WarheadTypeClass* pWH, bool affectsTiberium, HouseClass* pSourceHouse, TechnoClass* pTarget)
 {
-	auto const pWarheadTypeExt = WarheadTypeExt::ExtMap.Find(pWH);
+	auto const pWarheadTypeExt = WarheadTypeExt::Fetch(pWH);
 	pWarheadTypeExt->DamageAreaTarget = pTarget;
 	pWarheadTypeExt->DamageAreaInvoker = pSource;
 	auto const result = MapClass::DamageArea(coords, damage, pSource, pWH, affectsTiberium, pSourceHouse);
@@ -145,7 +145,7 @@ DamageAreaResult WarheadTypeExt::ExtData::DamageAreaWithTarget(const CoordStruct
 // =============================
 // load / save
 
-void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
+void WarheadTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 {
 	auto pThis = this->OwnerObject();
 	const char* pSection = pThis->ID;
@@ -453,6 +453,10 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->AnimZAdjust.Read(exINI, pSection, "AnimZAdjust");
 
+	this->ChangeOwner.Read(exINI, pSection, "ChangeOwner");
+	this->ChangeOwner_SetAsMindControl.Read(exINI, pSection, "ChangeOwner.SetAsMindControl");
+	this->ChangeOwner_MindControlAnim.Read(exINI, pSection, "ChangeOwner.MindControlAnim");
+
 	this->ApplyPerTargetEffectsOnDetonate.Read(exINI, pSection, "ApplyPerTargetEffectsOnDetonate");
 
 	this->PenetratesTransport_Level.Read(exINI, pSection, "PenetratesTransport.Level");
@@ -514,7 +518,7 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Damage_Deployed.Read(exINI, pSection, "Damage.Deployed");
 
 	// List all Warheads here that respect CellSpread
-	// Used in WarheadTypeExt::ExtData::Detonate
+	// Used in WarheadTypeExt::Detonate
 	this->PossibleCellSpreadDetonate = (
 		this->RemoveDisguise
 		|| this->RemoveMindControl
@@ -526,8 +530,11 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 		|| this->Shield_RemoveAll
 		|| this->Attachment_Transform.size() > 0
 		|| this->Convert_Pairs.size() > 0
+#ifdef LOCO_TEST_WARHEADS // Enable warheads parsing
 		|| this->InflictLocomotor
 		|| this->RemoveInflictedLocomotor
+#endif
+		|| this->ChangeOwner
 		|| this->AttachEffects.AttachTypes.size() > 0
 		|| this->AttachEffects.RemoveTypes.size() > 0
 		|| this->AttachEffects.RemoveGroups.size() > 0
@@ -582,7 +589,7 @@ void WarheadTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 }
 
 template <typename T>
-void WarheadTypeExt::ExtData::Serialize(T& Stm)
+void WarheadTypeExt::Serialize(T& Stm)
 {
 	Stm
 		.Process(this->Reveal)
@@ -758,10 +765,10 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->PenetratesTransport_DamageMultiplier)
 		.Process(this->PenetratesTransport_DamageAll)
 		.Process(this->PenetratesTransport_CleanSound)
-
+#ifdef LOCO_TEST_WARHEADS // Enable warheads parsing
 		.Process(this->InflictLocomotor)
 		.Process(this->RemoveInflictedLocomotor)
-
+#endif
 		.Process(this->DamageOwnerMultiplier)
 		.Process(this->DamageAlliesMultiplier)
 		.Process(this->DamageEnemiesMultiplier)
@@ -841,6 +848,10 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 
 		.Process(this->AnimZAdjust)
 
+		.Process(this->ChangeOwner)
+		.Process(this->ChangeOwner_SetAsMindControl)
+		.Process(this->ChangeOwner_MindControlAnim)
+
 		.Process(this->ApplyPerTargetEffectsOnDetonate)
 
 		.Process(this->Taunt)
@@ -870,15 +881,15 @@ void WarheadTypeExt::ExtData::Serialize(T& Stm)
 		;
 }
 
-void WarheadTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)
+void WarheadTypeExt::LoadFromStream(PhobosStreamReader& Stm)
 {
-	Extension<WarheadTypeClass>::LoadFromStream(Stm);
+	AbstractTypeExt::LoadFromStream(Stm);
 	this->Serialize(Stm);
 }
 
-void WarheadTypeExt::ExtData::SaveToStream(PhobosStreamWriter& Stm)
+void WarheadTypeExt::SaveToStream(PhobosStreamWriter& Stm)
 {
-	Extension<WarheadTypeClass>::SaveToStream(Stm);
+	AbstractTypeExt::SaveToStream(Stm);
 	this->Serialize(Stm);
 }
 
@@ -916,31 +927,6 @@ DEFINE_HOOK(0x75E5C8, WarheadTypeClass_SDDTOR, 0x6)
 	GET(WarheadTypeClass*, pItem, ESI);
 
 	WarheadTypeExt::ExtMap.Remove(pItem);
-
-	return 0;
-}
-
-DEFINE_HOOK_AGAIN(0x75E2C0, WarheadTypeClass_SaveLoad_Prefix, 0x5)
-DEFINE_HOOK(0x75E0C0, WarheadTypeClass_SaveLoad_Prefix, 0x8)
-{
-	GET_STACK(WarheadTypeClass*, pItem, 0x4);
-	GET_STACK(IStream*, pStm, 0x8);
-
-	WarheadTypeExt::ExtMap.PrepareStream(pItem, pStm);
-
-	return 0;
-}
-
-DEFINE_HOOK(0x75E2AE, WarheadTypeClass_Load_Suffix, 0x7)
-{
-	WarheadTypeExt::ExtMap.LoadStatic();
-
-	return 0;
-}
-
-DEFINE_HOOK(0x75E39C, WarheadTypeClass_Save_Suffix, 0x5)
-{
-	WarheadTypeExt::ExtMap.SaveStatic();
 
 	return 0;
 }

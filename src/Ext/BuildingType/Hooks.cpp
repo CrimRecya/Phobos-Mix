@@ -27,7 +27,7 @@ DEFINE_HOOK(0x44043D, BuildingClass_AI_Temporaled_Chronosparkle_MuzzleFix, 0x8)
 
 	if (pType->MaxNumberOccupants > 10)
 	{
-		auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+		auto const pTypeExt = BuildingTypeExt::Fetch(pType);
 		R->EAX(&pTypeExt->OccupierMuzzleFlashes[nFiringIndex]);
 	}
 
@@ -42,7 +42,7 @@ DEFINE_HOOK(0x45387A, BuildingClass_FireOffset_Replace_MuzzleFix, 0xA)
 
 	if (pType->MaxNumberOccupants > 10)
 	{
-		auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+		auto const pTypeExt = BuildingTypeExt::Fetch(pType);
 		R->EDX(&pTypeExt->OccupierMuzzleFlashes[pThis->FiringOccupantIndex]);
 	}
 
@@ -58,7 +58,7 @@ DEFINE_HOOK(0x458623, BuildingClass_KillOccupiers_Replace_MuzzleFix, 0x7)
 
 	if (pType->MaxNumberOccupants > 10)
 	{
-		auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+		auto const pTypeExt = BuildingTypeExt::Fetch(pType);
 		R->ECX(&pTypeExt->OccupierMuzzleFlashes[nFiringIndex]);
 	}
 
@@ -82,7 +82,7 @@ DEFINE_HOOK(0x6D528A, TacticalClass_DrawPlacement_PlacementPreview, 0x6)
 	do
 	{
 		const auto pType = pBuilding->Type;
-		const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+		const auto pTypeExt = BuildingTypeExt::Fetch(pType);
 
 		if (!pTypeExt->PlaceBuilding_Extra)
 			break;
@@ -199,7 +199,7 @@ DEFINE_HOOK(0x465D40, BuildingTypeClass_IsVehicle, 0x6)
 
 	GET(BuildingTypeClass*, pThis, ECX);
 
-	const auto pExt = BuildingTypeExt::ExtMap.Find(pThis);
+	const auto pExt = BuildingTypeExt::Fetch(pThis);
 
 	if (pExt->ConsideredVehicle.isset())
 	{
@@ -223,7 +223,7 @@ DEFINE_HOOK(0x5F5416, ObjectClass_ReceiveDamage_CanC4DamageRounding, 0x6)
 
 		if (!pType->CanC4)
 		{
-			auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+			auto const pTypeExt = BuildingTypeExt::Fetch(pType);
 
 			if (!pTypeExt->CanC4_AllowZeroDamage)
 				*pDamage = 1;
@@ -242,7 +242,7 @@ DEFINE_HOOK(0x6FE3F1, TechnoClass_FireAt_OccupyDamageBonus, 0xB)
 	if (const auto Building = specific_cast<BuildingClass*>(pThis))
 	{
 		GET_STACK(const int, damage, STACK_OFFSET(0xC8, -0x9C));
-		R->EAX(static_cast<int>(damage * BuildingTypeExt::ExtMap.Find(Building->Type)->BuildingOccupyDamageMult.Get(RulesClass::Instance->OccupyDamageMultiplier)));
+		R->EAX(static_cast<int>(damage * BuildingTypeExt::Fetch(Building->Type)->BuildingOccupyDamageMult.Get(RulesClass::Instance->OccupyDamageMultiplier)));
 		return ApplyDamageBonus;
 	}
 
@@ -258,7 +258,7 @@ DEFINE_HOOK(0x6FE421, TechnoClass_FireAt_BunkerDamageBonus, 0xB)
 	if (const auto Building = specific_cast<BuildingClass*>(pThis->BunkerLinkedItem))
 	{
 		GET_STACK(const int, damage, STACK_OFFSET(0xC8, -0x9C));
-		R->EAX(static_cast<int>(damage * BuildingTypeExt::ExtMap.Find(Building->Type)->BuildingBunkerDamageMult.Get(RulesClass::Instance->OccupyDamageMultiplier)));
+		R->EAX(static_cast<int>(damage * BuildingTypeExt::Fetch(Building->Type)->BuildingBunkerDamageMult.Get(RulesClass::Instance->OccupyDamageMultiplier)));
 		return ApplyDamageBonus;
 	}
 
@@ -273,7 +273,7 @@ DEFINE_HOOK(0x6FD183, TechnoClass_RearmDelay_BuildingOccupyROFMult, 0xC)
 
 	if (const auto Building = specific_cast<BuildingClass*>(pThis))
 	{
-		const auto multiplier = BuildingTypeExt::ExtMap.Find(Building->Type)->BuildingOccupyROFMult.Get(RulesClass::Instance->OccupyROFMultiplier);
+		const auto multiplier = BuildingTypeExt::Fetch(Building->Type)->BuildingOccupyROFMult.Get(RulesClass::Instance->OccupyROFMultiplier);
 
 		if (multiplier > 0.0f)
 		{
@@ -296,7 +296,7 @@ DEFINE_HOOK(0x6FD1C7, TechnoClass_RearmDelay_BuildingBunkerROFMult, 0xC)
 
 	if (const auto Building = specific_cast<BuildingClass*>(pThis->BunkerLinkedItem))
 	{
-		const auto multiplier = BuildingTypeExt::ExtMap.Find(Building->Type)->BuildingBunkerROFMult.Get(RulesClass::Instance->BunkerROFMultiplier);
+		const auto multiplier = BuildingTypeExt::Fetch(Building->Type)->BuildingBunkerROFMult.Get(RulesClass::Instance->BunkerROFMultiplier);
 
 		if (multiplier > 0.0f)
 		{
@@ -365,7 +365,7 @@ DEFINE_HOOK(0x70272E, BuildingClass_ReceiveDamage_DisableDamageSound, 0x8)
 
 	if (auto const pBuilding = specific_cast<BuildingClass*>(pThis))
 	{
-		if (BuildingTypeExt::ExtMap.Find(pBuilding->Type)->DisableDamageSound)
+		if (BuildingTypeExt::Fetch(pBuilding->Type)->DisableDamageSound)
 		{
 			switch (R->Origin())
 			{
@@ -393,7 +393,7 @@ DEFINE_HOOK(0x44E826, BuildingClass_GetPowerOutput_Enhancer, 0x6)
 
 	const auto pOwner = pThis->Owner;
 	auto [power, extraPower] = BuildingTypeExt::GetEnhancedPower(pThis->Type, R->EDI<int>(), pOwner, pThis);
-	 
+
 	if (pThis->UpgradeLevel)
 	{
 		for (const auto pUpgrade : pThis->Upgrades)
@@ -410,7 +410,7 @@ DEFINE_HOOK(0x44E826, BuildingClass_GetPowerOutput_Enhancer, 0x6)
 	if (power + extraPower <= 0)
 		return ReturnZero;
 
-	const double factor = BuildingTypeExt::ExtMap.Find(pThis->Type)->PowerPlant_DamageFactor;
+	const double factor = BuildingTypeExt::Fetch(pThis->Type)->PowerPlant_DamageFactor;
 
 	if (factor == 1.0)
 		power = static_cast<int>(power * pThis->GetHealthPercentage());

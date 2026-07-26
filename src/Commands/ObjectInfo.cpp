@@ -92,8 +92,8 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 		append("Tether = (%s, %s), ", (pFoot->IsTether ? "yes" : "no"), (pFoot->IsAlternativeTether ? "yes" : "no"));
 		append("Health = (%d/%d)", pFoot->Health, pType->Strength);
 
-		auto pTechnoExt = TechnoExt::ExtMap.Find(pFoot);
-		auto pShieldData = pTechnoExt->Shield.get();
+		const auto pTechnoExt = TechnoExt::Fetch(pFoot);
+		const auto pShieldData = pTechnoExt->Shield.get();
 
 		if (pTechnoExt->CurrentShieldType && pShieldData)
 			append(", Shield = (%d/%d)", pShieldData->GetHP(), pTechnoExt->CurrentShieldType->Strength);
@@ -259,8 +259,8 @@ void ObjectInfoCommandClass::Execute(WWKey eInput) const
 		append("Tether = (%s, %s), ", (pBuilding->IsTether ? "yes" : "no"), (pBuilding->IsAlternativeTether ? "yes" : "no"));
 		append("Health = (%d/%d)", pBuilding->Health, pType->Strength);
 
-		auto pTechnoExt = TechnoExt::ExtMap.Find(pBuilding);
-		auto pShieldData = pTechnoExt->Shield.get();
+		const auto pTechnoExt = TechnoExt::Fetch(pBuilding);
+		const auto pShieldData = pTechnoExt->Shield.get();
 
 		if (pTechnoExt->CurrentShieldType && pShieldData)
 			append(", Shield = (%d/%d)", pShieldData->GetHP(), pTechnoExt->CurrentShieldType->Strength);

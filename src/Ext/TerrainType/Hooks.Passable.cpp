@@ -1,5 +1,7 @@
 ﻿#include "Body.h"
 
+#include <Ext/Rules/Body.h>
+
 // Passable TerrainTypes Hook #1 - Do not set occupy bits.
 DEFINE_HOOK(0x71C110, TerrainClass_SetOccupyBit_PassableTerrain, 0x6)
 {
@@ -7,9 +9,13 @@ DEFINE_HOOK(0x71C110, TerrainClass_SetOccupyBit_PassableTerrain, 0x6)
 
 	GET(TerrainClass*, pThis, ECX);
 
-	auto const pTypeExt = TerrainTypeExt::ExtMap.Find(pThis->Type);
+	auto const pType = pThis->Type;
+	auto const pTypeExt = TerrainTypeExt::Fetch(pType);
+	bool const isPassable = pType->SpawnsTiberium
+		? pTypeExt->IsPassable.Get(RulesExt::Global()->Tibtree_IsPassable)
+		: pTypeExt->IsPassable.Get(RulesExt::Global()->Terrain_IsPassable);
 
-	if (pTypeExt->IsPassable)
+	if (isPassable)
 		return Skip;
 
 	return 0;
@@ -29,7 +35,13 @@ DEFINE_HOOK(0x7002E9, TechnoClass_WhatAction_PassableTerrain, 0x5)
 
 	if (const auto pTerrain = abstract_cast<TerrainClass*, true>(pTarget))
 	{
-		if (!isForceFire && TerrainTypeExt::ExtMap.Find(pTerrain->Type)->IsPassable)
+		auto const pType = pTerrain->Type;
+		auto const pTypeExt = TerrainTypeExt::Fetch(pType);
+		bool const isPassable = pType->SpawnsTiberium
+			? pTypeExt->IsPassable.Get(RulesExt::Global()->Tibtree_IsPassable)
+			: pTypeExt->IsPassable.Get(RulesExt::Global()->Terrain_IsPassable);
+
+		if (!isForceFire && isPassable)
 		{
 			R->EBP(Action::Move);
 			return ReturnAction;
@@ -47,9 +59,13 @@ DEFINE_HOOK(0x483DDF, CellClass_CheckPassability_PassableTerrain, 0x6)
 	GET(CellClass*, pThis, EDI);
 	GET(TerrainClass*, pTerrain, ESI);
 
-	auto const pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
+	auto const pType = pTerrain->Type;
+	auto const pTypeExt = TerrainTypeExt::Fetch(pTerrain->Type);
+	bool const isPassable = pType->SpawnsTiberium
+		? pTypeExt->IsPassable.Get(RulesExt::Global()->Tibtree_IsPassable)
+		: pTypeExt->IsPassable.Get(RulesExt::Global()->Terrain_IsPassable);
 
-	if (pTypeExt->IsPassable)
+	if (isPassable)
 	{
 		pThis->Passability = PassabilityType::Passable;
 		return ReturnFromFunction;
@@ -67,9 +83,13 @@ DEFINE_HOOK(0x73FB71, UnitClass_CanEnterCell_PassableTerrain, 0x6)
 
 	if (auto const pTerrain = abstract_cast<TerrainClass*>(pTarget))
 	{
-		auto const pTypeExt = TerrainTypeExt::ExtMap.Find(pTerrain->Type);
+		auto const pType = pTerrain->Type;
+		auto const pTypeExt = TerrainTypeExt::Fetch(pTerrain->Type);
+		bool const isPassable = pType->SpawnsTiberium
+			? pTypeExt->IsPassable.Get(RulesExt::Global()->Tibtree_IsPassable)
+			: pTypeExt->IsPassable.Get(RulesExt::Global()->Terrain_IsPassable);
 
-		if (pTypeExt->IsPassable)
+		if (isPassable)
 			return SkipTerrainChecks;
 	}
 
@@ -115,7 +135,13 @@ DEFINE_HOOK(0x586780, MapClass_IsAreaFree, 0x7)
 
 			if (pTerrain)
 			{
-				if (!FindBuildLocationTemp::EvaluatingBuildLocation || !TerrainTypeExt::ExtMap.Find(pTerrain->Type)->CanBeBuiltOn)
+				auto const pType = pTerrain->Type;
+				auto const pTypeExt = TerrainTypeExt::Fetch(pType);
+				bool const canBuild = pType->SpawnsTiberium
+					? pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Tibtree_CanBeBuiltOn)
+					: pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Terrain_CanBeBuiltOn);
+
+				if (!FindBuildLocationTemp::EvaluatingBuildLocation || !canBuild)
 				{
 					R->EAX(false);
 					return ReturnFromFunction;

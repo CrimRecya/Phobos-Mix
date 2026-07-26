@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <Ext/ObjectType/Body.h>
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 #include <Utilities/Enum.h>
@@ -17,701 +18,707 @@
 
 class Matrix3D;
 class ParticleSystemTypeClass;
-class TechnoTypeExt
+class TechnoTypeExt : public ObjectTypeExt
 {
 public:
 	using base_type = TechnoTypeClass;
 
+	// deprecated: the pre-rework nested data class is now the extension class itself
+	using ExtData [[deprecated("use the extension class itself instead")]] = TechnoTypeExt;
+
 	static constexpr DWORD Canary = 0x11111111;
-	static constexpr size_t ExtPointerOffset = 0xDF4;
 
-	class ExtData final : public Extension<TechnoTypeClass>
+public:
+	// typed owner accessor
+	TechnoTypeClass* OwnerObject() const
 	{
-	public:
-		Valueable<bool> HealthBar_Hide;
-		Valueable<bool> HealthBar_HidePips;
-		Valueable<bool> HealthBar_Permanent;
-		Valueable<bool> HealthBar_Permanent_PipScale;
-		Valueable<CSFText> UIDescription;
-		Valueable<bool> LowSelectionPriority;
-		Valueable<bool> LowDeployPriority;
-		PhobosFixedString<0x20> GroupAs;
-		std::vector<PhobosFixedString<0x20>> WeaponGroupAs;
-		Valueable<int> RadarJamRadius;
-		Valueable<AffectedHouse> RadarJamHouses;
-		Valueable<int> RadarJamDelay;
-		ValueableVector<BuildingTypeClass*> RadarJamAffect;
-		ValueableVector<BuildingTypeClass*> RadarJamIgnore;
-		Nullable<int> InhibitorRange;
-		Nullable<int> DesignatorRange;
-		Valueable<float> FactoryPlant_Multiplier;
-		Valueable<Leptons> MindControlRangeLimit;
-		Valueable<bool> MindControl_IgnoreSize;
-		Valueable<int> MindControlSize;
-		Valueable<AffectedHouse> MindControlLink_VisibleToHouse;
-
-		std::unique_ptr<InterceptorTypeClass> InterceptorType;
-
-		Valueable<PartialVector3D<int>> TurretOffset;
-		Nullable<bool> TurretShadow;
-		Valueable<int> ShadowIndex_Frame;
-		std::map<int, int> ShadowIndices;
-		Valueable<bool> Spawner_LimitRange;
-		Valueable<int> Spawner_ExtraLimitRange;
-		int SpawnerRange;
-		int EliteSpawnerRange;
-		Nullable<int> Spawner_DelayFrames;
-		Valueable<bool> Spawner_AttackImmediately;
-		Valueable<bool> Spawner_ReturnOnRepairDone;
-		Valueable<bool> Spawner_UseTurretFacing;
-		Nullable<bool> Harvester_Counted;
-		Valueable<bool> Promote_IncludeSpawns;
-		Valueable<bool> ImmuneToCrit;
-		Valueable<bool> MultiMindControl_ReleaseVictim;
-		Valueable<int> CameoPriority;
-		DWORD CameoPriority_Houses;
-		PhobosPCXFile AltCameoPCX;
-		Valueable<bool> NoManualMove;
-		Valueable<bool> NoManualEject;
-		Nullable<int> InitialStrength;
-		Valueable<bool> ReloadInTransport;
-		Valueable<bool> ForbidParallelAIQueues;
-		Valueable<bool> IgnoreForBaseCenter;
-
-		int TintColorAirstrike;
-		Nullable<int> LaserTargetColor;
-		Nullable<ColorStruct> AirstrikeLineColor;
-
-		Valueable<ShieldTypeClass*> ShieldType;
-		std::unique_ptr<PassengerDeletionTypeClass> PassengerDeletionType;
-		std::unique_ptr<DroppodTypeClass> DroppodType;
-		std::unique_ptr<TiberiumEaterTypeClass> TiberiumEaterType;
-
-		Nullable<float> HarvesterDumpAmount;
-
-		Valueable<int> Ammo_AddOnDeploy;
-		Valueable<int> Ammo_AutoDeployMinimumAmount;
-		Valueable<int> Ammo_AutoDeployMaximumAmount;
-		Valueable<int> Ammo_DeployUnlockMinimumAmount;
-		Valueable<int> Ammo_DeployUnlockMaximumAmount;
-
-		Nullable<AutoDeathBehavior> AutoDeath_Behavior;
-		ValueableVector<AnimTypeClass*> AutoDeath_VanishAnimation;
-		Valueable<bool> AutoDeath_OnAmmoDepletion;
-		Valueable<bool> AutoDeath_OnOwnerChange;
-		Nullable<bool> AutoDeath_OnOwnerChange_HumanToComputer;
-		Nullable<bool> AutoDeath_OnOwnerChange_ComputerToHuman;
-		Valueable<int> AutoDeath_AfterDelay;
-		ValueableVector<TechnoTypeClass*> AutoDeath_TechnosDontExist;
-		Valueable<bool> AutoDeath_TechnosDontExist_Any;
-		Valueable<bool> AutoDeath_TechnosDontExist_AllowLimboed;
-		Valueable<AffectedHouse> AutoDeath_TechnosDontExist_Houses;
-		ValueableVector<TechnoTypeClass*> AutoDeath_TechnosExist;
-		Valueable<bool> AutoDeath_TechnosExist_Any;
-		Valueable<bool> AutoDeath_TechnosExist_AllowLimboed;
-		Valueable<AffectedHouse> AutoDeath_TechnosExist_Houses;
-
-		Valueable<SlaveChangeOwnerType> Slaved_OwnerWhenMasterKilled;
-		NullableIdx<VocClass> SlavesFreeSound;
-		NullableIdx<VocClass> SellSound;
-		NullableIdx<VoxClass> EVA_Sold;
-
-		Nullable<bool> CombatAlert;
-		Nullable<bool> CombatAlert_NotBuilding;
-		Nullable<bool> CombatAlert_UseFeedbackVoice;
-		Nullable<bool> CombatAlert_UseAttackVoice;
-		Nullable<bool> CombatAlert_UseEVA;
-		NullableIdx<VoxClass> CombatAlert_EVA;
-
-		NullableIdx<VocClass> VoiceCreated;
-		NullableIdx<VocClass> VoicePickup; // Used by carryalls instead of VoiceMove if set.
-
-		ValueableVector<AnimTypeClass*> WarpOut;
-		ValueableVector<AnimTypeClass*> WarpIn;
-		ValueableVector<AnimTypeClass*> Chronoshift_WarpOut;
-		ValueableVector<AnimTypeClass*> Chronoshift_WarpIn;
-		ValueableVector<AnimTypeClass*> WarpAway;
-		Nullable<bool> ChronoTrigger;
-		Nullable<int> ChronoDistanceFactor;
-		Nullable<int> ChronoMinimumDelay;
-		Nullable<int> ChronoRangeMinimum;
-		Nullable<int> ChronoDelay;
-		Nullable<int> ChronoSpherePreDelay;
-		Nullable<int> ChronoSphereDelay;
-
-		Valueable<WeaponTypeClass*> WarpInWeapon;
-		Nullable<WeaponTypeClass*> WarpInMinRangeWeapon;
-		Valueable<WeaponTypeClass*> WarpOutWeapon;
-		Valueable<bool> WarpInWeapon_UseDistanceAsDamage;
-
-		int SubterraneanSpeed;
-		Nullable<int> SubterraneanHeight;
-
-		ValueableVector<AnimTypeClass*> OreGathering_Anims;
-		ValueableVector<int> OreGathering_Tiberiums;
-		ValueableVector<int> OreGathering_FramesPerDir;
-
-		std::vector<std::vector<CoordStruct>> WeaponBurstFLHs;
-		std::vector<std::vector<CoordStruct>> EliteWeaponBurstFLHs;
-		std::vector<CoordStruct> AlternateFLHs;
-		Valueable<bool> AlternateFLH_OnTurret;
-		Valueable<bool> AlternateFLH_ApplyVehicle;
-
-		Valueable<bool> DestroyAnim_Random;
-		Valueable<bool> NotHuman_RandomDeathSequence;
-
-		Valueable<TechnoTypeClass*> DefaultDisguise;
-		NullableVector<TerrainTypeClass*> DefaultMirageDisguises;
-		Valueable<bool> UseDisguiseMovementSpeed;
-
-		Nullable<int> OpenTopped_RangeBonus;
-		Nullable<float> OpenTopped_DamageMultiplier;
-		Nullable<int> OpenTopped_WarpDistance;
-		Valueable<bool> OpenTopped_IgnoreRangefinding;
-		Valueable<bool> OpenTopped_AllowFiringIfDeactivated;
-		Nullable<bool> OpenTopped_AllowFiringIfAttackedByLocomotor;
-		Valueable<bool> OpenTopped_ShareTransportTarget;
-		Valueable<bool> OpenTopped_UseTransportRangeModifiers;
-		Valueable<bool> OpenTopped_CheckTransportDisableWeapons;
-		Nullable<bool> OpenTopped_DecloakToFire;
-		Nullable<bool> OpenTopped_FireWhileMoving;
-		Valueable<int> OpenTransport_RangeBonus;
-		Valueable<float> OpenTransport_DamageMultiplier;
-		Nullable<bool> OpenTransport_FireWhileMoving;
-
-		Valueable<bool> AutoTargetOwnPosition;
-		Valueable<bool> AutoTargetOwnPosition_Self;
-
-		Valueable<bool> AggressiveStance;
-		Nullable<bool> AggressiveStance_Togglable;
-		ValueableIdx<VocClass> VoiceEnterAggressiveStance;
-		ValueableIdx<VocClass> VoiceExitAggressiveStance;
-
-		Valueable<bool> CeaseFireStance;
-		Nullable<bool> CeaseFireStance_Togglable;
-		ValueableIdx<VocClass> VoiceEnterCeaseFireStance;
-		ValueableIdx<VocClass> VoiceExitCeaseFireStance;
-
-		Valueable<bool> NoSecondaryWeaponFallback;
-		Valueable<bool> NoSecondaryWeaponFallback_AllowAA;
-		Nullable<bool> AllowWeaponSelectAgainstWalls;
-
-		Valueable<int> NoAmmoWeapon;
-		Valueable<int> NoAmmoAmount;
-
-		Valueable<bool> JumpjetRotateOnCrash;
-		Nullable<int> ShadowSizeCharacteristicHeight;
-
-		Valueable<bool> IsSimpleDeployer_ConsiderPathfinding;
-		Nullable<LandTypeFlags> IsSimpleDeployer_DisallowedLandTypes;
-		Nullable<FacingType> DeployDir;
-		ValueableVector<AnimTypeClass*> DeployingAnims;
-		Valueable<bool> DeployingAnim_KeepUnitVisible;
-		Valueable<bool> DeployingAnim_ReverseForUndeploy;
-		Valueable<bool> DeployingAnim_UseUnitDrawer;
-
-		Valueable<CSFText> EnemyUIName;
-		Valueable<TechnoTypeClass*> FakeOf;
-
-		bool ForceWeapon_Check;
-		Valueable<int> ForceWeapon_Naval_Decloaked;
-		Valueable<int> ForceWeapon_Cloaked;
-		Valueable<int> ForceWeapon_Disguised;
-		Valueable<int> ForceWeapon_UnderEMP;
-		Valueable<bool> ForceWeapon_InRange_TechnoOnly;
-		ValueableVector<int> ForceWeapon_InRange;
-		ValueableVector<double> ForceWeapon_InRange_Overrides;
-		Valueable<bool> ForceWeapon_InRange_ApplyRangeModifiers;
-		ValueableVector<int> ForceAAWeapon_InRange;
-		ValueableVector<double> ForceAAWeapon_InRange_Overrides;
-		Valueable<bool> ForceAAWeapon_InRange_ApplyRangeModifiers;
-		Valueable<int> ForceWeapon_Buildings;
-		Valueable<int> ForceWeapon_Defenses;
-		Valueable<int> ForceWeapon_Infantry;
-		Valueable<int> ForceWeapon_Naval_Units;
-		Valueable<int> ForceWeapon_Units;
-		Valueable<int> ForceWeapon_Aircraft;
-		Valueable<int> ForceAAWeapon_Infantry;
-		Valueable<int> ForceAAWeapon_Units;
-		Valueable<int> ForceAAWeapon_Aircraft;
-
-		Valueable<bool> Ammo_Shared;
-		Valueable<int> Ammo_Shared_Group;
-
-		Nullable<SelfHealGainType> SelfHealGainType;
-		Valueable<bool> Passengers_SyncOwner;
-		Valueable<bool> Passengers_SyncOwner_RevertOnExit;
-
-		Nullable<bool> IronCurtain_KeptOnDeploy;
-		Nullable<IronCurtainEffect> IronCurtain_Effect;
-		Nullable<WarheadTypeClass*> IronCurtain_KillWarhead;
-		Nullable<bool> ForceShield_KeptOnDeploy;
-		Nullable<IronCurtainEffect> ForceShield_Effect;
-		Nullable<WarheadTypeClass*> ForceShield_KillWarhead;
-		Valueable<bool> Explodes_KillPassengers;
-		Valueable<bool> Explodes_DuringBuildup;
-		Valueable<bool> DriverKilled_KeptPassengers;
-		Nullable<bool> DriverKilled_KillPassengers;
-		Nullable<int> DeployFireWeapon;
-		Valueable<TargetZoneScanType> TargetZoneScanType;
-
-		Nullable<Leptons> AreaGuardRange;
-		Valueable<Leptons> MaxGuardRange;
-
-		Promotable<SHPStruct*> Insignia;
-		Valueable<Vector3D<int>> InsigniaFrames;
-		Promotable<int> InsigniaFrame;
-		Nullable<bool> Insignia_ShowEnemy;
-		std::vector<Promotable<SHPStruct*>> Insignia_Weapon;
-		std::vector<Promotable<int>> InsigniaFrame_Weapon;
-		std::vector<Valueable<Vector3D<int>>> InsigniaFrames_Weapon;
-		std::vector<Promotable<SHPStruct*>> Insignia_Passengers;
-		std::vector<Promotable<int>> InsigniaFrame_Passengers;
-		std::vector<Valueable<Vector3D<int>>> InsigniaFrames_Passengers;
-
-		Valueable<bool> JumpjetTilt;
-		Valueable<double> JumpjetTilt_ForwardAccelFactor;
-		Valueable<double> JumpjetTilt_ForwardSpeedFactor;
-		Valueable<double> JumpjetTilt_SidewaysRotationFactor;
-		Valueable<double> JumpjetTilt_SidewaysSpeedFactor;
-
-		Nullable<bool> TiltsWhenCrushes_Vehicles;
-		Nullable<bool> TiltsWhenCrushes_Overlays;
-		Nullable<double> CrushForwardTiltPerFrame;
-		Valueable<double> CrushOverlayExtraForwardTilt;
-		Valueable<double> CrushSlowdownMultiplier;
-		Valueable<bool> SkipCrushSlowdown;
-
-		Valueable<bool> DigitalDisplay_Disable;
-		ValueableVector<DigitalDisplayTypeClass*> DigitalDisplayTypes;
-
-		Nullable<SelectBoxTypeClass*> SelectBox;
-		Valueable<bool> HideSelectBox;
-
-		Valueable<int> AmmoPipFrame;
-		Valueable<int> EmptyAmmoPipFrame;
-		Valueable<int> AmmoPipWrapStartFrame;
-		Nullable<Point2D> AmmoPipSize;
-		Valueable<Point2D> AmmoPipOffset;
-
-		Valueable<bool> ShowSpawnsPips;
-		Valueable<int> SpawnsPipFrame;
-		Valueable<int> EmptySpawnsPipFrame;
-		Nullable<Point2D> SpawnsPipSize;
-		Valueable<Point2D> SpawnsPipOffset;
-
-		Valueable<EdgeType> SpawnFromEdge;
-		Valueable<EdgeType> RetreatToEdge;
-		Nullable<Leptons> SpawnDistanceFromTarget;
-		Nullable<int> SpawnHeight;
-		Nullable<int> LandingDir;
-
-		Nullable<bool> CurleyShuffle;
-
-		Valueable<TechnoTypeClass*> Convert_Deploy; // Ares
-		Valueable<TechnoTypeClass*> Convert_Undeploy;
-		Valueable<TechnoTypeClass*> Convert_HumanToComputer;
-		Valueable<TechnoTypeClass*> Convert_ComputerToHuman;
-		Valueable<bool> Convert_ResetMindControl;
-
-		Valueable<double> CrateGoodie_RerollChance;
-
-		Nullable<ColorStruct> Tint_Color;
-		Valueable<double> Tint_Intensity;
-		Valueable<AffectedHouse> Tint_VisibleToHouses;
-
-		Valueable<WeaponTypeClass*> RevengeWeapon;
-		Valueable<AffectedHouse> RevengeWeapon_AffectsHouse;
-
-		AEAttachInfoTypeClass AttachEffects;
-
-		Nullable<bool> RecountBurst;
-
-		Valueable<bool> AdvancedDrive_Reverse;
-		Valueable<bool> AdvancedDrive_Reverse_FaceTarget;
-		Valueable<Leptons> AdvancedDrive_Reverse_FaceTargetRange;
-		Valueable<Leptons> AdvancedDrive_Reverse_MinimumDistance;
-		Valueable<int> AdvancedDrive_Reverse_RetreatDuration;
-		Valueable<double> AdvancedDrive_Reverse_Speed;
-		Valueable<bool> AdvancedDrive_Hover;
-		Valueable<bool> AdvancedDrive_Hover_Sink;
-		Valueable<bool> AdvancedDrive_Hover_Spin;
-		Valueable<bool> AdvancedDrive_Hover_Tilt;
-		Nullable<int> AdvancedDrive_Hover_Height;
-		Nullable<double> AdvancedDrive_Hover_Dampen;
-		Nullable<double> AdvancedDrive_Hover_Bob;
-
-		ValueableVector<TechnoTypeClass*> BuildLimitGroup_Types;
-		ValueableVector<int> BuildLimitGroup_Nums;
-		Valueable<int> BuildLimitGroup_Factor;
-		Valueable<bool> BuildLimitGroup_ContentIfAnyMatch;
-		Valueable<bool> BuildLimitGroup_NotBuildableIfQueueMatch;
-		ValueableVector<TechnoTypeClass*> BuildLimitGroup_ExtraLimit_Types;
-		ValueableVector<int> BuildLimitGroup_ExtraLimit_Nums;
-		ValueableVector<int> BuildLimitGroup_ExtraLimit_MaxCount;
-		Valueable<int> BuildLimitGroup_ExtraLimit_MaxNum;
-
-		Nullable<bool> Turret_IdleRotate;
-		Nullable<bool> Turret_PointToMouse;
-		Nullable<int> TurretROT;
-		Valueable<DirStruct> Turret_Restriction;
-		Valueable<DirStruct> Turret_ExtraAngle;
-		Nullable<bool> Turret_BodyFoundation;
-		Valueable<bool> Turret_BodyOrientation;
-		Valueable<DirStruct> Turret_BodyOrientationAngle;
-		Valueable<bool> Turret_BodyOrientationSymmetric;
-
-		Valueable<bool> TargetExtraThreat;
-		ValueableVector<DirStruct> TargetExtraThreat_Angles;
-		ValueableVector<double> TargetExtraThreat_Multipliers;
-		Valueable<bool> TargetExtraThreat_Turret;
-
-		Valueable<bool> CanBeBuiltOn;
-		Valueable<bool> ExtraBaseNormal;
-		Valueable<bool> ExtraBaseForAllyBuilding;
-
-		Nullable<bool> Cameo_AlwaysExist;
-		ValueableVector<TechnoTypeClass*> Cameo_OverrideTechnos;
-		DWORD Cameo_RequiredHouses;
-		bool IsMetTheEssentialConditions; // Not read from ini
-		bool IsGreyCameoForCurrentPlayer; // Not read from ini
-		bool IsGreyCameoAbandonedProduct; // Not read from ini
-		Valueable<CSFText> UIDescription_Unbuildable;
-
-		CustomPalette CameoPal;
-		PhobosPCXFile CameoPCX;
-		PhobosPCXFile GreyCameoPCX;
-
-		Valueable<DisplayInfoType> SelectedInfo_UpperType;
-		Valueable<int> SelectedInfo_UpperIndex;
-		Valueable<ColorStruct> SelectedInfo_UpperColor;
-		Valueable<int> SelectedInfo_UpperDivisor;
-		Valueable<DisplayInfoType> SelectedInfo_BelowType;
-		Valueable<int> SelectedInfo_BelowIndex;
-		Valueable<ColorStruct> SelectedInfo_BelowColor;
-		Valueable<int> SelectedInfo_BelowDivisor;
-		Valueable<DisplayInfoType> SelectedInfo_CameoType;
-		Valueable<int> SelectedInfo_CameoIndex;
-		Nullable<SHPStruct*> SelectedInfo_Button;
-		Nullable<CSFText> UIDescription_HoveredInfo;
-
-		Nullable<bool> AmphibiousEnter;
-		Nullable<bool> AmphibiousUnload;
-		Nullable<bool> NoQueueUpToEnter;
-		Nullable<int> NoQueueUpToEnter_BoardDistance;
-		Nullable<bool> NoQueueUpToUnload;
-		Valueable<bool> Passengers_BySize;
-
-		Valueable<int> RateDown_Delay;
-		Valueable<bool> RateDown_Reset;
-		Valueable<int> RateDown_Cover_Value;
-		Valueable<int> RateDown_Cover_AmmoBelow;
-
-		Valueable<bool> UniqueTechno;
-
-		Valueable<bool> Missile_Tracing;
-
-		Valueable<bool> CanManualReload;
-		Valueable<bool> CanManualReload_WhenFull;
-		Valueable<bool> CanManualReload_ResetROF;
-		Valueable<WarheadTypeClass*> CanManualReload_DetonateWarhead;
-		Valueable<int> CanManualReload_DetonateConsume;
-
-		Nullable<bool> NoRearm_UnderEMP;
-		Nullable<bool> NoRearm_Temporal;
-		Nullable<bool> NoReload_UnderEMP;
-		Nullable<bool> NoReload_Temporal;
-		Nullable<bool> NoTurret_TrackTarget;
-
-		Valueable<bool> KeepWarping;
-		Nullable<int> KeepWarping_Distance;
-
-		Valueable<bool> FiringByPassMovingCheck;
-
-		Nullable<bool> PlayerGuardModePursuit;
-		Nullable<Leptons> PlayerGuardModeStray;
-		Nullable<double> PlayerGuardModeGuardRangeMultiplier;
-		Nullable<Leptons> PlayerGuardModeGuardRangeAddend;
-		Nullable<Leptons> PlayerGuardStationaryStray;
-		Nullable<bool> AIGuardModePursuit;
-		Nullable<Leptons> AIGuardModeStray;
-		Nullable<double> AIGuardModeGuardRangeMultiplier;
-		Nullable<Leptons> AIGuardModeGuardRangeAddend;
-		Nullable<Leptons> AIGuardStationaryStray;
-
-		Valueable<bool> Engineer_CanAutoFire;
-
-		Valueable<int> DigStartROT;
-		Valueable<int> DigInSpeed;
-		Valueable<int> DigOutSpeed;
-		Valueable<int> DigEndROT;
-
-		Valueable<int> FlightClimb;
-		Valueable<int> FlightCrash;
-
-		Nullable<bool> ExplodeOnDestroy;
-		Nullable<bool> FireDeathWeaponOnCrushed;
-
-		Nullable<CoordStruct> ExitCoord;
-
-		Valueable<bool> MissileSpawnUseOtherFLHs;
-
-		Valueable<bool> HarvesterQuickUnloader;
-
-		Valueable<UnitTypeClass*> ThisIsAJumpjet;
-
-		Valueable<bool> IgnoreRallyPoint;
-
-		Valueable<int> JumpjetSpeedType;
-
-		Nullable<bool> KeepAlive;
-
-		Nullable<AnimTypeClass*> Wake;
-		Nullable<AnimTypeClass*> Wake_Grapple;
-		Nullable<AnimTypeClass*> Wake_Sinking;
-		Nullable<bool> MakesWake;
-
-		Nullable<int> AINormalTargetingDelay;
-		Nullable<int> PlayerNormalTargetingDelay;
-		Nullable<int> AIGuardAreaTargetingDelay;
-		Nullable<int> PlayerGuardAreaTargetingDelay;
-		Nullable<int> AIAttackMoveTargetingDelay;
-		Nullable<int> PlayerAttackMoveTargetingDelay;
-		Nullable<bool> DistributeTargetingFrame;
-
-		Nullable<bool> AttackMove_Aggressive;
-		Nullable<bool> AttackMove_UpdateTarget;
-
-		Valueable<bool> BunkerableAnyway;
-		Valueable<bool> KeepTargetOnMove;
-		Valueable<int> KeepTargetOnMove_Weapon;
-		Valueable<bool> KeepTargetOnMove_NoMorePursuit;
-		Valueable<Leptons> KeepTargetOnMove_ExtraDistance;
-
-		Nullable<bool> DirectionalArmor;
-		Nullable<float> DirectionalArmor_FrontMultiplier;
-		Nullable<float> DirectionalArmor_SideMultiplier;
-		Nullable<float> DirectionalArmor_BackMultiplier;
-		Nullable<float> DirectionalArmor_FrontField;
-		Nullable<float> DirectionalArmor_BackField;
-
-		Valueable<int> Power;
-
-		Nullable<bool> AllowAirstrike;
-
-		Nullable<TechnoTypeClass*> Image_ConditionYellow;
-		Nullable<TechnoTypeClass*> Image_ConditionRed;
-		Nullable<UnitTypeClass*> WaterImage_ConditionYellow;
-		Nullable<UnitTypeClass*> WaterImage_ConditionRed;
-		bool NeedDamagedImage;
-
-		Nullable<int> InitialSpawnsNumber;
-		ValueableVector<AircraftTypeClass*> Spawns_Queue;
-
-		Valueable<int> DefaultVisualCharacter;
-		Nullable<int> DefaultVisualCharacterToSelf;
-		Nullable<int> DefaultVisualCharacterToAlly;
-		Nullable<int> DefaultVisualCharacterToEnemy;
-
-		Valueable<bool> Cloneable;
-		ValueableVector<BuildingTypeClass*> ClonedAt;
-		Valueable<TechnoTypeClass*> ClonedAs;
-
-		Valueable<Leptons> Spawner_RecycleRange;
-		ValueableVector<AnimTypeClass*> Spawner_RecycleAnim;
-		Valueable<CoordStruct> Spawner_RecycleCoord;
-		Valueable<bool> Spawner_RecycleOnTurret;
-
-		Nullable<bool> Sinkable;
-		Valueable<bool> Sinkable_SquidGrab;
-		Valueable<int> SinkSpeed;
-
-		Nullable<double> ProneSpeed;
-		Nullable<double> DamagedSpeed;
-
-		ValueableVector<AnimTypeClass*> Promote_VeteranAnimation;
-		ValueableVector<AnimTypeClass*> Promote_EliteAnimation;
-
-		ValueableVector<TechnoTypeClass*> WreckageType;
-		Nullable<double> WreckageInitialHealthPercent;
-		Valueable<bool> WreckageDeactive;
-		Valueable<bool> WreckageMarkUp;
-		Valueable<OwnerHouseKind> WreckageOwner;
-		Valueable<bool> WreckageLeaveOnWater;
-		Valueable<bool> WreckageLeaveInAir;
-		Valueable<bool> WreckageSwapLocomotor;
-
-		Nullable<AffectedHouse> RadarInvisibleToHouse;
-
-		ValueableVector<AttachmentTypeClass*> AttachmentTypes;
-		Valueable<int> AttachmentTopLayerMinHeight;
-		Valueable<int> AttachmentUndergroundLayerMaxHeight;
-
-		struct LaserTrailDataEntry
-		{
-			ValueableIdx<LaserTrailTypeClass> idxType;
-			Valueable<CoordStruct> FLH;
-			Valueable<bool> IsOnTurret;
-			LaserTrailTypeClass* GetType() const { return LaserTrailTypeClass::Array[idxType].get(); }
-		};
-
-		std::vector<LaserTrailDataEntry> LaserTrailData;
-		Valueable<bool> OnlyUseLandSequences;
-		Nullable<bool> SecondaryFireSequenceLandOnly;
-		Nullable<CoordStruct> PronePrimaryFireFLH;
-		Nullable<CoordStruct> ProneSecondaryFireFLH;
-		Nullable<CoordStruct> DeployedPrimaryFireFLH;
-		Nullable<CoordStruct> DeployedSecondaryFireFLH;
-		std::vector<std::vector<CoordStruct>> CrouchedWeaponBurstFLHs;
-		std::vector<std::vector<CoordStruct>> EliteCrouchedWeaponBurstFLHs;
-		std::vector<std::vector<CoordStruct>> DeployedWeaponBurstFLHs;
-		std::vector<std::vector<CoordStruct>> EliteDeployedWeaponBurstFLHs;
-
-		Valueable<bool> IgnoredByMouse;
-		Nullable<bool> IgnoredByMouse_ToSelf;
-		Nullable<bool> IgnoredByMouse_ToAlly;
-		Nullable<bool> IgnoredByMouse_ToEnemy;
-
-		Valueable<bool> SuppressKillWeapons;
-		ValueableVector<WeaponTypeClass*> SuppressKillWeapons_Types;
-
-		Valueable<bool> DigitalDisplay_Health_FakeAtDisguise;
-
-		NullableVector<int> Overload_Count;
-		NullableVector<int> Overload_Damage;
-		NullableVector<int> Overload_Frames;
-		NullableIdx<VocClass> Overload_DeathSound;
-		Nullable<ParticleSystemTypeClass*> Overload_ParticleSys;
-		Valueable<int> Overload_ParticleSysCount;
-
-		Valueable<bool> Harvester_CanGuardArea;
-		Valueable<bool> Harvester_CanGuardArea_RequireTarget;
-		Nullable<bool> HarvesterScanAfterUnload;
-
-		Nullable<bool> ExtendedAircraftMissions;
-		Nullable<bool> ExtendedAircraftMissions_SmoothMoving;
-		Nullable<bool> ExtendedAircraftMissions_EarlyDescend;
-		Nullable<bool> ExtendedAircraftMissions_RearApproach;
-		Nullable<bool> ExtendedAircraftMissions_FastScramble;
-		Nullable<int> ExtendedAircraftMissions_UnlandDamage;
-
-		ValueableVector<InfantryTypeClass*> Squad_Members;
-		Valueable<bool> Squad_IsInitAsTeam;
-
-		Valueable<double> FallingDownDamage;
-		Nullable<double> FallingDownDamage_Water;
-		Valueable<bool> FallingDownDamage_AllowEMP;
-
-		Valueable<int> Ammo_AutoConvertMinimumAmount;
-		Valueable<int> Ammo_AutoConvertMaximumAmount;
-		Nullable<TechnoTypeClass*> Ammo_AutoConvertType;
-
-		Valueable<bool> FiringForceScatter;
-
-		Valueable<int> FireUp;
-		Valueable<bool> FireUp_ResetInRetarget;
-		//Nullable<int> SecondaryFire;
-
-		Nullable<bool> DebrisTypes_Limit;
-		ValueableVector<int> DebrisMinimums;
-
-		Valueable<int> EngineerRepairAmount;
-
-		Valueable<bool> AttackMove_Follow;
-		Valueable<bool> AttackMove_Follow_IncludeAir;
-		Valueable<bool> AttackMove_Follow_IfMindControlIsFull;
-		Nullable<bool> AttackMove_StopWhenTargetAcquired;
-		Valueable<bool> AttackMove_PursuitTarget;
-
-		Valueable<bool> MultiWeapon;
-		ValueableVector<bool> MultiWeapon_IsSecondary;
-		Valueable<int> MultiWeapon_SelectCount;
-		bool ReadMultiWeapon;
-		Vector2D<ThreatType> ThreatTypes;
-		Vector2D<int> CombatDamages;
-
-		ValueableIdx<VocClass> VoiceIFVRepair;
-		ValueableVector<int> VoiceWeaponAttacks;
-		ValueableVector<int> VoiceEliteWeaponAttacks;
-
-		Nullable<bool> InfantryAutoDeploy;
-
-		ValueableVector<TechnoTypeClass*> TeamMember_ConsideredAs;
-
-		Nullable<bool> TurretResponse;
-
-		Valueable<bool> ExtraTargeting_Excluded;
-
-		Valueable<bool> AIDefendBase_Ignore;
-
-		Valueable<bool> Missile_UseDeathWeaponWhenIntercepted;
-
-		Valueable<bool> NoAutoFire_AI;
-
-		Valueable<bool> ReorganizeToWhenDefeated_Excluded;
-
-		Vector2D<bool> AttackFriendlies;
-
-		Valueable<bool> Deploy_SkipPassengerUnload;
-		Valueable<bool> Deploy_NoPassenger;
-		Valueable<bool> Deploy_NoTiberium;
-
-		Nullable<int> DrainMoneyFrameDelay;
-		Nullable<int> DrainMoneyAmount;
-		Nullable<AnimTypeClass*> DrainAnimationType;
-		Nullable<bool> DrainMoneyDisplay;
-		Nullable<AffectedHouse> DrainMoneyDisplay_Houses;
-		Valueable<Point2D> DrainMoneyDisplay_Offset;
-		Nullable<bool> DrainMoneyDisplay_OnTarget;
-		Nullable<bool> DrainMoneyDisplay_OnTarget_UseDisplayIncome;
-
-		Nullable<Mission> ParadropMission;
-		Nullable<Mission> AIParadropMission;
-		Nullable<int> ParadropDelay;
-		Nullable<int> ParadropEndDelay;
-
-		Nullable<int> PenetratesTransport_Level;
-		Valueable<double> PenetratesTransport_PassThroughMultiplier;
-		Valueable<double> PenetratesTransport_FatalRateMultiplier;
-		Valueable<double> PenetratesTransport_DamageMultiplier;
-
-		Nullable<bool> JumpjetClimbIgnoreBuilding;
-
-		Valueable<bool> HoverDrownable;
-		bool ExtraThreat_Enabled;
-		Nullable<double> ExtraThreat_IsThreat;
-		Valueable<bool> AlwaysConsideredThreat;
-		Nullable<double> ExtraThreat_InRange;
-		Nullable<double> ExtraThreatCoefficient_InRangeDistance;
-		Nullable<double> ExtraThreatCoefficient_Facing;
-		Nullable<double> ExtraThreatCoefficient_DistanceToLastTarget;
-
-		Nullable<bool> Unsellable; // Ares 3.0
-
-		SHPStruct* TurretShape;
-
-		Nullable<int> HarvesterLoadRate;
-		Nullable<double> HarvesterDumpRate;
-
-		Nullable<bool> Parasite_AllowWaterExit;
-
-		Nullable<bool> FlyNoWobbles;
-
-		Nullable<AnimTypeClass*> LandingAnim;
-
-		Valueable<bool> Missile_Cruise;
-		Valueable<AnimTypeClass*> Missile_TakeOffAnim;
-		Valueable<int> Missile_TakeOffSeparation;
-
-		Nullable<bool> BarrelOverTurret;
-		Valueable<int> BarrelOffset;
-		Valueable<int> ExtraBarrelCount;
-		std::vector<int> ExtraBarrelOffsets;
-		Valueable<int> ExtraTurretCount;
-		std::vector<CoordStruct> ExtraTurretOffsets;
-		Valueable<int> BurstPerTurret;
-
-		ExtData(TechnoTypeClass* OwnerObject) : Extension<TechnoTypeClass>(OwnerObject)
+		return static_cast<TechnoTypeClass*>(this->GetAttachedObject());
+	}
+
+	Valueable<bool> HealthBar_Hide;
+	Valueable<bool> HealthBar_HidePips;
+	Valueable<bool> HealthBar_Permanent;
+	Valueable<bool> HealthBar_Permanent_PipScale;
+	Valueable<CSFText> UIDescription;
+	Valueable<bool> LowSelectionPriority;
+	Valueable<bool> LowDeployPriority;
+	PhobosFixedString<0x20> GroupAs;
+	std::vector<PhobosFixedString<0x20>> WeaponGroupAs;
+	Valueable<int> RadarJamRadius;
+	Valueable<AffectedHouse> RadarJamHouses;
+	Valueable<int> RadarJamDelay;
+	ValueableVector<BuildingTypeClass*> RadarJamAffect;
+	ValueableVector<BuildingTypeClass*> RadarJamIgnore;
+	Nullable<int> InhibitorRange;
+	Nullable<int> DesignatorRange;
+	Valueable<float> FactoryPlant_Multiplier;
+	Valueable<Leptons> MindControlRangeLimit;
+	Valueable<bool> MindControl_IgnoreSize;
+	Valueable<int> MindControlSize;
+	Valueable<AffectedHouse> MindControlLink_VisibleToHouse;
+
+	std::unique_ptr<InterceptorTypeClass> InterceptorType;
+
+	Valueable<PartialVector3D<int>> TurretOffset;
+	Nullable<bool> TurretShadow;
+	Valueable<int> ShadowIndex_Frame;
+	std::map<int, int> ShadowIndices;
+	Valueable<bool> Spawner_LimitRange;
+	Valueable<int> Spawner_ExtraLimitRange;
+	int SpawnerRange;
+	int EliteSpawnerRange;
+	Nullable<int> Spawner_DelayFrames;
+	Valueable<bool> Spawner_AttackImmediately;
+	Valueable<bool> Spawner_ReturnOnRepairDone;
+	Valueable<bool> Spawner_UseTurretFacing;
+	Nullable<bool> Harvester_Counted;
+	Valueable<bool> Promote_IncludeSpawns;
+	Valueable<bool> ImmuneToCrit;
+	Valueable<bool> MultiMindControl_ReleaseVictim;
+	Valueable<int> CameoPriority;
+	DWORD CameoPriority_Houses;
+	PhobosPCXFile AltCameoPCX;
+	Valueable<bool> NoManualMove;
+	Valueable<bool> NoManualEject;
+	Nullable<int> InitialStrength;
+	Valueable<bool> ReloadInTransport;
+	Valueable<bool> ForbidParallelAIQueues;
+	Valueable<bool> IgnoreForBaseCenter;
+
+	int TintColorAirstrike;
+	Nullable<int> LaserTargetColor;
+	Nullable<ColorStruct> AirstrikeLineColor;
+
+	Valueable<ShieldTypeClass*> ShieldType;
+	std::unique_ptr<PassengerDeletionTypeClass> PassengerDeletionType;
+	std::unique_ptr<DroppodTypeClass> DroppodType;
+	std::unique_ptr<TiberiumEaterTypeClass> TiberiumEaterType;
+
+	Nullable<float> HarvesterDumpAmount;
+
+	Valueable<int> Ammo_AddOnDeploy;
+	Valueable<int> Ammo_AutoDeployMinimumAmount;
+	Valueable<int> Ammo_AutoDeployMaximumAmount;
+	Valueable<int> Ammo_DeployUnlockMinimumAmount;
+	Valueable<int> Ammo_DeployUnlockMaximumAmount;
+
+	Nullable<AutoDeathBehavior> AutoDeath_Behavior;
+	ValueableVector<AnimTypeClass*> AutoDeath_VanishAnimation;
+	Valueable<bool> AutoDeath_OnAmmoDepletion;
+	Valueable<bool> AutoDeath_OnOwnerChange;
+	Nullable<bool> AutoDeath_OnOwnerChange_HumanToComputer;
+	Nullable<bool> AutoDeath_OnOwnerChange_ComputerToHuman;
+	Valueable<int> AutoDeath_AfterDelay;
+	ValueableVector<TechnoTypeClass*> AutoDeath_TechnosDontExist;
+	Valueable<bool> AutoDeath_TechnosDontExist_Any;
+	Valueable<bool> AutoDeath_TechnosDontExist_AllowLimboed;
+	Valueable<AffectedHouse> AutoDeath_TechnosDontExist_Houses;
+	ValueableVector<TechnoTypeClass*> AutoDeath_TechnosExist;
+	Valueable<bool> AutoDeath_TechnosExist_Any;
+	Valueable<bool> AutoDeath_TechnosExist_AllowLimboed;
+	Valueable<AffectedHouse> AutoDeath_TechnosExist_Houses;
+
+	Valueable<SlaveChangeOwnerType> Slaved_OwnerWhenMasterKilled;
+	NullableIdx<VocClass> SlavesFreeSound;
+	NullableIdx<VocClass> SellSound;
+	NullableIdx<VoxClass> EVA_Sold;
+
+	Nullable<bool> CombatAlert;
+	Nullable<bool> CombatAlert_NotBuilding;
+	Nullable<bool> CombatAlert_UseFeedbackVoice;
+	Nullable<bool> CombatAlert_UseAttackVoice;
+	Nullable<bool> CombatAlert_UseEVA;
+	NullableIdx<VoxClass> CombatAlert_EVA;
+
+	NullableIdx<VocClass> VoiceCreated;
+	NullableIdx<VocClass> VoicePickup; // Used by carryalls instead of VoiceMove if set.
+
+	ValueableVector<AnimTypeClass*> WarpOut;
+	ValueableVector<AnimTypeClass*> WarpIn;
+	ValueableVector<AnimTypeClass*> Chronoshift_WarpOut;
+	ValueableVector<AnimTypeClass*> Chronoshift_WarpIn;
+	ValueableVector<AnimTypeClass*> WarpAway;
+	Nullable<bool> ChronoTrigger;
+	Nullable<int> ChronoDistanceFactor;
+	Nullable<int> ChronoMinimumDelay;
+	Nullable<int> ChronoRangeMinimum;
+	Nullable<int> ChronoDelay;
+	Nullable<int> ChronoSpherePreDelay;
+	Nullable<int> ChronoSphereDelay;
+
+	Valueable<WeaponTypeClass*> WarpInWeapon;
+	Nullable<WeaponTypeClass*> WarpInMinRangeWeapon;
+	Valueable<WeaponTypeClass*> WarpOutWeapon;
+	Valueable<bool> WarpInWeapon_UseDistanceAsDamage;
+
+	int SubterraneanSpeed;
+	Nullable<int> SubterraneanHeight;
+
+	ValueableVector<AnimTypeClass*> OreGathering_Anims;
+	ValueableVector<int> OreGathering_Tiberiums;
+	ValueableVector<int> OreGathering_FramesPerDir;
+
+	std::vector<std::vector<CoordStruct>> WeaponBurstFLHs;
+	std::vector<std::vector<CoordStruct>> EliteWeaponBurstFLHs;
+	std::vector<CoordStruct> AlternateFLHs;
+	Valueable<bool> AlternateFLH_OnTurret;
+	Valueable<bool> AlternateFLH_ApplyVehicle;
+
+	Valueable<bool> DestroyAnim_Random;
+	Valueable<bool> NotHuman_RandomDeathSequence;
+
+	Valueable<TechnoTypeClass*> DefaultDisguise;
+	NullableVector<TerrainTypeClass*> DefaultMirageDisguises;
+	Valueable<bool> UseDisguiseMovementSpeed;
+
+	Nullable<int> OpenTopped_RangeBonus;
+	Nullable<float> OpenTopped_DamageMultiplier;
+	Nullable<int> OpenTopped_WarpDistance;
+	Valueable<bool> OpenTopped_IgnoreRangefinding;
+	Valueable<bool> OpenTopped_AllowFiringIfDeactivated;
+	Nullable<bool> OpenTopped_AllowFiringIfAttackedByLocomotor;
+	Valueable<bool> OpenTopped_ShareTransportTarget;
+	Valueable<bool> OpenTopped_UseTransportRangeModifiers;
+	Valueable<bool> OpenTopped_CheckTransportDisableWeapons;
+	Nullable<bool> OpenTopped_DecloakToFire;
+	Nullable<bool> OpenTopped_FireWhileMoving;
+	Valueable<int> OpenTransport_RangeBonus;
+	Valueable<float> OpenTransport_DamageMultiplier;
+	Nullable<bool> OpenTransport_FireWhileMoving;
+
+	Valueable<bool> AutoTargetOwnPosition;
+	Valueable<bool> AutoTargetOwnPosition_Self;
+
+	Valueable<bool> AggressiveStance;
+	Nullable<bool> AggressiveStance_Togglable;
+	ValueableIdx<VocClass> VoiceEnterAggressiveStance;
+	ValueableIdx<VocClass> VoiceExitAggressiveStance;
+
+	Valueable<bool> CeaseFireStance;
+	Nullable<bool> CeaseFireStance_Togglable;
+	ValueableIdx<VocClass> VoiceEnterCeaseFireStance;
+	ValueableIdx<VocClass> VoiceExitCeaseFireStance;
+
+	Valueable<bool> NoSecondaryWeaponFallback;
+	Valueable<bool> NoSecondaryWeaponFallback_AllowAA;
+	Nullable<bool> AllowWeaponSelectAgainstWalls;
+
+	Valueable<int> NoAmmoWeapon;
+	Valueable<int> NoAmmoAmount;
+
+	Valueable<bool> JumpjetRotateOnCrash;
+	Nullable<int> ShadowSizeCharacteristicHeight;
+
+	Valueable<bool> IsSimpleDeployer_ConsiderPathfinding;
+	Nullable<LandTypeFlags> IsSimpleDeployer_DisallowedLandTypes;
+	Nullable<FacingType> DeployDir;
+	ValueableVector<AnimTypeClass*> DeployingAnims;
+	Valueable<bool> DeployingAnim_KeepUnitVisible;
+	Valueable<bool> DeployingAnim_ReverseForUndeploy;
+	Valueable<bool> DeployingAnim_UseUnitDrawer;
+
+	Valueable<CSFText> EnemyUIName;
+	Valueable<TechnoTypeClass*> FakeOf;
+
+	bool ForceWeapon_Check;
+	Valueable<int> ForceWeapon_Naval_Decloaked;
+	Valueable<int> ForceWeapon_Cloaked;
+	Valueable<int> ForceWeapon_Disguised;
+	Valueable<int> ForceWeapon_UnderEMP;
+	Valueable<bool> ForceWeapon_InRange_TechnoOnly;
+	ValueableVector<int> ForceWeapon_InRange;
+	ValueableVector<double> ForceWeapon_InRange_Overrides;
+	Valueable<bool> ForceWeapon_InRange_ApplyRangeModifiers;
+	ValueableVector<int> ForceAAWeapon_InRange;
+	ValueableVector<double> ForceAAWeapon_InRange_Overrides;
+	Valueable<bool> ForceAAWeapon_InRange_ApplyRangeModifiers;
+	Valueable<int> ForceWeapon_Buildings;
+	Valueable<int> ForceWeapon_Defenses;
+	Valueable<int> ForceWeapon_Infantry;
+	Valueable<int> ForceWeapon_Naval_Units;
+	Valueable<int> ForceWeapon_Units;
+	Valueable<int> ForceWeapon_Aircraft;
+	Valueable<int> ForceAAWeapon_Infantry;
+	Valueable<int> ForceAAWeapon_Units;
+	Valueable<int> ForceAAWeapon_Aircraft;
+
+	Valueable<bool> Ammo_Shared;
+	Valueable<int> Ammo_Shared_Group;
+
+	Nullable<SelfHealGainType> SelfHealGainType;
+	Valueable<bool> Passengers_SyncOwner;
+	Valueable<bool> Passengers_SyncOwner_RevertOnExit;
+
+	Nullable<bool> IronCurtain_KeptOnDeploy;
+	Nullable<IronCurtainEffect> IronCurtain_Effect;
+	Nullable<WarheadTypeClass*> IronCurtain_KillWarhead;
+	Nullable<bool> ForceShield_KeptOnDeploy;
+	Nullable<IronCurtainEffect> ForceShield_Effect;
+	Nullable<WarheadTypeClass*> ForceShield_KillWarhead;
+	Valueable<bool> Explodes_KillPassengers;
+	Valueable<bool> Explodes_DuringBuildup;
+	Valueable<bool> DriverKilled_KeptPassengers;
+	Nullable<bool> DriverKilled_KillPassengers;
+	Nullable<int> DeployFireWeapon;
+	Valueable<TargetZoneScanType> TargetZoneScanType;
+
+	Nullable<Leptons> AreaGuardRange;
+	Valueable<Leptons> MaxGuardRange;
+
+	Promotable<SHPStruct*> Insignia;
+	Valueable<Vector3D<int>> InsigniaFrames;
+	Promotable<int> InsigniaFrame;
+	Nullable<bool> Insignia_ShowEnemy;
+	std::vector<Promotable<SHPStruct*>> Insignia_Weapon;
+	std::vector<Promotable<int>> InsigniaFrame_Weapon;
+	std::vector<Valueable<Vector3D<int>>> InsigniaFrames_Weapon;
+	std::vector<Promotable<SHPStruct*>> Insignia_Passengers;
+	std::vector<Promotable<int>> InsigniaFrame_Passengers;
+	std::vector<Valueable<Vector3D<int>>> InsigniaFrames_Passengers;
+
+	Valueable<bool> JumpjetTilt;
+	Valueable<double> JumpjetTilt_ForwardAccelFactor;
+	Valueable<double> JumpjetTilt_ForwardSpeedFactor;
+	Valueable<double> JumpjetTilt_SidewaysRotationFactor;
+	Valueable<double> JumpjetTilt_SidewaysSpeedFactor;
+
+	Nullable<bool> TiltsWhenCrushes_Vehicles;
+	Nullable<bool> TiltsWhenCrushes_Overlays;
+	Nullable<double> CrushForwardTiltPerFrame;
+	Valueable<double> CrushOverlayExtraForwardTilt;
+	Valueable<double> CrushSlowdownMultiplier;
+	Valueable<bool> SkipCrushSlowdown;
+
+	Valueable<bool> DigitalDisplay_Disable;
+	ValueableVector<DigitalDisplayTypeClass*> DigitalDisplayTypes;
+
+	Nullable<SelectBoxTypeClass*> SelectBox;
+	Valueable<bool> HideSelectBox;
+
+	Valueable<int> AmmoPipFrame;
+	Valueable<int> EmptyAmmoPipFrame;
+	Valueable<int> AmmoPipWrapStartFrame;
+	Nullable<Point2D> AmmoPipSize;
+	Valueable<Point2D> AmmoPipOffset;
+
+	Valueable<bool> ShowSpawnsPips;
+	Valueable<int> SpawnsPipFrame;
+	Valueable<int> EmptySpawnsPipFrame;
+	Nullable<Point2D> SpawnsPipSize;
+	Valueable<Point2D> SpawnsPipOffset;
+
+	Valueable<EdgeType> SpawnFromEdge;
+	Valueable<EdgeType> RetreatToEdge;
+	Nullable<Leptons> SpawnDistanceFromTarget;
+	Nullable<int> SpawnHeight;
+	Nullable<int> LandingDir;
+
+	Nullable<bool> CurleyShuffle;
+
+	Valueable<TechnoTypeClass*> Convert_Deploy; // Ares
+	Valueable<TechnoTypeClass*> Convert_Undeploy;
+	Valueable<TechnoTypeClass*> Convert_HumanToComputer;
+	Valueable<TechnoTypeClass*> Convert_ComputerToHuman;
+	Valueable<bool> Convert_ResetMindControl;
+
+	Valueable<double> CrateGoodie_RerollChance;
+
+	Nullable<ColorStruct> Tint_Color;
+	Valueable<double> Tint_Intensity;
+	Valueable<AffectedHouse> Tint_VisibleToHouses;
+
+	Valueable<WeaponTypeClass*> RevengeWeapon;
+	Valueable<AffectedHouse> RevengeWeapon_AffectsHouse;
+
+	AEAttachInfoTypeClass AttachEffects;
+
+	Nullable<bool> RecountBurst;
+
+	Valueable<bool> AdvancedDrive_Reverse;
+	Valueable<bool> AdvancedDrive_Reverse_FaceTarget;
+	Valueable<Leptons> AdvancedDrive_Reverse_FaceTargetRange;
+	Valueable<Leptons> AdvancedDrive_Reverse_MinimumDistance;
+	Valueable<int> AdvancedDrive_Reverse_RetreatDuration;
+	Valueable<double> AdvancedDrive_Reverse_Speed;
+	Valueable<bool> AdvancedDrive_Hover;
+	Valueable<bool> AdvancedDrive_Hover_Sink;
+	Valueable<bool> AdvancedDrive_Hover_Spin;
+	Valueable<bool> AdvancedDrive_Hover_Tilt;
+	Nullable<int> AdvancedDrive_Hover_Height;
+	Nullable<double> AdvancedDrive_Hover_Dampen;
+	Nullable<double> AdvancedDrive_Hover_Bob;
+
+	ValueableVector<TechnoTypeClass*> BuildLimitGroup_Types;
+	ValueableVector<int> BuildLimitGroup_Nums;
+	Valueable<int> BuildLimitGroup_Factor;
+	Valueable<bool> BuildLimitGroup_ContentIfAnyMatch;
+	Valueable<bool> BuildLimitGroup_NotBuildableIfQueueMatch;
+	ValueableVector<TechnoTypeClass*> BuildLimitGroup_ExtraLimit_Types;
+	ValueableVector<int> BuildLimitGroup_ExtraLimit_Nums;
+	ValueableVector<int> BuildLimitGroup_ExtraLimit_MaxCount;
+	Valueable<int> BuildLimitGroup_ExtraLimit_MaxNum;
+
+	Nullable<bool> Turret_IdleRotate;
+	Nullable<bool> Turret_PointToMouse;
+	Nullable<int> TurretROT;
+	Valueable<DirStruct> Turret_Restriction;
+	Valueable<DirStruct> Turret_ExtraAngle;
+	Nullable<bool> Turret_BodyFoundation;
+	Valueable<bool> Turret_BodyOrientation;
+	Valueable<DirStruct> Turret_BodyOrientationAngle;
+	Valueable<bool> Turret_BodyOrientationSymmetric;
+
+	Valueable<bool> TargetExtraThreat;
+	ValueableVector<DirStruct> TargetExtraThreat_Angles;
+	ValueableVector<double> TargetExtraThreat_Multipliers;
+	Valueable<bool> TargetExtraThreat_Turret;
+
+	Valueable<bool> CanBeBuiltOn;
+	Valueable<bool> ExtraBaseNormal;
+	Valueable<bool> ExtraBaseForAllyBuilding;
+
+	Nullable<bool> Cameo_AlwaysExist;
+	ValueableVector<TechnoTypeClass*> Cameo_OverrideTechnos;
+	DWORD Cameo_RequiredHouses;
+	bool IsMetTheEssentialConditions; // Not read from ini
+	bool IsGreyCameoForCurrentPlayer; // Not read from ini
+	bool IsGreyCameoAbandonedProduct; // Not read from ini
+	Valueable<CSFText> UIDescription_Unbuildable;
+
+	CustomPalette CameoPal;
+	PhobosPCXFile CameoPCX;
+	PhobosPCXFile GreyCameoPCX;
+
+	Valueable<DisplayInfoType> SelectedInfo_UpperType;
+	Valueable<int> SelectedInfo_UpperIndex;
+	Valueable<ColorStruct> SelectedInfo_UpperColor;
+	Valueable<int> SelectedInfo_UpperDivisor;
+	Valueable<DisplayInfoType> SelectedInfo_BelowType;
+	Valueable<int> SelectedInfo_BelowIndex;
+	Valueable<ColorStruct> SelectedInfo_BelowColor;
+	Valueable<int> SelectedInfo_BelowDivisor;
+	Valueable<DisplayInfoType> SelectedInfo_CameoType;
+	Valueable<int> SelectedInfo_CameoIndex;
+	Nullable<SHPStruct*> SelectedInfo_Button;
+	Nullable<CSFText> UIDescription_HoveredInfo;
+
+	Nullable<bool> AmphibiousEnter;
+	Nullable<bool> AmphibiousUnload;
+	Nullable<bool> NoQueueUpToEnter;
+	Nullable<int> NoQueueUpToEnter_BoardDistance;
+	Nullable<bool> NoQueueUpToUnload;
+	Valueable<bool> Passengers_BySize;
+
+	Valueable<int> RateDown_Delay;
+	Valueable<bool> RateDown_Reset;
+	Valueable<int> RateDown_Cover_Value;
+	Valueable<int> RateDown_Cover_AmmoBelow;
+
+	Valueable<bool> UniqueTechno;
+
+	Valueable<bool> Missile_Tracing;
+
+	Valueable<bool> CanManualReload;
+	Valueable<bool> CanManualReload_WhenFull;
+	Valueable<bool> CanManualReload_ResetROF;
+	Valueable<WarheadTypeClass*> CanManualReload_DetonateWarhead;
+	Valueable<int> CanManualReload_DetonateConsume;
+
+	Nullable<bool> NoRearm_UnderEMP;
+	Nullable<bool> NoRearm_Temporal;
+	Nullable<bool> NoReload_UnderEMP;
+	Nullable<bool> NoReload_Temporal;
+	Nullable<bool> NoTurret_TrackTarget;
+
+	Valueable<bool> KeepWarping;
+	Nullable<int> KeepWarping_Distance;
+
+	Valueable<bool> FiringByPassMovingCheck;
+
+	Nullable<bool> PlayerGuardModePursuit;
+	Nullable<Leptons> PlayerGuardModeStray;
+	Nullable<double> PlayerGuardModeGuardRangeMultiplier;
+	Nullable<Leptons> PlayerGuardModeGuardRangeAddend;
+	Nullable<Leptons> PlayerGuardStationaryStray;
+	Nullable<bool> AIGuardModePursuit;
+	Nullable<Leptons> AIGuardModeStray;
+	Nullable<double> AIGuardModeGuardRangeMultiplier;
+	Nullable<Leptons> AIGuardModeGuardRangeAddend;
+	Nullable<Leptons> AIGuardStationaryStray;
+
+	Valueable<bool> Engineer_CanAutoFire;
+
+	Valueable<int> DigStartROT;
+	Valueable<int> DigInSpeed;
+	Valueable<int> DigOutSpeed;
+	Valueable<int> DigEndROT;
+
+	Valueable<int> FlightClimb;
+	Valueable<int> FlightCrash;
+
+	Nullable<bool> ExplodeOnDestroy;
+	Nullable<bool> FireDeathWeaponOnCrushed;
+
+	Nullable<CoordStruct> ExitCoord;
+
+	Valueable<bool> MissileSpawnUseOtherFLHs;
+
+	Valueable<bool> HarvesterQuickUnloader;
+
+	Valueable<UnitTypeClass*> ThisIsAJumpjet;
+
+	Valueable<bool> IgnoreRallyPoint;
+
+	Valueable<int> JumpjetSpeedType;
+
+	Nullable<bool> KeepAlive;
+
+	Nullable<AnimTypeClass*> Wake;
+	Nullable<AnimTypeClass*> Wake_Grapple;
+	Nullable<AnimTypeClass*> Wake_Sinking;
+	Nullable<bool> MakesWake;
+
+	Nullable<int> AINormalTargetingDelay;
+	Nullable<int> PlayerNormalTargetingDelay;
+	Nullable<int> AIGuardAreaTargetingDelay;
+	Nullable<int> PlayerGuardAreaTargetingDelay;
+	Nullable<int> AIAttackMoveTargetingDelay;
+	Nullable<int> PlayerAttackMoveTargetingDelay;
+	Nullable<bool> DistributeTargetingFrame;
+
+	Nullable<bool> AttackMove_Aggressive;
+	Nullable<bool> AttackMove_UpdateTarget;
+
+	Valueable<bool> BunkerableAnyway;
+	Valueable<bool> KeepTargetOnMove;
+	Valueable<int> KeepTargetOnMove_Weapon;
+	Valueable<bool> KeepTargetOnMove_NoMorePursuit;
+	Valueable<Leptons> KeepTargetOnMove_ExtraDistance;
+
+	Nullable<bool> DirectionalArmor;
+	Nullable<float> DirectionalArmor_FrontMultiplier;
+	Nullable<float> DirectionalArmor_SideMultiplier;
+	Nullable<float> DirectionalArmor_BackMultiplier;
+	Nullable<float> DirectionalArmor_FrontField;
+	Nullable<float> DirectionalArmor_BackField;
+
+	Valueable<int> Power;
+
+	Nullable<bool> AllowAirstrike;
+
+	Nullable<TechnoTypeClass*> Image_ConditionYellow;
+	Nullable<TechnoTypeClass*> Image_ConditionRed;
+	Nullable<UnitTypeClass*> WaterImage_ConditionYellow;
+	Nullable<UnitTypeClass*> WaterImage_ConditionRed;
+	bool NeedDamagedImage;
+
+	Nullable<int> InitialSpawnsNumber;
+	ValueableVector<AircraftTypeClass*> Spawns_Queue;
+
+	Valueable<int> DefaultVisualCharacter;
+	Nullable<int> DefaultVisualCharacterToSelf;
+	Nullable<int> DefaultVisualCharacterToAlly;
+	Nullable<int> DefaultVisualCharacterToEnemy;
+
+	Valueable<bool> Cloneable;
+	ValueableVector<BuildingTypeClass*> ClonedAt;
+	Valueable<TechnoTypeClass*> ClonedAs;
+
+	Valueable<Leptons> Spawner_RecycleRange;
+	ValueableVector<AnimTypeClass*> Spawner_RecycleAnim;
+	Valueable<CoordStruct> Spawner_RecycleCoord;
+	Valueable<bool> Spawner_RecycleOnTurret;
+
+	Nullable<bool> Sinkable;
+	Valueable<bool> Sinkable_SquidGrab;
+	Valueable<int> SinkSpeed;
+
+	Nullable<double> ProneSpeed;
+	Nullable<double> DamagedSpeed;
+
+	ValueableVector<AnimTypeClass*> Promote_VeteranAnimation;
+	ValueableVector<AnimTypeClass*> Promote_EliteAnimation;
+
+	ValueableVector<TechnoTypeClass*> WreckageType;
+	Nullable<double> WreckageInitialHealthPercent;
+	Valueable<bool> WreckageDeactive;
+	Valueable<bool> WreckageMarkUp;
+	Valueable<OwnerHouseKind> WreckageOwner;
+	Valueable<bool> WreckageLeaveOnWater;
+	Valueable<bool> WreckageLeaveInAir;
+	Valueable<bool> WreckageSwapLocomotor;
+
+	Nullable<AffectedHouse> RadarInvisibleToHouse;
+
+	ValueableVector<AttachmentTypeClass*> AttachmentTypes;
+	Valueable<int> AttachmentTopLayerMinHeight;
+	Valueable<int> AttachmentUndergroundLayerMaxHeight;
+
+	struct LaserTrailDataEntry
+	{
+		ValueableIdx<LaserTrailTypeClass> idxType;
+		Valueable<CoordStruct> FLH;
+		Valueable<bool> IsOnTurret;
+		LaserTrailTypeClass* GetType() const { return LaserTrailTypeClass::Array[idxType].get(); }
+	};
+
+	std::vector<LaserTrailDataEntry> LaserTrailData;
+	Valueable<bool> OnlyUseLandSequences;
+	Nullable<bool> SecondaryFireSequenceLandOnly;
+	Nullable<CoordStruct> PronePrimaryFireFLH;
+	Nullable<CoordStruct> ProneSecondaryFireFLH;
+	Nullable<CoordStruct> DeployedPrimaryFireFLH;
+	Nullable<CoordStruct> DeployedSecondaryFireFLH;
+	std::vector<std::vector<CoordStruct>> CrouchedWeaponBurstFLHs;
+	std::vector<std::vector<CoordStruct>> EliteCrouchedWeaponBurstFLHs;
+	std::vector<std::vector<CoordStruct>> DeployedWeaponBurstFLHs;
+	std::vector<std::vector<CoordStruct>> EliteDeployedWeaponBurstFLHs;
+
+	Valueable<bool> IgnoredByMouse;
+	Nullable<bool> IgnoredByMouse_ToSelf;
+	Nullable<bool> IgnoredByMouse_ToAlly;
+	Nullable<bool> IgnoredByMouse_ToEnemy;
+
+	Valueable<bool> SuppressKillWeapons;
+	ValueableVector<WeaponTypeClass*> SuppressKillWeapons_Types;
+
+	Valueable<bool> DigitalDisplay_Health_FakeAtDisguise;
+
+	NullableVector<int> Overload_Count;
+	NullableVector<int> Overload_Damage;
+	NullableVector<int> Overload_Frames;
+	NullableIdx<VocClass> Overload_DeathSound;
+	Nullable<ParticleSystemTypeClass*> Overload_ParticleSys;
+	Valueable<int> Overload_ParticleSysCount;
+
+	Valueable<bool> Harvester_CanGuardArea;
+	Valueable<bool> Harvester_CanGuardArea_RequireTarget;
+	Nullable<bool> HarvesterScanAfterUnload;
+
+	Nullable<bool> ExtendedAircraftMissions;
+	Nullable<bool> ExtendedAircraftMissions_SmoothMoving;
+	Nullable<bool> ExtendedAircraftMissions_EarlyDescend;
+	Nullable<bool> ExtendedAircraftMissions_RearApproach;
+	Nullable<bool> ExtendedAircraftMissions_FastScramble;
+	Nullable<int> ExtendedAircraftMissions_UnlandDamage;
+
+	ValueableVector<InfantryTypeClass*> Squad_Members;
+	Valueable<bool> Squad_IsInitAsTeam;
+
+	Valueable<double> FallingDownDamage;
+	Nullable<double> FallingDownDamage_Water;
+	Valueable<bool> FallingDownDamage_AllowEMP;
+
+	Valueable<int> Ammo_AutoConvertMinimumAmount;
+	Valueable<int> Ammo_AutoConvertMaximumAmount;
+	Nullable<TechnoTypeClass*> Ammo_AutoConvertType;
+
+	Valueable<bool> FiringForceScatter;
+
+	Valueable<int> FireUp;
+	Valueable<bool> FireUp_ResetInRetarget;
+	//Nullable<int> SecondaryFire;
+
+	Nullable<bool> DebrisTypes_Limit;
+	ValueableVector<int> DebrisMinimums;
+
+	Valueable<int> EngineerRepairAmount;
+
+	Valueable<bool> AttackMove_Follow;
+	Valueable<bool> AttackMove_Follow_IncludeAir;
+	Valueable<bool> AttackMove_Follow_IfMindControlIsFull;
+	Nullable<bool> AttackMove_StopWhenTargetAcquired;
+	Valueable<bool> AttackMove_PursuitTarget;
+
+	Valueable<bool> MultiWeapon;
+	ValueableVector<bool> MultiWeapon_IsSecondary;
+	Valueable<int> MultiWeapon_SelectCount;
+	bool ReadMultiWeapon;
+	Vector2D<ThreatType> ThreatTypes;
+	Vector2D<int> CombatDamages;
+
+	ValueableIdx<VocClass> VoiceIFVRepair;
+	ValueableVector<int> VoiceWeaponAttacks;
+	ValueableVector<int> VoiceEliteWeaponAttacks;
+
+	Nullable<bool> InfantryAutoDeploy;
+
+	ValueableVector<TechnoTypeClass*> TeamMember_ConsideredAs;
+
+	Nullable<bool> TurretResponse;
+
+	Valueable<bool> ExtraTargeting_Excluded;
+
+	Valueable<bool> AIDefendBase_Ignore;
+
+	Valueable<bool> Missile_UseDeathWeaponWhenIntercepted;
+
+	Valueable<bool> NoAutoFire_AI;
+
+	Valueable<bool> ReorganizeToWhenDefeated_Excluded;
+
+	Vector2D<bool> AttackFriendlies;
+
+	Valueable<bool> Deploy_SkipPassengerUnload;
+	Valueable<bool> Deploy_NoPassenger;
+	Valueable<bool> Deploy_NoTiberium;
+
+	Nullable<int> DrainMoneyFrameDelay;
+	Nullable<int> DrainMoneyAmount;
+	Nullable<AnimTypeClass*> DrainAnimationType;
+	Nullable<bool> DrainMoneyDisplay;
+	Nullable<AffectedHouse> DrainMoneyDisplay_Houses;
+	Valueable<Point2D> DrainMoneyDisplay_Offset;
+	Nullable<bool> DrainMoneyDisplay_OnTarget;
+	Nullable<bool> DrainMoneyDisplay_OnTarget_UseDisplayIncome;
+
+	Nullable<Mission> ParadropMission;
+	Nullable<Mission> AIParadropMission;
+	Nullable<int> ParadropDelay;
+	Nullable<int> ParadropEndDelay;
+
+	Nullable<int> PenetratesTransport_Level;
+	Valueable<double> PenetratesTransport_PassThroughMultiplier;
+	Valueable<double> PenetratesTransport_FatalRateMultiplier;
+	Valueable<double> PenetratesTransport_DamageMultiplier;
+
+	Nullable<bool> JumpjetClimbIgnoreBuilding;
+
+	Valueable<bool> HoverDrownable;
+	bool ExtraThreat_Enabled;
+	Nullable<double> ExtraThreat_IsThreat;
+	Valueable<bool> AlwaysConsideredThreat;
+	Nullable<double> ExtraThreat_InRange;
+	Nullable<double> ExtraThreatCoefficient_InRangeDistance;
+	Nullable<double> ExtraThreatCoefficient_Facing;
+	Nullable<double> ExtraThreatCoefficient_DistanceToLastTarget;
+
+	Nullable<bool> Unsellable; // Ares 3.0
+
+	SHPStruct* TurretShape;
+
+	Nullable<int> HarvesterLoadRate;
+	Nullable<double> HarvesterDumpRate;
+
+	Nullable<bool> Parasite_AllowWaterExit;
+
+	Nullable<bool> FlyNoWobbles;
+
+	Nullable<AnimTypeClass*> LandingAnim;
+
+	Valueable<bool> Missile_Cruise;
+	Valueable<AnimTypeClass*> Missile_TakeOffAnim;
+	Valueable<int> Missile_TakeOffSeparation;
+
+	Nullable<bool> BarrelOverTurret;
+	Valueable<int> BarrelOffset;
+	Valueable<int> ExtraBarrelCount;
+	std::vector<int> ExtraBarrelOffsets;
+	Valueable<int> ExtraTurretCount;
+	std::vector<CoordStruct> ExtraTurretOffsets;
+	Valueable<int> BurstPerTurret;
+
+	TechnoTypeExt(TechnoTypeClass* OwnerObject) : ObjectTypeExt(OwnerObject)
 			, HealthBar_Hide { false }
 			, HealthBar_HidePips { false }
 			, HealthBar_Permanent { false }
@@ -1371,56 +1378,61 @@ public:
 			, ExtraTurretCount { 0 }
 			, ExtraTurretOffsets { }
 			, BurstPerTurret { 0 }
+	{ }
 
-		{ }
+	virtual ~TechnoTypeExt() = default;
+	virtual void LoadFromINIFile(CCINIClass* pINI) override;
 
-		virtual ~ExtData() = default;
-		virtual void LoadFromINIFile(CCINIClass* pINI) override;
-		virtual void Initialize() override;
+	virtual void LoadFromStream(PhobosStreamReader& Stm) override;
+	virtual void SaveToStream(PhobosStreamWriter& Stm) override;
 
-		virtual void InvalidatePointer(void* ptr, bool bRemoved) override { }
+	DirStruct GetTurretDesiredDir(DirStruct defaultDir);
+	void SetTurretLimitedDir(FootClass* pThis, DirStruct desiredDir);
+	short GetTurretLimitedRaw(short currentDirectionRaw);
+	DirStruct GetBodyDesiredDir(DirStruct currentDir, DirStruct defaultDir);
 
-		virtual void LoadFromStream(PhobosStreamReader& Stm) override;
-		virtual void SaveToStream(PhobosStreamWriter& Stm) override;
+	void ApplyTurretOffset(Matrix3D* mtx, double factor = 1.0);
+	void CalculateSpawnerRange();
+	bool IsSecondary(const int weaponIndex) const;
 
-		void LoadFromINIByWhatAmI(INI_EX& exINI, const char* pSection, INI_EX& exArtINI, const char* pArtSection);
+	int SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget) const;
+	int SelectMultiWeapon(TechnoClass* const pThis, AbstractClass* const pTarget) const;
 
-		DirStruct GetTurretDesiredDir(DirStruct defaultDir);
-		void SetTurretLimitedDir(FootClass* pThis, DirStruct desiredDir);
-		short GetTurretLimitedRaw(short currentDirectionRaw);
-		DirStruct GetBodyDesiredDir(DirStruct currentDir, DirStruct defaultDir);
+	void UpdateAdditionalAttributes();
 
-		void ApplyTurretOffset(Matrix3D* mtx, double factor = 1.0, int turIdx = -1);
-		void CalculateSpawnerRange();
-		bool IsSecondary(const int weaponIndex) const;
+	// Ares 0.2
+	bool CameoIsVeteran(HouseClass* pHouse) const;
 
-		int SelectForceWeapon(TechnoClass* pThis, AbstractClass* pTarget) const;
-		int SelectMultiWeapon(TechnoClass* const pThis, AbstractClass* const pTarget) const;
+	// Ares 0.A
+	const char* GetSelectionGroupID() const;
 
-		void UpdateAdditionalAttributes();
+protected:
+	// callable from the concrete leaf type exts (e.g. InfantryTypeExt) that read
+	// their own art-INI burst FLHs through this shared parser
+	void ParseBurstFLHs(INI_EX& exArtINI, const char* pArtSection, std::vector<std::vector<CoordStruct>>& nFLH, std::vector<std::vector<CoordStruct>>& nEFlh, const char* pPrefixTag);
 
-		// Ares 0.2
-		bool CameoIsVeteran(HouseClass* pHouse) const;
+private:
+	template <typename T>
+	void Serialize(T& Stm);
 
-		// Ares 0.A
-		const char* GetSelectionGroupID() const;
+	void ParseVoiceWeaponAttacks(INI_EX& exINI, const char* pSection, ValueableVector<int>& n, ValueableVector<int>& nE);
 
-	private:
-		template <typename T>
-		void Serialize(T& Stm);
-
-		void ParseBurstFLHs(INI_EX& exArtINI, const char* pArtSection, std::vector<std::vector<CoordStruct>>& nFLH, std::vector<std::vector<CoordStruct>>& nEFlh, const char* pPrefixTag);
-		void ParseVoiceWeaponAttacks(INI_EX& exINI, const char* pSection, ValueableVector<int>& n, ValueableVector<int>& nE);
-	};
-
-	class ExtContainer final : public Container<TechnoTypeExt>
+public:
+	// TechnoTypeExt is never instantiated and has no container of its own: instances are
+	// concrete leaves (UnitTypeExt/InfantryTypeExt/AircraftTypeExt/BuildingTypeExt)
+	// tracked by their own containers. The polymorphic fetch reads the inline slot directly.
+	static TechnoTypeExt* Fetch(const TechnoTypeClass* pThis)
 	{
-	public:
-		ExtContainer();
-		~ExtContainer();
-	};
+		return AbstractExt::Fetch<TechnoTypeExt>(pThis);
+	}
 
-	static ExtContainer ExtMap;
+	static TechnoTypeExt* TryFetch(const TechnoTypeClass* pThis)
+	{
+		return AbstractExt::TryFetch<TechnoTypeExt>(pThis);
+	}
+
+	// deprecated stand-in for the pre-rework container of all TechnoTypeClass extensions
+	static inline CompatExtMap<TechnoTypeExt, TechnoTypeClass> ExtMap {};
 	static bool SelectWeaponMutex;
 
 	static void ApplyTurretOffset(TechnoTypeClass* pType, Matrix3D* mtx, double factor = 1.0, int turIdx = -1);
@@ -1438,3 +1450,4 @@ public:
 	static const char* GetSelectionGroupID(ObjectTypeClass* pType);
 	static bool HasSelectionGroupID(ObjectTypeClass* pType, const char* pID);
 };
+

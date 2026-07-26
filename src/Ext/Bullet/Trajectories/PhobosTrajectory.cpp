@@ -218,7 +218,7 @@ void PhobosTrajectory::OnUnlimbo()
 bool PhobosTrajectory::OnEarlyUpdate()
 {
 	const auto pBullet = this->Bullet;
-	const auto pBulletExt = BulletExt::ExtMap.Find(pBullet);
+	const auto pBulletExt = BulletExt::Fetch(pBullet);
 
 	// Update group index for members by themselves
 	if (pBulletExt->TrajectoryGroup)
@@ -268,7 +268,7 @@ bool PhobosTrajectory::OnEarlyUpdate()
 bool PhobosTrajectory::OnVelocityCheck()
 {
 	const auto pBullet = this->Bullet;
-	const auto pBulletExt = BulletExt::ExtMap.Find(pBullet);
+	const auto pBulletExt = BulletExt::Fetch(pBullet);
 	double ratio = 1.0;
 
 	// If there is an obstacle on the route, the bullet should need to reduce its speed so it will not penetrate the obstacle.
@@ -434,7 +434,7 @@ void PhobosTrajectory::OnVelocityUpdate(BulletVelocity* pSpeed, BulletVelocity* 
 TrajectoryCheckReturnType PhobosTrajectory::OnDetonateUpdate(const CoordStruct& position)
 {
 	// Need to detonate at the next location
-	if (BulletExt::ExtMap.Find(this->Bullet)->Status & (TrajectoryStatus::Detonate | TrajectoryStatus::Vanish))
+	if (BulletExt::Fetch(this->Bullet)->Status & (TrajectoryStatus::Detonate | TrajectoryStatus::Vanish))
 		return TrajectoryCheckReturnType::Detonate;
 
 	// Below ground level? (16 -> error range)
@@ -449,7 +449,7 @@ TrajectoryCheckReturnType PhobosTrajectory::OnDetonateUpdate(const CoordStruct& 
 void PhobosTrajectory::OnPreDetonate()
 {
 	const auto pBullet = this->Bullet;
-	const auto pBulletExt = BulletExt::ExtMap.Find(pBullet);
+	const auto pBulletExt = BulletExt::Fetch(pBullet);
 	const auto pBulletTypeExt = pBulletExt->TypeExtData;
 
 	// Set detonate coords
@@ -501,15 +501,15 @@ void PhobosTrajectory::OpenFire()
 	{
 		const auto pBulletType = pBullet->Type;
 
-		if (pBulletType->SubjectToWalls || pBulletType->SubjectToCliffs || BulletTypeExt::ExtMap.Find(pBulletType)->SubjectToSolid)
+		if (pBulletType->SubjectToWalls || pBulletType->SubjectToCliffs || BulletTypeExt::Fetch(pBulletType)->SubjectToSolid)
 		{
 			const auto pSourceCell = MapClass::Instance.GetCellAt(source);
 			const auto pTargetCell = MapClass::Instance.GetCellAt(target);
 			const auto pFirer = pBullet->Owner;
-			const auto pOwner = pFirer ? pFirer->Owner : BulletExt::ExtMap.Find(pBullet)->FirerHouse;
+			const auto pOwner = pFirer ? pFirer->Owner : BulletExt::Fetch(pBullet)->FirerHouse;
 
 			if (TrajectoryHelper::GetObstacle(pSourceCell, pTargetCell, pSourceCell, pBullet->Location, pBulletType, pOwner))
-				BulletExt::ExtMap.Find(pBullet)->Status |= TrajectoryStatus::Detonate;
+				BulletExt::Fetch(pBullet)->Status |= TrajectoryStatus::Detonate;
 		}
 	}
 }
@@ -546,7 +546,7 @@ void PhobosTrajectory::MultiplyBulletVelocity(const double ratio, const bool sho
 
 	// The next frame needs to detonate itself
 	if (shouldDetonate)
-		BulletExt::ExtMap.Find(this->Bullet)->Status |= TrajectoryStatus::Detonate;
+		BulletExt::Fetch(this->Bullet)->Status |= TrajectoryStatus::Detonate;
 }
 
 /*!
@@ -630,7 +630,7 @@ void PhobosTrajectory::RotateAboutTheAxis(BulletVelocity& vector, BulletVelocity
 bool PhobosTrajectory::OnFacingCheck()
 {
 	const auto pBullet = this->Bullet;
-	const auto pBulletTypeExt = BulletTypeExt::ExtMap.Find(pBullet->Type);
+	const auto pBulletTypeExt = BulletTypeExt::Fetch(pBullet->Type);
 	const auto pType = this->GetType();
 
 	if (!pBulletTypeExt->DisperseFaceCheck)
@@ -798,7 +798,7 @@ DEFINE_HOOK(0x468B72, BulletClass_Unlimbo_Trajectories, 0x5)
 {
 	GET(BulletClass* const, pThis, EBX);
 
-	const auto pExt = BulletExt::ExtMap.Find(pThis);
+	const auto pExt = BulletExt::Fetch(pThis);
 
 	// Initialize before trajectory unlimbo
 	pExt->InitializeOnUnlimbo();
@@ -822,7 +822,7 @@ DEFINE_HOOK(0x46745C, BulletClass_Update_TrajectoriesVelocityUpdate, 0x7)
 	LEA_STACK(BulletVelocity*, pSpeed, STACK_OFFSET(0x1AC, -0x11C));
 	LEA_STACK(BulletVelocity*, pPosition, STACK_OFFSET(0x1AC, -0x144));
 
-	const auto pExt = BulletExt::ExtMap.Find(pThis);
+	const auto pExt = BulletExt::Fetch(pThis);
 
 	if (const auto pTraj = pExt->Trajectory.get())
 	{
@@ -852,7 +852,7 @@ DEFINE_HOOK(0x467609, BulletClass_Update_TrajectoriesSkipResetHeight, 0x6)
 
 	GET(BulletClass* const, pThis, EBP);
 
-	if (!BulletExt::ExtMap.Find(pThis)->Trajectory)
+	if (!BulletExt::Fetch(pThis)->Trajectory)
 		return 0;
 
 	R->ECX(0);
@@ -866,7 +866,7 @@ DEFINE_HOOK(0x4677D3, BulletClass_Update_TrajectoriesDetonateUpdate, 0x5)
 	GET(BulletClass* const, pThis, EBP);
 	REF_STACK(const CoordStruct, position, STACK_OFFSET(0x1AC, -0x188));
 
-	const auto pExt = BulletExt::ExtMap.Find(pThis);
+	const auto pExt = BulletExt::Fetch(pThis);
 
 	if (const auto pTraj = pExt->Trajectory.get())
 	{
@@ -898,7 +898,7 @@ DEFINE_HOOK(0x467BAC, BulletClass_Update_TrajectoriesCheckObstacle, 0x6)
 
 	GET(BulletClass* const, pThis, EBP);
 
-	if (const auto pTraj = BulletExt::ExtMap.Find(pThis)->Trajectory.get())
+	if (const auto pTraj = BulletExt::Fetch(pThis)->Trajectory.get())
 	{
 		// Already checked when the speed is high
 		if (BulletExt::Get2DVelocity(pTraj->MovingVelocity) >= Unsorted::LeptonsPerCell)
@@ -912,7 +912,7 @@ DEFINE_HOOK(0x467BAC, BulletClass_Update_TrajectoriesCheckObstacle, 0x6)
 DEFINE_HOOK(0x46703E, BulletClass_AI_SkipBridgeCheck1, 0x6)
 {
 	GET(BulletClass*, pThis, EBP);
-	auto const pExt = BulletExt::ExtMap.Find(pThis);
+	auto const pExt = BulletExt::TryFetch(pThis);
 	if (pExt && pExt->Trajectory)
 		return 0x467B7A;
 	return 0;
@@ -922,7 +922,7 @@ DEFINE_HOOK(0x46703E, BulletClass_AI_SkipBridgeCheck1, 0x6)
 DEFINE_HOOK(0x4674D4, BulletClass_AI_SkipBridgeCheck2, 0x6)
 {
 	GET(BulletClass*, pThis, EBP);
-	auto const pExt = BulletExt::ExtMap.Find(pThis);
+	auto const pExt = BulletExt::TryFetch(pThis);
 	if (pExt && pExt->Trajectory && pExt->Trajectory->ShouldSkipBridgeCheck())
 		return 0x467519;
 	return 0;
@@ -932,7 +932,7 @@ DEFINE_HOOK(0x467E53, BulletClass_Update_TrajectoriesPreDetonation, 0x6)
 {
 	GET(BulletClass* const, pThis, EBP);
 
-	const auto pExt = BulletExt::ExtMap.Find(pThis);
+	const auto pExt = BulletExt::Fetch(pThis);
 
 	if (const auto pTraj = pExt->Trajectory.get())
 		pTraj->OnPreDetonate();
@@ -948,7 +948,7 @@ DEFINE_HOOK(0x468585, BulletClass_PointerExpired_Trajectories, 0x9)
 
 	GET(BulletClass* const, pThis, ESI);
 
-	return BulletExt::ExtMap.Find(pThis)->Trajectory ? SkipSetCellAsTarget : 0;
+	return BulletExt::Fetch(pThis)->Trajectory ? SkipSetCellAsTarget : 0;
 }
 
 // Vanilla inertia effect only for bullets with ROT=0
@@ -958,7 +958,7 @@ DEFINE_HOOK(0x415F25, AircraftClass_Fire_TrajectorySkipInertiaEffect, 0x6)
 
 	GET(BulletClass*, pThis, ESI);
 
-	if (BulletExt::ExtMap.Find(pThis)->Trajectory)
+	if (BulletExt::Fetch(pThis)->Trajectory)
 		return SkipCheck;
 
 	return 0;
@@ -971,7 +971,7 @@ DEFINE_HOOK(0x6FD217, TechnoClass_CreateLaser_EngraveDrawNoLaser, 0x5)
 
 	GET(WeaponTypeClass*, pWeapon, EAX);
 
-	if (const auto pTrajType = BulletTypeExt::ExtMap.Find(pWeapon->Projectile)->TrajectoryType.get())
+	if (const auto pTrajType = BulletTypeExt::Fetch(pWeapon->Projectile)->TrajectoryType.get())
 	{
 		const auto flag = pTrajType->Flag();
 
@@ -993,13 +993,13 @@ DEFINE_HOOK(0x46B5A4, BulletClass_SetTarget_SetTrajectoryTarget, 0x6)
 	if (RulesExt::Global()->VHPScan_Enhanced)
 	{
 		if (const auto pOldTarget = abstract_cast<TechnoClass*>(pThis->Target))
-			TechnoExt::ExtMap.Find(pOldTarget)->BulletsTargetingMeCount--;
+			TechnoExt::Fetch(pOldTarget)->BulletsTargetingMeCount--;
 
 		if (const auto pNewTarget = abstract_cast<TechnoClass*>(pTarget))
-			TechnoExt::ExtMap.Find(pNewTarget)->BulletsTargetingMeCount++;
+			TechnoExt::Fetch(pNewTarget)->BulletsTargetingMeCount++;
 	}
 
-	if (const auto pTraj = BulletExt::ExtMap.Find(pThis)->Trajectory.get())
+	if (const auto pTraj = BulletExt::Fetch(pThis)->Trajectory.get())
 	{
 		if (pTarget)
 			pTraj->SetBulletNewTarget(pTarget);

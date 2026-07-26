@@ -160,6 +160,9 @@ public:
 		static bool AutomaticPlacingCombatBuilding;
 		static bool UnifiedTechnoColor;
 		static int SkipFrameDelay;
+		static bool ShowGameTime;
+		static int ShowGameTime_BoardOpacity;
+		static bool SelectCapturedCommand;
 	};
 
 	class Misc

@@ -1,6 +1,8 @@
 ﻿#include "Body.h"
 
+#include <Ext/Building/Body.h>
 #include <Ext/House/Body.h>
+#include <Ext/InfantryType/Body.h>
 #include <Ext/TEvent/Body.h>
 #include <Ext/WarheadType/Body.h>
 #include <Ext/WeaponType/Body.h>
@@ -17,7 +19,7 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 	GET(TechnoClass*, pThis, ECX);
 	LEA_STACK(args_ReceiveDamage*, args, 0x4);
 
-	const auto pWHExt = WarheadTypeExt::ExtMap.Find(args->WH);
+	const auto pWHExt = WarheadTypeExt::Fetch(args->WH);
 	int& damage = *args->Damage;
 
 	// AffectsAbove/BelowPercent & AffectsNeutral can ignore IgnoreDefenses like AffectsAllies/Enmies/Owner
@@ -31,7 +33,7 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 		return 0;
 	}
 
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pExt = TechnoExt::Fetch(pThis);
 	const auto pTypeExt = pExt->TypeExtData;
 	const auto pType = pTypeExt->OwnerObject();
 
@@ -108,7 +110,7 @@ DEFINE_HOOK(0x701900, TechnoClass_ReceiveDamage_Shield, 0x6)
 			if (!pTargetHouse->IsControlledByCurrentPlayer() || (RulesExt::Global()->CombatAlert_SuppressIfAllyDamage && pTargetHouse->IsAlliedWith(pSourceHouse)))
 				return;
 
-			const auto pHouseExt = HouseExt::ExtMap.Find(pTargetHouse);
+			const auto pHouseExt = HouseExt::Fetch(pTargetHouse);
 
 			if (pHouseExt->CombatAlertTimer.HasTimeLeft() || pWHExt->CombatAlert_Suppress.Get(!pWHExt->Malicious || pWHExt->Nonprovocative))
 				return;
@@ -232,7 +234,7 @@ DEFINE_HOOK(0x702819, TechnoClass_ReceiveDamage_Decloak, 0xA)
 	GET(TechnoClass* const, pThis, ESI);
 	GET_STACK(WarheadTypeClass*, pWarhead, STACK_OFFSET(0xC4, 0xC));
 
-	if (auto const pExt = WarheadTypeExt::ExtMap.TryFind(pWarhead))
+	if (auto const pExt = WarheadTypeExt::TryFetch(pWarhead))
 	{
 		if (pExt->DecloakDamagedTargets.Get(RulesExt::Global()->DecloakDamagedTargets))
 			pThis->Uncloak(false);
@@ -249,12 +251,12 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 	GET(WarheadTypeClass* const, pWH, EBP);
 
 	if (Phobos::DisplayDamageNumbers && *pDamage)
-		GeneralUtils::DisplayDamageNumberString(*pDamage, DamageDisplayType::Regular, pThis->GetRenderCoords(), TechnoExt::ExtMap.Find(pThis)->DamageNumberOffset);
+		GeneralUtils::DisplayDamageNumberString(*pDamage, DamageDisplayType::Regular, pThis->GetRenderCoords(), TechnoExt::Fetch(pThis)->DamageNumberOffset);
 
-	if ((state == DamageState::NowDead) && !WarheadTypeExt::ExtMap.Find(pWH)->SuppressWreckage && RulesExt::Global()->EnableWreckageSpawn)
+	if ((state == DamageState::NowDead) && !WarheadTypeExt::Fetch(pWH)->SuppressWreckage && RulesExt::Global()->EnableWreckageSpawn)
 	{
 		const auto pType = pThis->GetTechnoType();
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+		const auto pTypeExt = TechnoTypeExt::Fetch(pType);
 		const auto& vec = pTypeExt->WreckageType;
 
 		if (!vec.empty())
@@ -263,7 +265,7 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 
 			if ((pThis->GetCell()->LandType != LandType::Water || pTypeExt->WreckageLeaveOnWater)
 				&& (!pThis->IsInAir() || pTypeExt->WreckageLeaveInAir)
-				&& (pWreckageType != pType || !TechnoExt::ExtMap.Find(pThis)->IsWreckage))
+				&& (pWreckageType != pType || !TechnoExt::Fetch(pThis)->IsWreckage))
 			{
 				GET_STACK(HouseClass* const, pAttackerHosue, STACK_OFFSET(0xC4, 0x1C));
 
@@ -292,7 +294,7 @@ DEFINE_HOOK(0x701DFF, TechnoClass_ReceiveDamage_FlyingStrings, 0x7)
 
 					if (pTypeExt->WreckageDeactive)
 					{
-						TechnoExt::ExtMap.Find(pWreckage)->IsWreckage = true;
+						TechnoExt::Fetch(pWreckage)->IsWreckage = true;
 						pWreckage->Deactivate();
 					}
 
@@ -312,15 +314,15 @@ DEFINE_HOOK(0x702603, TechnoClass_ReceiveDamage_Explodes, 0x6)
 
 	GET(TechnoClass*, pThis, ESI);
 
-	const auto pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
+	const auto pExt = TechnoExt::Fetch(pThis);
 
 	if (pThis->WhatAmI() == AbstractType::Building)
 	{
-		if (!pTypeExt->Explodes_DuringBuildup && (pThis->CurrentMission == Mission::Construction || pThis->CurrentMission == Mission::Selling))
+		if (!static_cast<BuildingExt*>(pExt)->GetTypeExtData()->Explodes_DuringBuildup.Get(RulesExt::Global()->Explodes_DuringBuildup) && (pThis->CurrentMission == Mission::Construction || pThis->CurrentMission == Mission::Selling))
 			return SkipExploding;
 	}
 
-	if (!pTypeExt->Explodes_KillPassengers)
+	if (!pExt->TypeExtData->Explodes_KillPassengers.Get(RulesExt::Global()->Explodes_KillPassengers))
 		return SkipKillingPassengers;
 
 	return 0;
@@ -369,14 +371,14 @@ DEFINE_HOOK(0x518505, InfantryClass_ReceiveDamage_NotHuman, 0x4)
 	constexpr auto Die = [](int x) { return x + 10; };
 
 	int resultSequence = Die(1);
-	auto const pTypeExt = TechnoExt::ExtMap.Find(pThis)->TypeExtData;
+	auto const pTypeExt = InfantryTypeExt::Fetch(pThis->Type);
 
-	if (pTypeExt->NotHuman_RandomDeathSequence.Get())
+	if (pTypeExt->NotHuman_RandomDeathSequence.Get(RulesExt::Global()->NotHuman_RandomDeathSequence))
 		resultSequence = ScenarioClass::Instance->Random.RandomRanged(Die(1), Die(5));
 
 	if (receiveDamageArgs.WH)
 	{
-		auto const pWarheadExt = WarheadTypeExt::ExtMap.Find(receiveDamageArgs.WH);
+		auto const pWarheadExt = WarheadTypeExt::Fetch(receiveDamageArgs.WH);
 		const int whSequence = pWarheadExt->NotHuman_DeathSequence.Get();
 
 		if (whSequence > 0)
@@ -392,7 +394,7 @@ DEFINE_HOOK(0x702050, TechnoClass_ReceiveDamage_AttachEffectExpireWeapon, 0x6)
 {
 	GET(TechnoClass*, pThis, ESI);
 
-	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::Fetch(pThis);
 	std::set<AttachEffectTypeClass*> cumulativeTypes;
 	std::vector<std::pair<WeaponTypeClass*, TechnoClass*>> expireWeapons;
 
@@ -442,12 +444,12 @@ DEFINE_HOOK(0x701E18, TechnoClass_ReceiveDamage_ReflectDamage, 0x7)
 	if (*pDamage <= 0)
 		return 0;
 
-	auto const pWHExt = WarheadTypeExt::ExtMap.Find(pWarhead);
+	auto const pWHExt = WarheadTypeExt::Fetch(pWarhead);
 
 	if (pWHExt->Reflected)
 		return 0;
 
-	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::Fetch(pThis);
 	auto& random = ScenarioClass::Instance->Random;
 	const auto& suppressType = pWHExt->SuppressReflectDamage_Types;
 	const auto& suppressGroup = pWHExt->SuppressReflectDamage_Groups;
@@ -488,7 +490,7 @@ DEFINE_HOOK(0x701E18, TechnoClass_ReceiveDamage_ReflectDamage, 0x7)
 
 				if (pInvoker && EnumFunctions::CanTargetHouse(pType->ReflectDamage_AffectsHouse, pInvoker->Owner, pSourceHouse))
 				{
-					auto const pWHExtRef = WarheadTypeExt::ExtMap.Find(pWH);
+					auto const pWHExtRef = WarheadTypeExt::Fetch(pWH);
 					pWHExtRef->Reflected = true;
 
 					if (pType->ReflectDamage_Warhead_Detonate)
@@ -501,7 +503,7 @@ DEFINE_HOOK(0x701E18, TechnoClass_ReceiveDamage_ReflectDamage, 0x7)
 			}
 			else if (EnumFunctions::CanTargetHouse(pType->ReflectDamage_AffectsHouse, pThis->Owner, pSourceHouse))
 			{
-				auto const pWHExtRef = WarheadTypeExt::ExtMap.Find(pWH);
+				auto const pWHExtRef = WarheadTypeExt::Fetch(pWH);
 				pWHExtRef->Reflected = true;
 
 				if (pType->ReflectDamage_Warhead_Detonate)
@@ -524,7 +526,7 @@ DEFINE_HOOK(0x5F5480, ObjectClass_ReceiveDamage_FlashDuration, 0x6)
 	GET(ObjectClass*, pThis, ESI);
 	GET_STACK(WarheadTypeClass* const, pWH, STACK_OFFSET(0x24, 0xC));
 
-	const int flashDuration = pWH ? WarheadTypeExt::ExtMap.Find(pWH)->Flash_Duration.Get(7) : 7;
+	const int flashDuration = pWH ? WarheadTypeExt::Fetch(pWH)->Flash_Duration.Get(7) : 7;
 
 	if (flashDuration > 0)
 		pThis->Flash(flashDuration);

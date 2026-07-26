@@ -72,7 +72,7 @@ void SampleTrajectory::OnUnlimbo()
 	this->RemainingDistance += static_cast<int>(pBullet->SourceCoords.DistanceFrom(pBullet->TargetCoords));
 
 	// Waiting for launch trigger
-	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
+	if (!BulletExt::Fetch(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }
 
@@ -125,7 +125,7 @@ void SampleTrajectory::OnPreDetonate()
 	// Can snap to target?
 	if (pCoords.DistanceFrom(pBullet->Location) <= this->Type->TargetSnapDistance.Get())
 	{
-		BulletExt::ExtMap.Find(pBullet)->SnappedToTarget = true;
+		BulletExt::Fetch(pBullet)->SnappedToTarget = true;
 		pBullet->SetLocation(pCoords);
 	}
 
