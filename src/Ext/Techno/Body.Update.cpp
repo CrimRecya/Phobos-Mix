@@ -37,7 +37,6 @@ void TechnoExt::ExtData::OnEarlyUpdate()
 	this->ApplyMindControlRangeLimit();
 	this->UpdateRecountBurst();
 	this->UpdateRearmInEMPState();
-	this->UpdateTrackingLasers();
 	this->UpdateCachedClick();
 	this->UpdateLastTargetCrd();
 	this->UpdateRecoilData();
@@ -2017,18 +2016,6 @@ void TechnoExt::ExtData::UpdateTemporal()
 		ae->AI_Temporal();
 
 	this->UpdateRearmInTemporal();
-
-	const size_t size = this->MyTrackingLasers.size();
-
-	if (size > 0)
-	{
-		for (size_t i = 0; i < size; ++i)
-			this->MyTrackingLasers[i].Laser->Duration = 0;
-
-		this->MyTrackingLasers.clear();
-	}
-
-	this->MyTrackingLasersTarget = nullptr;
 }
 
 void TechnoExt::ExtData::UpdateRearmInEMPState()

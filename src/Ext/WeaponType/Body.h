@@ -90,7 +90,6 @@ public:
 		Valueable<double> Beam_Amplitude;
 		Valueable<bool> Beam_IsHouseColor;
 		Valueable<int> LaserThickness;
-		Valueable<bool> Laser_IsTracking;
 		Nullable<PartialVector2D<int>> DelayedFire_Duration;
 		Valueable<bool> DelayedFire_SkipInTransport;
 		Valueable<AnimTypeClass*> DelayedFire_Animation;
@@ -190,7 +189,6 @@ public:
 			, Beam_Amplitude { 40.0 }
 			, Beam_IsHouseColor { false }
 			, LaserThickness { 3 }
-			, Laser_IsTracking { false }
 			, SkipWeaponPicking { true }
 			, DelayedFire_Duration {}
 			, DelayedFire_SkipInTransport { false }

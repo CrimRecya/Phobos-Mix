@@ -116,9 +116,6 @@ public:
 			WeaponTypeClass* CreatorWeapon;
 		};
 
-		std::vector<LaserTrackingData> MyTrackingLasers;
-		AbstractClass* MyTrackingLasersTarget;
-
 		SquadManagerClass* SquadManager;
 
 		AttachmentClass* ParentAttachment;
@@ -236,8 +233,6 @@ public:
 			, BuildingOccupying { }
 			, TiberiumEater_Timer {}
 			, AirstrikeTargetingMe { nullptr }
-			, MyTrackingLasers { }
-			, MyTrackingLasersTarget { nullptr }
 			, SquadManager { nullptr }
 			, ParentAttachment { nullptr }
 			, ChildAttachments {}
@@ -303,7 +298,6 @@ public:
 		void UpdateRecountBurst();
 		void UpdateRearmInEMPState();
 		void UpdateRearmInTemporal();
-		void UpdateTrackingLasers();
 		void InitializeLaserTrails();
 		void InitializeAttachEffects();
 		void InitializeAttachments();

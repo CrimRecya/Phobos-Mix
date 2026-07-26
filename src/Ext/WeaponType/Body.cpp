@@ -187,7 +187,6 @@ void WeaponTypeExt::ExtData::LoadFromINIFile(CCINIClass* const pINI)
 	this->Beam_Amplitude.Read(exINI, pSection, "Beam.Amplitude");
 	this->Beam_IsHouseColor.Read(exINI, pSection, "Beam.IsHouseColor");
 	this->LaserThickness.Read(exINI, pSection, "LaserThickness");
-	this->Laser_IsTracking.Read(exINI, pSection, "Laser.IsTracking");
 	this->DelayedFire_Duration.Read(exINI, pSection, "DelayedFire.Duration");
 	this->DelayedFire_SkipInTransport.Read(exINI, pSection, "DelayedFire.SkipInTransport");
 	this->DelayedFire_Animation.Read(exINI, pSection, "DelayedFire.Animation");
@@ -301,7 +300,6 @@ void WeaponTypeExt::ExtData::Serialize(T& Stm)
 		.Process(this->Beam_Amplitude)
 		.Process(this->Beam_IsHouseColor)
 		.Process(this->LaserThickness)
-		.Process(this->Laser_IsTracking)
 		.Process(this->SkipWeaponPicking)
 		.Process(this->DelayedFire_Duration)
 		.Process(this->DelayedFire_SkipInTransport)

@@ -519,6 +519,7 @@ void BulletExt::ExtData::CreateDisperseBullets(TechnoClass* pTechno, const Coord
 		const auto pExt = BulletExt::ExtMap.Find(pBullet);
 
 		// Record basic information
+		pExt->IsSplitFromAirburst = true;
 		pExt->DispersedTrajectory = true;
 		BulletExt::SimulatedFiringUnlimbo(pBullet, pOwner, pWeapon, sourceCoord, false);
 		pExt->DispersedTrajectory = false;

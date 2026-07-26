@@ -65,16 +65,6 @@ TechnoExt::ExtData::~ExtData()
 		this->ChildAttachments.clear();
 	}
 
-	const size_t size = this->MyTrackingLasers.size();
-
-	if (size > 0)
-	{
-		for (size_t i = 0; i < size; ++i)
-			this->MyTrackingLasers[i].Laser->Duration = 0;
-
-		this->MyTrackingLasers.clear();
-	}
-
 	if (pTypeExt->AutoDeath_Behavior.isset())
 	{
 		auto& vec = ScenarioExt::Global()->AutoDeathObjects;
@@ -1004,47 +994,6 @@ bool TechnoExt::ExtData::CanToggleCeaseFireStance()
 	return pTypeExt->CeaseFireStance_Togglable.Get(true);
 }
 
-void TechnoExt::ExtData::UpdateTrackingLasers()
-{
-	const auto pThis = this->OwnerObject();
-	const auto pTarget = pThis->Target;
-
-	if (pTarget && pTarget == this->MyTrackingLasersTarget && pThis->IsCloseEnoughToAttack(pTarget))
-	{
-		const size_t size = this->MyTrackingLasers.size();
-		const auto coords = pTarget->GetCoords();
-
-		for (size_t i = 0; i < size; ++i)
-		{
-			const auto& data = this->MyTrackingLasers[i];
-			// Refresh the laser state to keep it alive.
-			data.Laser->Progress.Value = 0;
-			// Change the end point.
-			data.Laser->Target = coords;
-			// Change the start point.
-			const int burstIdx = pThis->CurrentBurstIndex;
-			pThis->CurrentBurstIndex = data.BurstIdx;
-			data.Laser->Source = pThis->GetFLH(data.WeaponIdx, CoordStruct::Empty);
-			pThis->CurrentBurstIndex = burstIdx;
-		}
-	}
-	else
-	{
-		// Stop tracking and delete all lasers if target changed.
-		const size_t size = this->MyTrackingLasers.size();
-
-		if (size > 0)
-		{
-			for (size_t i = 0; i < size; ++i)
-				this->MyTrackingLasers[i].Laser->Duration = 0;
-
-			this->MyTrackingLasers.clear();
-		}
-
-		this->MyTrackingLasersTarget = nullptr;
-	}
-}
-
 // Attaches this techno in a first available attachment "slot".
 // Returns true if the attachment is successful.
 bool TechnoExt::AttachTo(TechnoClass* pThis, TechnoClass* pParent)
@@ -1901,8 +1850,6 @@ void TechnoExt::ExtData::Serialize(T& Stm)
 		.Process(this->BuildingOccupying)
 		.Process(this->TiberiumEater_Timer)
 		.Process(this->AirstrikeTargetingMe)
-		//.Process(this->MyTrackingLasers)
-		.Process(this->MyTrackingLasersTarget)
 		.Process(this->SquadManager)
 		.Process(this->ParentAttachment)
 		.Process(this->ChildAttachments)
@@ -1945,8 +1892,6 @@ void TechnoExt::ExtData::InvalidatePointer(void* ptr, bool bRemoved)
 {
 	if (bRemoved)
 		AnnounceInvalidPointer(this->AirstrikeTargetingMe, ptr);
-
-	AnnounceInvalidPointer(this->MyTrackingLasersTarget, ptr);
 
 /* Clearing in advance can cause the game to crash
 	for (auto const& pAttachment : ChildAttachments)
