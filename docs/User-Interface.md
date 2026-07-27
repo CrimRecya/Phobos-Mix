@@ -582,7 +582,7 @@ PlacementGrid.WaterFrames=1,0,0  ; integer, zero-based frame index - have techno
 
 In `rulesmd.ini`:
 ```ini
-[AudioVisual]
+[General]
 SetTabBySelectingFactory=false  ; boolean
 
 [SOMEBUILDING]                  ; BuildingType

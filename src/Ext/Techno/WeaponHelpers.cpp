@@ -303,6 +303,8 @@ void TechnoExt::ApplyRevengeWeapon(TechnoClass* pThis, TechnoClass* pSource, War
 
 			if (pInvoker && EnumFunctions::CanTargetHouse(pType->RevengeWeapon_AffectsHouse, pInvoker->Owner, pSourceOwner))
 				WeaponTypeExt::DetonateAt(pType->RevengeWeapon, pSource, pInvoker);
+			else if (EnumFunctions::CanTargetHouse(pType->RevengeWeapon_AffectsHouse, attachEffect->GetInvokerHouse(), pSourceOwner))
+				WeaponTypeExt::DetonateAt(pType->RevengeWeapon, pSource, nullptr, attachEffect->GetInvokerHouse());
 		}
 		else if (EnumFunctions::CanTargetHouse(pType->RevengeWeapon_AffectsHouse, pThisOwner, pSourceOwner))
 		{
