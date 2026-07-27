@@ -39,11 +39,11 @@ bool Phobos::Optimizations::DisableRadDamageOnBuildings = true;
 bool Phobos::Optimizations::DisableSyncLogging = false;
 
 #ifdef STR_GIT_COMMIT
-const wchar_t* Phobos::VersionDescription = L"Phobos sp nightly #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"(" STR_GIT_COMMIT L")    ";
+const wchar_t* Phobos::VersionDescription = L"Phobos sp nightly #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"(" STR_GIT_COMMIT L")";
 #elif !defined(IS_RELEASE_VER)
-const wchar_t* Phobos::VersionDescription = L"Phobos sp build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L"    ";
+const wchar_t* Phobos::VersionDescription = L"Phobos sp build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH);
 #else
-const wchar_t* Phobos::VersionDescription = L"Phobos sp release v" FILE_VERSION_STR L"    ";
+const wchar_t* Phobos::VersionDescription = L"Phobos sp release v" FILE_VERSION_STR;
 #endif
 
 
@@ -407,17 +407,17 @@ DEFINE_HOOK(0x683E7F, ScenarioClass_Start_Optimizations, 0x7)
 
 DEFINE_HOOK(0x4F4583, GScreenClass_DrawText, 0x6)
 {
-	const int marginX = Phobos::Config::MessageDisplayInCenter ? 28 : 10;
+	const int marginX = Phobos::Config::MessageDisplayInCenter ? 18 : 0;
 	int coordY = 0;
 
 	if (!Phobos::HideWarning && !Phobos::PoweredByEC)
 	{
 		auto wanted = Drawing::GetTextDimensions(Phobos::VersionDescription, Point2D::Empty, 0, 2, 0);
-		RectangleStruct rect { DSurface::Composite->GetWidth() - wanted.Width - marginX, 0, wanted.Width + 10, wanted.Height + 10 };
-		Point2D location { rect.X + 5, 5 };
-		ColorStruct color { 0x0, 0xFF ,0xC8 };
-		DSurface::Composite->FillRectTrans(&rect, &color, 40);
-		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x07F9);
+		RectangleStruct rect { DSurface::Composite->GetWidth() - wanted.Width - marginX, 0, wanted.Width + 2, wanted.Height + 2 };
+		Point2D location { rect.X + 1, 1 };
+		ColorStruct color { 0x80, 0x0 ,0xFF };
+		DSurface::Composite->FillRectTrans(&rect, &color, 20);
+		DSurface::Composite->DrawText(Phobos::VersionDescription, &location, 0x801F);
 
 		// add margin for next text
 		coordY = rect.Height;
@@ -440,13 +440,9 @@ DEFINE_HOOK(0x4F4583, GScreenClass_DrawText, 0x6)
 	const auto text = GeneralUtils::LoadStringUnlessMissing("TXT_GAMETIME", L"Time:");
 
 	if (hours > 0)
-	{
 		swprintf(buffer, std::size(buffer), L"%ls %d:%02d:%02d", text, hours, minutes, seconds);
-	}
 	else
-	{
 		swprintf(buffer, std::size(buffer), L"%ls %02d:%02d", text, minutes, seconds);
-	}
 
 	auto wantedB = Drawing::GetTextDimensions(buffer, { 0, 0 }, 0, 2, 0);
 
