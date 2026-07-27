@@ -16,7 +16,7 @@
 class AirstrikeClass;
 struct ShiftSchedule;
 
-class TechnoExt : public RadioExt, public Detach::Listener<AirstrikeClass>
+class TechnoExt : public RadioExt, public Detach::Listener<AirstrikeClass>, public Detach::Listener<AbstractClass>, public Detach::Listener<TechnoClass>, public Detach::Listener<HouseClass>
 {
 public:
 	using base_type = TechnoClass;
@@ -33,7 +33,7 @@ public:
 		return static_cast<TechnoClass*>(this->GetAttachedObject());
 	}
 
-	TechnoTypeExt::ExtData* TypeExtData;
+	TechnoTypeExt* TypeExtData;
 	std::unique_ptr<ShieldClass> Shield;
 	std::vector<std::unique_ptr<LaserTrailClass>> LaserTrails;
 	std::vector<std::unique_ptr<AttachEffectClass>> AttachedEffects;
@@ -117,10 +117,6 @@ public:
 	int DelayedFireWeaponIndex;
 	CDTimerClass DelayedFireTimer;
 	AnimClass* CurrentDelayedFireAnim;
-
-	AirstrikeClass* AirstrikeTargetingMe;
-
-	bool IsSelected;
 
 	// cache tint values
 	int TintColorOwner;
@@ -263,20 +259,13 @@ public:
 
 	void ApplyInterceptor();
 	bool CheckDeathConditions(bool isInLimbo = false);
-	void DepletedAmmoActions();
-	void UpdateSubterraneanHarvester();
 	void EatPassengers();
-	void UpdateTiberiumEater();
 	void UpdateShield();
-	void UpdateOnTunnelEnter();
-	void UpdateOnTunnelExit();
 	void ApplySpawnLimitRange();
 	void UpdateLaserTrails();
 	void UpdateAttachEffects();
 	void UpdateGattlingRateDownReset();
-	void UpdateKeepTargetOnMove();
-	void UpdateWarpInDelay();
-	void UpdateCumulativeAttachEffects(AttachEffectTypeClass* pAttachEffectType, AttachEffectClass* pRemoved = nullptr);
+	void UpdateCumulativeAttachEffects(AttachEffectTypeClass* pAttachEffectType);
 	bool RecalculateStatMultipliers(AttachEffectClass* pAttachEffect = nullptr);
 	void UpdateTemporal();
 	void UpdateMindControlAnim();
@@ -302,7 +291,7 @@ public:
 	int ApplyForceWeaponInRange(AbstractClass* pTarget);
 	void ResetDelayedFireTimer();
 	void UpdateTintValues();
-
+	void UpdateTypeData(TechnoTypeClass* pCurrentType);
 	void AmmoAutoConvertActions();
 	void UpdateLastTargetCrd();
 	int GetSight();
@@ -319,6 +308,9 @@ public:
 
 	virtual ~TechnoExt() override;
 	virtual void OnDetach(AirstrikeClass* pTarget, bool removed) override;
+	virtual void OnDetach(AbstractClass* pTarget, bool removed) override;
+	virtual void OnDetach(TechnoClass* pTarget, bool removed) override;
+	virtual void OnDetach(HouseClass* pTarget, bool removed) override;
 	virtual void LoadFromStream(PhobosStreamReader& Stm) override;
 	virtual void SaveToStream(PhobosStreamWriter& Stm) override;
 
@@ -356,8 +348,6 @@ public:
 		Point2D* Location;
 		RectangleStruct* Bounds;
 	};
-
-	static UnitClass* Deployer;
 
 	static bool LoadGlobals(PhobosStreamReader& Stm);
 	static bool SaveGlobals(PhobosStreamWriter& Stm);
@@ -420,7 +410,6 @@ public:
 	static bool AllowedTargetByZone(TechnoClass* pThis, TechnoClass* pTarget, TargetZoneScanType zoneScanType, WeaponTypeClass* pWeapon = nullptr, bool useZone = false, int zone = -1);
 	static void UpdateAttachedAnimLayers(TechnoClass* pThis);
 	static bool ConvertToType(TechnoClass* pThis, TechnoTypeClass* toType);
-	static bool CanDeployIntoBuilding(UnitClass* pThis, bool noDeploysIntoDefaultValue = false);
 	static bool IsTypeImmune(TechnoClass* pThis, TechnoClass* pSource);
 	static int GetTintColor(TechnoClass* pThis, bool invulnerability, bool airstrike, bool berserk);
 	static int GetCustomTintColor(TechnoClass* pThis);

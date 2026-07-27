@@ -194,7 +194,7 @@ void __fastcall DistributionModeHoldDownCommandClass::ClickedWaypoint(ObjectClas
 	if (const auto pFoot = abstract_cast<FootClass*, true>(pSelect))
 		pFoot->unknown_bool_430 = false;
 
-	if (const auto pExt = TechnoExt::ExtMap.TryFind(abstract_cast<TechnoClass*, true>(pSelect)))
+	if (const auto pExt = TechnoExt::TryFetch(abstract_cast<TechnoClass*, true>(pSelect)))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -209,7 +209,7 @@ void __fastcall DistributionModeHoldDownCommandClass::ClickedTargetAction(Object
 	pSelect->ObjectClickedAction(action, pTarget, false);
 	Unsorted::MoveFeedback = false;
 
-	if (const auto pExt = TechnoExt::ExtMap.TryFind(abstract_cast<TechnoClass*, true>(pSelect)))
+	if (const auto pExt = TechnoExt::TryFetch(abstract_cast<TechnoClass*, true>(pSelect)))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -224,7 +224,7 @@ void __fastcall DistributionModeHoldDownCommandClass::ClickedCellAction(ObjectCl
 	pSelect->CellClickedAction(action, pCell, pSecondCell, false);
 	Unsorted::MoveFeedback = false;
 
-	if (const auto pExt = TechnoExt::ExtMap.TryFind(abstract_cast<TechnoClass*, true>(pSelect)))
+	if (const auto pExt = TechnoExt::TryFetch(abstract_cast<TechnoClass*, true>(pSelect)))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -239,7 +239,7 @@ void __fastcall DistributionModeHoldDownCommandClass::AreaGuardAction(TechnoClas
 	pTechno->ClickedMission(Mission::Area_Guard, pTechno->GetCellAgain(), nullptr, nullptr);
 	Unsorted::MoveFeedback = false;
 
-	if (const auto pExt = TechnoExt::ExtMap.Find(pTechno))
+	if (const auto pExt = TechnoExt::Fetch(pTechno))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -360,8 +360,8 @@ DEFINE_HOOK(0x4AE7B3, DisplayClass_ActiveClickWith_Iterate, 0x0)
 							if (!pItemType)
 								continue;
 
-							if (TechnoTypeExt::ExtMap.Find(pType)->FakeOf != pItemType
-								&& TechnoTypeExt::ExtMap.Find(pItemType)->FakeOf != pType)
+							if (TechnoTypeExt::Fetch(pType)->FakeOf != pItemType
+								&& TechnoTypeExt::Fetch(pItemType)->FakeOf != pType)
 							{
 								if (filterMode == 1)
 								{

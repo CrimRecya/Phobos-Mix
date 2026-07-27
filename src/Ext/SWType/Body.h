@@ -236,9 +236,9 @@ public:
 	void ApplyLimboDelivery(HouseClass* pHouse);
 	void ApplyLimboKill(HouseClass* pHouse);
 	void ApplyDetonation(HouseClass* pHouse, const CellStruct& cell);
-	void ApplySWNext(SuperClass* pSW, const CellStruct& cell);
+	void ApplySWNext(HouseClass* pHouse, const CellStruct& cell);
 	void ApplyAttachmentTransform(HouseClass* pHouse);
-	void ApplyTypeConversion(SuperClass* pSW);
+	void ApplyTypeConversion(HouseClass* pHouse);
 	void HandleEMPulseLaunch(SuperClass* pSW, const CellStruct& cell) const;
 	std::vector<BuildingClass*> GetEMPulseCannons(HouseClass* pOwner, const CellStruct& cell) const;
 	std::pair<double, double> GetEMPulseCannonRange(BuildingClass* pBuilding) const;

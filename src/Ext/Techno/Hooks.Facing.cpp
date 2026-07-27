@@ -19,11 +19,11 @@ DEFINE_HOOK(0x7369D6, UnitClass_UpdateRotation_StopUnitIdleAction, 0xA)
 	if (const auto pWeaponStruct = pThis->GetTurretWeapon())
 	{
 		const auto pWeapon = pWeaponStruct->WeaponType;
-		const auto pWeaponTypeExt = WeaponTypeExt::ExtMap.TryFind(pWeapon);
+		const auto pWeaponTypeExt = WeaponTypeExt::TryFetch(pWeapon);
 
 		if (pWeapon && (!pWeapon->OmniFire || (pWeaponTypeExt && pWeaponTypeExt->OmniFire_TurnToTarget)))
 		{
-			const auto pExt = TechnoExt::ExtMap.Find(pThis);
+			const auto pExt = TechnoExt::Fetch(pThis);
 			const auto pTypeExt = pExt->TypeExtData;
 
 			if (pWeaponStruct->TurretLocked)
@@ -61,7 +61,7 @@ DEFINE_HOOK(0x736AEA, UnitClass_UpdateRotation_ApplyUnitIdleAction, 0x6)
 	if (!RulesExt::Global()->ExpandTurretRotation)
 		return 0;
 
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pExt = TechnoExt::Fetch(pThis);
 
 	// Turning to target?
 	if (pThis->SecondaryFacing.IsRotating())
@@ -168,7 +168,7 @@ DEFINE_HOOK(0x7412BB, UnitClass_GetFireError_CheckFacingDeviation, 0x7)
 	*pTgtDir = pThis->GetTargetDirection(pTarget);
 
 	if (RulesExt::Global()->ExpandTurretRotation && pThis->Type->Turret)
-		*pTgtDir = TechnoTypeExt::ExtMap.Find(pThis->Type)->GetTurretDesiredDir(*pTgtDir);
+		*pTgtDir = TechnoTypeExt::Fetch(pThis->Type)->GetTurretDesiredDir(*pTgtDir);
 
 	R->EBX(pBulletType->ROT ? 16 : 8);
 	return SkipGameCode;

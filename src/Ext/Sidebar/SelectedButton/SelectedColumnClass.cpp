@@ -34,7 +34,7 @@ void SelectedColumnClass::OnMouseLeave()
 
 void SelectedColumnClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::Fetch(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	auto position = Point2D { this->X, this->Y };
 	auto surfaceRect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
 
@@ -55,7 +55,7 @@ void SelectedColumnClass::DrawInfo() const
 		{
 			if (pThis->IsDisguisedAs(HouseClass::CurrentPlayer))
 			{
-				if (const auto pDisguiseTypeExt = TechnoTypeExt::ExtMap.TryFind(TechnoTypeExt::GetTechnoType(pThis->Disguise)))
+				if (const auto pDisguiseTypeExt = TechnoTypeExt::TryFetch(TechnoTypeExt::GetTechnoType(pThis->Disguise)))
 				{
 					if (const auto pFakeType = pDisguiseTypeExt->FakeOf.Get())
 						return pFakeType;
@@ -72,7 +72,7 @@ void SelectedColumnClass::DrawInfo() const
 	};
 
 	const auto pDisplayType = getDisplayType();
-	const auto pDisplayTypeExt = TechnoTypeExt::ExtMap.TryFind(TechnoTypeExt::GetTechnoType(pDisplayType));
+	const auto pDisplayTypeExt = TechnoTypeExt::TryFetch(TechnoTypeExt::GetTechnoType(pDisplayType));
 
 	TextPrintType printType = TextPrintType::Center | TextPrintType::Point8;
 	COLORREF color = Drawing::RGB_To_Int(Drawing::TooltipColor);
@@ -345,7 +345,7 @@ void SelectedBottomClass::OnMouseLeave()
 
 void SelectedBottomClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::Fetch(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
 	const auto pSHP = pSideExt->SelectedInfo_Bottom.Get();
 

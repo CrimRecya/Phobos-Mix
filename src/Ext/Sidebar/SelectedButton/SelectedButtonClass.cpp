@@ -85,7 +85,7 @@ void SelectedButtonClass::DrawInfo() const
 	const auto pExt = SelectedInfoClass::Instance.CurrentSelectTechno[0];
 	const auto pTechno = pExt->OwnerObject();
 	const auto pTypeExt = pExt->TypeExtData;
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::Fetch(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	const auto pSHP = pTypeExt->SelectedInfo_Button.Get(pSideExt->SelectedInfo_Button.Get());
 
 	if (!pSHP || pSHP->Frames < 7)
@@ -175,7 +175,7 @@ void SelectedNotButtonClass::OnMouseLeave()
 
 void SelectedNotButtonClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::Fetch(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	const auto pSHP = pSideExt->SelectedInfo_Buff.Get();
 
 	if (!pSHP || pSHP->Frames < 15)
@@ -242,7 +242,7 @@ void SelectedNotButtonClass::DrawInfo() const
 	{
 		const auto pFoot = abstract_cast<FootClass*, true>(pTechno);
 		const double mult = pFoot
-			? pFoot->SpeedMultiplier * TechnoExt::ExtMap.Find(pFoot)->AE.SpeedMultiplier * (pFoot->HasAbility(Ability::Faster) ? RulesClass::Instance->VeteranSpeed : 1.0)
+			? pFoot->SpeedMultiplier * TechnoExt::Fetch(pFoot)->AE.SpeedMultiplier * (pFoot->HasAbility(Ability::Faster) ? RulesClass::Instance->VeteranSpeed : 1.0)
 			: pExt->AE.ROFMultiplier * (pTechno->HasAbility(Ability::ROF) ? RulesClass::Instance->VeteranROF : 1.0);
 		const int frame = getIconFrame((pFoot ? 10 : 0), mult);
 		RectangleStruct rect { 0, 0, this->X + this->Width, this->Y + this->Height };
@@ -309,7 +309,7 @@ bool SelectedToggleClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 
 void SelectedToggleClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::Fetch(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
 	const auto pSHP = pSideExt->SelectedInfo_Toggle.Get();
 
@@ -372,7 +372,7 @@ bool SelectedScrollClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 
 void SelectedScrollClass::DrawInfo() const
 {
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::Fetch(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	auto rect = RectangleStruct { 0, 0, this->X + this->Width, this->Y + this->Height };
 	const auto pSHP = pSideExt->SelectedInfo_Toggle.Get();
 

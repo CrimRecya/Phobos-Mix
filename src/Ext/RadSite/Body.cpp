@@ -172,6 +172,12 @@ void RadSiteExt::Serialize(T& Stm)
 		;
 }
 
+void RadSiteExt::OnDetach(TechnoClass* pTarget, bool removed)
+{
+	if (removed)
+		AnnounceInvalidPointer(this->RadInvoker, pTarget);
+}
+
 void RadSiteExt::LoadFromStream(PhobosStreamReader& Stm)
 {
 	AbstractExt::LoadFromStream(Stm);

@@ -34,9 +34,9 @@ public:
 	Nullable<bool> Bolt_FollowFLH;
 	Nullable<bool> Strafing;
 	Nullable<int> Strafing_Shots;
-	Valueable<bool> Strafing_SimulateBurst;
-	Valueable<bool> Strafing_UseAmmoPerShot;
-	Valueable<bool> Strafing_TargetCell;
+	Nullable<bool> Strafing_SimulateBurst;
+	Nullable<bool> Strafing_UseAmmoPerShot;
+	Nullable<bool> Strafing_TargetCell;
 	Nullable<int> Strafing_EndDelay;
 	Valueable<AffectedTarget> CanTarget;
 	Valueable<AffectedHouse> CanTargetHouses;
@@ -59,7 +59,7 @@ public:
 	Valueable<bool> VisualScatter;
 	Nullable<PartialVector2D<int>> ROF_RandomDelay;
 	ValueableVector<int> ChargeTurret_Delays;
-	Valueable<bool> OmniFire_TurnToTarget;
+	Nullable<bool> OmniFire_TurnToTarget;
 	Valueable<bool> FireOnce_ResetSequence;
 	Valueable<bool> TurretRecoil_Suppress;
 	ValueableVector<WarheadTypeClass*> ExtraWarheads;
@@ -69,7 +69,7 @@ public:
 	std::vector<ValueableVector<int>> ExtraWarheads_WeightsData;
 	ValueableVector<bool> ExtraWarheads_FullDetonation;
 	Nullable<WarheadTypeClass*> AmbientDamage_Warhead;
-	Valueable<bool> AmbientDamage_IgnoreTarget;
+	Nullable<bool> AmbientDamage_IgnoreTarget;
 	AEAttachInfoTypeClass AttachEffects;
 	Valueable<bool> AttachEffect_Enable;
 	ValueableVector<AttachEffectTypeClass*> AttachEffect_RequiredTypes;
@@ -83,14 +83,14 @@ public:
 	Valueable<bool> AttachEffect_CheckOnFirer;
 	Valueable<bool> AttachEffect_IgnoreFromSameSource;
 	Valueable<Leptons> KeepRange;
-	Valueable<bool> KeepRange_AllowAI;
-	Valueable<bool> KeepRange_AllowPlayer;
-	Valueable<int> KeepRange_EarlyStopFrame;
+	Nullable<bool> KeepRange_AllowAI;
+	Nullable<bool> KeepRange_AllowPlayer;
+	Nullable<int> KeepRange_EarlyStopFrame;
 	Nullable<bool> AttackIronCurtain;
 	Valueable<bool> ResetGattlingValue;
 	Valueable<bool> AddtionalDamage_GattlingValue;
 	Valueable<double> AddtionalDamage_GattlingValue_Mult;
-	Valueable<bool> KickOutPassengers;
+	Nullable<bool> KickOutPassengers;
 	Nullable<ColorStruct> Beam_Color;
 	Valueable<int> Beam_Duration;
 	Valueable<double> Beam_Amplitude;
@@ -129,11 +129,11 @@ public:
 		, Bolt_Arcs { 8 }
 		, Bolt_Duration { 17 }
 		, Bolt_FollowFLH {}
-		, Strafing { }
+		, Strafing {}
 		, Strafing_Shots {}
-		, Strafing_SimulateBurst { false }
-		, Strafing_UseAmmoPerShot { false }
-		, Strafing_TargetCell { false }
+		, Strafing_SimulateBurst {}
+		, Strafing_UseAmmoPerShot {}
+		, Strafing_TargetCell {}
 		, Strafing_EndDelay {}
 		, CanTarget { AffectedTarget::All }
 		, CanTargetHouses { AffectedHouse::All }
@@ -156,7 +156,7 @@ public:
 		, VisualScatter { false }
 		, ROF_RandomDelay {}
 		, ChargeTurret_Delays {}
-		, OmniFire_TurnToTarget { false }
+		, OmniFire_TurnToTarget {}
 		, FireOnce_ResetSequence { true }
 		, TurretRecoil_Suppress { false }
 		, ExtraWarheads {}
@@ -166,7 +166,7 @@ public:
 		, ExtraWarheads_WeightsData {}
 		, ExtraWarheads_FullDetonation {}
 		, AmbientDamage_Warhead {}
-		, AmbientDamage_IgnoreTarget { false }
+		, AmbientDamage_IgnoreTarget {}
 		, AttachEffects {}
 		, AttachEffect_Enable { false }
 		, AttachEffect_RequiredTypes {}
@@ -180,14 +180,14 @@ public:
 		, AttachEffect_CheckOnFirer { false }
 		, AttachEffect_IgnoreFromSameSource { false }
 		, KeepRange { Leptons(0) }
-		, KeepRange_AllowAI { false }
-		, KeepRange_AllowPlayer { false }
-		, KeepRange_EarlyStopFrame { 0 }
+		, KeepRange_AllowAI {}
+		, KeepRange_AllowPlayer {}
+		, KeepRange_EarlyStopFrame {}
 		, AttackIronCurtain {}
 		, ResetGattlingValue { false }
 		, AddtionalDamage_GattlingValue { false }
 		, AddtionalDamage_GattlingValue_Mult { 1.0 }
-		, KickOutPassengers { true }
+		, KickOutPassengers {}
 		, Beam_Color {}
 		, Beam_Duration { 15 }
 		, Beam_Amplitude { 40.0 }

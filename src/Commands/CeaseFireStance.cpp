@@ -41,7 +41,7 @@ void CeaseFireStanceClass::CeaseFireExecute()
 
 	auto processATechno = [&](TechnoClass* pTechno)
 	{
-		const auto pTechnoExt = TechnoExt::ExtMap.Find(pTechno);
+		const auto pTechnoExt = TechnoExt::Fetch(pTechno);
 
 		// If not togglable then exclude it from the iteration.
 		if (!pTechnoExt->CanToggleCeaseFireStance())
@@ -103,7 +103,7 @@ void CeaseFireStanceClass::CeaseFireExecute()
 			int ceasedAggressiveStanceCount = 0;
 			for (const auto& pTechno : TechnoVectorNonCeaseFire)
 			{
-				if (TechnoExt::ExtMap.Find(pTechno)->GetAggressiveStance())
+				if (TechnoExt::Fetch(pTechno)->GetAggressiveStance())
 				{
 					ceasedAggressiveStanceCount++;
 					EventExt::RaiseToggleAggressiveStance(pTechno);

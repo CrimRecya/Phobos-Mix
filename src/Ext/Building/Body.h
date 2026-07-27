@@ -69,13 +69,8 @@ public:
 
 	// virtual void LoadFromINIFile(CCINIClass* pINI) override;
 
-	virtual void OnDetach(BuildingClass* pTarget, bool removed) override
-	{
-		if (removed)
-			AnnounceInvalidPointer(this->CurrentAirFactory, pTarget);
-
-		AnnounceInvalidPointer(this->SecondaryArchiveTarget, pTarget);
-	}
+	virtual void OnDetach(AbstractClass* pTarget, bool removed) override;
+	virtual void OnDetach(BuildingClass* pTarget, bool removed) override;
 
 	virtual void LoadFromStream(PhobosStreamReader& Stm) override;
 	virtual void SaveToStream(PhobosStreamWriter& Stm) override;

@@ -105,7 +105,7 @@ void AssignSecondaryRallyPointCommandClass::Execute(WWKey eInput) const
 	{
 		if (const auto& pBuilding = abstract_cast<BuildingClass*>(pCurrent))
 		{
-			if (pBuilding->Owner->IsControlledByCurrentPlayer() && BuildingTypeExt::ExtMap.Find(pBuilding->Type)->HasSecondaryRallyPoint)
+			if (pBuilding->Owner->IsControlledByCurrentPlayer() && BuildingTypeExt::Fetch(pBuilding->Type)->HasSecondaryRallyPoint)
 				buildings.push_back(pBuilding);
 		}
 	}

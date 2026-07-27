@@ -11,6 +11,7 @@
 #include <comdef.h>
 #include <JumpjetLocomotionClass.h>
 #include <Locomotion/AStar/AStarClass.h>
+#include <Ext/Unit/Body.h>
 
 #pragma region Helpers
 
@@ -125,7 +126,7 @@ void ShiftLocomotionClass::BeginShift(std::unique_ptr<ShiftSchedule> schedule)
 
 		AircraftTrackerClass::Instance.Remove(this->LinkedTo);
 		ScenarioExt::Global()->UndergroundTracker.Remove(this->LinkedTo);
-		//auto const ext = TechnoExt::ExtMap.Find(this->LinkedTo);
+		//auto const ext = TechnoExt::Fetch(this->LinkedTo);
 		//if (ext) ext->SpecialTracked = true;
 	}
 
@@ -201,7 +202,7 @@ void ShiftLocomotionClass::FinishShift(bool normal)
 				}
 				case TrackerType::Underground:
 					ScenarioExt::Global()->UndergroundTracker.Remove(this->LinkedTo);
-					TechnoExt::ExtMap.Find(this->LinkedTo)->UndergroundTracked = false;
+					UnitExt::Fetch(static_cast<UnitClass*>(this->LinkedTo))->UndergroundTracked = false;
 					break;
 				default:
 					break;
@@ -222,7 +223,7 @@ void ShiftLocomotionClass::FinishShift(bool normal)
 					break;
 				case TrackerType::Underground:
 					ScenarioExt::Global()->UndergroundTracker.AddUnique(this->LinkedTo);
-					TechnoExt::ExtMap.Find(this->LinkedTo)->UndergroundTracked = true;
+					UnitExt::Fetch(static_cast<UnitClass*>(this->LinkedTo))->UndergroundTracked = true;
 					break;
 				default:
 					break;
@@ -270,7 +271,7 @@ void ShiftLocomotionClass::FinishShift(bool normal)
 					this->LinkedTo->OnBridge = false; // Air units is always marked as not on bridge.
 			}
 
-			//auto const ext = TechnoExt::ExtMap.Find(this->LinkedTo);
+			//auto const ext = TechnoExt::Fetch(this->LinkedTo);
 			//if (ext) ext->SpecialTracked = false;
 		}
 		else
@@ -297,7 +298,7 @@ void ShiftLocomotionClass::FinishShift(bool normal)
 			}
 			case TrackerType::Underground:
 				ScenarioExt::Global()->UndergroundTracker.Remove(this->LinkedTo);
-				TechnoExt::ExtMap.Find(this->LinkedTo)->UndergroundTracked = false;
+				UnitExt::Fetch(static_cast<UnitClass*>(this->LinkedTo))->UndergroundTracked = false;
 				break;
 			default:
 				break;
@@ -311,7 +312,7 @@ void ShiftLocomotionClass::FinishShift(bool normal)
 
 		// End piggyback
 		{
-			auto pExt = TechnoExt::ExtMap.Find(this->LinkedTo);
+			auto pExt = TechnoExt::Fetch(this->LinkedTo);
 			pExt->ShiftApplier = nullptr;
 			pExt->ShiftApplierHouse = nullptr;
 			this->LinkedTo->EnterIdleMode(false, false);
@@ -397,7 +398,7 @@ bool ShiftLocomotionClass::Process()
 		}
 		case TrackerType::Underground:
 			ScenarioExt::Global()->UndergroundTracker.Remove(this->LinkedTo);
-			TechnoExt::ExtMap.Find(this->LinkedTo)->UndergroundTracked = false;
+			UnitExt::Fetch(static_cast<UnitClass*>(this->LinkedTo))->UndergroundTracked = false;
 			break;
 		default:
 			break;
@@ -418,7 +419,7 @@ bool ShiftLocomotionClass::Process()
 			break;
 		case TrackerType::Underground:
 			ScenarioExt::Global()->UndergroundTracker.AddUnique(this->LinkedTo);
-			TechnoExt::ExtMap.Find(this->LinkedTo)->UndergroundTracked = true;
+			UnitExt::Fetch(static_cast<UnitClass*>(this->LinkedTo))->UndergroundTracked = true;
 			break;
 		default:
 			break;
@@ -481,7 +482,7 @@ HRESULT __stdcall ShiftLocomotionClass::Link_To_Object(void* pointer)
 
 	if (SUCCEEDED(result))
 	{
-		auto ext = TechnoExt::ExtMap.Find(this->LinkedTo);
+		auto ext = TechnoExt::Fetch(this->LinkedTo);
 
 		if (ext && ext->QueuedShift)
 		{

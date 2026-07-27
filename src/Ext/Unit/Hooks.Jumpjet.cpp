@@ -26,7 +26,7 @@ DEFINE_HOOK(0x736F78, UnitClass_UpdateFiring_FireErrorIsFACING, 0x6)
 	{
 		if (RulesExt::Global()->ExpandTurretRotation)
 		{
-			const auto pExt = TechnoExt::ExtMap.Find(pThis);
+			const auto pExt = TechnoExt::Fetch(pThis);
 			const auto pTypeExt = pExt->TypeExtData;
 
 			if (pTypeExt->Turret_BodyOrientation && !pThis->Destination && !pThis->Locomotor->Is_Moving()
@@ -46,7 +46,7 @@ DEFINE_HOOK(0x736F78, UnitClass_UpdateFiring_FireErrorIsFACING, 0x6)
 			pThis->SecondaryFacing.SetDesired(tgtDir);
 		}
 	}
-	else if (!TechnoExt::HasAttachmentLoco(pThis) || !TechnoExt::ExtMap.Find(pThis)->ParentAttachment) // 0x736FB6
+	else if (!TechnoExt::HasAttachmentLoco(pThis) || !TechnoExt::Fetch(pThis)->ParentAttachment) // 0x736FB6
 	{
 		if (const auto jjLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor))
 		{

@@ -1,5 +1,6 @@
 ﻿#include "Body.h"
 
+#include <Ext/Unit/Body.h>
 #include <Ext/House/Body.h>
 #include <Ext/Rules/Body.h>
 #include <Ext/Scenario/Body.h>
@@ -159,7 +160,15 @@ DEFINE_HOOK(0x6D57C1, TacticalClass_DrawLaserFencePlacement_BuildableTerrain, 0x
 	GET(CellClass*, pCell, ESI);
 
 	if (auto const pTerrain = pCell->GetTerrain(false))
-		return TerrainTypeExt::ExtMap.Find(pTerrain->Type)->CanBeBuiltOn ? ContinueChecks : DontDraw;
+	{
+		auto const pType = pTerrain->Type;
+		auto const pTypeExt = TerrainTypeExt::Fetch(pType);
+		bool const canBuild = pType->SpawnsTiberium
+			? pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Tibtree_CanBeBuiltOn)
+			: pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Terrain_CanBeBuiltOn);
+
+		return canBuild ? ContinueChecks : DontDraw;
+	}
 
 	return ContinueChecks;
 }
@@ -181,7 +190,7 @@ DEFINE_HOOK(0x5684B1, MapClass_PlaceDown_BuildableUponTypes, 0x6)
 		{
 			if (const auto pTechno = abstract_cast<TechnoClass*, true>(pObject))
 			{
-				if (TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType())->CanBeBuiltOn)
+				if (TechnoTypeExt::Fetch(pTechno->GetTechnoType())->CanBeBuiltOn)
 				{
 					pTechno->KillPassengers(nullptr);
 					pTechno->Stun();
@@ -191,7 +200,13 @@ DEFINE_HOOK(0x5684B1, MapClass_PlaceDown_BuildableUponTypes, 0x6)
 			}
 			else if (const auto pTerrain = abstract_cast<TerrainClass*, true>(pObject))
 			{
-				if (TerrainTypeExt::ExtMap.Find(pTerrain->Type)->CanBeBuiltOn)
+				const auto pType = pTerrain->Type;
+				const auto pTypeExt = TerrainTypeExt::Fetch(pType);
+				bool const canBuild = pType->SpawnsTiberium
+					? pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Tibtree_CanBeBuiltOn)
+					: pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Terrain_CanBeBuiltOn);
+
+				if (canBuild)
 				{
 					pCell->RemoveContent(pTerrain, false);
 					TerrainTypeExt::Remove(pTerrain);
@@ -219,7 +234,13 @@ DEFINE_HOOK(0x5FD2B6, OverlayClass_Unlimbo_SkipTerrainCheck, 0x9)
 
 	if (auto const pTerrain = pCell->GetTerrain(false))
 	{
-		if (!TerrainTypeExt::ExtMap.Find(pTerrain->Type)->CanBeBuiltOn)
+		auto const pType = pTerrain->Type;
+		auto const pTypeExt = TerrainTypeExt::Fetch(pType);
+		bool const canBuild = pType->SpawnsTiberium
+			? pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Tibtree_CanBeBuiltOn)
+			: pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Terrain_CanBeBuiltOn);
+
+		if (!canBuild)
 			return NoUnlimbo;
 
 		pCell->RemoveContent(pTerrain, false);
@@ -227,6 +248,28 @@ DEFINE_HOOK(0x5FD2B6, OverlayClass_Unlimbo_SkipTerrainCheck, 0x9)
 	}
 
 	return Unlimbo;
+}
+
+// Buildable-upon TerrainTypes Hook #5 -> Ignore when flushing building foundations for placement.
+DEFINE_HOOK(0x45EF3A, BuildingTypeClass_FlushForPlacement_BuildableTerrain, 0x7)
+{
+	enum { Disallow = 0x45F00B, Continue = 0x45EF4A };
+
+	GET(ObjectClass* const, pObject, ESI);
+
+	if (auto const pTerrain = abstract_cast<TerrainClass*>(pObject))
+	{
+		auto const pType = pTerrain->Type;
+		auto const pTypeExt = TerrainTypeExt::Fetch(pType);
+		bool const canBuild = pType->SpawnsTiberium
+			? pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Tibtree_CanBeBuiltOn)
+			: pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Terrain_CanBeBuiltOn);
+
+		if (!canBuild)
+			return Disallow;
+	}
+
+	return Continue;
 }
 
 // Buildable Proximity Helper
@@ -273,7 +316,7 @@ DEFINE_HOOK(0x4A8F3E, DisplayClass_BuildingProximityCheck_BeforeChecks, 0x6)
 	GET_STACK(CellStruct*, foundationData, STACK_OFFSET(0x30, 0xC));
 	GET_STACK(CellStruct*, currentPosition, STACK_OFFSET(0x30, 0x10));
 
-	auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+	const auto pTypeExt = BuildingTypeExt::Fetch(pType);
 	ProximityTemp::BuildType = pType;
 	ProximityTemp::SkipDisallowed = false;
 
@@ -310,12 +353,12 @@ DEFINE_HOOK(0x4A8FD7, DisplayClass_BuildingProximityCheck_BuildArea, 0x6)
 	GET(BuildingClass*, pCellBuilding, ESI);
 	GET_STACK(const int, houseArrayIndex, STACK_OFFSET(0x30, 0x8));
 
-	auto const pTypeExt = BuildingTypeExt::ExtMap.Find(pCellBuilding->Type);
+	auto const pTypeExt = BuildingTypeExt::Fetch(pCellBuilding->Type);
 
 	if (pTypeExt->NoBuildAreaOnBuildup && pCellBuilding->CurrentMission == Mission::Construction)
 		return SkipBuilding;
 
-	auto const pTmpTypeExt = BuildingTypeExt::ExtMap.Find(ProximityTemp::BuildType);
+	auto const pTmpTypeExt = BuildingTypeExt::Fetch(ProximityTemp::BuildType);
 	auto const& pBuildingsAllowed = pTmpTypeExt->Adjacent_Allowed;
 
 	if (pBuildingsAllowed.size() > 0 && !pBuildingsAllowed.Contains(pCellBuilding->Type))
@@ -393,7 +436,7 @@ DEFINE_HOOK(0x4A904E, MapClass_PassesProximityCheck_RestoreResult, 0x5)
 			GET_STACK(const int, foundationHeight, STACK_OFFSET(0x30, 0x4));
 
 			const auto pBuildType = ProximityTemp::BuildType;
-			const auto pBuildTypeExt = BuildingTypeExt::ExtMap.Find(ProximityTemp::BuildType);
+			const auto pBuildTypeExt = BuildingTypeExt::Fetch(ProximityTemp::BuildType);
 			const auto range = pBuildType->Adjacent + 1;
 			const auto maxX = topLeftX + range + foundationWidth;
 			const auto maxY = topLeftY + range + foundationHeight;
@@ -464,7 +507,7 @@ DEFINE_JUMP(LJMP, 0x4A9361, 0x4A9371);
 
 static inline bool IsSameFenceType(const BuildingTypeClass* const pPostType, const BuildingTypeClass* const pFenceType)
 {
-	if (const auto pSpecificType = BuildingTypeExt::ExtMap.Find(pPostType)->LaserFencePost_Fence.Get())
+	if (const auto pSpecificType = BuildingTypeExt::Fetch(pPostType)->LaserFencePost_Fence.Get())
 	{
 		if (pSpecificType != pFenceType)
 			return false;
@@ -493,7 +536,7 @@ static inline bool IsSameFenceType(const BuildingTypeClass* const pPostType, con
 static inline bool CheckCanNotExistHere(FootClass* const pTechno, HouseClass* const pOwner,
 	bool expand, bool& skipFlag, bool& builtOnCanBeBuiltOn, bool& landFootOnly, bool canBuildUnderUnits)
 {
-	if (pTechno == TechnoExt::Deployer)
+	if (pTechno == UnitExt::Deployer)
 	{
 		skipFlag = true;
 		return false;
@@ -504,7 +547,7 @@ static inline bool CheckCanNotExistHere(FootClass* const pTechno, HouseClass* co
 
 	const auto pTechnoType = pTechno->GetTechnoType();
 
-	if (canBuildUnderUnits || TechnoTypeExt::ExtMap.Find(pTechnoType)->CanBeBuiltOn)
+	if (canBuildUnderUnits || TechnoTypeExt::Fetch(pTechnoType)->CanBeBuiltOn)
 		builtOnCanBeBuiltOn = true;
 	else if (!expand || pTechnoType->Speed <= 0 || !BuildingTypeExt::CheckOccupierCanLeave(pOwner, pTechno->Owner))
 		return true;
@@ -536,8 +579,16 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 		return CanExistHere;
 
 	const bool expand = RulesExt::Global()->ExtendedBuildingPlacing.Get();
-	const bool canBuildUnderUnits = BuildingTypeExt::ExtMap.Find(pBuildingType)->CanBuildUnderUnits.Get();
+	const bool canBuildUnderUnits = BuildingTypeExt::Fetch(pBuildingType)->CanBuildUnderUnits.Get();
 	bool landFootOnly = false;
+	auto isTerrainBuildable = [](TerrainClass* pTerrain) -> bool
+	{
+		auto const pType = pTerrain->Type;
+		auto const pTypeExt = TerrainTypeExt::Fetch(pType);
+		return pType->SpawnsTiberium
+			? pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Tibtree_CanBeBuiltOn)
+			: pTypeExt->CanBeBuiltOn.Get(RulesExt::Global()->Terrain_CanBeBuiltOn);
+	};
 
 	if (pBuildingType->LaserFence)
 	{
@@ -547,7 +598,7 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 			{
 				case AbstractType::Building:
 				{
-					if (!TechnoTypeExt::ExtMap.Find(static_cast<BuildingClass*>(pObject)->Type)->CanBeBuiltOn)
+					if (!TechnoTypeExt::Fetch(static_cast<BuildingClass*>(pObject)->Type)->CanBeBuiltOn)
 						return CanNotExistHere;
 
 					break;
@@ -555,7 +606,7 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 
 				case AbstractType::Terrain:
 				{
-					if (!TerrainTypeExt::ExtMap.Find(static_cast<TerrainClass*>(pObject)->Type)->CanBeBuiltOn)
+					if (!isTerrainBuildable(static_cast<TerrainClass*>(pObject)))
 						return CanNotExistHere;
 
 					break;
@@ -570,7 +621,7 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 	}
 	else if (pBuildingType->LaserFencePost || pBuildingType->Gate)
 	{
-		bool skipFlag = TechnoExt::Deployer ? TechnoExt::Deployer->CurrentMapCoords == pCell->MapCoords : false;
+		bool skipFlag = UnitExt::Deployer ? UnitExt::Deployer->CurrentMapCoords == pCell->MapCoords : false;
 		bool builtOnCanBeBuiltOn = false;
 
 		for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
@@ -579,7 +630,7 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 			{
 				case AbstractType::Aircraft:
 				{
-					if (!canBuildUnderUnits && !TechnoTypeExt::ExtMap.Find(static_cast<AircraftClass*>(pObject)->Type)->CanBeBuiltOn)
+					if (!canBuildUnderUnits && !TechnoTypeExt::Fetch(static_cast<AircraftClass*>(pObject)->Type)->CanBeBuiltOn)
 						return CanNotExistHere;
 
 					builtOnCanBeBuiltOn = true;
@@ -591,7 +642,7 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 					const auto pBuilding = static_cast<BuildingClass*>(pObject);
 					const auto pType = pBuilding->Type;
 
-					if (TechnoTypeExt::ExtMap.Find(pType)->CanBeBuiltOn)
+					if (TechnoTypeExt::Fetch(pType)->CanBeBuiltOn)
 						builtOnCanBeBuiltOn = true;
 					else if (pOwner != pBuilding->Owner || !pType->LaserFence)
 						return CanNotExistHere;
@@ -612,7 +663,7 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 
 				case AbstractType::Terrain:
 				{
-					if (!TerrainTypeExt::ExtMap.Find(static_cast<TerrainClass*>(pObject)->Type)->CanBeBuiltOn)
+					if (!isTerrainBuildable(static_cast<TerrainClass*>(pObject)))
 						return CanNotExistHere;
 
 					builtOnCanBeBuiltOn = true;
@@ -645,14 +696,14 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 		{
 			if (const auto pBuilding = abstract_cast<BuildingClass*, true>(pObject))
 			{
-				if (!TechnoTypeExt::ExtMap.Find(pBuilding->Type)->CanBeBuiltOn)
+				if (!TechnoTypeExt::Fetch(pBuilding->Type)->CanBeBuiltOn)
 					return CanNotExistHere;
 			}
 		}
 	}
 	else
 	{
-		bool skipFlag = TechnoExt::Deployer ? TechnoExt::Deployer->CurrentMapCoords == pCell->MapCoords : false;
+		bool skipFlag = UnitExt::Deployer ? UnitExt::Deployer->CurrentMapCoords == pCell->MapCoords : false;
 		bool builtOnCanBeBuiltOn = false;
 
 		for (auto pObject = pCell->FirstObject; pObject; pObject = pObject->NextObject)
@@ -671,7 +722,7 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 				}
 				case AbstractType::Building:
 				{
-					if (!TechnoTypeExt::ExtMap.Find(pObject->GetTechnoType())->CanBeBuiltOn)
+					if (!TechnoTypeExt::Fetch(pObject->GetTechnoType())->CanBeBuiltOn)
 						return CanNotExistHere;
 
 					builtOnCanBeBuiltOn = true;
@@ -689,7 +740,7 @@ DEFINE_HOOK(0x47C640, CellClass_CanThisExistHere_IgnoreSomething, 0x6)
 
 				case AbstractType::Terrain:
 				{
-					if (!TerrainTypeExt::ExtMap.Find(static_cast<TerrainClass*>(pObject)->Type)->CanBeBuiltOn)
+					if (!isTerrainBuildable(static_cast<TerrainClass*>(pObject)))
 						return CanNotExistHere;
 
 					builtOnCanBeBuiltOn = true;
@@ -900,7 +951,7 @@ DEFINE_HOOK(0x4FB1EA, HouseClass_UnitFromFactory_HangUpPlaceEvent, 0x5)
 	auto pBuildingType = pBuilding->Type;
 	const auto pBufferBuilding = pBuilding;
 	const auto pBufferType = pBuildingType;
-	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType);
+	const auto pTypeExt = BuildingTypeExt::Fetch(pBuildingType);
 
 	if (pTypeExt->LimboBuild)
 	{
@@ -929,7 +980,7 @@ DEFINE_HOOK(0x4FB1EA, HouseClass_UnitFromFactory_HangUpPlaceEvent, 0x5)
 	{
 		bool noOccupy = true;
 		bool canBuild = CheckBuildingFoundation(pBuildingType, topLeftCell, pHouse, noOccupy);
-		const auto pHouseExt = HouseExt::ExtMap.Find(pHouse);
+		const auto pHouseExt = HouseExt::Fetch(pHouse);
 		auto& place = pBufferType->BuildCat != BuildCat::Combat ? pHouseExt->Common : pHouseExt->Combat;
 
 		do
@@ -1081,7 +1132,7 @@ DEFINE_HOOK(0x4A937D, DisplayClass_CallBuildingPlaceCheck_ReplaceBuildingType, 0
 	};
 
 	const auto pCurrentBuilding = abstract_cast<BuildingClass*>(pDisplay->CurrentBuilding);
-	const auto pTypeExt = pCurrentBuilding ? BuildingTypeExt::ExtMap.Find(pCurrentBuilding->Type) : nullptr;
+	const auto pTypeExt = pCurrentBuilding ? BuildingTypeExt::Fetch(pCurrentBuilding->Type) : nullptr;
 
 	if (pTypeExt && pTypeExt->PlaceBuilding_Extra)
 	{
@@ -1180,7 +1231,7 @@ DEFINE_HOOK(0x4ABAC0, DisplayClass_LeftMouseButtonUp_ReplaceBuildingType, 0x6)
 
 	int placeType = 0;
 
-	if (pBuildingType && BuildingTypeExt::ExtMap.Find(pBuildingType)->PlaceBuilding_Extra)
+	if (pBuildingType && BuildingTypeExt::Fetch(pBuildingType)->PlaceBuilding_Extra)
 	{
 		const auto pCenterCell = MapClass::Instance.GetCellAt(centerCell);
 		placeType |= pCenterCell->LandType == LandType::Water;
@@ -1326,7 +1377,7 @@ DEFINE_HOOK(0x4CA05B, FactoryClass_AbandonProduction_AbandonCurrentBuilding, 0x5
 		if (!pBuilding)
 			return 0;
 
-		const auto pHouseExt = HouseExt::ExtMap.Find(pFactory->Owner);
+		const auto pHouseExt = HouseExt::Fetch(pFactory->Owner);
 		auto& place = pBuilding->Type->BuildCat != BuildCat::Combat ? pHouseExt->Common : pHouseExt->Combat;
 		ClearPlacingBuildingData(&place);
 	}
@@ -1388,7 +1439,7 @@ DEFINE_HOOK(0x4451F8, BuildingClass_KickOutUnit_CleanUpAIBuildingSpace, 0x6)
 	}
 
 	const auto pHouse = pFactory->Owner;
-	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType);
+	const auto pTypeExt = BuildingTypeExt::Fetch(pBuildingType);
 
 	if (pTypeExt->LimboBuild)
 	{
@@ -1416,7 +1467,7 @@ DEFINE_HOOK(0x4451F8, BuildingClass_KickOutUnit_CleanUpAIBuildingSpace, 0x6)
 		{
 			bool noOccupy = true;
 			bool canBuild = CheckBuildingFoundation(pBuildingType, topLeftCell, pHouse, noOccupy);
-			const auto pHouseExt = HouseExt::ExtMap.Find(pHouse);
+			const auto pHouseExt = HouseExt::Fetch(pHouse);
 			auto& place = pBuildingType->BuildCat != BuildCat::Combat ? pHouseExt->Common : pHouseExt->Combat;
 
 			do
@@ -1558,9 +1609,9 @@ DEFINE_HOOK(0x73946C, UnitClass_TryToDeploy_CleanUpDeploySpace, 0x6)
 	if (!RulesExt::Global()->ExtendedBuildingPlacing)
 		return 0;
 
-	const auto pTechnoExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pTechnoExt = TechnoExt::Fetch(pThis);
 	const auto pBuildingType = pThis->Type->DeploysInto;
-	const auto pHouseExt = HouseExt::ExtMap.Find(pThis->Owner);
+	const auto pHouseExt = HouseExt::Fetch(pThis->Owner);
 	auto& vec = pHouseExt->OwnedDeployingUnits;
 
 	if (pBuildingType->GetFoundationWidth() > 2 || pBuildingType->GetFoundationHeight(false) > 2)
@@ -1658,7 +1709,7 @@ DEFINE_HOOK(0x4C7665, EventClass_RespondToEvent_StopDeployInIdleEvent, 0x6)
 
 			if (mission == Mission::Guard || mission == Mission::Unload)
 			{
-				if (const auto pHouseExt = HouseExt::ExtMap.TryFind(pUnit->Owner))
+				if (const auto pHouseExt = HouseExt::TryFetch(pUnit->Owner))
 				{
 					auto& vec = pHouseExt->OwnedDeployingUnits;
 
@@ -1690,7 +1741,7 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 	{
 		if (const auto pFactory = pHouse->Primary_ForBuildings)
 		{
-			if (pFactory->IsDone() && !HouseExt::ExtMap.Find(pHouse)->Common.Type)
+			if (pFactory->IsDone() && !HouseExt::Fetch(pHouse)->Common.Type)
 			{
 				if (const auto pBuilding = abstract_cast<BuildingClass*>(pFactory->Object))
 					BuildingTypeExt::AutoPlaceBuilding(pBuilding);
@@ -1699,7 +1750,7 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 
 		if (const auto pFactory = pHouse->Primary_ForDefenses)
 		{
-			if (pFactory->IsDone() && !HouseExt::ExtMap.Find(pHouse)->Combat.Type)
+			if (pFactory->IsDone() && !HouseExt::Fetch(pHouse)->Combat.Type)
 			{
 				if (const auto pBuilding = abstract_cast<BuildingClass*>(pFactory->Object))
 					BuildingTypeExt::AutoPlaceBuilding(pBuilding);
@@ -1710,7 +1761,7 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 	if (!RulesExt::Global()->ExtendedBuildingPlacing)
 		return 0;
 
-	const auto pHouseExt = HouseExt::ExtMap.Find(pHouse);
+	const auto pHouseExt = HouseExt::Fetch(pHouse);
 	auto buildCurrent = [&pHouse, &pHouseExt](BuildingTypeClass* pType, CellStruct cell, size_t placeType)
 	{
 		if (!pType)
@@ -1796,7 +1847,7 @@ DEFINE_HOOK(0x4F8DB1, HouseClass_Update_CheckHangUpBuilding, 0x6)
 				}
 				else if (mission == Mission::Guard)
 				{
-					if (const auto pExt = TechnoExt::ExtMap.Find(pUnit))
+					if (const auto pExt = TechnoExt::Fetch(pUnit))
 					{
 						if (!(pExt->UnitAutoDeployTimer.GetTimeLeft() % 8))
 							pUnit->QueueMission(Mission::Unload, true);
@@ -1861,7 +1912,7 @@ DEFINE_HOOK(0x6D504C, TacticalClass_DrawPlacement_DrawPlacingPreview, 0x6)
 	{
 		if (pPlayer->IsObserver() || pHouse->IsAlliedWith(pPlayer))
 		{
-			const auto pHouseExt = HouseExt::ExtMap.Find(pHouse);
+			const auto pHouseExt = HouseExt::Fetch(pHouse);
 
 			if (const auto pType = abstract_cast<BuildingTypeClass*>(pDisplay->CurrentBuildingTypeCopy))
 				drawImage(pType, pHouse, (pDisplay->CurrentFoundationCopy_TopLeftOffset + pDisplay->CurrentFoundationCopy_CenterCell));
@@ -1936,7 +1987,7 @@ DEFINE_HOOK(0x42EB8E, BaseClass_GetBaseNodeIndex_CheckValidBaseNode, 0x6)
 		{
 			const auto pType = BuildingTypeClass::Array.Items[index];
 
-			if ((pType->ConstructionYard && RulesExt::Global()->AIForbidConYard) || BuildingTypeExt::ExtMap.Find(pType)->LimboBuild)
+			if ((pType->ConstructionYard && RulesExt::Global()->AIForbidConYard) || BuildingTypeExt::Fetch(pType)->LimboBuild)
 				return Invalid;
 		}
 	}
@@ -1955,7 +2006,7 @@ DEFINE_HOOK(0x452E2C, BuildingClass_CreateLaserFence_FindSpecificIndex, 0x5)
 
 	GET(BuildingClass* const, pThis, EDI);
 
-	if (const auto pFenceType = BuildingTypeExt::ExtMap.Find(pThis->Type)->LaserFencePost_Fence.Get())
+	if (const auto pFenceType = BuildingTypeExt::Fetch(pThis->Type)->LaserFencePost_Fence.Get())
 	{
 		if (pFenceType->LaserFence)
 		{
@@ -1985,8 +2036,8 @@ DEFINE_HOOK(0x440AE9, BuildingClass_Unlimbo_SkipUninitFence, 0x7)
 
 static inline bool IsMatchedPostType(const BuildingTypeClass* const pThisType, const BuildingTypeClass* const pPostType)
 {
-	const auto pThisTypeExt = BuildingTypeExt::ExtMap.Find(pThisType);
-	const auto pPostTypeExt = BuildingTypeExt::ExtMap.Find(pPostType);
+	const auto pThisTypeExt = BuildingTypeExt::Fetch(pThisType);
+	const auto pPostTypeExt = BuildingTypeExt::Fetch(pPostType);
 
 	return pThisTypeExt->LaserFencePost_Fence.Get() == pPostTypeExt->LaserFencePost_Fence.Get();
 }

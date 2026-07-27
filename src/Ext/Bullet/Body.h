@@ -257,7 +257,7 @@ public:
 	{
 		return (!pTechno->IsAlive || !pTechno->IsOnMap || pTechno->InLimbo || pTechno->IsSinking || pTechno->Health <= 0);
 	}
-	static inline bool CheckWeaponCanTarget(const WeaponTypeExt::ExtData* const pWeaponExt, TechnoClass* const pFirer, TechnoClass* const pTarget)
+	static inline bool CheckWeaponCanTarget(const WeaponTypeExt* const pWeaponExt, TechnoClass* const pFirer, TechnoClass* const pTarget)
 	{
 		return !pWeaponExt || (EnumFunctions::IsTechnoEligible(pTarget, pWeaponExt->CanTarget) && pWeaponExt->IsHealthInThreshold(pTarget) && pWeaponExt->HasRequiredAttachedEffects(pTarget, pFirer));
 	}
@@ -273,7 +273,7 @@ public:
 		return pTechno->CloakState != CloakState::Cloaked || pCell->Sensors_InclHouse(pHouse->ArrayIndex);
 	}
 	static inline bool CheckCanRetarget(TechnoClass* const pTechno, HouseClass* const pOwner, const AffectedHouse retargetHouses, const CoordStruct& center, const double retargetRange, const int range,
-		const BulletClass* const pBullet, const WeaponTypeClass* const pWeapon, const WeaponTypeExt::ExtData* const pWeaponExt, TechnoClass* const pFirer)
+		const BulletClass* const pBullet, const WeaponTypeClass* const pWeapon, const WeaponTypeExt* const pWeaponExt, TechnoClass* const pFirer)
 	{
 		const auto pTechnoType = pTechno->GetTechnoType();
 
@@ -285,8 +285,8 @@ public:
 			&& (!pWeapon || BulletExt::GetDistanceFrom(pFirer ? pFirer->GetCoords() : pBullet->SourceCoords, pTechno) <= range)
 			&& BulletExt::CheckWeaponCanTarget(pWeaponExt, pFirer, pTechno);
 	}
-	static inline bool CheckCanDisperse(TechnoClass* const pTechno, HouseClass* const pOwner, const BulletTypeExt::ExtData* const pType, const CoordStruct& center, const CellClass* const pCell, const int range,
-		const AbstractClass* const pTarget, const WeaponTypeClass* const pWeapon, const WeaponTypeExt::ExtData* const pWeaponExt, TechnoClass* const pFirer)
+	static inline bool CheckCanDisperse(TechnoClass* const pTechno, HouseClass* const pOwner, const BulletTypeExt* const pType, const CoordStruct& center, const CellClass* const pCell, const int range,
+		const AbstractClass* const pTarget, const WeaponTypeClass* const pWeapon, const WeaponTypeExt* const pWeaponExt, TechnoClass* const pFirer)
 	{
 		const auto pTechnoType = pTechno->GetTechnoType();
 
@@ -316,7 +316,7 @@ public:
 		return pFirer;
 	}
 	static bool HasVirtualTrajectories(TechnoClass* pTechno);
-	static bool CheckExceededCapacity(TechnoClass* pTechno, BulletTypeClass* pBulletType, BulletExt::ExtData* pBulletExt = nullptr);
+	static bool CheckExceededCapacity(TechnoClass* pTechno, BulletTypeClass* pBulletType, BulletExt* pBulletExt = nullptr);
 	static std::vector<CellStruct> GetCellsInRectangle(const CellStruct bottomStaCell, const CellStruct leftMidCell, const CellStruct rightMidCell, const CellStruct topEndCell);
 
 	static inline BulletVelocity ApplyRadialFireVelocityWarp(BulletVelocity velocity, const RadialFireStruct& radialFire);

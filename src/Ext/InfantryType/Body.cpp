@@ -16,7 +16,6 @@ void InfantryTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->Slaved_OwnerWhenMasterKilled.Read(exINI, pSection, "Slaved.OwnerWhenMasterKilled");
 	this->SlavesFreeSound.Read(exINI, pSection, "SlavesFreeSound");
 	this->NotHuman_RandomDeathSequence.Read(exINI, pSection, "NotHuman.RandomDeathSequence");
-	this->DefaultDisguise.Read(exINI, pSection, "DefaultDisguise");
 	this->ProneSpeed.Read(exINI, pSection, "ProneSpeed");
 	this->InfantryAutoDeploy.Read(exINI, pSection, "InfantryAutoDeploy");
 
@@ -42,7 +41,6 @@ void InfantryTypeExt::Serialize(T& Stm)
 		.Process(this->Slaved_OwnerWhenMasterKilled)
 		.Process(this->SlavesFreeSound)
 		.Process(this->NotHuman_RandomDeathSequence)
-		.Process(this->DefaultDisguise)
 		.Process(this->ProneSpeed)
 		.Process(this->OnlyUseLandSequences)
 		.Process(this->SecondaryFireSequenceLandOnly)

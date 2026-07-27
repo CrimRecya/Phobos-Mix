@@ -51,11 +51,7 @@ public:
 	virtual void SaveToStream(PhobosStreamWriter& Stm) override;
 	virtual void Initialize() override;
 
-	virtual void OnDetach(TechnoClass* pTarget, bool removed) override
-	{
-		if (removed)
-			AnnounceInvalidPointer(this->RadInvoker, pTarget);
-	}
+	virtual void OnDetach(TechnoClass* pTarget, bool removed) override;
 
 private:
 	template <typename T>

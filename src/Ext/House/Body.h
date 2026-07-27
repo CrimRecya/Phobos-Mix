@@ -147,13 +147,13 @@ public:
 	int GetForceEnemyIndex();
 	void SetForceEnemyIndex(int EnemyIndex);
 
+	void UpdateVehicleProduction();
+
 	virtual ~HouseExt() = default;
 
 	virtual void LoadFromINIFile(CCINIClass* pINI) override;
 	//virtual void Initialize() override;
 	virtual void OnDetach(BuildingClass* pTarget, bool removed) override;
-
-	void UpdateVehicleProduction();
 
 	virtual void LoadFromStream(PhobosStreamReader& Stm) override;
 	virtual void SaveToStream(PhobosStreamWriter& Stm) override;

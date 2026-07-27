@@ -694,7 +694,7 @@ TechnoClass* TechnoTypeExt::CreateUnit(CreateUnitTypeClass* pCreateUnit, DirType
 	return nullptr;
 }
 
-DirStruct TechnoTypeExt::ExtData::GetTurretDesiredDir(DirStruct defaultDir)
+DirStruct TechnoTypeExt::GetTurretDesiredDir(DirStruct defaultDir)
 {
 	const auto turretExtraDir = this->Turret_ExtraAngle.Get();
 
@@ -704,7 +704,7 @@ DirStruct TechnoTypeExt::ExtData::GetTurretDesiredDir(DirStruct defaultDir)
 	return DirStruct { static_cast<short>(defaultDir.Raw) + static_cast<short>(turretExtraDir.Raw) };
 }
 
-void TechnoTypeExt::ExtData::SetTurretLimitedDir(FootClass* pThis, DirStruct desiredDir)
+void TechnoTypeExt::SetTurretLimitedDir(FootClass* pThis, DirStruct desiredDir)
 {
 	const auto turretRestrictDir = this->Turret_Restriction.Get();
 	const auto pBody = &pThis->PrimaryFacing;
@@ -741,7 +741,7 @@ void TechnoTypeExt::ExtData::SetTurretLimitedDir(FootClass* pThis, DirStruct des
 	// Beyond the rotation range of the turret, the body rotates first
 	if ((desiredDifference < -restrictRaw || desiredDifference > restrictRaw)
 		&& !pThis->Destination && !pThis->Locomotor->Is_Moving()
-		&& (!TechnoExt::ExtMap.Find(pThis)->ParentAttachment || !TechnoExt::HasAttachmentLoco(pThis)))
+		&& (!TechnoExt::Fetch(pThis)->ParentAttachment || !TechnoExt::HasAttachmentLoco(pThis)))
 	{
 		pBody->SetDesired(this->Turret_BodyOrientation ? this->GetBodyDesiredDir(currentDir, desiredDir) : desiredDir);
 		// Once rotation begins, data needs to be updated to avoid delays
@@ -776,7 +776,7 @@ void TechnoTypeExt::ExtData::SetTurretLimitedDir(FootClass* pThis, DirStruct des
 		setTurretDesired(destinationDir);
 }
 
-short TechnoTypeExt::ExtData::GetTurretLimitedRaw(short currentDirectionRaw)
+short TechnoTypeExt::GetTurretLimitedRaw(short currentDirectionRaw)
 {
 	const auto turretRestrictDir = this->Turret_Restriction.Get();
 
@@ -794,7 +794,7 @@ short TechnoTypeExt::ExtData::GetTurretLimitedRaw(short currentDirectionRaw)
 	return currentDirectionRaw;
 }
 
-DirStruct TechnoTypeExt::ExtData::GetBodyDesiredDir(DirStruct currentDir, DirStruct defaultDir)
+DirStruct TechnoTypeExt::GetBodyDesiredDir(DirStruct currentDir, DirStruct defaultDir)
 {
 	const auto bodyDir = this->Turret_BodyOrientationAngle.Get();
 
@@ -822,7 +822,7 @@ int __fastcall TechnoTypeExt::RequirementsMetExtraCheck(void* pAresHouseExt, voi
 
 	if (*reinterpret_cast<HouseClass**>(pAresHouseExt) == HouseClass::CurrentPlayer)
 	{
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+		const auto pTypeExt = TechnoTypeExt::Fetch(pType);
 
 		if (pTypeExt->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist))
 			pTypeExt->IsMetTheEssentialConditions = (result > 2);
@@ -833,7 +833,7 @@ int __fastcall TechnoTypeExt::RequirementsMetExtraCheck(void* pAresHouseExt, voi
 
 CanBuildResult TechnoTypeExt::CheckAlwaysExistCameo(TechnoTypeClass* pType, CanBuildResult canBuild)
 {
-	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	const auto pTypeExt = TechnoTypeExt::Fetch(pType);
 	auto ForceRedrawSidebar = [pType]()
 	{
 		const auto tabIndex = SidebarClass::GetObjectTabIdx(pType->WhatAmI(), pType->GetArrayIndex(), 0);
@@ -1052,6 +1052,8 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->WarpInMinRangeWeapon.Read<true>(exINI, pSection, "WarpInMinRangeWeapon");
 	this->WarpOutWeapon.Read<true>(exINI, pSection, "WarpOutWeapon");
 	this->WarpInWeapon_UseDistanceAsDamage.Read(exINI, pSection, "WarpInWeapon.UseDistanceAsDamage");
+
+	this->DefaultDisguise.Read(exINI, pSection, "DefaultDisguise");
 
 	this->DestroyAnim_Random.Read(exINI, pSection, "DestroyAnim.Random");
 
@@ -1946,9 +1948,7 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->OreGathering_Anims)
 		.Process(this->OreGathering_Tiberiums)
 		.Process(this->OreGathering_FramesPerDir)
-		.Process(this->NotHuman_RandomDeathSequence)
 		.Process(this->DefaultDisguise)
-		.Process(this->DefaultMirageDisguises)
 
 		.Process(this->LaserTrailData)
 		.Process(this->DestroyAnim_Random)
@@ -2444,9 +2444,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 		;
 }
 
-void TechnoTypeExt::ExtData::LoadFromStream(PhobosStreamReader& Stm)
-		;
-}
 void TechnoTypeExt::LoadFromStream(PhobosStreamReader& Stm)
 {
 	ObjectTypeExt::LoadFromStream(Stm);

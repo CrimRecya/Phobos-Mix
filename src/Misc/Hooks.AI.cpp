@@ -14,7 +14,7 @@ static bool __forceinline ShouldRemoveSmudgeCell(const int index, const int time
 	{
 		if (pCell->SmudgeTypeIndex != -1)
 		{
-			const auto pCellExt = CellExt::ExtMap.Find(pCell);
+			const auto pCellExt = CellExt::Fetch(pCell);
 
 			if ((pCellExt->SmudgeGenerate + time) > current)
 				return false;
@@ -70,7 +70,7 @@ DEFINE_HOOK(0x6B60DE, SmudgeTypeClass_Mark_SetContext, 0x6)
 	GET(CellClass* const, pCell, EAX);
 
 	ScenarioExt::Global()->Smudges.insert(MapClass::GetCellIndex(pCell->MapCoords));
-	const auto pCellExt = CellExt::ExtMap.Find(pCell);
+	const auto pCellExt = CellExt::Fetch(pCell);
 	pCellExt->SmudgeGenerate = Unsorted::CurrentFrame;
 	pCellExt->SmudgeState = BlitterFlags::None;
 
@@ -82,7 +82,7 @@ DEFINE_HOOK(0x6B56AC, SmudgeTypeClass_DrawIt_DrawTrans, 0x5)
 	GET(CellClass* const, pCell, ESI);
 	REF_STACK(BlitterFlags, flags, STACK_OFFSET(0x3C, -0x3C));
 
-	flags |= CellExt::ExtMap.Find(pCell)->SmudgeState;
+	flags |= CellExt::Fetch(pCell)->SmudgeState;
 
 	return 0;
 }
@@ -776,7 +776,7 @@ DEFINE_HOOK(0x4D1B2E, FoggedObjectClass_DrawFoggedObjects_DrawTerrain, 0x6)
 
 		ConvertClass* pPalette = pCell->LightConvert;
 		int intensity = static_cast<int>(pCell->Intensity_Terrain);
-		if (const auto pPalettes = TerrainTypeExt::ExtMap.Find(pType)->Palette)
+		if (const auto pPalettes = TerrainTypeExt::Fetch(pType)->Palette)
 		{
 			const int wallOwnerIndex = pCell->WallOwnerIndex;
 			int colorSchemeIndex = HouseClass::CurrentPlayer->ColorSchemeIndex;

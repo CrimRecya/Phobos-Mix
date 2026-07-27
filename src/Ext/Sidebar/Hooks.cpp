@@ -111,7 +111,7 @@ DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt, 0x6)
 				if (pShp->Frames)
 					SidebarAutoBuildingMark::DrawnTimes %= pShp->Frames;
 
-				const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.GetItem(HouseClass::CurrentPlayer->SideIndex));
+				const auto pSideExt = SideExt::Fetch(SideClass::Array.GetItem(HouseClass::CurrentPlayer->SideIndex));
 				const int XOffset = pSideExt->Sidebar_GDIPositions ? 29 : 32;
 				const int XBase = (pSideExt->Sidebar_GDIPositions ? 26 : 20);
 				const int YBase = 197;
@@ -223,7 +223,7 @@ DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
 	if (greyCameo && frameSize > 2) // Only draw extras over grey cameos
 	{
 		auto frame = frames[2];
-		const auto pTypeExt = TechnoTypeExt::ExtMap.TryFind(pType);
+		const auto pTypeExt = TechnoTypeExt::TryFetch(pType);
 
 		if (frameSize > 3 && pTypeExt && pTypeExt->IsGreyCameoForCurrentPlayer)
 		{
@@ -253,7 +253,7 @@ DEFINE_HOOK(0x6A9BC5, StripClass_Draw_DrawGreyCameoExtraCover, 0x6)
 
 	if (const auto pBuildingType = abstract_cast<BuildingTypeClass*>(pType)) // Only count owned buildings
 	{
-		const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType);
+		const auto pTypeExt = BuildingTypeExt::Fetch(pBuildingType);
 
 		if ((pBuildingType->BuildCat != BuildCat::Combat ? Phobos::Config::AutomaticPlacingBuilding : Phobos::Config::AutomaticPlacingCombatBuilding)
 			&& frameSize > 1 && frames[1] >= 0

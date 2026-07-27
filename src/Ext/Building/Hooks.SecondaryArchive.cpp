@@ -20,7 +20,7 @@ DEFINE_HOOK(0x6DAAB2, TacticalClass_DrawRallyPointLines_SecondaryRallyPoint1, 0x
 
 	SecondaryRallyPoint::pBuilding = pBuilding;
 	const auto pRally = pBuilding->ArchiveTarget;
-	const auto pSecondaryRally = BuildingExt::ExtMap.Find(pBuilding)->SecondaryArchiveTarget;
+	const auto pSecondaryRally = BuildingExt::Fetch(pBuilding)->SecondaryArchiveTarget;
 
 	if (pRally)
 		SecondaryRallyPoint::ArchiveTarget = pRally;
@@ -84,7 +84,7 @@ DEFINE_HOOK(0x455D50, BuildingClass_SetDestination_ResetSecondaryRallyPoint, 0xA
 	GET_STACK(AbstractClass*, pTarget, STACK_OFFSET(0, 0x4));
 
 	if (!pTarget)
-		BuildingExt::ExtMap.Find(pThis)->SecondaryArchiveTarget = nullptr;
+		BuildingExt::Fetch(pThis)->SecondaryArchiveTarget = nullptr;
 
 	return 0;
 }

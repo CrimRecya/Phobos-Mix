@@ -189,7 +189,7 @@ void __fastcall ArrivingRefineryNearBy(UnitClass* pThis, BuildingClass* pDock)
 		{
 			pOwner->GiveMoney(money);
 
-			if (const auto pDockTypeExt = BuildingTypeExt::ExtMap.Find(pDock->Type))
+			if (const auto pDockTypeExt = BuildingTypeExt::Fetch(pDock->Type))
 			{
 				const auto pRulesExt = RulesExt::Global();
 
@@ -226,7 +226,7 @@ DEFINE_HOOK(0x73EB2C, UnitClass_MissionHarvest_Status2, 0x6)
 	GET(UnitClass* const, pThis, EBP);
 
 	const auto pType = pThis->Type;
-	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+	const auto pTypeExt = TechnoTypeExt::Fetch(pType);
 
 	if (!pTypeExt->HarvesterQuickUnloader)
 		return 0;
@@ -271,7 +271,7 @@ DEFINE_HOOK(0x73EB2C, UnitClass_MissionHarvest_Status2, 0x6)
 	// Check destination
 	if (const auto pDestination = pThis->Destination)
 	{
-		if (Unsorted::CurrentFrame - HouseExt::ExtMap.Find(pHouse)->LastRefineryBuildFrame >= pThis->UpdateTimer.TimeLeft)
+		if (Unsorted::CurrentFrame - HouseExt::Fetch(pHouse)->LastRefineryBuildFrame >= pThis->UpdateTimer.TimeLeft)
 		{
 			const auto pDestinationCell = (pDestination->WhatAmI() == AbstractType::Cell)
 				? static_cast<CellClass*>(pDestination)
@@ -411,7 +411,7 @@ DEFINE_HOOK(0x441226, BuildingClass_Unlimbo_RecheckRefinery, 0x6)
 	GET(BuildingClass* const, pThis, ESI);
 
 	if (pThis->Type->Refinery && pThis->Owner)
-		HouseExt::ExtMap.Find(pThis->Owner)->LastRefineryBuildFrame = Unsorted::CurrentFrame;
+		HouseExt::Fetch(pThis->Owner)->LastRefineryBuildFrame = Unsorted::CurrentFrame;
 
 	return 0;
 }

@@ -83,7 +83,7 @@ bool UniqueTechnoButtonClass::Draw(bool forced)
 
 	if (pSelect)
 	{
-		const auto pSelectExt = TechnoExt::ExtMap.Find(pSelect);
+		const auto pSelectExt = TechnoExt::Fetch(pSelect);
 		const auto pRules = RulesClass::Instance;
 		auto ratio = pTechno->GetHealthPercentage();
 

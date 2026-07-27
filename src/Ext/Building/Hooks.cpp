@@ -984,7 +984,7 @@ DEFINE_HOOK(0x449306, BuildingClass_SetOwningHouse_Sell, 0x6)
 {
 	enum { NoSell = 0x44936E };
 	GET(BuildingClass*, pThis, ESI);
-	return BuildingTypeExt::ExtMap.Find(pThis->Type)->AISellCapturedBuilding.Get(RulesExt::Global()->AISellCapturedBuilding) ? 0 : NoSell;
+	return BuildingTypeExt::Fetch(pThis->Type)->AISellCapturedBuilding.Get(RulesExt::Global()->AISellCapturedBuilding) ? 0 : NoSell;
 }
 
 #pragma region OwnerChangeBuildupFix

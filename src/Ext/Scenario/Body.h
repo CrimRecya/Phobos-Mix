@@ -43,8 +43,8 @@ public:
 		DWORD OwnerBitfield_NavyType;
 		DWORD OwnerBitfield_AircraftType;
 
-		std::vector<TechnoExt::ExtData*> BaseNormalTechnos;
-		std::vector<TechnoExt::ExtData*> OwnedUniqueTechnos;
+		std::vector<TechnoExt*> BaseNormalTechnos;
+		std::vector<TechnoExt*> OwnedUniqueTechnos;
 
 		std::set<int> Smudges;
 

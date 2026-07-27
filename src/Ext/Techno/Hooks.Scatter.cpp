@@ -18,7 +18,7 @@ void TechnoExt::EnhancedScatterContent(CellClass* pCell, TechnoClass* pThis, con
 		if (pThis->QueueUpToEnter == pFoot || pThis->GetNthLink() == pFoot)
 			continue;
 
-		const auto pFootExt = TechnoExt::ExtMap.Find(pFoot);
+		const auto pFootExt = TechnoExt::Fetch(pFoot);
 
 		if (pFootExt->ScatteringStopFrame >= Unsorted::CurrentFrame)
 			continue;
@@ -335,7 +335,7 @@ void TechnoExt::ScatterPathCellContent(FootClass* pThis, CellClass* pCell)
 		if (pThis->QueueUpToEnter == pFoot || pThis->GetNthLink() == pFoot)
 			continue;
 
-		const auto pFootExt = TechnoExt::ExtMap.Find(pFoot);
+		const auto pFootExt = TechnoExt::Fetch(pFoot);
 
 		if (pFootExt->ScatteringStopFrame >= Unsorted::CurrentFrame)
 			continue;
@@ -471,7 +471,7 @@ CellStruct TechnoExt::GetScatterCell(FootClass* pThis, int face)
 
 int TechnoExt::GetTechnoCloseEnoughRange(TechnoClass* pThis)
 {
-	if (TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame >= Unsorted::CurrentFrame)
+	if (TechnoExt::Fetch(pThis)->ScatteringStopFrame >= Unsorted::CurrentFrame)
 		return pThis->WhatAmI() == AbstractType::Infantry ? 128 : 0;
 
 	return RulesClass::Instance->CloseEnough;
@@ -556,7 +556,7 @@ DEFINE_HOOK(0x51D43F, InfantryClass_Scatter_ScatterRecord, 0x6)
 	else
 		pThis->SetDestination(MapClass::Instance.GetCellAt(cell), true);
 
-	TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
+	TechnoExt::Fetch(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
 
 	return ProcessNow;
 }
@@ -582,7 +582,7 @@ DEFINE_HOOK(0x51D487, InfantryClass_Scatter_EnhancedScatter, 0x6)
 		else
 			pThis->SetDestination(MapClass::Instance.GetCellAt(cell), true);
 
-		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
+		TechnoExt::Fetch(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
 	}
 
 	return SkipGameCode;
@@ -601,7 +601,7 @@ DEFINE_HOOK(0x743C91, UnitClass_Scatter_ScatterRecord, 0x7)
 		pThis->SetDestination(MapClass::Instance.GetCellAt(cell), true);
 
 	if (RulesExt::Global()->ExtendedScatterAction)
-		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
+		TechnoExt::Fetch(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
 
 	return SkipGameCode;
 }
@@ -625,7 +625,7 @@ DEFINE_HOOK(0x743E08, UnitClass_Scatter_EnhancedScatter, 0x7)
 		else
 			pThis->SetDestination(MapClass::Instance.GetCellAt(cell), true);
 
-		TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
+		TechnoExt::Fetch(pThis)->ScatteringStopFrame = Unsorted::CurrentFrame + 60;
 	}
 
 	return SkipGameCode;
@@ -636,7 +636,7 @@ DEFINE_HOOK(0x4DF0D0, FootClass_AbortMotion_ScatterClear, 0x8)
 {
 	GET(FootClass* const, pThis, ECX);
 
-	TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = 0;
+	TechnoExt::Fetch(pThis)->ScatteringStopFrame = 0;
 
 	return 0;
 }
@@ -645,7 +645,7 @@ DEFINE_HOOK(0x4D82B0, FootClass_EnterIdleMode_ScatterClear, 0x5)
 {
 	GET(FootClass* const, pThis, ECX);
 
-	TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = 0;
+	TechnoExt::Fetch(pThis)->ScatteringStopFrame = 0;
 
 	return 0;
 }
@@ -654,7 +654,7 @@ DEFINE_HOOK(0x51AA45, InfantryClass_SetDestination_ScatterClear, 0x7)
 {
 	GET(InfantryClass* const, pThis, ECX);
 
-	TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = 0;
+	TechnoExt::Fetch(pThis)->ScatteringStopFrame = 0;
 
 	return 0;
 }
@@ -663,7 +663,7 @@ DEFINE_HOOK(0x741978, UnitClass_SetDestination_ScatterClear, 0x9)
 {
 	GET(UnitClass* const, pThis, ECX);
 
-	TechnoExt::ExtMap.Find(pThis)->ScatteringStopFrame = 0;
+	TechnoExt::Fetch(pThis)->ScatteringStopFrame = 0;
 
 	return 0;
 }

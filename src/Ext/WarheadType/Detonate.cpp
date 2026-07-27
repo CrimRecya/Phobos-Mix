@@ -589,7 +589,7 @@ HouseClass* WarheadTypeExt::ApplyRemoveMindControl(HouseClass* pHouse, TechnoCla
 	return pHouse;
 }
 
-void WarheadTypeExt::ExtData::ApplyOwnerChange(HouseClass* pHouse, TechnoClass* pTarget)
+void WarheadTypeExt::ApplyOwnerChange(HouseClass* pHouse, TechnoClass* pTarget)
 {
 	const bool isMindControl = this->ChangeOwner_SetAsMindControl;
 	const bool isImmune = (isMindControl && pTarget->GetTechnoType()->ImmuneToPsionics) || pTarget->IsMindControlled();
@@ -761,7 +761,7 @@ void WarheadTypeExt::InterceptBullets(TechnoClass* pOwner, BulletClass* pInterce
 
 void WarheadTypeExt::ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget)
 {
-	const auto pTargetExt = TechnoExt::ExtMap.Find(pTarget);
+	const auto pTargetExt = TechnoExt::Fetch(pTarget);
 
 	if (const auto pAttachment = pTargetExt->ParentAttachment)
 		AttachmentTransformGroup::Trasform(pAttachment, this->Attachment_Transform, pHouse);
@@ -1016,7 +1016,7 @@ void WarheadTypeExt::ApplyPenetratesTransport(TechnoClass* pTarget, TechnoClass*
 	}
 }
 
-void WarheadTypeExt::ExtData::ApplyKnockUp(TechnoClass* pTarget)
+void WarheadTypeExt::ApplyKnockUp(TechnoClass* pTarget)
 {
 	if (!this->KnockUp)
 		return;
@@ -1097,7 +1097,7 @@ void WarheadTypeExt::ExtData::ApplyKnockUp(TechnoClass* pTarget)
 		auto schedule = ParabolaShiftSchedule(sampleStart, sampleEnd, &params);
 
 		// Queue the shift
-		auto pExt = TechnoExt::ExtMap.Find(pTargetFoot);
+		auto pExt = TechnoExt::Fetch(pTargetFoot);
 		pExt->QueuedShift = std::make_unique<ParabolaShiftSchedule>(schedule);
 
 		// Change locomotor
@@ -1105,7 +1105,7 @@ void WarheadTypeExt::ExtData::ApplyKnockUp(TechnoClass* pTarget)
 	}
 }
 
-void WarheadTypeExt::ExtData::ApplyTraction(TechnoClass* pTarget, const CoordStruct& coords)
+void WarheadTypeExt::ApplyTraction(TechnoClass* pTarget, const CoordStruct& coords)
 {
 	if (!this->Traction)
 		return;
@@ -1233,7 +1233,7 @@ void WarheadTypeExt::ExtData::ApplyTraction(TechnoClass* pTarget, const CoordStr
 		auto params = LinearParams { tractionSpeed };
 		auto schedule = LinearShiftSchedule(sampleStart, sampleEnd, &params);
 
-		auto pExt = TechnoExt::ExtMap.Find(pTargetFoot);
+		auto pExt = TechnoExt::Fetch(pTargetFoot);
 		pExt->QueuedShift = std::make_unique<LinearShiftSchedule>(schedule);
 
 		// Change locomotor

@@ -1,5 +1,6 @@
 ﻿#include "Dummy.h"
 
+#include <MessageListClass.h>
 #include <Utilities/Debug.h>
 
 const char* DummyCommandClass::GetName() const

@@ -186,7 +186,7 @@ void SWTypeExt::ApplyLimboKill(HouseClass* pHouse)
 		if (!pBuildingType->Insignificant && !pBuildingType->DontScore)
 			HouseExt::Fetch(pBuilding->Owner)->RemoveFromLimboTracking(pBuildingType);
 
-		if (BuildingTypeExt::ExtMap.Find(pBuildingType)->LimboBuildID == BuildingExt::ExtMap.Find(pBuilding)->LimboID)
+		if (BuildingTypeExt::Fetch(pBuildingType)->LimboBuildID == BuildingExt::Fetch(pBuilding)->LimboID)
 		{
 			const int index = pBuilding->Type->ArrayIndex;
 
@@ -288,7 +288,7 @@ void SWTypeExt::ApplySWNext(HouseClass* pHouse, const CellStruct& cell)
 	}
 }
 
-void SWTypeExt::ApplyTypeConversion(SuperClass* pSW)
+void SWTypeExt::ApplyAttachmentTransform(HouseClass* pHouse)
 {
 	for (const auto& pAttachment : AttachmentClass::Array)
 		AttachmentTransformGroup::Trasform(pAttachment, this->Attachment_Transform, pHouse);

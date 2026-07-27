@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 
 #include <Ext/Aircraft/Body.h>
 #include <Ext/Anim/Body.h>
@@ -404,7 +404,7 @@ bool ConvertToType_Foot(FootClass* pThis, TechnoTypeClass* pToType)
 	{
 		if (AresFunctions::ConvertTypeTo(pThis, pToType))
 		{
-			FootExt::Fetch(pThis)->UpdateTypeData(pToType);
+			TechnoExt::Fetch(pThis)->UpdateTypeData(pToType);
 			return true;
 		}
 
@@ -507,7 +507,7 @@ bool ConvertToType_Foot(FootClass* pThis, TechnoTypeClass* pToType)
 	if (pToType->BalloonHover && pToType->DeployToLand && prevType->Locomotor != jjLoco && toLoco == jjLoco)
 		pThis->Locomotor->Move_To(pThis->Location);
 
-	FootExt::Fetch(pThis)->UpdateTypeData(pToType);
+	TechnoExt::Fetch(pThis)->UpdateTypeData(pToType);
 	return true;
 }
 
@@ -579,7 +579,7 @@ bool TechnoExt::ConvertToType(TechnoClass* pThis, TechnoTypeClass* pToType)
 	pBuilding->ActuallyPlacedOnMap = false;
 
 	pBuilding->Type = pToBuildingType;
-	FootExt::Fetch(pThis)->UpdateTypeData(pToType);
+	TechnoExt::Fetch(pThis)->UpdateTypeData(pToType);
 
 	pThis->SetHealthPercentage(static_cast<double>(pThis->Health) / pPrevBuildingType->Strength);
 	pThis->EstimatedHealth = pThis->Health;
@@ -967,7 +967,7 @@ void TechnoExt::InitializeAttachments()
 
 void TechnoExt::DestroyAttachments(TechnoClass* pThis, TechnoClass* pSource)
 {
-	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+	auto const pExt = TechnoExt::TryFetch(pThis);
 
 	if (!pExt)
 		return;
@@ -1022,7 +1022,7 @@ void TechnoExt::TransferAttachments(TechnoClass* pThis, TechnoClass* pThat)
 
 bool TechnoExt::ShouldInheritTarget(TechnoClass* pThis)
 {
-	if (auto const pExt = TechnoExt::ExtMap.TryFind(pThis))
+	if (auto const pExt = TechnoExt::TryFetch(pThis))
 	{
 		if (auto const pAttachment = pExt->ParentAttachment)
 		{
@@ -1037,7 +1037,7 @@ bool TechnoExt::ShouldInheritTarget(TechnoClass* pThis)
 
 TechnoClass* TechnoExt::GetTrainParent(TechnoClass* pThis)
 {
-	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+	auto const pExt = TechnoExt::TryFetch(pThis);
 
 	return pExt && pExt->ParentAttachment
 		&& pExt->ParentAttachment->GetType()->InheritExperience
@@ -1047,7 +1047,7 @@ TechnoClass* TechnoExt::GetTrainParent(TechnoClass* pThis)
 
 bool TechnoExt::IsAttached(TechnoClass* pThis)
 {
-	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+	auto const pExt = TechnoExt::TryFetch(pThis);
 
 	return pExt && pExt->ParentAttachment;
 }
@@ -1059,7 +1059,7 @@ bool TechnoExt::HasAttachmentLoco(FootClass* pThis)
 
 bool TechnoExt::DoesntOccupyCellAsChild(TechnoClass* pThis)
 {
-	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+	auto const pExt = TechnoExt::TryFetch(pThis);
 
 	return pExt && pExt->ParentAttachment
 		&& !pExt->ParentAttachment->GetType()->OccupiesCell;
@@ -1067,7 +1067,7 @@ bool TechnoExt::DoesntOccupyCellAsChild(TechnoClass* pThis)
 
 bool TechnoExt::IsChildOf(TechnoClass* pThis, TechnoClass* pParent, bool deep)
 {
-	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+	auto const pExt = TechnoExt::TryFetch(pThis);
 
 	return pExt && pParent  // sanity check, sometimes crashes because ext is null - Kerbiter
 		&& pExt->ParentAttachment
@@ -1083,37 +1083,12 @@ bool TechnoExt::AreRelatives(TechnoClass* pThis, TechnoClass* pThat)
 // Returns this if no parent.
 TechnoClass* TechnoExt::GetTopLevelParent(TechnoClass* pThis)
 {
-	auto const pExt = TechnoExt::ExtMap.TryFind(pThis);
+	auto const pExt = TechnoExt::TryFetch(pThis);
 
 	return pExt  // sanity check, sometimes crashes because ext is null - Kerbiter
 		&& pExt->ParentAttachment
 		? TechnoExt::GetTopLevelParent(pExt->ParentAttachment->Parent)
 		: pThis;
-}
-
-AircraftTypeClass* TechnoExt::GetAircraftTypeExtra(AircraftClass* pAircraft)
-{
-	auto const pType = pAircraft->Type;
-	auto const pData = TechnoTypeExt::Fetch(pType);
-
-	if (!pData->NeedDamagedImage || pAircraft->IsGreenHP())
-	{
-		return pType;
-	}
-	else if (pAircraft->IsYellowHP())
-	{
-		if (auto const imageYellow = pData->Image_ConditionYellow)
-			return abstract_cast<AircraftTypeClass*, true>(imageYellow);
-	}
-	else
-	{
-		if (auto const imageRed = pData->Image_ConditionRed)
-			return abstract_cast<AircraftTypeClass*, true>(imageRed);
-		else if (auto const imageYellow = pData->Image_ConditionYellow)
-			return abstract_cast<AircraftTypeClass*, true>(imageYellow);
-	}
-
-	return pType;
 }
 
 void TechnoExt::ResetDelayedFireTimer()
@@ -1634,14 +1609,8 @@ void TechnoExt::Serialize(T& Stm)
 		.Process(this->LastTargetID)
 		.Process(this->AccumulatedGattlingValue)
 		.Process(this->ShouldUpdateGattlingValue)
-		.Process(this->OriginalPassengerOwner)
-		.Process(this->HasRemainingWarpInDelay)
-		.Process(this->LastWarpInDelay)
-		.Process(this->IsBeingChronoSphered)
 		.Process(this->AggressiveStance)
 		.Process(this->CeaseFireStance)
-		.Process(this->KeepTargetOnMove)
-		.Process(this->LastSensorsMapCoords)
 		.Process(this->IsWreckage)
 		.Process(this->JumpjetFromAirport)
 		.Process(this->BuildingOccupying)
@@ -1651,7 +1620,6 @@ void TechnoExt::Serialize(T& Stm)
 		.Process(this->ThisOccupationCell)
 		.Process(this->LastOccupationCell)
 		.Process(this->AltOccupation)
-		.Process(this->SimpleDeployerAnimationTimer)
 		.Process(this->AirstrikeTargetingMe)
 		.Process(this->DelayedFireSequencePaused)
 		.Process(this->DelayedFireTimer)
@@ -1681,14 +1649,12 @@ void TechnoExt::Serialize(T& Stm)
 
 void TechnoExt::OnDetach(AirstrikeClass* pTarget, bool removed)
 {
-	if (bRemoved)
+	if (removed)
 		AnnounceInvalidPointer(this->AirstrikeTargetingMe, pTarget);
+}
 
-/* Clearing in advance can cause the game to crash
-	for (auto const& pAttachment : ChildAttachments)
-		pAttachment->InvalidatePointer(pTarget);
-*/
-
+void TechnoExt::OnDetach(AbstractClass* pTarget, bool removed)
+{
 	if (this->HasCachedClickMission && this->CachedTarget == pTarget)
 	{
 		this->HasCachedClickMission = false;
@@ -1696,8 +1662,15 @@ void TechnoExt::OnDetach(AirstrikeClass* pTarget, bool removed)
 		this->CachedCell = nullptr;
 		this->CachedTarget = nullptr;
 	}
+}
 
+void TechnoExt::OnDetach(TechnoClass* pTarget, bool removed)
+{
 	AnnounceInvalidPointer(this->ShiftApplier, pTarget);
+}
+
+void TechnoExt::OnDetach(HouseClass* pTarget, bool removed)
+{
 	AnnounceInvalidPointer(this->ShiftApplierHouse, pTarget);
 }
 

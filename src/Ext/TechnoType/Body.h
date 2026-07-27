@@ -45,17 +45,17 @@ public:
 	PhobosFixedString<0x20> GroupAs;
 	std::vector<PhobosFixedString<0x20>> WeaponGroupAs;
 	Valueable<int> RadarJamRadius;
-	Valueable<AffectedHouse> RadarJamHouses;
-	Valueable<int> RadarJamDelay;
+	Nullable<AffectedHouse> RadarJamHouses;
+	Nullable<int> RadarJamDelay;
 	ValueableVector<BuildingTypeClass*> RadarJamAffect;
 	ValueableVector<BuildingTypeClass*> RadarJamIgnore;
 	Nullable<int> InhibitorRange;
 	Nullable<int> DesignatorRange;
 	Valueable<float> FactoryPlant_Multiplier;
 	Valueable<Leptons> MindControlRangeLimit;
-	Valueable<bool> MindControl_IgnoreSize;
+	Nullable<bool> MindControl_IgnoreSize;
 	Valueable<int> MindControlSize;
-	Valueable<AffectedHouse> MindControlLink_VisibleToHouse;
+	Nullable<AffectedHouse> MindControlLink_VisibleToHouse;
 
 	std::unique_ptr<InterceptorTypeClass> InterceptorType;
 
@@ -68,20 +68,20 @@ public:
 	int SpawnerRange;
 	int EliteSpawnerRange;
 	Nullable<int> Spawner_DelayFrames;
-	Valueable<bool> Spawner_AttackImmediately;
+	Nullable<bool> Spawner_AttackImmediately;
 	Valueable<bool> Spawner_ReturnOnRepairDone;
-	Valueable<bool> Spawner_UseTurretFacing;
+	Nullable<bool> Spawner_UseTurretFacing;
 	Nullable<bool> Harvester_Counted;
-	Valueable<bool> Promote_IncludeSpawns;
+	Nullable<bool> Promote_IncludeSpawns;
 	Valueable<bool> ImmuneToCrit;
-	Valueable<bool> MultiMindControl_ReleaseVictim;
+	Nullable<bool> MultiMindControl_ReleaseVictim;
 	Valueable<int> CameoPriority;
 	DWORD CameoPriority_Houses;
 	PhobosPCXFile AltCameoPCX;
 	Valueable<bool> NoManualMove;
 	Valueable<bool> NoManualEject;
 	Nullable<int> InitialStrength;
-	Valueable<bool> ReloadInTransport;
+	Nullable<bool> ReloadInTransport;
 	Valueable<bool> ForbidParallelAIQueues;
 	Valueable<bool> IgnoreForBaseCenter;
 
@@ -103,19 +103,21 @@ public:
 	Valueable<int> Ammo_DeployUnlockMaximumAmount;
 
 	Nullable<AutoDeathBehavior> AutoDeath_Behavior;
+	Nullable<bool> AutoDeath_AllowLimboed;
 	ValueableVector<AnimTypeClass*> AutoDeath_VanishAnimation;
 	Valueable<bool> AutoDeath_OnAmmoDepletion;
 	Valueable<bool> AutoDeath_OnOwnerChange;
+	Nullable<bool> AutoDeath_OnOwnerChange_IgnoreRevertOnExit;
 	Nullable<bool> AutoDeath_OnOwnerChange_HumanToComputer;
 	Nullable<bool> AutoDeath_OnOwnerChange_ComputerToHuman;
 	Valueable<int> AutoDeath_AfterDelay;
 	ValueableVector<TechnoTypeClass*> AutoDeath_TechnosDontExist;
 	Valueable<bool> AutoDeath_TechnosDontExist_Any;
-	Valueable<bool> AutoDeath_TechnosDontExist_AllowLimboed;
+	Nullable<bool> AutoDeath_TechnosDontExist_AllowLimboed;
 	Valueable<AffectedHouse> AutoDeath_TechnosDontExist_Houses;
 	ValueableVector<TechnoTypeClass*> AutoDeath_TechnosExist;
 	Valueable<bool> AutoDeath_TechnosExist_Any;
-	Valueable<bool> AutoDeath_TechnosExist_AllowLimboed;
+	Nullable<bool> AutoDeath_TechnosExist_AllowLimboed;
 	Valueable<AffectedHouse> AutoDeath_TechnosExist_Houses;
 
 	Valueable<SlaveChangeOwnerType> Slaved_OwnerWhenMasterKilled;
@@ -161,29 +163,27 @@ public:
 	std::vector<std::vector<CoordStruct>> WeaponBurstFLHs;
 	std::vector<std::vector<CoordStruct>> EliteWeaponBurstFLHs;
 	std::vector<CoordStruct> AlternateFLHs;
-	Valueable<bool> AlternateFLH_OnTurret;
-	Valueable<bool> AlternateFLH_ApplyVehicle;
+	Nullable<bool> AlternateFLH_OnTurret;
+	Nullable<bool> AlternateFLH_ApplyVehicle;
 
-	Valueable<bool> DestroyAnim_Random;
-	Valueable<bool> NotHuman_RandomDeathSequence;
+	Nullable<bool> DestroyAnim_Random;
 
 	Valueable<TechnoTypeClass*> DefaultDisguise;
-	NullableVector<TerrainTypeClass*> DefaultMirageDisguises;
-	Valueable<bool> UseDisguiseMovementSpeed;
+	Nullable<bool> UseDisguiseMovementSpeed;
 
 	Nullable<int> OpenTopped_RangeBonus;
 	Nullable<float> OpenTopped_DamageMultiplier;
 	Nullable<int> OpenTopped_WarpDistance;
-	Valueable<bool> OpenTopped_IgnoreRangefinding;
-	Valueable<bool> OpenTopped_AllowFiringIfDeactivated;
+	Nullable<bool> OpenTopped_IgnoreRangefinding;
+	Nullable<bool> OpenTopped_AllowFiringIfDeactivated;
 	Nullable<bool> OpenTopped_AllowFiringIfAttackedByLocomotor;
-	Valueable<bool> OpenTopped_ShareTransportTarget;
-	Valueable<bool> OpenTopped_UseTransportRangeModifiers;
-	Valueable<bool> OpenTopped_CheckTransportDisableWeapons;
+	Nullable<bool> OpenTopped_ShareTransportTarget;
+	Nullable<bool> OpenTopped_UseTransportRangeModifiers;
+	Nullable<bool> OpenTopped_CheckTransportDisableWeapons;
 	Nullable<bool> OpenTopped_DecloakToFire;
 	Nullable<bool> OpenTopped_FireWhileMoving;
-	Valueable<int> OpenTransport_RangeBonus;
-	Valueable<float> OpenTransport_DamageMultiplier;
+	Nullable<int> OpenTransport_RangeBonus;
+	Nullable<float> OpenTransport_DamageMultiplier;
 	Nullable<bool> OpenTransport_FireWhileMoving;
 
 	Valueable<bool> AutoTargetOwnPosition;
@@ -206,7 +206,7 @@ public:
 	Valueable<int> NoAmmoWeapon;
 	Valueable<int> NoAmmoAmount;
 
-	Valueable<bool> JumpjetRotateOnCrash;
+	Nullable<bool> JumpjetRotateOnCrash;
 	Nullable<int> ShadowSizeCharacteristicHeight;
 
 	Valueable<bool> IsSimpleDeployer_ConsiderPathfinding;
@@ -225,13 +225,13 @@ public:
 	Valueable<int> ForceWeapon_Cloaked;
 	Valueable<int> ForceWeapon_Disguised;
 	Valueable<int> ForceWeapon_UnderEMP;
-	Valueable<bool> ForceWeapon_InRange_TechnoOnly;
+	Nullable<bool> ForceWeapon_InRange_TechnoOnly;
 	ValueableVector<int> ForceWeapon_InRange;
 	ValueableVector<double> ForceWeapon_InRange_Overrides;
-	Valueable<bool> ForceWeapon_InRange_ApplyRangeModifiers;
+	Nullable<bool> ForceWeapon_InRange_ApplyRangeModifiers;
 	ValueableVector<int> ForceAAWeapon_InRange;
 	ValueableVector<double> ForceAAWeapon_InRange_Overrides;
-	Valueable<bool> ForceAAWeapon_InRange_ApplyRangeModifiers;
+	Nullable<bool> ForceAAWeapon_InRange_ApplyRangeModifiers;
 	Valueable<int> ForceWeapon_Buildings;
 	Valueable<int> ForceWeapon_Defenses;
 	Valueable<int> ForceWeapon_Infantry;
@@ -246,8 +246,8 @@ public:
 	Valueable<int> Ammo_Shared_Group;
 
 	Nullable<SelfHealGainType> SelfHealGainType;
-	Valueable<bool> Passengers_SyncOwner;
-	Valueable<bool> Passengers_SyncOwner_RevertOnExit;
+	Nullable<bool> Passengers_SyncOwner;
+	Nullable<bool> Passengers_SyncOwner_RevertOnExit;
 
 	Nullable<bool> IronCurtain_KeptOnDeploy;
 	Nullable<IronCurtainEffect> IronCurtain_Effect;
@@ -255,9 +255,8 @@ public:
 	Nullable<bool> ForceShield_KeptOnDeploy;
 	Nullable<IronCurtainEffect> ForceShield_Effect;
 	Nullable<WarheadTypeClass*> ForceShield_KillWarhead;
-	Valueable<bool> Explodes_KillPassengers;
-	Valueable<bool> Explodes_DuringBuildup;
-	Valueable<bool> DriverKilled_KeptPassengers;
+	Nullable<bool> Explodes_KillPassengers;
+	Nullable<bool> DriverKilled_KeptPassengers;
 	Nullable<bool> DriverKilled_KillPassengers;
 	Nullable<int> DeployFireWeapon;
 	Valueable<TargetZoneScanType> TargetZoneScanType;
@@ -319,7 +318,7 @@ public:
 	Valueable<TechnoTypeClass*> Convert_Undeploy;
 	Valueable<TechnoTypeClass*> Convert_HumanToComputer;
 	Valueable<TechnoTypeClass*> Convert_ComputerToHuman;
-	Valueable<bool> Convert_ResetMindControl;
+	Nullable<bool> Convert_ResetMindControl;
 
 	Valueable<double> CrateGoodie_RerollChance;
 
@@ -351,8 +350,8 @@ public:
 	ValueableVector<TechnoTypeClass*> BuildLimitGroup_Types;
 	ValueableVector<int> BuildLimitGroup_Nums;
 	Valueable<int> BuildLimitGroup_Factor;
-	Valueable<bool> BuildLimitGroup_ContentIfAnyMatch;
-	Valueable<bool> BuildLimitGroup_NotBuildableIfQueueMatch;
+	Nullable<bool> BuildLimitGroup_ContentIfAnyMatch;
+	Nullable<bool> BuildLimitGroup_NotBuildableIfQueueMatch;
 	ValueableVector<TechnoTypeClass*> BuildLimitGroup_ExtraLimit_Types;
 	ValueableVector<int> BuildLimitGroup_ExtraLimit_Nums;
 	ValueableVector<int> BuildLimitGroup_ExtraLimit_MaxCount;
@@ -478,6 +477,8 @@ public:
 	Nullable<AnimTypeClass*> Wake_Sinking;
 	Nullable<bool> MakesWake;
 
+	Valueable<float> CrashSpin_Multiplier;
+
 	Nullable<int> AINormalTargetingDelay;
 	Nullable<int> PlayerNormalTargetingDelay;
 	Nullable<int> AIGuardAreaTargetingDelay;
@@ -524,10 +525,10 @@ public:
 	ValueableVector<BuildingTypeClass*> ClonedAt;
 	Valueable<TechnoTypeClass*> ClonedAs;
 
-	Valueable<Leptons> Spawner_RecycleRange;
+	Nullable<Leptons> Spawner_RecycleRange;
 	ValueableVector<AnimTypeClass*> Spawner_RecycleAnim;
 	Valueable<CoordStruct> Spawner_RecycleCoord;
-	Valueable<bool> Spawner_RecycleOnTurret;
+	Nullable<bool> Spawner_RecycleOnTurret;
 
 	Nullable<bool> Sinkable;
 	Valueable<bool> Sinkable_SquidGrab;
@@ -569,10 +570,6 @@ public:
 	Nullable<CoordStruct> ProneSecondaryFireFLH;
 	Nullable<CoordStruct> DeployedPrimaryFireFLH;
 	Nullable<CoordStruct> DeployedSecondaryFireFLH;
-	std::vector<std::vector<CoordStruct>> CrouchedWeaponBurstFLHs;
-	std::vector<std::vector<CoordStruct>> EliteCrouchedWeaponBurstFLHs;
-	std::vector<std::vector<CoordStruct>> DeployedWeaponBurstFLHs;
-	std::vector<std::vector<CoordStruct>> EliteDeployedWeaponBurstFLHs;
 
 	Valueable<bool> IgnoredByMouse;
 	Nullable<bool> IgnoredByMouse_ToSelf;
@@ -582,14 +579,14 @@ public:
 	Valueable<bool> SuppressKillWeapons;
 	ValueableVector<WeaponTypeClass*> SuppressKillWeapons_Types;
 
-	Valueable<bool> DigitalDisplay_Health_FakeAtDisguise;
+	Nullable<bool> DigitalDisplay_Health_FakeAtDisguise;
 
 	NullableVector<int> Overload_Count;
 	NullableVector<int> Overload_Damage;
 	NullableVector<int> Overload_Frames;
 	NullableIdx<VocClass> Overload_DeathSound;
 	Nullable<ParticleSystemTypeClass*> Overload_ParticleSys;
-	Valueable<int> Overload_ParticleSysCount;
+	Nullable<int> Overload_ParticleSysCount;
 
 	Valueable<bool> Harvester_CanGuardArea;
 	Valueable<bool> Harvester_CanGuardArea_RequireTarget;
@@ -605,15 +602,13 @@ public:
 	ValueableVector<InfantryTypeClass*> Squad_Members;
 	Valueable<bool> Squad_IsInitAsTeam;
 
-	Valueable<double> FallingDownDamage;
+	Nullable<double> FallingDownDamage;
 	Nullable<double> FallingDownDamage_Water;
-	Valueable<bool> FallingDownDamage_AllowEMP;
+	Nullable<bool> FallingDownDamage_AllowEMP;
 
 	Valueable<int> Ammo_AutoConvertMinimumAmount;
 	Valueable<int> Ammo_AutoConvertMaximumAmount;
 	Nullable<TechnoTypeClass*> Ammo_AutoConvertType;
-
-	Valueable<bool> FiringForceScatter;
 
 	Valueable<int> FireUp;
 	Valueable<bool> FireUp_ResetInRetarget;
@@ -719,665 +714,665 @@ public:
 	Valueable<int> BurstPerTurret;
 
 	TechnoTypeExt(TechnoTypeClass* OwnerObject) : ObjectTypeExt(OwnerObject)
-			, HealthBar_Hide { false }
-			, HealthBar_HidePips { false }
-			, HealthBar_Permanent { false }
-			, HealthBar_Permanent_PipScale { false }
-			, UIDescription {}
-			, LowSelectionPriority { false }
-			, LowDeployPriority { false }
-			, GroupAs { NONE_STR }
-			, WeaponGroupAs {}
-			, RadarJamRadius { 0 }
-			, RadarJamHouses { AffectedHouse::Enemies }
-			, RadarJamDelay { 30 }
-			, RadarJamAffect {}
-			, RadarJamIgnore {}
-			, InhibitorRange {}
-			, DesignatorRange { }
-			, FactoryPlant_Multiplier { 1.0f }
-			, MindControlRangeLimit {}
-			, MindControl_IgnoreSize { true }
-			, MindControlSize { 1 }
-			, MindControlLink_VisibleToHouse{ AffectedHouse::All }
-
-			, InterceptorType { nullptr }
-
-			, TurretOffset { { 0, 0, 0 } }
-			, TurretShadow { }
-			, ShadowIndices { }
-			, ShadowIndex_Frame { 0 }
-			, Spawner_LimitRange { false }
-			, Spawner_ExtraLimitRange { 0 }
-			, SpawnerRange { 0 }
-			, EliteSpawnerRange { 0 }
-			, Spawner_DelayFrames {}
-			, Spawner_AttackImmediately { false }
-			, Spawner_ReturnOnRepairDone { false }
-			, Spawner_UseTurretFacing { false }
-			, Harvester_Counted {}
-			, Promote_IncludeSpawns { false }
-			, ImmuneToCrit { false }
-			, MultiMindControl_ReleaseVictim { false }
-			, CameoPriority { 0 }
-			, CameoPriority_Houses { 0 }
-			, AltCameoPCX {}
-			, NoManualMove { false }
-			, NoManualEject { false }
-			, InitialStrength {}
-			, ReloadInTransport { false }
-			, ForbidParallelAIQueues { false }
-			, IgnoreForBaseCenter { false }
-			, TintColorAirstrike { 0 }
-			, LaserTargetColor {}
-			, AirstrikeLineColor {}
-			, ShieldType { nullptr }
-			, PassengerDeletionType { nullptr }
-
-			, WarpOut {}
-			, WarpIn {}
-			, Chronoshift_WarpOut {}
-			, Chronoshift_WarpIn {}
-			, WarpAway {}
-			, ChronoTrigger {}
-			, ChronoDistanceFactor {}
-			, ChronoMinimumDelay {}
-			, ChronoRangeMinimum {}
-			, ChronoDelay {}
-			, ChronoSpherePreDelay {}
-			, ChronoSphereDelay {}
-			, WarpInWeapon {}
-			, WarpInMinRangeWeapon {}
-			, WarpOutWeapon {}
-			, WarpInWeapon_UseDistanceAsDamage { false }
-
-			, SubterraneanSpeed { -1 }
-			, SubterraneanHeight {}
-
-			, OreGathering_Anims {}
-			, OreGathering_Tiberiums {}
-			, OreGathering_FramesPerDir {}
-			, LaserTrailData {}
-			, AlternateFLH_OnTurret { true }
-			, AlternateFLH_ApplyVehicle { false }
-			, DestroyAnim_Random { true }
-			, NotHuman_RandomDeathSequence { false }
-
-			, DefaultDisguise {}
-			, UseDisguiseMovementSpeed {}
-
-			, OpenTopped_RangeBonus {}
-			, OpenTopped_DamageMultiplier {}
-			, OpenTopped_WarpDistance {}
-			, OpenTopped_IgnoreRangefinding { false }
-			, OpenTopped_AllowFiringIfAttackedByLocomotor {}
-			, OpenTopped_AllowFiringIfDeactivated { true }
-			, OpenTopped_ShareTransportTarget { true }
-			, OpenTopped_UseTransportRangeModifiers { false }
-			, OpenTopped_CheckTransportDisableWeapons { false }
-			, OpenTopped_DecloakToFire {}
-			, OpenTopped_FireWhileMoving {}
-			, OpenTransport_RangeBonus { 0 }
-			, OpenTransport_DamageMultiplier { 1.0f }
-			, OpenTransport_FireWhileMoving {}
-
-			, AggressiveStance { false }
-			, AggressiveStance_Togglable {}
-			, VoiceEnterAggressiveStance { -1 }
-			, VoiceExitAggressiveStance { -1 }
-
-			, CeaseFireStance { false }
-			, CeaseFireStance_Togglable {}
-			, VoiceEnterCeaseFireStance { -1 }
-			, VoiceExitCeaseFireStance { -1 }
-
-			, AutoTargetOwnPosition { false }
-			, AutoTargetOwnPosition_Self { false }
-			, NoSecondaryWeaponFallback { false }
-			, NoSecondaryWeaponFallback_AllowAA { false }
-			, AllowWeaponSelectAgainstWalls {}
-			, NoAmmoWeapon { -1 }
-			, NoAmmoAmount { 0 }
-			, JumpjetRotateOnCrash { true }
-			, ShadowSizeCharacteristicHeight { }
-
-			, IsSimpleDeployer_ConsiderPathfinding { false }
-			, IsSimpleDeployer_DisallowedLandTypes {}
-			, DeployDir {}
-			, DeployingAnims {}
-			, DeployingAnim_KeepUnitVisible { false }
-			, DeployingAnim_ReverseForUndeploy { true }
-			, DeployingAnim_UseUnitDrawer { true }
-
-			, HarvesterDumpAmount {}
-
-			, Ammo_AddOnDeploy { 0 }
-			, Ammo_AutoDeployMinimumAmount { -1 }
-			, Ammo_AutoDeployMaximumAmount { -1 }
-			, Ammo_DeployUnlockMinimumAmount { -1 }
-			, Ammo_DeployUnlockMaximumAmount { -1 }
-
-			, AutoDeath_Behavior { }
-			, AutoDeath_VanishAnimation {}
-			, AutoDeath_OnAmmoDepletion { false }
-			, AutoDeath_OnOwnerChange { false }
-			, AutoDeath_OnOwnerChange_HumanToComputer {}
-			, AutoDeath_OnOwnerChange_ComputerToHuman {}
-			, AutoDeath_AfterDelay { 0 }
-			, AutoDeath_TechnosDontExist {}
-			, AutoDeath_TechnosDontExist_Any { false }
-			, AutoDeath_TechnosDontExist_AllowLimboed { false }
-			, AutoDeath_TechnosDontExist_Houses { AffectedHouse::Owner }
-			, AutoDeath_TechnosExist {}
-			, AutoDeath_TechnosExist_Any { true }
-			, AutoDeath_TechnosExist_AllowLimboed { true }
-			, AutoDeath_TechnosExist_Houses { AffectedHouse::Owner }
-
-			, Slaved_OwnerWhenMasterKilled { SlaveChangeOwnerType::Killer }
-			, SlavesFreeSound {}
-			, SellSound {}
-			, EVA_Sold {}
-
-			, CombatAlert {}
-			, CombatAlert_NotBuilding {}
-			, CombatAlert_UseFeedbackVoice {}
-			, CombatAlert_UseAttackVoice {}
-			, CombatAlert_UseEVA {}
-			, CombatAlert_EVA {}
-
-			, EnemyUIName {}
-			, FakeOf {}
-
-			, VoiceCreated {}
-			, VoicePickup {}
-
-			, ForceWeapon_Check { false }
-			, ForceWeapon_Naval_Decloaked { -1 }
-			, ForceWeapon_Cloaked { -1 }
-			, ForceWeapon_Disguised { -1 }
-			, ForceWeapon_UnderEMP { -1 }
-			, ForceWeapon_InRange_TechnoOnly { true }
-			, ForceWeapon_InRange {}
-			, ForceWeapon_InRange_Overrides {}
-			, ForceWeapon_InRange_ApplyRangeModifiers { false }
-			, ForceAAWeapon_InRange {}
-			, ForceAAWeapon_InRange_Overrides {}
-			, ForceAAWeapon_InRange_ApplyRangeModifiers { false }
-			, ForceWeapon_Buildings { -1 }
-			, ForceWeapon_Defenses { -1 }
-			, ForceWeapon_Infantry { -1 }
-			, ForceWeapon_Naval_Units { -1 }
-			, ForceWeapon_Units { -1 }
-			, ForceWeapon_Aircraft { -1 }
-			, ForceAAWeapon_Infantry { -1 }
-			, ForceAAWeapon_Units { -1 }
-			, ForceAAWeapon_Aircraft { -1 }
-
-			, Ammo_Shared { false }
-			, Ammo_Shared_Group { -1 }
-
-			, SelfHealGainType {}
-			, Passengers_SyncOwner { false }
-			, Passengers_SyncOwner_RevertOnExit { true }
-
-			, OnlyUseLandSequences { false }
-			, SecondaryFireSequenceLandOnly {}
-
-			, PronePrimaryFireFLH {}
-			, ProneSecondaryFireFLH {}
-			, DeployedPrimaryFireFLH {}
-			, DeployedSecondaryFireFLH {}
-
-			, IronCurtain_KeptOnDeploy {}
-			, IronCurtain_Effect {}
-			, IronCurtain_KillWarhead {}
-			, ForceShield_KeptOnDeploy {}
-			, ForceShield_Effect {}
-			, ForceShield_KillWarhead {}
-
-			, Explodes_KillPassengers { true }
-			, Explodes_DuringBuildup { true }
-			, DriverKilled_KeptPassengers { false }
-			, DriverKilled_KillPassengers {}
-			, DeployFireWeapon {}
-			, TargetZoneScanType { TargetZoneScanType::Same }
-
-			, AreaGuardRange {}
-			, MaxGuardRange { Leptons(4096) }
-
-			, Insignia {}
-			, InsigniaFrames { { -1, -1, -1 } }
-			, InsigniaFrame { -1 }
-			, Insignia_ShowEnemy {}
-			, Insignia_Weapon {}
-			, InsigniaFrame_Weapon {}
-			, InsigniaFrames_Weapon {}
-			, Insignia_Passengers {}
-			, InsigniaFrame_Passengers {}
-			, InsigniaFrames_Passengers {}
-
-			, JumpjetTilt { false }
-			, JumpjetTilt_ForwardAccelFactor { 1.0 }
-			, JumpjetTilt_ForwardSpeedFactor { 1.0 }
-			, JumpjetTilt_SidewaysRotationFactor { 1.0 }
-			, JumpjetTilt_SidewaysSpeedFactor { 1.0 }
-
-			, TiltsWhenCrushes_Vehicles {}
-			, TiltsWhenCrushes_Overlays {}
-			, CrushSlowdownMultiplier { 0.2 }
-			, CrushForwardTiltPerFrame {}
-			, CrushOverlayExtraForwardTilt { 0.02 }
-			, SkipCrushSlowdown { false }
-
-			, DigitalDisplay_Disable { false }
-			, DigitalDisplayTypes {}
-
-			, SelectBox {}
-			, HideSelectBox { false }
-
-			, AmmoPipFrame { 13 }
-			, EmptyAmmoPipFrame { -1 }
-			, AmmoPipWrapStartFrame { 14 }
-			, AmmoPipSize {}
-			, AmmoPipOffset { { 0,0 } }
-
-			, ShowSpawnsPips { true }
-			, SpawnsPipFrame { 1 }
-			, EmptySpawnsPipFrame { 0 }
-			, SpawnsPipSize {}
-			, SpawnsPipOffset { { 0,0 } }
-
-			, SpawnFromEdge { EdgeType::Owner }
-			, RetreatToEdge { EdgeType::Owner }
-			, SpawnDistanceFromTarget {}
-			, SpawnHeight {}
-			, LandingDir {}
-			, DroppodType {}
-			, TiberiumEaterType {}
-
-			, CurleyShuffle {}
-
-			, Convert_Deploy { }
-			, Convert_Undeploy { }
-			, Convert_HumanToComputer { }
-			, Convert_ComputerToHuman { }
-			, Convert_ResetMindControl { false }
-
-			, CrateGoodie_RerollChance { 0.0 }
-
-			, Tint_Color {}
-			, Tint_Intensity { 0.0 }
-			, Tint_VisibleToHouses { AffectedHouse::All }
-
-			, RevengeWeapon {}
-			, RevengeWeapon_AffectsHouse { AffectedHouse::All }
-
-			, AttachEffects {}
-
-			, RecountBurst {}
-
-			, AdvancedDrive_Reverse { true }
-			, AdvancedDrive_Reverse_FaceTarget { true }
-			, AdvancedDrive_Reverse_FaceTargetRange { Leptons(4096) }
-			, AdvancedDrive_Reverse_MinimumDistance { Leptons(640) }
-			, AdvancedDrive_Reverse_RetreatDuration { 150 }
-			, AdvancedDrive_Reverse_Speed { 0.85 }
-			, AdvancedDrive_Hover { false }
-			, AdvancedDrive_Hover_Sink { true }
-			, AdvancedDrive_Hover_Spin { true }
-			, AdvancedDrive_Hover_Tilt { true }
-			, AdvancedDrive_Hover_Height {}
-			, AdvancedDrive_Hover_Dampen {}
-			, AdvancedDrive_Hover_Bob {}
-
-			, BuildLimitGroup_Types {}
-			, BuildLimitGroup_Nums {}
-			, BuildLimitGroup_Factor { 1 }
-			, BuildLimitGroup_ContentIfAnyMatch { false }
-			, BuildLimitGroup_NotBuildableIfQueueMatch { false }
-			, BuildLimitGroup_ExtraLimit_Types {}
-			, BuildLimitGroup_ExtraLimit_Nums {}
-			, BuildLimitGroup_ExtraLimit_MaxCount {}
-			, BuildLimitGroup_ExtraLimit_MaxNum { 0 }
-
-			, Turret_IdleRotate {}
-			, Turret_PointToMouse {}
-			, TurretROT {}
-			, Turret_Restriction { DirStruct(32768) }
-			, Turret_ExtraAngle { DirStruct(0) }
-			, Turret_BodyFoundation {}
-			, Turret_BodyOrientation { false }
-			, Turret_BodyOrientationAngle { DirStruct(0) }
-			, Turret_BodyOrientationSymmetric { true }
-
-			, TargetExtraThreat { false }
-			, TargetExtraThreat_Angles {}
-			, TargetExtraThreat_Multipliers {}
-			, TargetExtraThreat_Turret { true }
-
-			, CanBeBuiltOn { false }
-			, ExtraBaseNormal { false }
-			, ExtraBaseForAllyBuilding { false }
-
-			, Cameo_AlwaysExist {}
-			, Cameo_OverrideTechnos {}
-			, Cameo_RequiredHouses { 0xFFFFFFFF }
-			, IsMetTheEssentialConditions { false }
-			, IsGreyCameoForCurrentPlayer { false }
-			, IsGreyCameoAbandonedProduct { true }
-			, UIDescription_Unbuildable {}
-
-			, CameoPal {}
-			, CameoPCX {}
-			, GreyCameoPCX {}
-
-			, SelectedInfo_UpperType { DisplayInfoType::Shield }
-			, SelectedInfo_UpperIndex { 0 }
-			, SelectedInfo_UpperColor { { 153, 153, 255 } }
-			, SelectedInfo_UpperDivisor {}
-			, SelectedInfo_BelowType { DisplayInfoType::Health }
-			, SelectedInfo_BelowIndex { 0 }
-			, SelectedInfo_BelowColor { { 0, 0, 0 } }
-			, SelectedInfo_BelowDivisor {}
-			, SelectedInfo_CameoType { DisplayInfoType::Ammo }
-			, SelectedInfo_CameoIndex { 0 }
-			, SelectedInfo_Button {}
-			, UIDescription_HoveredInfo {}
-
-			, AmphibiousEnter {}
-			, AmphibiousUnload {}
-			, NoQueueUpToEnter {}
-			, NoQueueUpToEnter_BoardDistance {}
-			, NoQueueUpToUnload {}
-			, Passengers_BySize { true }
-
-			, RateDown_Delay { 0 }
-			, RateDown_Reset { false }
-			, RateDown_Cover_Value { 0 }
-			, RateDown_Cover_AmmoBelow { -2 }
-
-			, UniqueTechno { false }
-
-			, Missile_Tracing { false }
-
-			, CanManualReload { false }
-			, CanManualReload_WhenFull { false }
-			, CanManualReload_ResetROF { true }
-			, CanManualReload_DetonateWarhead {}
-			, CanManualReload_DetonateConsume { 0 }
-
-			, NoRearm_UnderEMP {}
-			, NoRearm_Temporal {}
-			, NoReload_UnderEMP {}
-			, NoReload_Temporal {}
-			, NoTurret_TrackTarget {}
-
-			, KeepWarping { false }
-			, KeepWarping_Distance {}
-
-			, FiringByPassMovingCheck { false }
-
-			, PlayerGuardModePursuit {}
-			, PlayerGuardModeStray {}
-			, PlayerGuardModeGuardRangeMultiplier {}
-			, PlayerGuardModeGuardRangeAddend {}
-			, PlayerGuardStationaryStray {}
-			, AIGuardModePursuit {}
-			, AIGuardModeStray {}
-			, AIGuardModeGuardRangeMultiplier {}
-			, AIGuardModeGuardRangeAddend {}
-			, AIGuardStationaryStray {}
-
-			, Engineer_CanAutoFire { false }
-
-			, DigStartROT { -1 }
-			, DigInSpeed { -1 }
-			, DigOutSpeed { -1 }
-			, DigEndROT { -1 }
-
-			, FlightClimb { -1 }
-			, FlightCrash { -1 }
-
-			, ExplodeOnDestroy {}
-			, FireDeathWeaponOnCrushed {}
-
-			, ExitCoord {}
-
-			, MissileSpawnUseOtherFLHs { false }
-
-			, HarvesterQuickUnloader { false }
-
-			, ThisIsAJumpjet { nullptr }
-
-			, IgnoreRallyPoint { false }
-
-			, JumpjetSpeedType { 3 }
-
-			, KeepAlive {}
-
-			, Wake { }
-			, Wake_Grapple { }
-			, Wake_Sinking { }
-			, MakesWake { }
-
-			, AINormalTargetingDelay {}
-			, PlayerNormalTargetingDelay {}
-			, AIGuardAreaTargetingDelay {}
-			, PlayerGuardAreaTargetingDelay {}
-			, AIAttackMoveTargetingDelay {}
-			, PlayerAttackMoveTargetingDelay {}
-			, DistributeTargetingFrame {}
-
-			, DigitalDisplay_Health_FakeAtDisguise { true }
-
-			, AttackMove_Aggressive {}
-			, AttackMove_UpdateTarget {}
-
-			, BunkerableAnyway { false }
-			, KeepTargetOnMove { false }
-			, KeepTargetOnMove_Weapon { -1 }
-			, KeepTargetOnMove_NoMorePursuit { true }
-			, KeepTargetOnMove_ExtraDistance { Leptons(0) }
-
-			, DirectionalArmor {}
-			, DirectionalArmor_FrontMultiplier {}
-			, DirectionalArmor_SideMultiplier {}
-			, DirectionalArmor_BackMultiplier {}
-			, DirectionalArmor_FrontField {}
-			, DirectionalArmor_BackField {}
-
-			, Power { }
-
-			, AllowAirstrike { }
-
-			, Image_ConditionYellow { }
-			, Image_ConditionRed { }
-			, WaterImage_ConditionYellow { }
-			, WaterImage_ConditionRed { }
-			, NeedDamagedImage { false }
-
-			, InitialSpawnsNumber { }
-			, Spawns_Queue { }
-
-			, Spawner_RecycleRange { Leptons(-1) }
-			, Spawner_RecycleAnim { }
-			, Spawner_RecycleCoord { {0,0,0} }
-			, Spawner_RecycleOnTurret { false }
-
-			, DefaultVisualCharacter { 0 }
-			, DefaultVisualCharacterToSelf { }
-			, DefaultVisualCharacterToAlly { }
-			, DefaultVisualCharacterToEnemy { }
-
-			, IgnoredByMouse { false }
-			, IgnoredByMouse_ToSelf { }
-			, IgnoredByMouse_ToAlly { }
-			, IgnoredByMouse_ToEnemy { }
-
-			, Cloneable { true }
-			, ClonedAt { }
-			, ClonedAs { }
-
-			, Sinkable { }
-			, Sinkable_SquidGrab { true }
-			, SinkSpeed { 5 }
-
-			, ProneSpeed { }
-			, DamagedSpeed { }
-
-			, SuppressKillWeapons { false }
-			, SuppressKillWeapons_Types { }
-
-			, Promote_VeteranAnimation { }
-			, Promote_EliteAnimation { }
-
-			, WreckageType { }
-			, WreckageInitialHealthPercent { }
-			, WreckageDeactive { true }
-			, WreckageMarkUp { true }
-			, WreckageOwner { OwnerHouseKind::Default }
-			, WreckageLeaveOnWater { false }
-			, WreckageLeaveInAir { false }
-			, WreckageSwapLocomotor { false }
-
-			, RadarInvisibleToHouse {}
-
-			, Overload_Count {}
-			, Overload_Damage {}
-			, Overload_Frames {}
-			, Overload_DeathSound {}
-			, Overload_ParticleSys {}
-			, Overload_ParticleSysCount { 5 }
-
-			, AttachmentTypes {}
-			, AttachmentTopLayerMinHeight { RulesExt::Global()->AttachmentTopLayerMinHeight }
-			, AttachmentUndergroundLayerMaxHeight { RulesExt::Global()->AttachmentUndergroundLayerMaxHeight }
-
-			, Harvester_CanGuardArea { false }
-			, Harvester_CanGuardArea_RequireTarget { false }
-			, HarvesterScanAfterUnload {}
-
-			, ExtendedAircraftMissions {}
-			, ExtendedAircraftMissions_SmoothMoving {}
-			, ExtendedAircraftMissions_EarlyDescend {}
-			, ExtendedAircraftMissions_RearApproach {}
-			, ExtendedAircraftMissions_FastScramble {}
-			, ExtendedAircraftMissions_UnlandDamage {}
-
-			, Squad_Members {}
-			, Squad_IsInitAsTeam { false }
-
-			, FallingDownDamage { 1.0 }
-			, FallingDownDamage_Water {}
-			, FallingDownDamage_AllowEMP { true }
-
-			, Ammo_AutoConvertMinimumAmount { -1 }
-			, Ammo_AutoConvertMaximumAmount { -1 }
-			, Ammo_AutoConvertType { nullptr }
-
-			, FiringForceScatter { true }
-
-			, FireUp { -1 }
-			, FireUp_ResetInRetarget { true }
+		, HealthBar_Hide { false }
+		, HealthBar_HidePips { false }
+		, HealthBar_Permanent { false }
+		, HealthBar_Permanent_PipScale { false }
+		, UIDescription {}
+		, LowSelectionPriority { false }
+		, LowDeployPriority { false }
+		, GroupAs { NONE_STR }
+		, WeaponGroupAs {}
+		, RadarJamRadius { 0 }
+		, RadarJamHouses {}
+		, RadarJamDelay {}
+		, RadarJamAffect {}
+		, RadarJamIgnore {}
+		, InhibitorRange {}
+		, DesignatorRange {}
+		, FactoryPlant_Multiplier { 1.0f }
+		, MindControlRangeLimit {}
+		, MindControl_IgnoreSize {}
+		, MindControlSize { 1 }
+		, MindControlLink_VisibleToHouse{}
+
+		, InterceptorType { nullptr }
+
+		, TurretOffset { { 0, 0, 0 } }
+		, TurretShadow { }
+		, ShadowIndices { }
+		, ShadowIndex_Frame { 0 }
+		, Spawner_LimitRange { false }
+		, Spawner_ExtraLimitRange { 0 }
+		, SpawnerRange { 0 }
+		, EliteSpawnerRange { 0 }
+		, Spawner_DelayFrames {}
+		, Spawner_AttackImmediately {}
+		, Spawner_ReturnOnRepairDone { false }
+		, Spawner_UseTurretFacing {}
+		, Harvester_Counted {}
+		, Promote_IncludeSpawns {}
+		, ImmuneToCrit { false }
+		, MultiMindControl_ReleaseVictim {}
+		, CameoPriority { 0 }
+		, CameoPriority_Houses { 0 }
+		, AltCameoPCX {}
+		, NoManualMove { false }
+		, NoManualEject { false }
+		, InitialStrength {}
+		, ReloadInTransport {}
+		, ForbidParallelAIQueues { false }
+		, IgnoreForBaseCenter { false }
+		, TintColorAirstrike { 0 }
+		, LaserTargetColor {}
+		, AirstrikeLineColor {}
+		, ShieldType { nullptr }
+		, PassengerDeletionType { nullptr }
+
+		, WarpOut {}
+		, WarpIn {}
+		, Chronoshift_WarpOut {}
+		, Chronoshift_WarpIn {}
+		, WarpAway {}
+		, ChronoTrigger {}
+		, ChronoDistanceFactor {}
+		, ChronoMinimumDelay {}
+		, ChronoRangeMinimum {}
+		, ChronoDelay {}
+		, ChronoSpherePreDelay {}
+		, ChronoSphereDelay {}
+		, WarpInWeapon {}
+		, WarpInMinRangeWeapon {}
+		, WarpOutWeapon {}
+		, WarpInWeapon_UseDistanceAsDamage { false }
+
+		, SubterraneanSpeed { -1 }
+		, SubterraneanHeight {}
+
+		, OreGathering_Anims {}
+		, OreGathering_Tiberiums {}
+		, OreGathering_FramesPerDir {}
+		, LaserTrailData {}
+		, AlternateFLH_OnTurret {}
+		, AlternateFLH_ApplyVehicle {}
+		, DestroyAnim_Random {}
+
+		, DefaultDisguise { nullptr }
+		, UseDisguiseMovementSpeed {}
+
+		, OpenTopped_RangeBonus {}
+		, OpenTopped_DamageMultiplier {}
+		, OpenTopped_WarpDistance {}
+		, OpenTopped_IgnoreRangefinding {}
+		, OpenTopped_AllowFiringIfAttackedByLocomotor {}
+		, OpenTopped_AllowFiringIfDeactivated {}
+		, OpenTopped_ShareTransportTarget {}
+		, OpenTopped_UseTransportRangeModifiers {}
+		, OpenTopped_CheckTransportDisableWeapons {}
+		, OpenTopped_DecloakToFire {}
+		, OpenTopped_FireWhileMoving {}
+		, OpenTransport_RangeBonus {}
+		, OpenTransport_DamageMultiplier {}
+		, OpenTransport_FireWhileMoving {}
+
+		, AggressiveStance { false }
+		, AggressiveStance_Togglable {}
+		, VoiceEnterAggressiveStance { -1 }
+		, VoiceExitAggressiveStance { -1 }
+
+		, CeaseFireStance { false }
+		, CeaseFireStance_Togglable {}
+		, VoiceEnterCeaseFireStance { -1 }
+		, VoiceExitCeaseFireStance { -1 }
+
+		, AutoTargetOwnPosition { false }
+		, AutoTargetOwnPosition_Self { false }
+		, NoSecondaryWeaponFallback { false }
+		, NoSecondaryWeaponFallback_AllowAA { false }
+		, AllowWeaponSelectAgainstWalls {}
+		, NoAmmoWeapon { -1 }
+		, NoAmmoAmount { 0 }
+		, JumpjetRotateOnCrash {}
+		, ShadowSizeCharacteristicHeight { }
+
+		, IsSimpleDeployer_ConsiderPathfinding { false }
+		, IsSimpleDeployer_DisallowedLandTypes {}
+		, DeployDir {}
+		, DeployingAnims {}
+		, DeployingAnim_KeepUnitVisible { false }
+		, DeployingAnim_ReverseForUndeploy { true }
+		, DeployingAnim_UseUnitDrawer { true }
+
+		, HarvesterDumpAmount {}
+
+		, Ammo_AddOnDeploy { 0 }
+		, Ammo_AutoDeployMinimumAmount { -1 }
+		, Ammo_AutoDeployMaximumAmount { -1 }
+		, Ammo_DeployUnlockMinimumAmount { -1 }
+		, Ammo_DeployUnlockMaximumAmount { -1 }
+
+		, AutoDeath_Behavior {}
+		, AutoDeath_AllowLimboed {}
+		, AutoDeath_VanishAnimation {}
+		, AutoDeath_OnAmmoDepletion { false }
+		, AutoDeath_OnOwnerChange { false }
+		, AutoDeath_OnOwnerChange_IgnoreRevertOnExit {}
+		, AutoDeath_OnOwnerChange_HumanToComputer {}
+		, AutoDeath_OnOwnerChange_ComputerToHuman {}
+		, AutoDeath_AfterDelay { 0 }
+		, AutoDeath_TechnosDontExist {}
+		, AutoDeath_TechnosDontExist_Any { false }
+		, AutoDeath_TechnosDontExist_AllowLimboed {}
+		, AutoDeath_TechnosDontExist_Houses { AffectedHouse::Owner }
+		, AutoDeath_TechnosExist {}
+		, AutoDeath_TechnosExist_Any { true }
+		, AutoDeath_TechnosExist_AllowLimboed {}
+		, AutoDeath_TechnosExist_Houses { AffectedHouse::Owner }
+
+		, Slaved_OwnerWhenMasterKilled { SlaveChangeOwnerType::Killer }
+		, SlavesFreeSound {}
+		, SellSound {}
+		, EVA_Sold {}
+
+		, CombatAlert {}
+		, CombatAlert_NotBuilding {}
+		, CombatAlert_UseFeedbackVoice {}
+		, CombatAlert_UseAttackVoice {}
+		, CombatAlert_UseEVA {}
+		, CombatAlert_EVA {}
+
+		, EnemyUIName {}
+		, FakeOf {}
+
+		, VoiceCreated {}
+		, VoicePickup {}
+
+		, ForceWeapon_Check { false }
+		, ForceWeapon_Naval_Decloaked { -1 }
+		, ForceWeapon_Cloaked { -1 }
+		, ForceWeapon_Disguised { -1 }
+		, ForceWeapon_UnderEMP { -1 }
+		, ForceWeapon_InRange_TechnoOnly {}
+		, ForceWeapon_InRange {}
+		, ForceWeapon_InRange_Overrides {}
+		, ForceWeapon_InRange_ApplyRangeModifiers {}
+		, ForceAAWeapon_InRange {}
+		, ForceAAWeapon_InRange_Overrides {}
+		, ForceAAWeapon_InRange_ApplyRangeModifiers {}
+		, ForceWeapon_Buildings { -1 }
+		, ForceWeapon_Defenses { -1 }
+		, ForceWeapon_Infantry { -1 }
+		, ForceWeapon_Naval_Units { -1 }
+		, ForceWeapon_Units { -1 }
+		, ForceWeapon_Aircraft { -1 }
+		, ForceAAWeapon_Infantry { -1 }
+		, ForceAAWeapon_Units { -1 }
+		, ForceAAWeapon_Aircraft { -1 }
+
+		, Ammo_Shared { false }
+		, Ammo_Shared_Group { -1 }
+
+		, SelfHealGainType {}
+		, Passengers_SyncOwner {}
+		, Passengers_SyncOwner_RevertOnExit {}
+
+		, OnlyUseLandSequences { false }
+		, SecondaryFireSequenceLandOnly {}
+
+		, PronePrimaryFireFLH {}
+		, ProneSecondaryFireFLH {}
+		, DeployedPrimaryFireFLH {}
+		, DeployedSecondaryFireFLH {}
+
+		, IronCurtain_KeptOnDeploy {}
+		, IronCurtain_Effect {}
+		, IronCurtain_KillWarhead {}
+		, ForceShield_KeptOnDeploy {}
+		, ForceShield_Effect {}
+		, ForceShield_KillWarhead {}
+
+		, Explodes_KillPassengers {}
+		, DriverKilled_KeptPassengers {}
+		, DriverKilled_KillPassengers {}
+		, DeployFireWeapon {}
+		, TargetZoneScanType { TargetZoneScanType::Same }
+
+		, AreaGuardRange {}
+		, MaxGuardRange { Leptons(4096) }
+
+		, Insignia {}
+		, InsigniaFrames { { -1, -1, -1 } }
+		, InsigniaFrame { -1 }
+		, Insignia_ShowEnemy {}
+		, Insignia_Weapon {}
+		, InsigniaFrame_Weapon {}
+		, InsigniaFrames_Weapon {}
+		, Insignia_Passengers {}
+		, InsigniaFrame_Passengers {}
+		, InsigniaFrames_Passengers {}
+
+		, JumpjetTilt { false }
+		, JumpjetTilt_ForwardAccelFactor { 1.0 }
+		, JumpjetTilt_ForwardSpeedFactor { 1.0 }
+		, JumpjetTilt_SidewaysRotationFactor { 1.0 }
+		, JumpjetTilt_SidewaysSpeedFactor { 1.0 }
+
+		, TiltsWhenCrushes_Vehicles {}
+		, TiltsWhenCrushes_Overlays {}
+		, CrushSlowdownMultiplier { 0.2 }
+		, CrushForwardTiltPerFrame {}
+		, CrushOverlayExtraForwardTilt { 0.02 }
+		, SkipCrushSlowdown { false }
+
+		, DigitalDisplay_Disable { false }
+		, DigitalDisplayTypes {}
+
+		, SelectBox {}
+		, HideSelectBox { false }
+
+		, AmmoPipFrame { 13 }
+		, EmptyAmmoPipFrame { -1 }
+		, AmmoPipWrapStartFrame { 14 }
+		, AmmoPipSize {}
+		, AmmoPipOffset { { 0,0 } }
+
+		, ShowSpawnsPips { true }
+		, SpawnsPipFrame { 1 }
+		, EmptySpawnsPipFrame { 0 }
+		, SpawnsPipSize {}
+		, SpawnsPipOffset { { 0,0 } }
+
+		, SpawnFromEdge { EdgeType::Owner }
+		, RetreatToEdge { EdgeType::Owner }
+		, SpawnDistanceFromTarget {}
+		, SpawnHeight {}
+		, LandingDir {}
+		, DroppodType {}
+		, TiberiumEaterType {}
+
+		, CurleyShuffle {}
+
+		, Convert_Deploy {}
+		, Convert_Undeploy {}
+		, Convert_HumanToComputer {}
+		, Convert_ComputerToHuman {}
+		, Convert_ResetMindControl {}
+
+		, CrateGoodie_RerollChance { 0.0 }
+
+		, Tint_Color {}
+		, Tint_Intensity { 0.0 }
+		, Tint_VisibleToHouses { AffectedHouse::All }
+
+		, RevengeWeapon {}
+		, RevengeWeapon_AffectsHouse { AffectedHouse::All }
+
+		, AttachEffects {}
+
+		, RecountBurst {}
+
+		, AdvancedDrive_Reverse { true }
+		, AdvancedDrive_Reverse_FaceTarget { true }
+		, AdvancedDrive_Reverse_FaceTargetRange { Leptons(4096) }
+		, AdvancedDrive_Reverse_MinimumDistance { Leptons(640) }
+		, AdvancedDrive_Reverse_RetreatDuration { 150 }
+		, AdvancedDrive_Reverse_Speed { 0.85 }
+		, AdvancedDrive_Hover { false }
+		, AdvancedDrive_Hover_Sink { true }
+		, AdvancedDrive_Hover_Spin { true }
+		, AdvancedDrive_Hover_Tilt { true }
+		, AdvancedDrive_Hover_Height {}
+		, AdvancedDrive_Hover_Dampen {}
+		, AdvancedDrive_Hover_Bob {}
+
+		, BuildLimitGroup_Types {}
+		, BuildLimitGroup_Nums {}
+		, BuildLimitGroup_Factor { 1 }
+		, BuildLimitGroup_ContentIfAnyMatch {}
+		, BuildLimitGroup_NotBuildableIfQueueMatch {}
+		, BuildLimitGroup_ExtraLimit_Types {}
+		, BuildLimitGroup_ExtraLimit_Nums {}
+		, BuildLimitGroup_ExtraLimit_MaxCount {}
+		, BuildLimitGroup_ExtraLimit_MaxNum { 0 }
+
+		, Turret_IdleRotate {}
+		, Turret_PointToMouse {}
+		, TurretROT {}
+		, Turret_Restriction { DirStruct(32768) }
+		, Turret_ExtraAngle { DirStruct(0) }
+		, Turret_BodyFoundation {}
+		, Turret_BodyOrientation { false }
+		, Turret_BodyOrientationAngle { DirStruct(0) }
+		, Turret_BodyOrientationSymmetric { true }
+
+		, TargetExtraThreat { false }
+		, TargetExtraThreat_Angles {}
+		, TargetExtraThreat_Multipliers {}
+		, TargetExtraThreat_Turret { true }
+
+		, CanBeBuiltOn { false }
+		, ExtraBaseNormal { false }
+		, ExtraBaseForAllyBuilding { false }
+
+		, Cameo_AlwaysExist {}
+		, Cameo_OverrideTechnos {}
+		, Cameo_RequiredHouses { 0xFFFFFFFF }
+		, IsMetTheEssentialConditions { false }
+		, IsGreyCameoForCurrentPlayer { false }
+		, IsGreyCameoAbandonedProduct { true }
+		, UIDescription_Unbuildable {}
+
+		, CameoPal {}
+		, CameoPCX {}
+		, GreyCameoPCX {}
+
+		, SelectedInfo_UpperType { DisplayInfoType::Shield }
+		, SelectedInfo_UpperIndex { 0 }
+		, SelectedInfo_UpperColor { { 153, 153, 255 } }
+		, SelectedInfo_UpperDivisor {}
+		, SelectedInfo_BelowType { DisplayInfoType::Health }
+		, SelectedInfo_BelowIndex { 0 }
+		, SelectedInfo_BelowColor { { 0, 0, 0 } }
+		, SelectedInfo_BelowDivisor {}
+		, SelectedInfo_CameoType { DisplayInfoType::Ammo }
+		, SelectedInfo_CameoIndex { 0 }
+		, SelectedInfo_Button {}
+		, UIDescription_HoveredInfo {}
+
+		, AmphibiousEnter {}
+		, AmphibiousUnload {}
+		, NoQueueUpToEnter {}
+		, NoQueueUpToEnter_BoardDistance {}
+		, NoQueueUpToUnload {}
+		, Passengers_BySize { true }
+
+		, RateDown_Delay { 0 }
+		, RateDown_Reset { false }
+		, RateDown_Cover_Value { 0 }
+		, RateDown_Cover_AmmoBelow { -2 }
+
+		, UniqueTechno { false }
+
+		, Missile_Tracing { false }
+
+		, CanManualReload { false }
+		, CanManualReload_WhenFull { false }
+		, CanManualReload_ResetROF { true }
+		, CanManualReload_DetonateWarhead {}
+		, CanManualReload_DetonateConsume { 0 }
+
+		, NoRearm_UnderEMP {}
+		, NoRearm_Temporal {}
+		, NoReload_UnderEMP {}
+		, NoReload_Temporal {}
+		, NoTurret_TrackTarget {}
+
+		, KeepWarping { false }
+		, KeepWarping_Distance {}
+
+		, FiringByPassMovingCheck { false }
+
+		, PlayerGuardModePursuit {}
+		, PlayerGuardModeStray {}
+		, PlayerGuardModeGuardRangeMultiplier {}
+		, PlayerGuardModeGuardRangeAddend {}
+		, PlayerGuardStationaryStray {}
+		, AIGuardModePursuit {}
+		, AIGuardModeStray {}
+		, AIGuardModeGuardRangeMultiplier {}
+		, AIGuardModeGuardRangeAddend {}
+		, AIGuardStationaryStray {}
+
+		, Engineer_CanAutoFire { false }
+
+		, DigStartROT { -1 }
+		, DigInSpeed { -1 }
+		, DigOutSpeed { -1 }
+		, DigEndROT { -1 }
+
+		, FlightClimb { -1 }
+		, FlightCrash { -1 }
+
+		, ExplodeOnDestroy {}
+		, FireDeathWeaponOnCrushed {}
+
+		, ExitCoord {}
+
+		, MissileSpawnUseOtherFLHs { false }
+
+		, HarvesterQuickUnloader { false }
+
+		, ThisIsAJumpjet { nullptr }
+
+		, IgnoreRallyPoint { false }
+
+		, JumpjetSpeedType { 3 }
+
+		, KeepAlive {}
+
+		, Wake { }
+		, Wake_Grapple { }
+		, Wake_Sinking { }
+		, MakesWake { }
+
+		, CrashSpin_Multiplier { 1.0f }
+
+		, AINormalTargetingDelay {}
+		, PlayerNormalTargetingDelay {}
+		, AIGuardAreaTargetingDelay {}
+		, PlayerGuardAreaTargetingDelay {}
+		, AIAttackMoveTargetingDelay {}
+		, PlayerAttackMoveTargetingDelay {}
+		, DistributeTargetingFrame {}
+
+		, DigitalDisplay_Health_FakeAtDisguise {}
+
+		, AttackMove_Aggressive {}
+		, AttackMove_UpdateTarget {}
+
+		, BunkerableAnyway { false }
+		, KeepTargetOnMove { false }
+		, KeepTargetOnMove_Weapon { -1 }
+		, KeepTargetOnMove_NoMorePursuit { true }
+		, KeepTargetOnMove_ExtraDistance { Leptons(0) }
+
+		, DirectionalArmor {}
+		, DirectionalArmor_FrontMultiplier {}
+		, DirectionalArmor_SideMultiplier {}
+		, DirectionalArmor_BackMultiplier {}
+		, DirectionalArmor_FrontField {}
+		, DirectionalArmor_BackField {}
+
+		, Power { }
+
+		, AllowAirstrike { }
+
+		, Image_ConditionYellow { }
+		, Image_ConditionRed { }
+		, WaterImage_ConditionYellow { }
+		, WaterImage_ConditionRed { }
+		, NeedDamagedImage { false }
+
+		, InitialSpawnsNumber { }
+		, Spawns_Queue { }
+
+		, Spawner_RecycleRange {}
+		, Spawner_RecycleAnim { }
+		, Spawner_RecycleCoord { {0,0,0} }
+		, Spawner_RecycleOnTurret {}
+
+		, DefaultVisualCharacter { 0 }
+		, DefaultVisualCharacterToSelf { }
+		, DefaultVisualCharacterToAlly { }
+		, DefaultVisualCharacterToEnemy { }
+
+		, IgnoredByMouse { false }
+		, IgnoredByMouse_ToSelf { }
+		, IgnoredByMouse_ToAlly { }
+		, IgnoredByMouse_ToEnemy { }
+
+		, Cloneable { true }
+		, ClonedAt { }
+		, ClonedAs { }
+
+		, Sinkable { }
+		, Sinkable_SquidGrab { true }
+		, SinkSpeed { 5 }
+
+		, ProneSpeed { }
+		, DamagedSpeed { }
+
+		, SuppressKillWeapons { false }
+		, SuppressKillWeapons_Types { }
+
+		, Promote_VeteranAnimation { }
+		, Promote_EliteAnimation { }
+
+		, WreckageType { }
+		, WreckageInitialHealthPercent { }
+		, WreckageDeactive { true }
+		, WreckageMarkUp { true }
+		, WreckageOwner { OwnerHouseKind::Default }
+		, WreckageLeaveOnWater { false }
+		, WreckageLeaveInAir { false }
+		, WreckageSwapLocomotor { false }
+
+		, RadarInvisibleToHouse {}
+
+		, Overload_Count {}
+		, Overload_Damage {}
+		, Overload_Frames {}
+		, Overload_DeathSound {}
+		, Overload_ParticleSys {}
+		, Overload_ParticleSysCount {}
+
+		, AttachmentTypes {}
+		, AttachmentTopLayerMinHeight { RulesExt::Global()->AttachmentTopLayerMinHeight }
+		, AttachmentUndergroundLayerMaxHeight { RulesExt::Global()->AttachmentUndergroundLayerMaxHeight }
+
+		, Harvester_CanGuardArea { false }
+		, Harvester_CanGuardArea_RequireTarget { false }
+		, HarvesterScanAfterUnload {}
+
+		, ExtendedAircraftMissions {}
+		, ExtendedAircraftMissions_SmoothMoving {}
+		, ExtendedAircraftMissions_EarlyDescend {}
+		, ExtendedAircraftMissions_RearApproach {}
+		, ExtendedAircraftMissions_FastScramble {}
+		, ExtendedAircraftMissions_UnlandDamage {}
+
+		, Squad_Members {}
+		, Squad_IsInitAsTeam { false }
+
+		, FallingDownDamage {}
+		, FallingDownDamage_Water {}
+		, FallingDownDamage_AllowEMP {}
+
+		, Ammo_AutoConvertMinimumAmount { -1 }
+		, Ammo_AutoConvertMaximumAmount { -1 }
+		, Ammo_AutoConvertType { nullptr }
+
+		, FireUp { -1 }
+		, FireUp_ResetInRetarget { true }
 			//, SecondaryFire {}
 
-			, DebrisTypes_Limit {}
-			, DebrisMinimums {}
+		, DebrisTypes_Limit {}
+		, DebrisMinimums {}
 
-			, EngineerRepairAmount { 0 }
+		, EngineerRepairAmount { 0 }
 
-			, AttackMove_Follow { false }
-			, AttackMove_Follow_IncludeAir { false }
-			, AttackMove_Follow_IfMindControlIsFull { false }
-			, AttackMove_StopWhenTargetAcquired { }
-			, AttackMove_PursuitTarget { false }
+		, AttackMove_Follow { false }
+		, AttackMove_Follow_IncludeAir { false }
+		, AttackMove_Follow_IfMindControlIsFull { false }
+		, AttackMove_StopWhenTargetAcquired { }
+		, AttackMove_PursuitTarget { false }
 
-			, MultiWeapon { false }
-			, MultiWeapon_IsSecondary {}
-			, MultiWeapon_SelectCount { 2 }
-			, ReadMultiWeapon { false }
-			, ThreatTypes { ThreatType::Normal,ThreatType::Normal }
-			, CombatDamages { 0,0 }
+		, MultiWeapon { false }
+		, MultiWeapon_IsSecondary {}
+		, MultiWeapon_SelectCount { 2 }
+		, ReadMultiWeapon { false }
+		, ThreatTypes { ThreatType::Normal,ThreatType::Normal }
+		, CombatDamages { 0,0 }
 
-			, VoiceIFVRepair { -1 }
-			, VoiceWeaponAttacks {}
-			, VoiceEliteWeaponAttacks {}
+		, VoiceIFVRepair { -1 }
+		, VoiceWeaponAttacks {}
+		, VoiceEliteWeaponAttacks {}
 
-			, InfantryAutoDeploy {}
+		, InfantryAutoDeploy {}
 
-			, TeamMember_ConsideredAs {}
+		, TeamMember_ConsideredAs {}
 
-			, TurretResponse {}
+		, TurretResponse {}
 
-			, ExtraTargeting_Excluded { false }
+		, ExtraTargeting_Excluded { false }
 
-			, AIDefendBase_Ignore { false }
+		, AIDefendBase_Ignore { false }
 
-			, Missile_UseDeathWeaponWhenIntercepted { false }
+		, Missile_UseDeathWeaponWhenIntercepted { false }
 
-			, NoAutoFire_AI { false }
+		, NoAutoFire_AI { false }
 
-			, ReorganizeToWhenDefeated_Excluded { false }
-			, AttackFriendlies { false,false }
+		, ReorganizeToWhenDefeated_Excluded { false }
+		, AttackFriendlies { false,false }
 
-			, Deploy_SkipPassengerUnload { false }
-			, Deploy_NoPassenger { false }
-			, Deploy_NoTiberium { false }
+		, Deploy_SkipPassengerUnload { false }
+		, Deploy_NoPassenger { false }
+		, Deploy_NoTiberium { false }
 
-			, DrainMoneyFrameDelay {}
-			, DrainMoneyAmount {}
-			, DrainAnimationType {}
-			, DrainMoneyDisplay {}
-			, DrainMoneyDisplay_Houses {}
-			, DrainMoneyDisplay_Offset { Point2D::Empty }
-			, DrainMoneyDisplay_OnTarget {}
-			, DrainMoneyDisplay_OnTarget_UseDisplayIncome {}
+		, DrainMoneyFrameDelay {}
+		, DrainMoneyAmount {}
+		, DrainAnimationType {}
+		, DrainMoneyDisplay {}
+		, DrainMoneyDisplay_Houses {}
+		, DrainMoneyDisplay_Offset { Point2D::Empty }
+		, DrainMoneyDisplay_OnTarget {}
+		, DrainMoneyDisplay_OnTarget_UseDisplayIncome {}
 
-			, ParadropMission {}
-			, AIParadropMission {}
-			, ParadropDelay {}
-			, ParadropEndDelay {}
+		, ParadropMission {}
+		, AIParadropMission {}
+		, ParadropDelay {}
+		, ParadropEndDelay {}
 
-			, PenetratesTransport_Level {}
-			, PenetratesTransport_PassThroughMultiplier { 1.0 }
-			, PenetratesTransport_FatalRateMultiplier { 1.0 }
-			, PenetratesTransport_DamageMultiplier { 1.0 }
+		, PenetratesTransport_Level {}
+		, PenetratesTransport_PassThroughMultiplier { 1.0 }
+		, PenetratesTransport_FatalRateMultiplier { 1.0 }
+		, PenetratesTransport_DamageMultiplier { 1.0 }
 
-			, JumpjetClimbIgnoreBuilding {}
+		, JumpjetClimbIgnoreBuilding {}
 
-			, HoverDrownable { true }
+		, HoverDrownable { true }
 
-			, Unsellable {}
+		, Unsellable {}
 
-			, TurretShape { nullptr }
-			, ExtraThreat_Enabled { false }
-			, ExtraThreat_IsThreat {}
-			, AlwaysConsideredThreat { false }
-			, ExtraThreat_InRange {}
-			, ExtraThreatCoefficient_InRangeDistance {}
-			, ExtraThreatCoefficient_Facing {}
-			, ExtraThreatCoefficient_DistanceToLastTarget {}
+		, TurretShape { nullptr }
+		, ExtraThreat_Enabled { false }
+		, ExtraThreat_IsThreat {}
+		, AlwaysConsideredThreat { false }
+		, ExtraThreat_InRange {}
+		, ExtraThreatCoefficient_InRangeDistance {}
+		, ExtraThreatCoefficient_Facing {}
+		, ExtraThreatCoefficient_DistanceToLastTarget {}
 
-			, HarvesterLoadRate {}
-			, HarvesterDumpRate {}
+		, HarvesterLoadRate {}
+		, HarvesterDumpRate {}
 
-			, Parasite_AllowWaterExit {}
+		, Parasite_AllowWaterExit {}
 
-			, FlyNoWobbles {}
+		, FlyNoWobbles {}
 
-			, LandingAnim {}
+		, LandingAnim {}
 
-			, Missile_Cruise { false }
-			, Missile_TakeOffAnim { nullptr }
-			, Missile_TakeOffSeparation { 24 }
+		, Missile_Cruise { false }
+		, Missile_TakeOffAnim { nullptr }
+		, Missile_TakeOffSeparation { 24 }
 
-			, BarrelOverTurret { }
-			, BarrelOffset { 0 }
-			, ExtraBarrelCount { 0 }
-			, ExtraBarrelOffsets { }
-			, ExtraTurretCount { 0 }
-			, ExtraTurretOffsets { }
-			, BurstPerTurret { 0 }
+		, BarrelOverTurret { }
+		, BarrelOffset { 0 }
+		, ExtraBarrelCount { 0 }
+		, ExtraBarrelOffsets { }
+		, ExtraTurretCount { 0 }
+		, ExtraTurretOffsets { }
+		, BurstPerTurret { 0 }
 	{ }
 
 	virtual ~TechnoTypeExt() = default;

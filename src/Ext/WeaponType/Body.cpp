@@ -452,12 +452,9 @@ int WeaponTypeExt::GetTechnoKeepRange(WeaponTypeClass* pThis, TechnoClass* pFire
 
 	const auto pHouse = pFirer->Owner;
 
-	if (pHouse && pHouse->IsControlledByHuman())
-	{
-		if (!pExt->KeepRange_AllowPlayer.Get(RulesExt::Global()->KeepRange_AllowPlayer))
-			return 0;
-	}
-	else if (!pExt->KeepRange_AllowAI.Get(RulesExt::Global()->KeepRange_AllowAI))
+	if (pHouse && pHouse->IsControlledByHuman()
+		? !pExt->KeepRange_AllowPlayer.Get(RulesExt::Global()->KeepRange_AllowPlayer)
+		: !pExt->KeepRange_AllowAI.Get(RulesExt::Global()->KeepRange_AllowAI))
 	{
 		return 0;
 	}

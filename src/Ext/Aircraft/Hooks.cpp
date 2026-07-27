@@ -961,7 +961,7 @@ DEFINE_HOOK(0x4DF3BA, FootClass_UpdateAttackMove_AircraftHoldAttackMoveTarget1, 
 	}
 
 	const auto inSearchRange = pThis->InAuxiliarySearchRange(pThis->Target);
-	const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pThis->GetTechnoType());
+	const auto pTypeExt = TechnoTypeExt::Fetch(pThis->GetTechnoType());
 
 	if (pTypeExt->AttackMove_PursuitTarget && inSearchRange)
 		pThis->SetDestination(pThis->Target, true);
@@ -1174,7 +1174,7 @@ DEFINE_HOOK(0x4CDF84, FlyLocomotionClass_UpdateLoaction_FlightCrash, 0x5)
 {
 	GET(FootClass* const, pLinkedTo, EAX);
 
-	const int crashSpeed = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType())->FlightCrash;
+	const int crashSpeed = TechnoTypeExt::Fetch(pLinkedTo->GetTechnoType())->FlightCrash;
 
 	if (crashSpeed >= 0)
 		R->ECX(crashSpeed);
@@ -1189,7 +1189,7 @@ DEFINE_HOOK(0x4CDE96, FlyLocomotionClass_UpdateLoaction_FlightClimb, 0x6)
 	GET(FlyLocomotionClass* const, pThis, ESI);
 	GET(FootClass* const, pLinkedTo, ECX);
 
-	const int climbSpeed = TechnoTypeExt::ExtMap.Find(pLinkedTo->GetTechnoType())->FlightClimb;
+	const int climbSpeed = TechnoTypeExt::Fetch(pLinkedTo->GetTechnoType())->FlightClimb;
 
 	if (climbSpeed >= 0)
 		vZ = climbSpeed;

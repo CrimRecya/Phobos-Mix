@@ -14,7 +14,6 @@ public:
 	Valueable<SlaveChangeOwnerType> Slaved_OwnerWhenMasterKilled;
 	NullableIdx<VocClass> SlavesFreeSound;
 	Nullable<bool> NotHuman_RandomDeathSequence;
-	Valueable<InfantryTypeClass*> DefaultDisguise;
 	Nullable<double> ProneSpeed;
 	Nullable<bool> OnlyUseLandSequences;
 	Nullable<bool> SecondaryFireSequenceLandOnly;
@@ -32,7 +31,6 @@ public:
 		, Slaved_OwnerWhenMasterKilled { SlaveChangeOwnerType::Killer }
 		, SlavesFreeSound {}
 		, NotHuman_RandomDeathSequence {}
-		, DefaultDisguise {}
 		, ProneSpeed {}
 		, OnlyUseLandSequences {}
 		, SecondaryFireSequenceLandOnly {}
@@ -40,6 +38,10 @@ public:
 		, ProneSecondaryFireFLH {}
 		, DeployedPrimaryFireFLH {}
 		, DeployedSecondaryFireFLH {}
+		, CrouchedWeaponBurstFLHs {}
+		, EliteCrouchedWeaponBurstFLHs {}
+		, DeployedWeaponBurstFLHs {}
+		, EliteDeployedWeaponBurstFLHs {}
 		, InfantryAutoDeploy {}
 	{ }
 

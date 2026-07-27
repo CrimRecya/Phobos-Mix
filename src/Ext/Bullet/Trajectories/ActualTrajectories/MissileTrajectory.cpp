@@ -158,7 +158,7 @@ void MissileTrajectory::OnUnlimbo()
 	this->LastCruiseAltitude = -this->Type->CruiseAltitude;
 
 	// Waiting for launch trigger
-	if (!BulletExt::ExtMap.Find(pBullet)->DispersedTrajectory)
+	if (!BulletExt::Fetch(pBullet)->DispersedTrajectory)
 		this->OpenFire();
 }
 
@@ -249,7 +249,7 @@ void MissileTrajectory::OpenFire()
 
 		// Calculate speed
 		if (this->CalculateBulletVelocity(pType->LaunchSpeed))
-			BulletExt::ExtMap.Find(this->Bullet)->Status |= TrajectoryStatus::Detonate;
+			BulletExt::Fetch(this->Bullet)->Status |= TrajectoryStatus::Detonate;
 	}
 
 	this->PhobosTrajectory::OpenFire();
@@ -264,7 +264,7 @@ CoordStruct MissileTrajectory::GetRetargetCenter() const
 		return pBullet->TargetCoords;
 
 	// Calculate the coordinates of the radius distance ahead
-	const auto futureVelocity = this->MovingVelocity * ((BulletTypeExt::ExtMap.Find(pBullet->Type)->RetargetRadius * Unsorted::LeptonsPerCell) / this->MovingSpeed);
+	const auto futureVelocity = this->MovingVelocity * ((BulletTypeExt::Fetch(pBullet->Type)->RetargetRadius * Unsorted::LeptonsPerCell) / this->MovingSpeed);
 	return CoordStruct { pBullet->Location.X + static_cast<int>(futureVelocity.X), pBullet->Location.Y + static_cast<int>(futureVelocity.Y), pBullet->Location.Z };
 }
 

@@ -264,7 +264,7 @@ void TechnoExt::DrawInsignia(TechnoClass* pThis, Point2D* pLocation, RectangleSt
 
 void TechnoExt::DrawFactoryProgress(BuildingClass* pThis, RectangleStruct* pBounds, Point2D basePosition)
 {
-	const RulesExt::ExtData* const pRulesExt = RulesExt::Global();
+	const auto pRulesExt = RulesExt::Global();
 
 	if (!pRulesExt->FactoryProgressDisplay)
 		return;
@@ -370,7 +370,7 @@ void TechnoExt::DrawSuperProgress(BuildingClass* pThis, RectangleStruct* pBounds
 	const auto superIndex = pType->SuperWeapon;
 	const auto pSuper = (superIndex != -1) ? pOwner->Supers.GetItem(superIndex) : nullptr;
 
-	if (!pSuper || !SWTypeExt::ExtMap.Find(pSuper->Type)->IsAvailable(pOwner))
+	if (!pSuper || !SWTypeExt::Fetch(pSuper->Type)->IsAvailable(pOwner))
 		return;
 
 	const auto maxLength = pType->GetFoundationHeight(false) * 15 >> 1;
@@ -1324,7 +1324,7 @@ void TechnoExt::DrawExtraImage(UnitClass* pThis, Point2D* pLocation, RectangleSt
 	const bool warp = pThis->BeingWarpedOut;
 	pThis->BeingWarpedOut = transparent;
 
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pExt = TechnoExt::Fetch(pThis);
 	const auto pType = pThis->Type;
 
 	const bool shadow = pType->NoShadow;
@@ -1488,7 +1488,7 @@ void TechnoExt::DrawExtraImage(InfantryClass* pThis, Point2D* pLocation, Rectang
 	const bool warp = pThis->BeingWarpedOut;
 	pThis->BeingWarpedOut = transparent;
 
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pExt = TechnoExt::Fetch(pThis);
 	const auto pType = pThis->Type;
 
 	const bool shadow = pType->NoShadow;
@@ -1594,7 +1594,7 @@ void TechnoExt::DrawExtraImage(AircraftClass* pThis, Point2D* pLocation, Rectang
 	const bool warp = pThis->BeingWarpedOut;
 	pThis->BeingWarpedOut = transparent;
 
-	const auto pExt = TechnoExt::ExtMap.Find(pThis);
+	const auto pExt = TechnoExt::Fetch(pThis);
 	const auto pType = pThis->Type;
 
 	const bool shadow = pType->NoShadow;

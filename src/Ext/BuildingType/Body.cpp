@@ -147,7 +147,7 @@ CellStruct BuildingTypeExt::GetWeaponFactoryDoor(BuildingClass* pThis)
 	pThis->GetExitCoords(&buffer, 0);
 	const auto pType = pThis->Type;
 
-	switch (RulesExt::Global()->ExtendedWeaponsFactory ? BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get() : 2)
+	switch (RulesExt::Global()->ExtendedWeaponsFactory ? BuildingTypeExt::Fetch(pType)->WeaponsFactory_Dir.Get() : 2)
 	{
 
 	case 0:
@@ -242,7 +242,7 @@ BuildingTypeClass* BuildingTypeExt::GetAnotherPlacingType(size_t direction, bool
 
 	if (pAnotherType->BuildCat != pType->BuildCat
 		|| pAnotherType->PlaceAnywhere
-		|| BuildingTypeExt::ExtMap.Find(pAnotherType)->LimboBuild)
+		|| BuildingTypeExt::Fetch(pAnotherType)->LimboBuild)
 	{
 		return nullptr;
 	}
@@ -288,7 +288,7 @@ bool BuildingTypeExt::CleanUpBuildingSpace(BuildingTypeClass* pBuildingType, Cel
 					if (TechnoExt::DoesntOccupyCellAsChild(pFoot))
 						continue;
 
-					if (!TechnoTypeExt::ExtMap.Find(pFoot->GetTechnoType())->CanBeBuiltOn && pFoot != pExceptTechno) // No need to check house
+					if (!TechnoTypeExt::Fetch(pFoot->GetTechnoType())->CanBeBuiltOn && pFoot != pExceptTechno) // No need to check house
 					{
 						if (pFoot->GetCurrentSpeed() <= 0 || !pFoot->Locomotor->Is_Moving())
 						{
@@ -758,7 +758,7 @@ CellStruct BuildingTypeExt::SimulatePlacingAction(BuildingTypeClass* pType, Cell
 	cell += difference * Math::min(Math::min(dXRatio, dYRatio), 1.0);
 
 	// Calculate building spacing
-	auto buildGap = BuildingTypeExt::ExtMap.Find(pType)->AutoBuilding_Gap.Get(RulesExt::Global()->AutoBuilding_Gap);
+	auto buildGap = BuildingTypeExt::Fetch(pType)->AutoBuilding_Gap.Get(RulesExt::Global()->AutoBuilding_Gap);
 
 	if (pType->ProtectWithWall)
 		++buildGap;
@@ -818,7 +818,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 	// Adjacent 0x4A8EB0
 	const auto width = pType->GetFoundationWidth();
 	const auto height = pType->GetFoundationHeight(false);
-	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+	const auto pTypeExt = BuildingTypeExt::Fetch(pType);
 
 	if (RulesExt::Global()->CheckExtraBaseNormal)
 	{
@@ -905,7 +905,7 @@ CellStruct BuildingTypeExt::NearbyPlacingLocation(BuildingTypeClass* pType, Cell
 							return false;
 						};
 
-						if (canBeBaseNormal() && (!BuildingTypeExt::ExtMap.Find(pCellBuilding->Type)->NoBuildAreaOnBuildup || pCellBuilding->CurrentMission != Mission::Construction))
+						if (canBeBaseNormal() && (!BuildingTypeExt::Fetch(pCellBuilding->Type)->NoBuildAreaOnBuildup || pCellBuilding->CurrentMission != Mission::Construction))
 						{
 							auto const& pBuildingsAllowed = pTypeExt->Adjacent_Allowed;
 
@@ -1086,7 +1086,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 	if (isDefense ? !Phobos::Config::AutomaticPlacingCombatBuilding : !Phobos::Config::AutomaticPlacingBuilding)
 		return false;
 
-	const auto pTypeExt = BuildingTypeExt::ExtMap.Find(pType);
+	const auto pTypeExt = BuildingTypeExt::Fetch(pType);
 
 	if (!pTypeExt->AutoBuilding.Get(RulesExt::Global()->AutoBuilding) || pType->LaserFence || pType->Gate || pType->ToTile)
 		return false;
@@ -1096,7 +1096,7 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 	if (pHouse->Buildings.Count <= 0)
 		return false;
 
-	const auto pHouseExt = HouseExt::ExtMap.Find(pHouse);
+	const auto pHouseExt = HouseExt::Fetch(pHouse);
 
 	auto getMapCell = [&pHouseExt](BuildingClass* pBuilding)
 	{
@@ -1207,8 +1207,8 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 
 		for (auto pConYard : pHouse->ConYards)
 		{
-			auto pArchiveTarget = isDefense && BuildingTypeExt::ExtMap.Find(pConYard->Type)->HasSecondaryRallyPoint
-				? BuildingExt::ExtMap.Find(pConYard)->SecondaryArchiveTarget : pConYard->ArchiveTarget;
+			auto pArchiveTarget = isDefense && BuildingTypeExt::Fetch(pConYard->Type)->HasSecondaryRallyPoint
+				? BuildingExt::Fetch(pConYard)->SecondaryArchiveTarget : pConYard->ArchiveTarget;
 
 			if (!pArchiveTarget)
 				pArchiveTarget = pConYard;
@@ -1241,7 +1241,7 @@ bool BuildingTypeExt::BuildLimboBuilding(BuildingClass* pBuilding)
 {
 	const auto pBuildingType = pBuilding->Type;
 
-	if (BuildingTypeExt::ExtMap.Find(pBuildingType)->LimboBuild)
+	if (BuildingTypeExt::Fetch(pBuildingType)->LimboBuild)
 	{
 		EventClass::OutList.Add(EventClass(
 			pBuilding->Owner->ArrayIndex,
@@ -1336,12 +1336,12 @@ void BuildingTypeExt::CreateLimboBuilding(BuildingClass* pBuilding, BuildingType
 
 bool BuildingTypeExt::DeleteLimboBuilding(BuildingClass* pBuilding, int ID)
 {
-	const auto pBuildingExt = BuildingExt::ExtMap.Find(pBuilding);
+	const auto pBuildingExt = BuildingExt::Fetch(pBuilding);
 
 	if (pBuildingExt->LimboID != ID)
 		return false;
 
-	if (pBuildingExt->TypeExtData->LimboBuildID == ID)
+	if (pBuildingExt->GetTypeExtData()->LimboBuildID == ID)
 	{
 		const auto pHouse = pBuilding->Owner;
 		const auto index = pBuilding->Type->ArrayIndex;

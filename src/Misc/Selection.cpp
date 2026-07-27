@@ -98,7 +98,7 @@ public:
 
 				if (auto const pTypeExt = TechnoTypeExt::TryFetch(pTechnoType)) // If pTechnoType is nullptr so will be pTypeExt
 				{
-					const auto pExt = TechnoExt::ExtMap.Find(static_cast<TechnoClass*>(pObject));
+					const auto pExt = TechnoExt::Fetch(static_cast<TechnoClass*>(pObject));
 
 					if (priorityFiltering // Attached units shouldn't be selected regardless of the setting
 						&& (pExt->ParentAttachment && pExt->ParentAttachment->GetType()->LowSelectionPriority

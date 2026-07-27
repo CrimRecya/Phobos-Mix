@@ -738,7 +738,7 @@ int AttachEffectClass::Attach(TechnoClass* pTarget, HouseClass* pInvokerHouse, T
 	{
 		pTargetExt->UpdateCumulativeAttachEffects(pType);
 	}
-	          
+
 	return attachedCount;
 }
 
@@ -1123,7 +1123,7 @@ void AttachEffectClass::TransferAttachedEffects(TechnoClass* pSource, TechnoClas
 
 		transferCount++;
 		it = pSourceExt->AttachedEffects.erase(it);
-	} 
+	}
 
 	if (transferCount > 0)
 	{

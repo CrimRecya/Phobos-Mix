@@ -21,7 +21,7 @@ DEFINE_HOOK(0x5F7A89, ObjectTypeClass_FindFactory_End, 0x5)
 
 	if (const auto pAircraftType = abstract_cast<AircraftTypeClass*, true>(pObjectType))
 	{
-		if (TechnoTypeExt::ExtMap.Find(pAircraftType)->ThisIsAJumpjet)
+		if (TechnoTypeExt::Fetch(pAircraftType)->ThisIsAJumpjet)
 		{
 			BuildingClass* pBuildingResult = nullptr;
 			const DWORD ownerHouse = pAircraftType->GetOwners();
@@ -61,12 +61,12 @@ DEFINE_HOOK(0x443C71, BuildingClass_KickOutUnit_ThisIsAJumpjet, 0x6)
 
 	if (const auto pAircraft = abstract_cast<AircraftClass*>(pProduct))
 	{
-		if (const auto pJumpjetType = TechnoTypeExt::ExtMap.Find(pAircraft->Type)->ThisIsAJumpjet.Get())
+		if (const auto pJumpjetType = TechnoTypeExt::Fetch(pAircraft->Type)->ThisIsAJumpjet.Get())
 		{
 			if (pJumpjetType->Locomotor == LocomotionClass::CLSIDs::Jumpjet)
 			{
 				const auto pNewProduct = static_cast<UnitClass*>(pJumpjetType->CreateObject(pAircraft->Owner));
-				TechnoExt::ExtMap.Find(pNewProduct)->JumpjetFromAirport = true;
+				TechnoExt::Fetch(pNewProduct)->JumpjetFromAirport = true;
 				R->EDI<TechnoClass*>(pNewProduct);
 				pAircraft->UnInit();
 			}
@@ -79,11 +79,11 @@ DEFINE_HOOK(0x443C71, BuildingClass_KickOutUnit_ThisIsAJumpjet, 0x6)
 DEFINE_HOOK(0x44409C, BuildingClass_KickOutUnit_ImAJumpjetFromAirport1, 0x6)
 {
 	GET(TechnoClass* const, pProduct, EDI);
-	return TechnoExt::ExtMap.Find(pProduct)->JumpjetFromAirport ? 0x4445FB : 0;
+	return TechnoExt::Fetch(pProduct)->JumpjetFromAirport ? 0x4445FB : 0;
 }
 
 DEFINE_HOOK(0x44498E, BuildingClass_KickOutUnit_ImAJumpjetFromAirport2, 0x6)
 {
 	GET(TechnoClass* const, pProduct, EDI);
-	return TechnoExt::ExtMap.Find(pProduct)->JumpjetFromAirport ? 0x444638 : 0;
+	return TechnoExt::Fetch(pProduct)->JumpjetFromAirport ? 0x444638 : 0;
 }

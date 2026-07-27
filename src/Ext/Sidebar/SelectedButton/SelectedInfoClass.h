@@ -73,7 +73,7 @@ public:
 
 	struct SelectRecordStruct
 	{
-		TechnoTypeExt::ExtData* TypeExt { nullptr };
+		TechnoTypeExt* TypeExt { nullptr };
 		int Count { 0 };
 	};
 
@@ -117,7 +117,7 @@ public:
 
 	SelectedCameoClass* Cameos[20] { };
 	std::vector<SelectRecordStruct> CurrentSelectCameo { };
-	std::vector<TechnoExt::ExtData*> CurrentSelectTechno { };
+	std::vector<TechnoExt*> CurrentSelectTechno { };
 	int MaxCameo { 0 };
 	int Current { 0 };
 

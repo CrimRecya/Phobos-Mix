@@ -149,7 +149,7 @@ DEFINE_HOOK(0x73F528, UnitClass_CanEnterCell_SkipChildren, 0x0)
 
 void AccountForMovingInto(CellClass* into, bool isAlt, TechnoClass* pThis, byte& occupyFlags, bool& isVehicleFlagSet)
 {
-	auto const pCellExt = CellExt::ExtMap.Find(into);
+	auto const pCellExt = CellExt::Fetch(into);
 	auto& pIncoming = isAlt ? pCellExt->IncomingUnitAlt : pCellExt->IncomingUnit;
 
 	// Non-occupiers shouldn't be inserted as incoming units anyways so don't check that
@@ -412,7 +412,7 @@ DEFINE_HOOK(0x51A0DA, InfantryClass_PerCellProcess_EntryLoopTechnos, 0x0)
 
 bool __fastcall TechnoClass_OnGround(TechnoClass* pThis)
 {
-	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::Fetch(pThis);
 
 	return pExt->ParentAttachment && pExt->ParentAttachment->GetType()->InheritHeightStatus
 		? pExt->ParentAttachment->Parent->IsOnFloor()
@@ -421,7 +421,7 @@ bool __fastcall TechnoClass_OnGround(TechnoClass* pThis)
 
 bool __fastcall TechnoClass_InAir(TechnoClass* pThis)
 {
-	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::Fetch(pThis);
 
 	return pExt->ParentAttachment && pExt->ParentAttachment->GetType()->InheritHeightStatus
 		? pExt->ParentAttachment->Parent->IsInAir()
@@ -430,7 +430,7 @@ bool __fastcall TechnoClass_InAir(TechnoClass* pThis)
 
 bool __fastcall TechnoClass_IsSurfaced(TechnoClass* pThis)
 {
-	auto const pExt = TechnoExt::ExtMap.Find(pThis);
+	auto const pExt = TechnoExt::Fetch(pThis);
 
 	return pExt->ParentAttachment && pExt->ParentAttachment->GetType()->InheritHeightStatus
 		? pExt->ParentAttachment->Parent->IsSurfaced()
@@ -486,7 +486,7 @@ void ParentClickedWaypoint(TechnoClass* pThis, int idxPath, signed char idxWP)
 		pThis->unknown_bool_430 = false;
 
 	// Children handling
-	if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
+	if (const auto pExt = TechnoExt::Fetch(pThis))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -502,7 +502,7 @@ void ParentClickedTargetAction(TechnoClass* pThis, Action action, ObjectClass* p
 	Unsorted::MoveFeedback = false;
 
 	// Children handling
-	if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
+	if (const auto pExt = TechnoExt::Fetch(pThis))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -518,7 +518,7 @@ void ParentClickedCellAction(TechnoClass* pThis, Action action, CellStruct* pCel
 	Unsorted::MoveFeedback = false;
 
 	// Children handling
-	if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
+	if (const auto pExt = TechnoExt::Fetch(pThis))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -534,7 +534,7 @@ void ParentAreaGuardAction(TechnoClass* pThis)
 	Unsorted::MoveFeedback = false;
 
 	// Children handling
-	if (const auto pExt = TechnoExt::ExtMap.Find(pThis))
+	if (const auto pExt = TechnoExt::Fetch(pThis))
 	{
 		for (const auto& pAttachment : pExt->ChildAttachments)
 		{
@@ -759,7 +759,7 @@ DEFINE_HOOK(0x6FFE4F, TechnoClass_ClickedEvent_HandleChildren, 0x6)
 {
 	if ((TechnoAttachmentTemp::stopPressed || TechnoAttachmentTemp::deployPressed) && TechnoAttachmentTemp::pParent)
 	{
-		if (auto const pExt = TechnoExt::ExtMap.TryFind(TechnoAttachmentTemp::pParent))
+		if (auto const pExt = TechnoExt::TryFetch(TechnoAttachmentTemp::pParent))
 		{
 			for (auto const& pAttachment : pExt->ChildAttachments)
 			{
@@ -799,7 +799,7 @@ DEFINE_HOOK(0x469672, BulletClass_Logics_Locomotor_CheckIfAttached, 0x6)
 
 	GET(FootClass*, pThis, EDI);
 
-	return TechnoExt::ExtMap.Find(pThis)->ParentAttachment ? SkipInfliction : ContinueCheck;
+	return TechnoExt::Fetch(pThis)->ParentAttachment ? SkipInfliction : ContinueCheck;
 }
 
 DEFINE_HOOK(0x6FC3F4, TechnoClass_CanFire_HandleAttachmentLogics, 0x6)
@@ -821,7 +821,7 @@ DEFINE_HOOK(0x6F3283, TechnoClass_CanScatter_CheckIfAttached, 0x8)
 
 	GET(TechnoClass*, pThis, ECX);
 
-	return TechnoExt::ExtMap.Find(pThis)->ParentAttachment ? ReturnFalse : ContinueCheck;
+	return TechnoExt::Fetch(pThis)->ParentAttachment ? ReturnFalse : ContinueCheck;
 }
 
 DEFINE_HOOK(0x4817A8, CellClass_Incoming_CheckIfTechnoOccupies, 0x6)
@@ -830,7 +830,7 @@ DEFINE_HOOK(0x4817A8, CellClass_Incoming_CheckIfTechnoOccupies, 0x6)
 
 	GET(TechnoClass*, pTechno, ESI);
 
-	auto const pExt = TechnoExt::ExtMap.Find(pTechno);
+	auto const pExt = TechnoExt::Fetch(pTechno);
 
 	return pExt->ParentAttachment && pExt->ParentAttachment->GetType()->OccupiesCell ? ConditionIsTrue : ContinueCheck;
 }
@@ -869,7 +869,7 @@ DEFINE_HOOK(0x736FB6, UnitClass_FiringAI_ForbidAttachmentRotation, 0x6)
 
 	GET(UnitClass*, pThis, ESI);
 
-	return TechnoExt::ExtMap.Find(pThis)->ParentAttachment ? SkipBodyRotation : ContinueCheck;
+	return TechnoExt::Fetch(pThis)->ParentAttachment ? SkipBodyRotation : ContinueCheck;
 }
 */
 
@@ -879,14 +879,14 @@ DEFINE_HOOK(0x736A2F, UnitClass_RotationAI_ForbidAttachmentRotation, 0x7)
 
 	GET(UnitClass*, pThis, ESI);
 
-	return TechnoExt::HasAttachmentLoco(pThis) && TechnoExt::ExtMap.Find(pThis)->ParentAttachment ? SkipBodyRotation : ContinueCheck;
+	return TechnoExt::HasAttachmentLoco(pThis) && TechnoExt::Fetch(pThis)->ParentAttachment ? SkipBodyRotation : ContinueCheck;
 }
 
 Action __fastcall UnitClass_MouseOverCell_Wrapper(UnitClass* pThis, void*, CellStruct const* pCell, bool checkFog, bool ignoreForce)
 {
 	Action result = pThis->UnitClass::MouseOverCell(pCell, checkFog, ignoreForce);
 
-	if (!TechnoExt::ExtMap.Find(pThis)->ParentAttachment)
+	if (!TechnoExt::Fetch(pThis)->ParentAttachment)
 		return result;
 
 	switch (result)
@@ -914,7 +914,7 @@ DEFINE_FUNCTION_JUMP(VTABLE, 0x7F5CE0, UnitClass_MouseOverCell_Wrapper)
 // YSort for attachments
 int __fastcall TechnoClass_SortY_Wrapper(TechnoClass* pThis)
 {
-	if (const auto pParentAttachment = TechnoExt::ExtMap.Find(pThis)->ParentAttachment)
+	if (const auto pParentAttachment = TechnoExt::Fetch(pThis)->ParentAttachment)
 	{
 		if (const auto pParentTechno = pParentAttachment->Parent)
 		{
@@ -942,7 +942,7 @@ DEFINE_HOOK(0x6DA3FF, TacticalClass_SelectAt_TransparentToMouse_TacticalSelectab
 
 	GET(TechnoClass*, pTechno, EAX);
 
-	auto const pExt = TechnoExt::ExtMap.Find(pTechno);
+	auto const pExt = TechnoExt::Fetch(pTechno);
 
 	return (pExt && pExt->ParentAttachment && pExt->ParentAttachment->GetType()->TransparentToMouse) ? SkipTechno : ContinueCheck;
 }
@@ -960,7 +960,7 @@ DEFINE_HOOK(0x6DA4FB, TacticalClass_SelectAt_TransparentToMouse_OccupierPtr, 0x6
 		// find first non-transparent to mouse techno and return it
 		if (auto const pOccupierAsTechno = abstract_cast<TechnoClass*>(pOccupier))
 		{
-			auto const pExt = TechnoExt::ExtMap.Find(pOccupierAsTechno);
+			auto const pExt = TechnoExt::Fetch(pOccupierAsTechno);
 			if (pExt && pExt->ParentAttachment && pExt->ParentAttachment->GetType()->TransparentToMouse)
 				continue;
 		}

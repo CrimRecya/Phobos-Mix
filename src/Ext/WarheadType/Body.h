@@ -41,8 +41,8 @@ public:
 	Valueable<int> AnimList_CreationInterval;
 	Valueable<Leptons> AnimList_ScatterMin;
 	Valueable<Leptons> AnimList_ScatterMax;
-	Valueable<bool> CreateAnimsOnZeroDamage;
-	Valueable<bool> Conventional_IgnoreUnits;
+	Nullable<bool> CreateAnimsOnZeroDamage;
+	Nullable<bool> Conventional_IgnoreUnits;
 	Valueable<bool> RemoveDisguise;
 	Valueable<bool> RemoveMindControl;
 	Valueable<bool> RemoveMindControl_OnVictim;
@@ -53,7 +53,7 @@ public:
 	ValueableVector<TechnoTypeClass*> RemoveParasite_Disallow;
 	Nullable<bool> DecloakDamagedTargets;
 	Valueable<bool> ShakeIsLocal;
-	Valueable<bool> ApplyModifiersOnNegativeDamage;
+	Nullable<bool> ApplyModifiersOnNegativeDamage;
 	Valueable<bool> PenetratesIronCurtain;
 	Nullable<bool> PenetratesForceShield;
 	Valueable<double> Rocker_AmplitudeMultiplier;
@@ -62,9 +62,9 @@ public:
 	Nullable<bool> Temporal_ApplyMultiplier;
 
 	Valueable<double> Crit_Chance;
-	Valueable<bool> Crit_ApplyChancePerTarget;
+	Nullable<bool> Crit_ApplyChancePerTarget;
 	Valueable<int> Crit_ExtraDamage;
-	Valueable<bool> Crit_ExtraDamage_ApplyFirepowerMult;
+	Nullable<bool> Crit_ExtraDamage_ApplyFirepowerMult;
 	Valueable<WarheadTypeClass*> Crit_Warhead;
 	Valueable<bool> Crit_Warhead_FullDetonation;
 	Valueable<AffectedTarget> Crit_AffectsTarget;
@@ -73,15 +73,15 @@ public:
 	Nullable<bool> Crit_AnimList_PickRandom;
 	Nullable<bool> Crit_AnimList_CreateAll;
 	ValueableVector<AnimTypeClass*> Crit_ActiveChanceAnims;
-	Valueable<bool> Crit_AnimOnAffectedTargets;
+	Nullable<bool> Crit_AnimOnAffectedTargets;
 	Valueable<double> Crit_AffectsBelowPercent;
 	Valueable<double> Crit_AffectsAbovePercent;
-	Valueable<bool> Crit_SuppressWhenIntercepted;
+	Nullable<bool> Crit_SuppressWhenIntercepted;
 
 	Valueable<WarheadTypeClass*> ReturnWarhead;
 	Valueable<int> ReturnWarhead_Damage;
 	Valueable<double> ReturnWarhead_Chance;
-	Valueable<bool> ReturnWarhead_ApplyChancePerTarget;
+	Nullable<bool> ReturnWarhead_ApplyChancePerTarget;
 	Valueable<bool> ReturnWarhead_FullDetonation;
 	Valueable<AffectedTarget> ReturnWarhead_AffectsTarget;
 	Valueable<AffectedHouse> ReturnWarhead_AffectsHouse;
@@ -147,9 +147,9 @@ public:
 	Valueable<AffectedHouse> LaunchSW_DisplayMoney_Houses;
 	Valueable<Point2D> LaunchSW_DisplayMoney_Offset;
 
-	Valueable<bool> AllowDamageOnSelf;
+	Nullable<bool> AllowDamageOnSelf;
 	NullableVector<AnimTypeClass*> DebrisAnims;
-	Valueable<bool> Debris_Conventional;
+	Nullable<bool> Debris_Conventional;
 	Nullable<bool> DebrisTypes_Limit;
 	ValueableVector<int> DebrisMinimums;
 
@@ -180,7 +180,7 @@ public:
 	Valueable<bool> RemoveInflictedLocomotor;
 #endif
 	Nullable<ParticleSystemTypeClass*> Parasite_ParticleSystem;
-	Valueable<bool> Parasite_DisableParticleSystem;
+	Nullable<bool> Parasite_DisableParticleSystem;
 	Valueable<AffectedTarget> Parasite_CullingTarget;
 	NullableIdx<AnimTypeClass> Parasite_GrappleAnim;
 
@@ -276,6 +276,10 @@ public:
 
 	Nullable<int> AnimZAdjust;
 
+	Valueable<bool> ChangeOwner;
+	Valueable<bool> ChangeOwner_SetAsMindControl;
+	Nullable<AnimTypeClass*> ChangeOwner_MindControlAnim;
+
 	Nullable<bool> ApplyPerTargetEffectsOnDetonate;
 
 	Valueable<int> PenetratesTransport_Level;
@@ -344,8 +348,8 @@ public:
 		, AnimList_CreationInterval { 0 }
 		, AnimList_ScatterMin { Leptons(-1) }
 		, AnimList_ScatterMax { Leptons(-1) }
-		, CreateAnimsOnZeroDamage { false }
-		, Conventional_IgnoreUnits { false }
+		, CreateAnimsOnZeroDamage {}
+		, Conventional_IgnoreUnits {}
 		, RemoveDisguise { false }
 		, RemoveMindControl { false }
 		, RemoveMindControl_OnVictim { true }
@@ -356,7 +360,7 @@ public:
 		, RemoveParasite_Disallow {}
 		, DecloakDamagedTargets { true }
 		, ShakeIsLocal { false }
-		, ApplyModifiersOnNegativeDamage { false }
+		, ApplyModifiersOnNegativeDamage {}
 		, PenetratesIronCurtain { false }
 		, PenetratesForceShield {}
 		, Rocker_AmplitudeMultiplier { 1.0 }
@@ -365,9 +369,9 @@ public:
 		, Temporal_ApplyMultiplier {}
 
 		, Crit_Chance { 0.0 }
-		, Crit_ApplyChancePerTarget { false }
+		, Crit_ApplyChancePerTarget {}
 		, Crit_ExtraDamage { 0 }
-		, Crit_ExtraDamage_ApplyFirepowerMult { false }
+		, Crit_ExtraDamage_ApplyFirepowerMult {}
 		, Crit_Warhead {}
 		, Crit_Warhead_FullDetonation { true }
 		, Crit_AffectsTarget { AffectedTarget::All }
@@ -376,15 +380,15 @@ public:
 		, Crit_AnimList_PickRandom {}
 		, Crit_AnimList_CreateAll {}
 		, Crit_ActiveChanceAnims {}
-		, Crit_AnimOnAffectedTargets { false }
+		, Crit_AnimOnAffectedTargets {}
 		, Crit_AffectsBelowPercent { 1.0 }
 		, Crit_AffectsAbovePercent { 0.0 }
-		, Crit_SuppressWhenIntercepted { false }
+		, Crit_SuppressWhenIntercepted {}
 
 		, ReturnWarhead {}
 		, ReturnWarhead_Damage { 0 }
 		, ReturnWarhead_Chance { 1.0 }
-		, ReturnWarhead_ApplyChancePerTarget { false }
+		, ReturnWarhead_ApplyChancePerTarget {}
 		, ReturnWarhead_FullDetonation { true }
 		, ReturnWarhead_AffectsTarget { AffectedTarget::All }
 		, ReturnWarhead_AffectsHouse { AffectedHouse::All }
@@ -450,9 +454,9 @@ public:
 		, LaunchSW_DisplayMoney_Houses { AffectedHouse::All }
 		, LaunchSW_DisplayMoney_Offset { { 0, 0 } }
 
-		, AllowDamageOnSelf { false }
+		, AllowDamageOnSelf {}
 		, DebrisAnims {}
-		, Debris_Conventional { false }
+		, Debris_Conventional {}
 		, DebrisTypes_Limit {}
 		, DebrisMinimums {}
 
@@ -483,7 +487,7 @@ public:
 		, RemoveInflictedLocomotor { false }
 #endif
 		, Parasite_ParticleSystem {}
-		, Parasite_DisableParticleSystem { false }
+		, Parasite_DisableParticleSystem {}
 		, Parasite_CullingTarget { AffectedTarget::Infantry }
 		, Parasite_GrappleAnim {}
 
@@ -608,6 +612,10 @@ public:
 
 		, ApplyPerTargetEffectsOnDetonate {}
 
+		, ChangeOwner { false }
+		, ChangeOwner_SetAsMindControl { false }
+		, ChangeOwner_MindControlAnim {}
+
 		, Taunt { false }
 
 		, KnockUp { false }
@@ -624,6 +632,7 @@ public:
 	void ApplyConvert(HouseClass* pHouse, TechnoClass* pTarget);
 	void ApplyLocomotorInfliction(TechnoClass* pTarget);
 	void ApplyLocomotorInflictionReset(TechnoClass* pTarget);
+	void ApplyOwnerChange(HouseClass* pHouse, TechnoClass* pTarget);
 public:
 	bool CanTargetHouse(HouseClass* pHouse, TechnoClass* pTechno) const;
 	bool CanAffectTarget(TechnoClass* pTarget) const;
@@ -644,14 +653,14 @@ private:
 
 public:
 	// Detonate.cpp
-	void Detonate(TechnoClass* pOwner, HouseClass* pHouse, BulletExt::ExtData* pBullet, CoordStruct coords);
-	void DetonateOnOneUnit(HouseClass* pHouse, TechnoClass* pTarget, const CoordStruct& coords, int damage, TechnoClass* pOwner, BulletExt::ExtData* pBulletExt, bool bulletWasIntercepted = false, int distance = -1);
+	void Detonate(TechnoClass* pOwner, HouseClass* pHouse, BulletExt* pBullet, CoordStruct coords);
+	void DetonateOnOneUnit(HouseClass* pHouse, TechnoClass* pTarget, const CoordStruct& coords, int damage, TechnoClass* pOwner, BulletExt* pBulletExt, bool bulletWasIntercepted = false, int distance = -1);
 	void InterceptBullets(TechnoClass* pOwner, BulletClass* pInterceptor, const CoordStruct& coords);
 	DamageAreaResult DamageAreaWithTarget(const CoordStruct& coords, int damage, TechnoClass* pSource, WarheadTypeClass* pWH, bool affectsTiberium, HouseClass* pSourceHouse, TechnoClass* pTarget);
 private:
 	void ApplyRemoveDisguise(TechnoClass* pTarget);
 	HouseClass* ApplyRemoveMindControl(HouseClass* pHouse, TechnoClass* pTarget);
-	void ApplyCrit(HouseClass* pHouse, TechnoClass* pTarget, TechnoClass* Owner, BulletExt::ExtData* pBulletExt);
+	void ApplyCrit(HouseClass* pHouse, TechnoClass* pTarget, TechnoClass* Owner, BulletExt* pBulletExt);
 	void ApplyShieldModifiers(TechnoClass* pTarget);
 	void ApplyAttachEffects(TechnoClass* pTarget, HouseClass* pInvokerHouse, TechnoClass* pInvoker);
 	void ApplyBuildingUndeploy(TechnoClass* pTarget);

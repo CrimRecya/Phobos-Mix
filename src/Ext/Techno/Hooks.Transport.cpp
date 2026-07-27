@@ -198,7 +198,7 @@ DEFINE_HOOK(0x71A82C, TemporalClass_AI_Opentopped_WarpDistance, 0xC)
 		R->EDX(pExt->OpenTopped_WarpDistance.Get(RulesClass::Instance->OpenToppedWarpDistance));
 		return SkipGameCode;
 	}
-	else if (auto const pTypeExt = TechnoTypeExt::ExtMap.Find(pTechno->GetTechnoType()))
+	else if (auto const pTypeExt = TechnoTypeExt::Fetch(pTechno->GetTechnoType()))
 	{
 		R->EDX(pTypeExt->KeepWarping_Distance.Get(RulesClass::Instance->OpenToppedWarpDistance));
 		return SkipGameCode;

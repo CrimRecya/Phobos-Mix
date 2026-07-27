@@ -362,7 +362,7 @@ bool BulletExt::HasVirtualTrajectories(TechnoClass* pTechno)
 }
 
 // Check and set the group
-bool BulletExt::CheckExceededCapacity(TechnoClass* pTechno, BulletTypeClass* pBulletType, BulletExt::ExtData* pBulletExt)
+bool BulletExt::CheckExceededCapacity(TechnoClass* pTechno, BulletTypeClass* pBulletType, BulletExt* pBulletExt)
 {
 	const auto pTechnoExt = TechnoExt::Fetch(pTechno);
 

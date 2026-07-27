@@ -137,7 +137,7 @@ void SelectedCameoClass::DrawInfo() const
 	if (this->Disabled)
 		return;
 
-	auto drawCameo = [this](TechnoTypeExt::ExtData* pTypeExt)
+	auto drawCameo = [this](TechnoTypeExt* pTypeExt)
 	{
 		if (const auto CameoPCX = pTypeExt->CameoPCX.GetSurface())
 		{
@@ -176,7 +176,7 @@ void SelectedCameoClass::DrawInfo() const
 		const auto pExt = seIns.CurrentSelectTechno[this->ID + seIns.Current];
 		const auto pTechno = pExt->OwnerObject();
 		const auto pType = pTechno->GetTechnoType();
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+		const auto pTypeExt = TechnoTypeExt::Fetch(pType);
 
 		drawCameo(pTypeExt);
 

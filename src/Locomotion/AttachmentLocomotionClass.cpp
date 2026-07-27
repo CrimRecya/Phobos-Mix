@@ -58,11 +58,11 @@ Matrix3D AttachmentLocomotionClass::Draw_Matrix(VoxelIndexKey* key)
 
 		if (const auto pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(pParentLoco))
 		{
-			if (!TechnoTypeExt::ExtMap.Find(pParentFoot->GetTechnoType())->JumpjetTilt
+			if (!TechnoTypeExt::Fetch(pParentFoot->GetTechnoType())->JumpjetTilt
 				&& std::abs(pParentFoot->AngleRotatedSideways) < 0.005
 				&& std::abs(pParentFoot->AngleRotatedForwards) < 0.005)
 			{
-				const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pChild->GetTechnoType());
+				const auto pTypeExt = TechnoTypeExt::Fetch(pChild->GetTechnoType());
 
 				if (pTypeExt->JumpjetTilt && pChild->WhatAmI() == AbstractType::Unit)
 				{
@@ -139,11 +139,11 @@ Matrix3D AttachmentLocomotionClass::Shadow_Matrix(VoxelIndexKey* key)
 
 		if (const auto pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(pParentLoco))
 		{
-			if (!TechnoTypeExt::ExtMap.Find(pParentFoot->GetTechnoType())->JumpjetTilt
+			if (!TechnoTypeExt::Fetch(pParentFoot->GetTechnoType())->JumpjetTilt
 				&& std::abs(pParentFoot->AngleRotatedSideways) < 0.005
 				&& std::abs(pParentFoot->AngleRotatedForwards) < 0.005)
 			{
-				const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pChild->GetTechnoType());
+				const auto pTypeExt = TechnoTypeExt::Fetch(pChild->GetTechnoType());
 
 				if (pTypeExt->JumpjetTilt)
 				{
@@ -450,7 +450,7 @@ AttachmentClass* AttachmentLocomotionClass::GetAttachment()
 
 	if (this->LinkedTo)
 	{
-		if (auto const pExt = TechnoExt::ExtMap.Find(this->LinkedTo))
+		if (auto const pExt = TechnoExt::Fetch(this->LinkedTo))
 			result = pExt->ParentAttachment;
 	}
 
@@ -482,7 +482,7 @@ ILocomotionPtr AttachmentLocomotionClass::GetAttachmentParentLoco()
 
 Layer AttachmentLocomotionClass::CalculateLayer()
 {
-	auto const pExt = TechnoTypeExt::ExtMap.Find(this->LinkedTo->GetTechnoType());
+	auto const pExt = TechnoTypeExt::Fetch(this->LinkedTo->GetTechnoType());
 	int height = this->LinkedTo->GetHeight();
 
 	if (this->LinkedTo->IsInAir())

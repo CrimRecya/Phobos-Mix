@@ -98,10 +98,7 @@ CoordStruct TechnoExt::GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FL
 
 	if (pThis->Veterancy.IsElite())
 	{
-		auto const pTypeExt = TechnoExt::Fetch(pThis)->TypeExtData;
-		auto const pInf = abstract_cast<InfantryClass*, true>(pThis);
-
-		if (pThis->Veterancy.IsElite())
+		if (pInf)
 		{
 			auto const pInfTypeExt = InfantryTypeExt::Fetch(pInf->Type);
 
@@ -114,15 +111,7 @@ CoordStruct TechnoExt::GetBurstFLH(TechnoClass* pThis, int weaponIndex, bool& FL
 		}
 		else
 		{
-			if (pInf)
-			{
-				if (pInf->IsDeployed() && !pTypeExt->DeployedWeaponBurstFLHs.empty())
-					return pTypeExt->DeployedWeaponBurstFLHs;
-				else if (pInf->Crawling && !pTypeExt->CrouchedWeaponBurstFLHs.empty())
-					return pTypeExt->CrouchedWeaponBurstFLHs;
-			}
-
-			return pTypeExt->WeaponBurstFLHs;
+			pickedFLHs = pExt->EliteWeaponBurstFLHs;
 		}
 	}
 	else if (pInf)

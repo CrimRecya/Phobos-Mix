@@ -425,7 +425,7 @@ TechnoClass* ScriptExt::FindBestObject(TechnoClass* pTechno, int method, int cal
 				value = 1024 * 256 * 3;
 			else if (pFinalBuildingType && pFinalBuildingType->Factory != AbstractType::None)
 				value = 1024 * 256 * 2;
-			else if (TechnoTypeExt::ExtMap.Find(pTargetType)->KeepAlive.Get(pTargetBuildingType && !pTargetBuildingType->Insignificant && !pTargetBuildingType->DontScore))
+			else if (TechnoTypeExt::Fetch(pTargetType)->KeepAlive.Get(pTargetBuildingType && !pTargetBuildingType->Insignificant && !pTargetBuildingType->DontScore))
 				value = 1024 * 256 * 1;
 
 			value -= pTechno->DistanceFrom(pTarget); // Note: distance is in leptons (*256)

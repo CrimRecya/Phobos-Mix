@@ -357,7 +357,7 @@ bool BuildingExt::HandleInfiltrate(HouseClass* pInfiltratorHouse, int moneybefor
 		if (jamTime > 0)
 		{
 			pVictimHouse->RecheckRadar = true;
-			auto pVictimExt = HouseExt::ExtMap.Find(pVictimHouse);
+			auto pVictimExt = HouseExt::Fetch(pVictimHouse);
 			if (pVictimExt->SpyEffect_RadarJamTimer.TimeLeft < jamTime)
 			{
 				pVictimExt->SpyEffect_RadarJamTimer.Stop();
@@ -383,7 +383,7 @@ void BuildingExt::KickOutStuckUnits(BuildingClass* pThis)
 
 	const auto pType = pThis->Type;
 
-	switch (RulesExt::Global()->ExtendedWeaponsFactory ? BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get() : 2)
+	switch (RulesExt::Global()->ExtendedWeaponsFactory ? BuildingTypeExt::Fetch(pType)->WeaponsFactory_Dir.Get() : 2)
 	{
 
 	case 0: // North -> left+down/++Y
@@ -637,6 +637,18 @@ void BuildingExt::Serialize(T& Stm)
 		.Process(this->TurretAnimRateTick)
 		.Process(this->ConstructionStartFacing)
 		;
+}
+
+void BuildingExt::OnDetach(AbstractClass* pTarget, bool removed)
+{
+	AnnounceInvalidPointer(this->SecondaryArchiveTarget, pTarget);
+	TechnoExt::OnDetach(pTarget, removed);
+}
+
+void BuildingExt::OnDetach(BuildingClass* pTarget, bool removed)
+{
+	if (removed)
+		AnnounceInvalidPointer(this->CurrentAirFactory, pTarget);
 }
 
 void BuildingExt::LoadFromStream(PhobosStreamReader& Stm)

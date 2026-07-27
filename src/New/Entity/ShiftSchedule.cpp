@@ -4,7 +4,7 @@
 
 void ShiftSchedule::BeginShiftProcess(TechnoClass* pThis)
 {
-	auto pExt = TechnoExt::ExtMap.Find(pThis);
+	auto pExt = TechnoExt::Fetch(pThis);
 	for (auto const& cb : BeginCallbacks)
 	{
 		if (cb)
@@ -14,7 +14,7 @@ void ShiftSchedule::BeginShiftProcess(TechnoClass* pThis)
 
 void ShiftSchedule::DuringShiftProcess(TechnoClass* pThis)
 {
-	auto pExt = TechnoExt::ExtMap.Find(pThis);
+	auto pExt = TechnoExt::Fetch(pThis);
 	for (auto const& cb : DuringCallbacks)
 	{
 		if (cb)
@@ -24,7 +24,7 @@ void ShiftSchedule::DuringShiftProcess(TechnoClass* pThis)
 
 void ShiftSchedule::FinishShiftProcess(TechnoClass* pThis)
 {
-	auto pExt = TechnoExt::ExtMap.Find(pThis);
+	auto pExt = TechnoExt::Fetch(pThis);
 	for (auto const& cb : FinishCallbacks)
 	{
 		if (cb)

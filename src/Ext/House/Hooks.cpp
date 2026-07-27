@@ -487,7 +487,7 @@ static inline bool CheckShowGreyCameo(const HouseClass* const pHouse, const Tech
 		&& (address == 0x6A5FED // Check redraw sidebar when techno loss
 		|| address == 0x6A97EF // Draw sidebar cameos
 		|| address == 0x6AB65B) // Prevent click sidebar cameo
-		&& TechnoTypeExt::ExtMap.Find(pType)->IsGreyCameoForCurrentPlayer);
+		&& TechnoTypeExt::Fetch(pType)->IsGreyCameoForCurrentPlayer);
 }
 
 DEFINE_HOOK(0x50B669, HouseClass_ShouldDisableCameo_GreyCameo, 0x5)
@@ -534,7 +534,7 @@ DEFINE_HOOK(0x6A640B, SideBarClass_AddCameo_DoNotPlayEVA, 0x5)
 
 	if (const auto pType = ObjectTypeClass::GetTechnoType(absType, idxType))
 	{
-		if (TechnoTypeExt::ExtMap.Find(pType)->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist))
+		if (TechnoTypeExt::Fetch(pType)->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist))
 			return SkipPlaying;
 	}
 
@@ -718,7 +718,7 @@ DEFINE_HOOK(0x4F8440, HouseCLass_Update_SpyEffectRadarJam, 0x5)
 {
 	GET(HouseClass*, pThis, ECX);
 
-	auto& radarJamTimer = HouseExt::ExtMap.Find(pThis)->SpyEffect_RadarJamTimer;
+	auto& radarJamTimer = HouseExt::Fetch(pThis)->SpyEffect_RadarJamTimer;
 
 	if (radarJamTimer.Completed())
 	{
@@ -739,7 +739,7 @@ DEFINE_HOOK(0x508DF0, HouseClass_UpdateRadar_SetContext, 0x7)
 DEFINE_HOOK(0x508F2A, HouseClass_UpdateRadar_CheckSpyEffectRadarJam, 0x5)
 {
 	enum { RadarUnavailable = 0x508F2F };
-	auto const pExt = HouseExt::ExtMap.Find(SpyEffectRadarJamContext::pThis);
+	auto const pExt = HouseExt::Fetch(SpyEffectRadarJamContext::pThis);
 	return pExt->SpyEffect_RadarJamTimer.IsTicking() ? RadarUnavailable : 0;
 }
 

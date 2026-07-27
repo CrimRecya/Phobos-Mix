@@ -208,7 +208,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 						{
 							const auto pAircraft = abstract_cast<AircraftClass*, true>(pFoot);
 
-							if (!pAircraft || !TechnoTypeExt::ExtMap.Find(pAircraft->Type)->ExtendedAircraftMissions_RearApproach.Get(RulesExt::Global()->ExtendedAircraftMissions)
+							if (!pAircraft || !TechnoTypeExt::Fetch(pAircraft->Type)->ExtendedAircraftMissions_RearApproach.Get(RulesExt::Global()->ExtendedAircraftMissions)
 								|| !pDestination || (pAircraft->DockNowHeadingTo != pDestination && pAircraft->SpawnOwner != pDestination))
 							{
 								const auto destination = pFoot->Locomotor->Destination();
@@ -277,7 +277,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 						}
 						else if (locomotion_cast<AdvancedDriveLocomotionClass*>(pFoot->Locomotor))
 						{
-							const auto pTypeExt = TechnoExt::ExtMap.Find(pFoot)->TypeExtData;
+							const auto pTypeExt = TechnoExt::Fetch(pFoot)->TypeExtData;
 
 							if (pTypeExt->AdvancedDrive_Hover)
 								height += pTypeExt->AdvancedDrive_Hover_Height.Get(RulesClass::Instance->HoverHeight);
@@ -937,7 +937,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 			drawText(COLOR_CYAN, "SecDesiredFacing: (%05d)", facing22.Raw);
 		}
 
-		const auto pExt = TechnoExt::ExtMap.Find(pTechno);
+		const auto pExt = TechnoExt::Fetch(pTechno);
 
 		drawText(COLOR_WHITE, "Ammo: (%d/%d)", pTechno->Ammo, pType->Ammo);
 		drawText(COLOR_WHITE, "Tether: (%s,%s)", (pTechno->IsTether ? "Yes" : "No"), (pTechno->IsAlternativeTether ? "Yes" : "No"));
@@ -1191,7 +1191,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 		else if (const auto pBuilding = abstract_cast<BuildingClass*, true>(pTechno))
 		{
 			const auto pBuildingType = pBuilding->Type;
-			const auto pBuildingTypeExt = BuildingTypeExt::ExtMap.Find(pBuildingType);
+			const auto pBuildingTypeExt = BuildingTypeExt::Fetch(pBuildingType);
 
 			{
 				const int capacity = pBuildingType->MaxNumberOccupants;
@@ -1233,7 +1233,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 							{
 								if (pWH->ElectricAssault)
 								{
-									const int charge = WarheadTypeExt::ExtMap.Find(pWH)->ElectricAssaultLevel;
+									const int charge = WarheadTypeExt::Fetch(pWH)->ElectricAssaultLevel;
 									count += charge;
 									chargers.emplace_back(pCharger, charge);
 								}

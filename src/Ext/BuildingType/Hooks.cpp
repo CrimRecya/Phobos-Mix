@@ -120,7 +120,7 @@ DEFINE_HOOK(0x6D528A, TacticalClass_DrawPlacement_PlacementPreview, 0x6)
 
 	// DrawType
 	const auto pType = abstract_cast<BuildingTypeClass*>(pDisplay->CurrentBuildingType);
-	const auto pTypeExt = BuildingTypeExt::ExtMap.TryFind(pType);
+	const auto pTypeExt = BuildingTypeExt::TryFetch(pType);
 
 	if (pTypeExt && pTypeExt->PlacementPreview)
 	{
@@ -447,7 +447,7 @@ DEFINE_HOOK(0x73F5A7, UnitClass_IsCellOccupied_UnlimboDirection, 0x8)
 	auto buffer = CoordStruct::Empty;
 	pBuilding->GetExitCoords(&buffer, 0);
 	const auto cell = CellClass::Coord2Cell(buffer);
-	const bool pathX = (BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get() & 2) != 0; // 2,6/0,4
+	const bool pathX = (BuildingTypeExt::Fetch(pType)->WeaponsFactory_Dir.Get() & 2) != 0; // 2,6/0,4
 	const bool onPath = pathX ? pCell->MapCoords.Y == cell.Y : pCell->MapCoords.X == cell.X;
 
 	return onPath ? NextObject : ContinueCheck;
@@ -465,7 +465,7 @@ DEFINE_HOOK(0x44457B, BuildingClass_KickOutUnit_UnlimboDirection, 0x5)
 	GET(BuildingClass* const, pThis, ESI);
 	REF_STACK(DirType, dir, STACK_OFFSET(0x144, -0x144));
 
-	dir = static_cast<DirType>(BuildingTypeExt::ExtMap.Find(pThis->Type)->WeaponsFactory_Dir.Get() << 5);
+	dir = static_cast<DirType>(BuildingTypeExt::Fetch(pThis->Type)->WeaponsFactory_Dir.Get() << 5);
 
 	return 0;
 }
@@ -601,7 +601,7 @@ DEFINE_HOOK(0x516D3C, HoverLocomotionClass_IsIonSensitive_WeaponFactoryCell, 0x5
 	const auto cell = CellClass::Coord2Cell(buffer);
 	const auto pType = pBuilding->Type;
 
-	switch (BuildingTypeExt::ExtMap.Find(pType)->WeaponsFactory_Dir.Get())
+	switch (BuildingTypeExt::Fetch(pType)->WeaponsFactory_Dir.Get())
 	{
 
 	case 0:
@@ -680,7 +680,7 @@ DEFINE_HOOK(0x458A00, BuildingClass_IsCellNotPassable_ImpassableRowsDirection, 0
 		if (pType->Bunker && pThis->BunkerLinkedItem)
 			return true;
 
-		switch (BuildingTypeExt::ExtMap.Find(pType)->NumberImpassableRows_Dir.Get())
+		switch (BuildingTypeExt::Fetch(pType)->NumberImpassableRows_Dir.Get())
 		{
 
 		case 0:
@@ -736,7 +736,7 @@ DEFINE_HOOK(0x73F7DD, BuildingClass_IsCellNotPassable_BibDirection, 0x8)
 	GET(CellClass* const, pCell, EDI);
 	GET(BuildingTypeClass* const, pType, EAX);
 
-	R->ECX(MapClass::Instance.GetCellAt(Unsorted::AdjacentCell[BuildingTypeExt::ExtMap.Find(pType)->Bib_Dir.Get()] + pCell->MapCoords));
+	R->ECX(MapClass::Instance.GetCellAt(Unsorted::AdjacentCell[BuildingTypeExt::Fetch(pType)->Bib_Dir.Get()] + pCell->MapCoords));
 
 	return SkipGameCode;
 }

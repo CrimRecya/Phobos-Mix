@@ -69,7 +69,7 @@ void EventExt::RespondToManualReloadEvent()
 	if (TechnoExt::IsActive(pTechno) && pTechno->Ammo > 0 && !pTechno->Berzerk)
 	{
 		const auto pType = pTechno->GetTechnoType();
-		const auto pTypeExt = TechnoTypeExt::ExtMap.Find(pType);
+		const auto pTypeExt = TechnoTypeExt::Fetch(pType);
 
 		if (pTypeExt->CanManualReload && (pTechno->Ammo != pType->Ammo || pTypeExt->CanManualReload_WhenFull))
 		{
@@ -104,7 +104,7 @@ void EventExt::RespondToToggleAggressiveStance()
 	{
 		if (pTechno->IsAlive && !pTechno->Berzerk)
 		{
-			const auto pTechnoExt = TechnoExt::ExtMap.Find(pTechno);
+			const auto pTechnoExt = TechnoExt::Fetch(pTechno);
 
 			if (pTechnoExt->CanToggleAggressiveStance())
 				pTechnoExt->ToggleAggressiveStance();
@@ -129,7 +129,7 @@ void EventExt::RespondToToggleCeaseFireStance()
 	{
 		if (pTechno->IsAlive && !pTechno->Berzerk)
 		{
-			const auto pTechnoExt = TechnoExt::ExtMap.Find(pTechno);
+			const auto pTechnoExt = TechnoExt::Fetch(pTechno);
 
 			if (pTechnoExt->CanToggleCeaseFireStance())
 				pTechnoExt->ToggleCeaseFireStance();
@@ -153,8 +153,8 @@ void EventExt::RespondToAssignSecondaryRallyPoint()
 {
 	if (const auto pBuilding = this->AssignSecondaryRallyPoint.Who.As_Building())
 	{
-		if (pBuilding->IsAlive && BuildingTypeExt::ExtMap.Find(pBuilding->Type)->HasSecondaryRallyPoint)
-			BuildingExt::ExtMap.Find(pBuilding)->SecondaryArchiveTarget = this->AssignSecondaryRallyPoint.Whom.As_Abstract();
+		if (pBuilding->IsAlive && BuildingTypeExt::Fetch(pBuilding->Type)->HasSecondaryRallyPoint)
+			BuildingExt::Fetch(pBuilding)->SecondaryArchiveTarget = this->AssignSecondaryRallyPoint.Whom.As_Abstract();
 	}
 }
 

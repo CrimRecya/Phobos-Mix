@@ -1,5 +1,7 @@
 ﻿#include "SampleTrajectory.h"
 
+#include <Ext/Bullet/Body.h>
+
 // Create
 std::unique_ptr<PhobosTrajectory> SampleTrajectoryType::CreateInstance(BulletClass* pBullet) const
 {

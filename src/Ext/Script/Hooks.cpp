@@ -134,7 +134,7 @@ DEFINE_HOOK(0x6ECCF3, TeamClass_UpdateScriptAction16_UsePhobosTargeting, 0x7)
 	if (scriptArg >= 0)
 		return UseWaypoint;
 
-	auto const pTeamData = TeamExt::ExtMap.Find(pThis);
+	auto const pTeamData = TeamExt::Fetch(pThis);
 	// Find the Leader
 	auto pLeaderUnit = pTeamData->TeamLeader;
 

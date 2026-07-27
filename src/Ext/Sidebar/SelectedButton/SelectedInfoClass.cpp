@@ -120,7 +120,7 @@ void SelectedInfoClass::InitIO()
 	if (Unsorted::ArmageddonMode)
 		return;
 
-	const auto pSideExt = SideExt::ExtMap.Find(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
+	const auto pSideExt = SideExt::Fetch(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	const auto pBottomSHP = pSideExt->SelectedInfo_Bottom.Get();
 
 	if (!pBottomSHP || pBottomSHP->Frames < 3)
@@ -358,8 +358,8 @@ void SelectedInfoClass::UpdateSelected()
 			if (const auto pType = pCurrent->GetTechnoType())
 			{
 				const auto count = CurrentSelectBuffer.contains(pType->UniqueID) ? CurrentSelectBuffer.at(pType->UniqueID).Count : 0;
-				CurrentSelectBuffer[pType->UniqueID] = SelectRecordStruct { TechnoTypeExt::ExtMap.Find(pType), count + 1 };
-				this->CurrentSelectTechno.emplace_back(TechnoExt::ExtMap.Find(static_cast<TechnoClass*>(pCurrent)));
+				CurrentSelectBuffer[pType->UniqueID] = SelectRecordStruct { TechnoTypeExt::Fetch(pType), count + 1 };
+				this->CurrentSelectTechno.emplace_back(TechnoExt::Fetch(static_cast<TechnoClass*>(pCurrent)));
 			}
 		}
 
@@ -371,7 +371,7 @@ void SelectedInfoClass::UpdateSelected()
 	}
 
 	std::sort(this->CurrentSelectTechno.begin(), this->CurrentSelectTechno.end(),
-		[](const TechnoExt::ExtData* const pSelectA, const TechnoExt::ExtData* const pSelectB)
+		[](const TechnoExt* const pSelectA, const TechnoExt* const pSelectB)
 		{
 			const auto uniqueA = pSelectA->TypeExtData->OwnerObject()->UniqueID;
 			const auto uniqueB = pSelectB->TypeExtData->OwnerObject()->UniqueID;
@@ -693,6 +693,35 @@ DEFINE_HOOK(0x5F46AE, ObjectClass_Select, 0x7)
 	pThis->IsSelected = true;
 
 	SelectedInfoClass::Instance.ShouldUpdate = true;
+
+	if (RulesExt::Global()->SetTabBySelectingFactory && pThis->WhatAmI() == AbstractType::Building && pThis->GetOwningHouse()->IsCurrentPlayer())
+	{
+		auto const pBldTypeExt = BuildingTypeExt::Fetch(specific_cast<BuildingClass*>(pThis)->Type);
+		const int tabIndex = pBldTypeExt->SetTabBySelecting;
+
+		if (tabIndex >= 0 && tabIndex < 4)
+		{
+			TabClass::Instance.SetTab(tabIndex);
+		}
+		else if (tabIndex < 0)
+		{
+			switch (specific_cast<BuildingClass*>(pThis)->Type->Factory)
+			{
+			case AbstractType::InfantryType:
+				TabClass::Instance.SetTab(2);
+				break;
+			case AbstractType::UnitType:
+			case AbstractType::AircraftType:
+				TabClass::Instance.SetTab(3);
+				break;
+			case AbstractType::BuildingType:
+				TabClass::Instance.SetTab(SidebarClass::Instance.ActiveTabIndex == 0 ? 1 : 0); // A controversial design, but no one has yet proposed a better one.
+				break;
+			default:
+				break;
+			}
+		}
+	}
 
 	if (!Phobos::Config::ShowFlashOnSelecting)
 		return 0;

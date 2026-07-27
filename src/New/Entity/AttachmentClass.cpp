@@ -66,7 +66,7 @@ AttachmentClass::~AttachmentClass()
 	// clean up non-owning references
 	if (this->Child)
 	{
-		auto const pChildExt = TechnoExt::ExtMap.Find(this->Child);
+		auto const pChildExt = TechnoExt::Fetch(this->Child);
 		pChildExt->ParentAttachment = nullptr;
 	}
 
@@ -219,7 +219,7 @@ void AttachmentClass::Destroy(TechnoClass* pSource)
 {
 	if (this->Child)
 	{
-		auto const pChildExt = TechnoExt::ExtMap.Find(this->Child);
+		auto const pChildExt = TechnoExt::Fetch(this->Child);
 		pChildExt->ParentAttachment = nullptr;
 
 		auto pType = this->GetType();
@@ -240,7 +240,7 @@ void AttachmentClass::UnInit()
 {
 	if (const auto pChild = this->Child)
 	{
-		auto const pChildExt = TechnoExt::ExtMap.Find(pChild);
+		auto const pChildExt = TechnoExt::Fetch(pChild);
 		pChildExt->ParentAttachment = nullptr;
 
 		pChild->KillPassengers(nullptr);
@@ -255,7 +255,7 @@ void AttachmentClass::ChildDestroyed()
 {
 	if (this->Child)
 	{
-		if (auto const pChildExt = TechnoExt::ExtMap.Find(this->Child))
+		if (auto const pChildExt = TechnoExt::Fetch(this->Child))
 			pChildExt->ParentAttachment = nullptr;
 
 		AttachmentTypeClass* pType = this->GetType();
@@ -304,7 +304,7 @@ bool AttachmentClass::AttachChild(TechnoClass* pChild)
 
 	this->Child = pChild;
 
-	auto pChildExt = TechnoExt::ExtMap.Find(pChild);
+	auto pChildExt = TechnoExt::Fetch(pChild);
 	pChildExt->ParentAttachment = this;
 
 	// bandaid for jitterless drawing. TODO fix properly
@@ -339,7 +339,7 @@ bool AttachmentClass::DetachChild()
 		if (auto const pChildAsFoot = abstract_cast<FootClass*, true>(this->Child))
 			LocomotionClass::End_Piggyback(pChildAsFoot->Locomotor);
 
-		auto pChildExt = TechnoExt::ExtMap.Find(this->Child);
+		auto pChildExt = TechnoExt::Fetch(this->Child);
 		pChildExt->ParentAttachment = nullptr;
 		this->Child = nullptr;
 
