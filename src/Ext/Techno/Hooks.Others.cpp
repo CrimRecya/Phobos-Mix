@@ -161,7 +161,7 @@ DEFINE_HOOK(0x41AA91, AircraftClass_SetDestination_SetRocketDestination, 0x7)
 	GET(AircraftClass*, pThis, ESI);
 	GET(AbstractClass*, pDest, EDI);
 
-	return pDest->IsInAir() && (!pThis->Spawned || !pThis->Type->MissileSpawn || !pThis->SpawnOwner) ? SetNoDestination : ContinueCheckLanding;
+	return pDest->IsInAir() && (!pThis->IsALoaner || !pThis->Type->MissileSpawn || !pThis->SpawnOwner) ? SetNoDestination : ContinueCheckLanding;
 }
 
 #pragma endregion
@@ -1415,7 +1415,7 @@ DEFINE_HOOK(0x50B716, HouseClass_IsCurrentPlayer_SharedControl, 0x6)
 static inline bool ExtraTargeting(TechnoClass* pThis, bool area = false)
 {
 	if (!RulesExt::Global()->ExtraTargeting
-		|| pThis->Spawned
+		|| pThis->IsALoaner
 		|| pThis->SpawnOwner
 		|| !pThis->Owner->IsControlledByHuman()
 		|| pThis->PlanningToken
