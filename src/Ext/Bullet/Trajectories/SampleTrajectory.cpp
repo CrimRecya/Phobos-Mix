@@ -123,9 +123,10 @@ void SampleTrajectory::OnPreDetonate()
 	const auto pBullet = this->Bullet;
 	auto pTarget = abstract_cast<ObjectClass*>(pBullet->Target);
 	auto pCoords = pTarget ? pTarget->GetCoords() : pBullet->TargetCoords;
+	const double targetSnapDistance = static_cast<double>(this->Type->TargetSnapDistance.Get());
 
 	// Can snap to target?
-	if (pCoords.DistanceFrom(pBullet->Location) <= this->Type->TargetSnapDistance.Get())
+	if (targetSnapDistance > 0.0 && pCoords.DistanceFromSquared(pBullet->Location) <= targetSnapDistance * targetSnapDistance)
 	{
 		BulletExt::Fetch(pBullet)->SnappedToTarget = true;
 		pBullet->SetLocation(pCoords);

@@ -343,6 +343,7 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 			// Ensure that the same building is not recorded repeatedly
 			std::set<TechnoClass*> inserted;
 			const bool checkCellObjects = !this->TargetIsInAir || pType->DisperseHolistic;
+			const double rangeSq = static_cast<double>(pWeapon->Range) * pWeapon->Range;
 
 			for (CellSpreadEnumerator thisCell(static_cast<size_t>((static_cast<double>(pWeapon->Range) / Unsorted::LeptonsPerCell) + 0.99)); thisCell; ++thisCell)
 			{
@@ -364,7 +365,7 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 							{
 								const auto pObjType = pObject->GetType();
 
-								if (pObjType && !pObjType->Immune && centerCoords.DistanceFrom(pObject->GetCoords()) <= pWeapon->Range)
+								if (pObjType && !pObjType->Immune && centerCoords.DistanceFromSquared(pObject->GetCoords()) <= rangeSq)
 									validObjects.push_back(pObject);
 							}
 						}
@@ -407,6 +408,8 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 
 			if (checkObjects && BulletExt::Fetch(pBullet)->InterceptorTechnoType)
 			{
+				const double rangeSq = static_cast<double>(range) * range;
+
 				for (const auto& pObject : BulletClass::Array)
 				{
 					const auto pBulletExt = BulletExt::Fetch(pObject);
@@ -414,7 +417,7 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 
 					if (pBulletTypeExt->Interceptable
 						&& !pObject->SpawnNextAnim
-						&& centerCoords.DistanceFrom(pObject->Location) <= range
+						&& centerCoords.DistanceFromSquared(pObject->Location) <= rangeSq
 						&& (!pBulletTypeExt->Armor.isset() || GeneralUtils::GetWarheadVersusArmor(pWeapon->Warhead, pBulletTypeExt->Armor.Get()) != 0.0)
 						&& EnumFunctions::CanTargetHouse(pWeaponExt->CanTargetHouses, pOwner, (pObject->Owner ? pObject->Owner->Owner : pBulletExt->FirerHouse))
 						&& (!pType->DisperseTendency || pType->DisperseDoRepeat || pObject != pTarget))

@@ -153,7 +153,9 @@ TrajectoryCheckReturnType BombardTrajectory::OnDetonateUpdate(const CoordStruct&
 		return TrajectoryCheckReturnType::Detonate;
 
 	// Close enough
-	if (pBullet->TargetCoords.DistanceFrom(position) < pType->DetonationDistance.Get())
+	const double range = static_cast<double>(pType->DetonationDistance.Get());
+
+	if (pBullet->TargetCoords.DistanceFromSquared(position) < range * range)
 		return TrajectoryCheckReturnType::Detonate;
 
 	// Height
