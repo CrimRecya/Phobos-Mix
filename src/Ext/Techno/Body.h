@@ -365,6 +365,7 @@ public:
 	static bool IsHarvesting(TechnoClass* pThis);
 	static bool HasAvailableDock(TechnoClass* pThis);
 	static bool HasRadioLinkWithDock(TechnoClass* pThis);
+	static bool CanReceiveEvent(TechnoClass* pThis, HouseClass* pHouse);
 
 	static Matrix3D GetTransform(TechnoClass* pThis, VoxelIndexKey* pKey = nullptr, bool isShadow = false);
 	static Matrix3D GetFLHMatrix(TechnoClass* pThis, const CoordStruct& flh, bool isOnTurret, double factor = 1.0, bool isShadow = false, int turIdx = -1);

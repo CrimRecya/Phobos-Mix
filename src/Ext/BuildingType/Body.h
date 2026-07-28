@@ -158,6 +158,8 @@ public:
 
 	Valueable<int> SetTabBySelecting;
 
+	Nullable<int> RevealToAll_Radius;
+
 	// Ares 0.2
 	Valueable<bool> CloningFacility;
 
@@ -281,6 +283,7 @@ public:
 		, StartFacing{}
 		, StartFacing_Random{}
 		, SetTabBySelecting { -1 }
+		, RevealToAll_Radius {}
 
 		// Ares 0.2
 		, CloningFacility { false }

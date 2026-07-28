@@ -23,7 +23,7 @@ This page describes all the engine features that are either new and introduced b
     - `selling`: Discard when the building to which the effect is attached is sold.
     - `undeploying`: Discard when the building to which the effect is attached performs undeploy.
     - `harvesting`: Discard when the object the effect is attached is harvesting ore. This can only be used when `DiscardOn.ConsiderHarvestingAsStationary=false`.
-    - `invokerdie`: Discard when the invoker of the effect is destroyed. 
+    - `invokerdie`: Discard when the invoker of the effect is destroyed.
   - `DiscardOn.MoveBasedOnDestination` defines whether to determine the movement state according to the presence or absence of a destination. It treats Jumpjet units hovering in the air as movement, and units that have no destination but are turning as stationary.
     - If used for an AE that has `DiscardOn=harvesting`, in order for it to judge correctly, this should be set to `true`.
   - `DiscardOn.ConsiderHarvestingAsStationary` defines whether to treat `harvesting` as `stationary`. When this flag is set to `false`, `DiscardOn=harvesting` can be used and it will not be considered `stationary` while `harvesting`.
@@ -732,6 +732,16 @@ WeaponsFactory.Dir=2          ; integer
   - 2 - East (bottom right)
   - 4 - South (bottom left)
   - 6 - West (top left)
+```
+
+### Customize reveal radius of `RevealToAll`
+
+- In vanilla, `RevealToAll` is hardcoded to reveal area in radius is `Sight`. Now you can customize it.
+
+In `rulesmd.ini`:
+```ini
+[SOMEBUILDING]                  ; BuildingType
+RevealToAll.Radius=             ; integer
 ```
 
 ### Destroyable pathfinding obstacles

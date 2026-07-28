@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <Ext/Aircraft/Body.h>
 #include <Ext/Anim/Body.h>
@@ -1108,9 +1108,11 @@ void TechnoExt::CreateDelayedFireAnim(TechnoClass* pThis, AnimTypeClass* pAnimTy
 {
 	if (pAnimType)
 	{
-		auto coords = pThis->GetCenterCoords();
+		CoordStruct coords;
 
-		if (!center)
+		if (center)
+			coords = pThis->GetCenterCoords();
+		else
 			coords = TechnoExt::GetFLHAbsoluteCoords(pThis, firingCoords, onTurret);
 
 		auto const pAnim = GameCreate<AnimClass>(pAnimType, coords);
@@ -1519,6 +1521,25 @@ int TechnoExt::GetSight()
 	}
 
 	return static_cast<int>(sight);
+}
+
+bool TechnoExt::CanReceiveEvent(TechnoClass* pThis, HouseClass* pHouse)
+{
+	if (pThis->Berzerk)
+		return false;
+
+	if (pThis->GetTechnoType()->Spawned)
+		return false;
+
+	if (pThis->SlaveOwner)
+		return false;
+
+	auto const pOwner = pThis->GetOwningHouse();
+
+	if (pOwner != pHouse && !(pHouse->IsCurrentPlayer() && pOwner->IsControlledByCurrentPlayer()))
+		return false;
+
+	return true;
 }
 
 bool TechnoExt::HasWeaponsDisabled(TechnoClass* pThis)
