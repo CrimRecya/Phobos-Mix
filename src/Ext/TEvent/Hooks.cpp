@@ -1,7 +1,5 @@
 ﻿#include "Body.h"
 
-
-
 DEFINE_HOOK(0x71E940, TEventClass_Execute, 0x5)
 {
 	GET(TEventClass*, pThis, ECX);

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 // include this file whenever something is to be saved.
 
@@ -6,6 +6,10 @@
 #include "Constructs.h"
 
 #include <optional>
+#include <vector>
+#include <set>
+#include <map>
+#include <unordered_map>
 #include <bitset>
 
 #include <FileSystem.h>

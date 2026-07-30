@@ -1,5 +1,6 @@
-﻿#include <Kamikaze.h>
+﻿#include "Body.h"
 
+#include <Kamikaze.h>
 #include <JumpjetLocomotionClass.h>
 
 #include <Ext/Anim/Body.h>
