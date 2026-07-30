@@ -1,6 +1,4 @@
-﻿#include "Body.h"
-
-#include <Ext/Building/Body.h>
+﻿#include <Ext/Building/Body.h>
 #include <Ext/House/Body.h>
 
 bool BuildingTypeExt::CanUpgrade(BuildingClass* pBuilding, BuildingTypeClass* pUpgradeType, HouseClass* pUpgradeOwner)

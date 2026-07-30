@@ -327,6 +327,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Whether or not a passenger's weapon can fire out from an `OpenTopped=yes` transport will now respect the weapon's `FireWhileMoving` setting.
 - Fixed incorrect shadow rendering positions for non-Aircraft units with `Locomotor=Fly`, and for Aircraft units being dragged by warheads with `IsLocomotor=yes`.
 - Fixed the issue that spawnee or slave would execute some player commands.
+- Fixed the bug that technos do not reset their link with the linked building when deactivated.
 
 ## Fixes / interactions with other extensions
 
@@ -380,6 +381,7 @@ This page describes all ingame logics that are fixed or improved in Phobos witho
 - Allowed infantry to use `Convert.Deploy` without requiring `IsSimpleDeployer=true`.
 - Allowed adding custom cruise missiles, so that Ares' `Missile.RaiseRate` is no longer meaningless.
 - Fix the issue of Ares' EMP not suspending the production of AI factories.
+- Removed the restriction that prohibits InfantryTypes from using the InitialPayload logic.
 
 ## Newly added global settings
 

@@ -1,5 +1,6 @@
 ﻿#pragma once
-#include <Ext/Techno/Body.h>
+#include <WarheadTypeClass.h>
+#include <Ext/Bullet/Body.h>
 #include <Utilities/Container.h>
 #include <Utilities/TemplateDef.h>
 #include <New/Type/ShieldTypeClass.h>

@@ -1,6 +1,4 @@
-﻿#include "Body.h"
-
-#include <Ext/WeaponType/Body.h>
+﻿#include <Ext/WeaponType/Body.h>
 #include <Ext/Building/Body.h>
 
 // Reimplements the game function with few changes / optimizations

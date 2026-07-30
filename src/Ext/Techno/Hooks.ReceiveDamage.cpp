@@ -1,6 +1,4 @@
-﻿#include "Body.h"
-
-#include <Ext/Building/Body.h>
+﻿#include <Ext/Building/Body.h>
 #include <Ext/House/Body.h>
 #include <Ext/InfantryType/Body.h>
 #include <Ext/TEvent/Body.h>

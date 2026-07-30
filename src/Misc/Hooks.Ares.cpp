@@ -173,32 +173,6 @@ static bool __fastcall ParadropPlaneUnlimbo(AircraftClass* pThis, void* _, const
 
 #pragma endregion
 
-#pragma region UpdateFactoryQueues
-
-static void __stdcall UpdateFactoryQueues_Wrapper(BuildingClass* pBuilding)
-{
-	const auto pType = pBuilding->Type;
-	const auto absType = pType->Factory;
-
-	if (absType == AbstractType::None)
-		return;
-
-	if (const auto pFactory = pBuilding->Factory)
-	{
-		if (pFactory->Object)
-		{
-			if (pBuilding->Deactivated || !pBuilding->HasPower)
-				pFactory->Suspend(false);
-			else if (pFactory->IsSuspended && !pFactory->IsManual)
-				pFactory->Unsuspend(false);
-		}
-	}
-
-	pBuilding->Owner->Update_FactoriesQueues(absType, pType->Naval, BuildCat::DontCare);
-}
-
-#pragma endregion
-
 DEFINE_HOOK(0x440580, BuildingClass_Unlimbo_UnitDeliveryFix, 0x5)
 {
 	if (UnitDeliveryTemp::Placing)
@@ -234,6 +208,8 @@ void Apply_Ares3_0_Patches()
 	// Redirect Ares's RemoveCameo to our implementation:
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x02BDD0, GET_OFFSET(SidebarExt::AresTabCameo_RemoveCameo));
 
+	// Remove Ares' WhatAmI() != AbstractType::Infantry check.
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x491B8, AresHelper::AresBaseAddress + 0x491C4);
 	// InitialPayload creation:
 	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x43D5D, &CreateInitialPayload);
 	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x43E4F, GET_OFFSET(InitialPayloadFix));
@@ -314,9 +290,9 @@ void Apply_Ares3_0_Patches()
 	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x742AC, &ParadropPlaneUnlimbo);
 
 	// Replace Ares factory update logic with our wrapper.
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x13FA7, &UpdateFactoryQueues_Wrapper);
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4CD9E, &UpdateFactoryQueues_Wrapper);
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4CE84, &UpdateFactoryQueues_Wrapper);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x13FA7, &BuildingExt::UpdateFactoryQueues);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4CD9E, &BuildingExt::UpdateFactoryQueues);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4CE84, &BuildingExt::UpdateFactoryQueues);
 }
 
 void Apply_Ares3_0p1_Patches()
@@ -346,6 +322,8 @@ void Apply_Ares3_0p1_Patches()
 	// Redirect Ares's RemoveCameo to our implementation:
 	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x02C910, GET_OFFSET(SidebarExt::AresTabCameo_RemoveCameo));
 
+	// Remove Ares' WhatAmI() != AbstractType::Infantry check.
+	Patch::Apply_LJMP(AresHelper::AresBaseAddress + 0x49E08, AresHelper::AresBaseAddress + 0x49E14);
 	// InitialPayload creation:
 	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x4483D, &CreateInitialPayload);
 	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x4492F, GET_OFFSET(InitialPayloadFix));
@@ -426,7 +404,7 @@ void Apply_Ares3_0p1_Patches()
 	Patch::Apply_CALL6(AresHelper::AresBaseAddress + 0x7535C, &ParadropPlaneUnlimbo);
 
 	// Replace Ares factory update logic with our wrapper.
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x14537, &UpdateFactoryQueues_Wrapper);
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4DA0E, &UpdateFactoryQueues_Wrapper);
-	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4DAF4, &UpdateFactoryQueues_Wrapper);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x14537, &BuildingExt::UpdateFactoryQueues);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4DA0E, &BuildingExt::UpdateFactoryQueues);
+	Patch::Apply_CALL(AresHelper::AresBaseAddress + 0x4DAF4, &BuildingExt::UpdateFactoryQueues);
 }

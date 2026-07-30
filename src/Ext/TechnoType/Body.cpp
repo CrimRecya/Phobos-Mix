@@ -1,6 +1,4 @@
-﻿#include "Body.h"
-
-#include <EventClass.h>
+﻿#include <EventClass.h>
 #include <FlyLocomotionClass.h>
 #include <JumpjetLocomotionClass.h>
 

@@ -1,4 +1,4 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <Utilities/Debug.h>
 #include <Ext/House/Body.h>
@@ -8,10 +8,6 @@
 #include <Ext/WarheadType/Body.h>
 
 #include <Helpers/Macro.h>
-#include <BuildingClass.h>
-#include <EventClass.h>
-#include <HouseClass.h>
-#include <FootClass.h>
 #include <ShapeButtonClass.h>
 
 bool EventExt::AddEvent()

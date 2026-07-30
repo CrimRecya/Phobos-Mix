@@ -1,11 +1,11 @@
 ﻿#pragma once
+#include <EventClass.h>
+#include <TargetClass.h>
+#include <HouseClass.h>
+#include <TechnoClass.h>
 
 #include <cstddef>
 #include <stdint.h>
-#include <TechnoClass.h>
-#include <TargetClass.h>
-
-#include <HouseClass.h>
 
 enum class EventTypeExt : uint8_t
 {
