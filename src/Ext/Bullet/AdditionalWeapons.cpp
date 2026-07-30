@@ -222,8 +222,9 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 		return true;
 
 	auto pTarget = pBullet->Target;
+	const bool disperseForceFire = pType->DisperseForceFire;
 
-	if (!pType->DisperseForceFire)
+	if (!disperseForceFire)
 	{
 		if (!pTarget)
 			return false;
@@ -246,13 +247,20 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 	if (!pTarget && !this->TargetIsInAir)
 		pTarget = MapClass::Instance.TryGetCellAt(pBullet->TargetCoords);
 
+	const bool disperseHolistic = pType->DisperseHolistic;
+	const bool disperseTendency = pType->DisperseTendency;
+	const bool disperseDoRepeat = pType->DisperseDoRepeat;
+	const bool disperseRetarget = pType->DisperseRetarget;
+	const bool disperseSeparate = pType->DisperseSeparate;
+	const bool disperseLocation = pType->DisperseLocation;
+
 	// Launch weapons in sequence
 	for (int weaponNum = 0; weaponNum < validWeapons; ++weaponNum)
 	{
 		int curIndex = weaponNum;
 
 		// Only launch one group
-		if (pType->DisperseSeparate)
+		if (disperseSeparate)
 		{
 			// Set the current weapon number
 			curIndex = this->DisperseIndex;
@@ -285,7 +293,7 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 		}
 
 		// Only attack the original target
-		if (!pType->DisperseRetarget)
+		if (!disperseRetarget)
 		{
 			// Launch only when the target exist
 			if (pTarget)
@@ -300,7 +308,7 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 		int burstNow = 0;
 
 		// Prioritize attacking the original target once
-		if (pType->DisperseTendency && pTarget)
+		if (disperseTendency && pTarget)
 		{
 			this->CreateDisperseBullets(pFirer, sourceCoord, pWeapon, pTarget, pOwner, burstNow, burstCount);
 			++burstNow;
@@ -311,7 +319,7 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 
 		// Select new targets:
 		// Where to select?
-		const auto centerCoords = pType->DisperseLocation ? pBullet->Location : pBullet->TargetCoords;
+		const auto centerCoords = disperseLocation ? pBullet->Location : pBullet->TargetCoords;
 		const auto centerCell = CellClass::Coord2Cell(centerCoords);
 
 		std::vector<AbstractClass*> validTechnos;
@@ -319,11 +327,13 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 		std::vector<AbstractClass*> validCells;
 
 		// Select what?
-		const bool checkTechnos = (pWeaponExt->CanTarget & AffectedTarget::AllContents) != AffectedTarget::None;
+		const auto canTarget = pWeaponExt->CanTarget;
+		const bool checkTechnos = (canTarget & AffectedTarget::AllContents) != AffectedTarget::None;
 		const bool checkObjects = pType->DisperseMarginal;
-		const bool checkCells = (pWeaponExt->CanTarget & AffectedTarget::AllCells) != AffectedTarget::None;
+		const bool checkCells = (canTarget & AffectedTarget::AllCells) != AffectedTarget::None;
 
-		const size_t initialSize = pWeapon->Range / Unsorted::LeptonsPerCell + 1;
+		const int weaponRange = pWeapon->Range;
+		const size_t initialSize = weaponRange / Unsorted::LeptonsPerCell + 1;
 
 		// The number of technos cannot be predicted, only estimated
 		if (checkTechnos)
@@ -338,18 +348,19 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 			validCells.reserve(initialSize * initialSize);
 
 		// How to select?
-		if (pType->DisperseHolistic || !this->TargetIsInAir || checkCells) // On land targets
+		if (disperseHolistic || !this->TargetIsInAir || checkCells) // On land targets
 		{
 			// Ensure that the same building is not recorded repeatedly
 			std::set<TechnoClass*> inserted;
-			const bool checkCellObjects = !this->TargetIsInAir || pType->DisperseHolistic;
-			const double rangeSq = static_cast<double>(pWeapon->Range) * pWeapon->Range;
+			const bool checkCellObjects = !this->TargetIsInAir || disperseHolistic;
+			const double range = static_cast<double>(weaponRange);
+			const double rangeSq = range * range;
 
-			for (CellSpreadEnumerator thisCell(static_cast<size_t>((static_cast<double>(pWeapon->Range) / Unsorted::LeptonsPerCell) + 0.99)); thisCell; ++thisCell)
+			for (CellSpreadEnumerator thisCell(static_cast<size_t>((range / Unsorted::LeptonsPerCell) + 0.99)); thisCell; ++thisCell)
 			{
 				if (const auto pCell = MapClass::Instance.TryGetCellAt(*thisCell + centerCell))
 				{
-					if (checkCells && EnumFunctions::IsCellEligible(pCell, pWeaponExt->CanTarget, true, true))
+					if (checkCells && EnumFunctions::IsCellEligible(pCell, canTarget, true, true))
 						validCells.push_back(pCell);
 
 					if (!checkCellObjects)
@@ -361,7 +372,7 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 
 						if (!pTechno)
 						{
-							if (checkObjects && (!pType->DisperseTendency || pType->DisperseDoRepeat || pObject != pTarget))
+							if (checkObjects && (!disperseTendency || disperseDoRepeat || pObject != pTarget))
 							{
 								const auto pObjType = pObject->GetType();
 
@@ -374,7 +385,7 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 							const bool isBuilding = pTechno->WhatAmI() == AbstractType::Building;
 
 							if ((!isBuilding || (!static_cast<BuildingClass*>(pTechno)->Type->InvisibleInGame && !inserted.contains(pTechno)))
-								&& BulletExt::CheckCanDisperse(pTechno, pOwner, pType, centerCoords, pCell, pWeapon->Range, pTarget, pWeapon, pWeaponExt, pFirer))
+								&& BulletExt::CheckCanDisperse(pTechno, pOwner, pType, centerCoords, pCell, weaponRange, pTarget, pWeapon, pWeaponExt, pFirer))
 							{
 								validTechnos.push_back(pTechno);
 
@@ -387,9 +398,9 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 			}
 		}
 
-		if (pType->DisperseHolistic || this->TargetIsInAir) // In air targets
+		if (disperseHolistic || this->TargetIsInAir) // In air targets
 		{
-			const int range = pWeapon->Range + (pFirer ? pFirer->GetTechnoType()->AirRangeBonus : 0);
+			const int range = weaponRange + (pFirer ? pFirer->GetTechnoType()->AirRangeBonus : 0);
 
 			if (checkTechnos)
 			{
@@ -409,6 +420,8 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 			if (checkObjects && BulletExt::Fetch(pBullet)->InterceptorTechnoType)
 			{
 				const double rangeSq = static_cast<double>(range) * range;
+				const auto pWH = pWeapon->Warhead;
+				const auto canTargetHouses = pWeaponExt->CanTargetHouses;
 
 				for (const auto& pObject : BulletClass::Array)
 				{
@@ -418,9 +431,9 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 					if (pBulletTypeExt->Interceptable
 						&& !pObject->SpawnNextAnim
 						&& centerCoords.DistanceFromSquared(pObject->Location) <= rangeSq
-						&& (!pBulletTypeExt->Armor.isset() || GeneralUtils::GetWarheadVersusArmor(pWeapon->Warhead, pBulletTypeExt->Armor.Get()) != 0.0)
-						&& EnumFunctions::CanTargetHouse(pWeaponExt->CanTargetHouses, pOwner, (pObject->Owner ? pObject->Owner->Owner : pBulletExt->FirerHouse))
-						&& (!pType->DisperseTendency || pType->DisperseDoRepeat || pObject != pTarget))
+						&& (!pBulletTypeExt->Armor.isset() || GeneralUtils::GetWarheadVersusArmor(pWH, pBulletTypeExt->Armor.Get()) != 0.0)
+						&& EnumFunctions::CanTargetHouse(canTargetHouses, pOwner, (pObject->Owner ? pObject->Owner->Owner : pBulletExt->FirerHouse))
+						&& (!disperseTendency || disperseDoRepeat || pObject != pTarget))
 					{
 						validObjects.push_back(pObject);
 					}
@@ -434,7 +447,7 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 		validTargets.reserve(burstRemain);
 		std::vector<AbstractClass*>* vectors[3] = { &validTechnos, &validObjects, &validCells };
 
-		if (pType->DisperseDoRepeat) // Repeatedly attack new targets
+		if (disperseDoRepeat) // Repeatedly attack new targets
 		{
 			for (const auto pVector : vectors)
 			{
@@ -499,7 +512,7 @@ bool BulletExt::FireDisperseWeapon(TechnoClass* pFirer, const CoordStruct& sourc
 		}
 
 		// When WeaponTendency=false, if no suitable target can be found, attempt to attack the original target once
-		if (validTargets.empty() && pTarget && !burstNow && pType->DisperseForceFire)
+		if (validTargets.empty() && pTarget && !burstNow && disperseForceFire)
 			validTargets.push_back(pTarget);
 
 		for (const auto& pNewTarget : validTargets)
