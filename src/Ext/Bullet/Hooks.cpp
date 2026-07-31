@@ -528,9 +528,9 @@ DEFINE_HOOK(0x468D3F, BulletClass_ShouldExplode_AirTarget, 0x6)
 DEFINE_HOOK(0x4687F8, BulletClass_Unlimbo_FlakScatter, 0x6)
 {
 	GET(BulletClass*, pThis, EBX);
-	GET_STACK(const float, mult, STACK_OFFSET(0x5C, -0x44));
+	GET_STACK(const float, distance, STACK_OFFSET(0x5C, -0x44));
 
-	if (pThis->WeaponType)
+	if (const auto pWeapon = pThis->WeaponType)
 	{
 		auto const pTypeExt = BulletTypeExt::Fetch(pThis->Type);
 
@@ -547,7 +547,6 @@ DEFINE_HOOK(0x4687F8, BulletClass_Unlimbo_FlakScatter, 0x6)
 
 		if (pTypeExt->BallisticScatter_IncreaseByRange)
 		{
-			auto const pWeapon = pThis->WeaponType;
 			const int minInMinRange = pTypeExt->BallisticScatter_Min_InMinRange.Get(Leptons(min));
 			const int minInMaxRange = pTypeExt->BallisticScatter_Min_InMaxRange.Get(Leptons(min));
 			const int maxInMinRange = pTypeExt->BallisticScatter_Max_InMinRange.Get(Leptons(max));
@@ -555,7 +554,7 @@ DEFINE_HOOK(0x4687F8, BulletClass_Unlimbo_FlakScatter, 0x6)
 			const int minRange = pTypeExt->BallisticScatter_MinRange.Get(Leptons(pWeapon->MinimumRange));
 			const int maxRange = pTypeExt->BallisticScatter_MaxRange.Get(Leptons(pWeapon->Range));
 			const int deltaRange = maxRange - minRange;
-			const int deltaRangeReal = static_cast<int>(mult) - minRange;
+			const int deltaRangeReal = static_cast<int>(distance) - minRange;
 			const double rangePercent = Math::clamp((deltaRange == 0 ? 0.5 : deltaRangeReal / static_cast<double>(deltaRange)), 0, 1);
 			min = minInMinRange + static_cast<int>(rangePercent * (minInMaxRange - minInMinRange));
 			max = maxInMinRange + static_cast<int>(rangePercent * (maxInMaxRange - maxInMinRange));
@@ -563,7 +562,7 @@ DEFINE_HOOK(0x4687F8, BulletClass_Unlimbo_FlakScatter, 0x6)
 		}
 		else
 		{
-			result = static_cast<int>((mult * ScenarioClass::Instance->Random.RandomRanged(2 * min, 2 * max)) / pThis->WeaponType->Range);
+			result = static_cast<int>((distance * ScenarioClass::Instance->Random.RandomRanged(2 * min, 2 * max)) / pWeapon->Range);
 		}
 
 		R->EAX(result);

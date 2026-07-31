@@ -6,8 +6,6 @@
 #include "ActualTrajectories/ParabolaTrajectory.h"
 #include "VirtualTrajectories/TracingTrajectory.h"
 
-#include <OverlayTypeClass.h>
-
 #include <Ext/Bullet/Body.h>
 #include <Ext/Techno/Body.h>
 
@@ -907,23 +905,20 @@ DEFINE_HOOK(0x467BAC, BulletClass_Update_TrajectoriesCheckObstacle, 0x6)
 }
 
 /* ROT > 0. We temporarily do not need to make changes to the Bridge interaction for this scenario, but we will leave it here for now, as it may be used later.
-DEFINE_HOOK(0x46703E, BulletClass_AI_SkipBridgeCheck1, 0x6)
+DEFINE_HOOK(0x46703E, BulletClass_Update_SkipBridgeCheck1, 0x6)
 {
+	enum { SkipCheck = 0x467B7A };
 	GET(BulletClass*, pThis, EBP);
-	auto const pExt = BulletExt::TryFetch(pThis);
-	if (pExt && pExt->Trajectory)
-		return 0x467B7A;
-	return 0;
+	return BulletExt::Fetch(pThis)->Trajectory ? SkipCheck : 0;
 }
 */
 
-DEFINE_HOOK(0x4674D4, BulletClass_AI_SkipBridgeCheck2, 0x6)
+DEFINE_HOOK(0x4674D4, BulletClass_Update_SkipBridgeCheck2, 0x6)
 {
+	enum { SkipCheck = 0x467519 };
 	GET(BulletClass*, pThis, EBP);
-	auto const pExt = BulletExt::TryFetch(pThis);
-	if (pExt && pExt->Trajectory && pExt->Trajectory->ShouldSkipBridgeCheck())
-		return 0x467519;
-	return 0;
+	const auto pTraj = BulletExt::Fetch(pThis)->Trajectory.get();
+	return (pTraj && pTraj->ShouldSkipBridgeCheck()) ? SkipCheck : 0;
 }
 
 DEFINE_HOOK(0x467E53, BulletClass_Update_TrajectoriesPreDetonation, 0x6)
