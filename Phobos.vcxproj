@@ -63,6 +63,7 @@
     <ClCompile Include="src\Commands\AssignRallyPoint.cpp" />
     <ClCompile Include="src\Commands\AutoBuilding.cpp" />
     <ClCompile Include="src\Commands\CeaseFireStance.cpp" />
+    <ClCompile Include="src\Commands\ReversingStance.cpp" />
     <ClCompile Include="src\Commands\Commands.cpp" />
     <ClCompile Include="src\Commands\DamageDisplay.cpp" />
     <ClCompile Include="src\Commands\DeselectObject.cpp" />
@@ -392,6 +393,7 @@
     <ClInclude Include="src\Commands\AssignRallyPoint.h" />
     <ClInclude Include="src\Commands\AutoBuilding.h" />
     <ClInclude Include="src\Commands\CeaseFireStance.h" />
+    <ClInclude Include="src\Commands\ReversingStance.h" />
     <ClInclude Include="src\Commands\Commands.h" />
     <ClInclude Include="src\Commands\DamageDisplay.h" />
     <ClInclude Include="src\Commands\DeselectObject.h" />

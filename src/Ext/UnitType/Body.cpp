@@ -62,6 +62,20 @@ void UnitTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->DeployingAnim_ReverseForUndeploy.Read(exINI, pSection, "DeployingAnim.ReverseForUndeploy");
 	this->DeployingAnim_UseUnitDrawer.Read(exINI, pSection, "DeployingAnim.UseUnitDrawer");
 
+	this->AdvancedDrive_Reverse.Read(exINI, pSection, "AdvancedDrive.Reverse");
+	this->AdvancedDrive_Reverse_FaceTarget.Read(exINI, pSection, "AdvancedDrive.Reverse.FaceTarget");
+	this->AdvancedDrive_Reverse_FaceTargetRange.Read(exINI, pSection, "AdvancedDrive.Reverse.FaceTargetRange");
+	this->AdvancedDrive_Reverse_MinimumDistance.Read(exINI, pSection, "AdvancedDrive.Reverse.MinimumDistance");
+	this->AdvancedDrive_Reverse_RetreatDuration.Read(exINI, pSection, "AdvancedDrive.Reverse.RetreatDuration");
+	this->AdvancedDrive_Reverse_Speed.Read(exINI, pSection, "AdvancedDrive.Reverse.Speed");
+	this->AdvancedDrive_Hover.Read(exINI, pSection, "AdvancedDrive.Hover");
+	this->AdvancedDrive_Hover_Sink.Read(exINI, pSection, "AdvancedDrive.Hover.Sink");
+	this->AdvancedDrive_Hover_Spin.Read(exINI, pSection, "AdvancedDrive.Hover.Spin");
+	this->AdvancedDrive_Hover_Tilt.Read(exINI, pSection, "AdvancedDrive.Hover.Tilt");
+	this->AdvancedDrive_Hover_Height.Read(exINI, pSection, "AdvancedDrive.Hover.Height");
+	this->AdvancedDrive_Hover_Dampen.Read(exINI, pSection, "AdvancedDrive.Hover.Dampen");
+	this->AdvancedDrive_Hover_Bob.Read(exINI, pSection, "AdvancedDrive.Hover.Bob");
+
 	this->JumpjetTilt.Read(exINI, pSection, "JumpjetTilt");
 	this->JumpjetTilt_ForwardAccelFactor.Read(exINI, pSection, "JumpjetTilt.ForwardAccelFactor");
 	this->JumpjetTilt_ForwardSpeedFactor.Read(exINI, pSection, "JumpjetTilt.ForwardSpeedFactor");
@@ -170,6 +184,19 @@ void UnitTypeExt::Serialize(T& Stm)
 		.Process(this->DeployingAnim_KeepUnitVisible)
 		.Process(this->DeployingAnim_ReverseForUndeploy)
 		.Process(this->DeployingAnim_UseUnitDrawer)
+		.Process(this->AdvancedDrive_Reverse)
+		.Process(this->AdvancedDrive_Reverse_FaceTarget)
+		.Process(this->AdvancedDrive_Reverse_FaceTargetRange)
+		.Process(this->AdvancedDrive_Reverse_MinimumDistance)
+		.Process(this->AdvancedDrive_Reverse_RetreatDuration)
+		.Process(this->AdvancedDrive_Reverse_Speed)
+		.Process(this->AdvancedDrive_Hover)
+		.Process(this->AdvancedDrive_Hover_Sink)
+		.Process(this->AdvancedDrive_Hover_Spin)
+		.Process(this->AdvancedDrive_Hover_Tilt)
+		.Process(this->AdvancedDrive_Hover_Height)
+		.Process(this->AdvancedDrive_Hover_Dampen)
+		.Process(this->AdvancedDrive_Hover_Bob)
 		.Process(this->JumpjetTilt)
 		.Process(this->JumpjetTilt_ForwardAccelFactor)
 		.Process(this->JumpjetTilt_ForwardSpeedFactor)

@@ -19,7 +19,7 @@ public:
 	static constexpr int InUseButtonCount = 11;
 	static constexpr int UnusedButtonCount = 1;
 	static constexpr int OldButtonCount = InUseButtonCount + UnusedButtonCount;
-	static constexpr int NewButtonCount = std::min(4, (MaxButtonCount - OldButtonCount));
+	static constexpr int NewButtonCount = std::min(5, (MaxButtonCount - OldButtonCount));
 	//  1. Team01
 	//  2. Team02
 	//  3. Team03
@@ -37,14 +37,16 @@ public:
 	/* 13. */ "DistributionMode",
 	/* 14. */ "ManualReload",
 	/* 15. */ "AggressiveStance",
-	/* 16. */ "CeaseFire"
+	/* 16. */ "CeaseFire",
+	/* 17. */ "Reversing"
 	};
 	static constexpr const char* NewButtonTipNames[NewButtonCount] =
 	{
 		"Tip:DistributionMode",
 		"Tip:ManualReload",
 		"Tip:AggressiveStance",
-		"Tip:CeaseFire"
+		"Tip:CeaseFire",
+		"Tip:Reversing"
 	};
 	static int NewButtonIndexes[NewButtonCount];
 };

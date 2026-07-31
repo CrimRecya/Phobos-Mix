@@ -35,6 +35,7 @@ const wchar_t* SwitchNoMoveCommandClass::GetUIDescription() const
 void SwitchNoMoveCommandClass::Execute(WWKey eInput) const
 {
 	Phobos::Config::ApplyNoMoveCommand = !Phobos::Config::ApplyNoMoveCommand;
+	DistributionModeHoldDownCommandClass::ShowTime = SystemTimer::GetTime();
 }
 
 const char* DistributionModeSpreadCommandClass::GetName() const

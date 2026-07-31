@@ -104,10 +104,7 @@ void AggressiveStanceClass::AggressiveExecute()
 			for (const auto& pTechno : TechnoVectorNonAggressive)
 			{
 				if (TechnoExt::Fetch(pTechno)->GetCeaseFireStance())
-				{
-					EventExt::RaiseToggleCeaseFireStance(pTechno);
 					ceasedCeaseFireCount++;
-				}
 
 				EventExt::RaiseToggleAggressiveStance(pTechno);
 			}

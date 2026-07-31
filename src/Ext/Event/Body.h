@@ -18,7 +18,8 @@ enum class EventTypeExt : uint8_t
 	ManualReload = 0x82,
 	ToggleAggressiveStance = 0x83,
 	ToggleCeaseFireStance = 0x84,
-	AssignSecondaryRallyPoint = 0x85,
+	ToggleReversingStance = 0x85,
+	AssignSecondaryRallyPoint = 0x86,
 
 	FIRST = ApproachObject,
 	LAST = AssignSecondaryRallyPoint
@@ -27,6 +28,19 @@ enum class EventTypeExt : uint8_t
 #pragma pack(push, 1)
 class EventExt
 {
+	struct EventStruct_Obj0
+	{
+	};
+	struct EventStruct_Obj1
+	{
+		TargetClass Whom;
+	};
+	struct EventStruct_Obj2
+	{
+		TargetClass Whom;
+		TargetClass Target;
+	};
+
 public:
 	EventTypeExt Type;
 	bool IsExecuted;
@@ -35,36 +49,13 @@ public:
 	union
 	{
 		char DataBuffer[104];
-
-		struct APPROACHOBJECT
-		{
-			TargetClass Whom;
-			TargetClass Target;
-		} ApproachObject;
-
-		struct TogglePlayerAutoRepair
-		{ } TogglePlayerAutoRepair;
-
-		struct ManualReloadEvent
-		{
-			TargetClass Who;
-		} ManualReloadEvent;
-
-		struct ToggleAggressiveStance
-		{
-			TargetClass Who;
-		} ToggleAggressiveStance;
-
-		struct ToggleCeaseFireStance
-		{
-			TargetClass Who;
-		} ToggleCeaseFireStance;
-
-		struct AssignSecondaryRallyPoint
-		{
-			TargetClass Who;
-			TargetClass Whom;
-		} AssignSecondaryRallyPoint;
+		EventStruct_Obj2 ApproachObject;
+		EventStruct_Obj0 TogglePlayerAutoRepair;
+		EventStruct_Obj1 ManualReloadEvent;
+		EventStruct_Obj1 ToggleAggressiveStance;
+		EventStruct_Obj1 ToggleCeaseFireStance;
+		EventStruct_Obj1 ToggleReversingStance;
+		EventStruct_Obj2 AssignSecondaryRallyPoint;
 	};
 
 	bool AddEvent();
@@ -82,6 +73,9 @@ public:
 
 	static void RaiseToggleCeaseFireStance(TechnoClass* pTechno);
 	void RespondToToggleCeaseFireStance();
+
+	static void RaiseToggleReversingStance(TechnoClass* pTechno);
+	void RespondToToggleReversingStance();
 
 	static void RaiseAssignSecondaryRallyPoint(BuildingClass* pBuilding, AbstractClass* pTarget);
 	void RespondToAssignSecondaryRallyPoint();

@@ -10,6 +10,7 @@
 #include <HoverLocomotionClass.h>
 #include <InputManagerClass.h>
 
+#include <Ext/UnitType/Body.h>
 #include <Ext/WarheadType/Body.h>
 #include <Utilities/TemplateDef.h>
 #include <Locomotion/AStar/AStarClass.h>
@@ -277,10 +278,13 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 						}
 						else if (locomotion_cast<AdvancedDriveLocomotionClass*>(pFoot->Locomotor))
 						{
-							const auto pTypeExt = TechnoExt::Fetch(pFoot)->TypeExtData;
+							if (const auto pUnit = abstract_cast<UnitClass*, true>(pFoot))
+							{
+								const auto pTypeExt = UnitTypeExt::Fetch(pUnit->Type);
 
-							if (pTypeExt->AdvancedDrive_Hover)
-								height += pTypeExt->AdvancedDrive_Hover_Height.Get(RulesClass::Instance->HoverHeight);
+								if (pTypeExt->AdvancedDrive_Hover)
+									height += pTypeExt->AdvancedDrive_Hover_Height.Get(RulesClass::Instance->HoverHeight);
+							}
 						}
 
 						CoordStruct drawCoords = pCell->GetCoords();

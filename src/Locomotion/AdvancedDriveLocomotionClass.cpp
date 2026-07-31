@@ -10,6 +10,7 @@
 #include <TubeClass.h>
 
 #include <Ext/Techno/Body.h>
+#include <Ext/UnitType/Body.h>
 
 // Virtual
 
@@ -30,7 +31,9 @@ Matrix3D AdvancedDriveLocomotionClass::Draw_Matrix(VoxelIndexKey* key)
 	const auto pLinked = this->LinkedTo;
 	const auto pType = pLinked->GetTechnoType();
 	const auto pTypeExt = TechnoTypeExt::Fetch(pType);
-	const bool shouldTilt = !pTypeExt->AdvancedDrive_Hover || pTypeExt->AdvancedDrive_Hover_Tilt;
+	const bool shouldTilt = pLinked->WhatAmI() == AbstractType::Unit
+		&& (!static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover
+			|| static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover_Tilt);
 	const double rate = this->SlopeTimer.GetRatePassed();
 	const float ars = pLinked->AngleRotatedSideways;
 	const float arf = pLinked->AngleRotatedForwards;
@@ -101,7 +104,9 @@ Matrix3D AdvancedDriveLocomotionClass::Shadow_Matrix(VoxelIndexKey* key)
 
 	const auto pLinked = this->LinkedTo;
 	const auto pTypeExt = TechnoExt::Fetch(pLinked)->TypeExtData;
-	const bool shouldTilt = !pTypeExt->AdvancedDrive_Hover || pTypeExt->AdvancedDrive_Hover_Tilt;
+	const bool shouldTilt = pLinked->WhatAmI() == AbstractType::Unit
+		&& (!static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover
+			|| static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover_Tilt);
 
 	if ((shouldTilt && this->SlopeTimer.GetRatePassed() != 1.0)
 		|| std::abs(pLinked->AngleRotatedSideways) >= 0.005
@@ -120,6 +125,7 @@ bool AdvancedDriveLocomotionClass::Process()
 	const auto slopeIndex = pLinked->GetCell()->SlopeIndex;
 	const auto pType = pLinked->GetTechnoType();
 	const auto pTypeExt = TechnoTypeExt::Fetch(pType);
+	const bool isUnit = pLinked->WhatAmI() == AbstractType::Unit;
 
 	if (slopeIndex != this->CurrentRamp)
 	{
@@ -131,13 +137,13 @@ bool AdvancedDriveLocomotionClass::Process()
 	}
 
 	// Record target cell for reversing
-	if (pTypeExt->AdvancedDrive_Reverse)
+	if (isUnit && static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Reverse)
 		this->UpdateSituation();
 
 	const auto notInMotion = !this->InMotion();
 
 	// Update hover state
-	if (pTypeExt->AdvancedDrive_Hover && pLinked->TubeIndex < 0) // Check TubeIndex may be redundant
+	if (isUnit && static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover && pLinked->TubeIndex < 0) // Check TubeIndex may be redundant
 		this->UpdateHoverState();
 
 	if (notInMotion)
@@ -222,9 +228,8 @@ void AdvancedDriveLocomotionClass::Stop_Moving()
 bool AdvancedDriveLocomotionClass::Power_Off()
 {
 	const auto pLinked = this->LinkedTo;
-	const auto pTypeExt = TechnoExt::Fetch(pLinked)->TypeExtData;
 
-	if (pTypeExt->AdvancedDrive_Hover)
+	if (pLinked->WhatAmI() == AbstractType::Unit && static_cast<UnitTypeExt*>(TechnoExt::Fetch(pLinked)->TypeExtData)->AdvancedDrive_Hover)
 	{
 		if (this->Is_Powered())
 		{
@@ -251,8 +256,7 @@ bool AdvancedDriveLocomotionClass::Is_Powered()
 		return true;
 
 	const auto pLinked = this->LinkedTo;
-	const auto pTypeExt = TechnoExt::Fetch(pLinked)->TypeExtData;
-	return pTypeExt->AdvancedDrive_Hover && pLinked->GetHeight() > 0;
+	return pLinked->WhatAmI() == AbstractType::Unit && static_cast<UnitTypeExt*>(TechnoExt::Fetch(pLinked)->TypeExtData)->AdvancedDrive_Hover && pLinked->GetHeight() > 0;
 }
 
 void AdvancedDriveLocomotionClass::Force_Track(int track, CoordStruct coord)
@@ -375,12 +379,13 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 	const auto pLinked = this->LinkedTo;
 	const auto pType = pLinked->GetTechnoType();
 	const auto pTypeExt = TechnoTypeExt::Fetch(pType);
+	const bool notUnit = pLinked->WhatAmI() != AbstractType::Unit;
 
 	if (((!this->IsDriving || this->TrackNumber == -1)
 			&& pLinked->PathDirections[0] != 8)
 		|| (this->IsRotating
 			&& !pType->Turret
-			&& !pTypeExt->AdvancedDrive_Hover))
+			&& (notUnit || !static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover)))
 	{
 		this->SpeedAccum = 0;
 		return false;
@@ -391,8 +396,7 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 		pLinked->SetSpeedPercentage(this->MovementSpeed);
 	}
 	else if (this->TrackNumber < 64
-		&& (pLinked->WhatAmI() != AbstractType::Unit
-			|| !static_cast<UnitTypeClass*>(pType)->Passive))
+		&& (notUnit || !static_cast<UnitTypeClass*>(pType)->Passive))
 	{
 		do
 		{
@@ -459,7 +463,7 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 		}
 		while (false);
 
-		if (pLinked->WhatAmI() == AbstractType::Unit)
+		if (!notUnit)
 		{
 			if (auto pFollowerCar = static_cast<UnitClass*>(pLinked)->FollowerCar)
 			{
@@ -535,7 +539,7 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 	// Fix UpdatePosition bug
 	if (this->IsShifting)
 	{
-		const auto curDir = pTypeExt->AdvancedDrive_Hover ? pLinked->PrimaryFacing.Desired() : pLinked->PrimaryFacing.Current();
+		const auto curDir = (!notUnit && static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover) ? pLinked->PrimaryFacing.Desired() : pLinked->PrimaryFacing.Current();
 		const auto nextDir = DirStruct((this->TrackNumber & 7) << 13);
 
 		if (std::abs(static_cast<short>(static_cast<short>(curDir.Raw) - static_cast<short>(nextDir.Raw))) <= 4096)
@@ -608,6 +612,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 
 	const auto pType = pLinked->GetTechnoType();
 	const auto pTypeExt = TechnoTypeExt::Fetch(pType);
+	const bool isUnit = pLinked->WhatAmI() == AbstractType::Unit;
 
 	do
 	{
@@ -673,7 +678,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 			}
 			else
 			{
-				auto primaryFace = pTypeExt->AdvancedDrive_Hover ? pLinked->PrimaryFacing.Desired() : pLinked->PrimaryFacing.Current();
+				auto primaryFace = (isUnit && static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover) ? pLinked->PrimaryFacing.Desired() : pLinked->PrimaryFacing.Current();
 				const auto primaryDir = (primaryFace.GetValue<3>() + (this->IsForward ? 0 : 4)) & 7;
 				const auto faceCell = pLinked->GetMapCoords() + CellSpread::GetNeighbourOffset(primaryDir);
 
@@ -832,7 +837,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 	this->UpdateForwardState(desiredRaw);
 	const auto desDir = DirStruct(this->IsForward ? desiredRaw : (desiredRaw + 32768));
 
-	const bool isHover = pTypeExt->AdvancedDrive_Hover.Get();
+	const bool isHover = isUnit && static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover;
 
 	if ((isHover ? pLinked->PrimaryFacing.Desired() : pLinked->PrimaryFacing.Current()) != desDir)
 	{
@@ -1044,8 +1049,8 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 		speedFactor = 0.5;
 
 	// Customized backward speed
-	if (!this->IsForward)
-		speedFactor *= pTypeExt->AdvancedDrive_Reverse_Speed;
+	if (isUnit && !this->IsForward)
+		speedFactor *= static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Reverse_Speed;
 
 	// Customized damaged speed
 	if (pLinked->GetHealthPercentage() <= RulesClass::Instance->ConditionYellow)
@@ -1345,8 +1350,8 @@ CoordStruct AdvancedDriveLocomotionClass::GetTrackOffset(const Point2D& base, in
 
 void AdvancedDriveLocomotionClass::UpdateHoverState()
 {
-	const auto pLinked = this->LinkedTo;
-	const auto pTypeExt = TechnoExt::Fetch(pLinked)->TypeExtData;
+	const auto pLinked = static_cast<UnitClass*>(this->LinkedTo);
+	const auto pTypeExt = UnitTypeExt::Fetch(pLinked->Type);
 	const int hoverHeight = pTypeExt->AdvancedDrive_Hover_Height.Get(RulesClass::Instance->HoverHeight);
 	const int oldHeight = pLinked->GetHeight();
 	int adjustHeight = oldHeight;
@@ -1476,14 +1481,12 @@ CoordStruct AdvancedDriveLocomotionClass::CoordLerp(const CoordStruct& crd1, con
 
 inline void AdvancedDriveLocomotionClass::UpdateSituation()
 {
-	const auto pLinked = this->LinkedTo;
-	std::optional<TechnoTypeExt*> pTypeExt;
+	const auto pLinked = static_cast<UnitClass*>(this->LinkedTo);
+	const auto pTypeExt = UnitTypeExt::Fetch(pLinked->Type);
 
 	if (const auto pTarget = pLinked->MegaMissionIsAttackMove() ? nullptr : pLinked->Target)
 	{
-		pTypeExt = TechnoExt::Fetch(pLinked)->TypeExtData;
-
-		if (pLinked->DistanceFrom(pTarget) <= pTypeExt.value()->AdvancedDrive_Reverse_FaceTargetRange.Get())
+		if (pLinked->DistanceFrom(pTarget) <= pTypeExt->AdvancedDrive_Reverse_FaceTargetRange.Get())
 		{
 			this->ForwardTo = pTarget->GetCoords();
 			this->TargetFrame = Unsorted::CurrentFrame;
@@ -1494,13 +1497,10 @@ inline void AdvancedDriveLocomotionClass::UpdateSituation()
 
 	if (this->ForwardTo != CoordStruct::Empty)
 	{
-		if (!pTypeExt.has_value())
-			pTypeExt = TechnoExt::Fetch(pLinked)->TypeExtData;
-
 		const auto currentDistance = static_cast<int>(pLinked->Location.DistanceFrom(this->ForwardTo));
 
-		if (currentDistance > pTypeExt.value()->AdvancedDrive_Reverse_FaceTargetRange.Get()
-			|| (Unsorted::CurrentFrame - this->TargetFrame) > pTypeExt.value()->AdvancedDrive_Reverse_RetreatDuration
+		if (currentDistance > pTypeExt->AdvancedDrive_Reverse_FaceTargetRange.Get()
+			|| (Unsorted::CurrentFrame - this->TargetFrame) > pTypeExt->AdvancedDrive_Reverse_RetreatDuration
 			|| currentDistance < this->TargetDistance)
 		{
 			this->ForwardTo = CoordStruct::Empty;
@@ -1517,70 +1517,37 @@ inline void AdvancedDriveLocomotionClass::UpdateForwardState(int desiredRaw)
 		return;
 
 	const auto pLinked = static_cast<UnitClass*>(this->LinkedTo);
-	const auto pType = pLinked->Type;
-	const auto pTypeExt = TechnoTypeExt::Fetch(pType);
+	const auto pTypeExt = UnitTypeExt::Fetch(pLinked->Type);
 
-	if (!pTypeExt->AdvancedDrive_Reverse)
-		return;
-
-	const auto pLink = abstract_cast<BuildingClass*>(pLinked->GetNthLink());
-
-	if (pLink && pLink->Type->Bunker)
+	if (pTypeExt->AdvancedDrive_Reverse)
 	{
-		this->IsForward = true;
-		return;
-	}
+		if (pLinked->Owner->IsControlledByHuman())
+			return;
 
-	if (pType->Harvester || pType->Weeder)
-	{
-		if (pLink
-			&& pLink->Type->Refinery
-			&& pLinked->CurrentMission == Mission::Enter
-			&& !pLinked->MissionStatus
-			&& pLinked->DistanceFrom(pLinked->Destination) <= 363
-			&& !pLinked->GetCell()->GetBuilding())
+		if (!abstract_cast<BuildingClass*>(pLinked->GetNthLink()))
 		{
-			this->IsForward = false;
-			return;
-		}
-		else if (pLinked->CurrentMission == Mission::Harvest)
-		{
-			this->IsForward = true;
-			return;
+			if (this->ForwardTo != CoordStruct::Empty)
+			{
+				const auto tgtDir = pTypeExt->AdvancedDrive_Reverse_FaceTarget
+					? DirStruct(Math::atan2(pLinked->Location.Y - this->ForwardTo.Y, this->ForwardTo.X - pLinked->Location.X))
+					: pLinked->PrimaryFacing.Current();
+				const auto deltaTgtDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(tgtDir.Raw)));
+				const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768) - static_cast<short>(tgtDir.Raw)));
+				this->IsForward = deltaTgtDir <= deltaOppDir;
+			}
+			else if ((Unsorted::CurrentFrame - TechnoExt::Fetch(pLinked)->LastHurtFrame) <= pTypeExt->AdvancedDrive_Reverse_RetreatDuration
+				|| (pLinked->Destination && pLinked->DistanceFrom(pLinked->Destination) <= pTypeExt->AdvancedDrive_Reverse_MinimumDistance.Get()))
+			{
+				const auto curDir = pLinked->PrimaryFacing.Current();
+				const auto deltaCurDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(curDir.Raw)));
+				const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768) - static_cast<short>(curDir.Raw)));
+				this->IsForward = deltaCurDir <= deltaOppDir;
+			}
 		}
 	}
 
-	if (this->ForwardTo != CoordStruct::Empty)
-	{
-		const auto tgtDir = pTypeExt->AdvancedDrive_Reverse_FaceTarget
-			? DirStruct(Math::atan2(pLinked->Location.Y - this->ForwardTo.Y, this->ForwardTo.X - pLinked->Location.X))
-			: pLinked->PrimaryFacing.Current();
-		const auto deltaTgtDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(tgtDir.Raw)));
-		const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768) - static_cast<short>(tgtDir.Raw)));
-		this->IsForward = deltaTgtDir <= deltaOppDir;
-	}
-	else if ((Unsorted::CurrentFrame - TechnoExt::Fetch(pLinked)->LastHurtFrame) <= pTypeExt->AdvancedDrive_Reverse_RetreatDuration
-		|| (pLinked->Destination && pLinked->DistanceFrom(pLinked->Destination) <= pTypeExt->AdvancedDrive_Reverse_MinimumDistance.Get()))
-	{
-		const auto curDir = pLinked->PrimaryFacing.Current();
-		const auto deltaCurDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(curDir.Raw)));
-		const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768) - static_cast<short>(curDir.Raw)));
-		this->IsForward = deltaCurDir <= deltaOppDir;
-	}
-	else if (pLinked->ArchiveTarget
-		&& pLinked->CurrentMission == Mission::Area_Guard
-		&& pLinked->Owner->IsControlledByHuman()
-		&& !pType->DefaultToGuardArea)
-	{
-		const auto defDir = pLinked->GetTargetDirection(pLinked->ArchiveTarget);
-		const auto deltaDefDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw) - static_cast<short>(defDir.Raw)));
-		const auto deltaOppDir = std::abs(static_cast<short>(static_cast<short>(desiredRaw + 32768) - static_cast<short>(defDir.Raw)));
-		this->IsForward = deltaDefDir > deltaOppDir;
-	}
-	else
-	{
+	if (!this->IsForward)
 		this->IsForward = true;
-	}
 }
 
 inline bool AdvancedDriveLocomotionClass::InMotion()
@@ -1630,7 +1597,7 @@ inline bool AdvancedDriveLocomotionClass::InMotion()
 			this->IsRotating = true;
 
 			// Hover types can move when turning
-			if (!pTypeExt->AdvancedDrive_Hover)
+			if (pLinked->WhatAmI() != AbstractType::Unit || !static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover)
 				return true;
 		}
 		else if (this->IsRotating)
@@ -1806,7 +1773,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 		if (!pLinked->IsAlive)
 			return 1;
 
-		if (!pTypeExt->AdvancedDrive_Hover)
+		if (pLinked->WhatAmI() != AbstractType::Unit || !static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover)
 		{
 			// Stay on the ground
 			this->SetNewHeight(0);
@@ -1939,7 +1906,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 
 	auto maintainHeight = [this, pLinked, pTypeExt]()
 	{
-		if (pTypeExt->AdvancedDrive_Hover)
+		if (pLinked->WhatAmI() == AbstractType::Unit && static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover)
 		{
 			auto newPos = this->HeadToCoord;
 			newPos.Z = pLinked->Location.Z;

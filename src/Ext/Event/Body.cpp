@@ -5,7 +5,9 @@
 #include <Ext/Rules/Body.h>
 #include "Ext/Techno/Body.h"
 #include <Ext/Building/Body.h>
+#include <Ext/UnitType/Body.h>
 #include <Ext/WarheadType/Body.h>
+#include <Locomotion/AdvancedDriveLocomotionClass.h>
 
 #include <Helpers/Macro.h>
 #include <ShapeButtonClass.h>
@@ -39,6 +41,10 @@ void EventExt::RespondEvent()
 		this->RespondToToggleCeaseFireStance();
 		break;
 
+	case EventTypeExt::ToggleReversingStance:
+		this->RespondToToggleReversingStance();
+		break;
+
 	case EventTypeExt::AssignSecondaryRallyPoint:
 		this->RespondToAssignSecondaryRallyPoint();
 		break;
@@ -53,14 +59,14 @@ void EventExt::RaiseManualReloadEvent(TechnoClass* pTechno)
 	eventExt.Type = EventTypeExt::ManualReload;
 	eventExt.HouseIndex = static_cast<char>(pTechno->Owner->ArrayIndex);
 	eventExt.Frame = Unsorted::CurrentFrame;
-	eventExt.ManualReloadEvent.Who = TargetClass(pTechno);
+	eventExt.ManualReloadEvent.Whom = TargetClass(pTechno);
 	eventExt.AddEvent();
 	Debug::LogGame("Adding event MANUAL_RELOAD\n");
 }
 
 void EventExt::RespondToManualReloadEvent()
 {
-	const auto pTechno = this->ManualReloadEvent.Who.As_Techno();
+	const auto pTechno = this->ManualReloadEvent.Whom.As_Techno();
 
 	if (TechnoExt::IsActive(pTechno) && pTechno->Ammo > 0 && !pTechno->Berzerk)
 	{
@@ -89,14 +95,14 @@ void EventExt::RaiseToggleAggressiveStance(TechnoClass* pTechno)
 	eventExt.Type = EventTypeExt::ToggleAggressiveStance;
 	eventExt.HouseIndex = static_cast<char>(pTechno->Owner->ArrayIndex);
 	eventExt.Frame = Unsorted::CurrentFrame;
-	eventExt.ToggleAggressiveStance.Who = TargetClass(pTechno);
+	eventExt.ToggleAggressiveStance.Whom = TargetClass(pTechno);
 	eventExt.AddEvent();
 	Debug::LogGame("Adding event TOGGLE_AGGRESSIVE\n");
 }
 
 void EventExt::RespondToToggleAggressiveStance()
 {
-	if (const auto pTechno = this->ToggleAggressiveStance.Who.As_Techno())
+	if (const auto pTechno = this->ToggleAggressiveStance.Whom.As_Techno())
 	{
 		if (pTechno->IsAlive && !pTechno->Berzerk)
 		{
@@ -104,6 +110,9 @@ void EventExt::RespondToToggleAggressiveStance()
 
 			if (pTechnoExt->CanToggleAggressiveStance())
 				pTechnoExt->ToggleAggressiveStance();
+
+			if (pTechnoExt->GetAggressiveStance() && pTechnoExt->GetCeaseFireStance() && pTechnoExt->CanToggleCeaseFireStance())
+				pTechnoExt->ToggleCeaseFireStance();
 		}
 	}
 }
@@ -114,14 +123,14 @@ void EventExt::RaiseToggleCeaseFireStance(TechnoClass* pTechno)
 	eventExt.Type = EventTypeExt::ToggleCeaseFireStance;
 	eventExt.HouseIndex = static_cast<char>(pTechno->Owner->ArrayIndex);
 	eventExt.Frame = Unsorted::CurrentFrame;
-	eventExt.ToggleCeaseFireStance.Who = TargetClass(pTechno);
+	eventExt.ToggleCeaseFireStance.Whom = TargetClass(pTechno);
 	eventExt.AddEvent();
 	Debug::LogGame("Adding event TOGGLE_CEASEFIRE\n");
 }
 
 void EventExt::RespondToToggleCeaseFireStance()
 {
-	if (const auto pTechno = this->ToggleCeaseFireStance.Who.As_Techno())
+	if (const auto pTechno = this->ToggleCeaseFireStance.Whom.As_Techno())
 	{
 		if (pTechno->IsAlive && !pTechno->Berzerk)
 		{
@@ -129,6 +138,32 @@ void EventExt::RespondToToggleCeaseFireStance()
 
 			if (pTechnoExt->CanToggleCeaseFireStance())
 				pTechnoExt->ToggleCeaseFireStance();
+
+			if (pTechnoExt->GetCeaseFireStance() && pTechnoExt->GetAggressiveStance() && pTechnoExt->CanToggleAggressiveStance())
+				pTechnoExt->ToggleAggressiveStance();
+		}
+	}
+}
+
+void EventExt::RaiseToggleReversingStance(TechnoClass* pTechno)
+{
+	EventExt eventExt {};
+	eventExt.Type = EventTypeExt::ToggleReversingStance;
+	eventExt.HouseIndex = static_cast<char>(pTechno->Owner->ArrayIndex);
+	eventExt.Frame = Unsorted::CurrentFrame;
+	eventExt.ToggleReversingStance.Whom = TargetClass(pTechno);
+	eventExt.AddEvent();
+	Debug::LogGame("Adding event TOGGLE_CEASEFIRE\n");
+}
+
+void EventExt::RespondToToggleReversingStance()
+{
+	if (const auto pUnit = this->ToggleReversingStance.Whom.As_Unit())
+	{
+		if (pUnit->IsAlive && !pUnit->Berzerk && UnitTypeExt::Fetch(pUnit->Type)->AdvancedDrive_Reverse)
+		{
+			if (const auto pLoco = locomotion_cast<AdvancedDriveLocomotionClass*>(pUnit->Locomotor))
+				pLoco->IsForward = !pLoco->IsForward;
 		}
 	}
 }
@@ -139,18 +174,18 @@ void EventExt::RaiseAssignSecondaryRallyPoint(BuildingClass* pBuilding, Abstract
 	eventExt.Type = EventTypeExt::AssignSecondaryRallyPoint;
 	eventExt.HouseIndex = static_cast<char>(pBuilding->Owner->ArrayIndex);
 	eventExt.Frame = Unsorted::CurrentFrame;
-	eventExt.AssignSecondaryRallyPoint.Who = TargetClass(pBuilding);
-	eventExt.AssignSecondaryRallyPoint.Whom = TargetClass(pTarget);
+	eventExt.AssignSecondaryRallyPoint.Whom = TargetClass(pBuilding);
+	eventExt.AssignSecondaryRallyPoint.Target = TargetClass(pTarget);
 	eventExt.AddEvent();
 	Debug::LogGame("Adding event ASSIGN_BLDRALLY\n");
 }
 
 void EventExt::RespondToAssignSecondaryRallyPoint()
 {
-	if (const auto pBuilding = this->AssignSecondaryRallyPoint.Who.As_Building())
+	if (const auto pBuilding = this->AssignSecondaryRallyPoint.Whom.As_Building())
 	{
 		if (pBuilding->IsAlive && BuildingTypeExt::Fetch(pBuilding->Type)->HasSecondaryRallyPoint)
-			BuildingExt::Fetch(pBuilding)->SecondaryArchiveTarget = this->AssignSecondaryRallyPoint.Whom.As_Abstract();
+			BuildingExt::Fetch(pBuilding)->SecondaryArchiveTarget = this->AssignSecondaryRallyPoint.Target.As_Abstract();
 	}
 }
 
@@ -178,6 +213,8 @@ size_t EventExt::GetDataSize(EventTypeExt type)
 		return sizeof(EventExt::ToggleAggressiveStance);
 	case EventTypeExt::ToggleCeaseFireStance:
 		return sizeof(EventExt::ToggleCeaseFireStance);
+	case EventTypeExt::ToggleReversingStance:
+		return sizeof(EventExt::ToggleReversingStance);
 	case EventTypeExt::AssignSecondaryRallyPoint:
 		return sizeof(EventExt::AssignSecondaryRallyPoint);
 	default:
