@@ -1373,6 +1373,7 @@ Trajectory.AllowFirerTurning=true     ; boolean
 | `Trajectory.DetonationHeight` | ❌ | ✔️ | ❌ | ❌ | ✔️ | ❌ |
 | `Trajectory.AllowFirerTurning` | ❌ | ❌ | ❌ | ✔️ | ❌ | ✔️ |
 | `Inaccurate` | ✔️ | ✔️ | ✔️ | ❌ | ✔️ | ❌ |
+| `FlakScatter` | ✔️ | ✔️ | ✔️ | ❌ | ✔️ | ❌ |
 | `BallisticScatter` | ✔️ | ✔️ | ✔️ | ❌ | ✔️ | ❌ |
 | `Gravity` | ❌ | ✔️ | ✔️ | ❌ | ✔️ | ❌ |
 | `SubjectToGround` | ✔️ | ✔️ | ❌ | ❌ | ❌ | ❌ |
@@ -1608,6 +1609,7 @@ Trajectory.Tracing.ChasableDistance=0    ; floating point value
   ; Same as vanilla, when the distance reaches or exceeds the weapon's `Range`,
   ; the deviation distance will reach the setting here
   Inaccurate=yes
+  FlakScatter=yes
   BallisticScatter.Min=0
   BallisticScatter.Max=0.5
   SubjectToCliffs=yes
@@ -1750,6 +1752,7 @@ Trajectory.Tracing.ChasableDistance=0    ; floating point value
   AA=no
   AG=yes
   Inaccurate=yes
+  FlakScatter=yes
   BallisticScatter.Min=0.8
   BallisticScatter.Max=1.2
   SubjectToCliffs=yes
@@ -1793,6 +1796,7 @@ Trajectory.Tracing.ChasableDistance=0    ; floating point value
   AA=no
   AG=yes
   Inaccurate=yes
+  FlakScatter=yes
   BallisticScatter.Min=0.25
   BallisticScatter.Max=0.75
   SubjectToCliffs=yes
@@ -1831,6 +1835,7 @@ Trajectory.Tracing.ChasableDistance=0    ; floating point value
   AA=no
   AG=yes
   Inaccurate=yes
+  FlakScatter=yes
   BallisticScatter.Min=0
   BallisticScatter.Max=1
   SubjectToCliffs=no
