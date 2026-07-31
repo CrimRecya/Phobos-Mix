@@ -247,6 +247,8 @@ public:
 		, TargetDistance { 0 }
 		, Wobbles { 0.0 }
 		, OutOfControl { false }
+		, ShouldForward { false }
+		, ShouldReverse { false }
 		, TailSpin { 0 }
 	{ }
 
@@ -277,6 +279,8 @@ public:
 	int TargetDistance;
 	double Wobbles;
 	bool OutOfControl;
+	bool ShouldForward;
+	bool ShouldReverse;
 	int TailSpin;
 
 private:

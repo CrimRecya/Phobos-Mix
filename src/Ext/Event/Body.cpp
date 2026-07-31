@@ -163,7 +163,12 @@ void EventExt::RespondToToggleReversingStance()
 		if (pUnit->IsAlive && !pUnit->Berzerk && UnitTypeExt::Fetch(pUnit->Type)->AdvancedDrive_Reverse)
 		{
 			if (const auto pLoco = locomotion_cast<AdvancedDriveLocomotionClass*>(pUnit->Locomotor))
-				pLoco->IsForward = !pLoco->IsForward;
+			{
+				if (pLoco->IsForward)
+					pLoco->ShouldReverse = true;
+				else
+					pLoco->ShouldForward = true;
+			}
 		}
 	}
 }

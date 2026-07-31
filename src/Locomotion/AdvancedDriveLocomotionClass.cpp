@@ -1522,7 +1522,16 @@ inline void AdvancedDriveLocomotionClass::UpdateForwardState(int desiredRaw)
 	if (pTypeExt->AdvancedDrive_Reverse)
 	{
 		if (pLinked->Owner->IsControlledByHuman())
+		{
+			if (this->ShouldForward)
+				this->IsForward = true;
+			else if (this->ShouldReverse)
+				this->IsForward = false;
+
+			this->ShouldForward = false;
+			this->ShouldReverse = false;
 			return;
+		}
 
 		if (!abstract_cast<BuildingClass*>(pLinked->GetNthLink()))
 		{
