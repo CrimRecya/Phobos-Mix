@@ -674,6 +674,8 @@ public:
 	Nullable<double> ExtraThreatCoefficient_Facing;
 	Nullable<double> ExtraThreatCoefficient_DistanceToLastTarget;
 
+	Nullable<Powerup> DropCrate;
+
 	Nullable<bool> Unsellable; // Ares 3.0
 
 	SHPStruct* TurretShape;
@@ -1345,6 +1347,8 @@ public:
 		, ExtraTurretCount { 0 }
 		, ExtraTurretOffsets { }
 		, BurstPerTurret { 0 }
+
+		, DropCrate {}
 	{ }
 
 	virtual ~TechnoTypeExt() = default;
