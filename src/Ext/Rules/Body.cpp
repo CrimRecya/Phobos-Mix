@@ -470,6 +470,8 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->InvisoLatencyFix.Read(exINI, GameStrings::General, "InvisoLatencyFix");
 
+	this->WalkFrameFirst.Read(exINI, GameStrings::AudioVisual, "WalkFrameFirst");
+
 	this->UnifiedRadarColor.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor");
 	this->UnifiedRadarColor_Land.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Land");
 	this->UnifiedRadarColor_Water.Read(exINI, GameStrings::AudioVisual, "UnifiedRadarColor.Water");
@@ -1154,6 +1156,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->UpdateInLimbo_NormalPassenger)
 		.Process(this->UpdateInLimbo_LimboLaunch)
 		.Process(this->InvisoLatencyFix)
+		.Process(this->WalkFrameFirst)
 		.Process(this->UnifiedRadarColor)
 		.Process(this->UnifiedRadarColor_Land)
 		.Process(this->UnifiedRadarColor_Water)

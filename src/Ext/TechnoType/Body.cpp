@@ -1709,44 +1709,6 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->DefaultVisualCharacterToAlly.Read(exArtINI, pArtSection, "DefaultVisualCharacterToAlly");
 	this->DefaultVisualCharacterToEnemy.Read(exArtINI, pArtSection, "DefaultVisualCharacterToEnemy");
 
-	// Multi-turret / multi-barrel position offsets
-	this->BarrelOverTurret.Read(exArtINI, pArtSection, "BarrelOverTurret");
-	this->BarrelOffset.Read(exArtINI, pArtSection, "BarrelOffset");
-	this->ExtraBarrelCount.Read(exArtINI, pArtSection, "ExtraBarrelCount");
-
-	if (this->ExtraBarrelCount > 0)
-	{
-		for (int i = 0; i < this->ExtraBarrelCount; ++i)
-		{
-			Valueable<int> extraBarrelOffset;
-			_snprintf_s(tempBuffer, sizeof(tempBuffer), "ExtraBarrelOffset%u", i);
-			extraBarrelOffset.Read(exArtINI, pArtSection, tempBuffer);
-			this->ExtraBarrelOffsets.emplace_back(extraBarrelOffset.Get());
-		}
-	}
-	else
-	{
-		this->ExtraBarrelCount = 0;
-	}
-
-	this->ExtraTurretCount.Read(exArtINI, pArtSection, "ExtraTurretCount");
-
-	if (this->ExtraTurretCount > 0)
-	{
-		for (int i = 0; i < this->ExtraTurretCount; ++i)
-		{
-			Valueable<CoordStruct> extraTurretOffset;
-			_snprintf_s(tempBuffer, sizeof(tempBuffer), "ExtraTurretOffset%u", i);
-			extraTurretOffset.Read(exArtINI, pArtSection, tempBuffer);
-			this->ExtraTurretOffsets.emplace_back(extraTurretOffset.Get());
-		}
-		this->BurstPerTurret.Read(exArtINI, pArtSection, "BurstPerTurret");
-	}
-	else
-	{
-		this->ExtraTurretCount = 0;
-	}
-
 	// Parasitic types
 	this->AttachEffects.LoadFromINI(pINI, pSection);
 
@@ -2407,14 +2369,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->Missile_Cruise)
 		.Process(this->Missile_TakeOffAnim)
 		.Process(this->Missile_TakeOffSeparation)
-
-		.Process(this->BarrelOverTurret)
-		.Process(this->BarrelOffset)
-		.Process(this->ExtraBarrelCount)
-		.Process(this->ExtraBarrelOffsets)
-		.Process(this->ExtraTurretCount)
-		.Process(this->ExtraTurretOffsets)
-		.Process(this->BurstPerTurret)
 		;
 }
 

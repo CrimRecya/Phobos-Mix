@@ -421,6 +421,8 @@ public:
 
 		Valueable<bool> InvisoLatencyFix;
 
+		Valueable<bool> WalkFrameFirst;
+
 		Valueable<bool> UnifiedRadarColor;
 		Valueable<ColorStruct> UnifiedRadarColor_Land;
 		Valueable<ColorStruct> UnifiedRadarColor_Water;
@@ -1028,6 +1030,7 @@ public:
 			, UpdateInLimbo_NormalPassenger { false }
 			, UpdateInLimbo_LimboLaunch { false }
 			, InvisoLatencyFix { false }
+			, WalkFrameFirst { true }
 			, UnifiedRadarColor { false }
 			, UnifiedRadarColor_Land { ColorStruct(255,127,0) }
 			, UnifiedRadarColor_Water { ColorStruct(95,127,207) }

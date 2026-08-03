@@ -595,7 +595,7 @@ DEFINE_HOOK(0x73B748, UnitClass_DrawVXL_ResetKeyForTurretUse, 0x7)
 		{
 			GET(const UnitClass* const, pThis, EBP);
 			GET(const UnitTypeClass* const, pDrawType, EBX);
-			GET_STACK(const int, turretFrame, STACK_OFFSET(0x1C4, -0x18C));
+			REF_STACK(int, turretFrame, STACK_OFFSET(0x1C4, -0x18C));
 
 			const auto pDrawTypeExt = UnitTypeExt::Fetch(pDrawType);
 			if (*pDrawTypeExt->TurretOffset.GetEx() == CoordStruct::Empty && pDrawTypeExt->ExtraTurretCount <= 0 && pDrawTypeExt->ExtraBarrelCount <= 0)
@@ -604,12 +604,26 @@ DEFINE_HOOK(0x73B748, UnitClass_DrawVXL_ResetKeyForTurretUse, 0x7)
 				key.Base.Value &= ~0x1Fu;
 
 			if ((pThis->Type->TurretCount <= 0 || pThis->Type->IsGattling) && !pThis->Type->DisableVoxelCache)
+			{
 				key.Base.MinorVoxel.TurretWeaponIndex = GetTurretFacing(pThis);
+				key.Base.MinorVoxel.TurretFacing = 0;
+			}
 			else
+			{
+				key.Base.MinorVoxel.TurretWeaponIndex = 0;
 				key.Base.MinorVoxel.TurretFacing = pThis->SecondaryFacing.Current().GetFacing<32>();
+			}
 
-			if (pDrawType->TurretVoxel.HVA && pDrawType->TurretVoxel.HVA->FrameCount > 1)
-				key.Base.MinorVoxel.TurretFrameIndex = ((pDrawType->MainVoxel.HVA->FrameCount > 1) ? (pThis->TurretAnimFrame % pDrawType->TurretVoxel.HVA->FrameCount) : (turretFrame & 0xFFu));
+			if (!pDrawTypeExt->WalkFrameFirst.Get(RulesExt::Global()->WalkFrameFirst))
+			{
+				const auto pHva = pDrawType->TurretVoxel.HVA;
+				if (!pHva || pHva->FrameCount <= 1)
+					turretFrame = 0;
+				else if (pDrawType->MainVoxel.HVA->FrameCount > 1)
+					turretFrame = (pThis->TurretAnimFrame % pHva->FrameCount);
+			}
+
+			key.Base.MinorVoxel.TurretFrameIndex = (turretFrame & 0xFFu);
 		}
 	}
 

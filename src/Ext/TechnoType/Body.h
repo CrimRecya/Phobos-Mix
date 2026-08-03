@@ -693,14 +693,6 @@ public:
 	Valueable<AnimTypeClass*> Missile_TakeOffAnim;
 	Valueable<int> Missile_TakeOffSeparation;
 
-	Nullable<bool> BarrelOverTurret;
-	Valueable<int> BarrelOffset;
-	Valueable<int> ExtraBarrelCount;
-	std::vector<int> ExtraBarrelOffsets;
-	Valueable<int> ExtraTurretCount;
-	std::vector<CoordStruct> ExtraTurretOffsets;
-	Valueable<int> BurstPerTurret;
-
 	TechnoTypeExt(TechnoTypeClass* OwnerObject) : ObjectTypeExt(OwnerObject)
 		, HealthBar_Hide { false }
 		, HealthBar_HidePips { false }
@@ -1339,14 +1331,6 @@ public:
 		, Missile_Cruise { false }
 		, Missile_TakeOffAnim { nullptr }
 		, Missile_TakeOffSeparation { 24 }
-
-		, BarrelOverTurret { }
-		, BarrelOffset { 0 }
-		, ExtraBarrelCount { 0 }
-		, ExtraBarrelOffsets { }
-		, ExtraTurretCount { 0 }
-		, ExtraTurretOffsets { }
-		, BurstPerTurret { 0 }
 
 		, DropCrate {}
 	{ }
