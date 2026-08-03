@@ -905,6 +905,7 @@ void BulletExt::Serialize(T& Stm)
 		.Process(this->IsInstantDetonation)
 		.Process(this->FirepowerMult)
 		.Process(this->IsSplitFromAirburst)
+		.Process(this->DistanceTraveled)
 
 		.Process(this->Trajectory)
 		.Process(this->DispersedTrajectory)

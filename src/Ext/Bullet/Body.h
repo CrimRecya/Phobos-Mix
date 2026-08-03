@@ -59,6 +59,7 @@ public:
 	bool IsInstantDetonation;
 	double FirepowerMult;
 	bool IsSplitFromAirburst;
+	int DistanceTraveled;
 
 	TrajectoryPointer Trajectory;
 
@@ -99,6 +100,7 @@ public:
 		, IsInstantDetonation { false }
 		, FirepowerMult { 1.0 }
 		, IsSplitFromAirburst { false }
+		, DistanceTraveled { 0 }
 
 		, Trajectory { nullptr }
 
