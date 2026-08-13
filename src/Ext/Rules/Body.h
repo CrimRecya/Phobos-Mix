@@ -461,13 +461,15 @@ public:
 		Valueable<AffectedHouse> BerzerkTargeting;
 		Valueable<bool> AllowBerzerkOnAllies;
 
+		Valueable<bool> AttackMove_IgnoreWeaponCheck;
+
+		NullableIdx<AnimTypeClass> Parasite_GrappleAnim;
+		Nullable<bool> Parasite_AllowWaterExit;
+
 		// cache tint color
 		int TintColorIronCurtain;
 		int TintColorForceShield;
 		int TintColorBerserk;
-
-		Valueable<bool> AttackMove_IgnoreWeaponCheck;
-		Nullable<bool> AttackMove_StopWhenTargetAcquired;
 
 		Valueable<bool> Decloak_OnBlockingMovement;
 		Valueable<bool> Decloak_OnCloakingWithLowHealth;
@@ -498,6 +500,7 @@ public:
 		Valueable<int> WarheadAnimZAdjust;
 
 		Valueable<bool> IvanBombAttachToCenter;
+		Valueable<bool> MissileSpawnAttackCell;
 
 		Valueable<bool> FallingDownTargetingFix;
 		Valueable<bool> AIAirTargetingFix;
@@ -600,6 +603,8 @@ public:
 		Valueable<bool> HoverLocomotorMakesWake;
 		Valueable<bool> ShipLocomotorMakesWake;
 
+		Valueable<StackingMode> Psychedelic_StackingMode;
+
 		Valueable<bool> Shrapnel_AffectsGround;
 		Valueable<bool> Shrapnel_AffectsBuildings;
 		Valueable<bool> Shrapnel_UseWeaponTargeting;
@@ -633,6 +638,7 @@ public:
 		Valueable<bool> Temporal_ApplyVersus;
 		Valueable<bool> Temporal_ApplyMultiplier;
 
+		Valueable<bool> DiscardOn_Sequences_Immediate;
 		Valueable<bool> DiscardOn_MoveBasedOnDestination;
 		Valueable<bool> DiscardOn_ConsiderHarvestingAsStationary;
 		Valueable<bool> RemoveMindControl_Silent;
@@ -669,6 +675,11 @@ public:
 		Valueable<bool> AircraftDockingDir_DefaultToPoseDir;
 		Nullable<int> PoseDir_Production;
 		Nullable<int> PoseDir_Field;
+
+		Valueable<bool> ApproachTarget_StopWhenInRange;
+		Valueable<bool> ReadyToNextMission_MovingCheck;
+
+		Valueable<bool> NoAlphaImageOnBuildup;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -1074,7 +1085,6 @@ public:
 			, TintColorBerserk { 0 }
 
 			, AttackMove_IgnoreWeaponCheck { false }
-			, AttackMove_StopWhenTargetAcquired { }
 
 			, Decloak_OnBlockingMovement { true }
 			, Decloak_OnCloakingWithLowHealth { true }
@@ -1103,6 +1113,7 @@ public:
 			, WarheadAnimZAdjust { -15 }
 
 			, IvanBombAttachToCenter { false }
+			, MissileSpawnAttackCell { true }
 
 			, FallingDownTargetingFix { false }
 			, AIAirTargetingFix { false }
@@ -1204,6 +1215,8 @@ public:
 			, ShipLocomotorMakesWake { true }
 			, FiringAnim_Update { false }
 			, ExtendedPlayerRepair { false }
+
+			, Psychedelic_StackingMode { StackingMode::Override }
 			, Shrapnel_AffectsGround { false }
 			, Shrapnel_AffectsBuildings { false }
 			, Shrapnel_UseWeaponTargeting { false }
@@ -1229,6 +1242,7 @@ public:
 			, Vertical_AircraftFix { true }
 			, Temporal_ApplyVersus { false }
 			, Temporal_ApplyMultiplier { false }
+			, DiscardOn_Sequences_Immediate { true }
 			, DiscardOn_MoveBasedOnDestination { false }
 			, DiscardOn_ConsiderHarvestingAsStationary { true }
 			, RemoveMindControl_Silent { false }
@@ -1268,6 +1282,11 @@ public:
 			, AircraftDockingDir_DefaultToPoseDir{ true }
 			, PoseDir_Production {}
 			, PoseDir_Field{}
+
+			, ApproachTarget_StopWhenInRange { false }
+
+			, NoAlphaImageOnBuildup { false }
+			, ReadyToNextMission_MovingCheck { false }
 		{ }
 
 		virtual ~ExtData() = default;

@@ -1379,6 +1379,20 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->AttackMove_Aggressive.Read(exINI, pSection, "AttackMove.Aggressive");
 	this->AttackMove_UpdateTarget.Read(exINI, pSection, "AttackMove.UpdateTarget");
 
+	if (exINI.ReadString(pSection, "AttackMove.StopWhenTargetAcquired") > 0)
+	{
+		Debug::Log("[Developer warning][%s] AttackMove.StopWhenTargetAcquired is deprecated and has been replaced by ApproachTarget.StopWhenInRange! If both are set, the latter will be used.\n", pSection);
+	}
+	this->ApproachTarget_StopWhenInRange.Read(exINI, pSection, "AttackMove.StopWhenTargetAcquired");
+	this->ApproachTarget_StopWhenInRange.Read(exINI, pSection, "ApproachTarget.StopWhenInRange");
+
+	if (exINI.ReadString(pSection, "AttackMove.PursuitTarget") > 0)
+	{
+		Debug::Log("[Developer warning][%s] AttackMove.PursuitTarget is deprecated and has been replaced by ApproachTarget.PursuitTarget! If both are set, the latter will be used.\n", pSection);
+	}
+	this->ApproachTarget_PursuitTarget.Read(exINI, pSection, "AttackMove.PursuitTarget");
+	this->ApproachTarget_PursuitTarget.Read(exINI, pSection, "ApproachTarget.PursuitTarget");
+
 	this->KeepTargetOnMove.Read(exINI, pSection, "KeepTargetOnMove");
 	this->KeepTargetOnMove_Weapon.Read(exINI, pSection, "KeepTargetOnMove.Weapon");
 	this->KeepTargetOnMove_NoMorePursuit.Read(exINI, pSection, "KeepTargetOnMove.NoMorePursuit");
@@ -1413,10 +1427,6 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->IgnoredByMouse_ToAlly.Read(exINI, pSection, "IgnoredByMouse.ToAlly");
 	this->IgnoredByMouse_ToEnemy.Read(exINI, pSection, "IgnoredByMouse.ToEnemy");
 
-	this->Sinkable.Read(exINI, pSection, "Sinkable");
-	this->Sinkable_SquidGrab.Read(exINI, pSection, "Sinkable.SquidGrab");
-	this->SinkSpeed.Read(exINI, pSection, "SinkSpeed");
-
 	this->DamagedSpeed.Read(exINI, pSection, "DamagedSpeed");
 	this->ProneSpeed.Read(exINI, pSection, "ProneSpeed");
 
@@ -1444,10 +1454,6 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->Overload_ParticleSys.Read(exINI, pSection, "Overload.ParticleSys");
 	this->Overload_ParticleSysCount.Read(exINI, pSection, "Overload.ParticleSysCount");
 
-	this->Harvester_CanGuardArea.Read(exINI, pSection, "Harvester.CanGuardArea");
-	this->Harvester_CanGuardArea_RequireTarget.Read(exINI, pSection, "Harvester.CanGuardArea.RequireTarget");
-	this->HarvesterScanAfterUnload.Read(exINI, pSection, "HarvesterScanAfterUnload");
-
 	this->ExtendedAircraftMissions.Read(exINI, pSection, "ExtendedAircraftMissions");
 	this->ExtendedAircraftMissions_SmoothMoving.Read(exINI, pSection, "ExtendedAircraftMissions.SmoothMoving");
 	this->ExtendedAircraftMissions_EarlyDescend.Read(exINI, pSection, "ExtendedAircraftMissions.EarlyDescend");
@@ -1470,8 +1476,6 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->AttackMove_Follow.Read(exINI, pSection, "AttackMove.Follow");
 	this->AttackMove_Follow_IncludeAir.Read(exINI, pSection, "AttackMove.Follow.IncludeAir");
 	this->AttackMove_Follow_IfMindControlIsFull.Read(exINI, pSection, "AttackMove.Follow.IfMindControlIsFull");
-	this->AttackMove_StopWhenTargetAcquired.Read(exINI, pSection, "AttackMove.StopWhenTargetAcquired");
-	this->AttackMove_PursuitTarget.Read(exINI, pSection, "AttackMove.PursuitTarget");
 
 	this->Ammo_AutoConvertMinimumAmount.Read(exINI, pSection, "Ammo.AutoConvertMinimumAmount");
 	this->Ammo_AutoConvertMaximumAmount.Read(exINI, pSection, "Ammo.AutoConvertMaximumAmount");
@@ -1524,6 +1528,13 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 		|| ExtraThreatCoefficient_InRangeDistance.Get(RulesExt::Global()->ExtraThreatCoefficient_InRangeDistance) != 0.0
 		|| ExtraThreatCoefficient_Facing.Get(RulesExt::Global()->ExtraThreatCoefficient_Facing) != 0.0
 		|| ExtraThreatCoefficient_DistanceToLastTarget.Get(RulesExt::Global()->ExtraThreatCoefficient_DistanceToLastTarget) != 0.0;
+
+	this->Convert_Health_AbovePercent.Read(exINI, pSection, "Convert.Health.AbovePercent");
+	this->Convert_Health_BelowPercent.Read(exINI, pSection, "Convert.Health.BelowPercent");
+	this->Convert_Health.Read(exINI, pSection, "Convert.Health");
+
+	if (this->Convert_Health_AbovePercent > this->Convert_Health_BelowPercent)
+		Debug::Log("[Developer warning][%s] Convert.Health.AbovePercent is greater than Convert.Health.BelowPercent, resulting in no conversion.\n", pSection);
 
 	// Ares 0.2
 	this->RadarJamRadius.Read(exINI, pSection, "RadarJamRadius");
@@ -2185,6 +2196,9 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->AttackMove_Aggressive)
 		.Process(this->AttackMove_UpdateTarget)
 
+		.Process(this->ApproachTarget_StopWhenInRange)
+		.Process(this->ApproachTarget_PursuitTarget)
+
 		.Process(this->BunkerableAnyway)
 		.Process(this->KeepTargetOnMove)
 		.Process(this->KeepTargetOnMove_Weapon)
@@ -2228,10 +2242,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->ClonedAt)
 		.Process(this->ClonedAs)
 
-		.Process(this->Sinkable)
-		.Process(this->Sinkable_SquidGrab)
-		.Process(this->SinkSpeed)
-
 		.Process(this->DamagedSpeed)
 		.Process(this->ProneSpeed)
 
@@ -2263,10 +2273,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->AttachmentTopLayerMinHeight)
 		.Process(this->AttachmentUndergroundLayerMaxHeight)
 
-		.Process(this->Harvester_CanGuardArea)
-		.Process(this->Harvester_CanGuardArea_RequireTarget)
-		.Process(this->HarvesterScanAfterUnload)
-
 		.Process(this->ExtendedAircraftMissions)
 		.Process(this->ExtendedAircraftMissions_SmoothMoving)
 		.Process(this->ExtendedAircraftMissions_EarlyDescend)
@@ -2297,8 +2303,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->AttackMove_Follow)
 		.Process(this->AttackMove_Follow_IncludeAir)
 		.Process(this->AttackMove_Follow_IfMindControlIsFull)
-		.Process(this->AttackMove_StopWhenTargetAcquired)
-		.Process(this->AttackMove_PursuitTarget)
 
 		.Process(this->MultiWeapon)
 		.Process(this->MultiWeapon_IsSecondary)
@@ -2357,18 +2361,11 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->ExtraThreatCoefficient_Facing)
 		.Process(this->ExtraThreatCoefficient_DistanceToLastTarget)
 
-		.Process(this->HarvesterLoadRate)
-		.Process(this->HarvesterDumpRate)
-
 		.Process(this->Parasite_AllowWaterExit)
 
-		.Process(this->FlyNoWobbles)
-
-		.Process(this->LandingAnim)
-
-		.Process(this->Missile_Cruise)
-		.Process(this->Missile_TakeOffAnim)
-		.Process(this->Missile_TakeOffSeparation)
+		.Process(this->Convert_Health_AbovePercent)
+		.Process(this->Convert_Health_BelowPercent)
+		.Process(this->Convert_Health)
 		;
 }
 

@@ -261,6 +261,18 @@ enum class AttachmentYSortPosition : unsigned char
 	OverParent = 2
 };
 
+enum class StackingMode
+{
+	Override = 0,
+	SetIfZero = 1,
+	Min = 2,
+	Max = 3,
+	Add = 4,
+	Subtract = 5,
+	Multiply = 6,
+	Divide = 7
+};
+
 enum class ChronoSparkleDisplayPosition : unsigned char
 {
 	None = 0x0,

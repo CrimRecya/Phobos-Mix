@@ -181,5 +181,6 @@ public:
 		static bool DisableBalloonHoverPathingFix;
 		static bool DisableRadDamageOnBuildings;
 		static bool DisableSyncLogging;
+		static bool DisableLaserTracking;
 	};
 };

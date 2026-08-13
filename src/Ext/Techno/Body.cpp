@@ -123,7 +123,7 @@ TechnoExt::~TechnoExt()
 		ScenarioExt::Global()->FallingDownTracker.Remove(pThis);
 }
 
-bool TechnoExt::IsActiveIgnoreEMP(TechnoClass* pThis)
+bool TechnoExt::IsActive(TechnoClass* pThis)
 {
 	return pThis
 		&& pThis->IsAlive
@@ -131,12 +131,6 @@ bool TechnoExt::IsActiveIgnoreEMP(TechnoClass* pThis)
 		&& !pThis->InLimbo
 		&& !pThis->TemporalTargetingMe
 		&& !pThis->BeingWarpedOut
-		;
-}
-
-bool TechnoExt::IsActive(TechnoClass* pThis)
-{
-	return TechnoExt::IsActiveIgnoreEMP(pThis)
 		&& !pThis->Deactivated
 		&& !pThis->IsUnderEMP()
 		;
@@ -1746,6 +1740,7 @@ void TechnoExt::Serialize(T& Stm)
 		.Process(this->LastTargetCrd)
 		.Process(this->LastTargetCrdClearTimer)
 		.Process(this->ShouldBeDead)
+		.Process(this->PreventCrewEscape)
 		;
 }
 

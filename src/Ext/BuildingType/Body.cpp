@@ -1458,6 +1458,7 @@ void BuildingTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->Units_UseRepairCost.Read(exINI, pSection, "Units.UseRepairCost");
 
 	this->NoBuildAreaOnBuildup.Read(exINI, pSection, "NoBuildAreaOnBuildup");
+	this->NoAlphaImageOnBuildup.Read(exINI, pSection, "NoAlphaImageOnBuildup");
 	this->Adjacent_Allowed.Read(exINI, pSection, "Adjacent.Allowed");
 	this->Adjacent_Disallowed.Read(exINI, pSection, "Adjacent.Disallowed");
 	this->Adjacent_AllowedExtra.Read(exINI, pSection, "Adjacent.AllowedExtra");
@@ -1545,6 +1546,8 @@ void BuildingTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->NumberImpassableRows_Dir = Math::max(0, this->NumberImpassableRows_Dir) & 6; // Only accept 0,2,4,6
 	this->WeaponsFactory_Dir.Read(exINI, pSection, "WeaponsFactory.Dir");
 	this->WeaponsFactory_Dir = Math::max(0, this->WeaponsFactory_Dir) & 6; // Only accept 0,2,4,6
+
+	this->DeployFireDelay.Read(exINI, pSection, "DeployFireDelay");
 
 	// Ares tag
 	this->SpyEffect_Custom.Read(exINI, pSection, "SpyEffect.Custom");
@@ -1686,6 +1689,7 @@ void BuildingTypeExt::Serialize(T& Stm)
 		.Process(this->Units_RepairPercent)
 		.Process(this->Units_UseRepairCost)
 		.Process(this->NoBuildAreaOnBuildup)
+		.Process(this->NoAlphaImageOnBuildup)
 		.Process(this->Adjacent_Allowed)
 		.Process(this->Adjacent_Disallowed)
 		.Process(this->Adjacent_AllowedExtra)
@@ -1725,6 +1729,7 @@ void BuildingTypeExt::Serialize(T& Stm)
 		.Process(this->StartFacing_Random)
 		.Process(this->SetTabBySelecting)
 		.Process(this->RevealToAll_Radius)
+		.Process(this->DeployFireDelay)
 
 		// Ares 0.2
 		.Process(this->CloningFacility)

@@ -98,14 +98,15 @@ void RadSiteExt::CreateLight()
 
 	if (pThis->LightSource)
 	{
-		pThis->LightSource->ChangeLevels(Game::F2I(lightFactor), nTintBuffer, 0);
+		//pThis->LightSource->ChangeLevels(Game::F2I(lightFactor), nTintBuffer, false);
+		this->LightDirty = true;
 	}
 	else if (const auto pCell = MapClass::Instance.TryGetCellAt(pThis->BaseCell))
 	{
 		const auto pLight = GameCreate<LightSourceClass>(pCell->GetCoords(), pThis->SpreadInLeptons, Game::F2I(lightFactor), nTintBuffer);
 		pThis->LightSource = pLight;
 		pLight->DetailLevel = 0;
-		pLight->Activate();
+		pLight->Activate(false);
 	}
 
 	pThis->Radiate();
@@ -166,9 +167,10 @@ void RadSiteExt::Serialize(T& Stm)
 {
 	Stm
 		.Process(this->Weapon)
+		.Process(this->Type)
 		.Process(this->RadHouse)
 		.Process(this->RadInvoker)
-		.Process(this->Type)
+		.Process(this->LightDirty)
 		;
 }
 

@@ -1,4 +1,6 @@
-﻿#include <Ext/Anim/Body.h>
+﻿#include <JumpjetLocomotionClass.h>
+
+#include <Ext/Anim/Body.h>
 #include <Ext/Building/Body.h>
 #include <Ext/Bullet/Body.h>
 #include <Ext/Infantry/Body.h>
@@ -583,6 +585,18 @@ DEFINE_HOOK(0x6FC7EB, TechnoClass_CanFire_InterceptBullet, 0x7)
 
 	R->AL(pTarget->IsInAir());
 	return ContinueCheck;
+}
+
+DEFINE_HOOK(0x447FED, BuildingClass_CanFire_OmniFire, 0x7)
+{
+	enum { SkipGameCode = 0x448052 };
+
+	GET(BuildingClass* const, pThis, ESI);
+	GET_STACK(const int, weaponIndex, STACK_OFFSET(0xC, 0x8));
+
+	auto const pWeapon = pThis->GetWeapon(weaponIndex)->WeaponType;
+
+	return pWeapon->OmniFire ? SkipGameCode : 0;
 }
 
 #pragma endregion
@@ -1363,3 +1377,67 @@ DEFINE_HOOK(0x737086, UnitClass_FiringAI_Gattling, 0x9)
 }
 
 #pragma endregion
+
+DEFINE_HOOK(0x4D5A34, FootClass_ApproachTarget_StopWhenInRange, 0x6)
+{
+	GET_STACK(const bool, closeEnough, STACK_OFFSET(0x158, -0x146));
+
+	if (closeEnough)
+	{
+		GET(FootClass*, pThis, EBX);
+
+		if (pThis->InLimbo)
+			return 0;
+
+		const auto pTypeExt = TechnoExt::Fetch(pThis)->TypeExtData;
+
+		// Per-type setting takes priority, falls back to the global one.
+		if (pTypeExt->ApproachTarget_StopWhenInRange.Get(RulesExt::Global()->ApproachTarget_StopWhenInRange))
+		{
+			if (auto const pJumpjetLoco = locomotion_cast<JumpjetLocomotionClass*>(pThis->Locomotor))
+			{
+				auto const crd = pThis->GetCoords();
+				pJumpjetLoco->DestinationCoords.X = crd.X;
+				pJumpjetLoco->DestinationCoords.Y = crd.Y;
+				pJumpjetLoco->CurrentSpeed = 0;
+				pJumpjetLoco->MaxSpeed = 0;
+				pJumpjetLoco->State = JumpjetLocomotionClass::State::Hovering;
+				pThis->AbortMotion();
+			}
+			else
+			{
+				pThis->StopMoving();
+				pThis->AbortMotion();
+			}
+		}
+	}
+
+	return 0;
+}
+
+DEFINE_HOOK(0x4D57EA, FootClass_ApproachTarget_PursuitTarget, 0x9)
+{
+	enum { Return = 0x4D5A34 };
+
+	GET(FootClass*, pThis, EBX);
+
+	if (pThis->InLimbo)
+		return 0;
+
+	GET_STACK(const bool, closeEnough, STACK_OFFSET(0x158, -0x146));
+
+	const auto pTypeExt = TechnoExt::Fetch(pThis)->TypeExtData;
+
+	if (closeEnough && pTypeExt->ApproachTarget_StopWhenInRange.Get(RulesExt::Global()->ApproachTarget_StopWhenInRange))
+		return 0;
+
+	if (pTypeExt->ApproachTarget_PursuitTarget)
+	{
+		pThis->SetDestination(pThis->Target, true);
+		R->EDI(0);
+		R->Stack(STACK_OFFSET(0x158, -0x130), 0);
+		return Return;
+	}
+
+	return 0;
+}

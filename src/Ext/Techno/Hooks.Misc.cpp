@@ -983,13 +983,12 @@ static bool __fastcall LocomotorCheckForBunkerable(TechnoTypeClass* pType)
 {
 	auto const loco = pType->Locomotor;
 
-	// These locomotors either cause the game to crash or fail to enter the tank bunker properly.
-	return loco != LocomotionClass::CLSIDs::Hover
-		&& loco != LocomotionClass::CLSIDs::Mech
-		&& loco != LocomotionClass::CLSIDs::Fly
-		&& loco != LocomotionClass::CLSIDs::Droppod
-		&& loco != LocomotionClass::CLSIDs::Rocket
-		&& loco != LocomotionClass::CLSIDs::Ship;
+	// Other locomotors will either cause the game to crash or fail to enter the tank bunker properly.
+	return loco == LocomotionClass::CLSIDs::Drive
+		|| loco == LocomotionClass::CLSIDs::Walk
+		|| loco == LocomotionClass::CLSIDs::Tunnel
+		|| loco == LocomotionClass::CLSIDs::Teleport
+		|| loco == LocomotionClass::CLSIDs::Jumpjet;
 }
 
 DEFINE_HOOK(0x70FB73, FootClass_IsBunkerableNow_Dehardcode, 0x6)
@@ -1083,11 +1082,13 @@ DEFINE_HOOK(0x4C7512, EventClass_Execute_StopCommand, 0x6)
 {
 	GET(TechnoClass* const, pThis, ESI);
 
-	if (auto const pUnit = abstract_cast<UnitClass*>(pThis))
+	if (auto const pUnit = abstract_cast<UnitClass*, true>(pThis))
 	{
+		auto const pType = pUnit->Type;
+
 		// issue #112 Make FireOnce=yes work on other TechnoType
 		// Author: Starkku
-		if (pUnit->CurrentMission == Mission::Unload && pUnit->Type->DeployFire && !pUnit->Type->IsSimpleDeployer)
+		if (pUnit->CurrentMission == Mission::Unload && pType->DeployFire && !pType->IsSimpleDeployer)
 		{
 			pUnit->SetTarget(nullptr);
 			pThis->QueueMission(Mission::Guard, true);
@@ -1097,6 +1098,17 @@ DEFINE_HOOK(0x4C7512, EventClass_Execute_StopCommand, 0x6)
 		auto const pExt = UnitExt::Fetch(pUnit);
 		pExt->SubterraneanHarvStatus = 0;
 		pExt->SubterraneanHarvRallyPoint = nullptr;
+	}
+	else if (auto const pBuilding = abstract_cast<BuildingClass*, true>(pThis))
+	{
+		auto const pType = pBuilding->Type;
+
+		if (pBuilding->CurrentMission == Mission::Unload
+			&& pType->DeployFire && pType->Factory == AbstractType::None)
+		{
+			pBuilding->SetTarget(nullptr);
+			pBuilding->ForceMission(Mission::Guard);
+		}
 	}
 
 	return 0;
@@ -1159,6 +1171,10 @@ DEFINE_HOOK(0x4C6CF0, EventClass_RespondToEvent_CheckControllability, 0x8)  // P
 	GET(EventClass* const, pThis, ESI);
 
 	auto const pTechno = pThis->MegaMission.Whom.As_Techno();
+
+	if (!pTechno)
+		return SkipGameCode;
+
 	auto const pHouse = pTechno->GetOwningHouse();
 
 	if (!TechnoExt::CanReceiveEvent(pTechno, pHouse))

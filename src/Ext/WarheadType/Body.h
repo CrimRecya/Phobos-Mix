@@ -301,6 +301,12 @@ public:
 	Valueable<Leptons> Traction_Range;
 	Valueable<Leptons> Traction_Speed;
 
+	Nullable<StackingMode> Psychedelic_StackingMode;
+
+	Valueable<bool> PreventCrewEscape;
+	Valueable<bool> PreventPassengerEscape;
+	Valueable<bool> PreventOccupantEscape;
+
 	// Ares tags
 	// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
 	Valueable<bool> AffectsEnemies;
@@ -627,6 +633,12 @@ public:
 		, Traction { false }
 		, Traction_Range { Leptons(0) }
 		, Traction_Speed { Leptons(0) }
+
+		, Psychedelic_StackingMode {}
+
+		, PreventCrewEscape { false }
+		, PreventPassengerEscape { false }
+		, PreventOccupantEscape { false }
 	{ }
 
 	void ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget);

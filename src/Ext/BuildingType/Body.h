@@ -104,6 +104,7 @@ public:
 	Nullable<bool> Units_UseRepairCost;
 
 	Valueable<bool> NoBuildAreaOnBuildup;
+	Nullable<bool> NoAlphaImageOnBuildup;
 	ValueableVector<BuildingTypeClass*> Adjacent_Allowed;
 	ValueableVector<BuildingTypeClass*> Adjacent_Disallowed;
 	ValueableVector<TechnoTypeClass*> Adjacent_AllowedExtra;
@@ -160,6 +161,8 @@ public:
 	Valueable<int> SetTabBySelecting;
 
 	Nullable<int> RevealToAll_Radius;
+
+	Nullable<int> DeployFireDelay;
 
 	// Ares 0.2
 	Valueable<bool> CloningFacility;
@@ -246,6 +249,7 @@ public:
 		, Units_RepairPercent {}
 		, Units_UseRepairCost {}
 		, NoBuildAreaOnBuildup { false }
+		, NoAlphaImageOnBuildup {}
 		, Adjacent_Allowed {}
 		, Adjacent_Disallowed {}
 		, Adjacent_AllowedExtra {}
@@ -285,6 +289,7 @@ public:
 		, StartFacing_Random{}
 		, SetTabBySelecting { -1 }
 		, RevealToAll_Radius {}
+		, DeployFireDelay {}
 
 		// Ares 0.2
 		, CloningFacility { false }

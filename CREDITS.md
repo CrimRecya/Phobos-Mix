@@ -161,6 +161,7 @@ This page lists all the individual contributions to the project by their author.
   - Event 606: AttachEffect is attaching to a Techno
   - Linked superweapons
   - Unit & infantry auto-conversion on ammo change
+  - Restore the ScriptType action#24 `Play speech` from Tiberian Sun
 - **Starkku**:
   - Misc. minor bugfixes & improvements
   - AI script actions:
@@ -309,6 +310,7 @@ This page lists all the individual contributions to the project by their author.
   - Animatable template
   - Tank Bunker improvements
   - `ProjectileRange` weapon range modifiers interaction fix
+  - Berzerk duration stacking behaviour customization
 - **Morton (MortonPL)**:
   - `XDrawOffset` for animations
   - Shield passthrough & absorption
@@ -440,6 +442,10 @@ This page lists all the individual contributions to the project by their author.
   - SHP turret vehicles support the use of `*tur.shp` files
   - Fix a bug where game will crash after loading if a techno with `AlphaImage` converts to a type without it, or an anim with `AlphaImage` changes to a type without it through `Next`
   - `EVA.Tag` already supports being set for specific countries, and `EVAIndex` is no longer reset after load game
+  - `DeployFire` supports buildings
+  - Fix an issue where `OmniFire` was ineffective on buildings with `Turret=yes`
+  - Fix an issue where setting a production building as `Primary` could cause it to enter an unload state
+  - SkipMapSelect Enhancement
 - **NetsuNegi**:
   - Forbidding parallel AI queues by type
   - Jumpjet crash speed fix when crashing onto building
@@ -561,6 +567,8 @@ This page lists all the individual contributions to the project by their author.
   - Customize crash spin multiplier
   - Customize reveal radius of `RevealToAll`
   - Fix the bug that technos do not reset their link with the linked building when deactivated
+  - Customize whether warhead can prevent crew escape from techno
+  - Fix the issue of significant lagging caused by frequent lighting updates due to the accumulation of a large amount of radsite in a short time
 - **Apollo** - Translucent SHP drawing patches
 - **ststl**:
   - Customizable `ShowTimer` priority of superweapons
@@ -733,6 +741,8 @@ This page lists all the individual contributions to the project by their author.
   - Fix the bug where landing direction cannot be correctly converted when set to a value exceeding 256
   - Separately define the global default values of TerrainTypes' `IsPassable` and `CanBeBuiltOn` based on `SpawnsTiberium`
   - Remove the restriction that prohibits InfantryTypes from using the InitialPayload logic
+  - Add `ammo`, `health`, `mission`, `landtype` and `sequence` conditions to `DiscardOn`
+  - Disable AlphaImage during Buildup
 - **Ollerus**:
   - Build limit group enhancement
   - Customizable rocker amplitude
@@ -866,6 +876,8 @@ This page lists all the individual contributions to the project by their author.
   - New hotkey to select the units within the current screen that are captured by non-permanent mind-controller
   - Fix the issue that spawnee or slave would execute some player commands
   - Customize whether aircraft is a cargo plane
+  - Allow the unit to stop immediately if the target enters the range during ApproachTarget
+  - Allow the unit to keep pursuing the target during ApproachTarget
 - **solar-III (凤九歌)**
   - Target scanning delay customization (documentation)
   - Skip target scanning function calling for unarmed technos (documentation)
@@ -922,3 +934,4 @@ This page lists all the individual contributions to the project by their author.
 - **Chang_zhi**:
   - Interop export interface for accessing scenario local/global variables
   - Add `ClampToScreen` tag for `BannerType` to control whether banner position is clamped to the visible area
+- **obsidianus** - Automatic conversion based on health

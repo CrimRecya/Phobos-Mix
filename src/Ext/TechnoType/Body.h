@@ -476,6 +476,9 @@ public:
 	Nullable<bool> AttackMove_Aggressive;
 	Nullable<bool> AttackMove_UpdateTarget;
 
+	Nullable<bool> ApproachTarget_StopWhenInRange;
+	Valueable<bool> ApproachTarget_PursuitTarget;
+
 	Valueable<bool> BunkerableAnyway;
 	Valueable<bool> KeepTargetOnMove;
 	Valueable<int> KeepTargetOnMove_Weapon;
@@ -608,8 +611,6 @@ public:
 	Valueable<bool> AttackMove_Follow;
 	Valueable<bool> AttackMove_Follow_IncludeAir;
 	Valueable<bool> AttackMove_Follow_IfMindControlIsFull;
-	Nullable<bool> AttackMove_StopWhenTargetAcquired;
-	Valueable<bool> AttackMove_PursuitTarget;
 
 	Valueable<bool> MultiWeapon;
 	ValueableVector<bool> MultiWeapon_IsSecondary;
@@ -675,6 +676,10 @@ public:
 	Nullable<double> ExtraThreatCoefficient_DistanceToLastTarget;
 
 	Nullable<Powerup> DropCrate;
+
+	Valueable<double> Convert_Health_AbovePercent;
+	Valueable<double> Convert_Health_BelowPercent;
+	Nullable<TechnoTypeClass*> Convert_Health;
 
 	Nullable<bool> Unsellable; // Ares 3.0
 
@@ -1136,6 +1141,9 @@ public:
 		, AttackMove_Aggressive {}
 		, AttackMove_UpdateTarget {}
 
+		, ApproachTarget_StopWhenInRange {}
+		, ApproachTarget_PursuitTarget { false }
+
 		, BunkerableAnyway { false }
 		, KeepTargetOnMove { false }
 		, KeepTargetOnMove_Weapon { -1 }
@@ -1250,8 +1258,6 @@ public:
 		, AttackMove_Follow { false }
 		, AttackMove_Follow_IncludeAir { false }
 		, AttackMove_Follow_IfMindControlIsFull { false }
-		, AttackMove_StopWhenTargetAcquired { }
-		, AttackMove_PursuitTarget { false }
 
 		, MultiWeapon { false }
 		, MultiWeapon_IsSecondary {}
@@ -1333,6 +1339,10 @@ public:
 		, Missile_TakeOffSeparation { 24 }
 
 		, DropCrate {}
+
+		, Convert_Health_AbovePercent { -1.0 }
+		, Convert_Health_BelowPercent { -1.0 }
+		, Convert_Health {}
 	{ }
 
 	virtual ~TechnoTypeExt() = default;

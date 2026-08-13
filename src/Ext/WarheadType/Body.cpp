@@ -477,6 +477,12 @@ void WarheadTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->Traction_Range.Read(exINI, pSection, "Traction.Range");
 	this->Traction_Speed.Read(exINI, pSection, "Traction.Speed");
 
+	this->Psychedelic_StackingMode.Read(exINI, pSection, "Psychedelic.StackingMode");
+
+	this->PreventCrewEscape.Read(exINI, pSection, "PreventCrewEscape");
+	this->PreventPassengerEscape.Read(exINI, pSection, "PreventPassengerEscape");
+	this->PreventOccupantEscape.Read(exINI, pSection, "PreventOccupantEscape");
+
 	// Convert.From & Convert.To
 	TypeConvertGroup::Parse(this->Convert_Pairs, exINI, pSection, AffectedHouse::All);
 
@@ -864,6 +870,12 @@ void WarheadTypeExt::Serialize(T& Stm)
 		.Process(this->Traction)
 		.Process(this->Traction_Range)
 		.Process(this->Traction_Speed)
+
+		.Process(this->Psychedelic_StackingMode)
+
+		.Process(this->PreventCrewEscape)
+		.Process(this->PreventPassengerEscape)
+		.Process(this->PreventOccupantEscape)
 
 		// Ares tags
 		.Process(this->AffectsEnemies)
