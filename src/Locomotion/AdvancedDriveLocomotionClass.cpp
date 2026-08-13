@@ -419,8 +419,8 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 				if (pLinked->IsCrushingSomething)
 				{
 					// Customized crush slow down speed
-					if (!pTypeExt->SkipCrushSlowdown && this->MovementSpeed > pTypeExt->CrushSlowdownMultiplier)
-						this->MovementSpeed = pTypeExt->CrushSlowdownMultiplier;
+					if (pLinked->WhatAmI() == AbstractType::Unit && !static_cast<UnitTypeExt*>(pTypeExt)->SkipCrushSlowdown && this->MovementSpeed > static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier)
+						this->MovementSpeed = static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier;
 
 					speed = this->MovementSpeed;
 				}
@@ -435,8 +435,8 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 			else if (pLinked->IsCrushingSomething)
 			{
 				// Customized crush slow down speed
-				if (!pTypeExt->SkipCrushSlowdown && this->MovementSpeed > pTypeExt->CrushSlowdownMultiplier)
-					this->MovementSpeed = pTypeExt->CrushSlowdownMultiplier;
+				if (pLinked->WhatAmI() == AbstractType::Unit && !static_cast<UnitTypeExt*>(pTypeExt)->SkipCrushSlowdown && this->MovementSpeed > static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier)
+					this->MovementSpeed = static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier;
 
 				speed = this->MovementSpeed;
 			}
@@ -1768,12 +1768,12 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 				{
 					pLinked->IsCrushingSomething = true;
 
-					if (pType->TiltsWhenCrushes)
+					if (pLinked->WhatAmI() == AbstractType::Unit && pType->TiltsWhenCrushes)
 					{
 						// Customized crush tilt speed
 						pLinked->RockingForwardsPerFrame = this->IsForward
-							? static_cast<float>(pTypeExt->CrushForwardTiltPerFrame.Get(-0.05))
-							: static_cast<float>(-pTypeExt->CrushForwardTiltPerFrame.Get(-0.05));
+							? static_cast<float>(static_cast<UnitTypeExt*>(pTypeExt)->CrushForwardTiltPerFrame.Get(-0.05))
+							: static_cast<float>(-static_cast<UnitTypeExt*>(pTypeExt)->CrushForwardTiltPerFrame.Get(-0.05));
 					}
 				}
 			}

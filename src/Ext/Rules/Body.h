@@ -463,9 +463,6 @@ public:
 
 		Valueable<bool> AttackMove_IgnoreWeaponCheck;
 
-		NullableIdx<AnimTypeClass> Parasite_GrappleAnim;
-		Nullable<bool> Parasite_AllowWaterExit;
-
 		// cache tint color
 		int TintColorIronCurtain;
 		int TintColorForceShield;

@@ -1,4 +1,4 @@
-﻿#include "Body.h"
+#include "Body.h"
 #include <EventClass.h>
 #include <FlyLocomotionClass.h>
 
@@ -959,13 +959,7 @@ DEFINE_HOOK(0x4DF3BA, FootClass_UpdateAttackMove_AircraftHoldAttackMoveTarget1, 
 		return HoldTarget;
 	}
 
-	const auto inSearchRange = pThis->InAuxiliarySearchRange(pThis->Target);
-	const auto pTypeExt = TechnoTypeExt::Fetch(pThis->GetTechnoType());
-
-	if (pTypeExt->AttackMove_PursuitTarget && inSearchRange)
-		pThis->SetDestination(pThis->Target, true);
-
-	return inSearchRange ? HoldTarget : LoseTarget;
+	return pThis->InAuxiliarySearchRange(pThis->Target) ? HoldTarget : LoseTarget;
 }
 
 DEFINE_HOOK(0x4DF42A, FootClass_UpdateAttackMove_AircraftHoldAttackMoveTarget2, 0x6) // When it have MegaTarget

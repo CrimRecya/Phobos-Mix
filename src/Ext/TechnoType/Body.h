@@ -94,14 +94,6 @@ public:
 	std::unique_ptr<DroppodTypeClass> DroppodType;
 	std::unique_ptr<TiberiumEaterTypeClass> TiberiumEaterType;
 
-	Nullable<float> HarvesterDumpAmount;
-
-	Valueable<int> Ammo_AddOnDeploy;
-	Valueable<int> Ammo_AutoDeployMinimumAmount;
-	Valueable<int> Ammo_AutoDeployMaximumAmount;
-	Valueable<int> Ammo_DeployUnlockMinimumAmount;
-	Valueable<int> Ammo_DeployUnlockMaximumAmount;
-
 	Nullable<AutoDeathBehavior> AutoDeath_Behavior;
 	Nullable<bool> AutoDeath_AllowLimboed;
 	ValueableVector<AnimTypeClass*> AutoDeath_VanishAnimation;
@@ -120,8 +112,6 @@ public:
 	Nullable<bool> AutoDeath_TechnosExist_AllowLimboed;
 	Valueable<AffectedHouse> AutoDeath_TechnosExist_Houses;
 
-	Valueable<SlaveChangeOwnerType> Slaved_OwnerWhenMasterKilled;
-	NullableIdx<VocClass> SlavesFreeSound;
 	NullableIdx<VocClass> SellSound;
 	NullableIdx<VoxClass> EVA_Sold;
 
@@ -133,7 +123,6 @@ public:
 	NullableIdx<VoxClass> CombatAlert_EVA;
 
 	NullableIdx<VocClass> VoiceCreated;
-	NullableIdx<VocClass> VoicePickup; // Used by carryalls instead of VoiceMove if set.
 
 	ValueableVector<AnimTypeClass*> WarpOut;
 	ValueableVector<AnimTypeClass*> WarpIn;
@@ -152,13 +141,6 @@ public:
 	Nullable<WeaponTypeClass*> WarpInMinRangeWeapon;
 	Valueable<WeaponTypeClass*> WarpOutWeapon;
 	Valueable<bool> WarpInWeapon_UseDistanceAsDamage;
-
-	int SubterraneanSpeed;
-	Nullable<int> SubterraneanHeight;
-
-	ValueableVector<AnimTypeClass*> OreGathering_Anims;
-	ValueableVector<int> OreGathering_Tiberiums;
-	ValueableVector<int> OreGathering_FramesPerDir;
 
 	std::vector<std::vector<CoordStruct>> WeaponBurstFLHs;
 	std::vector<std::vector<CoordStruct>> EliteWeaponBurstFLHs;
@@ -208,14 +190,6 @@ public:
 
 	Nullable<bool> JumpjetRotateOnCrash;
 	Nullable<int> ShadowSizeCharacteristicHeight;
-
-	Valueable<bool> IsSimpleDeployer_ConsiderPathfinding;
-	Nullable<LandTypeFlags> IsSimpleDeployer_DisallowedLandTypes;
-	Nullable<FacingType> DeployDir;
-	ValueableVector<AnimTypeClass*> DeployingAnims;
-	Valueable<bool> DeployingAnim_KeepUnitVisible;
-	Valueable<bool> DeployingAnim_ReverseForUndeploy;
-	Valueable<bool> DeployingAnim_UseUnitDrawer;
 
 	Valueable<CSFText> EnemyUIName;
 	Valueable<TechnoTypeClass*> FakeOf;
@@ -275,19 +249,6 @@ public:
 	std::vector<Promotable<int>> InsigniaFrame_Passengers;
 	std::vector<Valueable<Vector3D<int>>> InsigniaFrames_Passengers;
 
-	Valueable<bool> JumpjetTilt;
-	Valueable<double> JumpjetTilt_ForwardAccelFactor;
-	Valueable<double> JumpjetTilt_ForwardSpeedFactor;
-	Valueable<double> JumpjetTilt_SidewaysRotationFactor;
-	Valueable<double> JumpjetTilt_SidewaysSpeedFactor;
-
-	Nullable<bool> TiltsWhenCrushes_Vehicles;
-	Nullable<bool> TiltsWhenCrushes_Overlays;
-	Nullable<double> CrushForwardTiltPerFrame;
-	Valueable<double> CrushOverlayExtraForwardTilt;
-	Valueable<double> CrushSlowdownMultiplier;
-	Valueable<bool> SkipCrushSlowdown;
-
 	Valueable<bool> DigitalDisplay_Disable;
 	ValueableVector<DigitalDisplayTypeClass*> DigitalDisplayTypes;
 
@@ -306,21 +267,11 @@ public:
 	Nullable<Point2D> SpawnsPipSize;
 	Valueable<Point2D> SpawnsPipOffset;
 
-	Valueable<EdgeType> SpawnFromEdge;
-	Valueable<EdgeType> RetreatToEdge;
-	Nullable<Leptons> SpawnDistanceFromTarget;
-	Nullable<int> SpawnHeight;
-	Nullable<int> LandingDir;
-
-	Nullable<bool> CurleyShuffle;
-
 	Valueable<TechnoTypeClass*> Convert_Deploy; // Ares
 	Valueable<TechnoTypeClass*> Convert_Undeploy;
 	Valueable<TechnoTypeClass*> Convert_HumanToComputer;
 	Valueable<TechnoTypeClass*> Convert_ComputerToHuman;
 	Nullable<bool> Convert_ResetMindControl;
-
-	Valueable<double> CrateGoodie_RerollChance;
 
 	Nullable<ColorStruct> Tint_Color;
 	Valueable<double> Tint_Intensity;
@@ -401,8 +352,6 @@ public:
 
 	Valueable<bool> UniqueTechno;
 
-	Valueable<bool> Missile_Tracing;
-
 	Valueable<bool> CanManualReload;
 	Valueable<bool> CanManualReload_WhenFull;
 	Valueable<bool> CanManualReload_ResetROF;
@@ -413,7 +362,6 @@ public:
 	Nullable<bool> NoRearm_Temporal;
 	Nullable<bool> NoReload_UnderEMP;
 	Nullable<bool> NoReload_Temporal;
-	Nullable<bool> NoTurret_TrackTarget;
 
 	Valueable<bool> KeepWarping;
 	Nullable<int> KeepWarping_Distance;
@@ -498,8 +446,6 @@ public:
 
 	Nullable<TechnoTypeClass*> Image_ConditionYellow;
 	Nullable<TechnoTypeClass*> Image_ConditionRed;
-	Nullable<UnitTypeClass*> WaterImage_ConditionYellow;
-	Nullable<UnitTypeClass*> WaterImage_ConditionRed;
 	bool NeedDamagedImage;
 
 	Nullable<int> InitialSpawnsNumber;
@@ -519,11 +465,6 @@ public:
 	Valueable<CoordStruct> Spawner_RecycleCoord;
 	Nullable<bool> Spawner_RecycleOnTurret;
 
-	Nullable<bool> Sinkable;
-	Valueable<bool> Sinkable_SquidGrab;
-	Valueable<int> SinkSpeed;
-
-	Nullable<double> ProneSpeed;
 	Nullable<double> DamagedSpeed;
 
 	ValueableVector<AnimTypeClass*> Promote_VeteranAnimation;
@@ -553,12 +494,6 @@ public:
 	};
 
 	std::vector<LaserTrailDataEntry> LaserTrailData;
-	Valueable<bool> OnlyUseLandSequences;
-	Nullable<bool> SecondaryFireSequenceLandOnly;
-	Nullable<CoordStruct> PronePrimaryFireFLH;
-	Nullable<CoordStruct> ProneSecondaryFireFLH;
-	Nullable<CoordStruct> DeployedPrimaryFireFLH;
-	Nullable<CoordStruct> DeployedSecondaryFireFLH;
 
 	Valueable<bool> IgnoredByMouse;
 	Nullable<bool> IgnoredByMouse_ToSelf;
@@ -577,17 +512,6 @@ public:
 	Nullable<ParticleSystemTypeClass*> Overload_ParticleSys;
 	Nullable<int> Overload_ParticleSysCount;
 
-	Valueable<bool> Harvester_CanGuardArea;
-	Valueable<bool> Harvester_CanGuardArea_RequireTarget;
-	Nullable<bool> HarvesterScanAfterUnload;
-
-	Nullable<bool> ExtendedAircraftMissions;
-	Nullable<bool> ExtendedAircraftMissions_SmoothMoving;
-	Nullable<bool> ExtendedAircraftMissions_EarlyDescend;
-	Nullable<bool> ExtendedAircraftMissions_RearApproach;
-	Nullable<bool> ExtendedAircraftMissions_FastScramble;
-	Nullable<int> ExtendedAircraftMissions_UnlandDamage;
-
 	ValueableVector<InfantryTypeClass*> Squad_Members;
 	Valueable<bool> Squad_IsInitAsTeam;
 
@@ -598,10 +522,6 @@ public:
 	Valueable<int> Ammo_AutoConvertMinimumAmount;
 	Valueable<int> Ammo_AutoConvertMaximumAmount;
 	Nullable<TechnoTypeClass*> Ammo_AutoConvertType;
-
-	Valueable<int> FireUp;
-	Valueable<bool> FireUp_ResetInRetarget;
-	//Nullable<int> SecondaryFire;
 
 	Nullable<bool> DebrisTypes_Limit;
 	ValueableVector<int> DebrisMinimums;
@@ -623,27 +543,17 @@ public:
 	ValueableVector<int> VoiceWeaponAttacks;
 	ValueableVector<int> VoiceEliteWeaponAttacks;
 
-	Nullable<bool> InfantryAutoDeploy;
-
 	ValueableVector<TechnoTypeClass*> TeamMember_ConsideredAs;
-
-	Nullable<bool> TurretResponse;
 
 	Valueable<bool> ExtraTargeting_Excluded;
 
 	Valueable<bool> AIDefendBase_Ignore;
-
-	Valueable<bool> Missile_UseDeathWeaponWhenIntercepted;
 
 	Valueable<bool> NoAutoFire_AI;
 
 	Valueable<bool> ReorganizeToWhenDefeated_Excluded;
 
 	Vector2D<bool> AttackFriendlies;
-
-	Valueable<bool> Deploy_SkipPassengerUnload;
-	Valueable<bool> Deploy_NoPassenger;
-	Valueable<bool> Deploy_NoTiberium;
 
 	Nullable<int> DrainMoneyFrameDelay;
 	Nullable<int> DrainMoneyAmount;
@@ -656,8 +566,6 @@ public:
 
 	Nullable<Mission> ParadropMission;
 	Nullable<Mission> AIParadropMission;
-	Nullable<int> ParadropDelay;
-	Nullable<int> ParadropEndDelay;
 
 	Nullable<int> PenetratesTransport_Level;
 	Valueable<double> PenetratesTransport_PassThroughMultiplier;
@@ -666,7 +574,6 @@ public:
 
 	Nullable<bool> JumpjetClimbIgnoreBuilding;
 
-	Valueable<bool> HoverDrownable;
 	bool ExtraThreat_Enabled;
 	Nullable<double> ExtraThreat_IsThreat;
 	Valueable<bool> AlwaysConsideredThreat;
@@ -682,21 +589,6 @@ public:
 	Nullable<TechnoTypeClass*> Convert_Health;
 
 	Nullable<bool> Unsellable; // Ares 3.0
-
-	SHPStruct* TurretShape;
-
-	Nullable<int> HarvesterLoadRate;
-	Nullable<double> HarvesterDumpRate;
-
-	Nullable<bool> Parasite_AllowWaterExit;
-
-	Nullable<bool> FlyNoWobbles;
-
-	Nullable<AnimTypeClass*> LandingAnim;
-
-	Valueable<bool> Missile_Cruise;
-	Valueable<AnimTypeClass*> Missile_TakeOffAnim;
-	Valueable<int> Missile_TakeOffSeparation;
 
 	TechnoTypeExt(TechnoTypeClass* OwnerObject) : ObjectTypeExt(OwnerObject)
 		, HealthBar_Hide { false }
@@ -771,12 +663,6 @@ public:
 		, WarpOutWeapon {}
 		, WarpInWeapon_UseDistanceAsDamage { false }
 
-		, SubterraneanSpeed { -1 }
-		, SubterraneanHeight {}
-
-		, OreGathering_Anims {}
-		, OreGathering_Tiberiums {}
-		, OreGathering_FramesPerDir {}
 		, LaserTrailData {}
 		, AlternateFLH_OnTurret {}
 		, AlternateFLH_ApplyVehicle {}
@@ -820,22 +706,6 @@ public:
 		, JumpjetRotateOnCrash {}
 		, ShadowSizeCharacteristicHeight { }
 
-		, IsSimpleDeployer_ConsiderPathfinding { false }
-		, IsSimpleDeployer_DisallowedLandTypes {}
-		, DeployDir {}
-		, DeployingAnims {}
-		, DeployingAnim_KeepUnitVisible { false }
-		, DeployingAnim_ReverseForUndeploy { true }
-		, DeployingAnim_UseUnitDrawer { true }
-
-		, HarvesterDumpAmount {}
-
-		, Ammo_AddOnDeploy { 0 }
-		, Ammo_AutoDeployMinimumAmount { -1 }
-		, Ammo_AutoDeployMaximumAmount { -1 }
-		, Ammo_DeployUnlockMinimumAmount { -1 }
-		, Ammo_DeployUnlockMaximumAmount { -1 }
-
 		, AutoDeath_Behavior {}
 		, AutoDeath_AllowLimboed {}
 		, AutoDeath_VanishAnimation {}
@@ -854,8 +724,6 @@ public:
 		, AutoDeath_TechnosExist_AllowLimboed {}
 		, AutoDeath_TechnosExist_Houses { AffectedHouse::Owner }
 
-		, Slaved_OwnerWhenMasterKilled { SlaveChangeOwnerType::Killer }
-		, SlavesFreeSound {}
 		, SellSound {}
 		, EVA_Sold {}
 
@@ -870,7 +738,6 @@ public:
 		, FakeOf {}
 
 		, VoiceCreated {}
-		, VoicePickup {}
 
 		, ForceWeapon_Check { false }
 		, ForceWeapon_Naval_Decloaked { -1 }
@@ -901,14 +768,6 @@ public:
 		, Passengers_SyncOwner {}
 		, Passengers_SyncOwner_RevertOnExit {}
 
-		, OnlyUseLandSequences { false }
-		, SecondaryFireSequenceLandOnly {}
-
-		, PronePrimaryFireFLH {}
-		, ProneSecondaryFireFLH {}
-		, DeployedPrimaryFireFLH {}
-		, DeployedSecondaryFireFLH {}
-
 		, IronCurtain_KeptOnDeploy {}
 		, IronCurtain_Effect {}
 		, IronCurtain_KillWarhead {}
@@ -936,19 +795,6 @@ public:
 		, InsigniaFrame_Passengers {}
 		, InsigniaFrames_Passengers {}
 
-		, JumpjetTilt { false }
-		, JumpjetTilt_ForwardAccelFactor { 1.0 }
-		, JumpjetTilt_ForwardSpeedFactor { 1.0 }
-		, JumpjetTilt_SidewaysRotationFactor { 1.0 }
-		, JumpjetTilt_SidewaysSpeedFactor { 1.0 }
-
-		, TiltsWhenCrushes_Vehicles {}
-		, TiltsWhenCrushes_Overlays {}
-		, CrushSlowdownMultiplier { 0.2 }
-		, CrushForwardTiltPerFrame {}
-		, CrushOverlayExtraForwardTilt { 0.02 }
-		, SkipCrushSlowdown { false }
-
 		, DigitalDisplay_Disable { false }
 		, DigitalDisplayTypes {}
 
@@ -967,23 +813,14 @@ public:
 		, SpawnsPipSize {}
 		, SpawnsPipOffset { { 0,0 } }
 
-		, SpawnFromEdge { EdgeType::Owner }
-		, RetreatToEdge { EdgeType::Owner }
-		, SpawnDistanceFromTarget {}
-		, SpawnHeight {}
-		, LandingDir {}
 		, DroppodType {}
 		, TiberiumEaterType {}
-
-		, CurleyShuffle {}
 
 		, Convert_Deploy {}
 		, Convert_Undeploy {}
 		, Convert_HumanToComputer {}
 		, Convert_ComputerToHuman {}
 		, Convert_ResetMindControl {}
-
-		, CrateGoodie_RerollChance { 0.0 }
 
 		, Tint_Color {}
 		, Tint_Intensity { 0.0 }
@@ -1064,8 +901,6 @@ public:
 
 		, UniqueTechno { false }
 
-		, Missile_Tracing { false }
-
 		, CanManualReload { false }
 		, CanManualReload_WhenFull { false }
 		, CanManualReload_ResetROF { true }
@@ -1076,7 +911,6 @@ public:
 		, NoRearm_Temporal {}
 		, NoReload_UnderEMP {}
 		, NoReload_Temporal {}
-		, NoTurret_TrackTarget {}
 
 		, KeepWarping { false }
 		, KeepWarping_Distance {}
@@ -1163,8 +997,6 @@ public:
 
 		, Image_ConditionYellow { }
 		, Image_ConditionRed { }
-		, WaterImage_ConditionYellow { }
-		, WaterImage_ConditionRed { }
 		, NeedDamagedImage { false }
 
 		, InitialSpawnsNumber { }
@@ -1189,11 +1021,6 @@ public:
 		, ClonedAt { }
 		, ClonedAs { }
 
-		, Sinkable { }
-		, Sinkable_SquidGrab { true }
-		, SinkSpeed { 5 }
-
-		, ProneSpeed { }
 		, DamagedSpeed { }
 
 		, SuppressKillWeapons { false }
@@ -1224,17 +1051,6 @@ public:
 		, AttachmentTopLayerMinHeight { RulesExt::Global()->AttachmentTopLayerMinHeight }
 		, AttachmentUndergroundLayerMaxHeight { RulesExt::Global()->AttachmentUndergroundLayerMaxHeight }
 
-		, Harvester_CanGuardArea { false }
-		, Harvester_CanGuardArea_RequireTarget { false }
-		, HarvesterScanAfterUnload {}
-
-		, ExtendedAircraftMissions {}
-		, ExtendedAircraftMissions_SmoothMoving {}
-		, ExtendedAircraftMissions_EarlyDescend {}
-		, ExtendedAircraftMissions_RearApproach {}
-		, ExtendedAircraftMissions_FastScramble {}
-		, ExtendedAircraftMissions_UnlandDamage {}
-
 		, Squad_Members {}
 		, Squad_IsInitAsTeam { false }
 
@@ -1245,10 +1061,6 @@ public:
 		, Ammo_AutoConvertMinimumAmount { -1 }
 		, Ammo_AutoConvertMaximumAmount { -1 }
 		, Ammo_AutoConvertType { nullptr }
-
-		, FireUp { -1 }
-		, FireUp_ResetInRetarget { true }
-			//, SecondaryFire {}
 
 		, DebrisTypes_Limit {}
 		, DebrisMinimums {}
@@ -1270,26 +1082,16 @@ public:
 		, VoiceWeaponAttacks {}
 		, VoiceEliteWeaponAttacks {}
 
-		, InfantryAutoDeploy {}
-
 		, TeamMember_ConsideredAs {}
-
-		, TurretResponse {}
 
 		, ExtraTargeting_Excluded { false }
 
 		, AIDefendBase_Ignore { false }
 
-		, Missile_UseDeathWeaponWhenIntercepted { false }
-
 		, NoAutoFire_AI { false }
 
 		, ReorganizeToWhenDefeated_Excluded { false }
 		, AttackFriendlies { false,false }
-
-		, Deploy_SkipPassengerUnload { false }
-		, Deploy_NoPassenger { false }
-		, Deploy_NoTiberium { false }
 
 		, DrainMoneyFrameDelay {}
 		, DrainMoneyAmount {}
@@ -1302,8 +1104,6 @@ public:
 
 		, ParadropMission {}
 		, AIParadropMission {}
-		, ParadropDelay {}
-		, ParadropEndDelay {}
 
 		, PenetratesTransport_Level {}
 		, PenetratesTransport_PassThroughMultiplier { 1.0 }
@@ -1312,11 +1112,8 @@ public:
 
 		, JumpjetClimbIgnoreBuilding {}
 
-		, HoverDrownable { true }
-
 		, Unsellable {}
 
-		, TurretShape { nullptr }
 		, ExtraThreat_Enabled { false }
 		, ExtraThreat_IsThreat {}
 		, AlwaysConsideredThreat { false }
@@ -1324,19 +1121,6 @@ public:
 		, ExtraThreatCoefficient_InRangeDistance {}
 		, ExtraThreatCoefficient_Facing {}
 		, ExtraThreatCoefficient_DistanceToLastTarget {}
-
-		, HarvesterLoadRate {}
-		, HarvesterDumpRate {}
-
-		, Parasite_AllowWaterExit {}
-
-		, FlyNoWobbles {}
-
-		, LandingAnim {}
-
-		, Missile_Cruise { false }
-		, Missile_TakeOffAnim { nullptr }
-		, Missile_TakeOffSeparation { 24 }
 
 		, DropCrate {}
 

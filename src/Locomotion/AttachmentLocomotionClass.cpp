@@ -14,6 +14,7 @@
 #include <JumpjetLocomotionClass.h>
 
 #include <Ext/Techno/Body.h>
+#include <Ext/UnitType/Body.h>
 #include <New/Entity/AttachmentClass.h>
 #include <New/Type/AttachmentTypeClass.h>
 
@@ -58,13 +59,15 @@ Matrix3D AttachmentLocomotionClass::Draw_Matrix(VoxelIndexKey* key)
 
 		if (const auto pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(pParentLoco))
 		{
-			if (!TechnoTypeExt::Fetch(pParentFoot->GetTechnoType())->JumpjetTilt
+			if ((pParentFoot->WhatAmI() != AbstractType::Unit
+					|| !UnitTypeExt::Fetch(static_cast<UnitClass*>(pParentFoot)->Type)->JumpjetTilt)
+				&& pChild->WhatAmI() == AbstractType::Unit
 				&& std::abs(pParentFoot->AngleRotatedSideways) < 0.005
 				&& std::abs(pParentFoot->AngleRotatedForwards) < 0.005)
 			{
-				const auto pTypeExt = TechnoTypeExt::Fetch(pChild->GetTechnoType());
+				const auto pTypeExt = UnitTypeExt::Fetch(static_cast<UnitClass*>(pChild)->Type);
 
-				if (pTypeExt->JumpjetTilt && pChild->WhatAmI() == AbstractType::Unit)
+				if (pTypeExt->JumpjetTilt)
 				{
 					const float forwardSpeedFactor = static_cast<float>(pJjLoco->CurrentSpeed * pTypeExt->JumpjetTilt_ForwardSpeedFactor);
 					const float forwardAccelFactor = static_cast<float>(pJjLoco->Accel * pTypeExt->JumpjetTilt_ForwardAccelFactor);
@@ -139,11 +142,13 @@ Matrix3D AttachmentLocomotionClass::Shadow_Matrix(VoxelIndexKey* key)
 
 		if (const auto pJjLoco = locomotion_cast<JumpjetLocomotionClass*>(pParentLoco))
 		{
-			if (!TechnoTypeExt::Fetch(pParentFoot->GetTechnoType())->JumpjetTilt
+			if ((pParentFoot->WhatAmI() != AbstractType::Unit
+					|| !UnitTypeExt::Fetch(static_cast<UnitClass*>(pParentFoot)->Type)->JumpjetTilt)
+				&& pChild->WhatAmI() == AbstractType::Unit
 				&& std::abs(pParentFoot->AngleRotatedSideways) < 0.005
 				&& std::abs(pParentFoot->AngleRotatedForwards) < 0.005)
 			{
-				const auto pTypeExt = TechnoTypeExt::Fetch(pChild->GetTechnoType());
+				const auto pTypeExt = UnitTypeExt::Fetch(static_cast<UnitClass*>(pChild)->Type);
 
 				if (pTypeExt->JumpjetTilt)
 				{

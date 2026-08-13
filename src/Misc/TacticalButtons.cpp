@@ -11,6 +11,7 @@
 #include <InputManagerClass.h>
 
 #include <Ext/UnitType/Body.h>
+#include <Ext/AircraftType/Body.h>
 #include <Ext/WarheadType/Body.h>
 #include <Utilities/TemplateDef.h>
 #include <Locomotion/AStar/AStarClass.h>
@@ -209,7 +210,7 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 						{
 							const auto pAircraft = abstract_cast<AircraftClass*, true>(pFoot);
 
-							if (!pAircraft || !TechnoTypeExt::Fetch(pAircraft->Type)->ExtendedAircraftMissions_RearApproach.Get(RulesExt::Global()->ExtendedAircraftMissions)
+							if (!pAircraft || !AircraftTypeExt::Fetch(pAircraft->Type)->ExtendedAircraftMissions_RearApproach.Get(RulesExt::Global()->ExtendedAircraftMissions)
 								|| !pDestination || (pAircraft->DockNowHeadingTo != pDestination && pAircraft->SpawnOwner != pDestination))
 							{
 								const auto destination = pFoot->Locomotor->Destination();

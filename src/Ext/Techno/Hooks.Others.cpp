@@ -8,6 +8,7 @@
 #include <Kamikaze.h>
 
 #include <Ext/Anim/Body.h>
+#include <Ext/Aircraft/Body.h>
 #include <Ext/Building/Body.h>
 #include <Ext/WarheadType/Body.h>
 #include <Ext/OverlayType/Body.h>
@@ -56,8 +57,8 @@ DEFINE_HOOK(0x662957, RocketLocomotionClass_Process_UpdateTargetPositionWhenBoos
 	GET(ILocomotion*, pThis, ESI);
 
 	const auto pLoco = static_cast<RocketLocomotionClass*>(pThis);
-	const auto pRocket = pLoco->LinkedTo;
-	const bool tracing = TechnoExt::Fetch(pRocket)->TypeExtData->Missile_Tracing;
+	const auto pRocket = static_cast<AircraftClass*>(pLoco->LinkedTo);
+	const bool tracing = AircraftExt::Fetch(pRocket)->GetTypeExtData()->Missile_Tracing;
 	if (tracing)
 	{
 		if (const auto pTarget = abstract_cast<FootClass*>(pRocket->Target))
@@ -87,8 +88,8 @@ DEFINE_HOOK(0x662A1E, RocketLocomotionClass_Process_UpdateTargetPositionWhenCrui
 	GET(ILocomotion*, pThis, ESI);
 
 	const auto pLoco = static_cast<RocketLocomotionClass*>(pThis);
-	const auto pRocket = pLoco->LinkedTo;
-	if (TechnoExt::Fetch(pRocket)->TypeExtData->Missile_Tracing)
+	const auto pRocket = static_cast<AircraftClass*>(pLoco->LinkedTo);
+	if (AircraftExt::Fetch(pRocket)->GetTypeExtData()->Missile_Tracing)
 	{
 		if (const auto pTarget = abstract_cast<FootClass*>(pRocket->Target))
 			pLoco->MovingDestination = pTarget->GetCoords();
@@ -102,8 +103,8 @@ DEFINE_HOOK(0x662CDF, RocketLocomotionClass_Process_UpdateTargetPositionWhenDive
 	GET(ILocomotion*, pThis, ESI);
 
 	const auto pLoco = static_cast<RocketLocomotionClass*>(pThis);
-	const auto pRocket = pLoco->LinkedTo;
-	if (TechnoExt::Fetch(pRocket)->TypeExtData->Missile_Tracing)
+	const auto pRocket = static_cast<AircraftClass*>(pLoco->LinkedTo);
+	if (AircraftExt::Fetch(pRocket)->GetTypeExtData()->Missile_Tracing)
 	{
 		if (const auto pTarget = abstract_cast<FootClass*>(pRocket->Target))
 			pLoco->MovingDestination = pTarget->GetCoords();
@@ -1966,11 +1967,11 @@ DEFINE_HOOK(0x708455, TechnoClass_BaseIsAttacked_Ignore2, 0x6)
 DEFINE_HOOK(0x662FD8, RocketLocomotionClass_Process_CheckHealth, 0x5)
 {
 	enum { SkipDetonate = 0x662FE6, Detonate = 0x662FDF };
-	GET(FootClass*, pLinkedTo, ECX);
+	GET(AircraftClass*, pLinkedTo, ECX);
 
 	if (pLinkedTo->Health <= 0)
 	{
-		if (TechnoTypeExt::Fetch(pLinkedTo->GetTechnoType())->Missile_UseDeathWeaponWhenIntercepted)
+		if (AircraftTypeExt::Fetch(pLinkedTo->Type)->Missile_UseDeathWeaponWhenIntercepted)
 		{
 			pLinkedTo->FireDeathWeapon(0);
 			AircraftTrackerClass::Instance.Remove(pLinkedTo);

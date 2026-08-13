@@ -1300,8 +1300,6 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 
 	this->UniqueTechno.Read(exINI, pSection, "UniqueTechno");
 
-	this->Missile_Tracing.Read(exINI, pSection, "Missile.Tracing");
-
 	this->CanManualReload.Read(exINI, pSection, "CanManualReload");
 	this->CanManualReload_WhenFull.Read(exINI, pSection, "CanManualReload.WhenFull");
 	this->CanManualReload_ResetROF.Read(exINI, pSection, "CanManualReload.ResetROF");
@@ -1428,7 +1426,6 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->IgnoredByMouse_ToEnemy.Read(exINI, pSection, "IgnoredByMouse.ToEnemy");
 
 	this->DamagedSpeed.Read(exINI, pSection, "DamagedSpeed");
-	this->ProneSpeed.Read(exINI, pSection, "ProneSpeed");
 
 	this->SuppressKillWeapons.Read(exINI, pSection, "SuppressKillWeapons");
 	this->SuppressKillWeapons_Types.Read(exINI, pSection, "SuppressKillWeapons.Types");
@@ -1454,13 +1451,6 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->Overload_ParticleSys.Read(exINI, pSection, "Overload.ParticleSys");
 	this->Overload_ParticleSysCount.Read(exINI, pSection, "Overload.ParticleSysCount");
 
-	this->ExtendedAircraftMissions.Read(exINI, pSection, "ExtendedAircraftMissions");
-	this->ExtendedAircraftMissions_SmoothMoving.Read(exINI, pSection, "ExtendedAircraftMissions.SmoothMoving");
-	this->ExtendedAircraftMissions_EarlyDescend.Read(exINI, pSection, "ExtendedAircraftMissions.EarlyDescend");
-	this->ExtendedAircraftMissions_RearApproach.Read(exINI, pSection, "ExtendedAircraftMissions.RearApproach");
-	this->ExtendedAircraftMissions_FastScramble.Read(exINI, pSection, "ExtendedAircraftMissions.FastScramble");
-	this->ExtendedAircraftMissions_UnlandDamage.Read(exINI, pSection, "ExtendedAircraftMissions.UnlandDamage");
-
 	this->Squad_Members.Read(exINI, pSection, "Squad.Members");
 	this->Squad_IsInitAsTeam.Read(exINI, pSection, "Squad.IsInitAsTeam");
 
@@ -1484,13 +1474,9 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	if (this->Ammo_AutoConvertMinimumAmount > this->Ammo_AutoConvertMaximumAmount)
 		Debug::Log("[Developer warning][%s] Ammo.AutoConvertMinimumAmount is greater than Ammo.AutoConvertMaximumAmount, resulting in no conversion.\n", pSection);
 
-	this->InfantryAutoDeploy.Read(exINI, pSection, "InfantryAutoDeploy");
-
 	this->ExtraTargeting_Excluded.Read(exINI, pSection, "ExtraTargeting.Excluded");
 
 	this->AIDefendBase_Ignore.Read(exINI, pSection, "AIDefendBase.Ignore");
-
-	this->Missile_UseDeathWeaponWhenIntercepted.Read(exINI, pSection, "Missile.UseDeathWeaponWhenIntercepted");
 
 	this->NoAutoFire_AI.Read(exINI, pSection, "NoAutoFire.AI");
 
@@ -1901,12 +1887,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->WarpOutWeapon)
 		.Process(this->WarpInWeapon_UseDistanceAsDamage)
 
-		.Process(this->SubterraneanSpeed)
-		.Process(this->SubterraneanHeight)
-
-		.Process(this->OreGathering_Anims)
-		.Process(this->OreGathering_Tiberiums)
-		.Process(this->OreGathering_FramesPerDir)
 		.Process(this->DefaultDisguise)
 
 		.Process(this->LaserTrailData)
@@ -2031,8 +2011,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 
 		.Process(this->DroppodType)
 
-		.Process(this->CurleyShuffle)
-
 		.Process(this->TiberiumEaterType)
 
 		.Process(this->Convert_Deploy)
@@ -2119,8 +2097,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->RateDown_Cover_AmmoBelow)
 
 		.Process(this->UniqueTechno)
-
-		.Process(this->Missile_Tracing)
 
 		.Process(this->CanManualReload)
 		.Process(this->CanManualReload_WhenFull)
@@ -2243,7 +2219,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->ClonedAs)
 
 		.Process(this->DamagedSpeed)
-		.Process(this->ProneSpeed)
 
 		.Process(this->SuppressKillWeapons)
 		.Process(this->SuppressKillWeapons_Types)
@@ -2272,13 +2247,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->AttachmentTypes)
 		.Process(this->AttachmentTopLayerMinHeight)
 		.Process(this->AttachmentUndergroundLayerMaxHeight)
-
-		.Process(this->ExtendedAircraftMissions)
-		.Process(this->ExtendedAircraftMissions_SmoothMoving)
-		.Process(this->ExtendedAircraftMissions_EarlyDescend)
-		.Process(this->ExtendedAircraftMissions_RearApproach)
-		.Process(this->ExtendedAircraftMissions_FastScramble)
-		.Process(this->ExtendedAircraftMissions_UnlandDamage)
 
 		.Process(this->Squad_Members)
 		.Process(this->Squad_IsInitAsTeam)
@@ -2317,13 +2285,9 @@ void TechnoTypeExt::Serialize(T& Stm)
 
 		.Process(this->TeamMember_ConsideredAs)
 
-		.Process(this->TurretResponse)
-
 		.Process(this->ExtraTargeting_Excluded)
 
 		.Process(this->AIDefendBase_Ignore)
-
-		.Process(this->Missile_UseDeathWeaponWhenIntercepted)
 
 		.Process(this->NoAutoFire_AI)
 
@@ -2349,8 +2313,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 
 		.Process(this->JumpjetClimbIgnoreBuilding)
 
-		.Process(this->HoverDrownable)
-
 		.Process(this->Unsellable)
 
 		.Process(this->ExtraThreat_Enabled)
@@ -2360,8 +2322,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->ExtraThreatCoefficient_InRangeDistance)
 		.Process(this->ExtraThreatCoefficient_Facing)
 		.Process(this->ExtraThreatCoefficient_DistanceToLastTarget)
-
-		.Process(this->Parasite_AllowWaterExit)
 
 		.Process(this->Convert_Health_AbovePercent)
 		.Process(this->Convert_Health_BelowPercent)

@@ -46,6 +46,8 @@ void TechnoExt::OnEarlyUpdate()
 		return;
 
 	this->ApplyInterceptor();
+	this->AmmoAutoConvertActions();
+	this->HealthAutoConvertActions();
 }
 
 void TechnoExt::ApplyInterceptor()
@@ -2060,6 +2062,48 @@ void TechnoExt::UpdateTypeData(TechnoTypeClass* pCurrentType)
 		if (const auto pAlpha = pAlphaMap->get_or_default(pFoot))
 			GameDelete(pAlpha);
 	}
+}
+
+void TechnoExt::AmmoAutoConvertActions()
+{
+	const auto pTypeExt = this->TypeExtData;
+
+	if (!pTypeExt->Ammo_AutoConvertType.isset())
+		return;
+
+	const int min = pTypeExt->Ammo_AutoConvertMinimumAmount;
+	const int max = pTypeExt->Ammo_AutoConvertMaximumAmount;
+
+	if (min < 0 && max < 0)
+		return;
+
+	if (pTypeExt->OwnerObject()->Ammo <= 0)
+		return;
+
+	const auto pThis = this->OwnerObject();
+	const int ammo = pThis->Ammo;
+
+	if ((min < 0 || ammo >= min) && (max < 0 || ammo <= max))
+		TechnoExt::ConvertToType(pThis, pTypeExt->Ammo_AutoConvertType);
+}
+
+void TechnoExt::HealthAutoConvertActions()
+{
+	const auto pTypeExt = this->TypeExtData;
+
+	if (!pTypeExt->Convert_Health.isset())
+		return;
+
+	const double min = pTypeExt->Convert_Health_AbovePercent;
+	const double max = pTypeExt->Convert_Health_BelowPercent;
+
+	if (min < 0 && max < 0)
+		return;
+
+	const auto pThis = this->OwnerObject();
+
+	if (TechnoExt::IsHealthInThreshold(pThis, min, max))
+		TechnoExt::ConvertToType(pThis, pTypeExt->Convert_Health);
 }
 
 void TechnoExt::UpdateCachedClick()
