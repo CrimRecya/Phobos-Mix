@@ -41,11 +41,11 @@ bool Phobos::Optimizations::DisableLaserTracking = true;
 // The leading L"" widens the narrow metadata literals it is concatenated with, so that the
 // name and the version are taken from Phobos.version.h rather than spelled out again.
 #ifdef NIGHTLY
-const wchar_t* Phobos::VersionDescription = L"Phobos sp nightly #" _STR(VERSION_MAJOR) L"." _STR(VERSION_MINOR) L"." _STR(VERSION_REVISION) L"." _STR(VERSION_PATCH) L"+" _STR(VERSION_EX_PATCH) L"(" STR_GIT_COMMIT L")";
+const wchar_t* Phobos::VersionDescription = L" " PRODUCT_NAME L" " PRODUCT_VERSION L". DO NOT SHIP IN MODS!";
 #elif defined(TESTING_BUILD)
-const wchar_t* Phobos::VersionDescription = L"Phobos sp build #" _STR(VERSION_MAJOR) L"." _STR(VERSION_MINOR) L"." _STR(VERSION_REVISION) L"." _STR(VERSION_PATCH) L"+" _STR(VERSION_EX_PATCH);
+const wchar_t* Phobos::VersionDescription = L" " PRODUCT_NAME L" " PRODUCT_VERSION L".";
 #else
-const wchar_t* Phobos::VersionDescription = L"Phobos sp release v" _STR(VERSION_MAJOR) L"." _STR(VERSION_MINOR) L"." _STR(VERSION_REVISION) L"." _STR(VERSION_PATCH) L"+" _STR(VERSION_EX_PATCH);
+const wchar_t* Phobos::VersionDescription = L" " PRODUCT_NAME L" " PRODUCT_VERSION L".";
 #endif
 
 void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
@@ -67,12 +67,10 @@ void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
 		{
 			Phobos::AppIconPath = ppArgs[++i];
 		}
-#ifdef TESTING_BUILD
-		if (_stricmp(pArg, "-HideVersionWarning=SPB" _STR(BUILD_NUMBER) "+" _STR(MERGE_NUMBER) "_" _STR(MERGE_PATCH)) == 0)
+		if (_stricmp(pArg, "-HideVersionWarning=SPB" VERSION_PREFIX FILE_VERSION_STR) == 0)
 		{
 			Phobos::HideWarning = true;
 		}
-#endif
 		if (_stricmp(pArg, "-Inheritance") == 0)
 		{
 			foundInheritance = true;
@@ -478,11 +476,11 @@ DEFINE_HOOK(0x684AD3, UnknownClass_sub_684620_InitMessageList, 0x5)
 		const time_t currentTime = Phobos::GetCurrent();
 		const int daysUsed = static_cast<int>(difftime(currentTime, compileTime) / (60 * 60 * 24));
 		const int daysLeft = 183 - daysUsed;
-		constexpr const wchar_t* const text = L"正在使用Phobos特别合并构建#" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH) L"。若在使用过程中发生问题，请按说明中的方法反馈。  — 绯红热茶";
+		constexpr const wchar_t* const text = L"正在使用Phobos特别合并构建" PRODUCT_VERSION L"。";
 		wchar_t buffer[0x40];
 
 		if (daysLeft > 7)
-			swprintf_s(buffer, L"剩余试用期：%2d天", daysLeft);
+			swprintf_s(buffer, L"剩余试用期：%2d天。若在使用过程中发生问题，请按说明中的方法反馈。", daysLeft);
 		else
 			swprintf_s(buffer, L"剩余试用期：%2d天，注意及时在群内获取最新版本。", daysLeft);
 
