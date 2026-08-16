@@ -782,7 +782,7 @@ DisableEmptySpawnPositions=false  ; boolean
 
 ### Skip saving game on starting a new campaign
 
-When starting a new campaign, the game automatically saves the game. Now you can decide whether you want that to happen or not.
+- When starting a new campaign, the game automatically saves the game. Now you can decide whether you want that to happen or not.
 
 In `RA2MD.INI`:
 ```ini
@@ -805,8 +805,6 @@ ScrollSidebarStripWhenHoldAlt=true    ; boolean
 ScrollSidebarStripWhenHoldCtrl=true   ; boolean
 ScrollSidebarStripWhenHoldShift=true  ; boolean
 ```
-
-## Sidebar / Battle UI
 
 ### Allow replacing vanilla repairing with togglable auto repairing
 

@@ -17,6 +17,10 @@
 bool Phobos::HideWarning = false;
 bool Phobos::PoweredByEC = false;
 
+#ifdef TESTING_BUILD
+bool HideWarning = false;
+#endif
+
 HANDLE Phobos::hInstance = 0;
 
 char Phobos::readBuffer[Phobos::readLength];
@@ -34,14 +38,15 @@ bool Phobos::Optimizations::DisableRadDamageOnBuildings = true;
 bool Phobos::Optimizations::DisableSyncLogging = false;
 bool Phobos::Optimizations::DisableLaserTracking = true;
 
-#ifdef STR_GIT_COMMIT
-const wchar_t* Phobos::VersionDescription = L"Phobos sp nightly #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"(" STR_GIT_COMMIT L")";
-#elif !defined(IS_RELEASE_VER)
-const wchar_t* Phobos::VersionDescription = L"Phobos sp build #" _STR(BUILD_NUMBER) L"+" _STR(MERGE_NUMBER) L"_" _STR(MERGE_PATCH);
+// The leading L"" widens the narrow metadata literals it is concatenated with, so that the
+// name and the version are taken from Phobos.version.h rather than spelled out again.
+#ifdef NIGHTLY
+const wchar_t* Phobos::VersionDescription = L"Phobos sp nightly #" _STR(VERSION_MAJOR) L"." _STR(VERSION_MINOR) L"." _STR(VERSION_REVISION) L"." _STR(VERSION_PATCH) L"+" _STR(VERSION_EX_PATCH) L"(" STR_GIT_COMMIT L")";
+#elif defined(TESTING_BUILD)
+const wchar_t* Phobos::VersionDescription = L"Phobos sp build #" _STR(VERSION_MAJOR) L"." _STR(VERSION_MINOR) L"." _STR(VERSION_REVISION) L"." _STR(VERSION_PATCH) L"+" _STR(VERSION_EX_PATCH);
 #else
-const wchar_t* Phobos::VersionDescription = L"Phobos sp release v" FILE_VERSION_STR;
+const wchar_t* Phobos::VersionDescription = L"Phobos sp release v" _STR(VERSION_MAJOR) L"." _STR(VERSION_MINOR) L"." _STR(VERSION_REVISION) L"." _STR(VERSION_PATCH) L"+" _STR(VERSION_EX_PATCH);
 #endif
-
 
 void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
 {
@@ -62,10 +67,12 @@ void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
 		{
 			Phobos::AppIconPath = ppArgs[++i];
 		}
-		if (_stricmp(pArg, "-SPBS=" _STR(BUILD_NUMBER) "+" _STR(MERGE_NUMBER) "_" _STR(MERGE_PATCH)) == 0)
+#ifdef TESTING_BUILD
+		if (_stricmp(pArg, "-HideVersionWarning=SPB" _STR(BUILD_NUMBER) "+" _STR(MERGE_NUMBER) "_" _STR(MERGE_PATCH)) == 0)
 		{
 			Phobos::HideWarning = true;
 		}
+#endif
 		if (_stricmp(pArg, "-Inheritance") == 0)
 		{
 			foundInheritance = true;
@@ -132,6 +139,13 @@ void Phobos::CmdLineParse(char** ppArgs, int nNumArgs)
 		ExceptionHandler::Init();
 
 	Debug::Log("Initialized version: " PRODUCT_VERSION "\n");
+#ifdef STR_GIT_COMMIT
+	Debug::Log("Git commit: " STR_GIT_COMMIT "\n");
+	Debug::Log("Git dirty: " GIT_DIRTY_FLAG "\n");
+#endif
+#ifdef STR_GIT_REF
+	Debug::Log("Git ref: " STR_GIT_REF "\n");
+#endif
 	Debug::Log("ExceptionHandler is %s\n", dontSetExceptionHandler ? "not present" : "present");
 }
 

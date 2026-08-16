@@ -14,8 +14,8 @@ env:
 jobs:
   Changelog-Check:
     name: Changelog Mention
-    # If the No Documentation Needed label is set, then workflow will not be executed
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'No Documentation Needed') }}
+    # If the Skip Changelog label is set, then workflow will not be executed
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'Skip Changelog') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -37,8 +37,8 @@ jobs:
 
   Documentation-Check:
     name: Documentation for Changes
-    # If the No Documentation Needed or Bugfix label is set, then workflow will not be executed
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'No Documentation Needed') && !contains(github.event.pull_request.labels.*.name, 'Bugfix') }}
+    # If the Skip Docs label is set, then workflow will not be executed
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'Skip Docs') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -60,8 +60,6 @@ jobs:
 
   Interop-Version-Check:
     name: Interop API Version Updated
-    # If the No Documentation Needed label is set, then workflow will not be executed
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'No Documentation Needed') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -73,12 +71,12 @@ jobs:
           # Check if any files in src/Interop/ were modified (excluding Version.h itself for initial checks)
           CHANGED_FILES=$(git diff --name-only $(git merge-base origin/$BASE_BRANCH HEAD))
           INTEROP_MODIFIED=$(echo "$CHANGED_FILES" | grep -E "^src/Interop/.*\.(h|cpp)$" | grep -v "^src/Interop/Version\." || true)
-          
+
           if [ -z "$INTEROP_MODIFIED" ]; then
             echo "No Interop files modified. Skipping version check."
             exit 0
           fi
-          
+
           # If Interop files were modified, check if Version.h was also modified
           if echo "$CHANGED_FILES" | grep -q "^src/Interop/Version\.h$"; then
             echo "Thank you for updating the Interop API version! 😋"

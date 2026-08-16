@@ -377,6 +377,7 @@ public:
 	static bool SaveGlobals(PhobosStreamWriter& Stm);
 
 	static void PlayBunkerSound(BuildingClass const* pThis, bool buildUp = false);
+	static bool IsPoweredAnimBlocked(BuildingClass* pBuilding, bool powered, bool poweredLight, bool poweredEffect, bool poweredSpecial);
 
 	static CellStruct GetWeaponFactoryDoor(BuildingClass* pThis);
 
