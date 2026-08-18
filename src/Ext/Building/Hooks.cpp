@@ -795,6 +795,51 @@ DEFINE_HOOK(0x6AA88D, StripClass_RecheckCameo_FindFactoryDehardCode, 0x6)
 	return 0;
 }
 
+DEFINE_PATCH(0x6AB6F7, 0x46); // jnz loc_6AB741;
+DEFINE_JUMP(LJMP, 0x4C9CE6, 0x4C9CF3);
+
+DEFINE_HOOK(0x4C9D6E, FactoryClass_QueueProduction_CheckBuildable, 0x8)
+{
+	enum { CannotBuild = 0x4C9D64 };
+
+	GET(FactoryClass*, pThis, ESI);
+	GET(TechnoTypeClass*, pType, EDI);
+	GET_STACK(HouseClass*, pHouse, STACK_OFFSET(0x14, 0x8));
+
+	if (!pHouse->IsControlledByHuman() || pHouse->CanBuild(pType, false, true) == CanBuildResult::Buildable)
+		return 0;
+
+	GET_STACK(bool, isQueueCall, STACK_OFFSET(0x14, 0xC));
+
+	if (isQueueCall && pThis->QueuedObjects.Count > 0)
+	{
+		for (TechnoTypeClass* pNextType = pThis->QueuedObjects.Items[0]; pThis->QueuedObjects.Count > 0; pNextType = pThis->QueuedObjects.Items[0])
+		{
+			pThis->QueuedObjects.Count -= 1;
+
+			for (int i = 0; i < pThis->QueuedObjects.Count; ++i)
+				pThis->QueuedObjects.Items[i] = pThis->QueuedObjects.Items[i + 1];
+
+			if (pHouse->CanBuild(pNextType, false, true) == CanBuildResult::Buildable)
+			{
+				if (pHouse->IsControlledByCurrentPlayer())
+					VocClass::PlayGlobal(RulesClass::Instance->ScoldSound, 0x2000, 1.0);
+
+				R->EDI(pNextType);
+				R->Stack(STACK_OFFSET(0x48, 0x4), pNextType->WhatAmI());
+				R->Stack(STACK_OFFSET(0x48, 0x8), pNextType->GetArrayIndex());
+
+				return 0;
+			}
+		}
+	}
+
+	if (pHouse->IsControlledByCurrentPlayer())
+		VocClass::PlayGlobal(RulesClass::Instance->ScoldSound, 0x2000, 1.0);
+
+	return CannotBuild;
+}
+
 #pragma endregion
 
 #pragma region BarracksExitCell
