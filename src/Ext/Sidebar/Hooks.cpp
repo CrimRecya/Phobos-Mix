@@ -55,7 +55,7 @@ DEFINE_HOOK(0x6A5EA1, SidebarClass_UnloadShapes_AdditionalFiles, 0x5)
 
 namespace SidebarAutoBuildingMark
 {
-	int DrawnTimes = 0;
+	unsigned int DrawnTimes = 0;
 }
 
 DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt, 0x6)
@@ -108,24 +108,22 @@ DEFINE_HOOK(0x6A6EB1, SidebarClass_DrawIt, 0x6)
 		{
 			if (const auto pShp = SidebarExt::AutoBuildingMark[tabIndex])
 			{
-				if (pShp->Frames)
-					SidebarAutoBuildingMark::DrawnTimes %= pShp->Frames;
-
+				const int frame = pShp->Frames ? (SidebarAutoBuildingMark::DrawnTimes % pShp->Frames) : 0;
 				const auto pSideExt = SideExt::Fetch(SideClass::Array.GetItem(HouseClass::CurrentPlayer->SideIndex));
 				const int XOffset = pSideExt->Sidebar_GDIPositions ? 29 : 32;
 				const int XBase = (pSideExt->Sidebar_GDIPositions ? 26 : 20);
 				const int YBase = 197;
 				const auto position = Point2D { XBase + tabIndex * XOffset, YBase };
 				RectangleStruct sidebarRect = DSurface::Sidebar->GetRect();
-				DSurface::Sidebar->DrawSHP(FileSystem::ANIM_PAL, pShp, SidebarAutoBuildingMark::DrawnTimes, &position,
+				DSurface::Sidebar->DrawSHP(FileSystem::ANIM_PAL, pShp, frame, &position,
 					&sidebarRect, BlitterFlags::bf_400, 0, 0, ZGradient::Ground, 1000, 0, 0, 0, 0, 0);
 			}
 		};
-	SidebarAutoBuildingMark::DrawnTimes++;
 	if (Phobos::Config::AutomaticPlacingBuilding)
 		drawAutoBuildingMark(0);
 	if (Phobos::Config::AutomaticPlacingCombatBuilding)
 		drawAutoBuildingMark(1);
+	SidebarAutoBuildingMark::DrawnTimes++;
 
 	return 0;
 }
@@ -150,6 +148,9 @@ DEFINE_HOOK(0x6A7904, SidebarClass_Update_ToggleAutoBuilding, 0x5)
 	GET(int, keyCode, EAX);
 
 	int clickedTabIdx = keyCode - ((int)WWKey::Button | (int)WWKey::RightClick | 203);
+
+	if (Phobos::Config::AutomaticPlacingBuilding || Phobos::Config::AutomaticPlacingCombatBuilding)
+		SidebarClass::Instance.SidebarBackgroundNeedsRedraw = true;
 
 	// Right clicked on the tab button.
 	if (clickedTabIdx == 0 || clickedTabIdx == 1)

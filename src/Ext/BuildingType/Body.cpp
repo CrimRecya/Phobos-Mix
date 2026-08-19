@@ -1141,16 +1141,10 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 
 			const auto width = pOwnedType->GetFoundationWidth();
 			const auto height = pOwnedType->GetFoundationHeight(false);
-			auto cell = CellStruct::Empty;
-			int index = 0, check = width + 1, count = 0;
 
-			for (auto pFoundation = pOwnedType->FoundationOutside; *pFoundation != CellStruct { 0x7FFF, 0x7FFF }; ++pFoundation)
+			for (int index = 0; index < 4; ++index)
 			{
-				if (++index != check)
-					continue;
-
-				check += (++count & 1) ? 1 : (height * 2 + width + 1);
-				const auto outsideCell = baseCell + *pFoundation;
+				const auto outsideCell = baseCell + CellStruct { (index & 1) ? width : static_cast<short>(-1), (index / 2) ? height : static_cast<short>(-1) };
 				const auto pCell = MapClass::Instance.TryGetCellAt(outsideCell);
 
 				if (pCell && pCell->CanThisExistHere(pOwnedType->SpeedType, pOwnedType, pHouse))
@@ -1166,14 +1160,11 @@ bool BuildingTypeExt::AutoPlaceBuilding(BuildingClass* pBuilding)
 				const auto pCell = MapClass::Instance.TryGetCellAt(outsideCell);
 
 				if (pCell && pCell->CanThisExistHere(pOwnedType->SpeedType, pOwnedType, pHouse))
-					cell = outsideCell;
+				{
+					addPlaceEvent(outsideCell);
+					return true;
+				}
 			}
-
-			if (cell == CellStruct::Empty)
-				continue;
-
-			addPlaceEvent(cell);
-			return true;
 		}
 
 		return false;
