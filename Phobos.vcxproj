@@ -31,6 +31,7 @@
     <ClCompile Include="ECSDK\IH.Loader.cpp" />
     <ClCompile Include="ECSDK\SyringeEx.cpp" />
     <!-- src/ -->
+    <ClCompile Include="src\Ext\TeamType\Hooks.cpp" />
     <ClCompile Include="src\Phobos.COM.cpp" />
     <ClCompile Include="src\Phobos.cpp" />
     <ClCompile Include="src\Phobos.CRT.cpp" />

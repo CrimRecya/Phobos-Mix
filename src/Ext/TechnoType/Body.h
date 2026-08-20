@@ -593,7 +593,8 @@ public:
 	Valueable<double> Convert_Health_BelowPercent;
 	Nullable<TechnoTypeClass*> Convert_Health;
 
-	Nullable<bool> Unsellable; // Ares 3.0
+	Nullable<bool> Unsellable;	// Ares 3.0
+	Nullable<bool> KeepAlive;	// Ares 3.0
 
 	TechnoTypeExt(TechnoTypeClass* OwnerObject) : ObjectTypeExt(OwnerObject)
 		, HealthBar_Hide { false }
@@ -1123,6 +1124,7 @@ public:
 		, JumpjetClimbIgnoreBuilding {}
 
 		, Unsellable {}
+		, KeepAlive {}
 
 		, ExtraThreat_Enabled { false }
 		, ExtraThreat_IsThreat {}

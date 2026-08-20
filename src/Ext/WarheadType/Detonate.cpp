@@ -286,6 +286,9 @@ void WarheadTypeExt::DetonateOnOneUnit(HouseClass* pHouse, TechnoClass* pTarget,
 		this->ApplyBuildingUndeploy(pTarget);
 
 	// Other one time effects
+	if (this->Ammo != 0)
+		this->ApplyAmmoModifier(pTarget);
+
 	if (this->RemoveDisguise)
 		this->ApplyRemoveDisguise(pTarget);
 
@@ -592,7 +595,8 @@ HouseClass* WarheadTypeExt::ApplyRemoveMindControl(HouseClass* pHouse, TechnoCla
 void WarheadTypeExt::ApplyOwnerChange(HouseClass* pHouse, TechnoClass* pTarget)
 {
 	const bool isMindControl = this->ChangeOwner_SetAsMindControl;
-	const bool isImmune = (isMindControl && pTarget->GetTechnoType()->ImmuneToPsionics) || pTarget->IsMindControlled();
+	const auto pType = pTarget->GetTechnoType();
+	const bool isImmune = (isMindControl && pType->ImmuneToPsionics) || pTarget->IsMindControlled();
 
 	if (!isImmune)
 	{
@@ -610,7 +614,7 @@ void WarheadTypeExt::ApplyOwnerChange(HouseClass* pHouse, TechnoClass* pTarget)
 				if (isBld)
 					location.Z += static_cast<BuildingClass*>(pTarget)->Type->Height * Unsorted::LevelHeight;
 				else
-					location.Z += pTarget->GetTechnoType()->MindControlRingOffset;
+					location.Z += pType->MindControlRingOffset;
 
 				if (const auto pOwnerAnim = GameCreate<AnimClass>(pAnimType, location))
 				{
@@ -1239,4 +1243,13 @@ void WarheadTypeExt::ApplyTraction(TechnoClass* pTarget, const CoordStruct& coor
 		// Change locomotor
 		LocomotionClass::ChangeLocomotorTo(pTargetFoot, inflictCLSID);
 	}
+}
+
+void WarheadTypeExt::ExtData::ApplyAmmoModifier(TechnoClass* pTarget)
+{
+	const int maxAmmo = pTarget->GetTechnoType()->Ammo;
+	int newCurrentAmmo = this->Ammo + pTarget->Ammo;
+
+	newCurrentAmmo = newCurrentAmmo < 0 ? 0 : newCurrentAmmo;
+	pTarget->Ammo = newCurrentAmmo > maxAmmo ? maxAmmo : newCurrentAmmo;
 }

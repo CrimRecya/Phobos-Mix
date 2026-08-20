@@ -307,6 +307,8 @@ public:
 	Valueable<bool> PreventPassengerEscape;
 	Valueable<bool> PreventOccupantEscape;
 
+	Valueable<int> Ammo;
+
 	// Ares tags
 	// http://ares-developers.github.io/Ares-docs/new/warheads/general.html
 	Valueable<bool> AffectsEnemies;
@@ -642,6 +644,8 @@ public:
 		, PreventCrewEscape { false }
 		, PreventPassengerEscape { false }
 		, PreventOccupantEscape { false }
+
+		, Ammo { 0 }
 	{ }
 
 	void ApplyAttachmentTransform(HouseClass* pHouse, TechnoClass* pTarget);
@@ -687,6 +691,7 @@ private:
 	void ApplyKnockUp(TechnoClass* pTarget);
 	void ApplyTraction(TechnoClass* pTarget, const CoordStruct& coords);
 	double GetCritChance(TechnoClass* pFirer) const;
+	void ApplyAmmoModifier(TechnoClass* pTarget);
 
 public:
 	class ExtContainer final : public Container<WarheadTypeExt>
