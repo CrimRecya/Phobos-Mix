@@ -289,6 +289,7 @@ DEFINE_HOOK(0x55B4E1, LogicClass_Update_UnmarkCellOccupationFlags, 0x5)
 
 namespace FoggedObjectHelper
 {
+	bool NoReveal = false;
 	struct FoggedObjectClassFake
 	{
 		char _[0x40];
@@ -349,7 +350,23 @@ namespace FoggedObjectHelper
 	static FoggedObjectClass* __fastcall CreateFoggedTerrain(void* pThis, void* _, TerrainClass* pTerrain) JMP_THIS(0x4D1370);
 	static void __fastcall TechnoClass_RevealLastSight(TechnoClass* pThis, void* _, bool OnlyOutline, bool RevealByHeight, bool specifiedHouse, HouseClass *pHouse)
 	{
+		if (!pThis->IsInPlayfield || !pThis->unknown_bool_250)
+			return;
+
+		const auto pOwner = pThis->Owner;
+		if (pOwner->Type->MultiplayPassive)
+			return;
+
 		pThis->unknown_bool_250 = false;
+
+		const int lastSightRange = pThis->LastSightRange;
+		if (!lastSightRange)
+			return;
+
+		// 只更新计数，不更新视野
+		FoggedObjectHelper::NoReveal = true;
+		MapClass::Instance.RevealArea2(&pThis->LastSightCoords, lastSightRange, pOwner, false, false, false, true, true);
+		FoggedObjectHelper::NoReveal = false;
 	}
 	class CellClassFake final : public CellClass
 	{
@@ -503,7 +520,7 @@ DEFINE_HOOK(0x4A9CA0, DisplayClass_RevealFogShroud_Reimplement, 0x8)
 	const bool edgeNotRevealed = !(flags & CellFlags::EdgeRevealed);
 	const bool shouldRadarRedraw = edgeNotRevealed || !(pCell->AltFlags & AltCellFlags::Mapped);
 	bool shouldRedraw = shouldRadarRedraw;
-	pCell->Flags = flags & ~CellFlags::IsPlot | CellFlags::EdgeRevealed;
+	pCell->Flags = FoggedObjectHelper::NoReveal ? (flags & ~CellFlags::IsPlot) : (flags & ~CellFlags::IsPlot | CellFlags::EdgeRevealed);
 
 	if (increase)
 		pCell->IncreaseShroudCounter();
@@ -591,6 +608,24 @@ DEFINE_HOOK(0x4A9CA0, DisplayClass_RevealFogShroud_Reimplement, 0x8)
 
 	if ((pCell->Flags & CellFlags::EdgeRevealed) && edgeNotRevealed && ScenarioClass::Instance->SpecialFlags.FogOfWar)
 		pCell->CleanFog();
+
+	return SkipGameCode;
+}
+
+// 让部分无效更新不更新实际视野
+DEFINE_HOOK(0x4A9DF1, DisplayClass_MapCellFoggedness_NoUpdate, 0x6)
+{
+	enum { SkipGameCode = 0x4A9DFE };
+
+	GET(CellFlags, flags, EAX);
+
+	R->ECX(!(flags & CellFlags::EdgeRevealed));
+
+	flags &= ~CellFlags::IsPlot;
+	if (!FoggedObjectHelper::NoReveal)
+		flags |= CellFlags::EdgeRevealed;
+
+	R->EAX(flags);
 
 	return SkipGameCode;
 }
@@ -805,6 +840,7 @@ DEFINE_HOOK(0x4D1B2E, FoggedObjectClass_DrawFoggedObjects_DrawTerrain, 0x6)
 	return SkipGameCode;
 }
 
+// 解决神秘建筑绘制错误
 // 矿石不更新
 // 修复Alpha光亮度异常
 // 波动效果要受影响
