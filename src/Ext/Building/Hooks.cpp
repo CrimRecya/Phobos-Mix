@@ -795,6 +795,7 @@ DEFINE_HOOK(0x6AA88D, StripClass_RecheckCameo_FindFactoryDehardCode, 0x6)
 	return 0;
 }
 
+// TODO 加个开关
 DEFINE_PATCH(0x6AB6F7, 0x46); // jnz loc_6AB741;
 DEFINE_JUMP(LJMP, 0x4C9CE6, 0x4C9CF3);
 

@@ -1588,9 +1588,6 @@ void TechnoTypeExt::LoadFromINIFile(CCINIClass* const pINI)
 	this->FakeOf.Read(exINI, pSection, "FakeOf");
 
 	// Ares 3.0
-	this->KeepAlive.Read(exINI, pSection, "KeepAlive");
-
-	// Ares 3.0
 	this->Unsellable.Read(exINI, pSection, "Unsellable");
 	this->KeepAlive.Read(exINI, pSection, "KeepAlive");
 
@@ -2196,8 +2193,6 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->IgnoreRallyPoint)
 
 		.Process(this->JumpjetSpeedType)
-
-		.Process(this->KeepAlive)
 
 		.Process(this->Wake)
 		.Process(this->Wake_Grapple)

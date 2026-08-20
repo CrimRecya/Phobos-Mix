@@ -404,8 +404,6 @@ public:
 
 	Valueable<int> JumpjetSpeedType;
 
-	Nullable<bool> KeepAlive;
-
 	std::bitset<AdditionalAbilityCount> AdditionalVeteranAbilities;
 	std::bitset<AdditionalAbilityCount> AdditionalEliteAbilities;
 	Nullable<double> VeteranReload;
@@ -958,8 +956,6 @@ public:
 		, IgnoreRallyPoint { false }
 
 		, JumpjetSpeedType { 3 }
-
-		, KeepAlive {}
 
 		, AdditionalVeteranAbilities {}
 		, AdditionalEliteAbilities {}
