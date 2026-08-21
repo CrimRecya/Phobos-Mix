@@ -681,7 +681,7 @@ public:
 		Valueable<bool> NoAlphaImageOnBuildup;
 
 		Valueable<bool> Warhead_PreventScatter;
-		
+
 		Valueable<bool> KeepAlive_Infantry;
 		Valueable<bool> KeepAlive_Units;
 		Valueable<bool> KeepAlive_Aircraft;

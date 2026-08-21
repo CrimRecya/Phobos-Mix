@@ -827,8 +827,13 @@ DEFINE_HOOK(0x4C9D6E, FactoryClass_QueueProduction_CheckBuildable, 0x8)
 					VocClass::PlayGlobal(RulesClass::Instance->ScoldSound, 0x2000, 1.0);
 
 				R->EDI(pNextType);
-				R->Stack(STACK_OFFSET(0x48, 0x4), pNextType->WhatAmI());
-				R->Stack(STACK_OFFSET(0x48, 0x8), pNextType->GetArrayIndex());
+
+				GET_STACK(int, returnAddress, STACK_OFFSET(0x14, 0x0))
+				if (returnAddress == 0x4FA5D6)
+				{
+					R->Stack(STACK_OFFSET(0x48, 0x4), pNextType->WhatAmI());
+					R->Stack(STACK_OFFSET(0x48, 0x8), pNextType->GetArrayIndex());
+				}
 
 				return 0;
 			}
