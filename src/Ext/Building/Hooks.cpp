@@ -303,7 +303,7 @@ DEFINE_HOOK(0x44FDC5, CreateBuildingFromINIFile_AfterCTOR_AfterUnlimbo, 0xA)
 	if (auto const pExt = BuildingExt::TryFetch(pBld))
 		pExt->HasPowerFromMapFile = false;
 
-	return 0;
+	return 0x44FDD3;
 }
 
 DEFINE_HOOK(0x440B4F, BuildingClass_Unlimbo_SetShouldRebuild, 0x5)
