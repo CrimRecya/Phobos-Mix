@@ -891,6 +891,7 @@ void WarheadTypeExt::Serialize(T& Stm)
 		.Process(this->PreventScatter)
 
 		.Process(this->WasDetonatedOnAllMapObjects)
+		.Process(this->InApplyCrit)
 		.Process(this->RemainingAnimCreationInterval)
 		.Process(this->PossibleCellSpreadDetonate)
 		.Process(this->Reflected)
