@@ -149,7 +149,8 @@ bool BuildingTypeExt::IsPoweredAnimBlocked(BuildingClass* pBuilding, bool powere
 
 	return pBuilding->CurrentMission != Mission::Construction
 		&& pBuilding->CurrentMission != Mission::Selling
-		&& !pBuilding->IsPowerOnline();
+		&& !pBuilding->IsPowerOnline()
+		&& !BuildingExt::Fetch(pBuilding)->HasPowerFromMapFile;
 }
 
 CellStruct BuildingTypeExt::GetWeaponFactoryDoor(BuildingClass* pThis)
