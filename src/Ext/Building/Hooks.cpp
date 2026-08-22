@@ -813,8 +813,12 @@ DEFINE_HOOK(0x6AA88D, StripClass_RecheckCameo_FindFactoryDehardCode, 0x6)
 }
 
 // TODO 加个开关
-DEFINE_PATCH(0x6AB6F7, 0x46); // jnz loc_6AB741;
+DEFINE_PATCH(0x6AB6F7, 0x1D); // jnz loc_6AB718;
 DEFINE_JUMP(LJMP, 0x4C9CE6, 0x4C9CF3);
+DEFINE_PATCH(0x4FA42C, 0xC6, 0x44, 0x24, 0x1C, 0x00); // mov [esp+24h+manual], 0
+DEFINE_JUMP(LJMP, 0x4FA431, 0x4FA46A);
+DEFINE_JUMP(LJMP, 0x4FA6BB, 0x4FA6CF);
+DEFINE_PATCH(0x4FA6CF, 0x33, 0xDB); // xor ebx, ebx
 
 DEFINE_HOOK(0x4C9D6E, FactoryClass_QueueProduction_CheckBuildable, 0x8)
 {
@@ -824,12 +828,17 @@ DEFINE_HOOK(0x4C9D6E, FactoryClass_QueueProduction_CheckBuildable, 0x8)
 	GET(TechnoTypeClass*, pType, EDI);
 	GET_STACK(HouseClass*, pHouse, STACK_OFFSET(0x14, 0x8));
 
-	if (!pHouse->IsControlledByHuman() || pHouse->CanBuild(pType, false, true) == CanBuildResult::Buildable)
+	if (!pHouse->IsControlledByHuman() || pHouse->CanBuild(pType, false, false) == CanBuildResult::Buildable)
 		return 0;
 
 	GET_STACK(bool, isQueueCall, STACK_OFFSET(0x14, 0xC));
 
-	if (isQueueCall && pThis->QueuedObjects.Count > 0)
+	if (!isQueueCall)
+	{
+		if (pHouse->IsControlledByCurrentPlayer())
+			VocClass::PlayGlobal(RulesClass::Instance->ScoldSound, 0x2000, 1.0);
+	}
+	else if (pThis->QueuedObjects.Count > 0)
 	{
 		for (TechnoTypeClass* pNextType = pThis->QueuedObjects.Items[0]; pThis->QueuedObjects.Count > 0; pNextType = pThis->QueuedObjects.Items[0])
 		{
@@ -838,11 +847,8 @@ DEFINE_HOOK(0x4C9D6E, FactoryClass_QueueProduction_CheckBuildable, 0x8)
 			for (int i = 0; i < pThis->QueuedObjects.Count; ++i)
 				pThis->QueuedObjects.Items[i] = pThis->QueuedObjects.Items[i + 1];
 
-			if (pHouse->CanBuild(pNextType, false, true) == CanBuildResult::Buildable)
+			if (pHouse->CanBuild(pNextType, false, false) == CanBuildResult::Buildable)
 			{
-				if (pHouse->IsControlledByCurrentPlayer())
-					VocClass::PlayGlobal(RulesClass::Instance->ScoldSound, 0x2000, 1.0);
-
 				R->EDI(pNextType);
 
 				GET_STACK(int, returnAddress, STACK_OFFSET(0x14, 0x0))
@@ -856,9 +862,6 @@ DEFINE_HOOK(0x4C9D6E, FactoryClass_QueueProduction_CheckBuildable, 0x8)
 			}
 		}
 	}
-
-	if (pHouse->IsControlledByCurrentPlayer())
-		VocClass::PlayGlobal(RulesClass::Instance->ScoldSound, 0x2000, 1.0);
 
 	return CannotBuild;
 }

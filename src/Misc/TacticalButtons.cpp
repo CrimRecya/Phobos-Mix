@@ -1293,14 +1293,14 @@ void TacticalButtonsClass::CurrentSelectInfoDraw()
 					if (pFactory = pOwner->GetPrimaryFactory(pBuildingType->Factory, pType->Naval, BuildCat::DontCare), pFactory)
 						pProduct = pFactory->Object;
 
-					if ((!pFactory || !pProduct) && pBuildingType->Factory == AbstractType::BuildingType && (pFactory = pOwner->Primary_ForDefenses, pFactory))
+					if (!pFactory && pBuildingType->Factory == AbstractType::BuildingType && (pFactory = pOwner->Primary_ForDefenses, pFactory))
 						pProduct = pFactory->Object;
 				}
 
 				if (pFactory && pProduct)
-					drawText(COLOR_PURPLE, "Product: (%s)[%d] {%d}", pProduct->GetTechnoType()->ID, (pFactory->GetProgress() * 100 / 54), (pFactory->QueuedObjects.Count + (pProduct ? 1 : 0)));
+					drawText(COLOR_PURPLE, "Product: (%s)[%d] {%d-%s}", pProduct->GetTechnoType()->ID, (pFactory->GetProgress() * 100 / 54), (pFactory->QueuedObjects.Count + 1), (pFactory->IsSuspended ? "P" : "O"));
 				else
-					drawText(COLOR_PURPLE, "Product: (%s)[%d] {%d}", "N/A", 0, (pFactory ? pFactory->QueuedObjects.Count : 0));
+					drawText(COLOR_PURPLE, "Product: (%s)[%d] {%d-%s}", "N/A", 0, (pFactory ? pFactory->QueuedObjects.Count : 0), (pFactory ? (pFactory->IsSuspended ? "P" : "O") : "N"));
 
 				drawTime("RetryProduction", pBuilding->FactoryRetryTimer);
 			}
