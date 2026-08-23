@@ -108,13 +108,40 @@ void SWSidebarClass::InitIO()
 			const auto toggleButton = GameCreate<ToggleSWButtonClass>(0, 0, width, height);
 			toggleButton->Zap();
 			GScreenClass::Instance.AddButton(toggleButton);
-			SWSidebarClass::Instance.ToggleButton = toggleButton;
+			this->ToggleButton = toggleButton;
 			toggleButton->UpdatePosition();
 		}
 	}
 
+	if (!this->ToggleButton)
+	{
+		const auto toggleButton = GameCreate<ToggleSWButtonClass>(0, 0, 1, 1);
+		toggleButton->Flags = GadgetFlag(0);
+		toggleButton->IsFake = true;
+		toggleButton->Zap();
+		GScreenClass::Instance.AddButton(toggleButton);
+		this->ToggleButton = toggleButton;
+	}
+
 	for (const auto superIdx : ScenarioExt::Global()->SWSidebar_Indices)
 		SWSidebarClass::Instance.AddButton(superIdx);
+}
+
+void SWSidebarClass::DrawInfo() const
+{
+	if (SWSidebarClass::IsEnabled())
+	{
+		for (const auto column : this->Columns)
+		{
+			column->DrawInfo();
+
+			for (const auto button : column->Buttons)
+				button->DrawInfo();
+		}
+	}
+
+	if (const auto toggle = this->ToggleButton)
+		toggle->DrawInfo();
 }
 
 bool SWSidebarClass::AddButton(int superIdx)

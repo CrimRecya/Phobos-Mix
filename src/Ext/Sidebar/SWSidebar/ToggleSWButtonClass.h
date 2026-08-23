@@ -14,6 +14,7 @@ public:
 	virtual void OnMouseLeave() override;
 	virtual bool Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier) override;
 
+	void DrawInfo() const;
 	void UpdatePosition();
 
 	static bool SwitchSidebar();
@@ -21,4 +22,5 @@ public:
 public:
 	bool IsHovering { false };
 	bool IsPressed { false };
+	bool IsFake { false };
 };

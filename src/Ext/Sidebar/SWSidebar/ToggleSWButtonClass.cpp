@@ -12,16 +12,27 @@ ToggleSWButtonClass::ToggleSWButtonClass(int x, int y, int width, int height)
 
 bool ToggleSWButtonClass::Draw(bool forced)
 {
+	if (!ScenarioClass::Instance->UserInputLocked)
+		SWSidebarClass::Instance.DrawInfo();
+
+	return true;
+}
+
+void ToggleSWButtonClass::DrawInfo() const
+{
+	if (this->IsFake)
+		return;
+
 	auto& columns = SWSidebarClass::Instance.Columns;
 
 	if (columns.empty())
-		return false;
+		return;
 
 	const auto pSideExt = SideExt::Fetch(SideClass::Array.Items[ScenarioClass::Instance->PlayerSideIndex]);
 	const auto pTogglePCX = SWSidebarClass::IsEnabled() ? pSideExt->SuperWeaponSidebar_OnPCX.GetSurface() : pSideExt->SuperWeaponSidebar_OffPCX.GetSurface();
 
 	if (!pTogglePCX)
-		return false;
+		return;
 
 	RectangleStruct destRect { this->X, this->Y, this->Width, this->Height };
 	PCX::Instance.BlitToSurface(&destRect, DSurface::Composite, pTogglePCX);
@@ -31,12 +42,13 @@ bool ToggleSWButtonClass::Draw(bool forced)
 		const COLORREF tooltipColor = Drawing::RGB_To_Int(Drawing::TooltipColor);
 		DSurface::Composite->DrawRect(&destRect, tooltipColor);
 	}
-
-	return true;
 }
 
 void ToggleSWButtonClass::OnMouseEnter()
 {
+	if (this->IsFake)
+		return;
+
 	auto& columns = SWSidebarClass::Instance.Columns;
 
 	if (columns.empty())
@@ -48,6 +60,9 @@ void ToggleSWButtonClass::OnMouseEnter()
 
 void ToggleSWButtonClass::OnMouseLeave()
 {
+	if (this->IsFake)
+		return;
+
 	this->IsHovering = false;
 	this->IsPressed = false;
 	MouseClass::Instance.UpdateCursor(MouseCursorType::Default, false);
@@ -55,6 +70,9 @@ void ToggleSWButtonClass::OnMouseLeave()
 
 bool ToggleSWButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
 {
+	if (this->IsFake)
+		return false;
+
 	auto& columns = SWSidebarClass::Instance.Columns;
 
 	if (columns.empty())
@@ -80,6 +98,9 @@ bool ToggleSWButtonClass::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modi
 
 void ToggleSWButtonClass::UpdatePosition()
 {
+	if (this->IsFake)
+		return;
+
 	Point2D position = Point2D::Empty;
 	auto& columns = SWSidebarClass::Instance.Columns;
 

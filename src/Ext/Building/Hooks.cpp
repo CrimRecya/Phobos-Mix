@@ -812,7 +812,7 @@ DEFINE_HOOK(0x6AA88D, StripClass_RecheckCameo_FindFactoryDehardCode, 0x6)
 	return 0;
 }
 
-// TODO 加个开关
+// TODO 加个开关，很烦，加开关应该全部要改成钩子
 DEFINE_PATCH(0x6AB6F7, 0x1D); // jnz loc_6AB718;
 DEFINE_JUMP(LJMP, 0x4C9CE6, 0x4C9CF3);
 DEFINE_PATCH(0x4FA42C, 0xC6, 0x44, 0x24, 0x1C, 0x00); // mov [esp+24h+manual], 0

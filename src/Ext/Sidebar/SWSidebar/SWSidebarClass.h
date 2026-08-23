@@ -12,6 +12,7 @@ public:
 	void InitClear();
 	void InitIO();
 
+	void DrawInfo() const;
 	bool AddButton(int superIdx);
 	void SortButtons();
 
