@@ -1145,7 +1145,14 @@ DEFINE_HOOK(0x4F43BE, GScreenClass_GetInputAndUpdate_CheckHoverState, 0x7)
 DEFINE_HOOK(0x4F4589, GScreenClass_NewMessageListDraw, 0x5)
 {
 	MessageColumnClass::Instance.DrawAll();
+	UIExt::UIRoot::Instance().DrawTooltips();
 
+	return 0;
+}
+
+DEFINE_HOOK(0x4F45A8, GScreenClass_DrawOnTop_End_UIRootTooltips, 0x5)
+{
+	UIExt::UIRoot::Instance().DrawTooltips();
 	return 0;
 }
 

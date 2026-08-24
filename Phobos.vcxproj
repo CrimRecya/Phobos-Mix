@@ -322,6 +322,7 @@
     <ClCompile Include="src\UI\Controls\IconStrip.cpp" />
     <ClCompile Include="src\UI\Controls\ListGrid.cpp" />
     <!-- src\Mutation -->
+    <ClCompile Include="src\Mutation\MutationArt.cpp" />
     <ClCompile Include="src\Mutation\MutationInterop.cpp" />
     <ClCompile Include="src\Mutation\MutationViewModel.cpp" />
     <ClCompile Include="src\Mutation\MutationSelectorDialog.cpp" />
@@ -530,6 +531,7 @@
     <ClInclude Include="src\UI\Controls\IconStrip.h" />
     <ClInclude Include="src\UI\Controls\ListGrid.h" />
     <!-- src\Mutation -->
+    <ClInclude Include="src\Mutation\MutationArt.h" />
     <ClInclude Include="src\Mutation\MutationInterop.h" />
     <ClInclude Include="src\Mutation\MutationViewModel.h" />
     <ClInclude Include="src\Mutation\MutationSelectorDialog.h" />

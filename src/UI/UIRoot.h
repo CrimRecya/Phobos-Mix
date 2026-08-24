@@ -5,6 +5,7 @@
 #include <GScreenClass.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace UIExt
@@ -41,6 +42,9 @@ namespace UIExt
 
 		bool IsBlockingTactical() const;
 		bool IsBlockingFullScreen() const;
+		bool IsBlockingAt(int x, int y) const;
+		bool HandleMouseWheel(int x, int y, bool down);
+		void DrawTooltips();
 
 	private:
 		struct Screen
@@ -55,10 +59,12 @@ namespace UIExt
 		void RegisterTree(UIComponent* component);
 		void UnregisterTree(UIComponent* component);
 		void FlushBindings();
-		void DrawTooltips();
+		void DrawModalMasks();
 		void ProcessPendingClose();
+		void HandleShortcuts();
 
 		std::vector<Screen> Screens_ { };
 		std::vector<UIComponent*> PendingClose_ { };
+		std::vector<std::pair<DWORD, bool>> ShortcutKeyStates_ { };
 	};
 }

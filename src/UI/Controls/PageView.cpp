@@ -30,6 +30,21 @@ namespace UIExt
 	{
 		this->PageIndex = page;
 		this->Refresh();
+
+		if (this->OnPageChanged_)
+			this->OnPageChanged_(this->PageIndex);
+
+		return *this;
+	}
+
+	PageView& PageView::SetPageIndex(int page)
+	{
+		return this->SetPage(page);
+	}
+
+	PageView& PageView::SetOnPageChanged(PageChangedCallback callback)
+	{
+		this->OnPageChanged_ = std::move(callback);
 		return *this;
 	}
 
@@ -75,6 +90,19 @@ namespace UIExt
 		return this->PageIndex > 0;
 	}
 
+	void PageView::RebuildItems(size_t count, const ItemBuilder& builder)
+	{
+		this->GetChildren().clear();
+
+		for (size_t i = 0; i < count; ++i)
+		{
+			if (builder)
+				builder(*this, i);
+		}
+
+		this->Refresh();
+	}
+
 	void PageView::Refresh()
 	{
 		const int pageCount = this->GetPageCount();
@@ -97,6 +125,7 @@ namespace UIExt
 		}
 
 		Layout::ArrangeGrid(pageItems, this->X, this->Y, this->Columns, this->ItemWidth, this->ItemHeight, this->GapX, this->GapY);
+		this->UpdateTreePositions();
 	}
 
 	int PageView::GetPageSize() const
@@ -117,6 +146,11 @@ namespace UIExt
 				const bool onPage = static_cast<int>(i) >= pageStart && static_cast<int>(i) < pageEnd;
 				child->SetVisible(onPage);
 				child->SetEnabled(onPage);
+
+				// Move off-page children far off-screen so they cannot overlap
+				// the current page and steal mouse input.
+				if (!onPage)
+					child->SetPos(-10000, -10000);
 			}
 		}
 	}

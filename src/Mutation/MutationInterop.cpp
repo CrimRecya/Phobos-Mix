@@ -1,5 +1,8 @@
 #include "MutationInterop.h"
 
+#include "MutationDisplayerStrip.h"
+#include "MutationViewModel.h"
+
 #include <algorithm>
 
 namespace Mutation
@@ -172,7 +175,9 @@ namespace Mutation
 
 	void MutationInterop::NotifyDataChanged()
 	{
-		if (s_notifyChanged)
-			s_notifyChanged();
+		// C# side calls this when the mutation model changes.
+		// Refresh the C++ ViewModel and any open displayer so the UI follows the model.
+		MutationViewModel::Instance().Refresh();
+		MutationDisplayerStrip::Refresh(MutationViewModel::Instance());
 	}
 }

@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Panel.h"
+#include "Button.h"
 
 #include "../UIRoot.h"
 
+#include <functional>
 #include <string>
 
 namespace UIExt
@@ -16,10 +18,13 @@ namespace UIExt
 		Dialog(int x, int y, int width, int height, std::wstring title);
 
 		Dialog& SetTitle(std::wstring title);
+		Dialog& SetCloseAction(std::function<void()> action);
+		bool IsDialog() const override { return true; }
 
 		bool Draw(bool forced) override;
 
 	protected:
 		std::wstring Title { };
+		Button* CloseButton_ { nullptr };
 	};
 }

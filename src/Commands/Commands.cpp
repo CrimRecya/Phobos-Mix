@@ -124,6 +124,9 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 
 static void MouseWheelDownCommand()
 {
+	if (UIExt::UIRoot::Instance().HandleMouseWheel(WWMouseClass::Instance->XY1.X, WWMouseClass::Instance->XY1.Y, true))
+		return;
+
 	if (DistributionModeHoldDownCommandClass::Enabled && Phobos::Config::AllowDistributionCommand_SpreadModeScroll)
 		DistributionModeHoldDownCommandClass::DistributionSpreadModeReduce();
 
@@ -136,6 +139,9 @@ static void MouseWheelDownCommand()
 
 static void MouseWheelUpCommand()
 {
+	if (UIExt::UIRoot::Instance().HandleMouseWheel(WWMouseClass::Instance->XY1.X, WWMouseClass::Instance->XY1.Y, false))
+		return;
+
 	if (DistributionModeHoldDownCommandClass::Enabled && Phobos::Config::AllowDistributionCommand_SpreadModeScroll)
 		DistributionModeHoldDownCommandClass::DistributionSpreadModeExpand();
 
@@ -167,7 +173,7 @@ static inline bool CheckSkipScrollSidebar()
 		|| DistributionModeHoldDownCommandClass::Enabled
 		|| SelectedInfoClass::Instance.IsHovering
 		|| MessageColumnClass::Instance.IsHovering()
-		|| UIExt::UIRoot::Instance().IsBlockingTactical();
+		|| UIExt::UIRoot::Instance().IsBlockingAt(WWMouseClass::Instance->XY1.X, WWMouseClass::Instance->XY1.Y);
 }
 
 DEFINE_HOOK(0x533F50, Game_ScrollSidebar_Skip, 0x5)

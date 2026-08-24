@@ -30,6 +30,19 @@ namespace UIExt
 		return *this;
 	}
 
+	void IconStrip::RebuildItems(size_t count, const ItemBuilder& builder)
+	{
+		this->GetChildren().clear();
+
+		for (size_t i = 0; i < count; ++i)
+		{
+			if (builder)
+				builder(*this, i);
+		}
+
+		this->Refresh();
+	}
+
 	void IconStrip::Refresh()
 	{
 		std::vector<UIComponent*> items;
@@ -45,5 +58,6 @@ namespace UIExt
 
 		this->SetSize(this->ItemWidth, this->ItemHeight * static_cast<int>(items.size()) + this->Spacing * Math::max(0, static_cast<int>(items.size()) - 1));
 		Layout::ArrangeColumn(items, this->X, this->Y, this->Spacing);
+		this->UpdateTreePositions();
 	}
 }

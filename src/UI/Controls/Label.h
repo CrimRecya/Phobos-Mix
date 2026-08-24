@@ -17,6 +17,7 @@ namespace UIExt
 
 		Label& SetText(std::wstring text);
 		Label& SetColor(COLORREF color);
+		Label& SetLineSpacing(int spacing);
 
 		void BindText(const Observable<std::wstring>& observable);
 
@@ -25,5 +26,6 @@ namespace UIExt
 	protected:
 		std::wstring Text { };
 		COLORREF Color { COLOR_WHITE };
+		int LineSpacing { 0 };
 	};
 }

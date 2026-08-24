@@ -24,10 +24,18 @@ namespace UIExt
 		return *this;
 	}
 
+	Panel& Panel::SetCustomDraw(DrawCallback callback)
+	{
+		this->CustomDraw_ = std::move(callback);
+		return *this;
+	}
+
 	bool Panel::Draw(bool forced)
 	{
-		if (!this->Visible)
+		if (!this->IsVisibleInTree())
 			return false;
+
+		this->UIComponent::Draw(forced);
 
 		RectangleStruct rect { this->X, this->Y, this->Width, this->Height };
 
@@ -36,6 +44,9 @@ namespace UIExt
 
 		if (this->DrawBorder)
 			DSurface::Composite->DrawRect(&rect, this->BorderColor);
+
+		if (this->CustomDraw_)
+			this->CustomDraw_(*this);
 
 		return false;
 	}

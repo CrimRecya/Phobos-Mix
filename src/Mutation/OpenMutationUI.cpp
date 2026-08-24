@@ -30,11 +30,15 @@ namespace Mutation
 
 	void OpenMutationUICommandClass::Execute(WWKey eInput) const
 	{
+		if (MutationSelectorDialog::IsOpen())
+			return;
+
 		auto& viewModel = MutationViewModel::Instance();
 		viewModel.Refresh();
 
 		auto dialog = MutationSelectorDialog::Create(viewModel);
 		UIExt::UIRoot::Instance().Open(std::move(dialog), UIExt::ModalLevel::BlockTactical);
+		MutationSelectorDialog::SetOpen(true);
 
 		MutationDisplayerStrip::Open(viewModel);
 	}

@@ -44,10 +44,31 @@ namespace UIExt
 		size_t Revision_ { 0 };
 	};
 
+	// Type-erased base for observable vectors.
+	// Lets containers (PageView / IconStrip / ListGrid) bind to any ObservableVector<T>
+	// without knowing T at compile time.
+	class ObservableVectorBase
+	{
+	public:
+		using ChangedCallback = std::function<void()>;
+
+		virtual ~ObservableVectorBase() = default;
+
+		ObservableVectorBase(const ObservableVectorBase&) = delete;
+		ObservableVectorBase& operator=(const ObservableVectorBase&) = delete;
+
+		virtual size_t GetCount() const = 0;
+		virtual const void* GetItem(size_t index) const = 0;
+		virtual void SetOnChanged(ChangedCallback callback) = 0;
+
+	protected:
+		ObservableVectorBase() = default;
+	};
+
 	// A minimal observable vector.
 	// Useful for lists of items that will be rendered by PageView / IconStrip / ListGrid.
 	template <typename T>
-	class ObservableVector final
+	class ObservableVector final : public ObservableVectorBase
 	{
 	public:
 		ObservableVector() = default;
@@ -62,18 +83,21 @@ namespace UIExt
 		{
 			this->Items_ = std::move(items);
 			++this->Revision_;
+			this->NotifyChanged();
 		}
 
 		void Add(const T& item)
 		{
 			this->Items_.push_back(item);
 			++this->Revision_;
+			this->NotifyChanged();
 		}
 
 		void Add(T&& item)
 		{
 			this->Items_.emplace_back(std::move(item));
 			++this->Revision_;
+			this->NotifyChanged();
 		}
 
 		void RemoveAt(size_t index)
@@ -82,6 +106,7 @@ namespace UIExt
 			{
 				this->Items_.erase(this->Items_.begin() + index);
 				++this->Revision_;
+				this->NotifyChanged();
 			}
 		}
 
@@ -91,6 +116,7 @@ namespace UIExt
 			{
 				this->Items_.clear();
 				++this->Revision_;
+				this->NotifyChanged();
 			}
 		}
 
@@ -99,9 +125,32 @@ namespace UIExt
 			return this->Revision_;
 		}
 
+		// ObservableVectorBase
+		size_t GetCount() const override
+		{
+			return this->Items_.size();
+		}
+
+		const void* GetItem(size_t index) const override
+		{
+			return &this->Items_[index];
+		}
+
+		void SetOnChanged(ChangedCallback callback) override
+		{
+			this->OnChanged_ = std::move(callback);
+		}
+
 	private:
+		void NotifyChanged()
+		{
+			if (this->OnChanged_)
+				this->OnChanged_();
+		}
+
 		std::vector<T> Items_ {};
 		size_t Revision_ { 0 };
+		ChangedCallback OnChanged_ { };
 	};
 
 	// BindingBase is the polymorphic root for value bindings.
@@ -131,7 +180,7 @@ namespace UIExt
 		ValueBinding(const Observable<T>* observable, Setter setter)
 			: Observable_ { observable }
 			, Setter_ { std::move(setter) }
-			, LastRevision_ { observable ? observable->GetRevision() : 0 }
+			, LastRevision_ { static_cast<size_t>(-1) }
 		{ }
 
 		void ApplyIfNeeded() override
@@ -161,6 +210,7 @@ namespace UIExt
 	public:
 		using ExecuteFn = std::function<void()>;
 		using CanExecuteFn = std::function<bool()>;
+		using CanExecuteChangedFn = std::function<void()>;
 
 		Command() = default;
 		Command(ExecuteFn execute) : Execute_ { std::move(execute) } { }
@@ -188,10 +238,36 @@ namespace UIExt
 		void SetCanExecute(CanExecuteFn canExecute)
 		{
 			this->CanExecute_ = std::move(canExecute);
+			this->NotifyCanExecuteChanged();
+		}
+
+		size_t AddCanExecuteChanged(CanExecuteChangedFn callback)
+		{
+			if (!callback)
+				return static_cast<size_t>(-1);
+
+			this->CanExecuteChangedCallbacks_.push_back(std::move(callback));
+			return this->CanExecuteChangedCallbacks_.size() - 1;
+		}
+
+		void RemoveCanExecuteChanged(size_t token)
+		{
+			if (token < this->CanExecuteChangedCallbacks_.size())
+				this->CanExecuteChangedCallbacks_[token] = nullptr;
+		}
+
+		void NotifyCanExecuteChanged() const
+		{
+			for (const auto& callback : this->CanExecuteChangedCallbacks_)
+			{
+				if (callback)
+					callback();
+			}
 		}
 
 	private:
 		ExecuteFn Execute_ {};
 		CanExecuteFn CanExecute_ {};
+		std::vector<CanExecuteChangedFn> CanExecuteChangedCallbacks_ { };
 	};
 }

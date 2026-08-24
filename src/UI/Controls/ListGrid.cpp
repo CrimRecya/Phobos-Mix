@@ -23,6 +23,19 @@ namespace UIExt
 		return *this;
 	}
 
+	void ListGrid::RebuildItems(size_t count, const ItemBuilder& builder)
+	{
+		this->GetChildren().clear();
+
+		for (size_t i = 0; i < count; ++i)
+		{
+			if (builder)
+				builder(*this, i);
+		}
+
+		this->Refresh();
+	}
+
 	void ListGrid::Refresh()
 	{
 		std::vector<UIComponent*> items;
@@ -34,5 +47,6 @@ namespace UIExt
 		}
 
 		Layout::ArrangeGrid(items, this->X, this->Y, this->Columns, this->ItemWidth, this->ItemHeight, this->GapX, this->GapY);
+		this->UpdateTreePositions();
 	}
 }

@@ -34,10 +34,20 @@ namespace UIExt
 		return this->Checked;
 	}
 
+	void CheckBox::BindText(const Observable<std::wstring>& observable)
+	{
+		this->BindValue(observable, [this](const std::wstring& value)
+		{
+			this->SetText(value);
+		});
+	}
+
 	bool CheckBox::Draw(bool forced)
 	{
-		if (!this->Visible)
+		if (!this->IsVisibleInTree())
 			return false;
+
+		this->UIComponent::Draw(forced);
 
 		constexpr int boxSize = 14;
 		RectangleStruct box { this->X, this->Y + (this->Height - boxSize) / 2, boxSize, boxSize };
@@ -51,11 +61,10 @@ namespace UIExt
 
 		if (!this->Text.empty())
 		{
-			Point2D position { this->X + boxSize + 6, this->Y + this->Height / 2 };
+			Point2D position { this->X + boxSize + 6, this->Y + (this->Height - 12) / 2 };
 			RectangleStruct rect { 0, 0, this->X + this->Width, this->Y + this->Height };
-			const auto printType = TextPrintType::Center | TextPrintType::Point8;
 			const auto color = this->Disabled ? 0x666666 : COLOR_WHITE;
-			DSurface::Composite->DrawTextA(this->Text.c_str(), &rect, &position, color, 0, printType);
+			DSurface::Composite->DrawTextA(this->Text.c_str(), &rect, &position, color, 0, TextPrintType::Point8);
 		}
 
 		return false;
@@ -63,7 +72,10 @@ namespace UIExt
 
 	bool CheckBox::Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier)
 	{
-		if (!this->Disabled && (flags & GadgetFlag::LeftPress))
+		if (!this->CanInteract())
+			return false;
+
+		if ((flags & GadgetFlag::LeftPress))
 		{
 			this->SetChecked(!this->Checked);
 

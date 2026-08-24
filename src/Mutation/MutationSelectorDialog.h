@@ -12,5 +12,10 @@ namespace Mutation
 	{
 	public:
 		static std::unique_ptr<UIExt::Dialog> Create(MutationViewModel& viewModel);
+		static bool IsOpen();
+		static void SetOpen(bool open);
+
+	private:
+		static bool s_open;
 	};
 }

@@ -14,6 +14,7 @@ namespace Mutation
 		static MutationViewModel& Instance();
 
 		void Refresh();
+		void SetPageCount(int count);
 		void ToggleSelect(int id);
 		void Commit();
 		void Close();
@@ -21,10 +22,14 @@ namespace Mutation
 
 		UIExt::ObservableVector<MutationInfo> Mutations;
 		UIExt::Observable<int> PageIndex;
+		UIExt::Observable<int> PageCount;
+		UIExt::Observable<int> MaxSelection;
 		UIExt::Observable<std::vector<int>> SelectedIDs;
 		UIExt::Observable<std::wstring> ConfirmText;
 
 		UIExt::Command ToggleSelectCommand;
+		UIExt::Command PageNextCommand;
+		UIExt::Command PagePrevCommand;
 		UIExt::Command CommitCommand;
 		UIExt::Command CloseCommand;
 

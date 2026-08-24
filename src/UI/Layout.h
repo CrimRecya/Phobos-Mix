@@ -6,18 +6,6 @@
 
 namespace UIExt
 {
-	enum class Anchor
-	{
-		None = 0,
-		Center,
-		Left,
-		Right,
-		Top,
-		Bottom,
-		BottomLeft,
-		BottomRight
-	};
-
 	// Lightweight layout helpers. They only arrange existing child components.
 	class Layout
 	{

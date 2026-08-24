@@ -30,6 +30,8 @@ namespace UIExt
 			});
 		}
 
+		void BindText(const Observable<std::wstring>& observable);
+
 		bool Draw(bool forced) override;
 		bool Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier) override;
 
