@@ -1427,10 +1427,10 @@ static inline bool ExtraTargeting(TechnoClass* pThis, bool area = false)
 
 	auto coord = (area && pThis->ArchiveTarget ? pThis->ArchiveTarget : pThis)->GetCoords();
 	pThis->ShouldLoseTargetNow = true;
-	const bool HasTarget = pThis->TargetAndEstimateDamage(coord, area ? ThreatType::Area : ThreatType::Range);
-	pThis->ShouldLoseTargetNow = HasTarget;
+	const bool hasTarget = pThis->TargetAndEstimateDamage(coord, area ? ThreatType::Area : ThreatType::Range);
+	pThis->ShouldLoseTargetNow = hasTarget;
 
-	return HasTarget;
+	return hasTarget;
 }
 
 // 按s时
@@ -1526,25 +1526,23 @@ DEFINE_HOOK(0x4C7462, EventClass_RespondToEvent_ExtraTargeting_MegaMission, 0x5)
 		pTechno->TargetingTimer.Stop();
 		return 0;
 	}
-	else
-	{
-		return SkipSetTarget;
-	}
-}
 
-static inline bool CanExtraTargetingNow(TechnoClass* const pTechno)
-{
-	return RulesExt::Global()->ExtraTargeting
-		&& (pTechno->WhatAmI() != AbstractType::Unit
-			|| !UnitExt::Fetch(static_cast<UnitClass*>(pTechno))->KeepTargetOnMove)
-		&& pTechno->Owner->IsControlledByHuman();
+	return SkipSetTarget;
 }
 
 DEFINE_HOOK(0x709918, TechnoClass_TargetAndEstimateDamage_CheckTarget, 0x6)
 {
 	enum { CanTargeting = 0x709926 };
+
 	GET(TechnoClass* const, pThis, ESI);
-	return CanExtraTargetingNow(pThis) ? CanTargeting : 0;
+
+	return RulesExt::Global()->ExtraTargeting
+		&& pThis->QueuedMission != Mission::Attack
+		&& (pThis->WhatAmI() != AbstractType::Unit
+			|| !UnitExt::Fetch(static_cast<UnitClass*>(pThis))->KeepTargetOnMove)
+		&& pThis->Owner->IsControlledByHuman()
+		? CanTargeting
+		: 0;
 }
 
 DEFINE_HOOK(0x709957, TechnoClass_TargetAndEstimateDamage_SetTarget, 0x6)
@@ -1554,7 +1552,7 @@ DEFINE_HOOK(0x709957, TechnoClass_TargetAndEstimateDamage_SetTarget, 0x6)
 	GET(TechnoClass*, pThis, ESI);
 	GET(AbstractClass*, pTarget, EDI);
 
-	if (CanExtraTargetingNow(pThis) ? (pThis->QueuedMission != Mission::Attack && pThis->Target != pTarget) : (pTarget != nullptr))
+	if (pTarget && (!RulesExt::Global()->ExtraTargeting || (pThis->QueuedMission != Mission::Attack && pThis->Target != pTarget)))
 		pThis->SetTarget(pTarget);
 
 	return RulesExt::Global()->VHPScan_Enhanced ? SkipSetTargetAndEstimateHealth : SkipSetTarget;
