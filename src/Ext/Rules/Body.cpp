@@ -567,6 +567,7 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 	this->WarheadAnimZAdjust.Read(exINI, GameStrings::AudioVisual, "WarheadAnimZAdjust");
 
 	this->IvanBombAttachToCenter.Read(exINI, GameStrings::CombatDamage, "IvanBombAttachToCenter");
+	this->IvanBomb_Visibility.Read(exINI, GameStrings::AudioVisual, "IvanIconVisibility");
 	this->MissileSpawnAttackCell.Read(exINI, GameStrings::CombatDamage, "MissileSpawnAttackCell");
 
 	this->FallingDownTargetingFix.Read(exINI, GameStrings::General, "FallingDownTargetingFix");
@@ -765,13 +766,13 @@ void RulesExt::ExtData::LoadBeforeTypeData(RulesClass* pThis, CCINIClass* pINI)
 
 	this->Warhead_PreventScatter.Read(exINI, GameStrings::CombatDamage, "Warhead.PreventScatter");
 	
+	this->ProjectileRange_ApplyModifiers.Read(exINI, GameStrings::CombatDamage, "ProjectileRange.ApplyModifiers");
+
 	this->KeepAlive_Infantry.Read(exINI, GameStrings::General, "KeepAlive.Infantry");
 	this->KeepAlive_Units.Read(exINI, GameStrings::General, "KeepAlive.Units");
 	this->KeepAlive_Aircraft.Read(exINI, GameStrings::General, "KeepAlive.Aircraft");
 	this->KeepAlive_Buildings.Read(exINI, GameStrings::General, "KeepAlive.Buildings");
 	this->KeepAlive_Defenses.Read(exINI, GameStrings::General, "KeepAlive.Defenses");
-
-	this->ProjectileRange_ApplyModifiers.Read(exINI, GameStrings::CombatDamage, "ProjectileRange.ApplyModifiers");
 
 	// Section AITargetTypes
 	int itemsCount = pINI->GetKeyCount("AITargetTypes");
@@ -1239,6 +1240,7 @@ void RulesExt::ExtData::Serialize(T& Stm)
 		.Process(this->ExtendedStray)
 		.Process(this->WarheadAnimZAdjust)
 		.Process(this->IvanBombAttachToCenter)
+		.Process(this->IvanBomb_Visibility)
 		.Process(this->MissileSpawnAttackCell)
 		.Process(this->FallingDownTargetingFix)
 		.Process(this->AIAirTargetingFix)

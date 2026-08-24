@@ -500,6 +500,7 @@ public:
 		Valueable<int> WarheadAnimZAdjust;
 
 		Valueable<bool> IvanBombAttachToCenter;
+		Valueable<AffectedHouse> IvanBomb_Visibility;
 		Valueable<bool> MissileSpawnAttackCell;
 
 		Valueable<bool> FallingDownTargetingFix;
@@ -683,13 +684,13 @@ public:
 
 		Valueable<bool> Warhead_PreventScatter;
 
+		Valueable<bool> ProjectileRange_ApplyModifiers;
+
 		Valueable<bool> KeepAlive_Infantry;
 		Valueable<bool> KeepAlive_Units;
 		Valueable<bool> KeepAlive_Aircraft;
 		Valueable<bool> KeepAlive_Buildings;
 		Valueable<bool> KeepAlive_Defenses;
-
-		Valueable<bool> ProjectileRange_ApplyModifiers;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -1126,6 +1127,7 @@ public:
 			, WarheadAnimZAdjust { -15 }
 
 			, IvanBombAttachToCenter { false }
+			, IvanBomb_Visibility { AffectedHouse::Owner }
 			, MissileSpawnAttackCell { true }
 
 			, FallingDownTargetingFix { false }
