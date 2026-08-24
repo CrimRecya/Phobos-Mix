@@ -419,8 +419,12 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 				if (pLinked->IsCrushingSomething)
 				{
 					// Customized crush slow down speed
-					if (pLinked->WhatAmI() == AbstractType::Unit && !static_cast<UnitTypeExt*>(pTypeExt)->SkipCrushSlowdown && this->MovementSpeed > static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier)
-						this->MovementSpeed = static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier;
+					if (pLinked->WhatAmI() == AbstractType::Unit && !static_cast<UnitTypeExt*>(pTypeExt)->SkipCrushSlowdown)
+					{
+						const double mult = static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier.Get(RulesExt::Global()->CrushSlowdownMultiplier);
+						if (this->MovementSpeed > mult)
+							this->MovementSpeed = mult;
+					}
 
 					speed = this->MovementSpeed;
 				}
@@ -435,8 +439,12 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 			else if (pLinked->IsCrushingSomething)
 			{
 				// Customized crush slow down speed
-				if (pLinked->WhatAmI() == AbstractType::Unit && !static_cast<UnitTypeExt*>(pTypeExt)->SkipCrushSlowdown && this->MovementSpeed > static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier)
-					this->MovementSpeed = static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier;
+				if (pLinked->WhatAmI() == AbstractType::Unit && !static_cast<UnitTypeExt*>(pTypeExt)->SkipCrushSlowdown)
+				{
+					const double mult = static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier.Get(RulesExt::Global()->CrushSlowdownMultiplier);
+					if (this->MovementSpeed > mult)
+						this->MovementSpeed = mult;
+				}
 
 				speed = this->MovementSpeed;
 			}
@@ -1761,7 +1769,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 
 			if (this->IsRocking)
 			{
-				if ((pType->MovementZone == MovementZone::CrusherAll && pNewCell->GetUnit(false))
+				if((pType->MovementZone == MovementZone::CrusherAll && pNewCell->GetUnit(false))
 					|| (pNewCell->OverlayTypeIndex != -1
 						&& (pType->Crusher || pLinked->HasAbility(Ability::Crusher))
 						&& OverlayTypeClass::Array.Items[pNewCell->OverlayTypeIndex]->Wall))
