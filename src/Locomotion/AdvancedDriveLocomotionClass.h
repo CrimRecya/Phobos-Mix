@@ -102,15 +102,12 @@ public:
 	virtual int Size() override { return sizeof(*this); }
 
 	// ILocomotion
-/*	virtual HRESULT __stdcall Link_To_Object(void* pointer) override
+	virtual HRESULT __stdcall Link_To_Object(void* pointer) override
 	{
 		HRESULT hr = this->LocomotionClass::Link_To_Object(pointer);
-
-		if (SUCCEEDED(hr))
-			Debug::Log("AdvancedDriveLocomotionClass - Sucessfully linked to \"%s\"\n", Owner->get_ID());
-
+		this->IsUnit = SUCCEEDED(hr) && this->LinkedTo->WhatAmI() == AbstractType::Unit;
 		return hr;
-	}*/
+	}
 	virtual bool __stdcall Is_Moving() override;
 	virtual CoordStruct __stdcall Destination() override { return this->TargetCoord; }
 	virtual CoordStruct __stdcall Head_To_Coord() override { return this->HeadToCoord == CoordStruct::Empty ? this->LinkedTo->Location : this->HeadToCoord; }
@@ -247,6 +244,7 @@ public:
 		, TargetDistance { 0 }
 		, Wobbles { 0.0 }
 		, OutOfControl { false }
+		, IsUnit { false }
 		, ShouldForward { false }
 		, ShouldReverse { false }
 		, TailSpin { 0 }
@@ -279,6 +277,7 @@ public:
 	int TargetDistance;
 	double Wobbles;
 	bool OutOfControl;
+	bool IsUnit;
 	bool ShouldForward;
 	bool ShouldReverse;
 	int TailSpin;

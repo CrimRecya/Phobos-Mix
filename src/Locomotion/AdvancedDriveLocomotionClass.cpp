@@ -31,7 +31,7 @@ Matrix3D AdvancedDriveLocomotionClass::Draw_Matrix(VoxelIndexKey* key)
 	const auto pLinked = this->LinkedTo;
 	const auto pType = pLinked->GetTechnoType();
 	const auto pTypeExt = TechnoTypeExt::Fetch(pType);
-	const bool shouldTilt = pLinked->WhatAmI() == AbstractType::Unit
+	const bool shouldTilt = this->IsUnit
 		&& (!static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover
 			|| static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover_Tilt);
 	const double rate = this->SlopeTimer.GetRatePassed();
@@ -104,7 +104,7 @@ Matrix3D AdvancedDriveLocomotionClass::Shadow_Matrix(VoxelIndexKey* key)
 
 	const auto pLinked = this->LinkedTo;
 	const auto pTypeExt = TechnoExt::Fetch(pLinked)->TypeExtData;
-	const bool shouldTilt = pLinked->WhatAmI() == AbstractType::Unit
+	const bool shouldTilt = this->IsUnit
 		&& (!static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover
 			|| static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover_Tilt);
 
@@ -125,7 +125,7 @@ bool AdvancedDriveLocomotionClass::Process()
 	const auto slopeIndex = pLinked->GetCell()->SlopeIndex;
 	const auto pType = pLinked->GetTechnoType();
 	const auto pTypeExt = TechnoTypeExt::Fetch(pType);
-	const bool isUnit = pLinked->WhatAmI() == AbstractType::Unit;
+	const bool isUnit = this->IsUnit;
 
 	if (slopeIndex != this->CurrentRamp)
 	{
@@ -229,7 +229,7 @@ bool AdvancedDriveLocomotionClass::Power_Off()
 {
 	const auto pLinked = this->LinkedTo;
 
-	if (pLinked->WhatAmI() == AbstractType::Unit && static_cast<UnitTypeExt*>(TechnoExt::Fetch(pLinked)->TypeExtData)->AdvancedDrive_Hover)
+	if (this->IsUnit && static_cast<UnitTypeExt*>(TechnoExt::Fetch(pLinked)->TypeExtData)->AdvancedDrive_Hover)
 	{
 		if (this->Is_Powered())
 		{
@@ -256,7 +256,7 @@ bool AdvancedDriveLocomotionClass::Is_Powered()
 		return true;
 
 	const auto pLinked = this->LinkedTo;
-	return pLinked->WhatAmI() == AbstractType::Unit && static_cast<UnitTypeExt*>(TechnoExt::Fetch(pLinked)->TypeExtData)->AdvancedDrive_Hover && pLinked->GetHeight() > 0;
+	return this->IsUnit && static_cast<UnitTypeExt*>(TechnoExt::Fetch(pLinked)->TypeExtData)->AdvancedDrive_Hover && pLinked->GetHeight() > 0;
 }
 
 void AdvancedDriveLocomotionClass::Force_Track(int track, CoordStruct coord)
@@ -379,7 +379,7 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 	const auto pLinked = this->LinkedTo;
 	const auto pType = pLinked->GetTechnoType();
 	const auto pTypeExt = TechnoTypeExt::Fetch(pType);
-	const bool notUnit = pLinked->WhatAmI() != AbstractType::Unit;
+	const bool notUnit = !this->IsUnit;
 
 	if (((!this->IsDriving || this->TrackNumber == -1)
 			&& pLinked->PathDirections[0] != 8)
@@ -419,7 +419,7 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 				if (pLinked->IsCrushingSomething)
 				{
 					// Customized crush slow down speed
-					if (pLinked->WhatAmI() == AbstractType::Unit && !static_cast<UnitTypeExt*>(pTypeExt)->SkipCrushSlowdown)
+					if (this->IsUnit && !static_cast<UnitTypeExt*>(pTypeExt)->SkipCrushSlowdown)
 					{
 						const double mult = static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier.Get(RulesExt::Global()->CrushSlowdownMultiplier);
 						if (this->MovementSpeed > mult)
@@ -439,7 +439,7 @@ bool AdvancedDriveLocomotionClass::MovingProcess(bool fix)
 			else if (pLinked->IsCrushingSomething)
 			{
 				// Customized crush slow down speed
-				if (pLinked->WhatAmI() == AbstractType::Unit && !static_cast<UnitTypeExt*>(pTypeExt)->SkipCrushSlowdown)
+				if (this->IsUnit && !static_cast<UnitTypeExt*>(pTypeExt)->SkipCrushSlowdown)
 				{
 					const double mult = static_cast<UnitTypeExt*>(pTypeExt)->CrushSlowdownMultiplier.Get(RulesExt::Global()->CrushSlowdownMultiplier);
 					if (this->MovementSpeed > mult)
@@ -620,7 +620,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 
 	const auto pType = pLinked->GetTechnoType();
 	const auto pTypeExt = TechnoTypeExt::Fetch(pType);
-	const bool isUnit = pLinked->WhatAmI() == AbstractType::Unit;
+	const bool isUnit = this->IsUnit;
 
 	do
 	{
@@ -1032,7 +1032,7 @@ bool AdvancedDriveLocomotionClass::PassableCheck(bool* pStop, bool force, bool c
 	if (speedFactor > 1.0)
 		speedFactor = 1.0;
 
-	if (pLinked->WhatAmI() == AbstractType::Unit)
+	if (this->IsUnit)
 	{
 		int currentHeight = MapClass::Instance.GetCellFloorHeight(pLinked->Location);
 		int nextHeight = MapClass::Instance.GetCellFloorHeight(pNextCell->GetCellCoords());
@@ -1521,7 +1521,7 @@ inline void AdvancedDriveLocomotionClass::UpdateSituation()
 
 inline void AdvancedDriveLocomotionClass::UpdateForwardState(int desiredRaw)
 {
-	if (this->LinkedTo->WhatAmI() != AbstractType::Unit)
+	if (!this->IsUnit)
 		return;
 
 	const auto pLinked = static_cast<UnitClass*>(this->LinkedTo);
@@ -1579,7 +1579,7 @@ inline bool AdvancedDriveLocomotionClass::InMotion()
 		if (this->TrackNumber != -1 || !this->Is_Moving() && pLinked->PathDirections[0] == -1)
 			return true;
 
-		if (pLinked->WhatAmI() == AbstractType::Unit)
+		if (this->IsUnit)
 		{
 			if (static_cast<UnitClass*>(pLinked)->Unloading)
 				return true;
@@ -1614,7 +1614,7 @@ inline bool AdvancedDriveLocomotionClass::InMotion()
 			this->IsRotating = true;
 
 			// Hover types can move when turning
-			if (pLinked->WhatAmI() != AbstractType::Unit || !static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover)
+			if (!this->IsUnit || !static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover)
 				return true;
 		}
 		else if (this->IsRotating)
@@ -1776,7 +1776,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 				{
 					pLinked->IsCrushingSomething = true;
 
-					if (pLinked->WhatAmI() == AbstractType::Unit && pType->TiltsWhenCrushes)
+					if (this->IsUnit && pType->TiltsWhenCrushes)
 					{
 						// Customized crush tilt speed
 						pLinked->RockingForwardsPerFrame = this->IsForward
@@ -1790,7 +1790,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 		if (!pLinked->IsAlive)
 			return 1;
 
-		if (pLinked->WhatAmI() != AbstractType::Unit || !static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover)
+		if (!this->IsUnit || !static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover)
 		{
 			// Stay on the ground
 			this->SetNewHeight(0);
@@ -1833,7 +1833,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 					case Move::OK:
 					case Move::MovingBlock:
 					{
-						if (pLinked->WhatAmI() == AbstractType::Unit && !static_cast<UnitClass*>(pLinked)->Type->Passive)
+						if (this->IsUnit && !static_cast<UnitClass*>(pLinked)->Type->Passive)
 							break;
 
 						const auto speedPercent = pLinked->SpeedPercentage;
@@ -1923,7 +1923,7 @@ inline int AdvancedDriveLocomotionClass::UpdateSpeedAccum(int& speedAccum)
 
 	auto maintainHeight = [this, pLinked, pTypeExt]()
 	{
-		if (pLinked->WhatAmI() == AbstractType::Unit && static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover)
+		if (this->IsUnit && static_cast<UnitTypeExt*>(pTypeExt)->AdvancedDrive_Hover)
 		{
 			auto newPos = this->HeadToCoord;
 			newPos.Z = pLinked->Location.Z;
