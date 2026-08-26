@@ -942,7 +942,6 @@ CanBuildResult TechnoTypeExt::CheckAlwaysExistCameo(TechnoTypeClass* pType, CanB
 	else if (pTypeExt->IsGreyCameoForCurrentPlayer)
 	{
 		pTypeExt->IsGreyCameoForCurrentPlayer = false;
-		pTypeExt->IsGreyCameoAbandonedProduct = false;
 		VoxClass::Play(&Make_Global<const char>(0x83FA64)); // 0x83FA64 -> EVA_NewConstructionOptions
 		ForceRedrawSidebar();
 	}
@@ -2094,7 +2093,8 @@ void TechnoTypeExt::Serialize(T& Stm)
 		.Process(this->Cameo_RequiredHouses)
 		.Process(this->IsMetTheEssentialConditions)
 		.Process(this->IsGreyCameoForCurrentPlayer)
-		.Process(this->IsGreyCameoAbandonedProduct)
+		.Process(this->CanBuildNowCheck)
+		.Process(this->CanBuildNowCount)
 		.Process(this->UIDescription_Unbuildable)
 
 		.Process(this->CameoPal)

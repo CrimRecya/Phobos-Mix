@@ -4,6 +4,7 @@
 #include <Ext/Anim/Body.h>
 #include <Ext/House/Body.h>
 #include <Ext/SWType/Body.h>
+#include <Ext/Scenario/Body.h>
 #include <Ext/WarheadType/Body.h>
 
 #pragma region Update
@@ -812,23 +813,106 @@ DEFINE_HOOK(0x6AA88D, StripClass_RecheckCameo_FindFactoryDehardCode, 0x6)
 	return 0;
 }
 
-// TODO 加个开关，很烦，加开关应该全部要改成钩子
-DEFINE_PATCH(0x6AB6F7, 0x1D); // jnz loc_6AB718;
-DEFINE_JUMP(LJMP, 0x4C9CE6, 0x4C9CF3);
-DEFINE_PATCH(0x4FA42C, 0xC6, 0x44, 0x24, 0x1C, 0x00); // mov [esp+24h+manual], 0
-DEFINE_JUMP(LJMP, 0x4FA431, 0x4FA46A);
-DEFINE_JUMP(LJMP, 0x4FA6BB, 0x4FA6CF);
-DEFINE_PATCH(0x4FA6CF, 0x33, 0xDB); // xor ebx, ebx
+DEFINE_HOOK(0x6AB6F5, SelectClass_Action_CheckBuildable, 0x6)
+{
+	enum { ContinueWithVoice = 0x6AB6FB, ContinueWithoutVoice = 0x6AB718, ShouldNotBuild = 0x6AB7D4 };
+
+	GET_STACK(bool, shouldDisableCameo, STACK_OFFSET(0xAC, -0x99));
+
+	if (!shouldDisableCameo)
+		return ContinueWithVoice;
+
+	GET(TechnoTypeClass* const, pType, EDI);
+
+	return TechnoTypeExt::Fetch(pType)->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist) ? ContinueWithoutVoice : ShouldNotBuild;
+}
+
+static bool __fastcall HouseClass_ShouldDisableCameo_Check(HouseClass* pThis, void* _, TechnoTypeClass* pType)
+{
+	if (TechnoTypeExt::Fetch(pType)->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist))
+		return false;
+
+	return pThis->ShouldDisableCameo(pType);
+}
+DEFINE_FUNCTION_JUMP(CALL, 0x4C9CEA, HouseClass_ShouldDisableCameo_Check);
+
+static BOOL __fastcall TechnoTypeClass_FindFactory_Check(TechnoTypeClass* pThis, void* _, bool allowOccupied, bool requirePower, bool requireCanBuild, HouseClass* pHouse)
+{
+	if (TechnoTypeExt::Fetch(pThis)->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist))
+		return 1;
+
+	return pThis->FindFactory(allowOccupied, requirePower, requireCanBuild, pHouse) ? 1 : 0;
+}
+DEFINE_FUNCTION_JUMP(CALL6, 0x4FA438, TechnoTypeClass_FindFactory_Check);
+
+DEFINE_HOOK(0x4FA6BB, HouseClass_BeginProduction_Check, 0x9)
+{
+	enum { SkipLog = 0x4FA6D1 };
+
+	GET(TechnoTypeClass* const, pType, EBP);
+
+	if (!TechnoTypeExt::Fetch(pType)->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist))
+		return 0;
+
+	GET(FactoryClass* const, pFactory, ESI);
+
+	R->EAX(pFactory->QueuedObjects.Count);
+	R->EBX(0);
+
+	return SkipLog;
+}
 
 DEFINE_HOOK(0x4C9D6E, FactoryClass_QueueProduction_CheckBuildable, 0x8)
 {
 	enum { CannotBuild = 0x4C9D64 };
 
-	GET(FactoryClass*, pThis, ESI);
-	GET(TechnoTypeClass*, pType, EDI);
-	GET_STACK(HouseClass*, pHouse, STACK_OFFSET(0x14, 0x8));
+	GET(FactoryClass* const, pThis, ESI);
+	GET(TechnoTypeClass* const, pType, EDI);
+	GET_STACK(HouseClass* const, pHouse, STACK_OFFSET(0x14, 0x8));
 
-	if (!pHouse->IsControlledByHuman() || pHouse->CanBuild(pType, false, false) == CanBuildResult::Buildable)
+	if (!pHouse->IsControlledByHuman() || !TechnoTypeExt::Fetch(pType)->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist))
+		return 0;
+
+	auto& globalCount = ScenarioExt::Global()->CanBuildNowCount;
+	if (!++globalCount)
+	{
+		++globalCount;
+		for (const auto& pTechnoType : TechnoTypeClass::Array)
+		{
+			if (const auto pTechnoTypeExt = TechnoTypeExt::TryFetch(pTechnoType))
+				pTechnoTypeExt->CanBuildNowCount = 0;
+		}
+	}
+
+	auto buildCheck = [pHouse, &globalCount](TechnoTypeClass* pTechnoType) -> bool
+	{
+		const auto pTechnoTypeExt = TechnoTypeExt::Fetch(pTechnoType);
+
+		if (pTechnoTypeExt->CanBuildNowCount != globalCount)
+		{
+			pTechnoTypeExt->CanBuildNowCount = globalCount;
+			auto canBuildNow = [pHouse](TechnoTypeClass* pTechnoType) -> bool
+			{
+				if (pHouse->CanBuild(pTechnoType, false, false) != CanBuildResult::Buildable)
+					return false;
+
+				if (pTechnoType->WhatAmI() != AbstractType::AircraftType || !static_cast<AircraftTypeClass*>(pTechnoType)->AirportBound)
+					return true;
+
+				int ownedAircraft = 0;
+
+				for(const auto& pAircraft : RulesClass::Instance->PadAircraft)
+					ownedAircraft += pHouse->CountOwnedAndPresent(pAircraft);
+
+				return ownedAircraft < pHouse->AirportDocks;
+			};
+			pTechnoTypeExt->CanBuildNowCheck = canBuildNow(pTechnoType);
+		}
+
+		return pTechnoTypeExt->CanBuildNowCheck;
+	};
+
+	if (buildCheck(pType))
 		return 0;
 
 	GET_STACK(bool, isQueueCall, STACK_OFFSET(0x14, 0xC));
@@ -840,15 +924,20 @@ DEFINE_HOOK(0x4C9D6E, FactoryClass_QueueProduction_CheckBuildable, 0x8)
 	}
 	else if (pThis->QueuedObjects.Count > 0)
 	{
-		for (TechnoTypeClass* pNextType = pThis->QueuedObjects.Items[0]; pThis->QueuedObjects.Count > 0; pNextType = pThis->QueuedObjects.Items[0])
-		{
-			pThis->QueuedObjects.Count -= 1;
+		const int expectedCount = pThis->QueuedObjects.Count - 1;
+		int checkIndex = 0;
 
-			for (int i = 0; i < pThis->QueuedObjects.Count; ++i)
+		do
+		{
+			auto pNextType = pThis->QueuedObjects.Items[0];
+
+			for (int i = 0; i < expectedCount; ++i)
 				pThis->QueuedObjects.Items[i] = pThis->QueuedObjects.Items[i + 1];
 
-			if (pHouse->CanBuild(pNextType, false, false) == CanBuildResult::Buildable)
+			if (buildCheck(pNextType))
 			{
+				pThis->QueuedObjects.Count = expectedCount;
+
 				R->EDI(pNextType);
 
 				GET_STACK(int, returnAddress, STACK_OFFSET(0x14, 0x0))
@@ -860,7 +949,12 @@ DEFINE_HOOK(0x4C9D6E, FactoryClass_QueueProduction_CheckBuildable, 0x8)
 
 				return 0;
 			}
+
+			pThis->QueuedObjects.Items[expectedCount] = pNextType;
 		}
+		while (expectedCount > checkIndex++);
+
+		pThis->QueuedObjects.Count = 0;
 	}
 
 	return CannotBuild;

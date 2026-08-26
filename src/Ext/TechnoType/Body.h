@@ -310,7 +310,8 @@ public:
 	DWORD Cameo_RequiredHouses;
 	bool IsMetTheEssentialConditions; // Not read from ini
 	bool IsGreyCameoForCurrentPlayer; // Not read from ini
-	bool IsGreyCameoAbandonedProduct; // Not read from ini
+	bool CanBuildNowCheck; // Not read from ini
+	int CanBuildNowCount; // Not read from ini
 	Valueable<CSFText> UIDescription_Unbuildable;
 
 	CustomPalette CameoPal;
@@ -874,7 +875,8 @@ public:
 		, Cameo_RequiredHouses { 0xFFFFFFFF }
 		, IsMetTheEssentialConditions { false }
 		, IsGreyCameoForCurrentPlayer { false }
-		, IsGreyCameoAbandonedProduct { true }
+		, CanBuildNowCheck { false }
+		, CanBuildNowCount { 0 }
 		, UIDescription_Unbuildable {}
 
 		, CameoPal {}
