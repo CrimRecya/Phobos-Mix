@@ -1,4 +1,8 @@
 #pragma once
+// ============================================================================
+// DISABLED SAMPLE - kept for reference only.
+// ============================================================================
+#if 0
 
 class BSurface;
 
@@ -8,3 +12,5 @@ namespace Mutation
 	// unit CameoPCX surfaces (E1, E2, APOC, MAMM, COMA).
 	BSurface* GetTestCameoSurface(int iconIndex);
 }
+
+#endif

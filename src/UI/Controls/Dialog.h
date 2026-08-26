@@ -19,7 +19,7 @@ namespace UIExt
 
 		Dialog& SetTitle(std::wstring title);
 		Dialog& SetCloseAction(std::function<void()> action);
-		bool IsDialog() const override { return true; }
+		UIComponentType GetType() const override { return UIComponentType::Dialog; }
 
 		bool Draw(bool forced) override;
 

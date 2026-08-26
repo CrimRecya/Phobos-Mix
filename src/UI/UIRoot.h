@@ -43,6 +43,7 @@ namespace UIExt
 		bool IsBlockingTactical() const;
 		bool IsBlockingFullScreen() const;
 		bool IsBlockingAt(int x, int y) const;
+		bool IsComponentOpen(UIComponent* component) const;
 		bool HandleMouseWheel(int x, int y, bool down);
 		void DrawTooltips();
 

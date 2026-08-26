@@ -1,3 +1,7 @@
+// ============================================================================
+// DISABLED SAMPLE - kept for reference only.
+// ============================================================================
+#if 0
 #include "MutationSelectorDialog.h"
 
 #include "MutationArt.h"
@@ -195,3 +199,5 @@ namespace Mutation
 		return dialog;
 	}
 }
+
+#endif

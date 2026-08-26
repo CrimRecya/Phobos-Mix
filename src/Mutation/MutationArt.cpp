@@ -1,3 +1,7 @@
+// ============================================================================
+// DISABLED SAMPLE - kept for reference only.
+// ============================================================================
+#if 0
 #include "MutationArt.h"
 
 #include <TechnoTypeClass.h>
@@ -27,3 +31,5 @@ namespace Mutation
 		return pTypeExt->CameoPCX.GetSurface();
 	}
 }
+
+#endif

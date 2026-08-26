@@ -32,6 +32,8 @@ namespace UIExt
 
 		void BindText(const Observable<std::wstring>& observable);
 
+		UIComponentType GetType() const override { return UIComponentType::CheckBox; }
+
 		bool Draw(bool forced) override;
 		bool Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier) override;
 

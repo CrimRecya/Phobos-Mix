@@ -48,7 +48,8 @@ namespace UIExt
 			if (!component)
 				return;
 
-			if (component->IsButton())
+			if (component->GetType() == UIComponentType::Button
+				|| component->GetType() == UIComponentType::IconButton)
 			{
 				auto* button = static_cast<Button*>(component);
 
@@ -94,7 +95,7 @@ namespace UIExt
 					return result;
 			}
 
-			if (component->IsPageView()
+			if (component->GetType() == UIComponentType::PageView
 				&& x >= component->X && x < component->X + component->Width
 				&& y >= component->Y && y < component->Y + component->Height)
 			{
@@ -102,6 +103,23 @@ namespace UIExt
 			}
 
 			return nullptr;
+		}
+
+		bool ContainsComponent(const UIComponent* root, const UIComponent* target)
+		{
+			if (!root)
+				return false;
+
+			if (root == target)
+				return true;
+
+			for (auto& child : root->GetChildren())
+			{
+				if (child && ContainsComponent(child.get(), target))
+					return true;
+			}
+
+			return false;
 		}
 	}
 	UIRoot& UIRoot::Instance()
@@ -271,6 +289,20 @@ namespace UIExt
 			default:
 				break;
 			}
+		}
+
+		return false;
+	}
+
+	bool UIRoot::IsComponentOpen(UIComponent* component) const
+	{
+		if (!component)
+			return false;
+
+		for (const auto& screen : this->Screens_)
+		{
+			if (ContainsComponent(screen.Root.get(), component))
+				return true;
 		}
 
 		return false;

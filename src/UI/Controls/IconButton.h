@@ -9,8 +9,8 @@ namespace UIExt
 	{
 	public:
 		IconButton();
-		IconButton(int x, int y, int width, int height, BSurface* icon = nullptr);
+		IconButton(int x, int y, int width, int height);
 
-		IconButton& SetIconSurface(BSurface* surface);
+		UIComponentType GetType() const override { return UIComponentType::IconButton; }
 	};
 }

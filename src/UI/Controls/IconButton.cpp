@@ -6,15 +6,7 @@ namespace UIExt
 		: Button()
 	{ }
 
-	IconButton::IconButton(int x, int y, int width, int height, BSurface* icon)
+	IconButton::IconButton(int x, int y, int width, int height)
 		: Button(x, y, width, height)
-	{
-		this->SetIcon(icon);
-	}
-
-	IconButton& IconButton::SetIconSurface(BSurface* surface)
-	{
-		this->SetIcon(surface);
-		return *this;
-	}
+	{ }
 }

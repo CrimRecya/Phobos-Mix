@@ -1,3 +1,7 @@
+// ============================================================================
+// DISABLED SAMPLE - kept for reference only.
+// ============================================================================
+#if 0
 #include "MutationDisplayerStrip.h"
 
 #include "MutationArt.h"
@@ -94,3 +98,4 @@ namespace Mutation
 		s_strip = nullptr;
 	}
 }
+#endif

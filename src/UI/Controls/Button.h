@@ -6,6 +6,8 @@
 #include <PCX.h>
 #include <Surface.h>
 
+#include <Utilities/Constructs.h>
+
 #include <cstddef>
 #include <functional>
 #include <string>
@@ -36,7 +38,7 @@ namespace UIExt
 		~Button() override;
 
 		Button& SetText(std::wstring text);
-		Button& SetIcon(BSurface* surface);
+		Button& SetIconFile(const char* filename);
 		Button& SetOnClick(std::function<void()> callback);
 		Button& SetOnRightClick(std::function<void()> callback);
 		Button& SetShortcut(DWORD key);
@@ -53,16 +55,15 @@ namespace UIExt
 
 		// MVVM helpers.
 		void BindText(const Observable<std::wstring>& observable);
-		void BindIcon(const Observable<BSurface*>& observable);
 		void BindCommand(Command& command);
 
 		bool Draw(bool forced) override;
 		bool Action(GadgetFlag flags, DWORD* pKey, KeyModifier modifier) override;
-		bool IsButton() const override { return true; }
+		UIComponentType GetType() const override { return UIComponentType::Button; }
 
 	protected:
 		std::wstring Text { };
-		BSurface* IconSurface { nullptr };
+		PhobosPCXFile IconFile { };
 		std::function<void()> OnClick_ { };
 		std::function<void()> OnRightClick_ { };
 		DWORD ShortcutKey { 0 };

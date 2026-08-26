@@ -1,4 +1,8 @@
 #pragma once
+// ============================================================================
+// DISABLED SAMPLE - kept for reference only.
+// ============================================================================
+#if 0
 
 #include <UI/Controls/Dialog.h>
 
@@ -19,3 +23,4 @@ namespace Mutation
 		static bool s_open;
 	};
 }
+#endif

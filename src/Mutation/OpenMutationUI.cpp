@@ -1,3 +1,7 @@
+// ============================================================================
+// DISABLED SAMPLE - kept for reference only.
+// ============================================================================
+#if 0
 #include "OpenMutationUI.h"
 
 #include "MutationDisplayerStrip.h"
@@ -43,3 +47,4 @@ namespace Mutation
 		MutationDisplayerStrip::Open(viewModel);
 	}
 }
+#endif

@@ -23,7 +23,7 @@ namespace UIExt
 		PageView& NextPage();
 		PageView& PrevPage();
 		PageView& SetOnPageChanged(PageChangedCallback callback);
-		bool IsPageView() const override { return true; }
+		UIComponentType GetType() const override { return UIComponentType::PageView; }
 
 		int GetPageCount() const;
 		int GetPageIndex() const;

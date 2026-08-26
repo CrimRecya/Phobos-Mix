@@ -19,6 +19,8 @@ namespace UIExt
 		void Refresh();
 		void RebuildItems(size_t count, const ItemBuilder& builder);
 
+		UIComponentType GetType() const override { return UIComponentType::ListGrid; }
+
 	protected:
 		int Columns { 1 };
 		int ItemWidth { 0 };

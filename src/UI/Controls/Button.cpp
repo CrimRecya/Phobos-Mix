@@ -23,9 +23,9 @@ namespace UIExt
 		return *this;
 	}
 
-	Button& Button::SetIcon(BSurface* surface)
+	Button& Button::SetIconFile(const char* filename)
 	{
-		this->IconSurface = surface;
+		this->IconFile = filename ? filename : "";
 		return *this;
 	}
 
@@ -86,14 +86,6 @@ namespace UIExt
 		});
 	}
 
-	void Button::BindIcon(const Observable<BSurface*>& observable)
-	{
-		this->BindValue(observable, [this](BSurface* const& value)
-		{
-			this->SetIcon(value);
-		});
-	}
-
 	void Button::BindCommand(Command& command)
 	{
 		if (this->BoundCommand_ && this->CommandToken_ != static_cast<size_t>(-1))
@@ -125,10 +117,10 @@ namespace UIExt
 		const auto bgColor = this->Disabled ? this->ColorDisabled : (this->Hovering ? this->ColorHover : this->ColorNormal);
 		DSurface::Composite->FillRect(&rect, bgColor);
 
-		if (this->IconSurface)
+		if (auto* surface = this->IconFile.GetSurface())
 		{
 			RectangleStruct iconRect { this->X, this->Y, this->Width, this->Height };
-			PCX::Instance.BlitToSurface(&iconRect, DSurface::Composite, this->IconSurface);
+			PCX::Instance.BlitToSurface(&iconRect, DSurface::Composite, surface);
 		}
 
 		if (!this->Text.empty())

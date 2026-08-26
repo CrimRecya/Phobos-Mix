@@ -34,9 +34,9 @@ namespace UIExt
 			return std::make_unique<UIExt::Button>(x, y, width, height, std::move(text));
 		}
 
-		static std::unique_ptr<IconButton> MakeIconButton(int x, int y, int width, int height, BSurface* icon = nullptr)
+		static std::unique_ptr<IconButton> MakeIconButton(int x, int y, int width, int height)
 		{
-			return std::make_unique<UIExt::IconButton>(x, y, width, height, icon);
+			return std::make_unique<UIExt::IconButton>(x, y, width, height);
 		}
 
 		static std::unique_ptr<CheckBox> MakeCheckBox(int x, int y, int width, int height, std::wstring text)

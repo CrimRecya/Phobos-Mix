@@ -21,6 +21,8 @@ namespace UIExt
 
 		void BindText(const Observable<std::wstring>& observable);
 
+		UIComponentType GetType() const override { return UIComponentType::Label; }
+
 		bool Draw(bool forced) override;
 
 	protected:

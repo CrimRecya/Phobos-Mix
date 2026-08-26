@@ -31,6 +31,21 @@ namespace UIExt
 		BottomRight
 	};
 
+	// Lightweight runtime type id, similar to YRpp's WhatAmI.
+	enum class UIComponentType
+	{
+		Generic = 0,
+		Panel,
+		Dialog,
+		Button,
+		IconButton,
+		CheckBox,
+		Label,
+		IconStrip,
+		ListGrid,
+		PageView
+	};
+
 	// Base class for all UI framework controls.
 	// Every control is a GadgetClass so it can be registered with GScreenClass.
 	class UIComponent : public GadgetClass
@@ -56,9 +71,7 @@ namespace UIExt
 		virtual void OnDraw() { }
 		virtual void OnEnter() { }
 		virtual void OnLeave() { }
-		virtual bool IsDialog() const { return false; }
-		virtual bool IsPageView() const { return false; }
-		virtual bool IsButton() const { return false; }
+		virtual UIComponentType GetType() const { return UIComponentType::Generic; }
 
 		// Public state.
 		UIComponent* Parent { nullptr };

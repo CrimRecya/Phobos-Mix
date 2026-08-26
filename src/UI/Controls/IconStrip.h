@@ -21,6 +21,8 @@ namespace UIExt
 		void Refresh();
 		void RebuildItems(size_t count, const ItemBuilder& builder);
 
+		UIComponentType GetType() const override { return UIComponentType::IconStrip; }
+
 	protected:
 		int ItemWidth { 60 };
 		int ItemHeight { 48 };
