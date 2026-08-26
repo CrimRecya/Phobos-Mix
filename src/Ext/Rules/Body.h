@@ -691,6 +691,7 @@ public:
 		Valueable<bool> KeepAlive_Aircraft;
 		Valueable<bool> KeepAlive_Buildings;
 		Valueable<bool> KeepAlive_Defenses;
+		Valueable<bool> AutoTarget_InsignificantWhenMindControlled;
 
 		ExtData(RulesClass* OwnerObject) : Extension<RulesClass>(OwnerObject)
 			, Storage_TiberiumIndex { -1 }
@@ -1313,6 +1314,8 @@ public:
 			, KeepAlive_Aircraft { false }
 			, KeepAlive_Buildings { true }
 			, KeepAlive_Defenses { true }
+
+			, AutoTarget_InsignificantWhenMindControlled { true }
 		{ }
 
 		virtual ~ExtData() = default;
