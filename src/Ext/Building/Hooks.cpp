@@ -867,7 +867,7 @@ DEFINE_HOOK(0x4C9D6E, FactoryClass_QueueProduction_CheckBuildable, 0x8)
 	enum { CannotBuild = 0x4C9D64 };
 
 	GET(FactoryClass* const, pThis, ESI);
-	GET(TechnoTypeClass* const, pType, EDI);
+	GET(TechnoTypeClass*, pType, EDI);
 	GET_STACK(HouseClass* const, pHouse, STACK_OFFSET(0x14, 0x8));
 
 	if (!pHouse->IsControlledByHuman() || !TechnoTypeExt::Fetch(pType)->Cameo_AlwaysExist.Get(RulesExt::Global()->Cameo_AlwaysExist))
@@ -924,35 +924,34 @@ DEFINE_HOOK(0x4C9D6E, FactoryClass_QueueProduction_CheckBuildable, 0x8)
 	}
 	else if (pThis->QueuedObjects.Count > 0)
 	{
-		const int expectedCount = pThis->QueuedObjects.Count - 1;
+		const int maxIndex = pThis->QueuedObjects.Count - 1;
 		int checkIndex = 0;
 
 		do
 		{
-			auto pNextType = pThis->QueuedObjects.Items[0];
+			const auto pNextType = pThis->QueuedObjects.Items[0];
 
-			for (int i = 0; i < expectedCount; ++i)
+			for (int i = 0; i < maxIndex; ++i)
 				pThis->QueuedObjects.Items[i] = pThis->QueuedObjects.Items[i + 1];
 
-			if (buildCheck(pNextType))
-			{
-				pThis->QueuedObjects.Count = expectedCount;
+			pThis->QueuedObjects.Items[maxIndex] = pType;
+			pType = pNextType;
 
-				R->EDI(pNextType);
+			if (buildCheck(pType))
+			{
+				R->EDI(pType);
 
 				GET_STACK(int, returnAddress, STACK_OFFSET(0x14, 0x0))
 				if (returnAddress == 0x4FA5D6)
 				{
-					R->Stack(STACK_OFFSET(0x48, 0x4), pNextType->WhatAmI());
-					R->Stack(STACK_OFFSET(0x48, 0x8), pNextType->GetArrayIndex());
+					R->Stack(STACK_OFFSET(0x48, 0x4), pType->WhatAmI());
+					R->Stack(STACK_OFFSET(0x48, 0x8), pType->GetArrayIndex());
 				}
 
 				return 0;
 			}
-
-			pThis->QueuedObjects.Items[expectedCount] = pNextType;
 		}
-		while (expectedCount > checkIndex++);
+		while (maxIndex > checkIndex++);
 
 		pThis->QueuedObjects.Count = 0;
 	}
