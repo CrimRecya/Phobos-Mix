@@ -19,7 +19,7 @@
 #define VERSION_PATCH 0
 
 // Indicates Merge-related bugfixes only.
-#define VERSION_EX_PATCH 0
+#define VERSION_EX_PATCH 1
 
 // The current pre-release being prepared, spelled out in full rather than as a number, so that
 // it can be anything semantic versioning allows - "alpha5", "beta1", "rc3", etc. Its presence is

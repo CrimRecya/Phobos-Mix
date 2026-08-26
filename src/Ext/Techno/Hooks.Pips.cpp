@@ -167,7 +167,7 @@ DEFINE_HOOK(0x6F5EE3, TechnoClass_DrawExtras_DrawAboveHealth, 0x9)
 		if (absType == AbstractType::Building)
 		{
 			const auto pBuilding = static_cast<BuildingClass*>(pThis);
-			const auto basePosition = TechnoExt::GetBuildingSelectBracketPosition(pBuilding, BuildingSelectBracketPosition::Top);
+			const auto basePosition = TechnoExt::GetBuildingSelectBracketPosition(pBuilding, pBuilding->Type, BuildingSelectBracketPosition::Top);
 
 			TechnoExt::DrawTemporalProgress(pThis, pBounds, basePosition, true, false);
 			TechnoExt::DrawIronCurtainProgress(pThis, pBounds, basePosition, true, false);
@@ -181,7 +181,7 @@ DEFINE_HOOK(0x6F5EE3, TechnoClass_DrawExtras_DrawAboveHealth, 0x9)
 		else
 		{
 			const bool isInfantry = absType == AbstractType::Infantry;
-			const auto basePosition = TechnoExt::GetFootSelectBracketPosition(pThis, Anchor(HorizontalPosition::Left, VerticalPosition::Top));
+			const auto basePosition = TechnoExt::GetFootSelectBracketPosition(pThis, Anchor(HorizontalPosition::Left, VerticalPosition::Top), isInfantry);
 
 			TechnoExt::DrawTemporalProgress(pThis, pBounds, basePosition, false, isInfantry);
 			TechnoExt::DrawIronCurtainProgress(pThis, pBounds, basePosition, false, isInfantry);
