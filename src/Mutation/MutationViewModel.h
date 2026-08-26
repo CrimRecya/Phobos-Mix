@@ -1,8 +1,7 @@
 #pragma once
 // ============================================================================
-// DISABLED SAMPLE - kept for reference only.
+// SAMPLE - kept as a runnable UI test.
 // ============================================================================
-#if 0
 
 #include <UI/Mvvm.h>
 
@@ -45,4 +44,3 @@ namespace Mutation
 		std::function<void()> CloseCallback_ { };
 	};
 }
-#endif

@@ -1,8 +1,7 @@
 #pragma once
 // ============================================================================
-// DISABLED SAMPLE - kept for reference only.
+// SAMPLE - kept as a runnable UI test.
 // ============================================================================
-#if 0
 
 #include <UI/Controls/IconStrip.h>
 
@@ -22,4 +21,3 @@ namespace Mutation
 		static UIExt::IconStrip* s_strip;
 	};
 }
-#endif

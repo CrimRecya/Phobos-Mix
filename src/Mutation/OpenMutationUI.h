@@ -1,8 +1,7 @@
 #pragma once
 // ============================================================================
-// DISABLED SAMPLE - kept for reference only.
+// SAMPLE - kept as a runnable UI test.
 // ============================================================================
-#if 0
 
 #include <Commands/Commands.h>
 #include <GameStrings.h>
@@ -19,4 +18,3 @@ namespace Mutation
 		virtual void Execute(WWKey eInput) const override;
 	};
 }
-#endif

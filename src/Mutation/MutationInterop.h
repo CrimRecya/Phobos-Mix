@@ -1,8 +1,7 @@
 #pragma once
 // ============================================================================
-// DISABLED SAMPLE - kept for reference only.
+// SAMPLE - kept as a runnable UI test.
 // ============================================================================
-#if 0
 
 #include <string>
 #include <vector>
@@ -79,4 +78,3 @@ namespace Mutation
 		static std::vector<int> s_fallbackActive;
 	};
 }
-#endif

@@ -1,7 +1,6 @@
 // ============================================================================
-// DISABLED SAMPLE - kept for reference only.
+// SAMPLE - kept as a runnable UI test.
 // ============================================================================
-#if 0
 #include "MutationDisplayerStrip.h"
 
 #include "MutationArt.h"
@@ -68,10 +67,10 @@ namespace Mutation
 			if (it == mutations.end())
 				continue;
 
-			auto icon = UIExt::Builder::MakeIconButton(0, 0, 60, 60, nullptr);
+			auto icon = UIExt::Builder::MakeIconButton(0, 0, 60, 60);
 
-			if (auto* cameo = GetTestCameoSurface(it->IconIndex))
-				icon->SetIcon(cameo);
+			if (const char* cameoFile = GetTestCameoFile(it->IconIndex))
+				icon->SetIconFile(cameoFile);
 			else
 				icon->SetText(std::wstring(1, it->Name.empty() ? L'?' : it->Name[0]));
 
@@ -98,4 +97,3 @@ namespace Mutation
 		s_strip = nullptr;
 	}
 }
-#endif

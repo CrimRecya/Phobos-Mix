@@ -1,7 +1,6 @@
 // ============================================================================
-// DISABLED SAMPLE - kept for reference only.
+// SAMPLE - kept as a runnable UI test.
 // ============================================================================
-#if 0
 #include "MutationArt.h"
 
 #include <TechnoTypeClass.h>
@@ -15,7 +14,7 @@ namespace Mutation
 		const char* TestCameoNames[] = { "E1", "E2", "APOC", "MAMM", "COMA" };
 	}
 
-	BSurface* GetTestCameoSurface(int iconIndex)
+	const char* GetTestCameoFile(int iconIndex)
 	{
 		if (iconIndex < 0)
 			iconIndex = 0;
@@ -28,8 +27,7 @@ namespace Mutation
 		if (!pTypeExt)
 			return nullptr;
 
-		return pTypeExt->CameoPCX.GetSurface();
+		const char* filename = pTypeExt->CameoPCX.GetFilename();
+		return (filename && *filename) ? filename : nullptr;
 	}
 }
-
-#endif

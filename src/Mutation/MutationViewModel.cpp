@@ -1,7 +1,6 @@
 // ============================================================================
-// DISABLED SAMPLE - kept for reference only.
+// SAMPLE - kept as a runnable UI test.
 // ============================================================================
-#if 0
 #include "MutationViewModel.h"
 
 #include "MutationDisplayerStrip.h"
@@ -128,4 +127,3 @@ namespace Mutation
 		this->ConfirmText.Set(std::wstring(buffer));
 	}
 }
-#endif

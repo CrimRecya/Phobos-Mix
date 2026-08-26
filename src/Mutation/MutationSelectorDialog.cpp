@@ -1,7 +1,6 @@
 // ============================================================================
-// DISABLED SAMPLE - kept for reference only.
+// SAMPLE - kept as a runnable UI test.
 // ============================================================================
-#if 0
 #include "MutationSelectorDialog.h"
 
 #include "MutationArt.h"
@@ -80,9 +79,11 @@ namespace Mutation
 			auto itemPanel = UIExt::Builder::MakePanel(0, 0, 190, 86);
 			itemPanel->SetBackColor({ 0, 0, 0 }, 0).SetBorder(true, COLOR_WHITE);
 
-			BSurface* cameo = Mutation::GetTestCameoSurface(info.IconIndex);
-			auto icon = UIExt::Builder::MakeIconButton(8, 12, 60, 60, cameo);
-			if (!cameo)
+			const char* cameoFile = Mutation::GetTestCameoFile(info.IconIndex);
+			auto icon = UIExt::Builder::MakeIconButton(8, 12, 60, 60);
+			if (cameoFile && *cameoFile)
+				icon->SetIconFile(cameoFile);
+			else
 				icon->SetText(std::wstring(1, info.Name.empty() ? L'?' : info.Name[0]));
 
 			auto checkBox = UIExt::Builder::MakeCheckBox(74, 6, 108, 20, info.Name);
@@ -199,5 +200,3 @@ namespace Mutation
 		return dialog;
 	}
 }
-
-#endif
