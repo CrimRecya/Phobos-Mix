@@ -23,11 +23,8 @@ namespace Mutation
 			return;
 		}
 
-		auto strip = UIExt::Builder::MakeIconStrip(
-			DSurface::ViewBounds.Width - 108,
-			(DSurface::ViewBounds.Height - 48) / 2,
-			60, 48, 4);
-		strip->SetAnchor(UIExt::Anchor::Right, -48, 0);
+		auto strip = UIExt::Builder::MakeIconStrip(DSurface::ViewBounds.Width - 80, 40, 60, 60, 4);
+		strip->SetAnchor(UIExt::Anchor::Right);
 		s_strip = strip.get();
 		UIExt::UIRoot::Instance().Open(std::move(strip), UIExt::ModalLevel::None);
 
@@ -51,21 +48,6 @@ namespace Mutation
 		if (!s_strip)
 			return;
 
-		// Fast path: only rebuild when the selected set or the mutation list
-		// actually changes. This mirrors DP's RefreshActiveStrip() behavior.
-		static std::vector<int> s_lastSelected;
-		static size_t s_lastMutationsRevision = static_cast<size_t>(-1);
-
-		const auto& selected = viewModel.SelectedIDs.Get();
-		const auto& mutations = viewModel.Mutations.GetItems();
-		const auto mutationsRevision = viewModel.Mutations.GetRevision();
-
-		if (s_lastSelected == selected && s_lastMutationsRevision == mutationsRevision)
-			return;
-
-		s_lastSelected = selected;
-		s_lastMutationsRevision = mutationsRevision;
-
 		auto& children = s_strip->GetChildren();
 
 		while (!children.empty())
@@ -73,6 +55,9 @@ namespace Mutation
 			auto* child = children.front().get();
 			UIExt::UIRoot::Instance().RemoveRootChild(s_strip, child);
 		}
+
+		const auto& mutations = viewModel.Mutations.GetItems();
+		const auto& selected = viewModel.SelectedIDs.Get();
 
 		for (const auto id : selected)
 		{
@@ -82,7 +67,7 @@ namespace Mutation
 			if (it == mutations.end())
 				continue;
 
-			auto icon = UIExt::Builder::MakeIconButton(0, 0, 60, 48);
+			auto icon = UIExt::Builder::MakeIconButton(0, 0, 60, 60);
 
 			if (const char* cameoFile = GetTestCameoFile(it->IconIndex))
 				icon->SetIconFile(cameoFile);

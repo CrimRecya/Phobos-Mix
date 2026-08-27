@@ -1,20 +1,12 @@
-#include "Body.h"
+﻿#include "Body.h"
 
 #include <VeinholeMonsterClass.h>
 
 #include <Ext/House/Body.h>
 
-#include <Mutation/MutationDisplayerStrip.h>
-#include <Mutation/MutationViewModel.h>
-#include <Mutation/OpenMutationUI.h>
-
 std::unique_ptr<ScenarioExt::ExtData> ScenarioExt::Data = nullptr;
 
 bool ScenarioExt::CellParsed = false;
-
-// TEMP DEBUG: set when a new scenario is loaded, consumed on the first
-// LogicClass_Update_BeforeAll to create the DP-like start button.
-static bool s_mutationStartPending = false;
 
 void ScenarioExt::ExtData::SetVariableToByID(bool bIsGlobal, int nIndex, char bState)
 {
@@ -299,10 +291,6 @@ DEFINE_HOOK(0x68AD2F, ScenarioClass_LoadFromINI, 0x5)
 	GET(CCINIClass*, pINI, EDI);
 
 	ScenarioExt::LoadFromINIFile(pItem, pINI);
-
-	// TEMP DEBUG: new scenario loaded -> create the start button on the next
-	// LogicClass_Update_BeforeAll (same gating as DP's NewGameInitOnce).
-	s_mutationStartPending = true;
 	return 0;
 }
 
@@ -312,20 +300,6 @@ DEFINE_HOOK(0x55B4E1, LogicClass_Update_BeforeAll, 0x5)
 
 	ScenarioExt::Global()->UpdateAutoDeathObjectsInLimbo();
 	ScenarioExt::Global()->UpdateTransportReloaders();
-
-	// TEMP DEBUG: create the same right-side start button as DP's
-	// MutatorSelector.ShowTriggerIcon(), but only after a new scenario has
-	// actually been loaded (not on the very first global frame).
-	if (s_mutationStartPending)
-	{
-		s_mutationStartPending = false;
-		Mutation::OpenStartButton();
-	}
-
-	// TEMP DEBUG: per-frame refresh similar to DP's
-	// MutatorSelector.RefreshActiveStrip().
-	auto& viewModel = Mutation::MutationViewModel::Instance();
-	Mutation::MutationDisplayerStrip::Refresh(viewModel);
 
 	return 0;
 }
