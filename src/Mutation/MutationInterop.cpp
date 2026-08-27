@@ -3,43 +3,15 @@
 // ============================================================================
 #include "MutationInterop.h"
 
+#include "MutationArt.h"
 #include "MutationDisplayerStrip.h"
 #include "MutationViewModel.h"
 
 #include <algorithm>
+#include <cstdio>
 
 namespace Mutation
 {
-	namespace
-	{
-		constexpr int FallbackCount = 12;
-
-		const wchar_t* FallbackNames[FallbackCount] =
-		{
-			L"Black Death", L"Boom Bots", L"Void Rifts", L"Heroes From The Storm",
-			L"Blizzard", L"Mutator Libra", L"Mutator Assn", L"Mutator Test",
-			L"Speed Demon", L"Tank Rush", L"Air Superiority", L"Economy Boom"
-		};
-
-		const wchar_t* FallbackDescriptions[FallbackCount] =
-		{
-			L"A deadly plague spreads across the battlefield.",
-			L"Small robotic bombs attach to enemy vehicles.",
-			L"Random void rifts open and tear units apart.",
-			L"Heroic units periodically appear on your side.",
-			L"A howling blizzard slows enemy forces.",
-			L"Libra-themed mutation changes the flow of battle.",
-			L"Assassin-themed mutation changes targeting logic.",
-			L"Development test mutation for the UI framework.",
-			L"All friendly vehicles move significantly faster.",
-			L"Friendly tanks receive extra armor and firepower.",
-			L"Air units are produced faster and are stronger.",
-			L"Resource income is increased by a large amount."
-		};
-
-		int FallbackScores[FallbackCount] = { 10, 20, 15, 25, 10, 15, 15, 5, 10, 15, 20, 20 };
-	}
-
 	MutationInterop::GetAvailableCountFn MutationInterop::s_getAvailableCount = nullptr;
 	MutationInterop::GetAvailableNameFn MutationInterop::s_getAvailableName = nullptr;
 	MutationInterop::GetAvailableDescriptionFn MutationInterop::s_getAvailableDescription = nullptr;
@@ -104,7 +76,7 @@ namespace Mutation
 
 	std::vector<MutationInfo> MutationInterop::GetAvailableMutations()
 	{
-		const int count = IsProviderAvailable() ? s_getAvailableCount() : FallbackCount;
+		const int count = IsProviderAvailable() ? s_getAvailableCount() : Mutation::GetCustomPcxCount();
 		std::vector<MutationInfo> result;
 		result.reserve(count < 0 ? 0 : count);
 
@@ -112,10 +84,24 @@ namespace Mutation
 		{
 			MutationInfo info;
 			info.ID = i;
-			info.Name = IsProviderAvailable() ? s_getAvailableName(i) : FallbackNames[i];
-			info.Description = IsProviderAvailable() ? s_getAvailableDescription(i) : FallbackDescriptions[i];
-			info.Score = IsProviderAvailable() ? s_getAvailableScore(i) : FallbackScores[i];
-			info.IconIndex = IsProviderAvailable() ? s_getAvailableIcon(i) : (i % 12);
+
+			if (IsProviderAvailable())
+			{
+				info.Name = s_getAvailableName(i);
+				info.Description = s_getAvailableDescription(i);
+				info.Score = s_getAvailableScore(i);
+				info.IconIndex = s_getAvailableIcon(i);
+			}
+			else
+			{
+				wchar_t buffer[0x40];
+				swprintf_s(buffer, L"Mutator %d", i + 1);
+				info.Name = buffer;
+				info.Description = L"Custom PCX test";
+				info.Score = 10;
+				info.IconIndex = i;
+			}
+
 			result.push_back(std::move(info));
 		}
 

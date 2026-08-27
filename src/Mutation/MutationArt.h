@@ -5,7 +5,10 @@
 
 namespace Mutation
 {
-	// Test-only art helper: maps a mutation IconIndex to a PCX filename
-	// based on a few well-known unit cameo PCX files (E1, E2, APOC, MAMM, COMA).
+	// TEMP DEBUG: maps a mutation IconIndex to one of the mod's custom
+	// mutator PCX filenames (BlackDeath.pcx, Blizzard.pcx, etc).
 	const char* GetTestCameoFile(int iconIndex);
+
+	int GetCustomPcxCount();
+	const char* GetCustomPcxFile(int index);
 }

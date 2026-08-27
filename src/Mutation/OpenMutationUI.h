@@ -17,4 +17,8 @@ namespace Mutation
 		virtual const wchar_t* GetUIDescription() const override;
 		virtual void Execute(WWKey eInput) const override;
 	};
+
+	// TEMP DEBUG: creates the same kind of start button DP uses
+	// (right side, MutStart.pcx) and opens it at game start.
+	void OpenStartButton();
 }

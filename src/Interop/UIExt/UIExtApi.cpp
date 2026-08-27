@@ -614,15 +614,11 @@ DEFINE_EXPORT(HRESULT, UIExt_Button_SetIconFromFile, void* pButton, const char* 
 
 	if (auto* button = AsButton(pButton))
 	{
-		if (PCX::Instance.LoadFile(filename))
-		{
-			// Keep the filename, not the BSurface*, so the icon survives PCX
-			// cache updates and matches the Phobos PCX usage pattern.
-			button->SetIconFile(filename);
-			return S_OK;
-		}
-
-		return S_FALSE;
+		// Let SetIconFile do the actual load/cache lookup. Calling
+		// PCX::Instance.LoadFile() first here caused crashes with some PCX
+		// files when the button was later drawn.
+		button->SetIconFile(filename);
+		return PCX::Instance.GetSurface(filename) ? S_OK : S_FALSE;
 	}
 
 	return E_INVALIDARG;
