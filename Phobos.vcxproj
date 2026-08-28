@@ -271,6 +271,7 @@
     <ClCompile Include="src\Interop\TechnoExt.cpp" />
     <ClCompile Include="src\Interop\ScenarioExt.cpp" />
     <ClCompile Include="src\Interop\Version.cpp" />
+    <ClCompile Include="src\Interop\UIExt\UIExtApi.cpp" />
     <!-- src\Locomotion -->
     <ClCompile Include="src\Locomotion\AdvancedDriveLocomotionClass.cpp" />
     <ClCompile Include="src\Locomotion\AStar\AStarClass.cpp" />
@@ -306,6 +307,28 @@
     <ClCompile Include="src\Misc\SyncLogging.cpp" />
     <ClCompile Include="src\Misc\TacticalButtons.cpp" />
     <ClCompile Include="src\Misc\TextInput.cpp" />
+    <!-- src\UI -->
+    <ClCompile Include="src\UI\Mvvm.cpp" />
+    <ClCompile Include="src\UI\UIComponent.cpp" />
+    <ClCompile Include="src\UI\UIRoot.cpp" />
+    <ClCompile Include="src\UI\Layout.cpp" />
+    <ClCompile Include="src\UI\Controls\Panel.cpp" />
+    <ClCompile Include="src\UI\Controls\Dialog.cpp" />
+    <ClCompile Include="src\UI\Controls\Button.cpp" />
+    <ClCompile Include="src\UI\Controls\IconButton.cpp" />
+    <ClCompile Include="src\UI\Controls\CheckBox.cpp" />
+    <ClCompile Include="src\UI\Controls\Label.cpp" />
+    <ClCompile Include="src\UI\Controls\Tooltip.cpp" />
+    <ClCompile Include="src\UI\Controls\PageView.cpp" />
+    <ClCompile Include="src\UI\Controls\IconStrip.cpp" />
+    <ClCompile Include="src\UI\Controls\ListGrid.cpp" />
+    <!-- src\UI\Example -->
+    <ClCompile Include="src\UI\Example\MutationArt.cpp" />
+    <ClCompile Include="src\UI\Example\MutationInterop.cpp" />
+    <ClCompile Include="src\UI\Example\MutationViewModel.cpp" />
+    <ClCompile Include="src\UI\Example\MutationSelectorDialog.cpp" />
+    <ClCompile Include="src\UI\Example\MutationDisplayerStrip.cpp" />
+    <ClCompile Include="src\UI\Example\OpenMutationUI.cpp" />
     <!-- src\New -->
     <!-- src\New\Entity -->
     <ClCompile Include="src\New\Entity\Ares\RadarJammerClass.cpp" />
@@ -477,6 +500,7 @@
     <ClInclude Include="src\Interop\TechnoExt.h" />
     <ClInclude Include="src\Interop\ScenarioExt.h" />
     <ClInclude Include="src\Interop\Version.h" />
+    <ClInclude Include="src\Interop\UIExt\UIExtApi.h" />
     <!-- src\Locomotion -->
     <ClInclude Include="src\Locomotion\AdvancedDriveLocomotionClass.h" />
     <ClInclude Include="src\Locomotion\AStar\AStarClass.h" />
@@ -492,6 +516,29 @@
     <ClInclude Include="src\Misc\PhobosToolTip.h" />
     <ClInclude Include="src\Misc\SyncLogging.h" />
     <ClInclude Include="src\Misc\TacticalButtons.h" />
+    <!-- src\UI -->
+    <ClInclude Include="src\UI\Mvvm.h" />
+    <ClInclude Include="src\UI\UIComponent.h" />
+    <ClInclude Include="src\UI\UIRoot.h" />
+    <ClInclude Include="src\UI\Layout.h" />
+    <ClInclude Include="src\UI\Builder.h" />
+    <ClInclude Include="src\UI\Controls\Panel.h" />
+    <ClInclude Include="src\UI\Controls\Dialog.h" />
+    <ClInclude Include="src\UI\Controls\Button.h" />
+    <ClInclude Include="src\UI\Controls\IconButton.h" />
+    <ClInclude Include="src\UI\Controls\CheckBox.h" />
+    <ClInclude Include="src\UI\Controls\Label.h" />
+    <ClInclude Include="src\UI\Controls\Tooltip.h" />
+    <ClInclude Include="src\UI\Controls\PageView.h" />
+    <ClInclude Include="src\UI\Controls\IconStrip.h" />
+    <ClInclude Include="src\UI\Controls\ListGrid.h" />
+    <!-- src\UI\Example -->
+    <ClInclude Include="src\UI\Example\MutationArt.h" />
+    <ClInclude Include="src\UI\Example\MutationInterop.h" />
+    <ClInclude Include="src\UI\Example\MutationViewModel.h" />
+    <ClInclude Include="src\UI\Example\MutationSelectorDialog.h" />
+    <ClInclude Include="src\UI\Example\MutationDisplayerStrip.h" />
+    <ClInclude Include="src\UI\Example\OpenMutationUI.h" />
     <!-- src\New -->
     <!-- src\New\Entity -->
     <ClInclude Include="src\New\Entity\Ares\RadarJammerClass.h" />
