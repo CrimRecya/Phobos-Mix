@@ -82,6 +82,12 @@ namespace UIExt
 		std::wstring TooltipText { };
 		int TooltipPadding { 5 };
 		int TooltipLineSpacing { 1 };
+		// When true, tooltip layout is handed to the parent; the first ancestor
+		// that does not delegate it draws the tooltip at its own edge.
+		bool TooltipDelegated { false };
+		// When > 0, tooltip title/text is word-wrapped to this width in pixels
+		// (0 = disabled; existing \n breaks are kept as hard breaks).
+		int TooltipMaxWidth { 0 };
 		Anchor AnchorPoint { Anchor::None };
 		int AnchorOffsetX { 0 };
 		int AnchorOffsetY { 0 };
@@ -147,6 +153,16 @@ namespace UIExt
 		void SetTooltipLineSpacing(int spacing)
 		{
 			this->TooltipLineSpacing = spacing;
+		}
+
+		void SetTooltipDelegated(bool delegated)
+		{
+			this->TooltipDelegated = delegated;
+		}
+
+		void SetTooltipMaxWidth(int width)
+		{
+			this->TooltipMaxWidth = width;
 		}
 
 		void SetAnchor(Anchor anchor)

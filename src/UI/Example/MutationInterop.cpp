@@ -1,4 +1,8 @@
 // ============================================================================
+// DISABLED EXAMPLE - kept for reference only.
+// ============================================================================
+#if 0
+// ============================================================================
 // SAMPLE - kept as a runnable UI test.
 // ============================================================================
 #include "MutationInterop.h"
@@ -184,3 +188,4 @@ namespace Mutation
 		MutationDisplayerStrip::Refresh(MutationViewModel::Instance());
 	}
 }
+#endif

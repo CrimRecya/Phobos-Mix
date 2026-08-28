@@ -451,6 +451,24 @@ DEFINE_EXPORT(HRESULT, UIExt_SetTooltip,
 	return S_OK;
 }
 
+DEFINE_EXPORT(HRESULT, UIExt_SetTooltipDelegated, void* pControl, int delegated)
+{
+	if (!pControl)
+		return E_POINTER;
+
+	static_cast<UIComponent*>(pControl)->SetTooltipDelegated(delegated != 0);
+	return S_OK;
+}
+
+DEFINE_EXPORT(HRESULT, UIExt_SetTooltipMaxWidth, void* pControl, int width)
+{
+	if (!pControl)
+		return E_POINTER;
+
+	static_cast<UIComponent*>(pControl)->SetTooltipMaxWidth(width);
+	return S_OK;
+}
+
 DEFINE_EXPORT(HRESULT, UIExt_SetBackColor,
 	void* pControl, int r, int g, int b, int opacity)
 {

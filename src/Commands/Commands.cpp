@@ -37,7 +37,7 @@
 #include <Ext/Sidebar/SelectedButton/SelectedInfoClass.h>
 #include <Misc/MessageColumn.h>
 #include <UI/UIRoot.h>
-#include <Mutation/OpenMutationUI.h>
+// #include <UI/Example/OpenMutationUI.h>
 
 #pragma region HotkeyCommand
 
@@ -51,7 +51,7 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<ToggleDesignatorRangeCommandClass>();
 	MakeCommand<SelectedInfoCommandClass>();
 	MakeCommand<SelectedExpandCommandClass>();
-	MakeCommand<Mutation::OpenMutationUICommandClass>();
+	// MakeCommand<Mutation::OpenMutationUICommandClass>();
 	MakeCommand<HerosInfoCommandClass>();
 	MakeCommand<AssignRallyPointCommandClass>();
 	MakeCommand<AssignSecondaryRallyPointCommandClass>();

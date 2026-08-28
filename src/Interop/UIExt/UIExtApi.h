@@ -128,6 +128,15 @@ DEFINE_EXPORT(HRESULT, UIExt_SetAnchor,
 DEFINE_EXPORT(HRESULT, UIExt_SetTooltip,
 	void* pControl, const wchar_t* title, const wchar_t* text);
 
+/// When nonzero, the control hands tooltip layout to its parent (multi-level:
+/// the first ancestor that does not delegate it manages the placement, drawing
+/// the tooltip at its own edge closest to this control).
+DEFINE_EXPORT(HRESULT, UIExt_SetTooltipDelegated, void* pControl, int delegated);
+
+/// Sets the maximum tooltip text width in pixels for automatic word-wrapping
+/// (0 disables wrapping; existing \n breaks are kept as hard breaks).
+DEFINE_EXPORT(HRESULT, UIExt_SetTooltipMaxWidth, void* pControl, int width);
+
 // Panel / Dialog background.
 DEFINE_EXPORT(HRESULT, UIExt_SetBackColor,
 	void* pControl, int r, int g, int b, int opacity);

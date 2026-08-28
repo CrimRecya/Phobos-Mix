@@ -43,7 +43,7 @@ void OpenSimpleDialog()
 }
 ```
 
-推荐结构（参照 `src/Mutation/`）：**ViewModel 持有 `Observable`/`Command`，工厂函数 `Create(ViewModel&)` 负责拼控件树，调用方 `Open`**。数据与视图分离，跟样例一样。
+推荐结构（参照 `src/UI/Example/`）：**ViewModel 持有 `Observable`/`Command`，工厂函数 `Create(ViewModel&)` 负责拼控件树，调用方 `Open`**。数据与视图分离，跟样例一样。
 
 ## 3. 核心功能
 
@@ -71,7 +71,7 @@ UIRoot::Instance().CloseAll();
 
 控件级 `Set*` 为流式 API（返回自身引用，可链式调用）；基类 `UIComponent` 的通用 setter 返回 `void`，不支持链式。坐标一律是**相对父控件**的（根组件相对屏幕）。
 
-**通用（`UIComponent`）**：`SetPos / SetSize / SetVisible / SetEnabled / SetTooltip(title, text) / SetTooltipPadding / SetTooltipLineSpacing / SetAnchor / SetAnchorOffset / SetRelativePosition / AddChild`，事件 `SetOnMouseEnter / SetOnMouseLeave / SetOnAction(flags, pKey, modifier)`。
+**通用（`UIComponent`）**：`SetPos / SetSize / SetVisible / SetEnabled / SetTooltip(title, text) / SetTooltipPadding / SetTooltipLineSpacing / SetTooltipDelegated(bool) / SetAnchor / SetAnchorOffset / SetRelativePosition / AddChild`，事件 `SetOnMouseEnter / SetOnMouseLeave / SetOnAction(flags, pKey, modifier)`。
 
 | 控件 | 关键 API |
 |---|---|
@@ -86,6 +86,10 @@ UIRoot::Instance().CloseAll();
 | `IconStrip` | `SetItemSize / SetSpacing`；高度随条目数自动增长 |
 
 Tooltip 只要 `SetTooltip(标题, 正文)` 即可，支持 `\n`，悬停自动显示，无需额外代码。
+
+**Tooltip 布局上交**：默认 tooltip 挂在控件自身右上角，只看控件自己的矩形——密集排布时会盖住兄弟控件。`SetTooltipDelegated(true)` 把布局权交给父控件，且可**多级上交**（父控件也上交则继续向上），由第一个不上交的祖先负责摆放：**优先左右边**——取离原控件更近的一侧，画在宿主该边外侧 8px、纵向对齐原控件；左右都放不下时才退到离原控件最近的上下边。纵向超出视口时自动收进屏内（不换边），横向钳制回视口。典型用法：对话框内每个按钮都上交，tooltip 画到对话框左右边框外，不会挡住其它按钮。
+
+**Tooltip 自动换行**：`SetTooltipMaxWidth(像素)`（默认 0 = 关闭）让标题和正文按指定宽度自动换行；已有的 `\n` 仍作为强制换行点（含空行）。英文按空格断词，中文等无空格文本按字符断行，并做**平衡换行**（二分收窄各行宽度、保持行数不变），避免末行只剩一两个字的"吊脚"；设置值超过视口宽度时自动钳制。换行发生在测量与定位之前，委托布局按换行后的尺寸决定贴边方向。
 
 ### 3.3 布局
 
@@ -177,10 +181,12 @@ public:
 6. **`BindCommand` 与 `SetOnClick` 互斥**，且它接管 `Enabled`。
 7. **PageView 非当前页的子控件**被移到 `(-10000,-10000)` 并禁用（防抢鼠标输入），依赖子节点顺序分页——插删节点后要 `Refresh()`。
 8. **输入锁**：引擎 `UserInputLocked` 时所有控件不可交互（`CanInteract` 内置判断）。
+9. **PCX 素材布局**：如果 PCX 的画布触及战术面板顶部，游戏会立即崩溃。这是游戏引擎本身的限制。
+10. **PCX 素材尺寸**：如果 PCX 的长宽像素数为奇数，则会导致绘制错误，在左侧和下侧画布边缘产生一条异常的线。这也是游戏引擎本身的限制。
 
 ## 6. 参考样例
 
 | 样例 | 演示内容 |
 |---|---|
-| `src/Mutation/MutationSelectorDialog.cpp` | 完整 MVVM：Dialog + PageView 分页 + Command 按钮联动 + 双向同步 + 快捷键 + `SetCustomDraw` 画 SHP |
-| `src/Mutation/MutationDisplayerStrip.cpp` | 常驻 IconStrip：Anchor::Right + `Observable` 驱动的运行期动态增删 |
+| `src/UI/Example/MutationSelectorDialog.cpp` | 完整 MVVM：Dialog + PageView 分页 + Command 按钮联动 + 双向同步 + 快捷键 + `SetCustomDraw` 画 SHP |
+| `src/UI/Example/MutationDisplayerStrip.cpp` | 常驻 IconStrip：Anchor::Right + `Observable` 驱动的运行期动态增删 |

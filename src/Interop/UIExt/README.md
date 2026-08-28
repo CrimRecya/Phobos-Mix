@@ -92,6 +92,8 @@ IconButton 创建后可用 `UIExt_Button_SetIconFromFile` 设置 PCX 图标。
 | `UIExt_SetChecked(control, checked)` | 设置 CheckBox 勾选状态 |
 | `UIExt_SetAnchor(control, anchor, offsetX, offsetY)` | 设置锚点 |
 | `UIExt_SetTooltip(control, title, text)` | 设置标题/正文 Tooltip |
+| `UIExt_SetTooltipDelegated(control, delegated)` | 上交 tooltip 布局权给父控件（可多级）；由最终管理控件优先在左右边外侧绘制，避免遮挡兄弟控件 |
+| `UIExt_SetTooltipMaxWidth(control, width)` | tooltip 文本自动换行的最大宽度（像素，0 = 关闭），`\n` 仍为强制换行；各行自动平衡，避免末行吊脚 |
 | `UIExt_SetBackColor(control, r, g, b, opacity)` | 设置 Panel/Dialog 背景色（0-255）和透明度 |
 | `UIExt_SetBorder(control, enabled, color)` | 设置 Panel/Dialog 边框，color 为 `COLORREF` |
 
@@ -127,6 +129,13 @@ IconButton 创建后可用 `UIExt_Button_SetIconFromFile` 设置 PCX 图标。
 ```cpp
 typedef void(__stdcall* UIExtActionCallback)(void* userData);
 ```
+
+### PCX 素材注意事项
+
+> ⚠️ 使用 PCX 素材时请注意（例如通过 `UIExt_Button_SetIconFromFile` 设置的按钮图标，以及框架内其它 PCX 绘制）：
+>
+> 1. **布局**：如果 PCX 的画布触及战术面板顶部，游戏会立即崩溃。这是游戏引擎本身的限制，请避免把 PCX 画到屏幕/战术区顶部边缘。
+> 2. **尺寸**：如果 PCX 的长宽像素数为奇数，则会导致绘制错误，在左侧和下侧画布边缘产生一条异常的线。这也是游戏引擎本身的限制。
 
 ## CheckBox
 

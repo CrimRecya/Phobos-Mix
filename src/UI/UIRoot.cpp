@@ -473,7 +473,16 @@ namespace UIExt
 				continue;
 
 			if (auto* component = FindTooltipComponentAt(screen.Root.get(), mouse.X, mouse.Y))
-				TooltipRenderer::Draw(*component);
+			{
+				// A control can hand tooltip layout to its parent; the first
+				// ancestor that does not delegate it manages the placement.
+				auto* layoutHost = component;
+
+				while (layoutHost->TooltipDelegated && layoutHost->Parent)
+					layoutHost = layoutHost->Parent;
+
+				TooltipRenderer::Draw(*component, layoutHost);
+			}
 		}
 	}
 }

@@ -322,13 +322,13 @@
     <ClCompile Include="src\UI\Controls\PageView.cpp" />
     <ClCompile Include="src\UI\Controls\IconStrip.cpp" />
     <ClCompile Include="src\UI\Controls\ListGrid.cpp" />
-    <!-- src\Mutation -->
-    <ClCompile Include="src\Mutation\MutationArt.cpp" />
-    <ClCompile Include="src\Mutation\MutationInterop.cpp" />
-    <ClCompile Include="src\Mutation\MutationViewModel.cpp" />
-    <ClCompile Include="src\Mutation\MutationSelectorDialog.cpp" />
-    <ClCompile Include="src\Mutation\MutationDisplayerStrip.cpp" />
-    <ClCompile Include="src\Mutation\OpenMutationUI.cpp" />
+    <!-- src\UI\Example -->
+    <ClCompile Include="src\UI\Example\MutationArt.cpp" />
+    <ClCompile Include="src\UI\Example\MutationInterop.cpp" />
+    <ClCompile Include="src\UI\Example\MutationViewModel.cpp" />
+    <ClCompile Include="src\UI\Example\MutationSelectorDialog.cpp" />
+    <ClCompile Include="src\UI\Example\MutationDisplayerStrip.cpp" />
+    <ClCompile Include="src\UI\Example\OpenMutationUI.cpp" />
     <!-- src\New -->
     <!-- src\New\Entity -->
     <ClCompile Include="src\New\Entity\Ares\RadarJammerClass.cpp" />
@@ -532,13 +532,13 @@
     <ClInclude Include="src\UI\Controls\PageView.h" />
     <ClInclude Include="src\UI\Controls\IconStrip.h" />
     <ClInclude Include="src\UI\Controls\ListGrid.h" />
-    <!-- src\Mutation -->
-    <ClInclude Include="src\Mutation\MutationArt.h" />
-    <ClInclude Include="src\Mutation\MutationInterop.h" />
-    <ClInclude Include="src\Mutation\MutationViewModel.h" />
-    <ClInclude Include="src\Mutation\MutationSelectorDialog.h" />
-    <ClInclude Include="src\Mutation\MutationDisplayerStrip.h" />
-    <ClInclude Include="src\Mutation\OpenMutationUI.h" />
+    <!-- src\UI\Example -->
+    <ClInclude Include="src\UI\Example\MutationArt.h" />
+    <ClInclude Include="src\UI\Example\MutationInterop.h" />
+    <ClInclude Include="src\UI\Example\MutationViewModel.h" />
+    <ClInclude Include="src\UI\Example\MutationSelectorDialog.h" />
+    <ClInclude Include="src\UI\Example\MutationDisplayerStrip.h" />
+    <ClInclude Include="src\UI\Example\OpenMutationUI.h" />
     <!-- src\New -->
     <!-- src\New\Entity -->
     <ClInclude Include="src\New\Entity\Ares\RadarJammerClass.h" />
