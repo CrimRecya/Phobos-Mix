@@ -118,6 +118,9 @@ IconButton 创建后可用 `UIExt_Button_SetIconFromFile` 设置 PCX 图标。
 | `UIExt_Button_SetShortcut(button, key)` | 设置快捷键（虚拟键码） |
 | `UIExt_Button_Click(button)` | 程序化触发点击 |
 | `UIExt_Button_SetIconFromFile(button, filename)` | 从游戏目录加载 PCX 文件并设置为按钮图标 |
+| `UIExt_Button_SetColor(button, normal, hover, disabled, text)` | 设置四态颜色，均为 `COLORREF`（0x00BBGGRR）；默认 0x303030 / 0x4A4A4A / 0x222222 / 白色 |
+| `UIExt_Button_SetFillOpacity(button, opacity)` | 背景填充透明度 0-100：**0 不绘制背景**，1-99 半透明，≥100 不透明（默认） |
+| `UIExt_Button_SetDrawHoverBorder(button, draw)` | 是否绘制悬停白色描边（0/1，默认绘制） |
 
 回调类型：
 

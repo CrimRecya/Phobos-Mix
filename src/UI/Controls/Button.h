@@ -45,6 +45,9 @@ namespace UIExt
 		Button& SetShortcut(WWKey key);
 		Button& SetTextOffset(int x, int y);
 		Button& SetTextAnchor(TextAlign align, TextVAlign valign);
+		Button& SetColor(COLORREF normal, COLORREF hover, COLORREF disabled, COLORREF text);
+		Button& SetFillOpacity(int opacity);
+		Button& SetDrawHoverBorder(bool draw);
 
 		// Fluent alias used by Builder.
 		Button& OnClick(std::function<void()> callback);
@@ -77,5 +80,7 @@ namespace UIExt
 		TextVAlign TextVAlign_ { TextVAlign::Middle };
 		int TextOffsetX { 0 };
 		int TextOffsetY { 1 };
+		int FillOpacity { 100 };
+		bool DrawHoverBorder { true };
 	};
 }

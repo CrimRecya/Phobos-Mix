@@ -152,6 +152,18 @@ DEFINE_EXPORT(HRESULT, UIExt_Button_SetShortcut, void* pButton, int key);
 DEFINE_EXPORT(HRESULT, UIExt_Button_Click, void* pButton);
 DEFINE_EXPORT(HRESULT, UIExt_Button_SetIconFromFile, void* pButton, const char* filename);
 
+/// Sets the button's four colors as COLORREF values (0x00BBGGRR).
+/// Defaults: normal 0x303030, hover 0x4A4A4A, disabled 0x222222, text COLOR_WHITE.
+DEFINE_EXPORT(HRESULT, UIExt_Button_SetColor,
+	void* pButton, int normalColor, int hoverColor, int disabledColor, int textColor);
+
+/// Sets the background fill opacity (0-100). 0 disables the background fill
+/// entirely; 1-99 draws a translucent fill; >= 100 draws an opaque fill.
+DEFINE_EXPORT(HRESULT, UIExt_Button_SetFillOpacity, void* pButton, int opacity);
+
+/// Controls whether the white outline is drawn while the button is hovered.
+DEFINE_EXPORT(HRESULT, UIExt_Button_SetDrawHoverBorder, void* pButton, int draw);
+
 // ----------------------------------------------------------------------------
 // CheckBox
 // ----------------------------------------------------------------------------

@@ -624,6 +624,53 @@ DEFINE_EXPORT(HRESULT, UIExt_Button_SetIconFromFile, void* pButton, const char* 
 	return E_INVALIDARG;
 }
 
+DEFINE_EXPORT(HRESULT, UIExt_Button_SetColor,
+	void* pButton, int normalColor, int hoverColor, int disabledColor, int textColor)
+{
+	if (!pButton)
+		return E_POINTER;
+
+	if (auto* button = AsButton(pButton))
+	{
+		button->SetColor(
+			static_cast<COLORREF>(normalColor),
+			static_cast<COLORREF>(hoverColor),
+			static_cast<COLORREF>(disabledColor),
+			static_cast<COLORREF>(textColor));
+		return S_OK;
+	}
+
+	return E_INVALIDARG;
+}
+
+DEFINE_EXPORT(HRESULT, UIExt_Button_SetFillOpacity, void* pButton, int opacity)
+{
+	if (!pButton)
+		return E_POINTER;
+
+	if (auto* button = AsButton(pButton))
+	{
+		button->SetFillOpacity(opacity);
+		return S_OK;
+	}
+
+	return E_INVALIDARG;
+}
+
+DEFINE_EXPORT(HRESULT, UIExt_Button_SetDrawHoverBorder, void* pButton, int draw)
+{
+	if (!pButton)
+		return E_POINTER;
+
+	if (auto* button = AsButton(pButton))
+	{
+		button->SetDrawHoverBorder(draw != 0);
+		return S_OK;
+	}
+
+	return E_INVALIDARG;
+}
+
 // ----------------------------------------------------------------------------
 // CheckBox
 // ----------------------------------------------------------------------------

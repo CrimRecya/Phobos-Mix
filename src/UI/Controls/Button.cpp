@@ -67,6 +67,27 @@ namespace UIExt
 		return *this;
 	}
 
+	Button& Button::SetColor(COLORREF normal, COLORREF hover, COLORREF disabled, COLORREF text)
+	{
+		this->ColorNormal = normal;
+		this->ColorHover = hover;
+		this->ColorDisabled = disabled;
+		this->ColorText = text;
+		return *this;
+	}
+
+	Button& Button::SetFillOpacity(int opacity)
+	{
+		this->FillOpacity = opacity < 0 ? 0 : (opacity > 100 ? 100 : opacity);
+		return *this;
+	}
+
+	Button& Button::SetDrawHoverBorder(bool draw)
+	{
+		this->DrawHoverBorder = draw;
+		return *this;
+	}
+
 	Button& Button::OnClick(std::function<void()> callback)
 	{
 		return this->SetOnClick(std::move(callback));
@@ -114,8 +135,28 @@ namespace UIExt
 		this->UIComponent::Draw(forced);
 
 		RectangleStruct rect { this->X, this->Y, this->Width, this->Height };
-		const auto bgColor = this->Disabled ? this->ColorDisabled : (this->Hovering ? this->ColorHover : this->ColorNormal);
-		DSurface::Composite->FillRect(&rect, bgColor);
+
+		// FillOpacity 0 disables the background entirely; 100 draws an opaque fill.
+		if (this->FillOpacity > 0)
+		{
+			const auto bgColor = this->Disabled ? this->ColorDisabled : (this->Hovering ? this->ColorHover : this->ColorNormal);
+
+			if (this->FillOpacity >= 100)
+			{
+				DSurface::Composite->FillRect(&rect, bgColor);
+			}
+			else
+			{
+				// COLORREF is 0x00BBGGRR.
+				ColorStruct fillColor
+				{
+					static_cast<BYTE>(bgColor & 0xFF),
+					static_cast<BYTE>((bgColor >> 8) & 0xFF),
+					static_cast<BYTE>((bgColor >> 16) & 0xFF)
+				};
+				DSurface::Composite->FillRectTrans(&rect, &fillColor, this->FillOpacity);
+			}
+		}
 
 		if (auto* surface = this->IconFile.GetSurface())
 		{
@@ -162,7 +203,7 @@ namespace UIExt
 			DSurface::Composite->DrawTextA(this->Text.c_str(), &surfaceRect, &position, this->ColorText, 0, TextPrintType::Point8);
 		}
 
-		if (this->Hovering && !this->Disabled)
+		if (this->DrawHoverBorder && this->Hovering && !this->Disabled)
 			DSurface::Composite->DrawRect(&rect, COLOR_WHITE);
 
 		return false;

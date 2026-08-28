@@ -77,7 +77,7 @@ UIRoot::Instance().CloseAll();
 |---|---|
 | `Panel` | `SetBackColor(color, opacity)`、`SetBorder(bool, color)`、`SetCustomDraw(fn)`（自绘 SHP/PCX 底图，见样例） |
 | `Dialog` | 继承 Panel；`SetTitle`、`SetCloseAction(fn)`（右上角内置关闭按钮） |
-| `Button` | `SetText / SetIcon / SetOnClick / OnClick(流式别名) / SetOnRightClick / SetShortcut(VK_*) / SetTextOffset / SetTextAnchor / BindIcon` |
+| `Button` | `SetText / SetIcon / SetOnClick / OnClick(流式别名) / SetOnRightClick / SetShortcut(VK_*) / SetTextOffset / SetTextAnchor / BindIcon`；`SetColor(普通,悬停,禁用,文字)` 改四态颜色，`SetFillOpacity(0-100)` 调背景透明度（**0 = 完全不画背景**，默认 100 不透明），`SetDrawHoverBorder(bool)` 控制悬停白色描边 |
 | `IconButton` | 继承 Button；`SetIconSurface(BSurface*)`，无图标时可用 `SetText` 显示文字（如首字，截取由调用方完成） |
 | `CheckBox` | `SetChecked / SetOnToggle(fn(bool))` |
 | `Label` | `SetText / SetColor / SetLineSpacing`，支持 `\n` 多行 |
