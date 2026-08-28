@@ -117,6 +117,12 @@
       Condition="'$(GitRef)' == ''">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitRef" />
     </Exec>
+    <!-- Non-ASCII branch names (e.g. Chinese branch names) can be mangled when MSBuild
+         captures git's UTF-8 console output through the system ANSI code page, producing a
+         generated header that fails to compile. Sanitize the ref to ASCII in that case. -->
+    <PropertyGroup>
+      <GitRef Condition="'$(GitRef)' != ''">$([System.Text.RegularExpressions.Regex]::Replace('$(GitRef)', '[^\x20-\x7E]', '_'))</GitRef>
+    </PropertyGroup>
     <Exec Command="git status --porcelain 2&gt;nul" WorkingDirectory="$(MSBuildProjectDirectory)"
       ConsoleToMsBuild="true" IgnoreExitCode="true" StandardOutputImportance="Low"
       Condition="'$(GitDirty)' == '' and '$(GitCommit)' != ''">
