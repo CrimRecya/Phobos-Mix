@@ -46,6 +46,7 @@
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)\%(Directory)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)\%(Directory)</ObjectFileName>
       <CallingConvention>StdCall</CallingConvention>

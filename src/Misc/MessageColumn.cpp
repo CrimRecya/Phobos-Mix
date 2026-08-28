@@ -1,9 +1,10 @@
-﻿#include "MessageColumn.h"
+#include "MessageColumn.h"
 
 #include <BitFont.h>
 #include <WWMouseClass.h>
 
 #include <Ext/Side/Body.h>
+#include <UI/UIRoot.h>
 
 MessageColumnClass MessageColumnClass::Instance;
 
@@ -1151,6 +1152,8 @@ DEFINE_HOOK(0x4F4589, GScreenClass_NewMessageListDraw, 0x5)
 DEFINE_HOOK(0x55DDA0, MainLoop_FrameStep_NewMessageListManage, 0x5)
 {
 	enum { SkipGameCode = 0x55DDAA };
+
+	UIExt::UIRoot::Instance().UpdateAndDraw();
 
 	if (!MessageTemp::OnOldMessages)
 		MessageListClass::Instance.Manage();

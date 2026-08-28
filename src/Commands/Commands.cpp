@@ -1,4 +1,4 @@
-﻿#include "Commands.h"
+#include "Commands.h"
 
 #include "ObjectInfo.h"
 #include "NextIdleHarvester.h"
@@ -36,6 +36,8 @@
 #include <Ext/Sidebar/SWSidebar/SWSidebarClass.h>
 #include <Ext/Sidebar/SelectedButton/SelectedInfoClass.h>
 #include <Misc/MessageColumn.h>
+#include <UI/UIRoot.h>
+#include <Mutation/OpenMutationUI.h>
 
 #pragma region HotkeyCommand
 
@@ -49,6 +51,7 @@ DEFINE_HOOK(0x533066, CommandClassCallback_Register, 0x6)
 	MakeCommand<ToggleDesignatorRangeCommandClass>();
 	MakeCommand<SelectedInfoCommandClass>();
 	MakeCommand<SelectedExpandCommandClass>();
+	MakeCommand<Mutation::OpenMutationUICommandClass>();
 	MakeCommand<HerosInfoCommandClass>();
 	MakeCommand<AssignRallyPointCommandClass>();
 	MakeCommand<AssignSecondaryRallyPointCommandClass>();
@@ -163,7 +166,8 @@ static inline bool CheckSkipScrollSidebar()
 		|| !Phobos::Config::ScrollSidebarStripInTactical && WWMouseClass::Instance->XY1.X < Make_Global<int>(0xB0CE30) // TacticalClass::view_bound.Width
 		|| DistributionModeHoldDownCommandClass::Enabled
 		|| SelectedInfoClass::Instance.IsHovering
-		|| MessageColumnClass::Instance.IsHovering();
+		|| MessageColumnClass::Instance.IsHovering()
+		|| UIExt::UIRoot::Instance().IsBlockingTactical();
 }
 
 DEFINE_HOOK(0x533F50, Game_ScrollSidebar_Skip, 0x5)
