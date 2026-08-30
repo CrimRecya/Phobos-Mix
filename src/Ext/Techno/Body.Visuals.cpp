@@ -171,7 +171,6 @@ void TechnoExt::DrawInsignia(TechnoClass* pThis, Point2D* pLocation, RectangleSt
 
 	VeterancyStruct* pVeterancy = &pThis->Veterancy;
 	auto insigniaFrames = pTechnoTypeExt->InsigniaFrames.Get();
-	int insigniaFrame = insigniaFrames.X;
 	int frameIndex = pTechnoTypeExt->InsigniaFrame.Get(pThis);
 
 	if (pTechnoType->Passengers > 0 && pTechnoTypeExt->Insignia_Passengers.size() > 0)
@@ -218,6 +217,8 @@ void TechnoExt::DrawInsignia(TechnoClass* pThis, Point2D* pLocation, RectangleSt
 		if (frames != Vector3D<int>(-1, -1, -1))
 			insigniaFrames = frames.Get();
 	}
+
+	int insigniaFrame = insigniaFrames.X;
 
 	if (pVeterancy->IsVeteran())
 	{

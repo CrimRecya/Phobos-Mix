@@ -201,6 +201,9 @@ void ScenarioExt::ExtData::Serialize(T& Stm)
 		.Process(this->FallingDownTracker)
 		.Process(this->EVAIndex)
 		.Process(this->FiringAnimUpdateCount)
+		.Process(this->MissionTimer_Type)
+		.Process(this->MissionTimer_Variable)
+		.Process(this->MissionTimer_Reverse)
 		;
 }
 

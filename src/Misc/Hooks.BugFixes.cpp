@@ -1544,6 +1544,22 @@ DEFINE_HOOK(0x468670, BulletClass_Unlimbo_Start_InvisoBlockageFix, 0x6)
 	return 0;
 }
 
+#define Hook_AIPlayerLogFix(addr, mode, size, reg1, reg2) \
+DEFINE_HOOK(addr, ##mode##_AIPlayerLogFix, size) \
+{ \
+	GET(HouseClass*, pHouse, reg1); \
+	if (!pHouse->IsControlledByHuman()) \
+		R->reg2(L"Computer"); \
+	return 0; \
+}
+
+// Fix the bug that computer's record may cannot log normally.
+Hook_AIPlayerLogFix(0x49B83B, Sub_49B7E0, 0x6, ESI, EDI)
+Hook_AIPlayerLogFix(0x46DAFA, Sub_46DA70, 0x5, EDI, EBX)
+Hook_AIPlayerLogFix(0x5C9927, Sub_5C98A0, 0x5, EDI, EBX)
+
+#undef Hook_AIPlayerLogFix
+
 #pragma region Sensors
 
 DEFINE_HOOK(0x4DE839, FootClass_AddSensorsAt_Record, 0x6)
